@@ -1,0 +1,23 @@
+{
+  "login": "Login",
+  "dashboard": "Dashboard",
+  "clients": "Clients",
+  "subscriptions": "Subscriptions",
+  "settings": "Settings",
+  "super_admin": "Super Admin",
+  "admin": "Admin",
+  "user": "User",
+  "crm": "CRM & Leads",
+  "inbox": "Inbox",
+  "products": "Products",
+  "analytics": "Analytics",
+  "booking": "Booking",
+  "copilot": "AI Copilot",
+  "funnel": "Funnel & Website",
+  "knowledge_center": "Knowledge Center",
+  "logout": "Logout",
+  "switch_lang": "عربي",
+  "welcome": "Welcome back",
+  "dark_mode": "Dark Mode",
+  "light_mode": "Light Mode"
+}
