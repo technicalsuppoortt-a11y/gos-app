@@ -1,4 +1,4 @@
-export type LeadStage = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'BOOKING_OFFERED' | 'BOOKED' | 'CUSTOMER' | 'CLOSED';
+export type LeadStage = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'BOOKING_OFFERED' | 'BOOKED' | 'CUSTOMER' | 'CLOSED' | 'LEAD_CAPTURED' | 'CONTACT_CREATED' | 'CONVERSATION' | 'BOOKING' | 'PAYMENT_COMPLETED' | 'ACTIVE_CUSTOMER' | 'FOLLOW_UP_NEEDED' | 'RENEWAL_UPSELL' | 'CLOSED_LOST';
 export type ProductType = 'Service' | 'Course' | 'Digital Product';
 export interface Lead { id:string; name:string; email:string; company:string; source:string; stage:LeadStage; owner:string; value:number; lastActivity:string; nextFollowUp?:string; tags:string[]; avatar:string; color:string; interest:string; }
 export interface Product { id:string; name:string; type:ProductType; description:string; price:number; currency:string; status:'Published'|'Draft'; sales:number; calendarId?:string; }
@@ -22,7 +22,7 @@ export const products:Product[]=[
 export const calendars:CalendarRecord[]=[{id:'cal-01',name:'Northstar Consultations',timezone:'America/New_York',duration:60,status:'Active',productId:'prd-01',connected:true},{id:'cal-02',name:'Strategy Session',timezone:'America/New_York',duration:90,status:'Active',productId:'prd-01',connected:false}];
 export const bookings:BookingRecord[]=[{id:'bk-801',leadId:'ld-105',productId:'prd-01',calendarId:'cal-01',date:'Today',time:'2:30 PM',status:'Confirmed'},{id:'bk-802',leadId:'ld-103',productId:'prd-01',calendarId:'cal-01',date:'Today',time:'4:00 PM',status:'Confirmed'},{id:'bk-803',leadId:'ld-102',productId:'prd-01',calendarId:'cal-01',date:'Tomorrow',time:'10:30 AM',status:'Pending payment'}];
 export const channels=[{id:'whatsapp',name:'WhatsApp',color:'channel-green'},{id:'instagram',name:'Instagram',color:'channel-purple'},{id:'messenger',name:'Messenger',color:'channel-blue'},{id:'email',name:'Email',color:'channel-orange'}];
-export const stageLabel:Record<LeadStage,string>={NEW:'New',CONTACTED:'Contacted',QUALIFIED:'Qualified',BOOKING_OFFERED:'Booking offered',BOOKED:'Booked',CUSTOMER:'Customer',CLOSED:'Closed'};
+export const stageLabel:Record<LeadStage,string>={NEW:'New',CONTACTED:'Contacted',QUALIFIED:'Qualified',BOOKING_OFFERED:'Booking offered',BOOKED:'Booked',CUSTOMER:'Customer',CLOSED:'Closed',LEAD_CAPTURED:'Lead captured',CONTACT_CREATED:'Contact created',CONVERSATION:'Conversation',BOOKING:'Booking offered / booked',PAYMENT_COMPLETED:'Payment completed',ACTIVE_CUSTOMER:'Active customer',FOLLOW_UP_NEEDED:'Follow-up needed',RENEWAL_UPSELL:'Renewal / upsell',CLOSED_LOST:'Closed / lost'};
 export const initialsColor=(c:string)=>`avatar-${c}`;
 import type { Role, StoredAuth } from '../types/auth';
 

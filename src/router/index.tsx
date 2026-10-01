@@ -12,6 +12,9 @@ const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module =>
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
+const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
+const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
+const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
 
 function Suspended({ children }: React.PropsWithChildren) {
   return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>;
@@ -30,9 +33,9 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
-      { path: 'copilot', element: <Suspended><DashboardPage page="copilot"/></Suspended> },
-      { path: 'funnels', element: <Suspended><DashboardPage page="funnels"/></Suspended> },
-      { path: 'templates', element: <Suspended><DashboardPage page="funnels"/></Suspended> },
+      { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
+      { path: 'funnels', element: <Suspended><FunnelBuilder/></Suspended> },
+      { path: 'templates', element: <Suspended><PagePlaceholder title="Templates"/></Suspended> },
       { path: 'crm', element: <Suspended><DashboardPage page="crm"/></Suspended> },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
@@ -40,6 +43,9 @@ export const router = createBrowserRouter([
       { path: 'products', element: <Suspended><DashboardPage page="products"/></Suspended> },
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
+      { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title="GOS Academy"/></Suspended> },
+      { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
       { path: 'integrations', element: <Suspended><DashboardPage page="settings"/></Suspended> },
       { path: 'settings/*', element: <Suspended><DashboardPage page="settings"/></Suspended> },
     ],

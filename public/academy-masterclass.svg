@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="320" y2="180" gradientUnits="userSpaceOnUse"><stop stop-color="#171B35"/><stop offset="1" stop-color="#5141A7"/></linearGradient>
+    <linearGradient id="glow" x1="79" y1="25" x2="253" y2="169" gradientUnits="userSpaceOnUse"><stop stop-color="#BCAFFF"/><stop offset="1" stop-color="#705BEB"/></linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="18" fill="url(#bg)"/>
+  <circle cx="246" cy="40" r="67" fill="#A895FF" fill-opacity=".13"/>
+  <path d="M182 180c8-42 30-66 66-66 36 0 58 24 66 66H182Z" fill="url(#glow)"/>
+  <path d="M216 89c0-22 14-39 34-39s34 17 34 39v17c0 23-14 39-34 39s-34-16-34-39V89Z" fill="#F0C6B2"/>
+  <path d="M211 91c-3-35 16-54 43-54 25 0 39 15 40 41-12-5-19-15-23-24-12 14-30 22-60 23v14Z" fill="#27223F"/>
+  <path d="M31 35h95" stroke="#9785FF" stroke-width="2" stroke-linecap="round"/>
+  <text x="31" y="69" fill="#C4B9FF" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2">GOS ACADEMY</text>
+  <text x="31" y="102" fill="#fff" font-family="Arial,sans-serif" font-size="21" font-weight="700">AI SALES</text>
+  <text x="31" y="128" fill="#fff" font-family="Arial,sans-serif" font-size="21" font-weight="700">MASTERCLASS</text>
+  <rect x="31" y="145" width="93" height="3" rx="2" fill="#7866F1"/>
+  <rect x="31" y="145" width="61" height="3" rx="2" fill="#C0B5FF"/>
+</svg>

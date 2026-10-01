@@ -2,12 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import { AUTH_STORAGE_KEY } from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
+import crmReducer from './slices/crmSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     ui: uiReducer,
-    // Add other slices here (crm, products, etc.)
+    crm: crmReducer,
   },
 });
 
@@ -21,6 +22,11 @@ store.subscribe(() => {
     }
   } catch {
     // Authentication remains available in memory if browser storage is unavailable.
+  }
+  try {
+    localStorage.setItem('gos-crm-leads-v1', JSON.stringify(store.getState().crm.leads));
+  } catch {
+    // Canonical lead updates remain available in memory when storage is unavailable.
   }
 });
 
