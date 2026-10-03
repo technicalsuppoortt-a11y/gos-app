@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ArrowDownUp, ArrowRight, ArrowUpRight, CalendarDays, Check, ChevronDown, Clock3, FileText, LayoutGrid, Mail, MessageCircle, MoreHorizontal, Plus, Search, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
@@ -56,9 +55,26 @@ function Dropdown({ value, options, onChange, placeholder = 'Select an option', 
       <span className="crm-dropdown-current">{selected?.label ?? placeholder}</span><ChevronDown size={14}/>
     </button>
     {open && (
-      <div className="absolute z-50 top-full left-0 mt-1 w-full min-w-[200px] shadow-xl border border-gray-100 bg-white rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100" role="listbox" aria-label={ariaLabel ?? placeholder}>
-        {showSearch && <label className="crm-dropdown-search"><Search size={13}/><input ref={searchRef} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search options..." aria-label="Search dropdown options"/></label>}
-        <div className="crm-dropdown-options max-h-[228px] overflow-auto overscroll-contain p-1">{filteredOptions.length ? filteredOptions.map(option => <button type="button" role="option" aria-selected={value === option.value} key={option.value || '__empty'} className={`crm-dropdown-option w-full flex items-center justify-between px-2 py-2 mb-0.5 text-left rounded-lg transition-colors hover:bg-gray-50 focus:bg-gray-50 outline-none ${value === option.value ? 'bg-gray-50 text-indigo-700 font-medium' : 'text-gray-700'}`} onClick={() => { onChange(option.value); setOpen(false); setQuery(''); }}><span><b className={`block text-[11px] truncate ${value === option.value ? 'font-bold text-indigo-700' : 'font-medium text-gray-700'}`}>{option.label}</b>{option.description && <small className="block text-[10px] text-gray-500 mt-0.5">{option.description}</small>}</span>{value === option.value && <Check size={14} className="text-indigo-600"/>}</button>) : <div className="crm-dropdown-empty p-3 text-center text-xs text-gray-500">No options found</div>}</div>
+      <div className="absolute z-50 top-full left-0 mt-2 w-full min-w-[220px] bg-white rounded-xl border border-gray-100 shadow-xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100" role="listbox" aria-label={ariaLabel ?? placeholder}>
+        {showSearch && (
+          <div className="relative flex items-center mb-1">
+            <Search size={14} className="absolute left-3 text-gray-400" />
+            <input ref={searchRef} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search options..." aria-label="Search dropdown options" className="w-full bg-gray-50 border border-gray-100 text-gray-700 text-[11px] rounded-lg pl-9 pr-3 py-2 outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all"/>
+          </div>
+        )}
+        <div className="max-h-60 overflow-y-auto overscroll-contain space-y-0.5">
+          {filteredOptions.length ? filteredOptions.map(option => (
+            <button type="button" role="option" aria-selected={value === option.value} key={option.value || '__empty'} className={`w-full flex items-center justify-between px-3 py-2.5 my-0.5 rounded-lg transition-colors cursor-pointer outline-none ${value === option.value ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'}`} onClick={() => { onChange(option.value); setOpen(false); setQuery(''); }}>
+              <span className="flex flex-col items-start min-w-0 text-left">
+                <b className={`text-[11px] truncate ${value === option.value ? 'font-bold' : 'font-medium'}`}>{option.label}</b>
+                {option.description && <small className="text-[10px] text-gray-500 mt-0.5 truncate">{option.description}</small>}
+              </span>
+              {value === option.value && <Check size={14} className="ml-auto flex-none text-purple-600"/>}
+            </button>
+          )) : (
+            <div className="p-3 text-center text-xs text-gray-500">No options found</div>
+          )}
+        </div>
       </div>
     )}
   </div>;
@@ -106,7 +122,7 @@ export const CRMLeads: React.FC<{ notify: (message: string) => void }> = ({ noti
     const id = `ld-${Date.now()}`;
     const source = String(data.get('source') || 'Website Funnel');
     const stage = String(data.get('stage') || 'LEAD_CAPTURED') as LeadStage;
-    const lead: CanonicalLead = { id, name, email, company: String(data.get('company') || 'New contact'), source, stage, lifecycleStage: stage, owner: String(data.get('owner') || owners[0]), value: Number(data.get('value') || 0), lastActivity: 'Just now', nextFollowUp: undefined, tags: [], avatar: initials(name), color: 'lilac', interest: String(data.get('interest') || 'Not specified'), bookingStatus: 'Not Scheduled', qualificationStatus: 'Pending', activities: [{ id: `${id}-capture`, type: 'capture', title: 'Lead captured', detail: `Added to CRM · ${source}`, at: 'Just now' }], notes: [] };
+    const lead: CanonicalLead = { id, name, email, company: String(data.get('company') || 'New contact'), source, stage, lifecycleStage: stage, owner: String(data.get('owner') || owners[0]), value: Number(data.get('value') || 0), lastActivity: 'Just now', nextFollowUp: undefined, tags: [], avatar: initials(name), color: 'lilac', interest: String(data.get('interest') || 'Not specified'), bookingStatus: 'Not Scheduled', qualificationStatus: 'Pending', followUpState: 'NEW', hasWhatsAppConsent: false, hasMessagingConsent: false, hasEmailConsent: false, activities: [{ id: `${id}-capture`, type: 'capture', title: 'Lead captured', detail: `Added to CRM · ${source}`, at: 'Just now' }], notes: [] };
     dispatch(addLead(lead)); setAddOpen(false); setSelectedId(id); setNewSource('Website Funnel'); setNewOwner(owners[0]); setNewStage('LEAD_CAPTURED'); notify(`${name} added to the CRM.`);
   };
   const saveNote = () => { if (!selectedLead || !noteDraft.trim()) return; dispatch(addLeadNote({ id: selectedLead.id, note: noteDraft.trim() })); setNoteDraft(''); notify('Internal note saved to the lead record.'); };

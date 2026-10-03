@@ -1,0 +1,86 @@
+.pp-products.list{grid-template-columns:1fr;grid-auto-rows:112px}.pp-products.list .pp-product-card{display:grid;grid-template-columns:155px minmax(0,1fr)}.pp-products.list .pp-art{height:auto;min-height:0;margin:8px}.pp-products.list .pp-card-info{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(80px,.7fr) minmax(100px,1fr) minmax(80px,.55fr);align-items:center;gap:6px 10px;padding:9px 11px}.pp-products.list .pp-type-tag{width:max-content}.pp-products.list .pp-product-title{grid-column:1;grid-row:2;margin:0}.pp-products.list .pp-price{grid-column:2;grid-row:1/3}.pp-products.list .pp-product-metric{grid-column:3;grid-row:1/3;margin:0}.pp-products.list .pp-card-footer{grid-column:4;grid-row:1/3;margin:0;padding:0}.pp-description-editor{min-height:76px;padding:8px;border:1px solid #ddd7f5;border-radius:7px;outline:none;color:#606a81;font:inherit;font-size:9px;line-height:1.5;resize:vertical}.pp-description-editor:focus{box-shadow:0 0 0 3px #6946e914}
+
+/* ── Viewport lock: the page owns its header; only the product grid + inspector scroll ── */
+@media (min-width:761px){
+ .layout-workspace:has(.pp-page){height:100vh;min-height:0;overflow:hidden}
+ .layout-workspace:has(.pp-page)>.layout-header,.layout-workspace:has(.pp-page)>.layout-footer{display:none}
+ .layout-main:has(.pp-page){display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:14px 20px 16px}
+ .layout-route-content:has(.pp-page){display:flex;flex:1;flex-direction:column;height:100%;min-height:0}
+ .pp-page{flex:1;height:100%;min-height:0;gap:12px}
+}
+
+/* ── Header ── */
+.pp-bell{display:grid;place-items:center;font-size:0;color:#2a3350}
+.pp-bell i{top:3px;right:3px}
+.pp-global-search{width:268px}
+
+/* ── KPI cards: soft tinted surfaces ── */
+.pp-metric{border-radius:12px}
+.pp-metric.violet{background:linear-gradient(135deg,#fbfaff,#f5f2ff);border-color:#eeeafd}
+.pp-metric.blue{background:linear-gradient(135deg,#f9fcff,#f1f7ff);border-color:#e4eefb}
+.pp-metric.green{background:linear-gradient(135deg,#f8fdfa,#f0faf4);border-color:#e0f2e7}
+.pp-metric.orange{background:linear-gradient(135deg,#fffdf8,#fff7ea);border-color:#f8ebd0}
+.pp-metric.pink{background:linear-gradient(135deg,#fffafc,#fff1f6);border-color:#fbe2ec}
+.pp-metric.violet>span{background:#ece6ff}
+.pp-metric.blue>span{background:#e0efff}
+.pp-metric.green>span{background:#dff5e9}
+.pp-metric.orange>span{background:#ffefcf}
+.pp-metric.pink>span{background:#fde3f1}
+.pp-metric.selected{box-shadow:0 0 0 2px #6d4aea1a}
+
+/* ── Catalog panel (toolbar + grid share one surface) ── */
+.pp-catalog{gap:12px;padding:12px;border:1px solid #e8eaf1;border-radius:12px;background:#fff;box-shadow:0 3px 13px #2b254306}
+.pp-toolbar{padding:0;border:0;border-radius:0;background:transparent}
+.pp-search{width:min(300px,34%)}
+.pp-toolbar>.pp-select:nth-of-type(1){width:104px}
+.pp-toolbar>.pp-select:nth-of-type(2){width:110px}
+.pp-toolbar>.pp-select:nth-of-type(3){width:140px}
+.pp-toolbar-divider{flex:none;width:1px;height:18px;margin-left:auto;background:#e4e7ef}
+.pp-toolbar .pp-view-toggle{gap:6px;margin-left:0;padding:0;border:0}
+.pp-view-toggle button{width:36px;height:36px;border:1px solid transparent;border-radius:8px;transition:background .15s,color .15s}
+.pp-view-toggle button:hover{background:#f7f5ff;color:#5b34e6}
+.pp-view-toggle button.active{border-color:#ddd5ff;background:#f0edff;color:#5b34e6}
+
+/* ── Product grid: natural card height, scrolls internally ── */
+.pp-products{grid-auto-rows:max-content;align-content:start;gap:12px;padding:1px 4px 2px 1px}
+.pp-product-card{border-radius:11px}
+.pp-product-card.selected{border-color:#c9bdfa;box-shadow:0 0 0 3px #6d4aea12,0 6px 18px #2b204c0d}
+.pp-art{height:auto;aspect-ratio:16/9;margin:8px 8px 0;border-radius:8px;background:#f2f0fa}
+.pp-art>img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.045);transition:transform .35s ease;user-select:none}
+.pp-product-card:hover .pp-art>img{transform:scale(1.085)}
+.pp-art>.pp-artwork{position:absolute;inset:0}
+.pp-card-more{z-index:1;width:26px;height:26px;border-color:#ececf3;background:#fff;box-shadow:0 2px 6px #1a14330f;transition:background .15s,color .15s}
+.pp-card-more:hover{background:#f6f3ff;color:#5b34e6}
+.pp-card-info{padding:9px 10px 10px}
+.pp-type-tag.online-course{background:#e9f3ff;color:#1f74d4}
+.pp-type-tag.digital-product{background:#f1ecff;color:#6a3fe0}
+.pp-product-title{display:block;width:100%;min-height:0;margin:7px 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-price{line-height:1.2}
+.pp-product-metric{gap:11px;margin-top:8px}
+.pp-product-metric>span{display:inline-flex;min-width:0;align-items:center;gap:4px}
+.pp-card-footer{padding-top:10px}
+.pp-status{gap:3px;padding:4px 8px 4px 6px;transition:filter .15s}
+.pp-status:hover{filter:brightness(.97)}
+.pp-status.active{background:#e8f8ef;color:#0f9a5f}
+.pp-status.inactive{background:#ffeff0;color:#e0505a}
+.pp-inspector-name .pp-status{padding:4px 8px;cursor:default}
+
+/* ── Inspector ── */
+.pp-thumb-small{width:78px;height:60px;border-radius:8px;background:#f2f0fa}
+.pp-thumb-small>img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.05)}
+.pp-quick-metrics{gap:4px;padding:10px 8px;border-color:#eceef4;border-radius:10px;background:#fff}
+.pp-quick-metrics>div{grid-template-columns:32px minmax(0,1fr);column-gap:7px}
+.pp-quick-metrics>div>span{width:32px;height:32px}
+.pp-quick-metrics .price>span{background:#e8f2ff;color:#2a7de1}
+.pp-quick-metrics .sales>span{background:#f0ebff;color:#6a40e8}
+.pp-quick-metrics .revenue>span{background:#fff2e2;color:#e8850c}
+.pp-select-value{display:flex;min-width:0;align-items:center;gap:8px;overflow:hidden}
+.pp-select-value>span{overflow:hidden;text-overflow:ellipsis}
+.pp-select>button .pp-select-icon{color:#4b5470}
+.pp-payment-options label{min-height:26px;cursor:pointer}
+.pp-payment-options input{display:grid;flex:none;width:17px;height:17px;place-items:center;border:1.5px solid #d4d9e4;border-radius:4px;background:#fff;cursor:pointer;-webkit-appearance:none;appearance:none;transition:background-color .15s,border-color .15s}
+.pp-payment-options input:hover{border-color:#a996ff}
+.pp-payment-options input:checked{border-color:#633ced;background:#633ced url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat}
+.pp-payment-options input:focus-visible{outline:none;box-shadow:0 0 0 3px #6946e926}
+.pp-payment-options em{color:#7a8399}
+.pp-payment-options label:has(input:checked) em{color:#1f2944;font-weight:600}
