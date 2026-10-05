@@ -25,6 +25,7 @@ store.subscribe(() => {
   }
   try {
     localStorage.setItem('gos-crm-leads-v1', JSON.stringify(store.getState().crm.leads));
+    localStorage.setItem('gos-crm-pipelines-v1', JSON.stringify(store.getState().crm.pipelines));
   } catch {
     // Canonical lead updates remain available in memory when storage is unavailable.
   }

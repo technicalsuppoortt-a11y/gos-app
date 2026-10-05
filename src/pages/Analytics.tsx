@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Bell, CalendarDays, ChartColumn, ChartColumnBig, ChartNoAxesColumnIncreasing, ChevronDown, CircleDollarSign, MessageSquareText, Package, ShoppingBag, Target, UserRound, UserRoundPlus, Users, UsersRound } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChartColumnBig, ChartNoAxesColumnIncreasing, CircleDollarSign, MessageSquareText, Package, ShoppingBag, Target, UserRound, UserRoundPlus, Users, UsersRound } from 'lucide-react';
 import aiCourseImg from '../assets/products/ai-course.jpg';
 import strategyCallImg from '../assets/products/strategy-call.jpg';
 import agencyKitImg from '../assets/products/agency-kit.jpg';
@@ -27,20 +27,12 @@ type TabName = typeof tabs[number]['name'];
 /* ───────────────────────── Page ───────────────────────── */
 export const Analytics: React.FC<Props> = ({ notify }) => {
   const [activeAnalyticsTab, setActiveAnalyticsTab] = React.useState<TabName>('Overview');
-  const [range, setRange] = React.useState('Last 30 days');
+  const [range] = React.useState('Last 30 days');
   const compare = `vs ${range.toLowerCase()}`;
   const ActiveView = (tabs.find(t => t.name === activeAnalyticsTab) ?? tabs[0]).view;
 
   return <main className="an-page">
-    <header className="an-header">
-      <span className="an-header-icon"><ChartColumn size={22} /></span>
-      <div className="an-header-copy"><h1>Analytics</h1><p>Track your growth, understand your audience and make better decisions.</p></div>
-      <div className="an-header-right">
-        <RangeSelect value={range} onChange={v => { setRange(v); notify(`Showing analytics for ${v.toLowerCase()}.`); }} withIcon large />
-        <button className="an-bell" aria-label="Notifications" onClick={() => notify('You are all caught up.')}><Bell size={19} /><i /></button>
-        <button className="an-user" onClick={() => notify('Account menu opened.')}><img src="https://i.pravatar.cc/80?img=12" alt="Mohamed Joe" /><span><b>Mohamed Joe</b><small>Business Owner</small></span><ChevronDown size={14} /></button>
-      </div>
-    </header>
+
 
     <nav className="an-tabs" role="tablist" aria-label="Analytics sections">
       {tabs.map(({ name, icon: Icon }) => <button key={name} role="tab" aria-selected={activeAnalyticsTab === name} className={activeAnalyticsTab === name ? 'active' : ''} onClick={() => setActiveAnalyticsTab(name)}><Icon size={15} />{name}</button>)}

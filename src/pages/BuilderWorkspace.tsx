@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronRight, Columns2, CreditCard, Eye, FileText, Globe2, Heading, Image, LayoutGrid, Link2, List, Menu, Monitor, MoreHorizontal, MousePointer2, PanelTop, Play, Plus, Redo2, Save, Search, ShieldCheck, Smartphone, Sparkles, Tablet, Trash2, Type, Undo2, Upload, Users, Video, WandSparkles, X, Zap, Clock3, CalendarDays, MessageSquare, Layers, Dumbbell, Heart, Star, Trophy, Flame, Target, CircleCheck, ArrowUpRight, Bell, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { showToast } from '../utils/toast';
 import './funnel-builder.css';
 
 type BuilderTab = 'Pages' | 'Global' | 'Theme';
@@ -141,7 +142,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode }> = ({ mode }) => {
   const [showPublishMenu, setShowPublishMenu] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
   const [accordion, setAccordion] = useState<Record<string, boolean>>({ Background: false, 'Custom Code': false, 'Advanced Settings': false });
-  const [toast, setToast] = useState('');
+
   const [leftInspectorMode, setLeftInspectorMode] = useState<'elements' | 'sections'>('elements');
   const [themeColor, setThemeColor] = useState('#6544e8');
   const [headingFont, setHeadingFont] = useState('Manrope');
@@ -179,7 +180,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode }> = ({ mode }) => {
     return ()=>{observer.disconnect();list.removeEventListener('scroll',measure);};
   },[funnelSteps,mode]);
 
-  const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2400); };
+  const notify = (message: string) => { showToast.success(message); };
   useEffect(() => {
     if (!pagesData.some(page => page.id === activePageId)) setActivePageId(pagesData[0]?.id ?? 'home');
   }, [activePageId, pagesData]);
@@ -476,7 +477,6 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode }> = ({ mode }) => {
       {showActionStep && <div className="fb-preview-action-backdrop" onMouseDown={event => event.target === event.currentTarget && setShowActionStep(false)}><section className="fb-preview-action-modal"><span className="fb-preview-action-icon">{previewActionType === 'payment' ? <CreditCard size={20}/> : <CalendarDays size={20}/>}</span><button className="fb-preview-action-close" onClick={() => setShowActionStep(false)} aria-label="Close"><X size={16}/></button><p className="fb-preview-eyebrow">{previewActionType === 'payment' ? 'SECURE CHECKOUT' : 'BOOK A SESSION'}</p><h2>{previewActionType === 'payment' ? 'Continue to checkout' : 'Choose a time that works for you'}</h2><p>{funnel.offer} · This preview shows the next connected step in the customer journey.</p><div className="fb-preview-action-fields"><label>Your name<input placeholder="Full name"/></label><label>Email address<input type="email" placeholder="you@example.com"/></label>{previewActionType === 'booking' && <label>Available time<select defaultValue=""><option value="" disabled>Select a time</option><option>Today · 2:00 PM</option><option>Tomorrow · 10:30 AM</option></select></label>}</div><button className="fb-site-primary" onClick={() => { setShowActionStep(false); notify(previewActionType === 'payment' ? 'Checkout preview submitted successfully' : 'Booking request submitted successfully'); }}>{previewActionType === 'payment' ? 'Continue to payment' : 'Confirm booking'} <ArrowRight size={14}/></button><small><ShieldCheck size={12}/> Demo preview · no real booking or payment is created</small></section></div>}
       <button className="fb-preview-exit-mobile" onClick={() => { setShowActionStep(false); setIsPreviewOpen(false); }} aria-label="Exit preview"><X size={18}/></button>
     </motion.div>}</AnimatePresence>
-    {toast && <div className="fb-toast"><CheckCircle2 size={15}/>{toast}</div>}
     {showJourney && <div className="fb-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && setShowJourney(false)}><section className="fb-journey-modal"><header><div><span><Zap size={16}/></span><div><h2>Visitor journey preview</h2><p>One connected flow · {funnel.name}</p></div></div><button onClick={() => setShowJourney(false)}><X size={17}/></button></header><div className="fb-journey-list">{journey.map((step,index) => <div key={step} className="fb-journey-step"><span className="fb-journey-number">{index+1}</span><div><b>{step}</b><small>{index===2?'Booking form or checkout is captured in the same workspace record.':index===5?'Payment is recorded against the canonical offer.':index===6?'The lead profile and activity history are updated.':'Connected funnel event is recorded for this visitor.'}</small></div>{index<journey.length-1&&<i/>}</div>)}</div><footer><span><ShieldCheck size={14}/> CRM, Booking, Checkout & Analytics stay connected</span><button onClick={() => setShowJourney(false)}>Close Preview</button></footer></section></div>}
     {showAIModal && <div className="fb-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && setShowAIModal(false)}><section className="fb-ai-modal"><header><div><span><Sparkles size={17}/></span><div><h2>AI Assist</h2><p>Enhance this page using your business context.</p></div></div><button onClick={() => setShowAIModal(false)}><X size={16}/></button></header>{['Rewrite headline in brand voice', 'Insert connected Booking Calendar', 'Attach Product Checkout form'].map(action => <button className="fb-ai-action" key={action} onClick={() => applyAIAction(action)}><span><WandSparkles size={15}/></span><b>{action}</b><ArrowRight size={14}/></button>)}<small><ShieldCheck size={12}/> Preview changes before you publish.</small></section></div>}
   </div>;

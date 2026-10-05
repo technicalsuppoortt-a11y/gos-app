@@ -1,11 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { leads as demoLeads } from '../../data/mockData';
 import type { Lead, LeadStage } from '../../data/mockData';
+import { mainPipeline, type Pipeline } from '../../pages/crm/model';
 
 export type LeadActivity = { id: string; type: 'capture' | 'stage' | 'message' | 'booking' | 'payment' | 'note' | 'system'; title: string; detail: string; at: string };
 export type FollowUpLifecycleState = 'NEW' | 'CONTACTED' | 'CONVERSING' | 'QUALIFYING' | 'QUALIFIED' | 'BOOKING_OFFERED' | 'BOOKED' | 'PRE_MEETING_REMINDER' | 'POST_MEETING' | 'NO_SHOW' | 'CUSTOMER' | 'NURTURE_REACTIVATION' | 'HUMAN_HANDOFF' | 'STOPPED_INELIGIBLE';
 export type MessagingChannel = 'whatsapp' | 'instagram' | 'facebook' | 'messenger' | 'email';
-export type CanonicalLead = Lead & { lifecycleStage: LeadStage; bookingStatus: 'Not Scheduled' | 'Offer Sent' | 'Booked' | 'Completed'; activities: LeadActivity[]; notes: string[]; qualificationStatus: 'Pending' | 'Qualified' | 'Unqualified'; followUpState: FollowUpLifecycleState; hasWhatsAppConsent: boolean; hasMessagingConsent: boolean; hasEmailConsent: boolean; role?: string; phone?: string; nextFollowUpAt?: string };
+export type CanonicalLead = Lead & { lifecycleStage: LeadStage; bookingStatus: 'Not Scheduled' | 'Offer Sent' | 'Booked' | 'Completed'; activities: LeadActivity[]; notes: string[]; qualificationStatus: 'Pending' | 'Qualified' | 'Unqualified'; followUpState: FollowUpLifecycleState; hasWhatsAppConsent: boolean; hasMessagingConsent: boolean; hasEmailConsent: boolean; role?: string; phone?: string; photoUrl?: string; nextFollowUpAt?: string; pipelineId?: string; archived?: boolean; createdAt?: string; tasks?: { id: string; title: string; due: string; done: boolean }[] };
 export const FOLLOW_UP_LIFECYCLE: { state: FollowUpLifecycleState; label: string; description: string }[] = [
   { state: 'NEW', label: 'New', description: 'Initial capture from a funnel form' },
   { state: 'CONTACTED', label: 'Contacted', description: 'Initial message dispatched with consent' },
@@ -22,7 +23,7 @@ export const FOLLOW_UP_LIFECYCLE: { state: FollowUpLifecycleState; label: string
   { state: 'HUMAN_HANDOFF', label: 'Human handoff', description: 'Automation paused for team attention' },
   { state: 'STOPPED_INELIGIBLE', label: 'Stopped / ineligible', description: 'Opt-out or missing consent' },
 ];
-const stageFromLegacy: Record<string, LeadStage> = { NEW: 'CONTACT_CREATED', CONTACTED: 'CONVERSATION', QUALIFIED: 'QUALIFIED', BOOKING_OFFERED: 'BOOKING', BOOKED: 'BOOKING', CUSTOMER: 'ACTIVE_CUSTOMER', CLOSED: 'CLOSED_LOST' };
+const stageFromLegacy: Record<string, LeadStage> = { NEW: 'LEAD_CAPTURED', CONTACTED: 'CONTACT_CREATED', QUALIFIED: 'QUALIFIED', BOOKING_OFFERED: 'BOOKING', BOOKED: 'BOOKING', CUSTOMER: 'ACTIVE_CUSTOMER', CLOSED: 'CLOSED_LOST' };
 const bookingFromStage = (stage: string): CanonicalLead['bookingStatus'] => stage === 'BOOKED' ? 'Booked' : stage === 'BOOKING_OFFERED' ? 'Offer Sent' : stage === 'CUSTOMER' ? 'Completed' : 'Not Scheduled';
 const followUpFromStage = (stage: string): FollowUpLifecycleState => ({ NEW: 'NEW', CONTACTED: 'CONTACTED', QUALIFIED: 'QUALIFIED', BOOKING_OFFERED: 'BOOKING_OFFERED', BOOKED: 'BOOKED', CUSTOMER: 'CUSTOMER', CLOSED: 'STOPPED_INELIGIBLE' }[stage] as FollowUpLifecycleState | undefined) ?? 'NEW';
 const makeInitialLeads = (): CanonicalLead[] => demoLeads.map(lead => ({
@@ -45,15 +46,33 @@ const loadSaved = (): CanonicalLead[] => {
     const saved = localStorage.getItem('gos-crm-leads-v1');
     if (!saved) return makeInitialLeads();
     const parsed = JSON.parse(saved) as CanonicalLead[];
-    if (!Array.isArray(parsed) || !parsed.length) return makeInitialLeads();
+    if (!Array.isArray(parsed)) return makeInitialLeads();
     return parsed.map(lead => ({ ...lead, followUpState: lead.followUpState ?? followUpFromStage(lead.stage), hasWhatsAppConsent: lead.hasWhatsAppConsent ?? false, hasMessagingConsent: lead.hasMessagingConsent ?? false, hasEmailConsent: lead.hasEmailConsent ?? false, qualificationStatus: lead.qualificationStatus ?? 'Pending', bookingStatus: lead.bookingStatus ?? bookingFromStage(lead.stage), activities: lead.activities ?? [], notes: lead.notes ?? [] }));
   } catch { return makeInitialLeads(); }
 };
 
+const loadPipelines = (): Pipeline[] => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('gos-crm-pipelines-v1') ?? 'null') as Pipeline[] | null;
+    if (Array.isArray(saved) && saved.some(p => p.id === 'main') && saved.every(p => typeof p.name === 'string' && p.stages?.length && p.stages.every(s => typeof s.id === 'string' && typeof s.label === 'string'))) {
+      return saved.map(p => {
+        // Upgrade the original default palette while preserving customized stages.
+        const originalDefault = p.id === 'main' && p.stages.length === mainPipeline.stages.length && p.stages.every((s, i) => s.id === mainPipeline.stages[i].id && s.label === mainPipeline.stages[i].label && s.color === ['#7C5CFC', '#38bdf8', '#10b981', '#f59e0b', '#22c55e'][i]);
+        return originalDefault ? { ...p, stages: mainPipeline.stages } : p;
+      });
+    }
+  } catch { /* Fall back to the default pipeline. */ }
+  return [mainPipeline];
+};
 const crmSlice = createSlice({
   name: 'crm',
-  initialState: { leads: loadSaved() },
+  initialState: { leads: loadSaved(), pipelines: loadPipelines() },
   reducers: {
+    savePipeline(state, action: PayloadAction<Pipeline>) {
+      const index = state.pipelines.findIndex(p => p.id === action.payload.id);
+      if (index < 0) state.pipelines.push(action.payload); else state.pipelines[index] = action.payload;
+    },
+    deleteLeads(state, action: PayloadAction<string[]>) { state.leads = state.leads.filter(lead => !action.payload.includes(lead.id)); },
     updateLead(state, action: PayloadAction<{ id: string; changes: Partial<CanonicalLead> }>) {
       const lead = state.leads.find(item => item.id === action.payload.id);
       if (lead) Object.assign(lead, action.payload.changes);
@@ -98,5 +117,5 @@ const crmSlice = createSlice({
   },
 });
 
-export const { updateLead, addLead, moveLead, addLeadNote, addLeadActivity, setLeadFollowUpState, setLeadConsent } = crmSlice.actions;
+export const { savePipeline, deleteLeads, updateLead, addLead, moveLead, addLeadNote, addLeadActivity, setLeadFollowUpState, setLeadConsent } = crmSlice.actions;
 export default crmSlice.reducer;

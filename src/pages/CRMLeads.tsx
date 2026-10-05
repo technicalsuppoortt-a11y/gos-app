@@ -1,185 +1,135 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { ArrowDownUp, ArrowRight, ArrowUpRight, CalendarDays, Check, ChevronDown, Clock3, FileText, LayoutGrid, Mail, MessageCircle, MoreHorizontal, Plus, Search, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
-import { addLead, addLeadNote, moveLead, updateLead, type CanonicalLead } from '../store/slices/crmSlice';
-import type { RootState, AppDispatch } from '../store';
-import type { LeadStage } from '../data/mockData';
-import { stageLabel } from '../data/mockData';
+import { Activity, ArrowDownUp, ArrowRight, ChevronDown, BarChart3, BookOpen, Clock3, Download, LayoutGrid, List, Lightbulb, ListChecks, Plus, Search, Settings2, ListFilter, Upload, Users, Workflow } from 'lucide-react';
+import type { AppDispatch, RootState } from '../store';
+import { deleteLeads, moveLead, savePipeline, updateLead } from '../store/slices/crmSlice';
+import { activityTime, colors, displayStage, euro, exportCSV, owners, templateStages, templates } from './crm/model';
+import { AddLeadDialog, Dialog, ImportDialog, SettingsDialog } from './crm/CRMDialogs';
+import { CRMAvatar, SourceBadge, LeadCard, OptionsMenu, CustomSelect, CustomDatePicker } from './crm/CRMPrimitives';
+export { CRMAvatar, SourceBadge } from './crm/CRMPrimitives';
 import './crm-leads.css';
+import './crm/crm-workspace.css';
+import './crm/crm-pipeline.css';
 
-const stages: { id: LeadStage; label: string; hint: string }[] = [
-  { id: 'LEAD_CAPTURED', label: 'Lead captured', hint: 'New from a funnel or source' },
-  { id: 'CONTACT_CREATED', label: 'Contact created', hint: 'Contact details confirmed' },
-  { id: 'QUALIFIED', label: 'Qualified / unqualified', hint: 'Qualification decision' },
-  { id: 'CONVERSATION', label: 'Conversation', hint: 'In active discussion' },
-  { id: 'BOOKING', label: 'Booking offered / booked', hint: 'Scheduling in progress' },
-  { id: 'PAYMENT_COMPLETED', label: 'Payment completed', hint: 'Payment recorded' },
-  { id: 'ACTIVE_CUSTOMER', label: 'Active customer', hint: 'Customer relationship active' },
-  { id: 'FOLLOW_UP_NEEDED', label: 'Follow-up needed', hint: 'Needs a personal touch' },
-  { id: 'RENEWAL_UPSELL', label: 'Renewal / upsell', hint: 'Ready for the next offer' },
-  { id: 'CLOSED_LOST', label: 'Closed / lost', hint: 'No longer in the pipeline' },
-];
-const sourceOptions = ['Website Funnel', 'Organic Search', 'Instagram', 'Paid Ad', 'Referral', 'Website', 'Landing page', 'LinkedIn'];
-const owners = ['Alex Morgan', 'Jamie Park', 'Taylor Reed'];
-const toneForStage = (stage: LeadStage) => ['QUALIFIED', 'PAYMENT_COMPLETED', 'ACTIVE_CUSTOMER'].includes(stage) ? 'mint' : stage === 'FOLLOW_UP_NEEDED' ? 'peach' : stage === 'CLOSED_LOST' ? 'rose' : stage === 'BOOKING' ? 'lilac' : 'blue';
-const avatarClass = (color: string) => `avatar avatar-${color}`;
-const money = (value: number) => `$${value.toLocaleString('en-US')}`;
-const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('') || 'NL';
-type DropdownOption = { value: string; label: string; description?: string };
-type DropdownProps = { value: string; options: DropdownOption[]; onChange: (value: string) => void; placeholder?: string; name?: string; searchable?: boolean; compact?: boolean; ariaLabel?: string; className?: string };
+const tabs = [{ path: 'pipeline', label: 'Pipeline', icon: LayoutGrid }, { path: 'contacts', label: 'Contacts', icon: Users }, { path: 'activities', label: 'Activities', icon: Lightbulb }, { path: 'tasks', label: 'Tasks', icon: ListChecks }, { path: 'overview', label: 'Overview', icon: BarChart3 }, { path: 'templates', label: 'Templates / Pipeline Presets', icon: BookOpen }];
 
-function Dropdown({ value, options, onChange, placeholder = 'Select an option', name, searchable, compact, ariaLabel, className = '' }: DropdownProps) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const rootRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const selected = options.find(option => option.value === value);
-  const showSearch = searchable ?? options.length > 6;
-  const filteredOptions = options.filter(option => `${option.label} ${option.description ?? ''}`.toLowerCase().includes(query.toLowerCase()));
+export function CRMLeads({ notify }: { notify: (message: string) => void }) {
+  const dispatch = useDispatch<AppDispatch>(); const navigate = useNavigate(); const location = useLocation(); const [params, setParams] = useSearchParams();
+  const { leads, pipelines } = useSelector((s: RootState) => s.crm);
+  const pipeline = pipelines.find(p => p.id === params.get('pipeline')) ?? pipelines[0];
+  const tab = params.get('tab') || (location.pathname.split('/').at(-1) === 'crm' ? 'pipeline' : location.pathname.split('/').at(-1)!) || 'pipeline';
+  const base = location.pathname.startsWith('/dashboard') ? '/dashboard/crm' : '/crm';
+  const [query, setQuery] = useState(''); const [filtersOpen, setFiltersOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!open) return;
-    const dismiss = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (!rootRef.current?.contains(target)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); setQuery(''); } };
-    document.addEventListener('pointerdown', dismiss);
-    document.addEventListener('keydown', onKeyDown);
-    if (showSearch) window.requestAnimationFrame(() => searchRef.current?.focus());
-    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', onKeyDown); };
-  }, [open, showSearch]);
-  return <div className={`crm-dropdown relative ${compact ? 'compact' : ''} ${open ? 'is-open' : ''} ${className}`} ref={rootRef}>
-    {name && <input type="hidden" name={name} value={value}/>}
-    <button type="button" className="crm-dropdown-trigger" aria-haspopup="listbox" aria-expanded={open} aria-label={ariaLabel} onClick={() => setOpen(current => !current)}>
-      <span className="crm-dropdown-current">{selected?.label ?? placeholder}</span><ChevronDown size={14}/>
-    </button>
-    {open && (
-      <div className="absolute z-50 top-full left-0 mt-2 w-full min-w-[220px] bg-white rounded-xl border border-gray-100 shadow-xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-100" role="listbox" aria-label={ariaLabel ?? placeholder}>
-        {showSearch && (
-          <div className="relative flex items-center mb-1">
-            <Search size={14} className="absolute left-3 text-gray-400" />
-            <input ref={searchRef} value={query} onChange={event => setQuery(event.target.value)} placeholder="Search options..." aria-label="Search dropdown options" className="w-full bg-gray-50 border border-gray-100 text-gray-700 text-[11px] rounded-lg pl-9 pr-3 py-2 outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all"/>
-          </div>
-        )}
-        <div className="max-h-60 overflow-y-auto overscroll-contain space-y-0.5">
-          {filteredOptions.length ? filteredOptions.map(option => (
-            <button type="button" role="option" aria-selected={value === option.value} key={option.value || '__empty'} className={`w-full flex items-center justify-between px-3 py-2.5 my-0.5 rounded-lg transition-colors cursor-pointer outline-none ${value === option.value ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'}`} onClick={() => { onChange(option.value); setOpen(false); setQuery(''); }}>
-              <span className="flex flex-col items-start min-w-0 text-left">
-                <b className={`text-[11px] truncate ${value === option.value ? 'font-bold' : 'font-medium'}`}>{option.label}</b>
-                {option.description && <small className="text-[10px] text-gray-500 mt-0.5 truncate">{option.description}</small>}
-              </span>
-              {value === option.value && <Check size={14} className="ml-auto flex-none text-purple-600"/>}
-            </button>
-          )) : (
-            <div className="p-3 text-center text-xs text-gray-500">No options found</div>
-          )}
-        </div>
+    if (!filtersOpen) return;
+    const outside = (event: PointerEvent) => { if (!filterRef.current?.contains(event.target as Node)) setFiltersOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setFiltersOpen(false); filterRef.current?.querySelector('button')?.focus(); } };
+    document.addEventListener('pointerdown', outside); document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+  }, [filtersOpen]);
+  const [filters, setFilters] = useState({ source: '', tag: '', owner: '', status: '', stage: '' });
+  const [sort, setSort] = useState('recent'); const [listView, setListView] = useState(false);
+  const [dragged, setDragged] = useState<string | null>(null); const [over, setOver] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<'add' | 'settings' | 'import' | 'bulk' | 'delete' | null>(null); const [addStage, setAddStage] = useState(pipeline.stages[0].id);
+  const [selected, setSelected] = useState<string[]>([]); const [bulkAction, setBulkAction] = useState('tag'); const [bulkValue, setBulkValue] = useState('');
+  const [taskTitle, setTaskTitle] = useState(''); const [taskLead, setTaskLead] = useState(''); const [taskDue, setTaskDue] = useState('');
+  const [taskFilter, setTaskFilter] = useState<'all'|'today'|'upcoming'|'overdue'|'completed'>('all');
+  useEffect(() => { const id = params.get('leadId'); if (id) navigate(`${base}/contacts/${encodeURIComponent(id)}`, { replace: true }); }, [params, base, navigate]);
+  const pipelineLeads = leads.filter(l => (l.pipelineId ?? 'main') === pipeline.id);
+  const active = pipelineLeads.filter(l => !l.archived);
+  const visible = pipelineLeads.filter(lead => {
+    const q = query.trim().toLowerCase();
+    return (!q || [lead.name, lead.email, lead.phone ?? '', lead.company, ...(lead.tags || [])].some(v => v.toLowerCase().includes(q))) && (filters.status === 'archived' ? lead.archived : !lead.archived) && (!filters.source || lead.source === filters.source) && (!filters.tag || lead.tags.includes(filters.tag)) && (!filters.owner || lead.owner === filters.owner) && (!filters.stage || displayStage(lead, pipeline) === filters.stage) && (filters.status !== 'followup' || Boolean(lead.nextFollowUp)) && (filters.status !== 'qualified' || lead.qualificationStatus === 'Qualified');
+  }).sort((a, b) => sort === 'name' ? a.name.localeCompare(b.name) : sort === 'value' ? b.value - a.value : activityTime(b.lastActivity) - activityTime(a.lastActivity));
+  const filterCount = Object.values(filters).filter(Boolean).length;
+  const chosen = selected.filter(id => visible.some(l => l.id === id));
+  const close = () => setDialog(null);
+  const openLead = (id: string) => navigate(`${base}/contacts/${encodeURIComponent(id)}`);
+  const newLead = (stage = pipeline.stages[0].id) => { setAddStage(stage); setDialog('add'); };
+  const resetFilters = () => { setFilters({ source: '', tag: '', owner: '', stage: '', status: '' }); setQuery(''); };
+  const toggleSelected = (id: string) => setSelected(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]);
+  const goTab = (t: string) => { const next = new URLSearchParams(params); next.set('tab', t); setParams(next); };
+  const runBulk = () => { for (const id of chosen) { const lead = leads.find(l => l.id === id)!; if (bulkAction === 'stage') dispatch(moveLead({ id, stage: pipeline.stages.find(s => s.id === bulkValue)!.id })); else dispatch(updateLead({ id, changes: bulkAction === 'tag' ? { tags: [...new Set([...lead.tags, bulkValue.trim()])] } : { owner: bulkValue } })); } notify(`${chosen.length} contacts updated.`); setSelected([]); close(); };
+  const allTasks = active.flatMap(l => (l.tasks ?? []).map(t => ({ ...t, lead: l })));
+  const filterPanel = <div className="crm-filter-bar">{(['source', 'tag', 'owner', 'status', 'stage'] as const).map(field => <label key={field}>{field}<CustomSelect aria-label={`Filter by ${field}`} value={filters[field]} onChange={val => setFilters({ ...filters, [field]: val })} options={[{ value: '', label: `All ${field === 'status' ? 'active contacts' : field + 's'}` }, ...(field === 'stage' ? pipeline.stages.map(s => ({ value: s.id, label: s.label })) : field === 'status' ? [{ value: 'followup', label: 'Needs follow-up' }, { value: 'qualified', label: 'Qualified' }, { value: 'archived', label: 'Archived' }] : [...new Set(pipelineLeads.flatMap(l => field === 'tag' ? l.tags : [l[field]]))].sort().map(val => ({ value: val as string, label: val as string })))]}/></label>)}<button className="crm2-btn-secondary" onClick={resetFilters}>Clear filters</button></div>;
+  return <div className="crm2-page crm-workspace crm-pipeline-workspace flex flex-col overflow-hidden">
+    <header className="crm2-header"><div className="crm2-header-left"><span className="crm2-header-icon"><BarChart3 size={20}/></span><div><h1 className="crm2-header-title">CRM &amp; Leads</h1><p className="crm2-header-sub">Manage your leads, conversations and turn them into customers</p></div></div><div className="crm2-header-right"><CustomSelect className="w-[195px]" aria-label="Pipeline selector" value={pipeline.id} onChange={val => { setParams({ pipeline: val }); resetFilters(); setSelected([]); }} options={pipelines.map(p => ({ value: p.id, label: p.name }))} /><button className="crm2-btn-secondary" onClick={() => setDialog('settings')}><Settings2 size={14}/>Pipeline Settings</button><button className="crm2-btn-primary" onClick={() => newLead()}><Plus size={15}/>Add Lead</button></div></header>
+    <nav className="crm2-subnav" aria-label="CRM navigation">{tabs.map(t => <button key={t.path} onClick={() => goTab(t.path)} className={`crm2-subnav-btn ${tab === t.path ? 'active' : ''}`} aria-current={tab === t.path ? 'page' : undefined}><t.icon size={14}/>{t.label}</button>)}</nav>
+    {(tab === 'pipeline' || tab === 'contacts') && <><div className="crm-toolbar">
+      <label className="crm-search w-64 md:w-80 min-w-[250px]"><Search size={16}/><input aria-label="Search contacts" placeholder="Search leads, name, company..." value={query} onChange={e => setQuery(e.target.value)}/></label>
+      <div className="crm-filter-anchor" ref={filterRef}><button className="crm-toolbar-control" onClick={() => setFiltersOpen(!filtersOpen)} aria-expanded={filtersOpen}><ListFilter size={16}/>Filters {filterCount > 0 && <span>{filterCount}</span>}<ChevronDown size={13}/></button>{filtersOpen && filterPanel}</div>
+      <CustomSelect className="w-[155px]" aria-label="Sort leads" icon={ArrowDownUp} value={sort} onChange={val => setSort(val)} options={[{ value: 'recent', label: 'Recent activity' }, { value: 'name', label: 'Name A–Z' }, { value: 'value', label: 'Highest value' }]} />
+      <div className="crm-toolbar-right">{tab === 'pipeline' ? <><div className="crm-view-switch"><button onClick={() => setListView(false)} className={!listView ? 'active' : ''} aria-pressed={!listView}><LayoutGrid size={15}/>Kanban</button><button onClick={() => setListView(true)} className={listView ? 'active' : ''} aria-pressed={listView}><List size={15}/>List</button></div><OptionsMenu label="Pipeline options" actions={[{ label: 'Export visible leads', onSelect: () => exportCSV(visible) }, { label: 'Pipeline settings', onSelect: () => setDialog('settings') }, { label: 'Pipeline presets', onSelect: () => goTab('templates') }]}/></> : <><button className="crm2-btn-secondary" onClick={() => exportCSV(visible)}><Download size={13}/>Export</button><button className="crm2-btn-secondary" onClick={() => setDialog('import')}><Upload size={13}/>Import</button></>}</div>
+    </div>
+
+    {tab === 'pipeline' && !listView ? <div className="crm-kanban" aria-label="CRM pipeline board" style={{ gridTemplateColumns: `repeat(${pipeline.stages.length}, minmax(155px, 1fr))` }}>{pipeline.stages.map(stage => { const cards = visible.filter(l => displayStage(l, pipeline) === stage.id); return <section key={stage.id} className={`crm-kanban-column ${over === stage.id ? 'crm-drop-active' : ''}`} aria-label={`${stage.label} stage`} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOver(stage.id); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(null); }} onDrop={e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain') || dragged; if (id && active.some(l => l.id === id)) { dispatch(moveLead({ id, stage: stage.id })); notify(`Lead moved to ${stage.label}.`); } setDragged(null); setOver(null); }}><div className="crm-stage-head"><div><i style={{ background: stage.color }}/><b>{stage.label}</b><span>{cards.length}</span><OptionsMenu label={`Options for ${stage.label} stage`} actions={[{ label: 'Edit stage settings', onSelect: () => setDialog('settings') }, { label: 'Add lead to stage', onSelect: () => newLead(stage.id) }]}/></div><small>{euro(cards.reduce((s, l) => s + l.value, 0))}</small><button className="crm-stage-add" aria-label={`Add lead to ${stage.label}`} onClick={() => newLead(stage.id)}><Plus size={12}/>Add Lead</button></div><div className="crm-stage-cards overflow-y-auto min-h-0">{cards.map(lead => <LeadCard key={lead.id} lead={lead} pipeline={pipeline} base={base} dragging={dragged === lead.id} onDragStart={setDragged} onDragEnd={() => { setDragged(null); setOver(null); }} onMove={(id, stage) => { dispatch(moveLead({ id, stage })); notify('Lead stage updated.'); }}/>)}{cards.length === 0 && <div className="crm-empty-stage"><Users size={20}/><span>No leads yet</span><small>Drop a lead or add one above</small></div>}</div></section>; })}</div> : <><div className="crm-bulk-bar"><label><input type="checkbox" aria-label="Select all visible contacts" checked={visible.length > 0 && chosen.length === visible.length} onChange={e => setSelected(e.target.checked ? visible.map(l => l.id) : [])}/>{chosen.length ? `${chosen.length} selected` : 'Select contacts for bulk actions'}</label>{chosen.length > 0 && <><button onClick={() => { setBulkAction('tag'); setBulkValue(''); setDialog('bulk'); }}>Tag</button><button onClick={() => { setBulkAction('owner'); setBulkValue(owners[0]); setDialog('bulk'); }}>Assign owner</button><button onClick={() => { setBulkAction('stage'); setBulkValue(pipeline.stages[0].id); setDialog('bulk'); }}>Move stage</button><button onClick={() => exportCSV(visible.filter(l => chosen.includes(l.id)))}>Export</button><button onClick={() => { chosen.forEach(id => dispatch(updateLead({ id, changes: { archived: filters.status !== 'archived' } }))); setSelected([]); notify(filters.status === 'archived' ? 'Contacts restored.' : 'Contacts archived.'); }}>{filters.status === 'archived' ? 'Restore' : 'Archive'}</button><button className="crm-danger" onClick={() => setDialog('delete')}>Delete</button></>}</div><div className="crm-contacts-table"><table><thead><tr><th/><th>Name</th><th>Contact Info</th><th>Company</th><th>Source</th><th>Stage</th><th>Owner</th><th>Last Activity</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>{visible.map(lead => <tr key={lead.id} onClick={() => openLead(lead.id)}><td onClick={e => e.stopPropagation()}><input type="checkbox" aria-label={`Select ${lead.name}`} checked={chosen.includes(lead.id)} onChange={() => toggleSelected(lead.id)}/></td><td><Link to={`${base}/contacts/${lead.id}`} className="crm-table-person"><CRMAvatar lead={lead}/><b>{lead.name}</b></Link></td><td><span>{lead.email}</span><small>{lead.phone || 'No phone added'}</small></td><td>{lead.company || '—'}</td><td><SourceBadge source={lead.source}/></td><td><span className="crm-stage-pill" style={{ color: pipeline.stages.find(s => s.id === displayStage(lead, pipeline))!.color }}>{pipeline.stages.find(s => s.id === displayStage(lead, pipeline))!.label}</span></td><td>{lead.owner}</td><td>{lead.lastActivity}</td><td>{lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'Not recorded'}</td><td><button aria-label={`Open ${lead.name}`} onClick={e => { e.stopPropagation(); openLead(lead.id); }}><ArrowRight size={14}/></button></td></tr>)}</tbody></table>{!visible.length && <div className="crm-empty"><Search size={28}/><h3>No matching contacts</h3><p>Try another search or clear your filters.</p><button className="crm2-btn-secondary" onClick={resetFilters}>Clear filters</button></div>}</div></> }</>}
+    {tab === 'templates' && <div className="crm-scroll-content"><div className="crm-section-heading"><div><h2>A pipeline for every kind of business</h2><p>Install a preset, then make the stages your own in Pipeline Settings.</p></div><span className="crm-stage-pill">5 ready-to-use presets</span></div><div className="crm-presets">{templates.map((template, index) => <article key={template.name}><span className="crm-preset-icon" style={{ color: colors[index], background: `${colors[index]}15` }}><Workflow size={22}/></span><h3>{template.name}</h3><p>{template.description}</p><div className="crm-preset-stages">{template.stages.map(s => <span key={s}>{s}</span>)}</div><button className="crm2-btn-primary" onClick={() => { const id = crypto.randomUUID(); dispatch(savePipeline({ id, name: template.name, stages: templateStages(template.stages) })); navigate(`${base}/pipeline?pipeline=${id}`); notify(`${template.name} installed. Add contacts or customize its stages.`); }}><Plus size={13}/>Use this pipeline</button></article>)}</div></div>}
+    {tab === 'activities' && <div className="crm-scroll-content"><div className="crm-section-heading"><div><h2>Activity feed</h2><p>Conversations, stage changes and notes in {pipeline.name}.</p></div></div>{active.flatMap(l => l.activities.map(a => ({ ...a, lead: l }))).sort((a, b) => activityTime(b.at) - activityTime(a.at)).map(a => <Link to={`${base}/contacts/${a.lead.id}`} className="crm-feed-item" key={`${a.lead.id}-${a.id}`}><span className="crm-feed-icon"><Activity size={16}/></span><div><b>{a.title}</b><p>{a.lead.name} · {a.detail}</p></div><small>{a.at.includes('T') ? new Date(a.at).toLocaleString() : a.at}</small><ArrowRight size={14}/></Link>)}{!active.some(l => l.activities.length) && <div className="crm-empty">No activities yet. Add a lead to get started.</div>}</div>}
+    {tab === 'tasks' && <div className="crm-scroll-content">
+      <div className="crm-section-heading"><div><h2>Tasks &amp; follow-ups</h2><p>Keep the next step clear for every contact.</p></div></div>
+      <form className="crm-task-form crm-task-quick-add" onSubmit={e => { e.preventDefault(); const lead = active.find(l => l.id === taskLead)!; dispatch(updateLead({ id: lead.id, changes: { tasks: [...(lead.tasks ?? []), { id: crypto.randomUUID(), title: taskTitle.trim(), due: taskDue, done: false }] } })); setTaskTitle(''); notify('Task created.'); }}>
+        <input aria-label="Task title" placeholder="What needs to happen next?" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} required/>
+        <CustomSelect className="w-[180px]" aria-label="Task contact" value={taskLead} onChange={val => setTaskLead(val)} options={[{ value: '', label: 'Choose contact' }, ...active.map(l => ({ value: l.id, label: l.name }))]} />
+        <CustomDatePicker className="w-[130px]" aria-label="Task due date" value={taskDue} onChange={val => setTaskDue(val)} placeholder="Due date" />
+        <button className="crm2-btn-primary" disabled={!taskTitle.trim() || !active.some(l => l.id === taskLead) || !taskDue}><Plus size={14}/>Add task</button>
+      </form>
+      <div className="crm-task-filters">
+        {(['all', 'today', 'upcoming', 'overdue', 'completed'] as const).map(f => <button key={f} className={`crm-task-pill ${taskFilter === f ? 'active' : ''}`} onClick={() => setTaskFilter(f)}>{f.charAt(0).toUpperCase() + f.slice(1)}</button>)}
       </div>
-    )}
+      <div className="crm-task-list">
+        {allTasks.filter(t => {
+          if (taskFilter === 'completed') return t.done;
+          if (t.done) return false;
+          if (taskFilter === 'all') return true;
+          const today = new Date().toISOString().split('T')[0];
+          if (taskFilter === 'today') return t.due === today;
+          if (taskFilter === 'upcoming') return t.due > today;
+          if (taskFilter === 'overdue') return t.due < today;
+          return true;
+        }).map(task => {
+          const today = new Date().toISOString().split('T')[0];
+          const status = task.done ? 'completed' : task.due < today ? 'overdue' : task.due === today ? 'today' : 'upcoming';
+          return <div className={`crm-task-card ${task.done ? 'done' : ''}`} key={task.id}>
+            <label className="crm-task-checkbox">
+              <input type="checkbox" aria-label={`Complete ${task.title}`} checked={task.done} onChange={() => dispatch(updateLead({ id: task.lead.id, changes: { tasks: task.lead.tasks!.map(t => t.id === task.id ? { ...t, done: !t.done } : t) } }))}/>
+              <span className="crm-checkmark"></span>
+            </label>
+            <div className="crm-task-content">
+              <b>{task.title}</b>
+              <div className="crm-task-meta">
+                <Link to={`${base}/contacts/${task.lead.id}`} className="crm-task-contact-badge"><CRMAvatar lead={task.lead} />{task.lead.name}</Link>
+                <span className={`crm-task-due-pill ${status}`}>{task.due}</span>
+              </div>
+            </div>
+            <div className="crm-task-actions">
+              <button className="crm2-btn-secondary" onClick={() => dispatch(updateLead({ id: task.lead.id, changes: { tasks: task.lead.tasks!.filter(t => t.id !== task.id) } }))}>Delete</button>
+              <Link className="crm2-btn-primary" to={`${base}/contacts/${task.lead.id}`}><ArrowRight size={14}/> Go to Contact</Link>
+            </div>
+          </div>;
+        })}
+        {taskFilter !== 'completed' && active.filter(l => l.nextFollowUp).map(l => <div className="crm-task-card" key={l.id}>
+          <div className="crm-task-icon"><Clock3 size={18}/></div>
+          <div className="crm-task-content">
+            <b>Follow up with {l.name}</b>
+            <div className="crm-task-meta">
+              <Link to={`${base}/contacts/${l.id}`} className="crm-task-contact-badge"><CRMAvatar lead={l} />{l.name}</Link>
+              <span className="crm-task-due-pill today">{l.nextFollowUp}</span>
+            </div>
+          </div>
+          <div className="crm-task-actions">
+            <Link className="crm2-btn-primary" to={`${base}/contacts/${l.id}`}><ArrowRight size={14}/> Go to Contact</Link>
+          </div>
+        </div>)}
+        {!allTasks.length && !active.some(l => l.nextFollowUp) && <div className="crm-empty">Your task list is clear. Create a task above.</div>}
+      </div>
+    </div>}
+    {tab === 'overview' && <div className="crm-scroll-content"><div className="crm-section-heading"><div><h2>Your pipeline at a glance</h2><p>Stage distribution and value from your current CRM records.</p></div></div><div className="crm-overview-grid">{pipeline.stages.map(stage => { const records = active.filter(l => displayStage(l, pipeline) === stage.id); return <article key={stage.id}><h3><i style={{ background: stage.color }}/>{stage.label}</h3><b>{records.length}<small> contacts</small></b><p>{euro(records.reduce((s, l) => s + l.value, 0))} in stage</p><div className="crm-progress"><span style={{ width: `${active.length ? records.length / active.length * 100 : 0}%`, background: stage.color }}/></div><button className="crm-link-button" onClick={() => goTab('pipeline')}>View pipeline <ArrowRight size={12}/></button></article>; })}</div></div>}
+    {dialog === 'add' && <AddLeadDialog pipeline={pipeline} initialStage={addStage} close={close} created={id => { close(); notify('Lead created.'); openLead(id); }}/>}
+    {dialog === 'settings' && <SettingsDialog pipeline={pipeline} close={close} notify={notify}/>}
+    {dialog === 'import' && <ImportDialog pipeline={pipeline} close={close} notify={notify}/>}
+    {dialog === 'bulk' && <Dialog title={`${bulkAction === 'tag' ? 'Tag' : bulkAction === 'owner' ? 'Assign owner to' : 'Move'} ${chosen.length} contacts`} close={close}><form onSubmit={e => { e.preventDefault(); runBulk(); }}><div className="crm-dialog-content"><label className="crm-field">{bulkAction === 'tag' ? 'Tag name' : bulkAction === 'owner' ? 'Owner' : 'Stage'}{bulkAction === 'tag' ? <input value={bulkValue} onChange={e => setBulkValue(e.target.value)} required/> : <CustomSelect value={bulkValue} onChange={val => setBulkValue(val)} options={bulkAction === 'owner' ? [...new Set([...owners, ...leads.map(l => l.owner)])].map(o => ({ value: o, label: o })) : pipeline.stages.map(s => ({ value: s.id, label: s.label }))} />}</label></div><div className="crm-dialog-footer"><button className="crm2-btn-primary" disabled={!bulkValue.trim()}>Apply changes</button></div></form></Dialog>}
+    {dialog === 'delete' && <Dialog title="Delete selected contacts?" close={close}><div className="crm-dialog-content"><p>This permanently deletes {chosen.length} contacts and their activities, notes and tasks.</p></div><div className="crm-dialog-footer"><button className="crm2-btn-secondary" onClick={close}>Cancel</button><button className="crm-delete-button" onClick={() => { dispatch(deleteLeads(chosen)); setSelected([]); close(); notify('Contacts deleted.'); }}>Delete contacts</button></div></Dialog>}
   </div>;
 }
-
-export const CRMLeads: React.FC<{ notify: (message: string) => void }> = ({ notify }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const leads = useSelector((state: RootState) => state.crm.leads);
-  const [view, setView] = useState<'board' | 'table'>('board');
-  const [query, setQuery] = useState('');
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [stageFilters, setStageFilters] = useState<LeadStage[]>([]);
-  const [tagFilter, setTagFilter] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState('');
-  const [bookingFilter, setBookingFilter] = useState('');
-  const [interestFilter, setInterestFilter] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
-  const [newSource, setNewSource] = useState('Website Funnel');
-  const [newOwner, setNewOwner] = useState(owners[0]);
-  const [newStage, setNewStage] = useState<LeadStage>('LEAD_CAPTURED');
-  const [noteDraft, setNoteDraft] = useState('');
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'recent' | 'name' | 'value'>('recent');
-  const allTags = useMemo(() => [...new Set(leads.flatMap(lead => lead.tags))].sort(), [leads]);
-  const interests = useMemo(() => [...new Set(leads.map(lead => lead.interest))].sort(), [leads]);
-  const selectedLead = leads.find(lead => lead.id === selectedId) ?? null;
-  const normalizedQuery = query.trim().toLowerCase();
-  const visible = useMemo(() => leads.filter(lead => {
-    const searchMatch = !normalizedQuery || [lead.name, lead.email, lead.company, ...lead.tags].some(value => value.toLowerCase().includes(normalizedQuery));
-    return searchMatch && (!stageFilters.length || stageFilters.includes(lead.lifecycleStage)) && (!tagFilter || lead.tags.includes(tagFilter)) && (!sourceFilter || lead.source === sourceFilter) && (!ownerFilter || lead.owner === ownerFilter) && (!bookingFilter || lead.bookingStatus === bookingFilter) && (!interestFilter || lead.interest === interestFilter);
-  }).sort((left, right) => sortBy === 'name' ? left.name.localeCompare(right.name) : sortBy === 'value' ? right.value - left.value : (left.lastActivity === 'Just now' ? -1 : right.lastActivity === 'Just now' ? 1 : 0)), [bookingFilter, interestFilter, leads, normalizedQuery, ownerFilter, sortBy, sourceFilter, stageFilters, tagFilter]);
-  const followUpCount = leads.filter(lead => lead.lifecycleStage === 'FOLLOW_UP_NEEDED' || Boolean(lead.nextFollowUp)).length;
-  const pipelineValue = leads.filter(lead => lead.lifecycleStage !== 'CLOSED_LOST').reduce((sum, lead) => sum + lead.value, 0);
-  const activeFilterCount = stageFilters.length + Number(Boolean(tagFilter)) + Number(Boolean(sourceFilter)) + Number(Boolean(ownerFilter)) + Number(Boolean(bookingFilter)) + Number(Boolean(interestFilter));
-  const clearFilters = () => { setStageFilters([]); setTagFilter(''); setSourceFilter(''); setOwnerFilter(''); setBookingFilter(''); setInterestFilter(''); };
-  const toggleStage = (stage: LeadStage) => setStageFilters(current => current.includes(stage) ? current.filter(item => item !== stage) : [...current, stage]);
-  const createLead = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = String(data.get('name') ?? '').trim();
-    const email = String(data.get('email') ?? '').trim();
-    if (!name || !email) return;
-    const id = `ld-${Date.now()}`;
-    const source = String(data.get('source') || 'Website Funnel');
-    const stage = String(data.get('stage') || 'LEAD_CAPTURED') as LeadStage;
-    const lead: CanonicalLead = { id, name, email, company: String(data.get('company') || 'New contact'), source, stage, lifecycleStage: stage, owner: String(data.get('owner') || owners[0]), value: Number(data.get('value') || 0), lastActivity: 'Just now', nextFollowUp: undefined, tags: [], avatar: initials(name), color: 'lilac', interest: String(data.get('interest') || 'Not specified'), bookingStatus: 'Not Scheduled', qualificationStatus: 'Pending', followUpState: 'NEW', hasWhatsAppConsent: false, hasMessagingConsent: false, hasEmailConsent: false, activities: [{ id: `${id}-capture`, type: 'capture', title: 'Lead captured', detail: `Added to CRM · ${source}`, at: 'Just now' }], notes: [] };
-    dispatch(addLead(lead)); setAddOpen(false); setSelectedId(id); setNewSource('Website Funnel'); setNewOwner(owners[0]); setNewStage('LEAD_CAPTURED'); notify(`${name} added to the CRM.`);
-  };
-  const saveNote = () => { if (!selectedLead || !noteDraft.trim()) return; dispatch(addLeadNote({ id: selectedLead.id, note: noteDraft.trim() })); setNoteDraft(''); notify('Internal note saved to the lead record.'); };
-  const changeStage = (lead: CanonicalLead, stage: LeadStage) => dispatch(moveLead({ id: lead.id, stage }));
-  const exportCsv = () => {
-    const rows = [['Name', 'Email', 'Company', 'Stage', 'Source', 'Owner', 'Booking status', 'Interest', 'Value'], ...visible.map(lead => [lead.name, lead.email, lead.company, stageLabel[lead.lifecycleStage], lead.source, lead.owner, lead.bookingStatus, lead.interest, String(lead.value)])];
-    const csv = rows.map(row => row.map(cell => `"${cell.replaceAll('"', '""')}"`).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'gos-crm-leads.csv'; anchor.click(); URL.revokeObjectURL(url);
-    notify(`Exported ${visible.length} lead${visible.length === 1 ? '' : 's'}.`);
-  };
-
-  return <div className="crm-leads-page">
-    <div className="crm-leads-heading"><div><span className="crm-eyebrow">RELATIONSHIPS</span><h1>CRM &amp; leads</h1><p>Your canonical contact records, from first touch through renewal.</p></div><div><button className="crm-secondary-action" onClick={exportCsv}><FileText size={15}/> Export</button><button className="button-primary" onClick={() => setAddOpen(true)}><Plus size={15}/> Add a lead</button></div></div>
-    <div className="crm-kpis"><div><span>Total leads</span><b>{leads.length.toLocaleString()}</b><small><Users size={13}/> All lifecycle stages</small></div><div><span>Need follow-up</span><b>{followUpCount}</b><small><Clock3 size={13}/> Includes scheduled reminders</small></div><div><span>Pipeline value</span><b>{money(pipelineValue)}</b><small><ArrowUpRight size={13}/> Open pipeline</small></div><div className="crm-kpi-insight"><span><Sparkles size={16}/></span><div><b>Keep every record connected</b><small>Inbox, bookings, and follow-ups use the same lead ID.</small></div><button onClick={() => { setBookingFilter('Offer Sent'); setFilterOpen(true); }}>Review pipeline <ArrowRight size={13}/></button></div></div>
-    <div className="crm-toolbar"><label className="crm-search"><Search size={15}/><input aria-label="Search leads" placeholder="Search name, email, company, or tag..." value={query} onChange={event => setQuery(event.target.value)}/>{query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={13}/></button>}</label><div className="crm-filter-wrap"><button className={`crm-filter-button ${filterOpen || activeFilterCount ? 'active' : ''}`} onClick={() => setFilterOpen(open => !open)}><SlidersHorizontal size={15}/> Filters{activeFilterCount > 0 && <i>{activeFilterCount}</i>}<ChevronDown size={13}/></button>{filterOpen && <div className="crm-filter-popover"><div className="crm-filter-popover-head"><div><b>Filter leads</b><small>Refine your pipeline view</small></div><button onClick={clearFilters}>Clear all</button></div><div className="crm-filter-stage-list"><span className="crm-filter-label">LIFECYCLE STAGE</span>{stages.map(stage => <label key={stage.id}><input type="checkbox" checked={stageFilters.includes(stage.id)} onChange={() => toggleStage(stage.id)}/><span>{stage.label}</span></label>)}</div><div className="crm-filter-grid">
-      <label>Tag<Dropdown value={tagFilter} onChange={setTagFilter} placeholder="All tags" options={[{ value: '', label: 'All tags' }, ...allTags.map(tag => ({ value: tag, label: tag }))]} searchable ariaLabel="Filter by tag"/></label>
-      <label>Source<Dropdown value={sourceFilter} onChange={setSourceFilter} placeholder="All sources" options={[{ value: '', label: 'All sources' }, ...[...new Set([...sourceOptions, ...leads.map(lead => lead.source)])].map(source => ({ value: source, label: source }))]} searchable ariaLabel="Filter by source"/></label>
-      <label>Assigned to<Dropdown value={ownerFilter} onChange={setOwnerFilter} placeholder="Anyone" options={[{ value: '', label: 'Anyone' }, ...[...new Set([...owners, ...leads.map(lead => lead.owner)])].map(owner => ({ value: owner, label: owner }))]} ariaLabel="Filter by owner"/></label>
-      <label>Booking status<Dropdown value={bookingFilter} onChange={setBookingFilter} placeholder="Any status" options={[{ value: '', label: 'Any status' }, ...['Not Scheduled', 'Offer Sent', 'Booked', 'Completed'].map(status => ({ value: status, label: status }))]} ariaLabel="Filter by booking status"/></label>
-      <label className="crm-filter-wide">Product interest<Dropdown value={interestFilter} onChange={setInterestFilter} placeholder="Any product or service" options={[{ value: '', label: 'Any product or service' }, ...interests.map(interest => ({ value: interest, label: interest }))]} searchable ariaLabel="Filter by product interest"/></label>
-      </div><button className="crm-apply-filters" onClick={() => setFilterOpen(false)}>Show {visible.length} results</button></div>}</div><div className="crm-sort-select"><ArrowDownUp size={14}/><Dropdown value={sortBy} onChange={value => setSortBy(value as typeof sortBy)} options={[{ value: 'recent', label: 'Recent activity' }, { value: 'name', label: 'Name A–Z' }, { value: 'value', label: 'Highest value' }]} ariaLabel="Sort leads"/></div><div className="crm-toolbar-spacer"/><div className="crm-view-toggle"><button className={view === 'board' ? 'selected' : ''} onClick={() => setView('board')}><LayoutGrid size={15}/> Board</button><button className={view === 'table' ? 'selected' : ''} onClick={() => setView('table')}><FileText size={15}/> Table</button></div></div>
-    <div className="crm-result-summary">Showing <b>{visible.length}</b> of <b>{leads.length}</b> leads{activeFilterCount > 0 && <button onClick={clearFilters}>Clear filters <X size={12}/></button>}</div>
-    {view === 'board' ? <div className="crm-board" aria-label="Lead lifecycle board">{stages.map(stage => {
-      const items = visible.filter(lead => lead.lifecycleStage === stage.id);
-      return <section key={stage.id} className={`crm-stage-column ${draggedId ? 'is-dragging' : ''}`} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (draggedId) { changeStage(leads.find(lead => lead.id === draggedId)!, stage.id); setDraggedId(null); notify(`Lead moved to ${stage.label}.`); } }}>
-        <header><span className={`crm-stage-dot stage-tone-${toneForStage(stage.id)}`}/><span><b>{stage.label}</b><small>{stage.hint}</small></span><i>{items.length}</i><button title={`Add lead to ${stage.label}`} onClick={() => setAddOpen(true)}><Plus size={14}/></button></header>
-        <div className="crm-stage-cards">{items.map(lead => <article key={lead.id} className="crm-lead-card" draggable onDragStart={event => { setDraggedId(lead.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', lead.id); }} onDragEnd={() => setDraggedId(null)} onClick={() => setSelectedId(lead.id)}>
-          <div className="crm-lead-card-head"><span className={`${avatarClass(lead.color)}`}>{lead.avatar}</span><button aria-label={`Open actions for ${lead.name}`} onClick={event => { event.stopPropagation(); setSelectedId(lead.id); }}><MoreHorizontal size={16}/></button></div><b className="crm-lead-card-name">{lead.name}</b><span className="crm-lead-company">{lead.company} · {lead.email}</span><div className="crm-tag-row">{lead.tags.slice(0, 3).map(tag => <span key={tag} className="crm-tag">{tag}</span>)}</div><div className="crm-lead-card-foot"><span><Clock3 size={12}/>{lead.lastActivity}</span><b>{money(lead.value)}</b></div><div className="crm-quick-move" onClick={event => event.stopPropagation()}><span>Move to</span><Dropdown compact value={lead.lifecycleStage} onChange={nextStage => { changeStage(lead, nextStage as LeadStage); notify(`${lead.name} moved to ${stageLabel[nextStage as LeadStage]}.`); }} options={stages.map(next => ({ value: next.id, label: next.label }))} ariaLabel={`Move ${lead.name} to a stage`}/></div>
-        </article>)}{!items.length && <div className="crm-stage-empty">Drop a lead here</div>}</div>
-      </section>;
-    })}</div> : <div className="crm-table-wrap"><table className="crm-table"><thead><tr><th>Contact</th><th>Lifecycle stage</th><th>Source</th><th>Assigned to</th><th>Booking</th><th>Product interest</th><th>Next follow-up</th><th>Value</th></tr></thead><tbody>{visible.map(lead => <tr key={lead.id} onClick={() => setSelectedId(lead.id)}><td><div className="crm-table-contact"><span className={`${avatarClass(lead.color)} avatar-small`}>{lead.avatar}</span><span><b>{lead.name}</b><small>{lead.email} · {lead.company}</small></span></div></td><td><span className={`crm-stage-pill ${toneForStage(lead.lifecycleStage)}`}>{stageLabel[lead.lifecycleStage]}</span></td><td>{lead.source}</td><td>{lead.owner}</td><td>{lead.bookingStatus}</td><td>{lead.interest}</td><td>{lead.nextFollowUp ?? '—'}</td><td><b>{money(lead.value)}</b></td></tr>)}</tbody></table>{visible.length === 0 && <div className="crm-no-results"><Search size={20}/><b>No leads match these filters</b><button onClick={clearFilters}>Reset filters</button></div>}</div>}
-    {selectedLead && <LeadDrawer lead={selectedLead} close={() => setSelectedId(null)} notify={notify} noteDraft={noteDraft} setNoteDraft={setNoteDraft} saveNote={saveNote}/>}
-    {addOpen && <div className="crm-drawer-scrim" onMouseDown={event => { if (event.target === event.currentTarget) setAddOpen(false); }}><form className="crm-add-modal" onSubmit={createLead}><header><div><span className="crm-drawer-icon"><Plus size={17}/></span><span><b>Add a lead</b><small>Create a canonical contact record</small></span></div><button type="button" onClick={() => setAddOpen(false)} aria-label="Close"><X size={17}/></button></header><div className="crm-add-grid"><label>Full name<input name="name" placeholder="e.g. Jordan Lee" required autoFocus/></label><label>Email address<input type="email" name="email" placeholder="name@company.com" required/></label><label>Company<input name="company" placeholder="Company or studio"/></label><label>Source<Dropdown name="source" value={newSource} options={sourceOptions.map(source => ({ value: source, label: source }))} onChange={setNewSource} ariaLabel="Lead source"/></label><label>Assigned owner<Dropdown name="owner" value={newOwner} options={owners.map(owner => ({ value: owner, label: owner }))} onChange={setNewOwner} ariaLabel="Assigned owner"/></label><label>Lifecycle stage<Dropdown name="stage" value={newStage} options={stages.map(stage => ({ value: stage.id, label: stage.label }))} onChange={value => setNewStage(value as LeadStage)} ariaLabel="Lifecycle stage"/></label><label>Product interest<input name="interest" placeholder="Service or product"/></label><label>Pipeline value<input name="value" type="number" min="0" placeholder="0"/></label></div><footer><button type="button" className="crm-cancel" onClick={() => setAddOpen(false)}>Cancel</button><button type="submit" className="button-primary"><Plus size={14}/> Create lead</button></footer></form></div>}
-  </div>;
-};
-
-function LeadDrawer({ lead, close, notify, noteDraft, setNoteDraft, saveNote }: { lead: CanonicalLead; close: () => void; notify: (message: string) => void; noteDraft: string; setNoteDraft: (value: string) => void; saveNote: () => void }) {
-  const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-  const [tab, setTab] = useState<'overview' | 'activity' | 'notes'>('overview');
-  const update = (changes: Partial<CanonicalLead>) => dispatch(updateLead({ id: lead.id, changes }));
-  const patch = (field: keyof CanonicalLead, value: string | number | string[]) => update({ [field]: value } as Partial<CanonicalLead>);
-  const updateTags = (value: string) => patch('tags', value.split(',').map(tag => tag.trim()).filter(Boolean));
-  return <div className="crm-drawer-scrim" onMouseDown={event => { if (event.target === event.currentTarget) close(); }}><aside className="crm-lead-drawer" aria-label={`${lead.name} lead details`}><header className="crm-drawer-top"><div><span className="crm-eyebrow">CANONICAL LEAD RECORD</span><small>{lead.id}</small></div><button onClick={close} aria-label="Close lead details"><X size={17}/></button></header><div className="crm-drawer-profile"><span className={`${avatarClass(lead.color)} avatar-large`}>{lead.avatar}</span><div><h2>{lead.name}</h2><p>{lead.company}</p></div><span className={`crm-stage-pill ${toneForStage(lead.lifecycleStage)}`}>{stageLabel[lead.lifecycleStage]}</span></div>
-    <div className="crm-drawer-actions"><button onClick={() => navigate(`/dashboard/booking?leadId=${encodeURIComponent(lead.id)}&create=link`)}><CalendarDays size={14}/> Book</button><button onClick={() => navigate(`/dashboard/inbox?leadId=${encodeURIComponent(lead.id)}`)}><MessageCircle size={14}/> Conversation</button><button onClick={() => { setTab('overview'); window.setTimeout(() => document.querySelector<HTMLInputElement>('.crm-edit-grid input[type="datetime-local"]')?.focus(), 30); notify('Set a date and time in Next follow-up to save a reminder.'); }}><Clock3 size={14}/> Reminder</button></div>
-    <nav className="crm-drawer-tabs"><button className={tab === 'overview' ? 'selected' : ''} onClick={() => setTab('overview')}>Overview</button><button className={tab === 'activity' ? 'selected' : ''} onClick={() => setTab('activity')}>Activity <i>{lead.activities.length}</i></button><button className={tab === 'notes' ? 'selected' : ''} onClick={() => setTab('notes')}>Notes <i>{lead.notes.length}</i></button></nav>
-    <div className="crm-drawer-scroll">
-      {tab === 'overview' && <><section className="crm-drawer-section"><h3>Contact information</h3><div className="crm-edit-grid"><label>Full name<input value={lead.name} onChange={event => patch('name', event.target.value)}/></label><label>Avatar initials<input value={lead.avatar} maxLength={3} onChange={event => patch('avatar', event.target.value.toUpperCase())}/></label><label>Company / role<input value={lead.company} onChange={event => patch('company', event.target.value)}/></label><label>Email address<input type="email" value={lead.email} onChange={event => patch('email', event.target.value)}/></label><label>Phone number<input value={lead.phone ?? ''} placeholder="Add phone number" onChange={event => patch('phone', event.target.value)}/></label><label>Source<Dropdown value={lead.source} onChange={value => patch('source', value)} options={[...new Set([...sourceOptions, lead.source])].map(source => ({ value: source, label: source }))} searchable ariaLabel="Lead source"/></label><label>Assigned owner<Dropdown value={lead.owner} onChange={value => patch('owner', value)} options={[...new Set([...owners, lead.owner])].map(owner => ({ value: owner, label: owner }))} ariaLabel="Assigned owner"/></label><label>Lifecycle stage<Dropdown value={lead.lifecycleStage} onChange={value => dispatch(moveLead({ id: lead.id, stage: value as LeadStage }))} options={stages.map(stage => ({ value: stage.id, label: stage.label }))} searchable ariaLabel="Lifecycle stage"/></label><label>Qualification status<Dropdown value={lead.qualificationStatus} onChange={value => patch('qualificationStatus', value as CanonicalLead['qualificationStatus'])} options={['Pending', 'Qualified', 'Unqualified'].map(status => ({ value: status, label: status }))} ariaLabel="Qualification status"/></label><label>Booking status<Dropdown value={lead.bookingStatus} onChange={value => patch('bookingStatus', value)} options={['Not Scheduled', 'Offer Sent', 'Booked', 'Completed'].map(status => ({ value: status, label: status }))} ariaLabel="Booking status"/></label><label>Product interest<input value={lead.interest} onChange={event => patch('interest', event.target.value)}/></label><label>Pipeline value<input type="number" min="0" value={lead.value} onChange={event => patch('value', Number(event.target.value))}/></label><label className="crm-edit-wide">Tags <small>Comma separated</small><input value={lead.tags.join(', ')} onChange={event => updateTags(event.target.value)}/></label><label className="crm-edit-wide">Next follow-up date / time<input type="datetime-local" value={lead.nextFollowUpAt ?? ''} onChange={event => dispatch(updateLead({ id: lead.id, changes: { nextFollowUpAt: event.target.value, nextFollowUp: event.target.value ? new Date(event.target.value).toLocaleString() : '' } }))}/></label></div></section><section className="crm-drawer-section"><h3>Recent journey</h3><Timeline lead={lead} limit={4}/></section></>}
-      {tab === 'activity' && <><section className="crm-drawer-section"><h3>Activity &amp; system events</h3><Timeline lead={lead}/></section><section className="crm-drawer-section"><h3>Unified conversation history</h3><div className="crm-conversation-link"><span><MessageCircle size={15}/></span><div><b>Messages are attached to this lead ID</b><small>WhatsApp · Email · Instagram · AI Copilot</small></div><button onClick={() => notify(`Conversation lookup uses canonical lead ${lead.id}.`)}><ArrowRight size={14}/></button></div>{lead.activities.filter(item => item.type === 'message').map(item => <div className="crm-message-event" key={item.id}><span><Mail size={12}/></span><div><b>{item.title}</b><p>{item.detail}</p><small>{item.at}</small></div></div>)}</section></>}
-      {tab === 'notes' && <section className="crm-drawer-section"><h3>Internal notes</h3><p className="crm-notes-caption">Private to your team. Notes are saved on this canonical contact.</p><textarea className="crm-note-input" placeholder="Add context for your team..." value={noteDraft} onChange={event => setNoteDraft(event.target.value)}/><button className="crm-save-note" onClick={saveNote} disabled={!noteDraft.trim()}><Plus size={13}/> Save note</button><div className="crm-note-list">{lead.notes.map((note, index) => <article key={`${index}-${note}`}><b>Alex Morgan</b><small>{index === 0 ? 'Just now' : 'Earlier'}</small><p>{note}</p></article>)}</div></section>}
-    </div></aside></div>;
-}
-
-function Timeline({ lead, limit }: { lead: CanonicalLead; limit?: number }) {
-  const activities = limit ? lead.activities.slice(0, limit) : lead.activities;
-  return <div className="crm-activity-timeline">{activities.map(activity => <div className="crm-timeline-item" key={activity.id}><span className={`crm-timeline-icon ${activity.type}`}>{activity.type === 'booking' ? <CalendarDays size={13}/> : activity.type === 'message' ? <MessageCircle size={13}/> : activity.type === 'payment' ? <Check size={13}/> : activity.type === 'note' ? <FileText size={13}/> : <UserRound size={13}/>}</span><div><b>{activity.title}</b><p>{activity.detail}</p><small>{activity.at}</small></div></div>)}{!activities.length && <div className="crm-no-activity">Activity will appear here as this lead moves through your workspace.</div>}</div>;
-}
-
-export default CRMLeads;

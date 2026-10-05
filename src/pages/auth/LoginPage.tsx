@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { authenticateDemo } from '../../data/mockData';
 import { loginSuccess, type Role } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
+import { showToast } from '../../utils/toast';
 import './login-page.css';
 
 const destination: Record<Role, string> = {
@@ -51,9 +52,12 @@ export const LoginPage: React.FC = () => {
       const session = authenticateDemo(email, password);
       if (!session) {
         setBusy(false);
-        setError('We couldn’t sign you in with those details. Check your email and password, then try again.');
+        const errStr = 'Invalid credentials. Please try again.';
+        setError(errStr);
+        showToast.error(errStr);
         return;
       }
+      showToast.success(`Welcome back, ${session.user.name}!`);
       dispatch(loginSuccess(session));
       const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
       const canOpenRequestedPath = session.role === 'SUPER_ADMIN'

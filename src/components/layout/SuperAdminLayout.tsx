@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Activity, AppWindow, BarChart3, Bell, CreditCard, FileText, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
+import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import './super-admin.css';
@@ -23,7 +24,7 @@ const navigation = [
 export const SuperAdminLayout: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const signOut = () => { dispatch(logout()); navigate('/auth/login', { replace: true }); };
+  const signOut = () => { showToast.success('You have been logged out successfully.'); dispatch(logout()); navigate('/auth/login', { replace: true }); };
 
   return <div className="sa-shell">
     <aside className="sa-sidebar">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, CircleHelp, Crown, LogOut, X, Rocket } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store';
 import { setSidebarOpen } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
+import { showToast } from '../../utils/toast';
 
 export interface SidebarItem {
   name: string;
@@ -15,6 +16,7 @@ export interface SidebarItem {
   badge?: string;
   dividerBefore?: boolean;
   end?: boolean;
+  activePaths?: string[];
 }
 
 interface SidebarProps {
@@ -25,23 +27,40 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const close = () => dispatch(setSidebarOpen(false));
-  const signOut = () => { dispatch(logout()); close(); navigate('/auth/login', { replace: true }); };
+  const signOut = () => { showToast.success('You have been logged out successfully.'); dispatch(logout()); close(); navigate('/auth/login', { replace: true }); };
+
+  const splitIndex = items.findIndex(item => item.dividerBefore);
+  const topItems = splitIndex >= 0 ? items.slice(0, splitIndex) : items;
+  const bottomItems = splitIndex >= 0 ? items.slice(splitIndex) : [];
 
   const content = <div className="layout-sidebar-content">
     <NavLink to={basePath} className="layout-brand" onClick={close}>
       <span className="layout-brand-wordmark"><b>GOS</b><Rocket size={20} strokeWidth={2.2}/></span>
       <span className="layout-brand-copy"><small>Growth Operating System</small></span>
     </NavLink>
-    <nav className="layout-nav" aria-label="Main navigation">
-      {items.map(item => <React.Fragment key={item.name}>
-        {item.dividerBefore && <div className="layout-nav-divider"/>}
-        <NavLink to={`${basePath}${item.href}`} end={item.end ?? true} onClick={close} className={({ isActive }) => `layout-nav-item${isActive ? ' is-active' : ''}`}>
-          <item.icon size={17} strokeWidth={1.8}/><span>{item.name}</span>{item.badge && <span className="layout-nav-badge">{item.badge}</span>}
-        </NavLink>
-      </React.Fragment>)}
-    </nav>
+
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'flex-start', minHeight: 0 }}>
+      <nav className="layout-nav" aria-label="Main navigation" style={{ flex: 'none', gap: '7px', overflow: 'visible', paddingTop: 0 }}>
+        {topItems.map(item => <React.Fragment key={item.name}>
+          {item.dividerBefore && <div className="layout-nav-divider"/>}
+          <NavLink to={`${basePath}${item.href}`} end={item.end ?? true} onClick={close} className={({ isActive }) => `layout-nav-item${isActive || item.activePaths?.some(path => location.pathname === path || location.pathname.startsWith(path + '/')) ? ' is-active' : ''}`}>
+            <item.icon size={17} strokeWidth={1.8}/><span>{item.name}</span>{item.badge && <span className="layout-nav-badge">{item.badge}</span>}
+          </NavLink>
+        </React.Fragment>)}
+      </nav>
+
+      {bottomItems.length > 0 && <nav className="layout-nav" aria-label="Utility navigation" style={{ flex: 'none', gap: '7px', overflow: 'visible', paddingTop: '10px', marginTop: '24px' }}>
+        <div className="layout-nav-divider" style={{ marginTop: 0 }}/>
+        {bottomItems.map(item => <React.Fragment key={item.name}>
+          <NavLink to={`${basePath}${item.href}`} end={item.end ?? true} onClick={close} className={({ isActive }) => `layout-nav-item${isActive ? ' is-active' : ''}`}>
+            <item.icon size={17} strokeWidth={1.8}/><span>{item.name}</span>{item.badge && <span className="layout-nav-badge">{item.badge}</span>}
+          </NavLink>
+        </React.Fragment>)}
+      </nav>}
+    </div>
     <div className="layout-sidebar-bottom">
       <button className="layout-profile"><span className="layout-profile-avatar">MJ</span><span className="layout-profile-copy"><b>Mohamed Joe</b><small>Business Owner</small></span><span className="layout-plan"><Crown size={12}/> Pro</span></button>
       <div className="layout-help-card"><span className="layout-help-icon"><CircleHelp size={17}/></span><div><b>Need Help?</b><small>Guides and support</small></div><button aria-label="Open help center"><ArrowRight size={14}/></button><a href="#help">View guides</a></div>

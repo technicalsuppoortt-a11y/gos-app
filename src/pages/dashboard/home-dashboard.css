@@ -1,0 +1,19 @@
+/* ───────── Home dashboard: single-screen viewport lock ─────────
+   On desktop the dashboard fills the workspace exactly (no page-level
+   scroll). Rows never shrink below their content (so nothing is ever
+   clipped) and grow to absorb spare height, keeping the bottom cards
+   flush with the bottom edge. If a screen is shorter than the content,
+   `useFitToViewport` (HomeDashboard.tsx) scales the board to fit.
+   Keep this media query in sync with LOCK_QUERY in HomeDashboard.tsx. */
+@media (min-width: 1280px) and (min-height: 620px) {
+  .layout-workspace:has(.gos-home-dashboard) { height: 100vh; min-height: 0; overflow: hidden; }
+  .layout-workspace:has(.gos-home-dashboard) .layout-footer { display: none; }
+  .layout-main:has(.gos-home-dashboard) { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 12px 20px 14px; }
+  .layout-route-content:has(.gos-home-dashboard) { display: flex; flex: 1; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+
+  .gos-home-dashboard { flex: 1; height: 100%; }
+  .gos-home-dashboard .gos-row { flex: 1 0 auto; }
+}
+
+/* Dark theme: knock-out colour for inner details of solid icons */
+html.dark .gos-home-dashboard { --icon-cut: #121829; }

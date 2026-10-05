@@ -3,7 +3,7 @@
 /* ── Viewport lock: the page owns its header; only the product grid + inspector scroll ── */
 @media (min-width:761px){
  .layout-workspace:has(.pp-page){height:100vh;min-height:0;overflow:hidden}
- .layout-workspace:has(.pp-page)>.layout-header,.layout-workspace:has(.pp-page)>.layout-footer{display:none}
+
  .layout-main:has(.pp-page){display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:14px 20px 16px}
  .layout-route-content:has(.pp-page){display:flex;flex:1;flex-direction:column;height:100%;min-height:0}
  .pp-page{flex:1;height:100%;min-height:0;gap:12px}
@@ -84,3 +84,13 @@
 .pp-payment-options input:focus-visible{outline:none;box-shadow:0 0 0 3px #6946e926}
 .pp-payment-options em{color:#7a8399}
 .pp-payment-options label:has(input:checked) em{color:#1f2944;font-weight:600}
+
+/* Dedicated product routes leave the catalog at full workspace width. */
+.pp-page{--pp-violet:#7c5cfc}.pp-page .pp-workspace{grid-template-columns:minmax(0,1fr);width:100%;min-width:0}.pp-page .pp-catalog{width:100%;min-width:0}.pp-page .pp-products:not(.list){grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.pp-page .pp-create{background:#7c5cfc}.pp-page .pp-products .pp-type-tag.course-\/\-membership{background:#e9f3ff;color:#1f74d4}.pp-page .pp-status.draft{background:#f1f5f9;color:#64748b}.pp-page .pp-product-card:hover{border-color:#c4b5fd;box-shadow:0 3px 12px #7c5cfc12}.pp-page .pp-toolbar{flex-wrap:wrap}.pp-page .pp-products.list .pp-card-info{grid-template-columns:minmax(0,1.6fr) minmax(80px,.7fr) minmax(100px,1fr) minmax(80px,.55fr)}
+@media(max-width:600px){.pp-page .pp-products:not(.list){grid-template-columns:repeat(2,minmax(0,1fr))}.pp-page .pp-products.list .pp-product-card{grid-template-columns:90px minmax(0,1fr)}.pp-page .pp-products.list .pp-card-info{grid-template-columns:1fr 1fr}.pp-page .pp-products.list .pp-price{grid-column:2;grid-row:1/3}.pp-page .pp-products.list .pp-product-metric{grid-column:1;grid-row:3}.pp-page .pp-products.list .pp-card-footer{grid-column:2;grid-row:3}.pp-page .pp-search{width:100%}.pp-page .pp-tabs{overflow-x:auto}.pp-page .pp-tabs>button{flex:none;padding:0 12px}}
+
+.pp-product-card{cursor:pointer}.pp-empty-results{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:12px;padding:65px 20px;color:#64748b;font-size:12px}.pp-empty-results button{background:#7c5cfc;color:white;padding:9px 14px;border:0;border-radius:7px}
+
+.pp-page .pp-product-card{position:relative}.pp-page .pp-product-card>.pp-card-more{top:14px;right:14px}.pp-page .pp-products.list .pp-product-card>.pp-card-more{top:12px;right:auto;left:120px}@media(max-width:600px){.pp-page .pp-products.list .pp-product-card>.pp-card-more{left:55px}}
+
+.pp-page .pp-search,.pp-page .pp-select>button{border-color:#cbd5e1}.pp-page .pp-search:focus-within,.pp-page .pp-select>button:focus-visible{border-color:#9333ea;box-shadow:0 0 0 3px #9333ea20;outline:none}.pp-page .pp-tabs>button.active{color:#7c5cfc}.pp-page .pp-tabs>button.active:after{background:#7c5cfc}

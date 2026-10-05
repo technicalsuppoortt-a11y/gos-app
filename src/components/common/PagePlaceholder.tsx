@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { showToast } from '../../utils/toast';
 import { motion } from 'framer-motion';
 
 export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
@@ -11,6 +12,7 @@ export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    showToast.success('You have been logged out successfully.');
     dispatch(logout());
     navigate('/auth/login');
   };

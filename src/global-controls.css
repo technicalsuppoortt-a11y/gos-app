@@ -56,7 +56,7 @@ html.dark .layout-search input{color:#e7eaf2}html.dark .layout-search input::pla
 html.dark .layout-notifications,html.dark .layout-header-user{color:#aab2c3}
 html.dark .layout-header-user b{color:#f0f2f8}html.dark .layout-header-user small{color:#a0a8b8}
 html.dark .layout-booking-tab{color:#aab1c1}html.dark .layout-booking-tab svg{color:#8e97aa}
-html.dark .layout-booking-tab.is-active{background:#30265b;color:#c8bbff}
+html.dark .layout-booking-tab.is-active{background:transparent;color:#c8bbff}
 html.dark .layout-main{background:#0b1020}
 html.dark .layout-footer{border-color:#252b3a;background:#111522;color:#8992a5}
 html.dark .panel,html.dark .metric-card,html.dark .toolbar,html.dark .calendar-panel,html.dark .booking-links-panel,html.dark .product-card,html.dark .settings-nav,html.dark .settings-content,html.dark .chat-history,html.dark .thread-panel,html.dark .conversation-list,html.dark .builder-sidebar,html.dark .inspector-sidebar,html.dark .page-canvas-wrap{border-color:#2a3040;background:#151a27;color:#e4e7ef}

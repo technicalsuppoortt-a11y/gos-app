@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ArrowUpRight, BarChart3, CalendarDays, Check, CheckCircle2, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { RootState } from '../store';
 import { bookings, calendars, leads, products, stageLabel } from '../data/mockData';
+import { showToast } from '../utils/toast';
 import './ai-copilot.css';
 
 type Kind = 'landing' | 'leads' | 'campaign' | 'booking' | 'product' | 'analytics' | 'question';
@@ -105,7 +106,7 @@ export const AICopilot: React.FC = () => {
   const [pendingMedia, setPendingMedia] = useState<MediaAttachment | null>(null);
   const [recording, setRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [toast, setToast] = useState('');
+
   const [showWelcome, setShowWelcome] = useState(true);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -133,7 +134,7 @@ export const AICopilot: React.FC = () => {
   }, []);
 
   const pushMessage = (message: Message) => setMessages(current => [...current, message]);
-  const flash = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2600); };
+  const flash = (message: string) => { showToast.success(message); };
   const chooseHistory = (item: typeof starterHistory[number]) => {
     setActiveConversation(item.id);
     setShowWelcome(false);
@@ -331,7 +332,6 @@ export const AICopilot: React.FC = () => {
         <button className="ai-history-all" onClick={() => setShowAllHistory(true)}>View all conversations <ArrowRight size={14}/></button><div className="ai-history-security"><ShieldCheck size={14}/><span>Private to <b>{tenant?.name ?? 'your workspace'}</b></span></div></>}
     </aside>
     <AnimatePresence>{showAllHistory && <motion.div className="ai-history-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowAllHistory(false); }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .2 }}><motion.section className="ai-history-modal" role="dialog" aria-modal="true" aria-labelledby="ai-history-modal-title" initial={{ opacity: 0, y: 12, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: .97 }} transition={{ type: 'spring', stiffness: 360, damping: 28 }}><header><div><span className="ai-history-mark"><History size={16}/></span><div><h2 id="ai-history-modal-title">All conversations</h2><p>{starterHistory.length} demo conversations · Private to your workspace</p></div></div><button onClick={() => setShowAllHistory(false)} aria-label="Close all conversations"><X size={17}/></button></header><div className="ai-history-modal-list">{starterHistory.map(item => <button key={item.id} onClick={() => { chooseHistory(item); setShowAllHistory(false); }}><MessageSquare size={15}/><span><b>{item.title}</b><small>{item.group} · {item.category}</small></span><time>{item.time}</time><ChevronRight size={15}/></button>)}</div></motion.section></motion.div>}</AnimatePresence>
-    {toast && <div className="ai-toast"><CheckCircle2 size={15}/>{toast}</div>}
   </div>;
 };
 

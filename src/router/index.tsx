@@ -15,6 +15,17 @@ const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder'
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
+const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
+const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
+
+const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
+
+const crmChildren = [
+  { index: true, element: <Suspended><DashboardPage page="crm"/></Suspended> },
+  ...['pipeline', 'contacts', 'activities', 'tasks', 'overview', 'templates'].map(path => ({ path, element: <Suspended><DashboardPage page="crm"/></Suspended> })),
+  { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
+  { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
+];
 
 function Suspended({ children }: React.PropsWithChildren) {
   return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>;
@@ -28,6 +39,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <DefaultRedirect/> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
+  { path: '/crm', element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: crmChildren },
   {
     path: '/dashboard',
     element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>,
@@ -36,11 +48,18 @@ export const router = createBrowserRouter([
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
       { path: 'funnels', element: <Suspended><FunnelBuilder/></Suspended> },
       { path: 'templates', element: <Suspended><PagePlaceholder title="Templates"/></Suspended> },
-      { path: 'crm', element: <Suspended><DashboardPage page="crm"/></Suspended> },
+      { path: 'crm', children: crmChildren },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'booking', element: <Suspended><DashboardPage page="booking"/></Suspended> },
       { path: 'products', element: <Suspended><DashboardPage page="products"/></Suspended> },
+      { path: 'products-payments', element: <Suspended><DashboardPage page="products"/></Suspended> },
+      { path: 'products-payments/products/new', element: <Suspended><ProductWorkspace mode="create"/></Suspended> },
+      { path: 'products-payments/products/:id/pricing', element: <Suspended><ProductWorkspace mode="edit" defaultTab="pricing"/></Suspended> },
+      { path: 'products-payments/products/:id/edit', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
+      { path: 'products-payments/products/:id', element: <Suspended><ProductWorkspace mode="detail"/></Suspended> },
+      { path: 'products-payments/discounts/new', element: <Suspended><DiscountEditorPage/></Suspended> },
+      { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
       { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
