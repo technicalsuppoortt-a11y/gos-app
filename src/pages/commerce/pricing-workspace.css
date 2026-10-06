@@ -78,3 +78,107 @@
 @media(max-width:1200px){.tw-pricing-workspace{grid-template-columns:minmax(0,1fr) 270px}.tw-pricing-workspace .tw-pricing-layout{grid-template-columns:1fr}.tw-pricing-workspace .tw-checkout-preview{position:static}.pricing-discount-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.tw-pricing-workspace{grid-template-columns:1fr}.tw-pricing-workspace .tw-workspace-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.pricing-discount-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.tw-pricing-workspace .tw-workspace-sidebar,.pricing-discount-grid{grid-template-columns:1fr}.pricing-amounts.with-compare{grid-template-columns:minmax(0,1fr) 95px}.tw-pricing-workspace .tw-three-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types>button{flex-direction:column}.pricing-region{grid-template-columns:1fr}.pricing-coupon-fields,.pricing-auto-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types b{padding-right:0}}
+/* The reference uses three simultaneous columns, including at 1024px. */
+.pricing-page{padding:10px 14px 8px;--pricing-accent:#6425f5}
+.pricing-page .tw-breadcrumb{margin-bottom:8px}
+.pricing-page .tw-pricing-workspace{grid-template-columns:minmax(0,2.8fr) minmax(0,1fr);gap:10px;padding-bottom:0;align-items:start}
+.pricing-page .tw-pricing-layout{grid-template-columns:minmax(0,1.95fr) minmax(0,1fr);gap:10px;align-items:start}
+.pricing-page .tw-workspace-main,.pricing-page .tw-workspace-sidebar,.pricing-page .tw-stack,.pricing-page .tw-pricing-form{gap:8px}
+.pricing-page .tw-workspace-sidebar{display:flex;flex-direction:column}
+.pricing-page .tw-section-heading{position:relative;margin:0;min-height:30px}
+.pricing-page .tw-section-heading h2{font-size:14px;line-height:1.3;margin:0 0 2px}
+.pricing-page .tw-section-heading p{font-size:10px;line-height:1.3;margin:0;color:#8b8ba5}
+.pricing-page .tw-section-heading>.cw-button{position:absolute;right:0;top:0}
+.pricing-page .cw-card{padding:10px 11px;border-radius:6px;border-color:#eeedf5;box-shadow:none;min-width:0;width:100%}
+.pricing-page .cw-card>header{margin-bottom:7px;gap:5px;align-items:start}
+.pricing-page .cw-card h2{font-size:11px;line-height:1.3;color:#171333;letter-spacing:-.25px}
+.pricing-page .cw-card header p{font-size:9px;line-height:1.4;margin-top:2px;color:#8b8ba5}
+.pricing-page .cw-field{font-size:9px;gap:4px;margin:0;font-weight:400}
+.pricing-page .cw-field input:not([type=checkbox]):not([type=file]),.pricing-page .commerce-select-trigger{height:28px;min-height:28px;padding:4px 8px;font-size:10px;line-height:1.3;border-radius:5px;border-color:#eeedf5}
+.pricing-page .cw-field input:disabled,.pricing-page .commerce-select-trigger:disabled{background:#f8f9fc;color:#a1a0b3;opacity:1}
+.pricing-page .tw-pricing-types{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pricing-page .tw-pricing-types>button{position:relative;flex-direction:row;align-items:flex-start;min-height:52px;padding:7px 6px;gap:6px;border-width:1px;border-color:#eeedf5;border-radius:6px}
+.pricing-page .tw-pricing-types>button.selected{border-color:#cbb8ed;background:#f8f5ff}
+.pricing-page .tw-pricing-types>button>svg{width:13px;height:13px;padding:5px;margin:0;background:#f2edfc;color:#8c5cde}
+.pricing-page .tw-pricing-types>button>span{padding:0;min-width:0}
+.pricing-page .tw-pricing-types b{font-size:9px;line-height:1.3;font-weight:500;padding-right:6px}
+.pricing-page .tw-pricing-types small{font-size:8px;line-height:1.35;color:#8b8ba5}
+.pricing-page .pricing-active svg{width:10px;height:10px;fill:#8b5de2;stroke:white}
+.pricing-page .pricing-amounts.with-compare{grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1.3fr) minmax(0,.7fr);gap:6px}
+.pricing-page .tw-three-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+.pricing-page .tw-toggle-row{min-height:22px;padding:4px 0;border:0;font-size:9px;gap:6px;color:#575570}
+.pricing-page .tw-toggle-row input{width:30px;height:16px;background:#cccfe0;flex-shrink:0}
+.pricing-page .tw-toggle-row input:checked{background:var(--pricing-accent)}
+.pricing-page .tw-toggle-row input:before{width:12px;height:12px;top:2px;left:2px}
+.pricing-page .tw-toggle-row input:checked:before{transform:translateX(14px)}
+.pricing-page .pricing-card-switch .tw-toggle-row{min-height:16px}
+.pricing-page .tw-pricing-form>.cw-card:nth-child(2)>.tw-toggle-row{flex-direction:row-reverse;justify-content:flex-end;margin-top:4px}
+.pricing-page .pricing-suffix>small{font-size:8px;right:6px}
+.pricing-page .pricing-suffix input{padding-right:44px!important}
+.pricing-page .pricing-extra{font-size:8px;margin-top:5px;position:relative}
+.pricing-page .pricing-extra[open]{z-index:5}
+.pricing-page .pricing-extra[open]::before{content:'';position:absolute;inset:-5px -8px;background:var(--panel,#fff);border:1px solid #eeedf5;border-radius:5px;box-shadow:0 5px 20px #17133315;z-index:-1}
+.pricing-page .tw-checkout-preview{position:static;padding:11px}
+.pricing-page .tw-checkout-preview>header{margin-bottom:20px}
+.pricing-page .tw-checkout-product{padding:7px 0;margin-bottom:8px;background:none;border:0;gap:8px}
+.pricing-page .tw-checkout-product>img{width:56px;height:40px;border-radius:4px;object-fit:cover}
+.pricing-page .tw-checkout-product b{font-size:10px;line-height:1.4}
+.pricing-page .tw-checkout-product small{font-size:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pricing-page .tw-checkout-option{position:relative;padding:9px 7px;gap:6px;margin-bottom:6px;border-radius:6px;border-color:#eeedf5;min-height:48px}
+.pricing-page .tw-checkout-option.selected{border-color:#cbb8ed;background:#f8f5ff}
+.pricing-page .tw-checkout-option input{accent-color:var(--pricing-accent);margin:0}
+.pricing-page .tw-checkout-option>span{gap:3px;display:block}
+.pricing-page .tw-checkout-option b{font-size:9px;line-height:1.4;font-weight:500}
+.pricing-page .tw-checkout-option small{display:block;font-size:8px;line-height:1.4;margin-top:3px}
+.pricing-page .tw-checkout-option strong{font-size:10px;line-height:1.4;max-width:34%}
+.pricing-page .tw-checkout-option strong del{font-size:8px}
+.pricing-page .pricing-popular{display:inline-block;font-size:6px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.pricing-page .tw-checkout-preview>.cw-button{margin-top:6px;min-height:31px}
+.pricing-page .pricing-payment-badges{gap:6px;margin-top:12px;flex-wrap:nowrap;justify-content:space-between}
+.pricing-page .pricing-payment-badges>small{font-size:6px;white-space:nowrap}
+.pricing-page .pricing-payment-badges>span{font-size:7px;white-space:nowrap}
+.pricing-page .payment-mastercard{width:17px;height:10px;flex-shrink:0}
+.pricing-page .payment-mastercard i{width:10px;height:10px}
+.pricing-page .payment-mastercard i+i{left:7px}
+.pricing-page .pricing-region{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:7px}
+.pricing-page .cw-help{font-size:8px;line-height:1.4;margin:6px 0 0;color:#8b8ba5}
+.pricing-page .tw-workspace-sidebar .tw-toggle-row{padding:4px 0;min-height:25px;font-size:9px}
+.pricing-page .pricing-offer{margin-bottom:7px}
+.pricing-page .pricing-offer>small{font-size:9px;margin-bottom:3px}
+.pricing-page .pricing-offer-row{gap:6px;padding:5px;border-color:#eeedf5;border-radius:5px}
+.pricing-page .pricing-offer-row>img{width:27px;height:27px;border-radius:3px}
+.pricing-page .pricing-offer-row>span{font-size:8px;gap:2px}
+.pricing-page .cw-button.small{min-height:23px;font-size:9px;padding:3px 7px}
+.pricing-page .pricing-drag-handle{color:#87849f;flex-shrink:0}
+.pricing-page .pricing-remove-offer{display:none}
+.pricing-page .pricing-offer-row:hover .pricing-remove-offer,.pricing-page .pricing-offer-row:focus-within .pricing-remove-offer{display:grid}
+.pricing-page .pricing-offer-row:hover .pricing-drag-handle,.pricing-page .pricing-offer-row:focus-within .pricing-drag-handle{display:none}
+.pricing-page .pricing-access-rules{gap:8px;margin:3px 0 2px}
+.pricing-page .pricing-access-rules label{gap:7px;font-size:9px;color:#494661}
+.pricing-page .pricing-access-rules input{width:12px;height:12px;margin:0;accent-color:var(--pricing-accent)}
+.pricing-page .pricing-discount-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pricing-page .pricing-discount-grid .cw-card{padding:7px 8px}
+.pricing-page .pricing-discount-grid .cw-card>header{margin-bottom:4px}
+.pricing-page .pricing-discount-grid h2{font-size:9px}
+.pricing-page .pricing-coupon-fields,.pricing-page .pricing-auto-fields{gap:5px}
+.pricing-page .pricing-coupon-limits{gap:5px;font-size:8px;margin-top:5px}
+.pricing-page .pricing-coupon-limits input[type=checkbox]{width:12px;height:12px;margin:0}
+.pricing-page .pricing-coupon-limits>.pricing-suffix{max-width:76px}
+.pricing-page .pricing-coupon-limits>.pricing-suffix input{height:22px;font-size:9px}
+.pricing-page .pricing-icon-button{padding:3px}
+.pricing-page .pricing-add-discount{min-height:22px;font-size:8px;padding:3px 6px}
+.pricing-page .pricing-discount-grid>.tw-stack{gap:4px}
+@media(min-width:1500px) and (min-height:850px){.pricing-page .cw-card{padding:14px}.pricing-page .cw-card h2{font-size:13px}.pricing-page .cw-field,.pricing-page .tw-toggle-row,.pricing-page .tw-workspace-sidebar .tw-toggle-row{font-size:11px}.pricing-page .cw-field input:not([type=checkbox]):not([type=file]),.pricing-page .commerce-select-trigger{height:32px;min-height:32px;font-size:12px}.pricing-page .tw-pricing-types>button{min-height:64px}.pricing-page .tw-pricing-types b,.pricing-page .tw-checkout-option b{font-size:11px}.pricing-page .tw-pricing-types small,.pricing-page .tw-checkout-option small{font-size:10px}}
+@media(max-width:900px){.pricing-page .tw-pricing-workspace{grid-template-columns:1fr}.pricing-page .tw-workspace-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.pricing-page .tw-pricing-layout{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}}
+@media(max-width:600px){.pricing-page .tw-action-bar{flex-direction:column;align-items:stretch}.pricing-page .cw-header-actions{justify-content:flex-start}.pricing-page .tw-pricing-layout,.pricing-page .tw-workspace-sidebar,.pricing-page .pricing-discount-grid{grid-template-columns:1fr}.pricing-page .tw-product-heading{flex-wrap:wrap}.pricing-page .tw-pricing-types>button{min-height:60px}.pricing-page .tw-checkout-preview>header{margin-bottom:10px}}
+html.dark .pricing-page .cw-card h2{color:#e2e8f0}html.dark .pricing-page .tw-pricing-types>button.selected,html.dark .pricing-page .tw-checkout-option.selected{background:#2b2345;border-color:#7c5cfc}html.dark .pricing-page .cw-field input:disabled,html.dark .pricing-page .commerce-select-trigger:disabled{background:#172033;color:#94a3b8}
+.pricing-money-field{position:relative;display:flex;align-items:center;min-width:0}
+.pricing-money-field>i{position:absolute;left:8px;font-style:normal;font-size:10px;color:#64748b;pointer-events:none}
+.pricing-page .cw-field .pricing-money-field>input{padding-left:18px!important;width:100%}
+.pricing-page .tw-toggle-row input{border-color:transparent}
+.pricing-page .tw-toggle-row input:before{width:10px;height:10px}
+.pricing-page .tw-toggle-row input:checked{border-color:var(--pricing-accent)}
+.pricing-page .tw-toggle-row input:checked:before{transform:translateX(13px)}
+.pricing-drag-handle{display:grid;place-items:center;border:0;background:transparent;padding:2px;color:#87849f;cursor:grab}
+.pricing-drag-handle:active{cursor:grabbing}
+.pricing-page .pricing-offer-row:hover .pricing-drag-handle,.pricing-page .pricing-offer-row:focus-within .pricing-drag-handle{display:grid}

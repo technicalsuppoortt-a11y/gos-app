@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, CalendarDays, Clock3, CreditCard, Filter, LayoutGrid, Link2, ListChecks, MessageCircle, Plug, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
+import { BarChart3, CalendarDays, Clock3, CreditCard, Filter, LayoutGrid, Link2, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 
@@ -16,8 +16,7 @@ const userItems: SidebarItem[] = [
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Templates', href: '/templates', icon: LayoutGrid, dividerBefore: true },
-  { name: 'Integrations', href: '/integrations', icon: Plug },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Settings', href: '/settings', icon: Settings, end: false },
 ];
 
 const bookingTabs = [
@@ -51,14 +50,15 @@ function BookingTabs() {
 export const UserLayout: React.FC = () => {
   const location = useLocation();
   const isBooking = location.pathname === '/dashboard/booking';
+  const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/products\/[^/]+(?:\/(?:edit|pricing))?$/.test(location.pathname);
   const isFullPage = isInbox || isCRM;
-  return <div className={`layout-dashboard-shell user-dashboard-shell${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
+  return <div className={`layout-dashboard-shell user-dashboard-shell${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
     <Sidebar items={userItems} basePath="/dashboard"/>
     <div className={`layout-workspace${isFullPage ? ' layout-workspace-inbox' : ''}`}>
-      {!isProductWorkspace && <Header title={isCRM ? 'CRM & Leads' : undefined}/>}
+      <Header title={isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
       {isBooking && <BookingTabs/>}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         <AnimatePresence mode="wait"><motion.div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: .18 }}><Outlet/></motion.div></AnimatePresence>

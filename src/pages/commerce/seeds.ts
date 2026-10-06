@@ -8,6 +8,7 @@ import gosProImg from '../../assets/products/gos-pro.jpg';
 import growthBundleImg from '../../assets/products/growth-bundle.jpg';
 import type { Product } from './model';
 import { defaultConfig } from './model';
+import { sampleCourseModules } from './course-curriculum-data';
 export const seedProducts:Product[]=[
  {id:'ai-course',name:'Complete AI Marketing Course',type:'Course / Membership',price:'€297',stats:[['sales','124 sales'],['revenue','€36,828 revenue']],status:'Active',sales:'124',revenue:'€36,828',art:'course',image:aiCourseImg,tag:'Course / Membership',description:'Learn how to create, market and sell digital products using AI. Step by step system with real examples and templates.'},
  {id:'social-pack',name:'Social Media Templates Pack',type:'Digital Product',price:'€47',stats:[['sales','312 sales'],['revenue','€14,664 revenue']],status:'Active',sales:'312',revenue:'€14,664',art:'templates',image:socialPackImg,tag:'Digital Product',description:'A ready-to-use library of branded social templates for growing businesses.'},
@@ -17,6 +18,8 @@ export const seedProducts:Product[]=[
  {id:'agency-kit',name:'Agency Starter Kit',type:'Digital Product',price:'€67',stats:[['sales','210 sales']],status:'Active',sales:'210',revenue:'€14,070',art:'agency',image:agencyKitImg,tag:'Digital Product',description:'Systems, templates, and resources to launch and grow a modern agency.'},
  {id:'gos-pro',name:'GOS Pro Membership',type:'Subscription',price:'€29 / month',stats:[['members','86 members']],status:'Active',sales:'86',revenue:'€2,494',art:'membership',image:gosProImg,tag:'Subscription',description:'A monthly membership for tools, training, and business growth support.'},
  {id:'growth-bundle',name:'Business Growth Bundle',type:'Bundle',price:'€197',stats:[['sales','54 sales']],status:'Active',sales:'54',revenue:'€10,638',art:'bundle',image:growthBundleImg,tag:'Bundle',description:'A curated bundle of digital tools and resources for business growth.'},
+ {id:'advanced-ai-templates',name:'Advanced AI Templates Pack',type:'Digital Product',price:'€47',stats:[['sales','0 sales']],status:'Active',sales:'0',revenue:'€0',art:'templates',image:socialPackImg,tag:'Digital Product',description:'Advanced AI templates for your marketing workflow.'},
+ {id:'starter-kit',name:'Starter Kit',type:'Digital Product',price:'€27',stats:[['sales','0 sales']],status:'Active',sales:'0',revenue:'€0',art:'agency',image:agencyKitImg,tag:'Digital Product',description:'Essential resources to get started.'},
 ];
 
 // Demo content for the existing catalog; persisted customer edits are never replaced.
@@ -25,14 +28,17 @@ for (const product of seedProducts) {
   const experience = config.experience!;
   experience.shortDescription = product.description;
   if (product.id === 'ai-course') {
+    experience.shortDescription = 'Learn AI marketing step by step';
+    experience.comparePrice = 497; experience.showComparePrice = true;
+    experience.planEnabled = true; experience.installmentAmount = 99;
+    config.trialDays = 7; experience.taxHandling = 'Include tax in price';
+    experience.checkout.requirePhone = true; experience.checkout.testimonials = true;
+    experience.offersEnabled = true; experience.upsellId = 'advanced-ai-templates'; experience.downsellId = 'starter-kit';
+    experience.coupon = { ...experience.coupon, enabled: true, code: 'LAUNCH20', limitUsage: true };
     experience.category = 'Marketing'; experience.tags = ['AI', 'Marketing', 'Digital Products', 'Online Business'];
     experience.instructor = { name: 'Mohamed Joe', bio: 'Digital entrepreneur, AI expert and online business creator.', image: strategyCallImg };
     experience.included = ['Step-by-step framework', 'Ready-to-use templates', 'Private community', 'Lifetime access'].map((title, index) => ({ id: `course-benefit-${index}`, title, enabled: true }));
-    config.modules = [{ title: 'Module 1: Introduction', lessons: [
-      { id: 'welcome', title: 'Welcome to the Course', kind: 'Video', duration: '08:24', url: '' },
-      { id: 'outcomes', title: 'What You Will Learn', kind: 'Video', duration: '06:15', url: '' },
-      { id: 'tools', title: 'Tools You Need', kind: 'PDF', duration: '2.4 MB', url: '' },
-    ] }];
+    config.modules = sampleCourseModules();
   }
   if (product.id === 'social-pack') {
     experience.category = 'Design Templates'; experience.tags = ['Templates', 'Social Media', 'Design', 'Canva'];

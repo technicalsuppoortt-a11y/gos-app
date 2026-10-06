@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute, RouteLoading } from './ProtectedRoute';
 import type { Role } from '../types/auth';
 import '../route-loading.css';
@@ -13,6 +13,7 @@ const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(m
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
+const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
@@ -65,8 +66,9 @@ export const router = createBrowserRouter([
       { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
       { path: 'academy', element: <Suspended><PagePlaceholder title="GOS Academy"/></Suspended> },
       { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
-      { path: 'integrations', element: <Suspended><DashboardPage page="settings"/></Suspended> },
-      { path: 'settings/*', element: <Suspended><DashboardPage page="settings"/></Suspended> },
+      { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
+      { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
+      { path: 'settings/*', element: <Suspended><SettingsWorkspace/></Suspended> },
     ],
   },
   {

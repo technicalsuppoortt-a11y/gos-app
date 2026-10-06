@@ -1,0 +1,48 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useBlocker, useNavigate } from 'react-router-dom';
+import { CalendarDays, Camera, Check, Clock3, Globe2, Mail, Megaphone, Moon, Phone, Trash2, UserRound } from 'lucide-react';
+import { LinkedinLogo, YoutubeLogo } from '@phosphor-icons/react';
+import { InstagramIcon, FacebookIcon } from '../inbox/ChannelIcons';
+import portrait from '../../assets/inbox/mohamed.jpg';
+import { toggleTheme, setLanguage } from '../../store/slices/uiSlice';
+import { logout } from '../../store/slices/authSlice';
+import type { RootState } from '../../store';
+import { Badge, Card, Field, Modal, Toggle } from './kit';
+import { friendlyError, settingsApiEnabled, settingsRequest } from './data';
+import type { Profile, SettingsData } from './data';
+import { PanelHeading } from './kit';
+
+export function ProfilePanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
+  const [draft, setDraft] = useState<Profile>(data.profile), [busy, setBusy] = useState(false), [error, setError] = useState(''), [deleteOpen, setDeleteOpen] = useState(false), [confirmation, setConfirmation] = useState('');
+  const file = useRef<HTMLInputElement>(null), dispatch = useDispatch(), navigate = useNavigate();
+  const theme = useSelector((s: RootState) => s.ui.theme);
+  const closeDelete = useCallback(() => setDeleteOpen(false), []);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(data.profile);
+  const blocker = useBlocker(dirty && !busy);
+  const closeLeave = useCallback(() => { if (blocker.state === 'blocked') blocker.reset(); }, [blocker]);
+  useEffect(() => { const handler = (e: BeforeUnloadEvent) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } }; window.addEventListener('beforeunload', handler); return () => window.removeEventListener('beforeunload', handler); }, [dirty]);
+  const update = (key: keyof Profile, value: string | boolean) => setDraft(p => ({ ...p, [key]: value }));
+  const avatar = draft.photo;
+  const avatarView = (large = false) => avatar ? <img className={`st-avatar${large ? ' large' : ''}`} src={avatar} alt={draft.name} onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = portrait; }}/>: <span className={`st-avatar st-initials${large ? ' large' : ''}`}>{draft.name.split(' ').map(x => x[0]).slice(0, 2).join('')}</span>;
+  return <>{blocker.state === 'blocked' && <Modal title="Leave without saving?" close={closeLeave}><p>Your profile changes haven’t been saved.</p><div className="st-modal-actions"><button className="st-secondary" onClick={closeLeave}>Keep editing</button><button className="st-danger" onClick={() => blocker.proceed()}>Discard changes</button></div></Modal>}<PanelHeading title="Profile Settings" description="Manage your personal information and account preferences."/><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, profile: draft }); dispatch(setLanguage(draft.language === 'Arabic' ? 'ar' : 'en')); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
+    <div className="st-profile-grid"><Card className="st-profile-form">
+      <div className="st-section-title"><h3>Profile Photo</h3><p>This photo will be used across your account.</p></div>
+      <div className="st-photo-row"><div className="st-avatar-wrap">{avatarView(true)}<button type="button" aria-label="Change profile photo" className="st-camera" onClick={() => file.current?.click()}><Camera size={13}/></button></div><div><div className="st-photo-actions"><button type="button" className="st-secondary" onClick={() => file.current?.click()}>Change Photo</button><button type="button" className="st-danger" onClick={() => update('photo', '')}>Remove</button></div><small>JPG, PNG or GIF. Max 5MB.</small></div><input ref={file} type="file" hidden accept="image/jpeg,image/png,image/gif" onChange={e => { const image = e.target.files?.[0]; e.target.value = ''; if (!image) return; if (!['image/jpeg', 'image/png', 'image/gif'].includes(image.type) || image.size > 5 * 1024 * 1024) { setError('Choose a JPG, PNG or GIF image smaller than 5MB.'); return; } const reader = new FileReader(); reader.onload = () => { update('photo', String(reader.result)); setError(''); }; reader.onerror = () => setError('This image could not be opened. Choose another file.'); reader.readAsDataURL(image); }}/></div>
+      <div className="st-section-title"><h3>Personal Information</h3><p>Update your personal details.</p></div>
+      <div className="st-form-grid">
+        <Field label="Full Name"><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
+        <Field label="Email Address"><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
+        <Field label="Phone Number"><span className="st-phone-field"><span aria-label="Egypt">🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
+        <Field label="Language"><select value={draft.language} onChange={e => update('language', e.target.value)}><option>English</option><option>Arabic</option></select></Field>
+        <Field label="Timezone"><select value={draft.timezone} onChange={e => update('timezone', e.target.value)}><option value="Africa/Cairo">(GMT+2) Cairo</option><option value="Europe/London">London</option><option value="America/New_York">New York</option><option value="Asia/Dubai">Dubai</option><option value="UTC">UTC</option></select></Field>
+        <Field label="Date Format"><select value={draft.dateFormat} onChange={e => update('dateFormat', e.target.value)}><option>DD / MM / YYYY</option><option>MM / DD / YYYY</option><option>YYYY / MM / DD</option></select></Field>
+      </div>
+      <div className="st-section-title st-preferences-title"><h3>Preferences</h3><p>Customize your experience.</p></div>
+      {[{ name: 'Email Notifications', text: 'Receive important updates via email', icon: Mail, value: draft.emailNotifications, change: (v: boolean) => update('emailNotifications', v) }, { name: 'Marketing Updates', text: 'Receive tips, new features and offers', icon: Megaphone, value: draft.marketing, change: (v: boolean) => update('marketing', v) }, { name: 'Dark Mode', text: 'Switch between light and dark theme', icon: Moon, value: theme === 'dark', change: () => dispatch(toggleTheme()) }].map(p => <div key={p.name} className="st-preference"><span className="st-preference-icon"><p.icon size={17}/></span><span><b>{p.name}</b><small>{p.text}</small></span><Toggle label={p.name} checked={p.value} onChange={p.change}/></div>)}
+    </Card><aside className="st-profile-summary"><Card title="Account Overview" action={<Badge>Active</Badge>}><dl className="st-account-list">{[[UserRound, 'Name', draft.name], [Mail, 'Email', draft.email], [Phone, 'Phone', draft.phone || '—'], [Globe2, 'Language', draft.language], [Clock3, 'Timezone', draft.timezone === 'Africa/Cairo' ? '(GMT+2) Cairo' : draft.timezone], [CalendarDays, 'Member Since', draft.memberSince || '—']].map(([Icon, label, value]) => { const I = Icon as typeof UserRound; return <div key={String(label)}><dt><I size={15}/>{String(label)}</dt><dd>{String(value)}</dd></div>; })}</dl></Card>
+      <Card title="Profile Preview" description="This is how your profile appears to clients."><div className="st-preview">{avatarView()}<b>{draft.name}</b><small>{draft.title}</small><p>{draft.bio}</p><div className="st-socials"><a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramIcon size={18}/></a><a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook"><FacebookIcon size={18}/></a><a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube"><YoutubeLogo weight="fill" size={20} color="#ff0033"/></a><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><LinkedinLogo weight="fill" size={18} color="#0a7db5"/></a></div><button className="st-primary" type="button" onClick={() => navigate('/dashboard/booking')}><CalendarDays size={15}/>Book a Call</button></div></Card>
+    </aside></div>
+    {error && <p className="st-error" role="alert">{error}</p>}<div className="st-form-footer"><button type="button" className="st-danger" onClick={() => { setError(''); setDeleteOpen(true); }}><Trash2 size={14}/>Delete Account</button><button className="st-primary" disabled={busy}><Check size={15}/>{busy ? 'Saving…' : 'Save Changes'}</button></div>
+  </form>{deleteOpen && <Modal title="Delete your account?" close={closeDelete}><p>This permanently deletes your account and personal data. This action cannot be undone.</p><Field label="Type DELETE to confirm"><input value={confirmation} onChange={e => setConfirmation(e.target.value)}/></Field>{!settingsApiEnabled && <p className="st-note">Account deletion requires the account service to be connected. Your account will remain active.</p>}{error && <p className="st-error" role="alert">{error}</p>}<div className="st-modal-actions"><button className="st-secondary" onClick={closeDelete}>Cancel</button><button disabled={confirmation !== 'DELETE' || busy} className="st-danger" onClick={async () => { setBusy(true); try { await settingsRequest('/account', { confirmation }, 'DELETE'); dispatch(logout()); navigate('/auth/login', { replace: true }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>Delete Account</button></div></Modal>}</>;
+}

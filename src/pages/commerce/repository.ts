@@ -50,3 +50,10 @@ export function duplicateProduct(product: Product, version = false): Product {
   clone.config!.salesUrl = '';
   return saveProduct(clone);
 }
+export function deleteProduct(id: string) {
+  if (products.some(product => product.config?.components.includes(id))) throw new Error('Remove this product from its bundles before deleting it.');
+  const next = products.filter(product => product.id !== id);
+  try { localStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be deleted. Browser storage is unavailable.'); }
+  products = next;
+  listeners.forEach(fn => fn());
+}

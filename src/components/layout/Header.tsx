@@ -8,6 +8,7 @@ import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useProducts } from '../../pages/commerce/repository';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
@@ -44,6 +45,14 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const discountTitle = isDiscountEdit ? 'Edit Discount' : 'Create New Discount';
   const backToDiscounts = () => navigate('/dashboard/products-payments?tab=discounts');
 
+  const productMatch = location.pathname.match(/^\/dashboard\/products-payments\/products\/([^/]+)/);
+  const isProductWorkspace = !!productMatch;
+  const productId = productMatch ? productMatch[1] : null;
+  const products = useProducts();
+  const product = isProductWorkspace ? products.find(p => p.id === productId) : null;
+  const productName = product ? product.name : (productId === 'new' ? 'Create Product' : '');
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -58,7 +67,14 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     <div className="layout-header-title">
       <button className="layout-menu-button" onClick={onMenu ?? (() => dispatch(toggleSidebar()))} aria-label="Open navigation"><Menu size={19}/></button>
       {isDiscountEditor && <button type="button" className="discount-header-back" onClick={backToDiscounts} aria-label="Back to Discounts"><ArrowLeft size={18}/></button>}
-      {isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label="Breadcrumb"><button type="button" onClick={() => navigate('/dashboard/products-payments')}>Products &amp; Payments</button><i aria-hidden="true">/</i>{isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>Discounts</button><i aria-hidden="true">/</i><h1 aria-current="page">{discountTitle}</h1></> : <h1 aria-current="page">Discounts</h1>}</nav> : <div className="layout-header-breadcrumb"><span>Workspace</span><i>/</i><h1>{pageTitle}</h1></div>}
+      {isProductWorkspace && <button type="button" className="discount-header-back" onClick={() => navigate('/dashboard/products-payments')} aria-label="Back to Products"><ArrowLeft size={18}/></button>}
+      {isProductWorkspace ? (
+        <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label="Breadcrumb">
+          <span>Workspace</span><i aria-hidden="true">/</i>
+          <button type="button" onClick={() => navigate('/dashboard/products-payments')}>Products &amp; Payments</button>
+          <i aria-hidden="true">/</i><h1 aria-current="page">{productName}</h1>
+        </nav>
+      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label="Breadcrumb"><button type="button" onClick={() => navigate('/dashboard/products-payments')}>Products &amp; Payments</button><i aria-hidden="true">/</i>{isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>Discounts</button><i aria-hidden="true">/</i><h1 aria-current="page">{discountTitle}</h1></> : <h1 aria-current="page">Discounts</h1>}</nav> : <div className="layout-header-breadcrumb"><span>Workspace</span><i>/</i><h1>{pageTitle}</h1></div>}
     </div>
     <div className="layout-header-actions">
       {isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>Cancel</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{isDiscountEdit ? 'Save Changes' : 'Create Discount'}</button></div> : <label className="layout-search"><Search size={16}/><input aria-label="Search" placeholder="Search anything..."/><kbd>⌘ K</kbd></label>}

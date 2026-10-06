@@ -125,6 +125,27 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   auth = { tenant: { id: 'tenant-a' }, user: { id: 'user-a' } };
   subscriptions.forEach(fn => fn());
   assert.equal(repository.useProducts().find(p => p.id === saved.id).name, 'Test offer');
+  const digital = offer('Digital Product');
+  digital.id = '';
+  digital.config.experience.fileType = 'Canva Template';
+  digital.config.experience.downloadLimitEnabled = false;
+  const savedDigital = repository.saveProduct(digital);
+  assert.equal(repository.useProducts().find(p => p.id === savedDigital.id).config.experience.fileType, 'Canva Template');
+  assert.equal(repository.useProducts().find(p => p.id === savedDigital.id).config.experience.downloadLimitEnabled, false);
+  failStorage = true;
+  assert.throws(() => repository.deleteProduct(savedDigital.id), /could not be deleted/);
+  assert.ok(repository.useProducts().some(p => p.id === savedDigital.id));
+  failStorage = false;
+  const bundle = offer('Bundle');
+  bundle.id = '';
+  bundle.config.components = [savedDigital.id, saved.id];
+  const savedBundle = repository.saveProduct(bundle);
+  assert.throws(() => repository.deleteProduct(savedDigital.id), /bundles/);
+  repository.deleteProduct(savedBundle.id);
+  repository.deleteProduct(savedDigital.id);
+  assert.ok(!repository.useProducts().some(p => p.id === savedDigital.id));
+  assert.ok(!JSON.parse(storage.get('gos-commerce-products-v1:tenant-a')).some(p => p.id === savedDigital.id));
+  assert.ok(JSON.parse(storage.get('gos-commerce-products-v1:tenant-b')).some(p => p.name === 'Tenant B offer'));
 });
 
 

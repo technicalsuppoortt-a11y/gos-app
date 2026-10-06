@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Bot, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, ExternalLink, FileText, Globe2, Lightbulb, Link2, MessageCircle, MoreHorizontal, Plus, Send, Settings2, ShieldCheck, Sparkles, Upload, Users, WandSparkles, ContactRound, Blocks, Filter, LayoutGrid } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { ArrowRight, Bot, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, ExternalLink, FileText, Globe2, Link2, MessageCircle, MoreHorizontal, Plus, Send, ShieldCheck, Sparkles, Upload, Users, WandSparkles } from 'lucide-react';
 import './home-upgrades.css';
 import { HomeDashboard } from './dashboard/HomeDashboard';
 import { products } from '../data/mockData';
@@ -10,11 +10,12 @@ import { AIFollowUp } from './AIFollowUp';
 import { BookingCalendar } from './BookingCalendar';
 import { ProductsPayments } from './ProductsPayments';
 import { Analytics } from './Analytics';
+
 import { useSelector } from 'react-redux';
 import { showToast } from '../utils/toast';
 import type { RootState } from '../store';
 
-type PageKey='home'|'copilot'|'funnels'|'crm'|'inbox'|'follow-up'|'booking'|'products'|'analytics'|'knowledge'|'settings';
+type PageKey='home'|'copilot'|'funnels'|'crm'|'inbox'|'follow-up'|'booking'|'products'|'analytics'|'knowledge';
 function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{eyebrow?:string;title:string;description?:string;action?:string;actionIcon?:React.ElementType}){return <div className="page-heading"><div>{eyebrow&&<div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1>{description&&<p>{description}</p>}</div>{action&&<button className="button-primary"><Icon size={16}/>{action}</button>}</div>}
 function Pill({children,tone='neutral'}:{children:React.ReactNode;tone?:string}){return <span className={`pill pill-${tone}`}>{children}</span>}
 
@@ -23,7 +24,6 @@ export const DashboardPage:React.FC<{page:PageKey}>=({page})=>{
  const [activeChannel,setActiveChannel]=React.useState('whatsapp');
  const [activeConversation,setActiveConversation]=React.useState('ld-101');
  const [aiMode,setAiMode]=React.useState(true);
- const [activeTab,setActiveTab]=React.useState(location.pathname.endsWith('/integrations')?'Integrations':location.pathname.endsWith('/profile')?'Profile':location.pathname.endsWith('/tools')?'Tools':'Business');
  const [sent,setSent]=React.useState(false);
  const [showModal,setShowModal]=React.useState(false);
  React.useEffect(()=>{const leadId=new URLSearchParams(location.search).get('leadId');if(leadId)setActiveConversation(leadId)},[location.search]);
@@ -41,7 +41,7 @@ export const DashboardPage:React.FC<{page:PageKey}>=({page})=>{
  case 'products':return <ProductsPayments showModal={showModal} setShowModal={setShowModal} notify={notify}/>;
  case 'analytics':return <Analytics notify={notify}/>;
  case 'knowledge':return <KnowledgePage notify={notify}/>;
- case 'settings':return <SettingsPage activeTab={activeTab} setActiveTab={setActiveTab} notify={notify}/>;
+
  }})();
  return <>{content}</>;
 };
@@ -53,40 +53,4 @@ function FunnelsPage({notify}:{notify:(s:string)=>void}){const [device,setDevice
 
 
 function KnowledgePage({notify}:{notify:(s:string)=>void}){const [faqOpen,setFaqOpen]=React.useState(true);const [url,setUrl]=React.useState('');const [faqs,setFaqs]=React.useState([{q:'What makes Northstar Studio different?',a:'We combine clear strategy with considered design, helping small teams create brands built for what’s next.'},{q:'Who do you work with?',a:'Ambitious founders and small teams who are ready to make their next move.'}]);return <><PageHeading eyebrow="BUSINESS CONTEXT" title="Knowledge center" description="Teach GOS the facts, voice, and policies that make your business yours." action="Add knowledge"/><div className="knowledge-overview"><div><span className="knowledge-confidence"><Sparkles size={18}/></span><span><b>Your business context is in good shape.</b><small>Copilot and your customer-facing tools use these reviewed sources.</small></span></div><div className="confidence-score"><span>CONTEXT CONFIDENCE</span><b>86<span>%</span></b><i><b/></i></div></div><div className="knowledge-columns"><div className="knowledge-main"><div className="panel knowledge-section"><div className="knowledge-section-head"><div className="knowledge-section-icon icon-lilac"><FileText size={17}/></div><div><h2>Business brief</h2><p>Your approved business identity and brand voice</p></div><Pill tone="green"><CheckCircle2 size={12}/> Reviewed</Pill><button className="text-link">Edit</button></div><div className="brief-details"><div><label>BUSINESS</label><b>Northstar Studio</b></div><div><label>WHAT YOU DO</label><b>Brand strategy and thoughtful design for people building what’s next.</b></div><div><label>BRAND VOICE</label><span className="lead-card-tags"><Pill>Thoughtful</Pill><Pill>Confident</Pill><Pill>Warm</Pill></span></div></div></div><div className="panel knowledge-section"><div className="knowledge-section-head"><div className="knowledge-section-icon icon-blue"><Globe2 size={17}/></div><div><h2>Website sources</h2><p>Help GOS learn from your existing website</p></div><Pill tone="green"><i className="live-dot"/> 1 active source</Pill></div><div className="website-source"><span className="source-favicon">n.</span><div><b>northstarstudio.co</b><small>Last synced today at 9:42 AM · 12 pages indexed</small></div><Pill tone="green">Reviewed</Pill><button className="subtle-icon"><MoreHorizontal size={16}/></button></div><div className="add-url"><Globe2 size={15}/><input placeholder="Paste a website URL to add a source..." value={url} onChange={e=>setUrl(e.target.value)}/><button onClick={()=>{if(url){notify('Website added to sources · Review the extracted facts before publishing');setUrl('')}}}>Add source <ArrowRight size={13}/></button></div></div><div className="panel knowledge-section faq-section"><button className="knowledge-section-head clickable" onClick={()=>setFaqOpen(!faqOpen)}><div className="knowledge-section-icon icon-peach"><MessageCircle size={17}/></div><div><h2>FAQs & policies</h2><p>Approved answers for Copilot and customer conversations</p></div><Pill tone="neutral">{faqs.length} FAQs</Pill><ChevronDown size={16} className={faqOpen?'':'rotated'}/></button>{faqOpen&&<><div className="faq-list">{faqs.map((f,i)=><details key={f.q} open={i===0}><summary>{f.q}<ChevronDown size={14}/></summary><p>{f.a}</p><small><CheckCircle2 size={12}/> Reviewed · Used by Copilot, Inbox, and Follow-up</small></details>)}</div><button className="text-link add-faq" onClick={()=>setFaqs([...faqs,{q:'New business question',a:'Add an approved answer to help GOS respond accurately.'}])}><Plus size={14}/> Add a FAQ</button></>}</div></div><aside className="knowledge-side"><div className="panel knowledge-upload"><span className="upload-illustration"><Upload size={20}/></span><h2>Add your business knowledge</h2><p>Upload a PDF, DOCX, or TXT file. GOS will extract useful facts for your review.</p><button className="subtle-outline" onClick={()=>notify('Choose a file to upload')}>Choose a file <Upload size={13}/></button><small>Maximum file size: 20 MB</small></div><div className="panel context-sources"><div className="section-heading"><h2>Knowledge sources</h2><button>•••</button></div>{[{icon:Globe2,name:'Website',n:'12 pages',status:'Reviewed',tone:'green'},{icon:FileText,name:'Business brief',n:'Edited Oct 10',status:'Reviewed',tone:'green'},{icon:MessageCircle,name:'FAQs',n:`${faqs.length} answers`,status:'Reviewed',tone:'green'},{icon:Upload,name:'Brand guide.pdf',n:'Added Oct 8',status:'Needs review',tone:'peach'}].map(x=><div className="source-list-item" key={x.name}><span className="source-list-icon"><x.icon size={15}/></span><span><b>{x.name}</b><small>{x.n}</small></span><Pill tone={x.tone}>{x.status}</Pill></div>)}</div><div className="knowledge-safe"><ShieldCheck size={14}/><span>Only <b>reviewed</b> sources are used as approved facts. GOS will flag conflicting information for you.</span></div></aside></div></>}
-
-function SettingsPage({activeTab,setActiveTab,notify}:{activeTab:string;setActiveTab:(s:string)=>void;notify:(s:string)=>void}){const tabs=[{name:'Business',icon:Globe2},{name:'Team & roles',icon:Users},{name:'Knowledge',icon:Lightbulb},{name:'Tools',icon:Blocks},{name:'Integrations',icon:Link2},{name:'Payments',icon:CreditCard},{name:'Billing & credits',icon:FileText},{name:'Security',icon:ShieldCheck},{name:'Profile',icon:ContactRound}];return <><PageHeading eyebrow="WORKSPACE PREFERENCES" title="Settings" description="Manage your business, team, connections, and account."/><div className="settings-layout"><aside className="panel settings-nav"><span className="settings-nav-title">WORKSPACE</span>{tabs.map(t=><button key={t.name} onClick={()=>setActiveTab(t.name)} className={activeTab===t.name?'active':''}><t.icon size={16}/>{t.name}{t.name==='Integrations'&&<i className="settings-attention"/>}</button>)}</aside><section className="settings-content"><div className="settings-heading"><div><h2>{activeTab}</h2><p>{activeTab==='Business'?'The business identity and defaults used across GOS.':activeTab==='Tools'?'Access and manage all your business tools, products, and features.':`Manage your workspace ${activeTab.toLowerCase()} settings.`}</p></div><button className="button-primary" onClick={()=>notify('Settings saved successfully')}><Check size={15}/> Save changes</button></div>{activeTab==='Business'?<><div className="panel settings-card"><h3>Business identity</h3><p>Your brand appears on customer-facing pages and communications.</p><div className="brand-upload"><div className="brand-logo-preview">n<span>✦</span></div><div><b>Business logo</b><small>SVG, PNG, or JPG · at least 256 × 256 px</small></div><button className="subtle-outline" onClick={()=>notify('Choose a logo file')}>Upload logo</button></div><div className="form-grid"><label>Business name<input defaultValue="Northstar Studio"/></label><label>Business type<select><option>Creative services</option><option>Consulting</option><option>Education</option></select></label><label className="span-2">Business description<textarea defaultValue="Brand strategy and thoughtful design for people building what’s next."/></label><label>Business email<input defaultValue="hello@northstarstudio.co"/></label><label>Phone number<input defaultValue="+1 (212) 555-0186"/></label></div></div><div className="panel settings-card"><h3>Regional defaults</h3><p>Used across dates, payments, and your customer experience.</p><div className="form-grid"><label>Timezone<select><option>Eastern Time (America/New_York)</option></select></label><label>Default currency<select><option>USD · US Dollar</option></select></label><label>Language<select><option>English (US)</option></select></label><label>Date format<select><option>MM / DD / YYYY</option></select></label></div></div></>:activeTab==='Tools'?<ToolsSettingsPanel/>:<div className="panel settings-card generic-settings"><div className="integration-state"><span className="integration-orb"><Settings2 size={22}/></span><h3>{activeTab} settings</h3><p>Keep your {activeTab.toLowerCase()} preferences consistent across your workspace. These settings connect to your shared business records.</p><button className="subtle-outline" onClick={()=>notify(`${activeTab} preferences opened`)}>Manage {activeTab.toLowerCase()}<ArrowRight size={14}/></button></div></div>}</section></div></>}
-
-function ToolsSettingsPanel() {
-  const navigate = useNavigate();
-  const tools = [
-    { name: 'Funnels', desc: 'Create conversion funnels', icon: Filter, color: 'text-purple-600', bg: 'bg-purple-50', to: '/dashboard/funnels' },
-    { name: 'Websites', desc: 'Manage your pages', icon: Globe2, color: 'text-blue-600', bg: 'bg-blue-50', to: '/dashboard/funnels' },
-    { name: 'CRM & Leads', desc: 'Track your contacts', icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50', to: '/dashboard/crm' },
-    { name: 'Calendars', desc: 'Bookings & availability', icon: CalendarDays, color: 'text-orange-600', bg: 'bg-orange-50', to: '/dashboard/booking' },
-    { name: 'Products', desc: 'Sell digital/physical', icon: CreditCard, color: 'text-rose-600', bg: 'bg-rose-50', to: '/dashboard/products' },
-    { name: 'AI Follow-up', desc: 'Automated replies', icon: Send, color: 'text-indigo-600', bg: 'bg-indigo-50', to: '/dashboard/follow-up' },
-    { name: 'Inbox', desc: 'Unified conversations', icon: MessageCircle, color: 'text-sky-600', bg: 'bg-sky-50', to: '/dashboard/inbox' },
-    { name: 'Templates', desc: 'Saved page templates', icon: LayoutGrid, color: 'text-slate-600', bg: 'bg-slate-100', to: '/dashboard/templates' },
-  ];
-  return (
-    <div className="panel settings-card">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-        {tools.map(t => (
-          <div key={t.name} onClick={() => navigate(t.to)} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', transition: 'all 0.2s ease' }} className="hover:-translate-y-0.5 hover:shadow-md hover:border-purple-200">
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '10px' }} className={`${t.bg} ${t.color}`}>
-              <t.icon size={22} />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: '14px', color: '#0f1535' }}>{t.name}</div>
-              <div style={{ fontSize: '12px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.desc}</div>
-            </div>
-            <ChevronRight size={16} className="text-slate-400" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
 

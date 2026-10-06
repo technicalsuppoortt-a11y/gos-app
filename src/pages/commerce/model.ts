@@ -3,22 +3,26 @@ export type ProductType = typeof productTypes[number] | 'Physical Product' | Pro
 export type StatKind = 'sales' | 'revenue' | 'bookings' | 'members';
 export type Billing = 'One-time' | 'Payment plan' | 'Subscription';
 export type ProductKind = 'course' | 'digital' | 'service' | 'subscription' | 'bundle' | 'physical';
-export interface Lesson { id: string; title: string; kind: 'Video' | 'PDF' | 'Text'; duration: string; url: string }
+export interface Lesson { id: string; title: string; kind: 'Video' | 'PDF' | 'Text'; duration: string; url: string; storageId?: string; fileName?: string }
 export interface PricingDiscount { id: string; enabled: boolean; type: 'Percentage' | 'Fixed Amount'; value: number; appliesTo: 'All pricing options' | 'One-time payment' | 'Payment plan' | 'Subscription' }
 export const accessRules = ['Immediately after payment', 'After manual approval', 'After specific date', 'Drip content (scheduled release)'] as const;
 export interface ProductExperience {
   shortDescription: string; gallery: string[]; tags: string[]; category: string; language: string; visibility: 'Published' | 'Private' | 'Unlisted';
   instructor: { name: string; bio: string; image: string }; studentLimit: number; requireLogin: boolean;
+  fileType?: string; downloadLimitEnabled?: boolean;
   directDownload: boolean; watermark: boolean; included: Array<{ id: string; title: string; enabled: boolean }>;
   serviceMode: 'Online' | 'At Location' | 'Both'; provider: string; location: string;
+  rating?: number; reviewCount?: number;
+  activeStudents?: number; courseLevel?: string; estimatedDuration?: string;
+  instructorSocials?: Record<string, string>; directCheckoutUrl?: string;
   oneTimeAmount: number; comparePrice: number; showComparePrice: boolean; planEnabled: boolean; recurringEnabled: boolean;
   recurringAmount: number; installmentAmount: number; paymentInterval: 'Monthly' | 'Quarterly' | 'Yearly';
   checkout: { secure: boolean; collectInfo: boolean; requirePhone: boolean; guest: boolean; testimonials: boolean };
   upsellId: string; downsellId: string; offersEnabled: boolean; funnelUrl: string;
   version: number; parentId: string; updatedAt: string;
   taxHandling: 'Include tax in price' | 'Calculate at checkout';
-  paymentMethods: Array<'Visa' | 'Mastercard' | 'PayPal' | 'Apple Pay'>;
-  coupon: { enabled: boolean; code: string; type: PricingDiscount['type']; value: number; limitUsage: boolean; usageLimit: number; oncePerCustomer: boolean };
+  paymentMethods: Array<'Visa' | 'Mastercard' | 'PayPal' | 'Apple Pay' | 'Google Pay'>;
+  coupon: { enabled: boolean; code: string; type: PricingDiscount['type']; value: number; limitUsage: boolean; usageLimit: number; oncePerCustomer: boolean; geofenceOffer: boolean };
   discounts: PricingDiscount[];
   accessRule: typeof accessRules[number]; accessDate: string; dripDays: number;
 }
@@ -48,15 +52,15 @@ export function defaultConfig(type: ProductType, price = ''): CommerceConfig {
     access: recurring ? 'While subscribed' : 'Lifetime access', delivery: 'Instant',
     bookingUrl: '', duration: 60, fulfillment: '', assets: [], downloadLimit: 5, modules: [], communityUrl: '', enrollment: 'Automatic',
     components: [], sku: '', inventory: 0, shippingRequired: true,
-    automations: { grantAccess: true, confirmation: true, crmTag: '', followUp: false }, checkoutFields: '', thankYouUrl: '', salesUrl: '', experience: { ...defaultExperience(), oneTimeAmount: amount, recurringAmount: recurring ? amount : 29, recurringEnabled: recurring, installmentAmount: Math.round(amount / 3 * 100) / 100 } };
+    automations: { grantAccess: true, confirmation: true, crmTag: '', followUp: false }, checkoutFields: '', thankYouUrl: '', salesUrl: '', experience: { ...defaultExperience(), downloadLimitEnabled: productKind(type) === 'digital' ? false : undefined, oneTimeAmount: amount, recurringAmount: recurring ? amount : 29, recurringEnabled: recurring, installmentAmount: Math.round(amount / 3 * 100) / 100 } };
 }
 export function defaultExperience(): ProductExperience {
   return { shortDescription: '', gallery: [], tags: [], category: '', language: 'English', visibility: 'Published', instructor: { name: '', bio: '', image: '' },
     studentLimit: 0, requireLogin: true, directDownload: true, watermark: false, included: [], serviceMode: 'Online', provider: '', location: '',
     oneTimeAmount: 0, comparePrice: 0, showComparePrice: false, planEnabled: false, recurringEnabled: false, recurringAmount: 29, installmentAmount: 99, paymentInterval: 'Monthly',
     checkout: { secure: true, collectInfo: true, requirePhone: false, guest: true, testimonials: false }, upsellId: '', downsellId: '', offersEnabled: false, funnelUrl: '',
-    version: 1, parentId: '', updatedAt: '', taxHandling: 'Calculate at checkout', paymentMethods: ['Visa', 'Mastercard', 'PayPal', 'Apple Pay'],
-    coupon: { enabled: false, code: '', type: 'Percentage', value: 20, limitUsage: false, usageLimit: 100, oncePerCustomer: true },
+    version: 1, parentId: '', updatedAt: '', taxHandling: 'Calculate at checkout', paymentMethods: ['Visa', 'Mastercard', 'PayPal', 'Apple Pay', 'Google Pay'],
+    coupon: { enabled: false, code: '', type: 'Percentage', value: 20, limitUsage: false, usageLimit: 100, oncePerCustomer: true, geofenceOffer: false },
     discounts: [{ id: 'automatic-default', enabled: false, type: 'Fixed Amount', value: 10, appliesTo: 'All pricing options' }],
     accessRule: 'Immediately after payment', accessDate: '', dripDays: 7 };
 }
@@ -114,7 +118,7 @@ export function validateProduct(product: Product, publish = false): string[] {
     if (experience.accessRule === 'After specific date' && (!experience.accessDate || !Number.isFinite(Date.parse(experience.accessDate)))) errors.push('Choose a valid product access date.');
     if (experience.accessRule === 'Drip content (scheduled release)' && (!Number.isInteger(experience.dripDays) || experience.dripDays < 1)) errors.push('Drip release interval must be a positive whole number of days.');
   }
-  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Funnel URL', experience?.funnelUrl], ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
+  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Funnel URL', experience?.funnelUrl], ['Direct checkout URL', experience?.directCheckoutUrl], ...Object.entries(experience?.instructorSocials ?? {}).map(([network, url]) => [`${network} URL`, url]), ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
     if (url) {
       try { const parsed = new URL(url); if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(); }
       catch { errors.push(`${label} must be a valid https:// or http:// URL.`); }

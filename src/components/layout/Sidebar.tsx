@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   </div>;
 
   return <>
-    <aside className={`layout-sidebar${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} aria-label="Workspace sidebar">{content}</aside>
-    <AnimatePresence>{isOpen && <><motion.button aria-label="Close navigation" className="layout-mobile-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close}/><motion.aside className={`layout-mobile-sidebar${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: .2 }}>{content}<button className="layout-mobile-close" onClick={close} aria-label="Close menu"><X size={18}/></button></motion.aside></>}</AnimatePresence>
+    <aside className={`layout-sidebar shrink-0${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} aria-label="Workspace sidebar">{content}</aside>
+    <AnimatePresence>{isOpen && <><motion.button aria-label="Close navigation" className="layout-mobile-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close}/><motion.aside className={`layout-mobile-sidebar shrink-0${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: .2 }}>{content}<button className="layout-mobile-close" onClick={close} aria-label="Close menu"><X size={18}/></button></motion.aside></>}</AnimatePresence>
   </>;
 };
