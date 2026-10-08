@@ -11,6 +11,7 @@ const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayou
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
+const Templates = lazy(() => import('../pages/Templates'));
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <DefaultRedirect/> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
+  ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
   { path: '/crm', element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: crmChildren },
   {
     path: '/dashboard',
@@ -47,8 +49,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
-      { path: 'funnels', element: <Suspended><FunnelBuilder/></Suspended> },
-      { path: 'templates', element: <Suspended><PagePlaceholder title="Templates"/></Suspended> },
+      ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
+      { path: 'templates', element: <Suspended><Templates/></Suspended> },
       { path: 'crm', children: crmChildren },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
@@ -100,3 +102,4 @@ export const router = createBrowserRouter([
   },
   { path: '*', element: <DefaultRedirect/> },
 ]);
+

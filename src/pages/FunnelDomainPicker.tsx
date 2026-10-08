@@ -1,0 +1,14 @@
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { Check, Globe, Plus, ShieldCheck } from 'lucide-react';
+import { AssetSearch } from './AssetControls';
+import { Modal } from './settings/kit';
+import type { Asset, Workspace } from './asset-model';
+
+export function FunnelDomainPicker({asset,workspace,setWorkspace,close,add}:{asset:Asset;workspace:Workspace;setWorkspace:Dispatch<SetStateAction<Workspace>>;close:()=>void;add:()=>void}) {
+ const navigate = useNavigate();
+ const [search,setSearch]=useState(''),[chosen,setChosen]=useState(workspace.domains.find(domain=>domain.name===asset.domain)?.id??'');
+ const rows=workspace.domains.filter(domain=>domain.name.toLowerCase().includes(search.toLowerCase())),domain=workspace.domains.find(domain=>domain.id===chosen),owner=workspace.assets.find(item=>item.id===domain?.assetId);
+ return <Modal title={`Choose a ${asset.kind} domain`} close={close}><div className="aw-modal-body fn-domain-picker"><p>Select a connected domain for {asset.name}.</p><AssetSearch value={search} onChange={setSearch} placeholder="Search available domains..."/><div className="fn-domain-options" role="radiogroup" aria-label="Available domains">{rows.map(domain=><button role="radio" aria-checked={chosen===domain.id} disabled={domain.status!=='Connected'} key={domain.id} onClick={()=>setChosen(domain.id)}><span className="fn-domain-symbol"><Globe size={19}/></span><span><b>{domain.name}</b><small>{workspace.assets.find(item=>item.id===domain.assetId)?.name??'Available to assign'} · {domain.status}</small></span><span className={'fn-ssl '+(domain.ssl==='Active'?'active':'')}><ShieldCheck size={13}/>{domain.ssl==='Active'?'SSL active':domain.ssl}</span>{chosen===domain.id&&<Check size={16}/>}</button>)}</div>{!rows.length&&<div className="fn-no-results">No matching domains. Add a domain to get started.</div>}{owner&&owner.id!==asset.id&&<p className="aw-info">Connecting will reassign this domain from {owner.name} to this {asset.kind}.</p>}<button className="fn-add-domain" onClick={add}><Plus size={15}/>Add New Domain</button><button className="fn-add-domain" onClick={()=>{close();navigate('/dashboard/domains');}}><Globe size={15}/>Manage all domains</button><footer><button className="aw-secondary" onClick={close}>Cancel</button><button className="aw-primary" disabled={!domain||domain.status!=='Connected'} onClick={()=>{if(!domain)return;setWorkspace(current=>({...current,assets:current.assets.map(item=>item.id===asset.id?{...item,domain:domain.name,updated:new Date().toISOString()}:item.id===domain.assetId&&item.domain===domain.name?{...item,domain:''}:item),domains:current.domains.map(item=>item.id===domain.id?{...item,assetId:asset.id}:item.assetId===asset.id?{...item,assetId:''}:item)}));close();}}>Connect domain</button></footer></div></Modal>;
+}

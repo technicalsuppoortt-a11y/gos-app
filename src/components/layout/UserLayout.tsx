@@ -8,7 +8,7 @@ import { Header } from './Header';
 const userItems: SidebarItem[] = [
   { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'AI Copilot', href: '/copilot', icon: Sparkles },
-  { name: 'Funnel & Website', href: '/funnels', icon: Filter },
+  { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/domains', '/funnels', '/websites', '/domains'] },
   { name: 'Inbox', href: '/inbox', icon: MessageCircle, badge: '12' },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },
   { name: 'AI Follow-Up', href: '/follow-up', icon: Send },
@@ -54,8 +54,9 @@ export const UserLayout: React.FC = () => {
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/products\/[^/]+(?:\/(?:edit|pricing))?$/.test(location.pathname);
-  const isFullPage = isInbox || isCRM;
-  return <div className={`layout-dashboard-shell user-dashboard-shell${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
+  const isTemplates = location.pathname === '/dashboard/templates';
+  const isFullPage = isInbox || isCRM || isTemplates;
+  return <div className={`layout-dashboard-shell user-dashboard-shell${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isTemplates ? ' is-templates-route h-screen max-h-screen overflow-hidden' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
     <Sidebar items={userItems} basePath="/dashboard"/>
     <div className={`layout-workspace${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
@@ -67,3 +68,4 @@ export const UserLayout: React.FC = () => {
     </div>
   </div>;
 };
+

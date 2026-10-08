@@ -1,0 +1,37 @@
+/* Scoped module preview, website starter and generator styles. */
+.aw-preview-scrim{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:20px;background:#0f172a66;backdrop-filter:blur(3px)}
+.aw-preview-modal{width:1440px;max-width:100%;max-height:calc(100dvh - 40px);display:flex;flex-direction:column;overflow:hidden;padding:20px;border:1px solid #e2e8f0;border-radius:20px;background:white;box-shadow:0 24px 80px #0f172a33;color:#0f172a}
+.aw-preview-modal-header{display:flex;justify-content:space-between;align-items:center;width:100%;gap:20px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;flex:none}
+.aw-preview-modal-title{min-width:0}.aw-preview-modal-title h2{margin:0;font-size:18px;font-weight:650;overflow-wrap:anywhere}.aw-preview-modal-title p{margin:5px 0 0;color:#64748b;font-size:12px}
+.aw-preview-modal-controls{display:flex;align-items:center;gap:12px;flex:none}.aw-preview-modal-controls>.aw-select{width:180px;min-width:0}
+.aw-preview-device-switch{display:flex;align-items:center;gap:4px;background:#f1f5f9;padding:4px;border-radius:12px;border:1px solid #e2e8f0;flex:none}
+.aw-preview-device-switch button,.fb-live-preview-overlay .fb-preview-device-switch button{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;width:auto;min-width:0;height:36px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#64748b;font-size:12px;white-space:nowrap;font-weight:500}
+.aw-preview-device-switch svg,.fb-live-preview-overlay .fb-preview-device-switch svg{flex:none}
+.aw-preview-device-switch button.active,.fb-live-preview-overlay .fb-preview-device-switch button.active{background:white;box-shadow:0 1px 4px #0f172a1a;color:#9333ea;font-weight:500}
+.aw-preview-close{display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid #e2e8f0;border-radius:10px;background:white;color:#64748b}
+.aw-preview-modal-stage{display:flex;flex:1;min-height:0;overflow:auto;padding:20px 0 4px}
+.aw-preview-viewport{width:100%;max-width:100%;height:75vh;flex:none;overflow:auto;margin:auto;transition:all .3s ease-in-out;background:white}
+.aw-preview-viewport.tablet{width:768px;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 25px -5px #0f172a26}
+.aw-preview-viewport.mobile{width:375px;height:667px;border:8px solid #1e293b;border-radius:32px;box-shadow:0 25px 50px -12px #0f172a40}
+.aw-preview-viewport>.aw-live-preview{width:100%;max-width:100%;margin:0;border:0;border-radius:0;box-shadow:none;min-height:100%}
+.aw-preview-modal :focus-visible{outline:2px solid #818cf8;outline-offset:3px}
+.aw-workspace .aw-ai-template{background:linear-gradient(135deg,#eef2ff,#faf5ff,#e0e7ff99);border:1px solid #c7d2fe99;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:24px;min-height:300px;text-align:left}
+.aw-ai-spark{display:grid;place-items:center;width:48px;height:48px;border:1px solid #c7d2fe;border-radius:14px;background:#ffffffb3;color:#6366f1;margin-bottom:14px}
+.aw-ai-spark svg{transition:transform .3s ease}.aw-ai-template:hover .aw-ai-spark svg{transform:rotate(-12deg) scale(1.12)}
+.aw-workspace .aw-ai-template h3{font-size:18px;margin:0 0 8px;color:#312e81}.aw-workspace .aw-ai-template p{font-size:12px;line-height:1.6;margin:0;color:#64748b}
+.aw-ai-features{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px;font-size:11px;color:#475569}.aw-ai-features li{display:flex;align-items:center;gap:7px}.aw-ai-features svg{color:#6366f1;flex:none}
+.aw-workspace .aw-ai-template>.aw-primary{margin-top:auto;background:#4f46e5;color:white;min-height:38px;width:100%;justify-content:center;box-shadow:0 4px 10px #4f46e522}.aw-workspace .aw-ai-template>.aw-primary:hover{background:#4338ca}
+.aw-ai-generator h3{font-size:17px;color:#0f172a;margin:0 0 20px}.aw-ai-progress{display:flex;list-style:none;padding:0;margin:20px 0 28px;gap:12px}.aw-ai-progress li{display:flex;align-items:center;gap:7px;flex:1;font-size:11px;color:#94a3b8}.aw-ai-progress li>span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#f1f5f9;flex:none}.aw-ai-progress li.active{color:#4f46e5;font-weight:600}.aw-ai-progress li.active>span{background:#eef2ff}
+.aw-ai-palettes{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;padding:0;margin:24px 0}.aw-ai-palettes legend{font-size:12px;color:#475569;margin-bottom:12px}.aw-ai-palettes>button{display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;font-size:12px;color:#475569}.aw-ai-palettes>button[aria-pressed=true]{border-color:#6366f1;background:#eef2ff}.aw-ai-palettes>button>svg{margin-left:auto;color:#4f46e5}.aw-ai-swatches{display:inline-flex;gap:3px}.aw-ai-swatches i{height:16px;width:16px;border-radius:50%;border:1px solid #0f172a15}
+.aw-ai-review{display:grid;grid-template-columns:140px 1fr;gap:14px;padding:20px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:12px;margin:0 0 20px}.aw-ai-review dt{color:#64748b}.aw-ai-review dd{margin:0;display:flex;align-items:center;gap:10px;font-weight:500;overflow-wrap:anywhere;min-width:0}
+.fb-live-preview-overlay .fb-preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;height:auto;min-height:72px;padding:12px 24px;flex-wrap:wrap}
+.fb-live-preview-overlay .fb-preview-brand{margin-right:auto;min-width:0}.fb-live-preview-overlay .fb-preview-device-switch{display:flex;position:static;border-radius:12px;background:#f1f5f9;border:1px solid #e2e8f0;padding:4px;gap:4px}.fb-live-preview-overlay .fb-preview-device-switch button span{display:inline}
+.fb-preview-page-select{width:180px;min-width:0}
+.fb-live-preview-overlay .fb-live-preview-stage{padding:20px;overflow:auto}
+.fb-live-preview-overlay .fb-live-preview-frame{width:100%;max-width:100%;height:75vh;min-height:0;flex:none;margin:auto;overflow:auto;transition:all .3s ease-in-out;background:white}
+.fb-live-preview-overlay .fb-live-preview-frame.tablet{width:768px;max-width:100%;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 25px -5px #0f172a26}
+.fb-live-preview-overlay .fb-live-preview-frame.mobile{width:375px;max-width:100%;height:667px;border:8px solid #1e293b;border-radius:32px;box-shadow:0 25px 50px -12px #0f172a40}
+.fb-live-preview-overlay .fb-live-page{border:0;border-radius:0;box-shadow:none}
+@media(max-width:1000px){.aw-preview-modal-header{flex-wrap:wrap}.aw-preview-modal-controls{width:100%;flex-wrap:wrap}.aw-preview-modal-controls>.aw-select{flex:1}.aw-preview-close{margin-left:auto}}
+@media(max-width:600px){.aw-preview-scrim{padding:8px}.aw-preview-modal{padding:12px;max-height:calc(100dvh - 16px)}.aw-preview-modal-controls{gap:8px}.aw-preview-device-switch{order:3;width:100%;justify-content:center}.aw-preview-device-switch button{flex:1;padding:0 8px}.aw-preview-modal-title h2{font-size:15px}.aw-preview-modal-stage{padding-top:12px}.fb-live-preview-overlay .fb-preview-toolbar{padding:10px 12px;gap:8px}.fb-live-preview-overlay .fb-preview-device-switch{order:4;width:100%;justify-content:center}.fb-live-preview-overlay .fb-live-preview-stage{padding:12px}.fb-preview-page-select{flex:1}.aw-ai-review{grid-template-columns:1fr;gap:8px}.aw-ai-palettes{grid-template-columns:1fr}.aw-ai-progress{gap:6px}}
+@media(prefers-reduced-motion:reduce){.aw-preview-viewport,.fb-live-preview-overlay .fb-live-preview-frame,.aw-ai-spark svg{transition:none}}
