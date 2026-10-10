@@ -11,6 +11,8 @@ const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayou
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
+const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
+const PublicBookingPage = lazy(() => import('../pages/booking/PublicBookingPage'));
 const Templates = lazy(() => import('../pages/Templates'));
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
@@ -38,6 +40,7 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
+  { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/', element: <DefaultRedirect/> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
@@ -54,6 +57,8 @@ export const router = createBrowserRouter([
       { path: 'crm', children: crmChildren },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
+      { path: 'booking/new', element: <Suspended><BookingEditorPage/></Suspended> },
+      { path: 'booking/:pageId/edit', element: <Suspended><BookingEditorPage/></Suspended> },
       { path: 'booking', element: <Suspended><DashboardPage page="booking"/></Suspended> },
       { path: 'products', element: <Suspended><DashboardPage page="products"/></Suspended> },
       { path: 'products-payments', element: <Suspended><DashboardPage page="products"/></Suspended> },
@@ -102,4 +107,3 @@ export const router = createBrowserRouter([
   },
   { path: '*', element: <DefaultRedirect/> },
 ]);
-

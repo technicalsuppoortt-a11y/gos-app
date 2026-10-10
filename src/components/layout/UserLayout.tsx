@@ -1,7 +1,7 @@
 import React from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, CalendarDays, Clock3, CreditCard, Filter, LayoutGrid, Link2, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
+import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 
@@ -20,19 +20,19 @@ const userItems: SidebarItem[] = [
 ];
 
 const bookingTabs = [
-  { label: 'Booking Links', value: 'links', icon: Link2 },
-  { label: 'Calendar', value: 'calendar', icon: CalendarDays },
+  { label: 'Dashboard', value: 'dashboard', icon: LayoutGrid },
   { label: 'Bookings', value: 'bookings', icon: ListChecks },
-  { label: 'Availability', value: 'availability', icon: Clock3 },
-  { label: 'Automation', value: 'automation', icon: Sparkles },
-  { label: 'Settings', value: 'settings', icon: Settings },
+  { label: 'Calendar', value: 'calendar', icon: CalendarDays },
+  { label: 'Contacts', value: 'contacts', icon: Users },
+  { label: 'Workspace', value: 'workspace', icon: Users },
 ];
 
 function BookingTabs() {
-  const [params, setParams] = useSearchParams();
-  const active = params.get('tab') ?? 'links';
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const active = params.get('tab') === 'links' ? 'dashboard' : params.get('tab') ?? 'dashboard';
   return <nav className="layout-booking-tabs" aria-label="Booking navigation">
-    {bookingTabs.map(tab => <button key={tab.value} className={`layout-booking-tab relative${active === tab.value ? ' is-active' : ''}`} onClick={() => setParams({ tab: tab.value })} aria-current={active === tab.value ? 'page' : undefined}>
+    {bookingTabs.map(tab => <button key={tab.value} className={`layout-booking-tab relative${active === tab.value ? ' is-active' : ''}`} onClick={() => navigate('/dashboard/booking?tab='+tab.value)} aria-current={active === tab.value ? 'page' : undefined}>
       {active === tab.value && (
         <motion.div
           layoutId="activeBookingTab"
@@ -49,17 +49,17 @@ function BookingTabs() {
 
 export const UserLayout: React.FC = () => {
   const location = useLocation();
-  const isBooking = location.pathname === '/dashboard/booking';
+  const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/products\/[^/]+(?:\/(?:edit|pricing))?$/.test(location.pathname);
   const isTemplates = location.pathname === '/dashboard/templates';
-  const isFullPage = isInbox || isCRM || isTemplates;
-  return <div className={`layout-dashboard-shell user-dashboard-shell${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isTemplates ? ' is-templates-route h-screen max-h-screen overflow-hidden' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
+  const isFullPage = isInbox || isCRM || isTemplates || isBooking;
+  return <div className={`layout-dashboard-shell user-dashboard-shell${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isTemplates ? ' is-templates-route h-screen max-h-screen overflow-hidden' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
     <Sidebar items={userItems} basePath="/dashboard"/>
     <div className={`layout-workspace${isFullPage ? ' layout-workspace-inbox' : ''}`}>
-      <Header title={isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
+      <Header title={isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
       {isBooking && <BookingTabs/>}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         <AnimatePresence mode="wait"><motion.div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: .18 }}><Outlet/></motion.div></AnimatePresence>
