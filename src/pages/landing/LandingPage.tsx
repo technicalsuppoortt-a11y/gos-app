@@ -16,7 +16,6 @@ import i18n from '../../i18n/i18n';
 import { landingContent, type LandingCopy, type PreviewView } from './landing-content';
 import './landing.css';
 
-const BOOKING_URL = '/book/consultation';
 
 const businessIcons: LucideIcon[] = [Presentation, BriefcaseBusiness, Building2, ShoppingCart, Store, Stethoscope, GraduationCap, House];
 const mockNavIcons: LucideIcon[] = [Sparkles, MessagesSquare, Inbox, Users, CalendarDays, CreditCard, BarChart3, Settings];
