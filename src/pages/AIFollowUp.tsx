@@ -464,7 +464,7 @@ const channels: Channel[] = [
     conversations: "318 conversations",
   },
 ];
-const defaultWorkflows: Workflow[] = [
+export const defaultWorkflows: Workflow[] = [
   {
     id: "new-lead",
     name: "New Lead Follow-Up",
@@ -1601,7 +1601,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <small>{knowledgeItems.length} sources</small>
             </div>
           </div>
-          <div className="af-knowledge-compact-list">
+          <div className="af-knowledge-compact-list overflow-y-auto max-h-[120px]">
             {knowledgeItems.slice(0, 5).map((item) => {
               const SourceIcon = knowledgeIconFor(item.type);
               return (
@@ -1640,7 +1640,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           View all <ArrowRight size={13} />
         </button>
       </div>
-      <div className="af-workflow-list">
+      <div className="af-workflow-list overflow-y-auto max-h-[160px]">
         {workflows.map((flow) => {
           const FlowIcon = workflowIconFor(flow.actionType);
           return (
@@ -2386,7 +2386,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   };
 
   return (
-    <main className="af-page flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+    <main className="af-page flex h-[calc(100vh-4rem)] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
       <div className="af-page-title">
         <div>
           <h1>
@@ -2449,6 +2449,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       {renderKpis()}
       <AnimatePresence mode="wait">
         <motion.div
+          className="flex-1 min-h-0 w-full h-full flex flex-col"
           key={tab}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

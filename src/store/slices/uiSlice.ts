@@ -30,6 +30,8 @@ const uiSlice = createSlice({
     },
     setLanguage: (state, action: PayloadAction<Language>) => {
       state.language = action.payload;
+      localStorage.setItem('i18nextLng', action.payload);
+      document.documentElement.lang = action.payload;
       document.documentElement.dir = action.payload === 'ar' ? 'rtl' : 'ltr';
     },
     toggleSidebar: (state) => {

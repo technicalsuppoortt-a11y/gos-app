@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import type { Lead } from "../data/mockData";
 import { showToast } from "../utils/toast";
+import { Select } from "../components/ui/Select";
 import { ChannelIcon } from "./inbox/ChannelIcons";
 import {
   channelMeta,
@@ -168,14 +169,14 @@ function Toggle({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:cursor-not-allowed disabled:opacity-50 ${track} ${
+      className={`relative inline-flex shrink-0 items-center px-[2px] rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:cursor-not-allowed disabled:opacity-50 ${track} ${
         checked
           ? "bg-[#7C5CFC] shadow-[0_2px_8px_-2px_rgba(124,92,252,0.6)]"
           : "bg-slate-200 dark:bg-white/15"
       }`}
     >
       <span
-        className={`${knob} rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? shift : "translate-x-0"}`}
+        className={`block ${knob} rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? shift : "translate-x-0"}`}
       />
     </button>
   );
@@ -1389,20 +1390,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
 
               <dt className={MUTED}>Stage</dt>
               <dd className="relative">
-                <select
-                  id="inbox-stage"
+                <Select
                   value={active.stage}
-                  onChange={(e) => {
-                    updateActive({ stage: e.target.value });
-                    logActivity("tag", `Stage changed to ${e.target.value}`);
+                  onChange={(value) => {
+                    updateActive({ stage: value });
+                    logActivity("tag", `Stage changed to ${value}`);
                   }}
-                  className="h-7 w-full cursor-pointer appearance-none rounded-lg border border-purple-100 bg-purple-50/60 pl-2.5 pr-7 text-[12px] font-semibold text-purple-700 outline-none transition hover:border-purple-200 focus:ring-4 focus:ring-purple-100 dark:border-purple-400/20 dark:bg-purple-500/10 dark:text-purple-200"
-                >
-                  {stages.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-                <ChevronDown size={13} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-purple-500" />
+                  options={stages}
+                  className="h-7"
+                  triggerClassName="h-7 min-h-[28px] border-purple-100 bg-purple-50/60 text-[12px] font-semibold text-purple-700 py-0 dark:border-purple-400/20 dark:bg-purple-500/10 dark:text-purple-200"
+                />
               </dd>
 
               <dt className={MUTED}>Assigned To</dt>

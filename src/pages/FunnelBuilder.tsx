@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, Filter, Globe, LayoutGrid, Plus } from 'lucide-react';
-import { BuilderWorkspace } from './BuilderWorkspace';
+import { TemplatesWorkspace } from './TemplatesWorkspace';
+import { createBuilderDocument, BuilderWorkspace } from './BuilderWorkspace';
 import type { BuilderDocument, BuilderPage } from './BuilderWorkspace';
 import { OptionsMenu } from './crm/CRMPrimitives';
 import { showToast } from '../utils/toast';
-import { readWorkspace, storageKey } from './asset-model';
-import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
+import { useAssetWorkspace } from './asset-store';
+import { images } from './asset-model';
+import type { Asset, BuilderMode, Dialog } from './asset-model';
 import { AssetHub, AssetOverview, DomainsView, Empty } from './AssetViews';
 import { AssetDialog } from './AssetDialog';
 import { FunnelDomainPicker } from './FunnelDomainPicker';
@@ -19,18 +21,12 @@ import './website-funnel-polish.css';
 export type { BuilderMode } from './asset-model';
 export function FunnelBuilder() {
     const navigate = useNavigate(), location = useLocation();
-    const [workspace, setWorkspace] = useState<Workspace>(readWorkspace);
+    const [workspace, setWorkspace] = useAssetWorkspace();
     const [query, setQuery] = useState(''), [status, setStatus] = useState('All Status'), [sort, setSort] = useState('Last Updated'), [list, setList] = useState(false);
     const [tab, setTab] = useState(location.pathname.includes('/websites') ? 'Pages' : 'Steps'), [selectedPage, setSelectedPage] = useState(''), [device, setDevice] = useState('Desktop');
     const [dialog, setDialog] = useState<Dialog | null>(null), [showArchived, setShowArchived] = useState(false), [reorder, setReorder] = useState(false);
     const segments = location.pathname.split('/').filter(Boolean), sectionIndex = segments[0] === 'dashboard' ? 1 : 0, section = segments[sectionIndex] || 'funnels', assetId = segments[sectionIndex + 1], pageId = segments[sectionIndex + 3], base = segments[0] === 'dashboard' ? '/dashboard' : '';
     const kind: BuilderMode = section === 'websites' ? 'website' : 'funnel', asset = workspace.assets.find(item => item.id === assetId && item.kind === kind), activePage = asset?.document.pages.find(page => page.id === selectedPage) ?? asset?.document.pages[0], editing = segments[sectionIndex + 2] === 'edit';
-    useEffect(() => { try {
-        localStorage.setItem(storageKey, JSON.stringify(workspace));
-    }
-    catch {
-        showToast.error('Browser storage is unavailable. Changes remain in this session.');
-    } }, [workspace]);
     useEffect(() => { setQuery(''); setStatus('All Status'); setTab(section === 'websites' ? 'Pages' : 'Steps'); setSelectedPage(''); setReorder(false); }, [section, assetId]);
     const updateAsset = (id: string, update: (value: Asset) => Asset) => setWorkspace(current => ({ ...current, assets: current.assets.map(item => item.id === id ? update(item) : item) }));
     const updateDocument = (document: BuilderDocument) => { if (asset)
@@ -50,10 +46,11 @@ export function FunnelBuilder() {
     const editTarget=asset?.document.pages.find(page=>page.id===pageId||page.path.replace(/^\//,'')===pageId);
     const dialogAsset=workspace.assets.find(item=>item.id===dialog?.assetId);
     const modal=dialog&&(dialog.type==='domain-select'&&dialogAsset?<FunnelDomainPicker asset={dialogAsset} workspace={workspace} setWorkspace={setWorkspace} close={()=>setDialog(null)} add={()=>setDialog({type:'domain',assetId:dialogAsset.id})}/>:<AssetDialog key={`${dialog.type}-${dialog.assetId}-${dialog.pageId}-${dialog.domainId}`} dialog={dialog} kind={kind} workspace={workspace} setWorkspace={setWorkspace} updateAsset={updateAsset} close={() => setDialog(null)} go={go} section={section} selected={setSelectedPage}/>);
+    if (new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><button className="aw-secondary" onClick={() => go(section)}>Back to {section}</button></div><TemplatesWorkspace scope="funnels" onInstall={template => { const kind = template.category === 'Websites' ? 'website' : 'funnel'; const document = createBuilderDocument(kind, template.name, images.agency, kind === 'funnel' ? 1 : 7); document.pages[0].sections[0].content.title = template.content.headline; document.pages[0].sections[0].content.body = template.description; document.pages.slice(0, template.content.steps.length).forEach((page, index) => { page.name = template.content.steps[index]; }); const created: Asset = { id: template.id, name: template.name, description: template.description, kind, image: images.agency, domain: '', document, updated: new Date().toISOString(), settings: { seo: template.name, color: template.color, navigation: document.pages.map(page => page.name).join(', ') } }; setWorkspace(current => ({ ...current, assets: [created, ...current.assets] })); }}/></>;
     if(editing&&asset&&!editTarget)return <div className="aw-workspace"><Empty title="Step not found" description="Choose an existing step from the funnel overview." action={<button className="aw-primary" onClick={()=>go(section+'/'+asset.id)}>Back to overview</button>}/></div>;
     if (editing && asset)
         return <div className={"aw-editor-host"+(kind==='funnel'?' fn-focused-editor':'')}><BuilderWorkspace key={`${asset.id}-${pageId}`} mode={kind} document={asset.document} domain={asset.domain} initialColor={asset.settings.color} selectedPageId={editTarget?.id} onStepChange={next=>go(section+'/'+asset.id+'/edit/'+next)} onDocumentChange={updateDocument} onBack={() => go(`${section}/${asset.id}`)}/>{modal}</div>;
-    return <div className={`aw-workspace${section==='domains'?' aw-domains-workspace':section==='funnels'?' aw-funnels-workspace':''}`}><div className="aw-topbar"><nav aria-label="Funnel and website navigation">{[{ key: 'funnels', label: 'Funnels', Icon: Filter }, { key: 'websites', label: 'Websites', Icon: LayoutGrid }, { key: 'domains', label: 'Domains', Icon: Globe }].map(({ key, label, Icon }) => <button key={key} aria-current={section === key ? 'page' : undefined} className={section === key ? 'active' : ''} onClick={() => go(key)}><Icon size={17}/>{label}</button>)}</nav>{!asset && section !== 'domains' && <div className="aw-actions"><button className="aw-secondary" onClick={() => showToast.info('Choose an asset → organize pages → edit a page → preview and publish.')}><Eye size={15}/>How it works?</button><div className="aw-split"><button className="aw-primary" onClick={() => open({ type: 'create' })}><Plus size={16}/>Create {kind === 'funnel' ? 'Funnel' : 'Website'}</button><OptionsMenu label="Creation options" actions={[{ label: 'Create blank', onSelect: () => open({ type: 'create' }) }, { label: 'Build with AI', onSelect: () => open({ type: 'ai' }) }]}/></div></div>}</div>
+    return <div className={`aw-workspace${section==='domains'?' aw-domains-workspace':section==='funnels'?' aw-funnels-workspace':''}`}><div className="aw-topbar"><nav aria-label="Funnel and website navigation"><button onClick={() => navigate(`${base}/funnels?tab=templates`)}><LayoutGrid size={17}/>Templates</button>{[{ key: 'funnels', label: 'Funnels', Icon: Filter }, { key: 'websites', label: 'Websites', Icon: LayoutGrid }, { key: 'domains', label: 'Domains', Icon: Globe }].map(({ key, label, Icon }) => <button key={key} aria-current={section === key ? 'page' : undefined} className={section === key ? 'active' : ''} onClick={() => go(key)}><Icon size={17}/>{label}</button>)}</nav>{!asset && section !== 'domains' && <div className="aw-actions"><button className="aw-secondary" onClick={() => showToast.info('Choose an asset → organize pages → edit a page → preview and publish.')}><Eye size={15}/>How it works?</button><div className="aw-split"><button className="aw-primary" onClick={() => open({ type: 'create' })}><Plus size={16}/>Create {kind === 'funnel' ? 'Funnel' : 'Website'}</button><OptionsMenu label="Creation options" actions={[{ label: 'Create blank', onSelect: () => open({ type: 'create' }) }, { label: 'Build with AI', onSelect: () => open({ type: 'ai' }) }]}/></div></div>}</div>
  {assetId && !asset ? <Empty title="Asset not found" description="This asset may have been deleted. Choose another asset to continue." action={<button className="aw-primary" onClick={() => go(section)}>Back to {section}<ArrowRight size={14}/></button>}/> : section === 'domains' ? <DomainsView workspace={workspace} setWorkspace={setWorkspace} query={query} setQuery={setQuery} status={status} setStatus={setStatus} go={go} open={open}/> : asset ? <AssetOverview asset={asset} kind={kind} section={section} tab={tab} setTab={setTab} activePage={activePage} selected={setSelectedPage} device={device} setDevice={setDevice} editPage={editPage} movePage={movePage} reorder={reorder} setReorder={setReorder} open={open} go={go} publish={publish} assetActions={assetActions} pageActions={pageActions} updateAsset={updateAsset}/> : <AssetHub assets={filteredAssets} kind={kind} section={section} query={query} setQuery={setQuery} status={status} setStatus={setStatus} sort={sort} setSort={setSort} list={list} setList={setList} archived={showArchived} setArchived={setShowArchived} open={open} go={go} actions={assetActions}/>}{modal}</div>;
 }
 export default FunnelBuilder;

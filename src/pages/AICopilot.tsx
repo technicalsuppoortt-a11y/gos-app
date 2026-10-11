@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { RootState } from '../store';
 import { bookings, calendars, leads, products, stageLabel } from '../data/mockData';
 import { showToast } from '../utils/toast';
+import { TemplatesWorkspace } from './TemplatesWorkspace';
+import { Select } from '../components/ui/Select';
 import './ai-copilot.css';
 
 type Kind = 'landing' | 'leads' | 'campaign' | 'booking' | 'product' | 'analytics' | 'question';
@@ -83,7 +85,7 @@ function formatTime(seconds: number) {
 }
 
 export const AICopilot: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(), location = useLocation();
   const { role, tenant } = useSelector((state: RootState) => state.auth);
   const leads = useSelector((state: RootState) => state.crm.leads);
   const tenantId = tenant?.id ?? (role === 'SUPER_ADMIN' ? 'platform-demo' : '');
@@ -289,9 +291,10 @@ export const AICopilot: React.FC = () => {
     }
   };
 
+  if (new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><button onClick={() => navigate('/dashboard/copilot')}>Back to AI Copilot</button></div><TemplatesWorkspace scope="copilot" onInstall={template => setPrompt(template.content.headline)}/></>;
   return <div className={`ai-copilot-page ${historyOpen ? '' : 'history-collapsed'}`}>
     <section className="ai-copilot-main">
-      <div className="ai-copilot-toolbar"><div><span className="ai-status-dot"/> Business context connected</div><button onClick={() => { setMessages([]); setShowWelcome(true); setActiveConversation(null); setPrompt(''); }}><Plus size={14}/> New chat</button></div>
+      <div className="ai-copilot-toolbar"><button onClick={() => navigate('/dashboard/copilot?tab=templates')}><Sparkles size={14}/>Assistant templates</button><div><span className="ai-status-dot"/> Business context connected</div><button onClick={() => { setMessages([]); setShowWelcome(true); setActiveConversation(null); setPrompt(''); }}><Plus size={14}/> New chat</button></div>
       <div className="ai-copilot-thread" ref={listRef}>
         {showWelcome && messages.length === 0 ? <div className="ai-copilot-welcome">
           <div className="ai-copilot-badge"><Sparkles size={16}/> AI Business Copilot</div>
@@ -370,7 +373,7 @@ function DraftPreview({ draft, update, confirm, busy }: { draft: Draft; update: 
   return <div className="ai-draft-card"><div className="ai-draft-title"><span><span className="ai-draft-icon"><Sparkles size={15}/></span><b>{title}</b></span><span className={`ai-draft-status ${draft.status}`}>{draft.status === 'published' ? <><Check size={12}/> Confirmed</> : draft.status === 'executing' ? 'Processing…' : draft.status === 'failed' ? 'Not published' : 'Needs review'}</span></div>
     <label>{draft.kind === 'landing' ? 'Page name' : draft.kind === 'campaign' ? 'Campaign name' : draft.kind === 'booking' ? 'Service name' : 'Product name'}<input value={draft.name} onChange={event => update('name', event.target.value)} placeholder={draft.kind === 'booking' ? 'e.g. Strategy consultation' : draft.kind === 'campaign' ? 'e.g. October launch' : draft.kind === 'landing' ? 'e.g. Brand strategy offer' : 'e.g. New course'}/></label>
     {(draft.kind === 'booking' || draft.kind === 'product') && <div className="ai-draft-fields"><label>Price<input value={draft.price} onChange={event => update('price', event.target.value)} placeholder="Enter price" inputMode="decimal"/></label>{draft.kind === 'booking' && <label>Duration<input value={draft.duration} onChange={event => update('duration', event.target.value)} placeholder="Minutes" inputMode="numeric"/></label>}</div>}
-    {draft.kind === 'campaign' && <><label>Channel<select value={draft.channel} onChange={event => update('channel', event.target.value)}><option>WhatsApp</option><option>Email</option><option>Instagram</option></select></label><label>Message<textarea value={draft.content} onChange={event => update('content', event.target.value)} placeholder="Write and review your message"/></label></>}
+    {draft.kind === 'campaign' && <><label className="flex flex-col gap-1.5">Channel<Select value={draft.channel} onChange={value => update('channel', value)} options={['WhatsApp', 'Email', 'Instagram']} /></label><label>Message<textarea value={draft.content} onChange={event => update('content', event.target.value)} placeholder="Write and review your message"/></label></>}
     {draft.kind === 'landing' && <div className="ai-draft-preview"><div className="ai-preview-top"><span>PAGE PREVIEW</span><span><span/>Draft</span></div><strong>{draft.name || 'Your offer headline'}</strong><p>Page content remains a draft until you review and confirm it in Funnel & Website.</p><div><i/><i/><i/></div></div>}
     <div className="ai-draft-footer"><span><ShieldCheck size={12}/> Nothing publishes without confirmation</span><button onClick={confirm} disabled={busy || draft.status === 'published' || draft.status === 'executing'}>{draft.status === 'published' ? 'Confirmed' : draft.status === 'executing' ? <><LoaderCircle size={13} className="ai-spinner"/> Processing</> : draft.kind === 'campaign' ? 'Confirm & send' : draft.kind === 'landing' ? 'Publish draft' : 'Confirm & create'}<ArrowRight size={13}/></button></div>
   </div>;

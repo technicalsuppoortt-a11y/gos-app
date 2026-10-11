@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowDownToLine, CalendarDays, Check, CircleX, Clock3, CreditCard, Search, Settings2, Users, Zap } from 'lucide-react';
+import { Select } from '../components/ui/Select';
 import './activity-page.css';
 
 type EventType = 'Booking' | 'Lead' | 'Payment' | 'Automation' | 'System';
@@ -88,7 +89,7 @@ export const ActivityPage: React.FC = () => {
 
     <section className="activity-toolbar" aria-label="Activity filters">
       <label className="activity-search"><Search size={16}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search activities..." aria-label="Search activities"/>{query && <button onClick={() => setQuery('')} aria-label="Clear search">×</button>}</label>
-      <label className="activity-type-filter"><span>Event type</span><select value={type} onChange={event => setType(event.target.value as EventType | 'All Events')} aria-label="Filter by event type">{[{ label: 'All Events', value: 'All Events' }, { label: 'Leads', value: 'Lead' }, { label: 'Payments', value: 'Payment' }, { label: 'Bookings', value: 'Booking' }, { label: 'Automation', value: 'Automation' }, { label: 'System', value: 'System' }].map(option => <option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
+      <label className="activity-type-filter flex items-center gap-1.5"><span>Event type</span><Select value={type} onChange={value => setType(value as EventType | 'All Events')} options={[{ label: 'All Events', value: 'All Events' }, { label: 'Leads', value: 'Lead' }, { label: 'Payments', value: 'Payment' }, { label: 'Bookings', value: 'Booking' }, { label: 'Automation', value: 'Automation' }, { label: 'System', value: 'System' }]} /></label>
       <div className="activity-date-filter" role="group" aria-label="Filter by date range">{(['Today', 'Last 7 Days', 'Last 30 Days'] as const).map(preset => <button key={preset} className={datePreset === preset ? 'active' : ''} onClick={() => setDatePreset(preset)} aria-pressed={datePreset === preset}>{preset}</button>)}</div>
       <span className="activity-results-count">{filteredEvents.length} events</span>
     </section>

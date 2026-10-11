@@ -5,6 +5,7 @@ import type { Role } from '../types/auth';
 import '../route-loading.css';
 
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
+const LandingPage = lazy(() => import('../pages/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const UserLayout = lazy(() => import('../components/layout/UserLayout').then(module => ({ default: module.UserLayout })));
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
@@ -13,7 +14,7 @@ const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(m
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
 const PublicBookingPage = lazy(() => import('../pages/booking/PublicBookingPage'));
-const Templates = lazy(() => import('../pages/Templates'));
+
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
@@ -22,6 +23,7 @@ const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module =>
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
 const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
 
+const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
 const crmChildren = [
@@ -31,8 +33,43 @@ const crmChildren = [
   { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
 ];
 
+class ErrorBoundary extends React.Component<React.PropsWithChildren, { hasError: boolean }> {
+  constructor(props: React.PropsWithChildren) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error) {
+    const msg = error.message || "";
+    if (
+      error.name === "ChunkLoadError" ||
+      msg.includes("fetch dynamically imported module") ||
+      msg.includes("loading chunk")
+    ) {
+      window.location.reload();
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-[#0b101e]">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">A new version is available, or there was an issue loading this page.</h2>
+          <button onClick={() => window.location.reload()} className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700">Reload Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Suspended({ children }: React.PropsWithChildren) {
-  return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<RouteLoading/>}>{children}</Suspense>
+    </ErrorBoundary>
+  );
 }
 
 function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Role[] }>) {
@@ -40,8 +77,11 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
+  { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><Suspended><ProductLivePreview/></Suspended></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
-  { path: '/', element: <DefaultRedirect/> },
+  // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
+  { path: '/', element: <Suspended><LandingPage/></Suspended> },
+  { path: '/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
   ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
@@ -53,7 +93,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
       ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
-      { path: 'templates', element: <Suspended><Templates/></Suspended> },
+      { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace/> },
       { path: 'crm', children: crmChildren },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
@@ -65,7 +105,11 @@ export const router = createBrowserRouter([
       { path: 'products-payments/products/new', element: <Suspended><ProductWorkspace mode="create"/></Suspended> },
       { path: 'products-payments/products/:id/pricing', element: <Suspended><ProductWorkspace mode="edit" defaultTab="pricing"/></Suspended> },
       { path: 'products-payments/products/:id/edit', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
-      { path: 'products-payments/products/:id', element: <Suspended><ProductWorkspace mode="detail"/></Suspended> },
+      { path: 'products-payments/products/:id', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
+      { path: 'products-payments/course/:id', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
+      { path: 'products-payments/course/:id/edit', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
+      { path: 'products-payments/course/:id/orders', element: <Suspended><ProductWorkspace mode="edit" defaultTab="orders"/></Suspended> },
+      { path: 'products-payments/course/:id/students', element: <Suspended><ProductWorkspace mode="edit" defaultTab="access"/></Suspended> },
       { path: 'products-payments/discounts/new', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
@@ -99,7 +143,7 @@ export const router = createBrowserRouter([
       { path: 'analytics', element: <Suspended><PagePlaceholder title="Platform Analytics"/></Suspended> },
       { path: 'settings', element: <Suspended><PagePlaceholder title="Platform Settings"/></Suspended> },
       { path: 'users', element: <Suspended><PagePlaceholder title="Team Management"/></Suspended> },
-      { path: 'templates', element: <Suspended><PagePlaceholder title="Platform Templates"/></Suspended> },
+      { path: 'templates', element: <Navigate to="/super-admin" replace/> },
       { path: 'integrations', element: <Suspended><PagePlaceholder title="Platform Integrations"/></Suspended> },
       { path: 'payments', element: <Suspended><PagePlaceholder title="Payments"/></Suspended> },
       { path: 'logs', element: <Suspended><PagePlaceholder title="Logs & Monitoring"/></Suspended> },

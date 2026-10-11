@@ -2,7 +2,7 @@
 
 The existing repository is a frontend application. This module does not introduce or replace a backend. Set `VITE_SETTINGS_API_URL` to the authenticated settings service base URL to enable live operations. Restart Vite after changing the environment. The adapter sends the session bearer token, credentials, and the current tenant ID. The server must derive and authorize tenant access from the session; the tenant header is context, not authorization.
 
-Without that variable, profile/business/payment preferences are stored on this device under a tenant-and-user key. Wallet values, plan, payment methods and transactions are explicitly labeled preview data. Provider connections start disconnected. Checkout, account deletion, invitations and security operations return actionable unavailable-service messages. No charges, new credits, provider authorizations or account deletion are simulated.
+Without that variable, profile/business/payment preferences are stored on this device under a tenant-and-user key. Wallet values, plan, payment methods and transactions are explicitly labeled preview data. Provider connections start disconnected. Checkout and account deletion return actionable unavailable-service messages. Team and security demo operations are described below. No charges, new credits, provider authorizations or account deletion are simulated.
 
 ## Settings
 
@@ -43,9 +43,10 @@ Checkout return refreshes `GET /settings`. Redirects never increase the balance.
 
 | Endpoint | Request / response |
 | --- | --- |
-| `GET /team` | `{ members: [{ id, name, email, role, active }] }` |
-| `POST /team/invitations` | `{ email, role }`; authorize, create an invitation and send it through the team service. |
-| `PATCH /team/:id` | `{ role? , active? }`; enforce owner protections and audit sensitive changes. |
+| `GET /team` | `{ members: [{ id, name, email, role, active, permissions: string[] }] }` |
+| `POST /team` | `{ id, name, email, role, active, permissions }`; create a member without sending an invitation. |
+| `PATCH /team/:id` | `{ name?, email?, role?, active?, permissions? }`; enforce owner protections and audit sensitive changes. |
+| `DELETE /team/:id` | Remove a member; enforce owner protections. |
 | `GET /team/audit` | `{ entries: string[] }`, restricted to authorized managers. |
 | `GET /security` | `{ sessions: [{ id, device, lastActive, current }], history: string[], mfa: boolean }` |
 | `POST /security/password` | `{ currentPassword, newPassword }`; validate current credentials and password policy. |
@@ -60,3 +61,11 @@ All returned navigation URLs must use HTTPS. The client uses a 20-second request
 `npm run build`, `npm run lint`, `node tests/settings-routes.test.mjs`, `node tests/settings-api.test.mjs`.
 
 `node tests/settings-browser.test.mjs` additionally checks Chromium interactions and desktop/mobile overflow when browser execution is permitted. Set `SETTINGS_BROWSER_PATH` for a Chromium binary and optionally `SETTINGS_SCREENSHOT_DIR` for screenshot output. The browser test uses an isolated test harness and temporary browser profile; it does not change production authentication.
+
+## Local workspace mode
+
+When VITE_SETTINGS_API_URL is absent, team CRUD and module visibility are persisted per tenant. Profile and knowledge preferences are stored per tenant and user. Module view permissions hide navigation and show an access message for restricted routes; API authorization must enforce access server-side. Settings remains available so an owner can restore access. Owner permissions and membership cannot be removed in this view.
+
+Security is an explicitly labelled local demo. The initial demo password is DemoPassword123!; subsequent changes store a salted digest, never plaintext. This is a simulated credential, independent of actual authentication. QR graphics and six-digit challenges simulate verification; no authenticator secret is provisioned. Session revocation removes sample sessions and appends history. Connected workspaces continue to use the existing password, secure MFA setup portal and session APIs.
+
+Profile supports language (English/Arabic), preferred currency (USD/EUR/EGP/GBP/AED/SAR) and the existing persistent Light/Dark theme. Include optional profile.currency in GET/PATCH /settings. The Settings sidebar combines Payments and Billing & Wallet under Billing & Payments; legacy payment and wallet URLs resolve to the merged view.

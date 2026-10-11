@@ -12,11 +12,13 @@ function compile(name) {
 const modelContext = { exports: {}, URL, Intl };
 vm.runInNewContext(compile('model.ts'), modelContext);
 const model = modelContext.exports;
+const demoContext = { exports: {}, Intl };
+vm.runInNewContext(compile('demoData.ts'), demoContext);
 function offer(type) {
-  return { ...model.newProduct(), id: 'test-offer', type, name: 'Test offer', description: 'A complete offer.', config: model.defaultConfig(type) };
+  return { ...model.newProduct(), id: 'test-offer', type: model.kindLabels[model.productKind(type)], name: 'Test offer', description: 'A complete offer.', config: model.defaultConfig(type) };
 }
 
-test('publishing checks delivery requirements for all five primary types', () => {
+test('publishing checks delivery requirements for the three supported types', () => {
   const service = offer('Service');
   assert.match(model.validateProduct(service, true).join(' '), /booking link/);
   service.config.bookingUrl = 'https://example.com/book';
@@ -33,14 +35,11 @@ test('publishing checks delivery requirements for all five primary types', () =>
   assert.match(model.validateProduct(course, true).join(' '), /named lessons/);
   course.config.communityUrl = 'https://example.com/community';
   assert.equal(model.validateProduct(course, true).length, 0);
-  const subscription = offer('Subscription');
-  assert.equal(subscription.config.billing, 'Subscription');
-  subscription.config.billing = 'One-time';
-  assert.match(model.validateProduct(subscription, true).join(' '), /recurring billing/);
-  const bundle = offer('Bundle');
-  assert.match(model.validateProduct(bundle, true).join(' '), /at least two/);
-  bundle.config.components = ['course', 'workbook'];
-  assert.equal(model.validateProduct(bundle, true).length, 0);
+  for (const type of ['Subscription', 'Bundle', 'Physical Product']) {
+    const unsupported = { ...offer('Digital Product'), type };
+    assert.match(model.validateProduct(unsupported).join(' '), /Choose Service/);
+  }
+
 });
 
 test('drafts allow unfinished delivery, but reject invalid billing and unsafe URLs', () => {
@@ -91,6 +90,7 @@ test('repository persists type-specific fields, isolates tenants and handles fai
     require: name => {
       if (name === 'react') return { useSyncExternalStore: (_, snapshot) => snapshot() };
       if (name === './model') return model;
+      if (name === './demoData') return demoContext.exports;
       if (name === './seeds') return { seedProducts: [] };
       if (name === '../../store') return { store: { getState: () => ({ auth }), subscribe: fn => subscriptions.push(fn) } };
       throw new Error(`Unexpected import: ${name}`);
@@ -140,7 +140,7 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   bundle.id = '';
   bundle.config.components = [savedDigital.id, saved.id];
   const savedBundle = repository.saveProduct(bundle);
-  assert.throws(() => repository.deleteProduct(savedDigital.id), /bundles/);
+  assert.doesNotThrow(() => repository.deleteProduct(savedDigital.id), 'Retired bundle metadata must not block product deletion');
   repository.deleteProduct(savedBundle.id);
   repository.deleteProduct(savedDigital.id);
   assert.ok(!repository.useProducts().some(p => p.id === savedDigital.id));
@@ -150,8 +150,8 @@ test('repository persists type-specific fields, isolates tenants and handles fai
 
 
 test('legacy types and lesson titles migrate without losing saved data', () => {
- for (const [type,kind,label] of [['course','course','Course / Membership'],['Online Course','course','Course / Membership'],['digital','digital','Digital Product'],['service','service','Service']]) {
-   const original=offer(type);
+ for (const [type,kind,label] of [['course','course','Course'],['Online Course','course','Course'],['Subscription','course','Course'],['Bundle','digital','Digital Product'],['digital','digital','Digital Product'],['service','service','Service']]) {
+   const original={...offer(type),type};
    delete original.config.experience;
    original.config.modules=[{title:'Saved module',lessons:['Saved lesson']}];
    original.config.assets=[{name:'Saved file',url:'https://example.com/file.pdf'}];

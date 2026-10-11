@@ -33,3 +33,8 @@ export async function downloadFile(id: string, name: string) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } finally { db.close(); }
 }
+export async function readStoredFile(id: string): Promise<Blob> {
+  const db = await openFiles();
+  try { return await new Promise<Blob>((resolve, reject) => { const request = db.transaction('files').objectStore('files').get(`${scope()}:${id}`); request.onsuccess = () => request.result ? resolve(request.result) : reject(new Error('File unavailable')); request.onerror = () => reject(new Error('Could not read file')); }); }
+  finally { db.close(); }
+}

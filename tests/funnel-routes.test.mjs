@@ -32,7 +32,7 @@ try {
   assert.equal((hub.match(/class="aw-asset-card"/g) ?? []).length, 6);
   assert.ok(hub.includes('Search funnels...'));
   const overview = render('/dashboard/funnels/fitness');
-  assert.equal((overview.match(/class="aw-step-card"/g) ?? []).length, 5);
+  assert.equal((overview.match(/class="aw-step-card(?:\s[^"]*)?"/g) ?? []).length, 5);
   assert.ok(overview.includes('Edit Step'));
   assert.ok(!overview.includes('fb-editor-header'));
   const website = render('/dashboard/websites/fitzone-site');

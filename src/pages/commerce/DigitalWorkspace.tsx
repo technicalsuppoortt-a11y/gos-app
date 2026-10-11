@@ -4,6 +4,7 @@ import { Card, Field, Select, Status, Toggle } from './primitives';
 import { DigitalFiles, IncludedItems, MediaCard } from './TypeForms';
 import { DigitalDescription } from './DigitalDescription';
 import type { FormProps } from './TypeForms';
+import { PricingForm } from './PricingForms';
 import type { Billing, CommerceConfig } from './model';
 
 export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean) => void; onSalesPage: () => void; onCopy: () => void; onDuplicate: () => void; onDelete: () => void; onFunnel: () => void; onAutomation: () => void; disabled: boolean }) {
@@ -12,8 +13,7 @@ export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean
   function addTag(event: React.FormEvent) { event.preventDefault(); const next = tag.trim(); if (next && !e.tags.includes(next)) customize({ tags: [...e.tags, next] }); setTag(''); setAddingTag(false); }
   function billing(value: Billing) {
     configure({ billing: value, amount: value === 'One-time' ? e.oneTimeAmount : value === 'Payment plan' ? e.installmentAmount : e.recurringAmount });
-    if (value === 'Payment plan') customize({ planEnabled: true });
-    if (value === 'Subscription') customize({ recurringEnabled: true });
+    customize({ planEnabled: value === 'Payment plan', recurringEnabled: value === 'Subscription' });
   }
   function amount(value: number) { configure({ amount: value }); customize(c.billing === 'One-time' ? { oneTimeAmount: value } : c.billing === 'Payment plan' ? { installmentAmount: value } : { recurringAmount: value }); }
   const money = (amount: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: c.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
@@ -30,6 +30,7 @@ export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean
         <div className="dw-pricing-options">{(['One-time', 'Payment plan', 'Subscription'] as const).map((value, index) => <button key={value} disabled={!editing} aria-pressed={c.billing === value} className={c.billing === value ? 'selected' : ''} onClick={() => billing(value)}>{index === 0 ? <span className="dw-radio"/> : index === 1 ? <CreditCard className="dw-billing-icon" size={13}/> : <Package className="dw-billing-icon" size={13}/>}<span><b>{['One-time Payment', 'Payment Plan', 'Subscription'][index]}</b><small>{['Single payment', 'Multiple payments', 'Recurring payment'][index]}</small><strong>{index === 0 ? money(e.oneTimeAmount) : index === 1 ? `${money(e.installmentAmount)} × ${c.installments}` : `${money(e.recurringAmount)} / ${c.frequency === 'Yearly' ? 'year' : c.frequency === 'Quarterly' ? 'quarter' : 'month'}`}</strong></span></button>)}</div>
         <div className="cw-form-grid"><Field label="Price *"><div className="dw-money"><input type="number" min="0" step="0.01" disabled={!editing} value={c.amount} onChange={event => amount(Number(event.target.value))}/><Select disabled={!editing} value={c.currency} options={['EUR', 'USD', 'GBP']} onChange={currency => configure({ currency: currency as CommerceConfig['currency'] })}/></div></Field><Field label="Compare Price (Optional)"><div className="dw-money"><input type="number" min="0" step="0.01" disabled={!editing} value={e.comparePrice || ''} onChange={event => customize({ comparePrice: Number(event.target.value), showComparePrice: !!event.target.value })}/><Select disabled={!editing} value={c.currency} options={['EUR', 'USD', 'GBP']} onChange={currency => configure({ currency: currency as CommerceConfig['currency'] })}/></div></Field></div>
       </Card>
+      {c.billing !== 'One-time' && <PricingForm {...props}/>}
     </div>
     <div className="dw-column dw-middle">
       <div className="dw-image-group"><MediaCard {...props} compact/>

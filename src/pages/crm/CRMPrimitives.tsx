@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import * as Select from '@radix-ui/react-select';
 import { Link } from 'react-router-dom';
 import { BadgeCheck, Clock3, Flame, Globe, Mail, MessageCircle, MoreHorizontal, MoreVertical, Phone, Sparkles, ChevronDown, Check, Calendar } from 'lucide-react';
 import { InstagramLogo as Instagram, LinkedinLogo as Linkedin } from '@phosphor-icons/react';
@@ -128,62 +129,35 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   const value = propValue !== undefined ? propValue : internalValue;
   const onChange = propOnChange || setInternalValue;
   
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const outside = (e: PointerEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
-    const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
-  }, [open]);
-
-  const selected = options.find(o => o.value === value);
-
-  return (
-    <div className={`crm-custom-select ${className}`} ref={ref}>
-      {name && <input type="hidden" name={name} value={value} />}
-      <button 
-        type="button" 
-        className="crm-custom-select-trigger" 
-        aria-label={ariaLabel} 
-        aria-expanded={open} 
-        onClick={() => setOpen(!open)}
-      >
+  // Radix portals prevent menus from being clipped by the fixed CRM viewport.
+  const encode = (v: string) => 'crm:' + v;
+  return <div className={`crm-custom-select ${className}`}>
+    {name && <input type="hidden" name={name} value={value}/>}
+    <Select.Root value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
+      <Select.Trigger className="crm-custom-select-trigger" aria-label={ariaLabel}>
         {Icon && <Icon size={14} className="crm-custom-select-icon"/>}
-        <span>{selected ? selected.label : (placeholder || 'Select...')}</span>
-        <ChevronDown size={14} className="crm-custom-select-chevron"/>
-      </button>
-      {open && (
-        <div className="crm-custom-select-popup">
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              className={opt.value === value ? "active" : ""}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
-            >
-              <span>{opt.label}</span>
-              {opt.value === value && <Check size={14}/>}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+        <Select.Value placeholder={placeholder || 'Select…'}/><Select.Icon asChild><ChevronDown size={14} className="crm-custom-select-chevron"/></Select.Icon>
+      </Select.Trigger>
+      <Select.Portal><Select.Content className="crm-select-content" position="popper" sideOffset={6} collisionPadding={10}>
+        <Select.ScrollUpButton className="crm-select-scroll"><ChevronDown size={14} style={{ transform: 'rotate(180deg)' }}/></Select.ScrollUpButton>
+        <Select.Viewport>{options.map(opt => <Select.Item className="crm-select-item" key={opt.value} value={encode(opt.value)}><Select.ItemText>{opt.label}</Select.ItemText><Select.ItemIndicator><Check size={14}/></Select.ItemIndicator></Select.Item>)}</Select.Viewport>
+        <Select.ScrollDownButton className="crm-select-scroll"><ChevronDown size={14}/></Select.ScrollDownButton>
+      </Select.Content></Select.Portal>
+    </Select.Root>
+  </div>;
 }
 
-export function CustomDatePicker({ value, onChange, placeholder = "Select date...", className = "", name, type = "date" }: { value: string, onChange: (v: string) => void, placeholder?: string, className?: string, name?: string, type?: "date" | "datetime-local" }) {
+export function CustomDatePicker({ value, onChange, placeholder = "Select date...", className = "", name, type = "date", 'aria-label': ariaLabel }: { 'aria-label'?: string, value: string, onChange: (v: string) => void, placeholder?: string, className?: string, name?: string, type?: "date" | "datetime-local" }) {
   const ref = useRef<HTMLInputElement>(null);
   return (
-    <div className={`crm-custom-select crm-custom-date ${className}`} onClick={() => { try { (ref.current as any)?.showPicker?.() } catch(e){} }}>
-      <button type="button" className="crm-custom-select-trigger" onClick={e => e.preventDefault()}>
+    <div className={`crm-custom-select crm-custom-date ${className}`} onClick={() => { try { ref.current?.showPicker?.() } catch { /* Native picker may be unavailable in this browser. */ } }}>
+      <button type="button" className="crm-custom-select-trigger" aria-label={ariaLabel || placeholder} onClick={e => e.preventDefault()}>
         <Calendar size={14} className="crm-custom-select-icon"/>
         <span>{value || placeholder}</span>
       </button>
       <input 
         ref={ref}
+        aria-label={ariaLabel || placeholder}
         type={type} 
         name={name}
         value={value} 

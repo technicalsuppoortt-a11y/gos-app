@@ -16,7 +16,7 @@ const server = await createServer({ server: { port: 5197, strictPort: true }, pl
       import { store } from '/src/store/index.ts'; import { loginSuccess } from '/src/store/slices/authSlice.ts';
       import { setLanguage } from '/src/store/slices/uiSlice.ts'; import { ThemeProvider } from '/src/context/ThemeProvider.tsx';
       import { SettingsWorkspace } from '/src/pages/settings/SettingsWorkspace.tsx'; import { UserLayout } from '/src/components/layout/UserLayout.tsx';
-      import '/src/index.css'; import '/src/layout-shell.css'; import '/src/global-controls.css';
+      import '/src/i18n/i18n.ts'; import '/src/index.css'; import '/src/layout-shell.css'; import '/src/global-controls.css';
       store.dispatch(loginSuccess({user:{id:'settings-test',name:'Mohamed Joe',email:'mohamedjoe@gmail.com'},role:'ADMIN',tenant:{id:'settings-test',name:'Test'},token:'test'}));
       store.dispatch(setLanguage('en'));
       window.testRouter = createMemoryRouter([{element:React.createElement(UserLayout),children:[{path:'/dashboard/settings/*',element:React.createElement(SettingsWorkspace)},{path:'/dashboard/integrations',element:React.createElement(SettingsWorkspace)}]}],{initialEntries:['/dashboard/settings/'+(new URLSearchParams(location.search).get('tab')||'profile')]});
@@ -43,8 +43,8 @@ try {
   async function route(tab) {await evaluate(`window.testRouter.navigate('/dashboard/settings/${tab}')`);await pause(450);}
   await cdp('Runtime.enable');await cdp('Page.enable');
   await cdp('Page.navigate',{url:'http://localhost:5197/__settings-test'});await wait(`!!document.querySelector('.st-profile-grid')`);
-  const names=['Profile','Business','Team & roles','Knowledge','Tools','Integrations','Payments','Billing & Wallet','Security'];
-  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.st-nav-item b')].map(x=>x.textContent)`),names);
+  const names=['Profile','Business','Team & roles','Knowledge','Tools','Integrations','Billing & Payments','Security'];
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.layout-settings-link span')].map(x=>x.textContent)`),names);
   for(const [width,height] of [[1920,1080],[1440,900],[1024,682],[768,900],[390,844]]){
     await cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
     for(const tab of ['profile','billing','integrations']){

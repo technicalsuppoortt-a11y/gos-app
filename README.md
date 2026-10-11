@@ -1,92 +1,108 @@
 
-- Team system: sales, ratios, and targets
-- Payments Methods
-- Products must be connect with calander
-- in Analysis
-  - must part of sales in overview
-- Build Landing Page
-- Dark Mode
-- Arabic Language
+# Rest Reqs
 
-======================
+## User Dashboard
 
-# done
 
-- Toast Notifcation => done
-- Header Problems => done
-  - dropdown => done
-  - Remove Create => done
-  - logout => done
-- Redesign dashbaord
-- Redesign Inbox Page
-- Navigation between tabs => done
-- Ai Follow Up Updated
-- Redsign CRM & Leads
-  - Ready Templetes
-- Redesign Products & Paymnet
-  - must service , digital product , course => different => done
-  - Create and view and Edit Digital product Page
-  - Create and view and Edit Service Page
-  - Create and view and Edit Course Page
-  - Redesign Pricing and Offers in Course Details => done
-  - Redesign Discount and Coupons => done
-- redesign Funnels & Website
-  - Logic Of Funnels => drag & drop
-  - design
-    - Overview Design
-      - Funnels page
-      - Websites Page
-      - Domains Page
+  2- Funnel & Website
+    - Make EDitor Like Page fly
+      - Add Custom Code
+      - Layout Row and so on
+      - drag/ drop
+    - Funnels & Website
+      - Can Create Funnel Blank
+      - Make Preview More Professional
+      - make Website Templates more profesional
+      - 
+    - Domains 
+      - Make Create Domains more Professional
 
-    - Funnels Details Page
-    - Domain Detials Page
 
-- Settings
-  - Redesign Tabs
-    - Business
-    - Teams & Roles
-    - Knowledge
-    - Integrations
-    - Payments
-    - Billing & credits => have screen
-    - Security
-    - Profile
+  
+ 
 
-- Templete Designs
-- Calander Logic
 
-Act as a Senior UI/UX Architect and Lead React/Tailwind Frontend Developer. Refactor and upgrade the **Booking & Calendar** module (`src/pages/BookingCalendar.tsx` or equivalent route) to seamlessly match Koalendar's workflow and UI structure, while maintaining GOS design system aesthetics (lavender/indigo/slate palette, high density, and zero outer-page scroll).
+  
+  6- Booking & Calendar
+    - Add Booking Page
+      - Make inputs more small
+      - compare exisit all inputs
+    - New Booking
+      - make in isolated page and make inputs small
+  
 
----
+  
+  8- Analysis
+    - Add Sales Cards in overview
+    - Review analysis from document
+  
 
-### 🚨 1. Navigation Architecture & Tab Structure
-Modify the top tab bar to contain **5 core tabs**:
-1. **Dashboard:** Primary hub showing active booking pages cards with status indicators, booking counts, duration, platform tag (e.g., Google Meet, Zoom), share/view CTAs, and a 3-dot dropdown menu (`Edit`, `Add Internal Note`, `Set Color`, `Clone`, `Turn Off/On`, `Delete`).
-2. **Bookings:** Chronological list of appointments categorized by sub-tabs (`Upcoming`, `Pending`, `Canceled`, `Past`, `Date Range`), styled with time slots, attendee details, and left accent status borders matching Koalendar.
-3. **Calendar:** Retain the existing Interactive System Calendar grid (Week/Month views, time-slot event blocks, metrics stats bar).
-4. **Contacts:** High-density contact table showing `Name`, `Email`, `Phone`, `Company`, search input, column visibility toggle, and import/export triggers.
-5. **Workspace:** Team management view with `Invite teammates` hero banner, team member roles (`Admins`, `Members`), search/role filter bar, and status badges.
+      
+  11- General 
+    - First View Dashboard
+    - Mobile APP
+    - Crediet
+    - Dark Mode
+    - Arabic Language   
+    - Team system: sales, ratios, and targets
+    - Payments Methods
+    - Products must be connect with calander
+    - Pixel
 
----
+==========================
 
-### 🚨 2. Route & Modal Handlers for "Create" and "View"
-- **Create / Edit Booking Page:**
-  - Clicking `+ New booking page` or `Edit` must open a dedicated route/view or full-page modal.
-  - Extract all reference fields and data inputs from `public/Feedback/Calander/BookingSuccess.tsx`.
-- **Public View Booking Page:**
-  - Clicking `View` on any booking card must open the public booking view page in a new window/tab (`target="_blank"`).
-  - Extract all reference data and booking form logic from `public/Feedback/Calander/PublicBooking.tsx`.
-- **Styling Requirement:** Adapt all input fields, forms, and step components to match the GOS UI/UX design system (rounded-xl containers, slate-100 borders, indigo focus rings, purple primary buttons). Do NOT copy raw unstyled legacy markup.
+# Done
+## Landing Page
+  - Make Landing page
+## User Dashboard
+  1- Dashboard
+    - Revenue Overview => last Hover
+  3- inbox 
+    - white page problem
+    - switch input problem
+  5- Ai Followup
+    - white page problem
+    - Scroll problem
+  4- CRM & Leads
+    - Add professional pagination in Contacts
+    - Search bar problem in Tasks
+    - Can Add Templete with stages
+    - Crm Details Page
+      - Must be appear without scroll
+      - Add mocha data for Conversation history 
+      - Add mocha data for Appointments
+      - Add mocha data for Products & Orders
+    - make Templates / Pipeline Presets appear in one view without need scroll
+  7- Products & Payments
+      - Product Preview Page  for each type depend on inputs => done
+      - Recent orders added in all products => done
+      - make setting work => done
+      - in Course product:
+        - CRUD  student in course product
+        - must Course Content Work => done
+        - add design for orders
+        - add design for analysis => done
+        - must edit like view done 
+      - Preview for checkout page => done 
+      - remove bundle and subscription => done
+      - Must when open can edit immediately => done
+      - must funnel work => done 
+      - Pricing & Offers => restructure ui/ux => done
+      - Servie
+        - reStructure Booking in edit/create =>  done
+      - Digital Product
+        - Remove Files and Download => done
 
----
+  9- Templates
+    - remove Design Blocks
+    - Remove this tab => and make it in each category
+  
+  10- Settings 
+    - Make Sidemenu in sidebar
+    - in profile => add language , currency ,mode
+    - add permission for Team & roles
+    - add design for Knowledge
+    - Merge Payment with Billing & Wallet
+    - make Security more profssional logic /design
 
-### 🚨 3. Zero-Scroll Viewport & Responsive Design Constraints
-- **Viewport Layout:** Set the root view container to `h-[calc(100vh-4rem)] overflow-hidden flex flex-col` so that top headers and tabs remain fixed.
-- **Scroll Containment:** Ensure only inner view tables or lists scroll vertically (`flex-1 overflow-y-auto custom-scrollbar`).
-- **Responsive Adaptability:** On mobile/tablet screens, collapse navigation tabs into a smooth horizontal scroll strip or compact dropdown, and stack table rows/cards cleanly.
-- Do NOT alter any external sidebar, header, or unrelated workspace routes.
 
----
-
-### 💻 EXPECTED OUTCOME:
-The Booking & Calendar module features a 5-tab interface (Dashboard, Bookings, Calendar, Contacts, Workspace) matching Koalendar's exact layout and card actions, integrates the custom input references from `BookingSuccess.tsx` and `PublicBooking.tsx` styled to GOS standards, and delivers a zero-scroll responsive layout.

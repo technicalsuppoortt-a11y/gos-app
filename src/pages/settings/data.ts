@@ -4,7 +4,7 @@ import portrait from '../../assets/inbox/mohamed.jpg';
 export interface Profile {
   name: string; email: string; phone: string; language: string; timezone: string; dateFormat: string;
   photo: string; title: string; bio: string; emailNotifications: boolean; marketing: boolean;
-  memberSince?: string;
+  memberSince?: string; currency?: string;
 }
 export interface IntegrationState { status: 'Connected' | 'Not Connected' | 'Needs Attention'; account?: string; problem?: string; providerStatus?: string; sync?: boolean }
 export interface Transaction { id: string; date: string; type: string; description: string; service: string; amount: number; balance: number }

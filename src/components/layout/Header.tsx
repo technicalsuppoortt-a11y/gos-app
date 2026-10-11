@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { toggleSidebar } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
@@ -14,7 +14,6 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
   '/dashboard/booking': { title: 'Booking & Calendar', description: 'Create booking links, manage your availability and let clients book appointments with you.' },
   '/dashboard/funnels': { title: 'Funnel & Website', description: 'Build and manage the paths that turn visitors into customers.' },
-  '/dashboard/templates': { title: 'Templates', description: 'Start with a proven page or funnel design.' },
   '/dashboard/integrations': { title: 'Integrations', description: 'Connect the tools that keep your business in sync.' },
   '/dashboard/inbox': { title: 'Inbox', description: 'Manage all your customer conversations in one place.' },
   '/dashboard/crm': { title: 'CRM & Leads', description: 'Build relationships and keep your pipeline moving.' },
@@ -45,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const discountTitle = isDiscountEdit ? 'Edit Discount' : 'Create New Discount';
   const backToDiscounts = () => navigate('/dashboard/products-payments?tab=discounts');
 
-  const productMatch = location.pathname.match(/^\/dashboard\/products-payments\/products\/([^/]+)/);
+  const productMatch = location.pathname.match(/^\/dashboard\/products-payments\/(?:products|course)\/([^/]+)/);
   const isProductWorkspace = !!productMatch;
   const productId = productMatch ? productMatch[1] : null;
   const products = useProducts();
@@ -78,6 +77,15 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     </div>
     <div className="layout-header-actions">
       {isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>Cancel</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{isDiscountEdit ? 'Save Changes' : 'Create Discount'}</button></div> : <label className="layout-search"><Search size={16}/><input aria-label="Search" placeholder="Search anything..."/><kbd>⌘ K</kbd></label>}
+      <button 
+        type="button" 
+        onClick={() => navigate('/')} 
+        className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+        aria-label="View Landing Page"
+      >
+        <Globe size={15} />
+        <span>View Landing Page</span>
+      </button>
       <div className="layout-preference-controls"><LanguageSwitcher/><ThemeToggle/></div>
       <button className="layout-notifications" aria-label="Notifications"><Bell size={18}/><i/></button>
       

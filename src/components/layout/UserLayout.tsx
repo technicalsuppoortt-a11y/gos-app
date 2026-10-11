@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
+import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
+import { settingsTabs } from '../../pages/settings/navigation';
 
 const userItems: SidebarItem[] = [
   { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
@@ -15,8 +17,7 @@ const userItems: SidebarItem[] = [
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Templates', href: '/templates', icon: LayoutGrid, dividerBefore: true },
-  { name: 'Settings', href: '/settings', icon: Settings, end: false },
+  { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'], children: settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon })) },
 ];
 
 const bookingTabs = [
@@ -25,6 +26,7 @@ const bookingTabs = [
   { label: 'Calendar', value: 'calendar', icon: CalendarDays },
   { label: 'Contacts', value: 'contacts', icon: Users },
   { label: 'Workspace', value: 'workspace', icon: Users },
+  { label: 'Templates', value: 'templates', icon: LayoutGrid },
 ];
 
 function BookingTabs() {
@@ -49,20 +51,25 @@ function BookingTabs() {
 
 export const UserLayout: React.FC = () => {
   const location = useLocation();
+  const canAccess = useModuleAccess();
+  const module = moduleForPath(location.pathname);
+  const permitted = ['settings', 'integrations'].includes(module) || canAccess(module);
+  const visibleItems = userItems.filter(item => item.href === '/settings' || canAccess(moduleForPath('/dashboard' + item.href)));
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
-  const isProductWorkspace = /^\/dashboard\/products-payments\/products\/[^/]+(?:\/(?:edit|pricing))?$/.test(location.pathname);
-  const isTemplates = location.pathname === '/dashboard/templates';
-  const isFullPage = isInbox || isCRM || isTemplates || isBooking;
-  return <div className={`layout-dashboard-shell user-dashboard-shell${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isTemplates ? ' is-templates-route h-screen max-h-screen overflow-hidden' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
-    <Sidebar items={userItems} basePath="/dashboard"/>
+  const isProductWorkspace = /^\/dashboard\/products-payments\/(?:products|course)\/[^/]+(?:\/(?:edit|pricing|orders|students))?$/.test(location.pathname);
+
+  const isNativeTemplates = new URLSearchParams(location.search).get('tab') === 'templates';
+  const isFullPage = isInbox || isCRM || isBooking || isNativeTemplates;
+  return <div className={`layout-dashboard-shell user-dashboard-shell${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`}>
+    <Sidebar items={visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
       {isBooking && <BookingTabs/>}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
-        <AnimatePresence mode="wait"><motion.div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: .18 }}><Outlet/></motion.div></AnimatePresence>
+        <AnimatePresence mode="wait"><motion.div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: .18 }}>{permitted ? <Outlet/> : <section className="module-access-message"><h1>Module access restricted</h1><p>Your team permissions do not include this module. Contact your workspace owner to request access.</p></section>}</motion.div></AnimatePresence>
       </main>
       {!isFullPage && !isProductWorkspace && <footer className="layout-footer"><span>© 2025 GOS Inc.</span><span className="layout-footer-status"><i/> All systems operational</span></footer>}
     </div>

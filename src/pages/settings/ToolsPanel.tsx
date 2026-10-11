@@ -9,7 +9,7 @@ const tools = [
   { name: 'Products', description: 'Sell digital/physical products', icon: CreditCard, color: 'red', to: '/dashboard/products' },
   { name: 'AI Follow-up', description: 'Automated replies', icon: Send, color: 'purple', to: '/dashboard/follow-up' },
   { name: 'Inbox', description: 'Unified conversations', icon: MessageCircle, color: 'blue', to: '/dashboard/inbox' },
-  { name: 'Templates', description: 'Saved page templates', icon: LayoutGrid, color: 'neutral', to: '/dashboard/templates' },
+  { name: 'Funnel templates', description: 'Saved funnel and website templates', icon: LayoutGrid, color: 'neutral', to: '/dashboard/funnels?tab=templates' },
 ];
 export function ToolsSettingsPanel() {
   const navigate = useNavigate();

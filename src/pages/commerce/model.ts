@@ -1,5 +1,5 @@
-export const productTypes = ['Service', 'Digital Product', 'Course / Membership', 'Subscription', 'Bundle'] as const;
-export type ProductType = typeof productTypes[number] | 'Physical Product' | ProductKind;
+export const productTypes = ['Service', 'Digital Product', 'Course'] as const;
+export type ProductType = typeof productTypes[number] | 'Course / Membership' | 'Subscription' | 'Bundle' | 'Physical Product' | ProductKind;
 export type StatKind = 'sales' | 'revenue' | 'bookings' | 'members';
 export type Billing = 'One-time' | 'Payment plan' | 'Subscription';
 export type ProductKind = 'course' | 'digital' | 'service' | 'subscription' | 'bundle' | 'physical';
@@ -26,12 +26,17 @@ export interface ProductExperience {
   discounts: PricingDiscount[];
   accessRule: typeof accessRules[number]; accessDate: string; dripDays: number;
 }
+export interface Student { id: string; name: string; email: string; status: 'Active' | 'Pending' | 'Completed' | 'Suspended'; progress: number; enrolledAt: string; avatar?: string; sample?: boolean }
+export interface CommerceOrder { id: string; customer: string; email: string; at: string; amount: number; currency: CommerceConfig['currency']; status: 'Paid' | 'Pending' | 'Refunded'; productName?: string; sample?: boolean }
+export interface CommerceActivity { id: string; title: string; at: string }
 export interface CommerceConfig {
+  students?: Student[]; orders?: CommerceOrder[]; activities?: CommerceActivity[];
+  funnelId?: string; funnelPageId?: string; customDomain?: string; webhookUrl?: string; webhookEvents?: string[];
   amount: number; currency: 'EUR' | 'USD' | 'GBP'; billing: Billing;
   installments: number; frequency: 'Monthly' | 'Quarterly' | 'Yearly'; trialDays: number;
   cancellation: 'End of billing period' | 'Immediately'; taxRate: number;
   access: 'Lifetime access' | '12 months' | 'While subscribed'; delivery: 'Instant' | 'After approval';
-  bookingUrl: string; duration: number; fulfillment: string;
+  bookingUrl: string; duration: number; fulfillment: string; bookingSlots?: string[];
   assets: Array<{ name: string; url: string; storageId?: string; size?: number; mime?: string }>; downloadLimit: number;
   modules: Array<{ title: string; lessons: Array<string | Lesson> }>; communityUrl: string; enrollment: 'Automatic' | 'After approval';
   components: string[]; sku: string; inventory: number; shippingRequired: boolean;
@@ -46,7 +51,7 @@ export interface Product {
 }
 export function defaultConfig(type: ProductType, price = ''): CommerceConfig {
   const amount = Number((price.match(/[\d,.]+/)?.[0] ?? '0').replaceAll(',', '')) || 0;
-  const recurring = productKind(type) === 'subscription';
+  const recurring = type.toLowerCase() === 'subscription';
   return { amount, currency: 'EUR', billing: recurring ? 'Subscription' : 'One-time',
     installments: 3, frequency: 'Monthly', trialDays: 0, cancellation: 'End of billing period', taxRate: 0,
     access: recurring ? 'While subscribed' : 'Lifetime access', delivery: 'Instant',
@@ -68,16 +73,17 @@ export function productKind(type: string): ProductKind {
   const value = type.toLowerCase();
   if (['course', 'membership', 'course / membership', 'online course'].includes(value)) return 'course';
   if (['digital', 'digital product'].includes(value)) return 'digital';
-  if (['service', 'subscription', 'bundle'].includes(value)) return value as ProductKind;
-  return 'physical';
+  if (value === 'service') return 'service';
+  if (value === 'subscription') return 'course';
+  return 'digital';
 }
-export const kindLabels: Record<ProductKind, ProductType> = { course: 'Course / Membership', digital: 'Digital Product', service: 'Service', subscription: 'Subscription', bundle: 'Bundle', physical: 'Physical Product' };
+export const kindLabels: Record<ProductKind, ProductType> = { course: 'Course', digital: 'Digital Product', service: 'Service', subscription: 'Course', bundle: 'Digital Product', physical: 'Digital Product' };
 export function lessonData(lesson: string | Lesson, index = 0): Lesson {
   return typeof lesson === 'string' ? { id: `legacy-${index}`, title: lesson, kind: 'Video', duration: '', url: '' } : lesson;
 }
 export function hydrateProduct(product: Product): Product {
   const type = kindLabels[productKind(product.type)];
-  const defaults = defaultConfig(type, product.price);
+  const defaults = defaultConfig(product.type, product.price);
   const config = { ...defaults, ...product.config, automations: { ...defaults.automations, ...product.config?.automations } };
   const experience = { ...defaultExperience(), oneTimeAmount: config.billing === 'Payment plan' ? config.amount * config.installments : config.amount, installmentAmount: config.billing === 'Payment plan' ? config.amount : Math.round(config.amount / config.installments * 100) / 100, recurringAmount: config.billing === 'Subscription' ? config.amount : 29, planEnabled: config.billing === 'Payment plan', recurringEnabled: config.billing === 'Subscription', ...product.config?.experience, instructor: { ...defaultExperience().instructor, ...config.experience?.instructor }, checkout: { ...defaultExperience().checkout, ...config.experience?.checkout } };
   experience.coupon = { ...defaultExperience().coupon, ...product.config?.experience?.coupon };
@@ -94,6 +100,7 @@ export function formatPrice(config: CommerceConfig) {
 export function validateProduct(product: Product, publish = false): string[] {
   const c = product.config ?? defaultConfig(product.type, product.price);
   const errors: string[] = [];
+  if (!productTypes.includes(product.type as typeof productTypes[number])) errors.push('Choose Service, Digital Product or Course as the product type.');
   if (!product.name.trim()) errors.push('Enter a product name.');
   if (!Number.isFinite(c.amount) || c.amount < 0) errors.push('Price must be zero or greater.');
   if (c.billing === 'Payment plan' && (!Number.isInteger(c.installments) || c.installments < 2)) errors.push('Payment plans need at least two installments.');
@@ -118,12 +125,14 @@ export function validateProduct(product: Product, publish = false): string[] {
     if (experience.accessRule === 'After specific date' && (!experience.accessDate || !Number.isFinite(Date.parse(experience.accessDate)))) errors.push('Choose a valid product access date.');
     if (experience.accessRule === 'Drip content (scheduled release)' && (!Number.isInteger(experience.dripDays) || experience.dripDays < 1)) errors.push('Drip release interval must be a positive whole number of days.');
   }
-  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Funnel URL', experience?.funnelUrl], ['Direct checkout URL', experience?.directCheckoutUrl], ...Object.entries(experience?.instructorSocials ?? {}).map(([network, url]) => [`${network} URL`, url]), ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
+  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Webhook URL', c.webhookUrl], ['Custom domain', c.customDomain ? `https://${c.customDomain}` : ''], ['Funnel URL', experience?.funnelUrl], ['Direct checkout URL', experience?.directCheckoutUrl], ...Object.entries(experience?.instructorSocials ?? {}).map(([network, url]) => [`${network} URL`, url]), ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
     if (url) {
       try { const parsed = new URL(url); if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(); }
       catch { errors.push(`${label} must be a valid https:// or http:// URL.`); }
     }
   }
+  if (c.customDomain && !/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(c.customDomain)) errors.push('Enter a domain name without a protocol or path.');
+  for (const student of c.students ?? []) { if (!student.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email) || !Number.isFinite(student.progress) || student.progress < 0 || student.progress > 100) errors.push('Students need a name, valid email and progress between 0 and 100.'); }
   if (publish) {
     if (!product.description.trim()) errors.push('Add a description before publishing.');
     if (kind === 'service' && !c.bookingUrl.trim() && !c.fulfillment.trim()) errors.push('Add a booking link or service fulfillment instructions.');

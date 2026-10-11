@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Activity, AppWindow, BarChart3, Bell, CreditCard, FileText, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck } from 'lucide-react';
+import { Activity, AppWindow, BarChart3, Bell, CreditCard, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
@@ -15,7 +15,6 @@ const navigation = [
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },
-  { label: 'Templates', to: '/super-admin/templates', icon: FileText },
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
   { label: 'Payments', to: '/super-admin/payments', icon: CreditCard },
   { label: 'Logs & Monitoring', to: '/super-admin/logs', icon: Activity },
