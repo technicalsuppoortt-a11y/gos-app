@@ -5,7 +5,7 @@ import { showToast } from '../utils/toast';
 let workspace: Workspace | null = null;
 const snapshot = () => workspace ?? (workspace = readWorkspace());
 const listeners = new Set<() => void>();
-window.addEventListener('storage', event => {
+if (typeof window !== 'undefined') window.addEventListener('storage', event => {
   if (event.key === storageKey || event.key === null) { workspace = readWorkspace(); listeners.forEach(fn => fn()); }
 });
 export function useAssetWorkspace(): [Workspace, (update: SetStateAction<Workspace>) => void] {

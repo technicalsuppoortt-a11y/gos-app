@@ -129,15 +129,36 @@ type FollowUpSettings = {
 };
 const readLocal = <T,>(key: string, fallback: T): T => {
   try {
+    if (typeof localStorage === 'undefined') return fallback;
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    const value: unknown = raw ? JSON.parse(raw) : null;
+    if (value === null || typeof value !== typeof fallback || (Array.isArray(fallback) !== Array.isArray(value))) return fallback;
+    if (Array.isArray(value)) {
+      const strings = (item: Record<string, unknown>, keys: string[]) => keys.every(field => typeof item[field] === 'string');
+      const valid = value.filter(item => {
+        if (!item || typeof item !== 'object' || typeof item.id !== 'string') return false;
+        if (key === WORKFLOWS_KEY) return strings(item, ['name', 'description', 'trigger', 'from', 'to', 'actionType']) && typeof item.active === 'boolean' && Array.isArray(item.sequenceSteps) && item.sequenceSteps.every((step: unknown) => !!step && typeof step === 'object' && strings(step as Record<string, unknown>, ['id', 'delay', 'unit', 'action']));
+        if (key === TEMPLATES_KEY) return strings(item, ['title', 'description', 'iconKey']);
+        return strings(item, ['name', 'type', 'detail']);
+      });
+      return (value.length && !valid.length ? fallback : valid) as T;
+    }
+    if (typeof fallback === 'object' && fallback !== null) {
+      const merged = { ...fallback } as Record<string, unknown>;
+      for (const [field, expected] of Object.entries(fallback)) {
+        const saved = (value as Record<string, unknown>)[field];
+        if (typeof saved === typeof expected) merged[field] = saved;
+      }
+      return merged as T;
+    }
+    return value as T;
   } catch {
     return fallback;
   }
 };
 const writeLocal = (key: string, value: unknown) => {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(value));
   } catch {
     /* Keep the current session usable when storage is unavailable. */
   }

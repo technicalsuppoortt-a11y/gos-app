@@ -1,6 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+
 import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
@@ -69,7 +70,7 @@ export const UserLayout: React.FC = () => {
       <Header title={isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined}/>
       {isBooking && <BookingTabs/>}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
-        <AnimatePresence mode="wait"><motion.div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: .18 }}>{permitted ? <Outlet/> : <section className="module-access-message"><h1>Module access restricted</h1><p>Your team permissions do not include this module. Contact your workspace owner to request access.</p></section>}</motion.div></AnimatePresence>
+        <div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`}>{permitted ? <Outlet/> : <section className="module-access-message"><h1>Module access restricted</h1><p>Your team permissions do not include this module. Contact your workspace owner to request access.</p></section>}</div>
       </main>
       {!isFullPage && !isProductWorkspace && <footer className="layout-footer"><span>© 2025 GOS Inc.</span><span className="layout-footer-status"><i/> All systems operational</span></footer>}
     </div>

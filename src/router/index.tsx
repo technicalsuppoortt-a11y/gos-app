@@ -1,6 +1,9 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy as reactLazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { DefaultRedirect, ProtectedRoute, RouteLoading } from './ProtectedRoute';
+import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
+import { Suspended } from './RouteBoundary';
+import { retryImport } from './chunkRecovery';
+const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
 import '../route-loading.css';
 
@@ -32,45 +35,6 @@ const crmChildren = [
   { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
   { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
 ];
-
-class ErrorBoundary extends React.Component<React.PropsWithChildren, { hasError: boolean }> {
-  constructor(props: React.PropsWithChildren) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error) {
-    const msg = error.message || "";
-    if (
-      error.name === "ChunkLoadError" ||
-      msg.includes("fetch dynamically imported module") ||
-      msg.includes("loading chunk")
-    ) {
-      window.location.reload();
-    }
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-[#0b101e]">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">A new version is available, or there was an issue loading this page.</h2>
-          <button onClick={() => window.location.reload()} className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white hover:bg-purple-700">Reload Page</button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-function Suspended({ children }: React.PropsWithChildren) {
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<RouteLoading/>}>{children}</Suspense>
-    </ErrorBoundary>
-  );
-}
 
 function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Role[] }>) {
   return <ProtectedRoute allowedRoles={roles}><Suspended>{children}</Suspended></ProtectedRoute>;

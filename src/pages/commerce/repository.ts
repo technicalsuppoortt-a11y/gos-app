@@ -22,7 +22,7 @@ function read(key: string): Product[] {
 let key = storageKey();
 let products = read(key);
 store.subscribe(() => { const nextKey = storageKey(); if (nextKey !== key) { key = nextKey; products = read(key); listeners.forEach(fn => fn()); } });
-window.addEventListener('storage', event => { if (event.key === key || event.key === null) { products = read(key); listeners.forEach(fn => fn()); } });
+if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === key || event.key === null) { products = read(key); listeners.forEach(fn => fn()); } });
 export function useProducts() {
   return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, () => products, () => products);
 }

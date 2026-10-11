@@ -1,3 +1,4 @@
+import { storageGet, storageSet } from '../../utils/browserStorage';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type Theme = 'light' | 'dark';
@@ -10,8 +11,8 @@ interface UIState {
 }
 
 const initialState: UIState = {
-  theme: (localStorage.getItem('theme') as Theme) || 'light',
-  language: (localStorage.getItem('i18nextLng') as Language) || 'ar',
+  theme: storageGet('theme') === 'dark' ? 'dark' : 'light',
+  language: storageGet('i18nextLng') === 'en' ? 'en' : 'ar',
   sidebarOpen: false,
 };
 
@@ -21,18 +22,17 @@ const uiSlice = createSlice({
   reducers: {
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('theme', state.theme);
-      if (state.theme === 'dark') {
+      storageSet('theme', state.theme);
+      if (typeof document !== 'undefined' && state.theme === 'dark') {
         document.documentElement.classList.add('dark');
-      } else {
+      } else if (typeof document !== 'undefined') {
         document.documentElement.classList.remove('dark');
       }
     },
     setLanguage: (state, action: PayloadAction<Language>) => {
       state.language = action.payload;
-      localStorage.setItem('i18nextLng', action.payload);
-      document.documentElement.lang = action.payload;
-      document.documentElement.dir = action.payload === 'ar' ? 'rtl' : 'ltr';
+      storageSet('i18nextLng', action.payload);
+      if (typeof document !== 'undefined') { document.documentElement.lang = action.payload; document.documentElement.dir = action.payload === 'ar' ? 'rtl' : 'ltr'; }
     },
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;

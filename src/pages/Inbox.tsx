@@ -492,7 +492,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     setAttachments((current) => current.filter((item) => item.id !== id));
 
   const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia || typeof window.MediaRecorder === "undefined") {
+    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof window.MediaRecorder === "undefined") {
       showToast.error("Voice recording isn't supported in this browser.");
       return;
     }

@@ -1,3 +1,4 @@
+import { storageGet } from '../utils/browserStorage';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -11,7 +12,7 @@ i18n
       en: { translation: en },
       ar: { translation: ar },
     },
-    lng: localStorage.getItem('i18nextLng') || 'ar',
+    lng: storageGet('i18nextLng') || 'ar',
     fallbackLng: 'ar',
     interpolation: {
       escapeValue: false, // react already safes from xss
@@ -19,6 +20,6 @@ i18n
   });
 
 // Setup initial direction based on language
-document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+if (typeof document !== 'undefined') document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
 
 export default i18n;
