@@ -4,19 +4,6 @@
 ## User Dashboard
 
 
-  2- Funnel & Website
-    - Make EDitor Like Page fly
-      - Add Custom Code
-      - Layout Row and so on
-      - drag/ drop
-    - Funnels & Website
-      - Can Create Funnel Blank
-      - Make Preview More Professional
-      - make Website Templates more profesional
-      - 
-    - Domains 
-      - Make Create Domains more Professional
-
 
   
  
@@ -106,3 +93,17 @@
     - make Security more profssional logic /design
 
 
+
+
+  2- Funnel & Website
+    - Make EDitor Like Page fly
+      - Add Custom Code
+      - Layout Row and so on
+      - drag/ drop
+    - Funnels & Website
+      - Can Create Funnel Blank
+      - Make Preview More Professional
+      - make Website Templates more profesional
+      - 
+    - Domains 
+      - Make Create Domains more Professional

@@ -2,10 +2,10 @@ import { InviteeFields } from './InviteeFields';
 import type { Dispatch, SetStateAction } from 'react';
 import { BookingSelect } from './BookingSelect';
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Video } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Video, X } from 'lucide-react';
 import { COLORS, availableSlots, dateKey, formatTime, hostInstant, parseDate, uid } from './model';
 import type { Appointment, BookingPage } from './model';
-import { Empty, Modal } from './ui';
+import { Empty } from './ui';
 
 export function SystemCalendar({ pages, bookings, onEdit, onNew }: { pages: BookingPage[]; bookings: Appointment[]; onEdit: (b: Appointment) => void; onNew: (date?: string, time?: string) => void }) {
   const [view, setView] = useState<'Week' | 'Month'>('Week');
@@ -56,7 +56,7 @@ export function AppointmentEditor({ pages, bookings, value, save, close }: { pag
     setResponses(current=>current[nextId]?current:{...current,[nextId]:{name:answers.name||'',email:answers.email||'',whatsapp:answers.whatsapp||'',firstName:answers.firstName||'',lastName:answers.lastName||''}});
     setPageId(nextId);setDuration(next.duration);setLocation(next.location);setTime('');setError('');
   };
-  return <Modal title={existing?'Appointment details / reschedule':'Add appointment'} close={close}><form className="bk-form bk-dialog-body" onSubmit={e=>{
+  return <main className="bk-editor-page bk-appointment-page flex flex-col"><header className="bk-editor-header"><button type="button" className="bk-button" onClick={close}><ArrowLeft size={15}/>Back</button><div><span className="bk-eyebrow">GOS / BOOKING WORKSPACE</span><h1>{existing?'Appointment details / reschedule':'Add appointment'}</h1></div><button className="bk-icon" type="button" onClick={close} aria-label="Close appointment editor"><X size={19}/></button></header><form className="bk-appointment-form" onSubmit={e=>{
     e.preventDefault();
     if(!page){setError('Choose a booking page.');return}
     const missing=page.questions.find(q=>q.active!==false&&q.type!=='text-block'&&q.required&&!answers[q.id]?.trim());
@@ -66,15 +66,15 @@ export function AppointmentEditor({ pages, bookings, value, save, close }: { pag
     if(!selected&&status!=='Canceled'&&!(past&&existing.date===date&&existing.time===time&&existing.duration===duration&&existing.calendarId===pageId)){setError('Choose an available time. Availability, notice and buffers apply.');return}
     save({id:existing?.id||uid(),calendarId:page.id,serviceName:page.name,name:(answers.name||'').trim(),email:(answers.email||'').trim().toLowerCase(),whatsapp:answers.whatsapp||'',date,time,start:selected?.start||existing?.start||hostInstant(date,time,page.hostTimezone).toISOString(),duration,location,timezone:page.hostTimezone,status,source:existing?.source||'',fromAd:existing?.fromAd??null,customAnswers:{...answers},guests:page.formSettings.guestsActive?guests:[],...(existing?.payment?{payment:existing.payment}:{})});
   }}>
-    {!pages.length?<Empty title="Create a booking page first" detail="Appointments need a page with availability rules."/>:<>
+    <div className="bk-appointment-fields bk-form custom-scrollbar">{!pages.length?<Empty title="Create a booking page first" detail="Appointments need a page with availability rules."/>:<>
       <label>Booking page<BookingSelect value={pageId} onChange={e=>changePage(e.target.value)}>{pages.map(p=><option key={p.id} value={p.id}>{p.name}{p.active?'':' (turned off)'}</option>)}</BookingSelect></label>
       {page&&<section className="bk-appointment-questions bk-form" key={page.id}><div className="bk-appointment-form-heading"><b>Client details &amp; booking questions</b><small>{page.name}</small></div><InviteeFields page={page} answers={answers} setAnswers={setAnswers} guests={guests} setGuests={setGuests}/></section>}
       <div className="bk-form-grid"><label>Date<input type="date" required value={date} onChange={e=>{setDate(e.target.value);setTime('');setError('')}}/></label><label>Time ({page?.hostTimezone})<BookingSelect required value={time} onChange={e=>setTime(e.target.value)}><option value="">Select a time</option>{existing&&existing.calendarId===pageId&&existing.date===date&&existing.duration===duration&&!slots.some(s=>s.time===existing.time)&&<option value={existing.time}>{existing.time} (existing)</option>}{slots.map(s=><option key={s.time} value={s.time}>{formatTime(s.start,page!.hostTimezone)}</option>)}</BookingSelect></label></div>
       <div className="bk-form-grid"><label>Duration<BookingSelect value={duration} onChange={e=>{setDuration(Number(e.target.value));setTime('')}}>{[...new Set([duration,...(page?.durationOptions||[30])])].map(n=><option key={n} value={n}>{n} min</option>)}</BookingSelect></label><label>Status<BookingSelect value={status} onChange={e=>setStatus(e.target.value as Appointment['status'])}>{['Confirmed','Pending','Canceled'].map(s=><option key={s}>{s}</option>)}</BookingSelect></label></div>
       <label><span><Video size={13}/>Location</span><input required value={location} onChange={e=>setLocation(e.target.value)}/></label>
       {!slots.length&&!past&&<p className="bk-tip">There are no bookable times on this day. Choose another date.</p>}{error&&<p className="bk-error" role="alert">{error}</p>}
-    </>}
+    </>}</div>
     <div className="bk-dialog-footer"><button type="button" className="bk-button" onClick={close}>Close</button><button className="bk-button primary" disabled={!page}>Save appointment</button></div>
-  </form></Modal>;
+  </form></main>;
 }
 

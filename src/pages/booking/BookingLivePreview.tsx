@@ -1,6 +1,6 @@
 import { BookingBrandingFooter } from './BookingBrandingFooter';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, Monitor, Smartphone, Video } from 'lucide-react';
 import { availableSlots, COLORS, dateKey, displayedSlots, formatDay, formatTime, KEYS, readAppointments, remainingSpots, TIMEZONES, useStored } from './model';
 import type { BookingPage } from './model';
@@ -10,6 +10,26 @@ import { InviteeFields } from './InviteeFields';
 
 export function BookingLivePreview({page}:{page:BookingPage}) {
   const [device,setDevice] = useState<'desktop'|'mobile'>('desktop');
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [fit,setFit] = useState({scale:1,height:0});
+  useLayoutEffect(()=>{
+    const viewport=viewportRef.current,frame=frameRef.current;
+    if(!viewport||!frame)return;
+    let pending=0;
+    const measure=()=>{
+      cancelAnimationFrame(pending);
+      pending=requestAnimationFrame(()=>{
+        const width=frame.offsetWidth,height=frame.offsetHeight;
+        if(!width||!height)return;
+        const scale=Math.min(1,Math.max(1,viewport.clientWidth-8)/width,Math.max(1,viewport.clientHeight-8)/height);
+        setFit(current=>Math.abs(current.scale-scale)<.001&&current.height===height?current:{scale,height});
+      });
+    };
+    const observer=new ResizeObserver(measure);
+    observer.observe(viewport);observer.observe(frame);measure();
+    return()=>{observer.disconnect();cancelAnimationFrame(pending);};
+  },[device]);
   const [month,setMonth] = useState(()=>new Date(new Date().getFullYear(),new Date().getMonth(),1));
   const [date,setDate] = useState('');
   const [slot,setSlot] = useState('');
@@ -30,7 +50,7 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
   const selected = slots.find(s=>s.start===slot&&!s.busy);
   const advance = (n:number)=>{setMonth(m=>new Date(m.getFullYear(),m.getMonth()+n,1));setDate('');setSlot('');setStep('time')};
   return <aside className="bk-editor-preview"><header className="bk-preview-heading"><div><b>Live preview</b><small>Changes appear as you edit.</small></div><div className="bk-segmented" aria-label="Preview device"><button aria-label="Desktop preview" aria-pressed={device==='desktop'} className={device==='desktop'?'active':''} onClick={()=>setDevice('desktop')}><Monitor size={16}/></button><button aria-label="Mobile preview" aria-pressed={device==='mobile'} className={device==='mobile'?'active':''} onClick={()=>setDevice('mobile')}><Smartphone size={16}/></button></div></header>
-    <div className="bk-preview-scroll custom-scrollbar"><div className={'bk-preview-frame '+device} style={{'--booking-color':COLORS[page.color]||COLORS.violet} as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
+    <div className="bk-preview-scroll" ref={viewportRef}><div className="bk-preview-fit" style={{height:fit.height*fit.scale}}><div ref={frameRef} className={'bk-preview-frame '+device} style={{'--booking-color':COLORS[page.color]||COLORS.violet,transform:`translateX(-50%) scale(${fit.scale})` } as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
       <div className="bk-preview-banner"><CalendarDays size={13}/><span>Preview · Appointments are not saved here</span></div>
       <div className="bk-preview-public"><section className="bk-preview-profile">
         {page.image?<div className="bk-public-media">{page.mediaType==='video'?<video src={page.image} controls playsInline/>:<img src={page.image} alt={page.hostName} style={{borderRadius:page.imageRound?'50%':12}}/>}</div>:<Avatar name={page.hostName}/>}
@@ -43,7 +63,7 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
           <div className="bk-slot-list"><b>{date?formatDay(date):'Choose a date to see available times'}</b>{slots.map(s=><button key={s.start} disabled={s.busy} className={selected?.start===s.start?'selected':''} aria-pressed={selected?.start===s.start} onClick={()=>setSlot(s.start)}>{formatTime(s.start,zone)}{page.groupCapacity>1&&page.displaySpotsLeft&&!s.busy&&<small>{remainingSpots(page,s.start,duration,bookings)} spots left</small>}</button>)}{date&&!slots.length&&<p className="bk-muted">No available times for this date.</p>}</div><button className="bk-button primary" disabled={!selected} onClick={()=>setStep('details')}>Continue<ArrowRight size={13}/></button>
         </>}
       </section></div><BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/>
-    </div></div>
+    </div></div></div>
   </aside>;
 }
 

@@ -1,0 +1,59 @@
+import {useState} from 'react';
+import type {ReactNode} from 'react';
+import {AssetSelect} from './AssetControls';
+import type {BuilderSection} from './BuilderWorkspace';
+import {deviceElement,elementHidden} from './element-properties';
+import {ElementCodeEditor} from './ElementCodeEditor';
+import {defaultElementCode} from './HtmlLiquidElement';
+
+type Props={item:BuilderSection;tab:string;content:(key:string,value:string)=>void;styles:(value:Partial<BuilderSection['styles']>)=>void;children:ReactNode};
+const fonts=['Default','Arial','Inter','Manrope','DM Sans','Georgia','Times New Roman','Verdana'];
+export function PageFlyInspector({item:source,tab,content:saveContent,styles:saveStyles,children}:Props) {
+  const [codeOpen,setCodeOpen]=useState(false);
+  const device=tab==='Style'?(source.content.styleDevice||'All'):'All';
+  const item=device==='All'?source:deviceElement(source,device);
+  const devicePatch=(patch:{content?:Record<string,string>;styles?:Partial<BuilderSection['styles']>})=>{
+    let previous:{content?:Record<string,string>;styles?:Partial<BuilderSection['styles']>}={};
+    try{previous=JSON.parse(source.content['device:'+device.toLowerCase()]||'{}');}catch{/* Start this device's settings. */}
+    saveContent('device:'+device.toLowerCase(),JSON.stringify({content:{...previous.content,...patch.content},styles:{...previous.styles,...patch.styles}}));
+  };
+  const content=(key:string,next:string)=>{const patch=key==='bold'?{[key]:next,fontWeight:'Default'}:{[key]:next};if(device==='All'||key==='styleDevice'){for(const [name,value] of Object.entries(patch))saveContent(name,value);}else devicePatch({content:patch});};
+  const styles=(patch:Partial<BuilderSection['styles']>)=>device==='All'?saveStyles(patch):devicePatch({styles:patch});
+  const value=(key:string,fallback='')=>item.content[key]??fallback;
+  const field=(label:string,key:string,fallback='',type='text')=><label>{label}<input aria-label={label} type={type} value={value(key,fallback)} onChange={e=>content(key,e.target.value)}/></label>;
+  const select=(label:string,key:string,options:string[],fallback='')=><label>{label}<AssetSelect label={label} value={value(key,fallback)} options={options} onChange={next=>content(key,next)}/></label>;
+  const color=(label:string,key:string,fallback='#ffffff')=><label>{label}<div className="pf-color-control"><input type="color" aria-label={label+' picker'} value={/^#[\da-f]{6}$/i.test(value(key,fallback))?value(key,fallback):fallback} onChange={e=>content(key,e.target.value)}/><input aria-label={label} value={value(key,fallback)} onChange={e=>content(key,e.target.value)}/></div></label>;
+  const group=(title:string,body:ReactNode)=><details className="pf-inspector-group" open><summary>{title}</summary><div>{body}</div></details>;
+  const check=(label:string,key:string)=><label className="fb-check-row"><input type="checkbox" checked={value(key)==='true'} onChange={e=>content(key,String(e.target.checked))}/>{label}</label>;
+  const alignment=<div className="pf-choice-row" role="group" aria-label="Text alignment">{['Left','Center','Right','Justify'].map(align=><button key={align} aria-label={'Align '+align.toLowerCase()} aria-pressed={item.styles.textAlign===align} onClick={()=>styles({textAlign:align})}><span>{align==='Left'?'☰':align==='Center'?'≡':align==='Right'?'☰':'▤'}</span><small>{align}</small></button>)}</div>;
+  const format=<div className="pf-choice-row pf-format-row" role="group" aria-label="Text style">{[{label:'Bold',key:'bold',text:'B'},{label:'Italic',key:'italic',text:'I'},{label:'Underline',key:'underline',text:'U'},{label:'Strikethrough',key:'strikethrough',text:'S'}].map(entry=><button key={entry.key} aria-label={entry.label} aria-pressed={value(entry.key)==='true'} onClick={()=>content(entry.key,String(value(entry.key)!=='true'))}>{entry.text}</button>)}</div>;
+  const visibility=<>{['desktop','tablet','mobile','laptop'].map(device=><label key={device} className="fb-check-row"><input type="checkbox" aria-label={'Hide on '+device} checked={device==='laptop'?value('hide_laptop')==='true':elementHidden(item,device)} onChange={e=>{if(item.styles.visibility!=='All devices'){for(const target of ['desktop','tablet','mobile'])content('hide_'+target,String(elementHidden(item,target)));styles({visibility:'All devices'});}content('hide_'+device,String(e.target.checked));}}/>Hide on {device}</label>)}</>;
+  const animations=<>{select('When visible','animationVisible',['None','Fade','Rise','Slide left','Zoom'],'None')}{select('When mouse over','animationHover',['None','Grow','Lift','Fade'],'None')}{select('When scrolling','animationScroll',['None','Fade','Rise'],'None')}{select('When clicked','animationClick',['None','Pulse'],'None')}{select('When page loading','animationLoad',['None','Fade','Rise'],'None')}</>;
+  const attributes=<>{field('HTML ID','trackingId')}{field('HTML class','htmlClass')}<button className="pf-more-settings" onClick={()=>content('showAttributes',String(value('showAttributes')!=='true'))}>More settings</button>{value('showAttributes')==='true'&&field('Tracking label','trackingLabel')}</>;
+  const text=['Heading','Paragraph','Text'].includes(item.type);
+  const box=(kind:'margin'|'padding')=><div className={'pf-box-model pf-box-'+kind} aria-label={kind+' spacing'}><span>{kind==='margin'?'Margin':'Padding'}</span>{['Top','Right','Bottom','Left'].map(side=><input className={'pf-box-'+side.toLowerCase()} key={side} aria-label={kind[0].toUpperCase()+kind.slice(1)+' '+side.toLowerCase()} value={value(kind+side,kind==='padding'?(side==='Top'||side==='Bottom'||item.id.includes('::')?item.styles.padding:'22'):value('margin','0'))} onChange={e=>content(kind+side,e.target.value)} placeholder="0"/>)}<div className="pf-box-center">{kind==='padding'?'Content':'↔'}</div></div>;
+  if(tab==='Content'||tab==='Advanced') return <div className="pf-pagefly-inspector">{tab==='Content'&&<>
+    <label>Element name<input aria-label="Element name" maxLength={100} value={source.content.elementName??''} placeholder={source.type} onChange={e=>saveContent('elementName',e.target.value)}/></label>
+    {group('Content',<>{item.type==='HTML/Liquid'?<button className="pf-open-code" onClick={()=>setCodeOpen(true)}>Open code editor</button>:text?<>
+      <label>{item.type==='Heading'?'Heading text':'Text content'}<textarea aria-label={item.type==='Heading'?'Heading text':'Text content'} value={value(item.type==='Heading'?'title':'body')} onChange={e=>content(item.type==='Heading'?'title':'body',e.target.value)}/></label>
+      {select('HTML tag','headingTag',item.type==='Heading'?['H1','H2','H3','H4','H5','H6']:['Paragraph','H1','H2','H3','H4','H5','H6'],item.type==='Heading'?'H2':'Paragraph')}
+      <label>Text alignment{alignment}</label><label>Text style{format}</label>{color('Text color','textColor','#172033')}
+      {select('Link action','destinationType',['None','External URL','Open Booking Modal','Scroll to Section'],'None')}{value('destinationType','None')!=='None'&&field('Link destination','destination')}
+    </>:children}<label>Enable style tag<div className="pf-choice-row">{['Yes','No'].map(option=><button key={option} aria-pressed={value('enableStyle','Yes')===option} onClick={()=>content('enableStyle',option)}>{option}</button>)}</div></label></>)}
+    </>}{group('Visibility',visibility)}{group('Attributes',attributes)}{group('Animation',animations)}
+    {tab==='Advanced'&&group('Custom CSS',<textarea aria-label="Custom CSS" value={item.styles.customCss} onChange={e=>styles({customCss:e.target.value})}/>)}
+    {codeOpen&&<ElementCodeEditor code={value('code',defaultElementCode)} close={()=>setCodeOpen(false)} save={code=>{content('code',code);setCodeOpen(false);}}/>}
+  </div>;
+  return <div className="pf-pagefly-inspector">
+    {group('Global style',select('Global style','globalStyle',['No global style','Brand heading','Brand body'],'No global style'))}
+    {group('Size',<><div className="pf-inspector-pair">{field('Width','width')}{field('Height','height')}</div><div className="pf-inspector-pair">{field('Min width','minWidth')}{field('Max width','maxWidth')}</div><div className="pf-inspector-pair">{field('Min height','minHeight')}{field('Max height','maxHeight')}</div></>)}
+    {group('Overall',color('Content color','textColor','#172033'))}
+    {group('Spacing',<>{box('padding')}{box('margin')}</>)}
+    {group('Typography',<>{select('Font family','fontFamily',fonts,'Default')}<label>Font size<div className="pf-slider-value"><input aria-label="Font size slider" type="range" min="8" max="120" value={value('fontSize','16')} onChange={e=>content('fontSize',e.target.value)}/><input aria-label="Font size" type="number" min="1" value={value('fontSize','')} onChange={e=>content('fontSize',e.target.value)}/><span>px</span></div></label><div className="pf-inspector-pair">{field('Line height','lineHeight')}{select('Font weight','fontWeight',['Default','100','200','300','400','500','600','700','800','900'],'Default')}</div><label>Text alignment{alignment}</label><label>Text style{format}</label>{color('Text color','textColor','#172033')}{field('Letter spacing','letterSpacing')}<button className="pf-more-settings" onClick={()=>content('moreTypography',String(value('moreTypography')!=='true'))}>More settings</button>{value('moreTypography')==='true'&&select('Text transform','textTransform',['None','uppercase','lowercase','capitalize'],'None')}</>)}
+    {group('Background',<><label>Background color<div className="pf-color-control"><input type="color" aria-label="Background color picker" value={/^#[\da-f]{6}$/i.test(item.styles.backgroundColor)?item.styles.backgroundColor:'#ffffff'} onChange={e=>styles({backgroundColor:e.target.value})}/><input aria-label="Background color" value={item.styles.backgroundColor} onChange={e=>styles({backgroundColor:e.target.value})}/></div></label>{field('Background gradient','backgroundGradient')}{field('Background image URL','backgroundImage')}<label className="pf-background-upload">Add image<input aria-label="Upload background image" type="file" accept="image/*" onChange={e=>{const file=e.target.files?.[0];if(file){const reader=new FileReader();reader.onload=()=>content('backgroundImage',String(reader.result));reader.readAsDataURL(file);}}}/></label>{select('Background size','backgroundSize',['cover','contain','auto'],'cover')}</>)}
+    {group('Border',<>{select('Border style','borderStyle',['None','solid','dashed','dotted','double'],'None')}<div className="pf-inspector-pair">{field('Border width','borderWidth','0','number')}{field('Border radius','borderRadius','0','number')}</div>{color('Border color','borderColor','#dddddd')}</>)}
+    {group('Effects',<><label>Opacity<div className="pf-slider-value"><input type="range" aria-label="Opacity" min="0" max="100" value={value('opacity','100')} onChange={e=>content('opacity',e.target.value)}/><span>{value('opacity','100')}%</span></div></label>{check('Enable shadow','enableShadow')}{value('enableShadow')==='true'&&<><div className="pf-inspector-pair">{field('Shadow X','shadowX','0','number')}{field('Shadow Y','shadowY','4','number')}</div><div className="pf-inspector-pair">{field('Shadow blur','shadowBlur','12','number')}{field('Shadow spread','shadowSpread','0','number')}</div>{color('Shadow color','shadowColor','#000000')}</>}</>)}
+    {group('Animation',animations)}
+    {group('Advanced',<><label>CSS code<textarea aria-label="CSS code" value={item.styles.customCss} onChange={e=>styles({customCss:e.target.value})}/></label><label>Apply styles to<div className="pf-choice-row">{['All','Desktop','Tablet','Mobile'].map(device=><button key={device} aria-label={device+' styles'} aria-pressed={value('styleDevice','All')===device} onClick={()=>content('styleDevice',device)}>{device}</button>)}</div></label></>)}
+  </div>;
+}

@@ -141,8 +141,8 @@ html.dark .fb-select-trigger{border-color:#34374b;background:#1b1e2e;color:#e4e5
 .fb-site-frame.mobile .fb-canvas-section:not(.fb-hero-section){padding:24px 16px!important;overflow-wrap:anywhere}
 .fb-site-frame.mobile .fb-site-footer{flex-wrap:wrap;padding:14px}
 .fb-site-frame.mobile .fb-site-footer small{margin-left:0}
-.fb-live-preview-frame.mobile{width:min(375px,100%);max-width:375px;min-width:0;overflow-x:hidden}
-.fb-live-preview-frame.mobile .fb-live-page{min-height:660px;overflow-x:hidden;border:8px solid #111827;border-radius:32px;box-shadow:0 20px 55px #171a2b30}
+.fb-live-preview-frame.mobile{width:375px;height:700px;max-height:85vh;max-width:100%;min-width:0;overflow:hidden;border:10px solid #111827;border-radius:36px;box-shadow:0 25px 50px -12px rgba(15,23,42,0.25);display:flex;flex-direction:column;margin:0 auto}
+.fb-live-preview-frame.mobile .fb-live-page{flex:1;width:100%;height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;border:0;border-radius:0;box-shadow:none;background:#fff}
 .fb-live-preview-frame.mobile .fb-live-page-nav{height:50px;gap:8px;padding:0 10px}
 .fb-live-preview-frame.mobile .fb-live-wordmark{flex:1;text-align:left;font-size:14px}
 .fb-live-preview-frame.mobile .fb-live-mobile-nav-toggle{width:30px;height:30px;display:grid;flex:none;place-items:center;border:1px solid #ffffff2a;border-radius:8px;background:#ffffff0d;color:#fff}

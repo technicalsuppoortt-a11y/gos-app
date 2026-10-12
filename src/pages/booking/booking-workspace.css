@@ -208,7 +208,7 @@
 
 .bk-public-details{border-top:3px solid var(--booking-color,var(--bk-indigo))}
 
-/* Dedicated booking editor: fixed shell, independently scrolling configuration and preview. */
+/* Dedicated booking editor: scrolling configuration and a preview fitted to its viewport. */
 .bk-editor-page{flex:1;min-height:0;max-height:100%;width:100%;background:var(--bk-bg);color:var(--bk-text);overflow:hidden}
 .bk-editor-header{display:flex;align-items:center;gap:12px;flex:none;padding:17px 24px;border-bottom:1px solid var(--bk-line);background:var(--bk-card)}
 .bk-editor-header h1{font-size:20px;letter-spacing:-.5px;margin:3px 0 0;font-weight:650}
@@ -280,6 +280,41 @@
 @media(max-width:1150px){.bk-editor-split{grid-template-columns:minmax(330px,1fr) minmax(320px,1fr);gap:17px;padding:17px 18px 0}.bk-preview-public{grid-template-columns:1fr}.bk-preview-profile{border-inline-end:0;border-bottom:1px solid var(--bk-line)}}
 @media(max-width:760px){.bk-editor-header{padding:12px;gap:8px;flex-wrap:wrap}.bk-editor-header h1{font-size:17px}.bk-editor-header>.bk-pill,.bk-editor-header>a{display:none}.bk-editor-split{display:flex;flex-direction:column;overflow-y:auto;padding:14px 12px 0;gap:20px}.bk-editor-configurator{overflow:visible;flex:none;padding:0}.bk-editor-preview{overflow:visible;flex:none}.bk-preview-scroll{overflow:visible}.bk-preview-public{grid-template-columns:1fr}.bk-preview-frame{max-width:550px}.bk-editor-footer{padding:10px 12px}.bk-editor-footer>.bk-muted{display:none}.bk-editor-header .bk-button{font-size:10px;padding:7px 9px}.bk-configurator-card>div:not([hidden]){padding:0 13px 15px}.bk-select.bk-filter{min-width:125px}}
 @media(prefers-reduced-motion:reduce){.bk-select-content{animation:none}.bk-preview-frame,.bk-configurator-heading>svg:last-child{transition:none}}
+
+/* Compact controls are scoped to configuration and appointment pages. */
+.bk-editor-page .bk-form{gap:10px}
+.bk-editor-page .bk-form input:not([type=checkbox]):not([type=radio]),.bk-editor-page .bk-form select,.bk-editor-page .bk-form textarea,.bk-editor-page .bk-form .bk-select-trigger{min-height:32px;margin-top:4px;padding:5px 9px;border-width:1px;border-radius:7px;font-size:12px;line-height:1.4}
+.bk-editor-page .bk-form textarea{height:68px;min-height:58px;padding:6px 9px}
+.bk-editor-page .bk-form .bk-select-trigger{margin-top:0}
+.bk-editor-page .bk-form .bk-select{margin-top:4px}
+.bk-editor-page .bk-form-grid{gap:10px}
+.bk-editor-page .bk-form .bk-hours input[type=time],.bk-editor-page .bk-form .bk-interval input{min-height:30px;margin:0;padding:4px 7px}
+.bk-editor-page .bk-input-prefix{margin-top:4px;border-radius:7px}
+.bk-editor-page .bk-form .bk-input-prefix input{margin:0;border:0}
+.bk-editor-page .bk-configurator-heading{padding:13px 15px}
+.bk-editor-page .bk-configurator-card>div:not([hidden]){padding:0 15px 15px}
+
+.bk-editor-preview .bk-preview-scroll{position:relative;overflow:hidden;padding:0 4px 8px;min-height:0;flex:1}
+.bk-preview-fit{position:relative;width:100%;margin:0 auto}
+.bk-editor-preview .bk-preview-frame{position:absolute;top:0;left:50%;width:100%;max-width:800px;margin:0;transform-origin:top center;transition:none}
+.bk-editor-preview .bk-preview-frame.mobile{width:355px;max-width:100%}
+.bk-editor-preview .bk-preview-profile{padding:15px 13px;gap:8px}
+.bk-editor-preview .bk-preview-profile h2{font-size:17px;line-height:1.35}
+.bk-editor-preview .bk-preview-profile p{line-height:1.5}
+.bk-editor-preview .bk-preview-profile .bk-public-media img,.bk-editor-preview .bk-preview-profile .bk-public-media video{max-height:100px;object-fit:contain}
+.bk-editor-preview .bk-preview-calendar{padding:15px 13px}
+.bk-editor-preview .bk-preview-calendar h3{margin-bottom:10px}
+.bk-editor-preview .bk-preview-calendar .bk-slot-list{max-height:none;overflow:visible;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:12px;gap:5px}
+.bk-editor-preview .bk-preview-calendar .bk-slot-list>b,.bk-editor-preview .bk-preview-calendar .bk-slot-list>.bk-muted{grid-column:1/-1}
+.bk-editor-preview .bk-preview-frame.mobile .bk-slot-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bk-editor-preview .bk-preview-calendar .bk-slot-list button{padding:5px;min-width:0;font-size:10px}
+.bk-editor-preview .bk-preview-calendar>.bk-button{margin-top:10px}
+
+.bk-appointment-page{height:100%;max-height:100%;overflow:hidden}
+.bk-appointment-form{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.bk-appointment-fields{flex:1;min-height:0;width:100%;max-width:880px;align-self:center;padding:20px 24px;overflow-y:auto}
+.bk-appointment-page .bk-dialog-footer{background:var(--bk-card)}
+@media(max-width:760px){.user-dashboard-shell:has(.bk-editor-page) .layout-workspace{margin-left:0}.bk-editor-preview{order:-1;min-height:0;height:min(640px,max(260px,calc(100dvh - 300px)));overflow:hidden;flex:none}.bk-editor-preview .bk-preview-scroll{overflow:hidden;flex:1;min-height:0}.bk-appointment-fields{padding:15px 12px}.bk-appointment-page .bk-editor-header{flex-wrap:nowrap}.bk-appointment-page .bk-editor-header h1{font-size:16px}.bk-appointment-page .bk-editor-header>.bk-icon{flex:none}}
 
 
 .bk-section-summary{max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px;padding:3px 6px;background:var(--bk-bg);color:var(--bk-muted);font-size:9px}

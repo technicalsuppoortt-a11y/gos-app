@@ -16,6 +16,7 @@ const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module =>
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
+const AppointmentEditorPage = lazy(() => import('../pages/booking/AppointmentEditorPage'));
 const PublicBookingPage = lazy(() => import('../pages/booking/PublicBookingPage'));
 
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
@@ -62,6 +63,8 @@ export const router = createBrowserRouter([
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'booking/new', element: <Suspended><BookingEditorPage/></Suspended> },
+      { path: 'booking/appointments/new', element: <Suspended><AppointmentEditorPage/></Suspended> },
+      { path: 'booking/appointments/:appointmentId/edit', element: <Suspended><AppointmentEditorPage/></Suspended> },
       { path: 'booking/:pageId/edit', element: <Suspended><BookingEditorPage/></Suspended> },
       { path: 'booking', element: <Suspended><DashboardPage page="booking"/></Suspended> },
       { path: 'products', element: <Suspended><DashboardPage page="products"/></Suspended> },

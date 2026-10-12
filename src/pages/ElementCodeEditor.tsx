@@ -1,0 +1,9 @@
+import {useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
+
+export function ElementCodeEditor({code,close,save}:{code:string;close:()=>void;save:(code:string)=>void}) {
+  const [draft,setDraft]=useState(code);
+  const root=useRef<HTMLDivElement>(null);
+  useEffect(()=>{const previous=document.activeElement as HTMLElement|null;root.current?.querySelector('textarea')?.focus();const key=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}if(event.key==='Tab'){const items=Array.from(root.current?.querySelectorAll<HTMLElement>('button,textarea')??[]);const index=items.indexOf(document.activeElement as HTMLElement);if(event.shiftKey&&index===0||!event.shiftKey&&index===items.length-1){event.preventDefault();items[event.shiftKey?items.length-1:0]?.focus();}}};document.addEventListener('keydown',key,true);return()=>{document.removeEventListener('keydown',key,true);previous?.focus();};},[close]);
+  return createPortal(<div className="pf-code-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close();}}><div className="pf-code-modal" ref={root} role="dialog" aria-modal="true" aria-labelledby="pf-code-title"><header><h2 id="pf-code-title">HTML/Liquid code editor</h2></header><textarea aria-label="HTML/Liquid code" spellCheck={false} value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Tab'){e.preventDefault();const input=e.currentTarget,start=input.selectionStart,end=input.selectionEnd;setDraft(draft.slice(0,start)+'  '+draft.slice(end));requestAnimationFrame(()=>input.setSelectionRange(start+2,start+2));}}}/><footer><button onClick={close}>Cancel</button><button className="pf-code-done" onClick={()=>save(draft)}>Done</button></footer></div></div>,document.body);
+}

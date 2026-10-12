@@ -30,8 +30,8 @@
 .fb-live-preview-overlay .fb-live-preview-stage{padding:20px;overflow:auto}
 .fb-live-preview-overlay .fb-live-preview-frame{width:100%;max-width:100%;height:75vh;min-height:0;flex:none;margin:auto;overflow:auto;transition:all .3s ease-in-out;background:white}
 .fb-live-preview-overlay .fb-live-preview-frame.tablet{width:768px;max-width:100%;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 20px 25px -5px #0f172a26}
-.fb-live-preview-overlay .fb-live-preview-frame.mobile{width:375px;max-width:100%;height:667px;border:8px solid #1e293b;border-radius:32px;box-shadow:0 25px 50px -12px #0f172a40}
-.fb-live-preview-overlay .fb-live-page{border:0;border-radius:0;box-shadow:none}
+.fb-live-preview-overlay .fb-live-preview-frame.mobile{width:375px;max-width:100%;height:667px;border:10px solid #1e293b;border-radius:36px;box-shadow:0 25px 50px -12px #0f172a40;overflow:hidden;display:flex;flex-direction:column}
+.fb-live-preview-overlay .fb-live-page{border:0;border-radius:0;box-shadow:none;flex:1;width:100%;height:100%;min-height:0;overflow-y:auto;overflow-x:hidden}
 @media(max-width:1000px){.aw-preview-modal-header{flex-wrap:wrap}.aw-preview-modal-controls{width:100%;flex-wrap:wrap}.aw-preview-modal-controls>.aw-select{flex:1}.aw-preview-close{margin-left:auto}}
 @media(max-width:600px){.aw-preview-scrim{padding:8px}.aw-preview-modal{padding:12px;max-height:calc(100dvh - 16px)}.aw-preview-modal-controls{gap:8px}.aw-preview-device-switch{order:3;width:100%;justify-content:center}.aw-preview-device-switch button{flex:1;padding:0 8px}.aw-preview-modal-title h2{font-size:15px}.aw-preview-modal-stage{padding-top:12px}.fb-live-preview-overlay .fb-preview-toolbar{padding:10px 12px;gap:8px}.fb-live-preview-overlay .fb-preview-device-switch{order:4;width:100%;justify-content:center}.fb-live-preview-overlay .fb-live-preview-stage{padding:12px}.fb-preview-page-select{flex:1}.aw-ai-review{grid-template-columns:1fr;gap:8px}.aw-ai-palettes{grid-template-columns:1fr}.aw-ai-progress{gap:6px}}
 @media(prefers-reduced-motion:reduce){.aw-preview-viewport,.fb-live-preview-overlay .fb-live-preview-frame,.aw-ai-spark svg{transition:none}}
