@@ -110,8 +110,8 @@
   animation: gos-progress-slide 1.4s ease-in-out infinite alternate;
 }
 @keyframes gos-progress-slide {
-  0% { left: -10%; width: 30%; }
-  100% { left: 80%; width: 40%; }
+  0% { inset-inline-start: -10%; width: 30%; }
+  100% { inset-inline-start: 80%; width: 40%; }
 }
 
 .gos-loader-text {

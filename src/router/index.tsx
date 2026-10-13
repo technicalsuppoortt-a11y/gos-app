@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
@@ -6,8 +7,13 @@ import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
 import '../route-loading.css';
+const ActivationPage = lazy(() => import('../pages/onboarding/ActivationPage').then(module => ({ default: module.ActivationPage })));
+const OnboardingWizard = lazy(() => import('../pages/onboarding/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
+const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(module => ({ default: module.AdminUsers })));
 
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
+const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
 const LandingPage = lazy(() => import('../pages/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const UserLayout = lazy(() => import('../components/layout/UserLayout').then(module => ({ default: module.UserLayout })));
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
@@ -38,16 +44,23 @@ const crmChildren = [
 ];
 
 function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Role[] }>) {
-  return <ProtectedRoute allowedRoles={roles}><Suspended>{children}</Suspended></ProtectedRoute>;
+  useUILanguage();
+  return <ProtectedRoute allowedRoles={roles}><Suspended>{localizeNode(children)}</Suspended></ProtectedRoute>;
 }
 
 export const router = createBrowserRouter([
+  { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
+  { path: '/onboarding', element: <Suspended><OnboardingWizard/></Suspended> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><Suspended><ProductLivePreview/></Suspended></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
   { path: '/', element: <Suspended><LandingPage/></Suspended> },
   { path: '/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
+  { path: '/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
+  { path: '/auth/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
+  { path: '/reset-password', element: <Suspended><ResetPasswordPage/></Suspended> },
+  { path: '/auth/reset-password', element: <Suspended><ResetPasswordPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
   ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
   { path: '/crm', element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: crmChildren },
@@ -81,8 +94,8 @@ export const router = createBrowserRouter([
       { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
-      { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
-      { path: 'academy', element: <Suspended><PagePlaceholder title="GOS Academy"/></Suspended> },
+      { path: 'content', element: <Suspended><PagePlaceholder title={translateText("Content Generator")}/></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title={translateText("GOS Academy")}/></Suspended> },
       { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
       { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
       { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
@@ -94,10 +107,10 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><AdminDashboard/></Suspended> },
-      { path: 'users', element: <Suspended><PagePlaceholder title="Users Management"/></Suspended> },
-      { path: 'integrations', element: <Suspended><PagePlaceholder title="Integrations"/></Suspended> },
-      { path: 'billing', element: <Suspended><PagePlaceholder title="Billing"/></Suspended> },
-      { path: 'settings', element: <Suspended><PagePlaceholder title="Tenant Settings"/></Suspended> },
+      { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
+      { path: 'integrations', element: <Suspended><PagePlaceholder title={translateText("Integrations")}/></Suspended> },
+      { path: 'billing', element: <Suspended><PagePlaceholder title={translateText("Billing")}/></Suspended> },
+      { path: 'settings', element: <Suspended><PagePlaceholder title={translateText("Tenant Settings")}/></Suspended> },
     ],
   },
   {
@@ -105,15 +118,15 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['SUPER_ADMIN']}><SuperAdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
-      { path: 'clients', element: <Suspended><PagePlaceholder title="Clients"/></Suspended> },
-      { path: 'subscriptions', element: <Suspended><PagePlaceholder title="Subscriptions"/></Suspended> },
-      { path: 'analytics', element: <Suspended><PagePlaceholder title="Platform Analytics"/></Suspended> },
-      { path: 'settings', element: <Suspended><PagePlaceholder title="Platform Settings"/></Suspended> },
-      { path: 'users', element: <Suspended><PagePlaceholder title="Team Management"/></Suspended> },
+      { path: 'clients', element: <Suspended><PagePlaceholder title={translateText("Clients")}/></Suspended> },
+      { path: 'subscriptions', element: <Suspended><PagePlaceholder title={translateText("Subscriptions")}/></Suspended> },
+      { path: 'analytics', element: <Suspended><PagePlaceholder title={translateText("Platform Analytics")}/></Suspended> },
+      { path: 'settings', element: <Suspended><PagePlaceholder title={translateText("Platform Settings")}/></Suspended> },
+      { path: 'users', element: <Suspended><PagePlaceholder title={translateText("Team Management")}/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin" replace/> },
-      { path: 'integrations', element: <Suspended><PagePlaceholder title="Platform Integrations"/></Suspended> },
-      { path: 'payments', element: <Suspended><PagePlaceholder title="Payments"/></Suspended> },
-      { path: 'logs', element: <Suspended><PagePlaceholder title="Logs & Monitoring"/></Suspended> },
+      { path: 'integrations', element: <Suspended><PagePlaceholder title={translateText("Platform Integrations")}/></Suspended> },
+      { path: 'payments', element: <Suspended><PagePlaceholder title={translateText("Payments")}/></Suspended> },
+      { path: 'logs', element: <Suspended><PagePlaceholder title={translateText("Logs & Monitoring")}/></Suspended> },
     ],
   },
   { path: '*', element: <DefaultRedirect/> },

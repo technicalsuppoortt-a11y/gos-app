@@ -11,16 +11,16 @@
 .tw-pricing-workspace .tw-pricing-types>button{padding:12px 9px;gap:8px;min-height:76px;transition:border-color .2s,background .2s}
 .tw-pricing-workspace .tw-pricing-types>button:hover:enabled{border-color:#7c5cfc}
 .tw-pricing-workspace .tw-pricing-types>button>svg{background:#f3efff;box-sizing:content-box;padding:8px;border-radius:50%;width:16px;height:16px;color:#7c5cfc}
-.tw-pricing-workspace .tw-pricing-types b{font-size:11px;padding-right:12px}
+.tw-pricing-workspace .tw-pricing-types b{font-size:11px;padding-inline-end:12px}
 .tw-pricing-workspace .tw-pricing-types small{font-size:10px;line-height:1.45}
-.tw-pricing-types>button>.pricing-active{position:absolute;right:5px;top:5px;color:#7c5cfc;display:flex;flex-direction:row;gap:3px;align-items:center}
+.tw-pricing-types>button>.pricing-active{position:absolute;inset-inline-end:5px;top:5px;color:#7c5cfc;display:flex;flex-direction:row;gap:3px;align-items:center}
 .pricing-active>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .pricing-amounts{display:grid;grid-template-columns:minmax(0,1fr) 95px;gap:10px}
 .pricing-amounts.with-compare{grid-template-columns:minmax(0,1.5fr) minmax(80px,.8fr) minmax(0,1.5fr) minmax(80px,.8fr)}
 .pricing-region{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr);gap:10px}
 .pricing-suffix{display:flex;align-items:center;position:relative;min-width:0}
-.tw-page .pricing-suffix input{width:100%;padding-right:58px!important;min-width:0}
-.pricing-suffix>small{position:absolute;right:9px;color:#64748b;font-size:10px;pointer-events:none}
+.tw-page .pricing-suffix input{width:100%;padding-inline-end:58px!important;min-width:0}
+.pricing-suffix>small{position:absolute;inset-inline-end:9px;color:#64748b;font-size:10px;pointer-events:none}
 .pricing-card-switch .tw-toggle-row{padding:0!important;border:0!important;margin:0;min-height:24px}
 .pricing-card-switch .tw-toggle-row>span,.pricing-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .pricing-extra{margin-top:10px;font-size:11px;color:#64748b}
@@ -46,7 +46,7 @@
 .pricing-payment-badges .payment-paypal{color:#0070ba;font-style:italic}
 .payment-mastercard{display:flex;position:relative;width:23px;height:14px}
 .payment-mastercard i{width:14px;height:14px;border-radius:50%;background:#eb001b}
-.payment-mastercard i+i{background:#f79e1b;position:absolute;left:9px;opacity:.9}
+.payment-mastercard i+i{background:#f79e1b;position:absolute;inset-inline-start:9px;opacity:.9}
 .pricing-offer{margin-bottom:10px;min-width:0}
 .pricing-offer>small{display:block;color:#64748b;font-size:10px;margin-bottom:5px}
 .pricing-offer-row{display:flex;align-items:center;gap:8px;border:1px solid #e2e8f0;border-radius:8px;padding:7px;min-width:0}
@@ -69,7 +69,7 @@
 .pricing-coupon-limits{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:#64748b}
 .pricing-coupon-limits>label{display:flex;align-items:center;gap:5px}
 .pricing-coupon-limits>.pricing-suffix{max-width:110px}
-.pricing-coupon-limits>button{margin-left:auto}
+.pricing-coupon-limits>button{margin-inline-start:auto}
 .pricing-discount-actions{display:flex;align-items:center;gap:4px}
 .pricing-add-discount{align-self:flex-end}
 .pricing-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
@@ -77,7 +77,7 @@
 .tw-pricing-workspace .tw-workspace-sidebar .tw-toggle-row{font-size:11px;padding:7px 0}
 @media(max-width:1200px){.tw-pricing-workspace{grid-template-columns:minmax(0,1fr) 270px}.tw-pricing-workspace .tw-pricing-layout{grid-template-columns:1fr}.tw-pricing-workspace .tw-checkout-preview{position:static}.pricing-discount-grid{grid-template-columns:1fr}}
 @media(max-width:850px){.tw-pricing-workspace{grid-template-columns:1fr}.tw-pricing-workspace .tw-workspace-sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.pricing-discount-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.tw-pricing-workspace .tw-workspace-sidebar,.pricing-discount-grid{grid-template-columns:1fr}.pricing-amounts.with-compare{grid-template-columns:minmax(0,1fr) 95px}.tw-pricing-workspace .tw-three-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types>button{flex-direction:column}.pricing-region{grid-template-columns:1fr}.pricing-coupon-fields,.pricing-auto-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types b{padding-right:0}}
+@media(max-width:600px){.tw-pricing-workspace .tw-workspace-sidebar,.pricing-discount-grid{grid-template-columns:1fr}.pricing-amounts.with-compare{grid-template-columns:minmax(0,1fr) 95px}.tw-pricing-workspace .tw-three-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types>button{flex-direction:column}.pricing-region{grid-template-columns:1fr}.pricing-coupon-fields,.pricing-auto-fields{grid-template-columns:1fr}.tw-pricing-workspace .tw-pricing-types b{padding-inline-end:0}}
 /* The reference uses three simultaneous columns, including at 1024px. */
 .pricing-page{padding:10px 14px 8px;--pricing-accent:#6425f5}
 .pricing-page .tw-breadcrumb{margin-bottom:8px}
@@ -88,7 +88,7 @@
 .pricing-page .tw-section-heading{position:relative;margin:0;min-height:30px}
 .pricing-page .tw-section-heading h2{font-size:14px;line-height:1.3;margin:0 0 2px}
 .pricing-page .tw-section-heading p{font-size:10px;line-height:1.3;margin:0;color:#8b8ba5}
-.pricing-page .tw-section-heading>.cw-button{position:absolute;right:0;top:0}
+.pricing-page .tw-section-heading>.cw-button{position:absolute;inset-inline-end:0;top:0}
 .pricing-page .cw-card{padding:10px 11px;border-radius:6px;border-color:#eeedf5;box-shadow:none;min-width:0;width:100%}
 .pricing-page .cw-card>header{margin-bottom:7px;gap:5px;align-items:start}
 .pricing-page .cw-card h2{font-size:11px;line-height:1.3;color:#171333;letter-spacing:-.25px}
@@ -101,7 +101,7 @@
 .pricing-page .tw-pricing-types>button.selected{border-color:#cbb8ed;background:#f8f5ff}
 .pricing-page .tw-pricing-types>button>svg{width:13px;height:13px;padding:5px;margin:0;background:#f2edfc;color:#8c5cde}
 .pricing-page .tw-pricing-types>button>span{padding:0;min-width:0}
-.pricing-page .tw-pricing-types b{font-size:9px;line-height:1.3;font-weight:500;padding-right:6px}
+.pricing-page .tw-pricing-types b{font-size:9px;line-height:1.3;font-weight:500;padding-inline-end:6px}
 .pricing-page .tw-pricing-types small{font-size:8px;line-height:1.35;color:#8b8ba5}
 .pricing-page .pricing-active svg{width:10px;height:10px;fill:#8b5de2;stroke:white}
 .pricing-page .pricing-amounts.with-compare{grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1.3fr) minmax(0,.7fr);gap:6px}
@@ -113,8 +113,8 @@
 .pricing-page .tw-toggle-row input:checked:before{transform:translateX(14px)}
 .pricing-page .pricing-card-switch .tw-toggle-row{min-height:16px}
 .pricing-page .tw-pricing-form>.cw-card:nth-child(2)>.tw-toggle-row{flex-direction:row-reverse;justify-content:flex-end;margin-top:4px}
-.pricing-page .pricing-suffix>small{font-size:8px;right:6px}
-.pricing-page .pricing-suffix input{padding-right:44px!important}
+.pricing-page .pricing-suffix>small{font-size:8px;inset-inline-end:6px}
+.pricing-page .pricing-suffix input{padding-inline-end:44px!important}
 .pricing-page .pricing-extra{font-size:8px;margin-top:5px;position:relative}
 .pricing-page .pricing-extra[open]{z-index:5}
 .pricing-page .pricing-extra[open]::before{content:'';position:absolute;inset:-5px -8px;background:var(--panel,#fff);border:1px solid #eeedf5;border-radius:5px;box-shadow:0 5px 20px #17133315;z-index:-1}
@@ -132,14 +132,14 @@
 .pricing-page .tw-checkout-option small{display:block;font-size:8px;line-height:1.4;margin-top:3px}
 .pricing-page .tw-checkout-option strong{font-size:10px;line-height:1.4;max-width:34%}
 .pricing-page .tw-checkout-option strong del{font-size:8px}
-.pricing-page .pricing-popular{display:inline-block;font-size:6px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.pricing-page .pricing-popular{display:inline-block;font-size:6px;padding:1px 4px;margin-inline-start:4px;vertical-align:middle}
 .pricing-page .tw-checkout-preview>.cw-button{margin-top:6px;min-height:31px}
 .pricing-page .pricing-payment-badges{gap:6px;margin-top:12px;flex-wrap:nowrap;justify-content:space-between}
 .pricing-page .pricing-payment-badges>small{font-size:6px;white-space:nowrap}
 .pricing-page .pricing-payment-badges>span{font-size:7px;white-space:nowrap}
 .pricing-page .payment-mastercard{width:17px;height:10px;flex-shrink:0}
 .pricing-page .payment-mastercard i{width:10px;height:10px}
-.pricing-page .payment-mastercard i+i{left:7px}
+.pricing-page .payment-mastercard i+i{inset-inline-start:7px}
 .pricing-page .pricing-region{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:7px}
 .pricing-page .cw-help{font-size:8px;line-height:1.4;margin:6px 0 0;color:#8b8ba5}
 .pricing-page .tw-workspace-sidebar .tw-toggle-row{padding:4px 0;min-height:25px;font-size:9px}
@@ -173,8 +173,8 @@
 @media(max-width:600px){.pricing-page .tw-action-bar{flex-direction:column;align-items:stretch}.pricing-page .cw-header-actions{justify-content:flex-start}.pricing-page .tw-pricing-layout,.pricing-page .tw-workspace-sidebar,.pricing-page .pricing-discount-grid{grid-template-columns:1fr}.pricing-page .tw-product-heading{flex-wrap:wrap}.pricing-page .tw-pricing-types>button{min-height:60px}.pricing-page .tw-checkout-preview>header{margin-bottom:10px}}
 html.dark .pricing-page .cw-card h2{color:#e2e8f0}html.dark .pricing-page .tw-pricing-types>button.selected,html.dark .pricing-page .tw-checkout-option.selected{background:#2b2345;border-color:#7c5cfc}html.dark .pricing-page .cw-field input:disabled,html.dark .pricing-page .commerce-select-trigger:disabled{background:#172033;color:#94a3b8}
 .pricing-money-field{position:relative;display:flex;align-items:center;min-width:0}
-.pricing-money-field>i{position:absolute;left:8px;font-style:normal;font-size:10px;color:#64748b;pointer-events:none}
-.pricing-page .cw-field .pricing-money-field>input{padding-left:18px!important;width:100%}
+.pricing-money-field>i{position:absolute;inset-inline-start:8px;font-style:normal;font-size:10px;color:#64748b;pointer-events:none}
+.pricing-page .cw-field .pricing-money-field>input{padding-inline-start:18px!important;width:100%}
 .pricing-page .tw-toggle-row input{border-color:transparent}
 .pricing-page .tw-toggle-row input:before{width:10px;height:10px}
 .pricing-page .tw-toggle-row input:checked{border-color:var(--pricing-accent)}

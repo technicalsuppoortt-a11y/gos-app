@@ -22,9 +22,9 @@ export default {
           950: '#252247',
         },
         dark: {
-          bg: '#25243d',
-          card: '#302e4a',
-          border: '#41405e'
+          bg: 'var(--bg, #0b1020)',
+          card: 'var(--ui-surface, #151a27)',
+          border: 'var(--ui-border, #2d3344)'
         }
       },
       fontFamily: {

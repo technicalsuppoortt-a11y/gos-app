@@ -1,0 +1,21 @@
+/* Direction belongs to the document; native flex/grid flow mirrors naturally. */
+html[dir="rtl"] .layout-sidebar,
+html[dir="rtl"] .layout-mobile-sidebar,
+html[dir="rtl"] .sa-sidebar,
+html[dir="rtl"] .role-sidebar { direction: rtl; }
+html[dir="rtl"] :is(input, textarea, select) { text-align: start; }
+/* Technical values retain their natural reading order. */
+:is(input[type="email"], input[type="url"], input[type="tel"], input[type="number"], input[type="time"], input[type="date"], code, pre, kbd) {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+html[dir="rtl"] :is(.layout-header-breadcrumb, .layout-nav-item, .bk-tabs, .crm-toolbar, .fb-toolbar) { text-align: start; }
+html[dir="rtl"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right, .lucide-chevrons-left, .lucide-chevrons-right) { scale: -1 1; }
+html[dir="rtl"] :is(.bk-toggle, .crm-switch, .settings-toggle) :is(.lucide-arrow-left, .lucide-arrow-right) { scale: 1; }
+html[dir="rtl"] :is(.line-chart, .sparkline, .analytics-chart, .recharts-wrapper) { direction: ltr; }
+/* Arabic glyphs need normal tracking and enough line height to avoid clipping. */
+html[dir="rtl"] :is(h1, h2, h3, h4, label, button, th, .status-pill) { letter-spacing: normal; }
+:is(.layout-workspace, .role-shell-main, .sa-main, .settings-content) { min-inline-size: 0; }
+/* Explicit language scopes on booking pages remain independent of the shell. */
+[lang="en"] { --ui-text-direction: ltr; }
+[lang="ar"] { --ui-text-direction: rtl; }

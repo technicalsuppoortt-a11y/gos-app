@@ -23,6 +23,7 @@ export type Contact = { id: string; name: string; email: string; phone: string; 
 export type Member = { id: string; name: string; email: string; role: 'Admin' | 'Member'; status: 'Active' | 'Invited' };
 export const KEYS = { pages: 'gos.booking-links.v1', appointments: 'gos.booking.appointments.v2', contacts: 'gos.booking.contacts.v2', members: 'gos.booking.members.v2' };
 export const COLORS: Record<string, string> = { violet: '#7960e9', mint: '#10a993', purple: '#a855d9', blue: '#488ce1', rose: '#ef7186', amber: '#d99a32' };
+export const bookingColor = (value: string) => COLORS[value] || (/^#[0-9a-f]{6}$/i.test(value) ? value : COLORS.violet);
 export const TIMEZONES = ['Africa/Cairo', 'Asia/Riyadh', 'Asia/Dubai', 'Europe/London', 'Europe/Paris', 'Europe/Bucharest', 'Europe/Istanbul', 'America/New_York', 'America/Los_Angeles', 'Asia/Kolkata', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney', 'UTC'];
 export const uid = () => crypto.randomUUID();
 export const slugify = (name: string) => name.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
@@ -95,9 +96,20 @@ export function useStored<T>(key: string, initial: () => T) {
   const save = useCallback((next: T) => { write(key, next); setValue(next); }, [key]);
   return [value, save] as const;
 }
+const dtfCache = new Map<string, Intl.DateTimeFormat>();
+export function getDTF(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}:${JSON.stringify(options)}`;
+  let dtf = dtfCache.get(key);
+  if (!dtf) {
+    dtf = new Intl.DateTimeFormat(locale, options);
+    dtfCache.set(key, dtf);
+  }
+  return dtf;
+}
+
 export function dateKey(date: Date, timezone?: string): string {
   if (timezone) {
-    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
+    const parts = getDTF('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
     return ['year', 'month', 'day'].map(type => parts.find(p => p.type === type)?.value).join('-');
   }
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -105,19 +117,41 @@ export function dateKey(date: Date, timezone?: string): string {
 export const parseDate = (date: string) => new Date(date + 'T12:00:00');
 export const minutes = (time: string) => { const [h, m] = time.split(':').map(Number); return h * 60 + m; };
 export const clock = (minute: number) => `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+
+const hostInstantCache = new Map<string, Date>();
 export function hostInstant(date: string, time: string, timezone: string): Date {
+  const cacheKey = `${date}_${time}_${timezone}`;
+  const cached = hostInstantCache.get(cacheKey);
+  if (cached) return cached;
+
   const desired = Date.parse(date + 'T' + time + ':00Z');
   let instant = desired;
+  const dtf = getDTF('en-GB', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
   for (let i = 0; i < 3; i++) {
-    const parts = new Intl.DateTimeFormat('en-GB', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(instant));
+    const parts = dtf.formatToParts(new Date(instant));
     const get = (name: string) => Number(parts.find(p => p.type === name)?.value);
     const observed = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
     instant += desired - observed;
   }
-  return new Date(instant);
+  const result = new Date(instant);
+  if (hostInstantCache.size > 2000) hostInstantCache.clear();
+  hostInstantCache.set(cacheKey, result);
+  return result;
 }
-export const formatTime = (start: string | Date, timezone: string) => new Intl.DateTimeFormat('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' }).format(new Date(start));
-export const formatDay = (key: string) => parseDate(key).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+export const formatTime = (start: string | Date, timezone: string) =>
+  getDTF('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' }).format(new Date(start));
+
+const formatDayCache = new Map<string, string>();
+export const formatDay = (key: string) => {
+  let res = formatDayCache.get(key);
+  if (!res) {
+    res = parseDate(key).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (formatDayCache.size > 500) formatDayCache.clear();
+    formatDayCache.set(key, res);
+  }
+  return res;
+};
 export function bookingLimitReached(page: BookingPage, date: string, records: Appointment[], email = '', excludeId?: string) {
   const start = parseDate(date); start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
   const end = new Date(start); end.setDate(end.getDate() + 6);

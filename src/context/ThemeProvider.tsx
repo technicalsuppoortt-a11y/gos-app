@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode } from '../i18n/display';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
@@ -8,6 +9,7 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  useUILanguage();
   const theme = useSelector((state: RootState) => state.ui.theme);
   const language = useSelector((state: RootState) => state.ui.language);
 
@@ -26,5 +28,5 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (i18n.language !== language) void i18n.changeLanguage(language);
   }, [language]);
 
-  return <>{children}</>;
+  return <>{localizeNode(children)}</>;
 };

@@ -116,7 +116,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 28px 7px 12px;
+  padding-block: 7px 7px;
+  padding-inline: 12px 28px;
   border: 1px solid #e4dff7;
   border-radius: 8px;
   background: #faf8ff url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a94a7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
@@ -169,8 +170,8 @@
   content: "";
   position: absolute;
   bottom: 0;
-  left: 8px;
-  right: 8px;
+  inset-inline-start: 8px;
+  inset-inline-end: 8px;
   height: 2px;
   border-radius: 2px 2px 0 0;
   background: #7c5cfc;
@@ -178,8 +179,8 @@
 .crm2-subnav-indicator {
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   height: 2px;
   border-radius: 2px 2px 0 0;
   background: #7c5cfc;

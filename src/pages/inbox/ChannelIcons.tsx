@@ -1,3 +1,4 @@
+import { useUILanguage } from '../../i18n/display';
 import React, { useId } from "react";
 import type { ChannelId } from "./inboxData";
 
@@ -7,6 +8,7 @@ const useSvgId = (prefix: string) =>
   `${prefix}-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
 export const InstagramIcon: React.FC<IconProps> = ({ size = 16, className }) => {
+  useUILanguage();
   const id = useSvgId("ig");
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
@@ -27,7 +29,7 @@ export const InstagramIcon: React.FC<IconProps> = ({ size = 16, className }) => 
   );
 };
 
-export const FacebookIcon: React.FC<IconProps> = ({ size = 16, className }) => (
+export const FacebookIcon: React.FC<IconProps> = ({ size = 16, className }) => { useUILanguage(); return ((
   <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
     <circle cx="12" cy="12" r="12" fill="#1877F2" />
     <path
@@ -35,9 +37,9 @@ export const FacebookIcon: React.FC<IconProps> = ({ size = 16, className }) => (
       d="M13.45 24v-8.6h2.55l.4-3.05h-2.95v-1.9c0-.88.25-1.48 1.5-1.48h1.6V6.25a21 21 0 0 0-2.3-.12c-2.3 0-3.85 1.4-3.85 3.95v2.27H7.8v3.05h2.6V24z"
     />
   </svg>
-);
+)); };
 
-export const WhatsAppIcon: React.FC<IconProps> = ({ size = 16, className }) => (
+export const WhatsAppIcon: React.FC<IconProps> = ({ size = 16, className }) => { useUILanguage(); return ((
   <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
     <circle cx="12" cy="12" r="12" fill="#25D366" />
     <path
@@ -52,9 +54,10 @@ export const WhatsAppIcon: React.FC<IconProps> = ({ size = 16, className }) => (
       d="M9.55 8.8c.17-.38.35-.39.52-.4h.44c.15 0 .4.06.6.5l.6 1.43c.05.13.08.28 0 .44l-.37.5c-.12.14-.2.3-.06.52.33.55.75 1.05 1.24 1.45.55.45 1.1.74 1.45.86.2.07.33.04.45-.1l.55-.66c.13-.17.28-.17.45-.1l1.34.63c.18.09.3.14.34.22.05.12.05.66-.2 1.12-.26.47-1.02.9-1.6.94-.5.04-1.13.06-3.15-1.06-1.6-.9-2.65-2.55-2.86-2.95-.2-.38-.62-1.25-.62-2.14 0-.66.34-1.17.48-1.4z"
     />
   </svg>
-);
+)); };
 
 export const MessengerIcon: React.FC<IconProps> = ({ size = 16, className }) => {
+  useUILanguage();
   const id = useSvgId("ms");
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
@@ -75,7 +78,7 @@ export const MessengerIcon: React.FC<IconProps> = ({ size = 16, className }) => 
   );
 };
 
-export const WebChatIcon: React.FC<IconProps> = ({ size = 16, className }) => (
+export const WebChatIcon: React.FC<IconProps> = ({ size = 16, className }) => { useUILanguage(); return ((
   <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
     <rect width="24" height="24" rx="7" fill="#7C5CFC" />
     <path
@@ -86,7 +89,7 @@ export const WebChatIcon: React.FC<IconProps> = ({ size = 16, className }) => (
     <circle cx="12" cy="11.4" r=".95" fill="#7C5CFC" />
     <circle cx="14.6" cy="11.4" r=".95" fill="#7C5CFC" />
   </svg>
-);
+)); };
 
 const iconMap: Record<ChannelId, React.FC<IconProps>> = {
   instagram: InstagramIcon,
@@ -100,6 +103,7 @@ export const ChannelIcon: React.FC<IconProps & { channel: ChannelId }> = ({
   channel,
   ...props
 }) => {
+  useUILanguage();
   const Icon = iconMap[channel];
   return <Icon {...props} />;
 };

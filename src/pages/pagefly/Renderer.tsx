@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, ElementType, ReactNode } from 'react';
 import { MapPin, Play, Star } from 'lucide-react';
@@ -54,6 +55,7 @@ export function useViewportDevice(): Device {
 /* ------------------------------------------------------------------ */
 
 function Editable({ tag, attrs, html, editing, plain, onCommit }: { tag: string; attrs: RootAttrs; html: string; editing: boolean; plain?: boolean; onCommit: (value: string) => void }) {
+  useUILanguage();
   const { stopEditing } = useRender();
   const ref = useRef<HTMLElement>(null);
   const Tag = tag as ElementType;
@@ -78,14 +80,16 @@ const escapeHtml = (value: string) => String(value ?? '').replace(/&/g, '&amp;')
 /* ------------------------------------------------------------------ */
 
 function EmptyDrop({ label }: { label: string }) {
+  useUILanguage();
   const { mode } = useRender();
   if (mode !== 'edit') return null;
-  return <div className="pf-drop-placeholder"><b>{label}</b><span>Drag an element here</span></div>;
+  return <div className="pf-drop-placeholder"><b>{localizeNode(label)}</b><span>{translateText("Drag an element here")}</span></div>;
 }
 
 const render = (child: PFNode) => <PFElement key={child.id} node={child}/>;
 
 function PFElement({ node }: { node: PFNode }) {
+  useUILanguage();
   const ctx = useRender();
   const { mode, device, selectedId } = ctx;
   const hidden = Boolean(node.props.hideOn?.[device]);
@@ -103,7 +107,7 @@ function PFElement({ node }: { node: PFNode }) {
     attrs.onClick = event => { event.stopPropagation(); ctx.runAction(node, event); };
     attrs.style = { ...style, cursor: 'pointer' };
   }
-  return <>{renderNode(node, attrs, ctx)}</>;
+  return <>{localizeNode(renderNode(node, attrs, ctx))}</>;
 }
 
 function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): ReactNode {
@@ -125,10 +129,10 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       if (p.scrollEffect === 'parallax' && isInteractive(mode)) outer.backgroundAttachment = 'fixed';
       const boxed = p.container !== 'full';
       return <section {...attrs} style={outer}>
-        {p.bgVideo && <video className="pf-section-video" src={p.bgVideo} autoPlay={!thumb} muted loop playsInline/>}
-        {p.overlay && <div className="pf-section-overlay" style={{ background: p.overlay, opacity: (Number(p.overlayOpacity ?? 50) || 0) / 100 }}/>}
+        {localizeNode(p.bgVideo && <video className="pf-section-video" src={p.bgVideo} autoPlay={!thumb} muted loop playsInline/>)}
+        {localizeNode(p.overlay && <div className="pf-section-overlay" style={{ background: p.overlay, opacity: (Number(p.overlayOpacity ?? 50) || 0) / 100 }}/>)}
         <div className="pf-section-inner" data-pf-children={node.id} style={{ ...inner, maxWidth: boxed ? `${p.maxWidth || 1200}px` : 'none' }}>
-          {kids.length ? kids.map(render) : <EmptyDrop label="Flex section"/>}
+          {localizeNode(kids.length ? kids.map(render) : <EmptyDrop label="Flex section"/>)}
         </div>
       </section>;
     }
@@ -136,19 +140,19 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       const children = device === 'mobile' && p.reverseMobile ? [...kids].reverse() : kids;
       const align = p.verticalAlign && p.verticalAlign !== 'stretch' ? p.verticalAlign : 'stretch';
       return <div {...attrs} data-pf-children={node.id} style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', alignItems: align, ...attrs.style }}>
-        {children.length ? children.map(render) : <EmptyDrop label="Layout"/>}
+        {localizeNode(children.length ? children.map(render) : <EmptyDrop label="Layout"/>)}
       </div>;
     }
     case 'column': {
       const span = columnSpan(p, device);
       return <div {...attrs} data-pf-children={node.id} style={{ ...attrs.style, gridColumn: `span ${Math.min(12, Math.max(1, span))} / span ${Math.min(12, Math.max(1, span))}`, minWidth: 0 }}>
-        {kids.length ? kids.map(render) : <EmptyDrop label="Column"/>}
+        {localizeNode(kids.length ? kids.map(render) : <EmptyDrop label="Column"/>)}
       </div>;
     }
     case 'block': case 'tab': case 'slide':
-      return <div {...attrs} data-pf-children={node.id}>{kids.length ? kids.map(render) : <EmptyDrop label={node.type === 'block' ? 'Flex block' : node.type === 'tab' ? 'Tab' : 'Slide'}/>}</div>;
+      return <div {...attrs} data-pf-children={node.id}>{localizeNode(kids.length ? kids.map(render) : <EmptyDrop label={node.type === 'block' ? 'Flex block' : node.type === 'tab' ? 'Tab' : 'Slide'}/>)}</div>;
     case 'accordion-item':
-      return <div {...attrs} data-pf-children={node.id}>{kids.map(render)}</div>;
+      return <div {...attrs} data-pf-children={node.id}>{localizeNode(kids.map(render))}</div>;
     case 'tabs': return <TabsView node={node} attrs={attrs} render={render}/>;
     case 'accordion': return <AccordionView node={node} attrs={attrs} render={render}/>;
     case 'slideshow': return <SlideshowView node={node} attrs={attrs} render={render}/>;
@@ -156,10 +160,10 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
     case 'content-list': {
       const items: { icon: string; title: string; text: string }[] = Array.isArray(p.items) ? p.items : [];
       return <div {...attrs} className={`${attrs.className} pf-content-list--${p.layout || 'vertical'}`}>
-        {items.map((item, index) => <div className="pf-content-item" key={index}>
+        {localizeNode(items.map((item, index) => <div className="pf-content-item" key={index}>
           <span className="pf-content-icon" style={{ color: p.iconColor || 'var(--pf-accent)' }}><PFIcon name={item.icon} size={22}/></span>
-          <div><b>{item.title}</b>{item.text && <p>{item.text}</p>}</div>
-        </div>)}
+          <div><b>{localizeNode(item.title)}</b>{localizeNode(item.text && <p>{localizeNode(item.text)}</p>)}</div>
+        </div>))}
       </div>;
     }
 
@@ -168,32 +172,32 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
     case 'image': {
       const src = p.src || IMG.landscape;
       return <figure {...attrs}>
-        <img src={src} alt={p.alt || ''} loading={p.lazy ? 'lazy' : undefined} draggable={false} style={{ aspectRatio: ratioCss(p.ratio), objectFit: p.fit || 'cover' }}/>
-        {p.caption && <figcaption>{p.caption}</figcaption>}
+        <img src={src} alt={translateText(p.alt || '')} loading={p.lazy ? 'lazy' : undefined} draggable={false} style={{ aspectRatio: ratioCss(p.ratio), objectFit: p.fit || 'cover' }}/>
+        {localizeNode(p.caption && <figcaption>{localizeNode(p.caption)}</figcaption>)}
       </figure>;
     }
     case 'youtube': {
       const id = youtubeId(p.url);
-      if (!id) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>Paste a YouTube link in the General tab</div></div>;
+      if (!id) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>{translateText("Paste a YouTube link in the General tab")}</div></div>;
       if (thumb) return <div {...attrs}><div className="pf-video-poster" style={{ aspectRatio: ratioCss(p.ratio || '16:9'), backgroundImage: `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)` }}><span><Play size={22} fill="currentColor"/></span></div></div>;
       const params = new URLSearchParams({ rel: '0', modestbranding: '1', autoplay: p.autoplay && mode !== 'edit' ? '1' : '0', mute: p.mute || p.autoplay ? '1' : '0', controls: p.controls === false ? '0' : '1', loop: p.loop ? '1' : '0', playlist: p.loop ? id : '' });
-      return <div {...attrs}><div className="pf-embed" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}><iframe title="YouTube video" src={`https://www.youtube-nocookie.com/embed/${id}?${params}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" style={lockedFrame}/></div></div>;
+      return <div {...attrs}><div className="pf-embed" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}><iframe title={translateText("YouTube video")} src={`https://www.youtube-nocookie.com/embed/${id}?${params}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" style={lockedFrame}/></div></div>;
     }
     case 'vimeo': {
       const id = vimeoId(p.url);
-      if (!id) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>Paste a Vimeo link in the General tab</div></div>;
+      if (!id) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>{translateText("Paste a Vimeo link in the General tab")}</div></div>;
       if (thumb) return <div {...attrs}><div className="pf-video-poster pf-video-poster--vimeo" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}><VimeoIcon size={34}/></div></div>;
       const params = new URLSearchParams({ autoplay: p.autoplay && mode !== 'edit' ? '1' : '0', muted: p.mute || p.autoplay ? '1' : '0', loop: p.loop ? '1' : '0', dnt: '1' });
-      return <div {...attrs}><div className="pf-embed" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}><iframe title="Vimeo video" src={`https://player.vimeo.com/video/${id}?${params}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen loading="lazy" style={lockedFrame}/></div></div>;
+      return <div {...attrs}><div className="pf-embed" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}><iframe title={translateText("Vimeo video")} src={`https://player.vimeo.com/video/${id}?${params}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen loading="lazy" style={lockedFrame}/></div></div>;
     }
     case 'html-video':
-      if (!p.src) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>Add a video file URL in the General tab</div></div>;
+      if (!p.src) return <div {...attrs}><div className="pf-media-empty" style={{ aspectRatio: ratioCss(p.ratio || '16:9') }}>{translateText("Add a video file URL in the General tab")}</div></div>;
       return <div {...attrs}><video className="pf-video" src={p.src} poster={p.poster || undefined} autoPlay={Boolean(p.autoplay) && isInteractive(mode)} muted={p.muted !== false} loop={Boolean(p.loop)} controls={p.controls !== false && !thumb} playsInline preload="metadata" style={{ aspectRatio: ratioCss(p.ratio || '16:9'), ...lockedFrame }}/></div>;
     case 'soundcloud': {
-      if (!p.url) return <div {...attrs}><div className="pf-media-empty">Paste a SoundCloud link in the General tab</div></div>;
+      if (!p.url) return <div {...attrs}><div className="pf-media-empty">{translateText("Paste a SoundCloud link in the General tab")}</div></div>;
       if (thumb) return <div {...attrs}><div className="pf-sc-mock" style={{ height: Number(p.height) || 166 }}><SoundcloudIcon size={30}/><span/></div></div>;
       const src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(p.url)}&color=${encodeURIComponent(p.color || '#ff5500')}&auto_play=false&hide_related=true&show_comments=false&visual=${p.visual ? 'true' : 'false'}`;
-      return <div {...attrs}><iframe title="SoundCloud" className="pf-sc-frame" src={src} allow="autoplay" loading="lazy" style={{ height: Number(p.height) || 166, ...lockedFrame }}/></div>;
+      return <div {...attrs}><iframe title={translateText("SoundCloud")} className="pf-sc-frame" src={src} allow="autoplay" loading="lazy" style={{ height: Number(p.height) || 166, ...lockedFrame }}/></div>;
     }
 
     /* -------- Basic -------- */
@@ -207,7 +211,7 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
     }
     case 'paragraph': {
       const source = p.source || 'static';
-      if (source === 'seo-description') return <p {...attrs}>{page.seoDescription || 'Add an SEO description in page settings.'}</p>;
+      if (source === 'seo-description') return <p {...attrs}>{localizeNode(page.seoDescription || 'Add an SEO description in page settings.')}</p>;
       return <Editable tag="p" attrs={attrs} html={sanitizeInline(p.text || '')} editing={editing} onCommit={value => commitText(node.id, 'text', value)}/>;
     }
     case 'button': case 'mc-button': {
@@ -215,13 +219,13 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       const style = { ...attrs.style, ...(p.fullWidth ? { width: '100%', justifyContent: 'center' } : {}) };
       const label = editing
         ? <Editable tag="span" attrs={{ 'data-pf-id': `${node.id}-label`, 'data-pf-type': 'label', className: 'pf-button-label', style: {} }} html={p.label || ''} plain editing onCommit={value => commitText(node.id, 'label', value)}/>
-        : <span className="pf-button-label">{p.label || 'Button'}</span>;
-      const content = <>{p.iconLeft && <PFIcon name={p.iconLeft} size={16}/>}{label}{p.iconRight && <PFIcon name={p.iconRight} size={16}/>}</>;
+        : <span className="pf-button-label">{localizeNode(p.label || 'Button')}</span>;
+      const content = <>{localizeNode(p.iconLeft && <PFIcon name={p.iconLeft} size={16}/>)}{localizeNode(label)}{localizeNode(p.iconRight && <PFIcon name={p.iconRight} size={16}/>)}</>;
       const action = p.action;
       const href = !isSubmit && isInteractive(mode) && action ? action.type === 'link' ? normalizeUrl(action.url) : action.type === 'email' && action.url ? `mailto:${action.url}` : action.type === 'phone' && action.url ? `tel:${action.url}` : '' : '';
-      if (href) return <a {...attrs} style={style} href={href} target={action?.newTab || mode === 'preview' ? '_blank' : undefined} rel="noopener noreferrer" onClick={event => { event.stopPropagation(); ctx.runAction(node, event); }}>{content}</a>;
+      if (href) return <a {...attrs} style={style} href={href} target={action?.newTab || mode === 'preview' ? '_blank' : undefined} rel="noopener noreferrer" onClick={event => { event.stopPropagation(); ctx.runAction(node, event); }}>{localizeNode(content)}</a>;
       return <button {...attrs} style={style} type={isSubmit && isInteractive(mode) ? 'submit' : 'button'} tabIndex={mode === 'edit' ? -1 : undefined}
-        onClick={event => { if (mode === 'edit') { event.preventDefault(); return; } if (!isSubmit) { event.stopPropagation(); ctx.runAction(node, event); } }}>{content}</button>;
+        onClick={event => { if (mode === 'edit') { event.preventDefault(); return; } if (!isSubmit) { event.stopPropagation(); ctx.runAction(node, event); } }}>{localizeNode(content)}</button>;
     }
     case 'list': {
       const items: string[] = Array.isArray(p.items) ? p.items : [];
@@ -229,14 +233,14 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       const markerColor = p.iconColor || 'var(--pf-accent)';
       const commitItem = (index: number, value: string) => { const next = [...items]; next[index] = value; commitText(node.id, 'items', next); };
       return <Tag {...attrs} className={`${attrs.className} pf-list--${p.marker || 'bullet'}`} style={{ ...attrs.style, ['--pf-marker' as string]: markerColor }}>
-        {items.map((item, index) => <li key={index}>
-          {p.marker === 'icon' && <span className="pf-li-icon" style={{ color: markerColor }}><PFIcon name={p.icon || 'check'} size={18}/></span>}
-          {editing
+        {localizeNode(items.map((item, index) => <li key={index}>
+          {localizeNode(p.marker === 'icon' && <span className="pf-li-icon" style={{ color: markerColor }}><PFIcon name={p.icon || 'check'} size={18}/></span>)}
+          {localizeNode(editing
             ? <span className="pf-li-text pf-editing" contentEditable suppressContentEditableWarning ref={element => { if (element && !element.dataset.init) { element.innerHTML = sanitizeInline(item); element.dataset.init = '1'; } }}
               onKeyDown={event => { event.stopPropagation(); if (event.key === 'Escape') event.currentTarget.blur(); }}
               onBlur={event => { commitItem(index, sanitizeInline(event.currentTarget.innerHTML)); const next = event.relatedTarget as HTMLElement | null; if (!next || !next.closest(`[data-pf-id="${node.id}"]`)) ctx.stopEditing(); }}/>
-            : <span className="pf-li-text" dangerouslySetInnerHTML={{ __html: sanitizeInline(item) }}/>}
-        </li>)}
+            : <span className="pf-li-text" dangerouslySetInnerHTML={{ __html: sanitizeInline(item) }}/>)}
+        </li>))}
       </Tag>;
     }
     case 'html': return <HtmlEmbedView node={node} attrs={attrs} render={render}/>;
@@ -244,7 +248,7 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       return <span {...attrs}><PFIcon name={p.icon} size={Number(p.size) || 32} color={p.color || 'var(--pf-accent)'}/></span>;
     case 'divider': {
       const align = p.align || 'center';
-      return <div {...attrs}><div className="pf-divider-line" style={{ borderTop: `${Number(p.thickness) || 1}px ${p.lineStyle || 'solid'} ${p.color || '#e3e3e3'}`, width: `${Number(p.width) || 100}%`, marginLeft: align === 'left' ? 0 : 'auto', marginRight: align === 'right' ? 0 : 'auto' }}/></div>;
+      return <div {...attrs}><div className="pf-divider-line" style={{ borderTop: `${Number(p.thickness) || 1}px ${p.lineStyle || 'solid'} ${p.color || '#e3e3e3'}`, width: `${Number(p.width) || 100}%`, marginInlineStart: align === 'left' ? 0 : 'auto', marginInlineEnd: align === 'right' ? 0 : 'auto' }}/></div>;
     }
     case 'spacer': return <div {...attrs} style={{ ...attrs.style, height: `${Number(p.height) || 40}px` }}/>;
 
@@ -255,27 +259,27 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
     case 'qrcode': {
       const size = Number(p.size) || 180;
       const src = `https://api.qrserver.com/v1/create-qr-code/?size=${size * 2}x${size * 2}&margin=8&data=${encodeURIComponent(p.data || ' ')}&color=${String(p.color || '#111111').replace('#', '')}&bgcolor=${String(p.bg || '#ffffff').replace('#', '')}`;
-      return <div {...attrs}><img className="pf-qr" src={src} alt={`QR code: ${p.data || ''}`} width={size} height={size} draggable={false} style={{ background: p.bg || '#ffffff' }}/></div>;
+      return <div {...attrs}><img className="pf-qr" src={src} alt={translateText(`QR code: ${p.data || ''}`)} width={size} height={size} draggable={false} style={{ background: p.bg || '#ffffff' }}/></div>;
     }
     case 'table': {
       const rows: string[][] = Array.isArray(p.rows) ? p.rows : [];
       const [head, ...body] = p.header !== false ? rows : [[], ...rows];
       return <div {...attrs}><div className="pf-table-scroll"><table className={`pf-table-el ${p.striped ? 'striped' : ''} ${p.bordered !== false ? 'bordered' : ''}`}>
-        {p.header !== false && head?.length > 0 && <thead><tr>{head.map((cell, i) => <th key={i}>{cell}</th>)}</tr></thead>}
-        <tbody>{body.map((row, r) => <tr key={r}>{row.map((cell, c) => <td key={c}>{cell}</td>)}</tr>)}</tbody>
+        {localizeNode(p.header !== false && head?.length > 0 && <thead><tr>{localizeNode(head.map((cell, i) => <th key={i}>{localizeNode(cell)}</th>))}</tr></thead>)}
+        <tbody>{localizeNode(body.map((row, r) => <tr key={r}>{localizeNode(row.map((cell, c) => <td key={c}>{localizeNode(cell)}</td>))}</tr>))}</tbody>
       </table></div></div>;
     }
     case 'countdown': return <CountdownView node={node} attrs={attrs} render={render}/>;
     case 'google-map': {
       const height = Number(p.height) || 360;
-      if (thumb) return <div {...attrs}><div className="pf-map-mock" style={{ height }}><MapPin size={30}/><span>{p.address}</span></div></div>;
+      if (thumb) return <div {...attrs}><div className="pf-map-mock" style={{ height }}><MapPin size={30}/><span>{localizeNode(p.address)}</span></div></div>;
       const src = `https://maps.google.com/maps?q=${encodeURIComponent(p.address || 'Cairo')}&t=${p.mapType === 'satellite' ? 'k' : 'm'}&z=${Number(p.zoom) || 14}&ie=UTF8&iwloc=&output=embed`;
-      return <div {...attrs}><iframe title={`Map of ${p.address}`} className="pf-map-frame" src={src} loading="lazy" referrerPolicy="no-referrer-when-downgrade" style={{ height, ...lockedFrame }}/></div>;
+      return <div {...attrs}><iframe title={translateText(`Map of ${p.address}`)} className="pf-map-frame" src={src} loading="lazy" referrerPolicy="no-referrer-when-downgrade" style={{ height, ...lockedFrame }}/></div>;
     }
     case 'progress': {
       const value = Math.min(100, Math.max(0, Number(p.value) || 0));
       return <div {...attrs}>
-        {(p.label || p.showValue) && <div className="pf-progress-head"><span>{p.label}</span>{p.showValue !== false && <b>{value}%</b>}</div>}
+        {localizeNode((p.label || p.showValue) && <div className="pf-progress-head"><span>{localizeNode(p.label)}</span>{localizeNode(p.showValue !== false && <b>{localizeNode(value)}%</b>)}</div>)}
         <div className="pf-progress-track" style={{ background: p.track || '#e9eaee', height: `${Number(p.height) || 12}px` }}>
           <div className={`pf-progress-bar ${p.striped ? 'striped' : ''}`} style={{ width: `${value}%`, background: p.color || 'var(--pf-accent)' }}/>
         </div>
@@ -290,24 +294,24 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
       const count = Math.max(1, Number(p.count) || 6), username = String(p.username || 'instagram').replace(/^@/, '');
       const profile = `https://www.instagram.com/${encodeURIComponent(username)}/`;
       return <div {...attrs}>
-        <div className="pf-ig-head"><span className="pf-ig-avatar"><InstagramIcon size={18}/></span><div><b>@{username}</b><small>Follow us on Instagram</small></div><a href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer">Follow</a></div>
+        <div className="pf-ig-head"><span className="pf-ig-avatar"><InstagramIcon size={18}/></span><div><b>@{localizeNode(username)}</b><small>{translateText("Follow us on Instagram")}</small></div><a href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer">{translateText("Follow")}</a></div>
         <div className="pf-ig-grid" style={{ gridTemplateColumns: `repeat(${Math.max(1, Number(p.columns) || 3)}, minmax(0, 1fr))` }}>
-          {Array.from({ length: count }, (_, i) => images[i % images.length]).map((src, i) => <a key={i} href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer" className="pf-ig-post"><img src={src} alt={`Instagram post ${i + 1}`} loading="lazy" draggable={false}/><span><InstagramIcon size={20}/></span></a>)}
+          {localizeNode(Array.from({ length: count }, (_, i) => images[i % images.length]).map((src, i) => <a key={i} href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer" className="pf-ig-post"><img src={src} alt={translateText(`Instagram post ${i + 1}`)} loading="lazy" draggable={false}/><span><InstagramIcon size={20}/></span></a>))}
         </div>
       </div>;
     }
     case 'fb-like': {
       const url = normalizeUrl(p.url) || 'https://www.facebook.com/facebook';
-      if (thumb || mode === 'edit') return <div {...attrs}><div className={`pf-fb-mock ${p.size === 'small' ? 'small' : ''}`}><span className="pf-fb-btn"><FacebookIcon size={14}/> {p.likeAction === 'recommend' ? 'Recommend' : 'Like'}</span>{p.layout !== 'button' && <span className="pf-fb-count">2.4K</span>}{p.share !== false && <span className="pf-fb-btn">Share</span>}</div></div>;
+      if (thumb || mode === 'edit') return <div {...attrs}><div className={`pf-fb-mock ${p.size === 'small' ? 'small' : ''}`}><span className="pf-fb-btn"><FacebookIcon size={14}/> {localizeNode(p.likeAction === 'recommend' ? 'Recommend' : 'Like')}</span>{localizeNode(p.layout !== 'button' && <span className="pf-fb-count">{translateText("2.4K")}</span>)}{localizeNode(p.share !== false && <span className="pf-fb-btn">{translateText("Share")}</span>)}</div></div>;
       const src = `https://www.facebook.com/plugins/like.php?href=${encodeURIComponent(url)}&layout=${p.layout || 'button_count'}&action=${p.likeAction || 'like'}&size=${p.size || 'large'}&share=${p.share !== false}&height=65`;
-      return <div {...attrs}><iframe title="Facebook like" src={src} className="pf-fb-like-frame" scrolling="no" allow="encrypted-media" loading="lazy"/></div>;
+      return <div {...attrs}><iframe title={translateText("Facebook like")} src={src} className="pf-fb-like-frame" scrolling="no" allow="encrypted-media" loading="lazy"/></div>;
     }
     case 'fb-feed': {
       const url = normalizeUrl(p.url) || 'https://www.facebook.com/facebook';
       const height = Number(p.height) || 500;
-      if (thumb) return <div {...attrs}><div className="pf-feed-mock" style={{ height }}><header><FacebookIcon size={22}/><b>{url.replace(/^https?:\/\/(www\.)?facebook\.com\//, '') || 'Facebook'}</b></header>{[0, 1].map(i => <div key={i} className="pf-feed-post"><i/><i/><i/></div>)}</div></div>;
+      if (thumb) return <div {...attrs}><div className="pf-feed-mock" style={{ height }}><header><FacebookIcon size={22}/><b>{localizeNode(url.replace(/^https?:\/\/(www\.)?facebook\.com\//, '') || 'Facebook')}</b></header>{localizeNode([0, 1].map(i => <div key={i} className="pf-feed-post"><i/><i/><i/></div>))}</div></div>;
       const src = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(url)}&tabs=timeline&width=500&height=${height}&small_header=${Boolean(p.smallHeader)}&hide_cover=${Boolean(p.hideCover)}&adapt_container_width=true&show_facepile=true`;
-      return <div {...attrs}><iframe title="Facebook page feed" src={src} className="pf-fb-feed-frame" style={{ height, ...lockedFrame }} scrolling="no" allow="encrypted-media" loading="lazy"/></div>;
+      return <div {...attrs}><iframe title={translateText("Facebook page feed")} src={src} className="pf-fb-feed-frame" style={{ height, ...lockedFrame }} scrolling="no" allow="encrypted-media" loading="lazy"/></div>;
     }
     case 'x-feed': return <XFeed node={node} attrs={attrs}/>;
 
@@ -315,42 +319,44 @@ function renderNode(node: PFNode, attrs: RootAttrs, ctx: RenderContextValue): Re
     case 'pricing': {
       const plans: { name: string; price: string; period?: string; description?: string; features?: string[]; button?: string; highlighted?: boolean; badge?: string }[] = Array.isArray(p.plans) ? p.plans : [];
       return <div {...attrs} className={`${attrs.className} pf-pricing-cols-${Math.min(4, plans.length || 1)}`}>
-        {plans.map((plan, index) => <div key={index} className={`pf-plan ${plan.highlighted ? 'highlighted' : ''}`}>
-          {plan.badge && <span className="pf-plan-badge">{plan.badge}</span>}
-          <b className="pf-plan-name">{plan.name}</b>
-          {plan.description && <small className="pf-plan-desc">{plan.description}</small>}
-          <div className="pf-plan-price"><strong>{p.currency || '$'}{plan.price}</strong>{plan.period && <span>/ {plan.period}</span>}</div>
-          <ul>{(plan.features ?? []).map((feature, i) => <li key={i}><PFIcon name="check" size={15}/>{feature}</li>)}</ul>
-          <button type="button" className="pf-plan-button" onClick={event => { if (isInteractive(mode)) ctx.runAction(node, event); }}>{plan.button || 'Choose plan'}</button>
-        </div>)}
+        {localizeNode(plans.map((plan, index) => <div key={index} className={`pf-plan ${plan.highlighted ? 'highlighted' : ''}`}>
+          {localizeNode(plan.badge && <span className="pf-plan-badge">{localizeNode(plan.badge)}</span>)}
+          <b className="pf-plan-name">{localizeNode(plan.name)}</b>
+          {localizeNode(plan.description && <small className="pf-plan-desc">{localizeNode(plan.description)}</small>)}
+          <div className="pf-plan-price"><strong>{localizeNode(p.currency || '$')}{localizeNode(plan.price)}</strong>{localizeNode(plan.period && <span>/ {localizeNode(plan.period)}</span>)}</div>
+          <ul>{localizeNode((plan.features ?? []).map((feature, i) => <li key={i}><PFIcon name="check" size={15}/>{localizeNode(feature)}</li>))}</ul>
+          <button type="button" className="pf-plan-button" onClick={event => { if (isInteractive(mode)) ctx.runAction(node, event); }}>{localizeNode(plan.button || 'Choose plan')}</button>
+        </div>))}
       </div>;
     }
     case 'testimonial': {
       const items: { quote: string; name: string; role?: string; avatar?: string; rating?: number }[] = Array.isArray(p.items) ? p.items : [];
       return <div {...attrs} style={{ ...attrs.style, gridTemplateColumns: `repeat(${device === 'mobile' ? 1 : Math.min(Number(p.columns) || 3, device === 'tablet' ? 2 : 4)}, minmax(0, 1fr))` }}>
-        {items.map((item, index) => <figure key={index} className="pf-review">
+        {localizeNode(items.map((item, index) => <figure key={index} className="pf-review">
           <Stars value={Number(item.rating) || 5} color="#f5a623" size={15}/>
-          <blockquote>“{item.quote}”</blockquote>
-          <figcaption>{item.avatar ? <img src={item.avatar} alt={item.name}/> : <span className="pf-review-initial">{(item.name || '?').charAt(0)}</span>}<div><b>{item.name}</b>{item.role && <small>{item.role}</small>}</div></figcaption>
-        </figure>)}
+          <blockquote>“{localizeNode(item.quote)}”</blockquote>
+          <figcaption>{localizeNode(item.avatar ? <img src={item.avatar} alt={translateText(item.name)}/> : <span className="pf-review-initial">{localizeNode((item.name || '?').charAt(0))}</span>)}<div><b>{localizeNode(item.name)}</b>{localizeNode(item.role && <small>{localizeNode(item.role)}</small>)}</div></figcaption>
+        </figure>))}
       </div>;
     }
     case 'booking': return <BookingView node={node} attrs={attrs} render={render}/>;
     case 'checkout': return <CheckoutView node={node} attrs={attrs} render={render}/>;
     case 'rating':
-      return <div {...attrs}><Stars value={Number(p.value) || 0} color={p.color || '#f5a623'} size={Number(p.size) || 18}/><b>{Number(p.value || 0).toFixed(1)}</b>{p.count && <span>{p.count}</span>}</div>;
+      return <div {...attrs}><Stars value={Number(p.value) || 0} color={p.color || '#f5a623'} size={Number(p.size) || 18}/><b>{localizeNode(Number(p.value || 0).toFixed(1))}</b>{localizeNode(p.count && <span>{localizeNode(p.count)}</span>)}</div>;
     default:
-      return <div {...attrs}>{stripTags(String(p.text ?? ''))}</div>;
+      return <div {...attrs}>{localizeNode(stripTags(String(p.text ?? '')))}</div>;
   }
 }
 
 function Stars({ value, color, size }: { value: number; color: string; size: number }) {
-  return <span className="pf-stars" style={{ color }} aria-label={`${value} out of 5 stars`}>
-    {Array.from({ length: 5 }, (_, i) => { const fill = Math.min(1, Math.max(0, value - i)); return <span key={i} className="pf-star" style={{ width: size, height: size }}><Star size={size} className="pf-star-bg"/><span style={{ width: `${fill * 100}%` }}><Star size={size} fill="currentColor"/></span></span>; })}
+  useUILanguage();
+  return <span className="pf-stars" style={{ color }} aria-label={translateText(`${value} out of 5 stars`)}>
+    {localizeNode(Array.from({ length: 5 }, (_, i) => { const fill = Math.min(1, Math.max(0, value - i)); return <span key={i} className="pf-star" style={{ width: size, height: size }}><Star size={size} className="pf-star-bg"/><span style={{ width: `${fill * 100}%` }}><Star size={size} fill="currentColor"/></span></span>; }))}
   </span>;
 }
 
 function XFeed({ node, attrs }: { node: PFNode; attrs: RootAttrs }) {
+  useUILanguage();
   const { mode } = useRender();
   const username = String(node.props.username || 'X').replace(/^@/, '');
   const dark = node.props.theme === 'dark';
@@ -364,10 +370,10 @@ function XFeed({ node, attrs }: { node: PFNode; attrs: RootAttrs }) {
   const profile = `https://x.com/${encodeURIComponent(username)}`;
   return <div {...attrs} className={`${attrs.className} ${dark ? 'dark' : ''}`} ref={ref}>
     <div className="pf-x-card" style={{ minHeight: Math.min(Number(node.props.height) || 500, 320) }}>
-      <header><span className="pf-x-logo"><XIcon size={18}/></span><div><b>@{username}</b><small>Posts from X</small></div><a href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer">Follow</a></header>
-      {isInteractive(mode)
-        ? <a className="twitter-timeline" data-height={node.props.height || 500} data-theme={dark ? 'dark' : 'light'} href={profile}>Posts by @{username}</a>
-        : [0, 1, 2].map(i => <div className="pf-feed-post" key={i}><i/><i/><i/></div>)}
+      <header><span className="pf-x-logo"><XIcon size={18}/></span><div><b>@{localizeNode(username)}</b><small>{translateText("Posts from X")}</small></div><a href={isInteractive(mode) ? profile : undefined} target="_blank" rel="noopener noreferrer">{translateText("Follow")}</a></header>
+      {localizeNode(isInteractive(mode)
+        ? <a className="twitter-timeline" data-height={node.props.height || 500} data-theme={dark ? 'dark' : 'light'} href={profile}>{translateText("Posts by @")}{localizeNode(username)}</a>
+        : [0, 1, 2].map(i => <div className="pf-feed-post" key={i}><i/><i/><i/></div>))}
     </div>
   </div>;
 }
@@ -391,6 +397,7 @@ export type PFRendererProps = {
 };
 
 export function PFRenderer({ nodes, mode, device, theme, page, selectedId = null, editingId = null, onCommitText, onStopEditing, onNextStep, className }: PFRendererProps) {
+  useUILanguage();
   const rootRef = useRef<HTMLDivElement>(null);
   const [openPopups, setOpenPopups] = useState<string[]>([]);
   useGoogleFonts(nodes, mode === 'thumb' ? [] : [theme.headingFont, theme.bodyFont]);
@@ -465,8 +472,8 @@ export function PFRenderer({ nodes, mode, device, theme, page, selectedId = null
   const rootStyle = { '--pf-accent': theme.color, '--pf-heading-font': fontStack(theme.headingFont || 'Inter'), '--pf-body-font': fontStack(theme.bodyFont || 'Inter') } as CSSProperties;
   return <RenderContext.Provider value={context}>
     <div ref={rootRef} className={`pf-page pf-mode-${mode} pf-device-${device} ${className ?? ''}`} style={rootStyle} data-pf-children="root">
-      {customCss && <style>{customCss}</style>}
-      {nodes.length ? nodes.map(render) : mode === 'edit' ? <div className="pf-page-empty"><b>Your page is empty</b><span>Drag a layout or element from the left panel, or pick a template to get started.</span></div> : null}
+      {localizeNode(customCss && <style>{customCss}</style>)}
+      {localizeNode(nodes.length ? nodes.map(render) : mode === 'edit' ? <div className="pf-page-empty"><b>{translateText("Your page is empty")}</b><span>{translateText("Drag a layout or element from the left panel, or pick a template to get started.")}</span></div> : null)}
     </div>
   </RenderContext.Provider>;
 }
@@ -476,6 +483,7 @@ export function PFRenderer({ nodes, mode, device, theme, page, selectedId = null
 /* ------------------------------------------------------------------ */
 
 export function PFThumbnail({ nodes, theme, width = 1280, device = 'desktop', className, maxHeight }: { nodes: PFNode[]; theme: PFTheme; width?: number; device?: Device; className?: string; maxHeight?: number }) {
+  useUILanguage();
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.25);
   useLayoutEffect(() => {

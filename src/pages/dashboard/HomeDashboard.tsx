@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,12 +11,14 @@ import {
   Plus,
 } from "lucide-react";
 import "./home-dashboard.css";
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
 const CARD =
-  "rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]";
+  "rounded-xl border border-slate-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]";
 const H = "text-slate-900 dark:text-white";
 const MUTED = "text-slate-500 dark:text-slate-400";
 
@@ -90,6 +93,7 @@ type IconProps = { size?: number; className?: string };
 const CUT = "var(--icon-cut,#fff)";
 function solid(children: React.ReactNode) {
   return function SolidIcon({ size = 20, className = "" }: IconProps) {
+  useUILanguage();
     return (
       <svg
         width={size}
@@ -99,7 +103,7 @@ function solid(children: React.ReactNode) {
         className={className}
         aria-hidden="true"
       >
-        {children}
+        {localizeNode(children)}
       </svg>
     );
   };
@@ -582,6 +586,7 @@ function IconTile({
   tone: Tone;
   size?: "xs" | "sm" | "md";
 }) {
+  useUILanguage();
   const t = TONES[tone];
   const box =
     size === "xs"
@@ -611,37 +616,38 @@ function SectionHeader({
   onAction?: () => void;
   variant?: "link" | "button";
 }) {
+  useUILanguage();
   return (
-    <div className="flex items-start justify-between gap-3 shrink-0">
-      <div className="min-w-0">
-        <h2 className={`text-[15px] font-bold leading-5 ${H}`}>{title}</h2>
-        {subtitle && (
-          <p className={`truncate text-xs leading-4 ${MUTED}`}>{subtitle}</p>
-        )}
+    <div className="flex items-center justify-between gap-2 shrink-0">
+      <div className="min-w-0 text-start">
+        <h2 className={`text-xs font-bold leading-none ${H}`}>{localizeNode(title)}</h2>
+        {localizeNode(subtitle && (
+          <p className={`truncate text-[10px] leading-tight mt-0.5 ${MUTED}`}>{localizeNode(subtitle)}</p>
+        ))}
       </div>
-      {action &&
+      {localizeNode(action &&
         (variant === "button" ? (
           <button
             type="button"
             onClick={onAction}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-purple-100 bg-white px-3 py-1.5 text-xs font-semibold text-[#6D4AFF] transition hover:border-purple-200 hover:bg-purple-50 dark:border-purple-500/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
+            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-purple-100 bg-white px-2 py-0.5 text-[11px] font-semibold text-[#6D4AFF] transition hover:border-purple-200 hover:bg-purple-50 dark:border-purple-500/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
           >
-            {action}
-            <ArrowRight size={13} />
+            {localizeNode(action)}
+            <ArrowRight size={11} />
           </button>
         ) : (
           <button
             type="button"
             onClick={onAction}
-            className="group inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[#6D4AFF] transition hover:text-purple-700 dark:text-purple-300"
+            className="group inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-[#6D4AFF] transition hover:text-purple-700 dark:text-purple-300"
           >
-            {action}
+            {localizeNode(action)}
             <ArrowRight
-              size={13}
-              className="transition-transform group-hover:translate-x-0.5"
+              size={11}
+              className="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
             />
           </button>
-        ))}
+        )))}
     </div>
   );
 }
@@ -656,6 +662,7 @@ function Sparkline({
   color: string;
   className?: string;
 }) {
+  useUILanguage();
   const id = React.useId().replace(/:/g, "");
   const w = 120,
     h = 48,
@@ -703,29 +710,30 @@ function Sparkline({
 }
 
 function ProgressRing({ value }: { value: number }) {
-  const r = 17,
+  useUILanguage();
+  const r = 9,
     c = 2 * Math.PI * r;
   return (
-    <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#efeaff] dark:bg-purple-500/20">
+    <span className="relative grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#efeaff] dark:bg-purple-500/20">
       <svg
-        viewBox="0 0 40 40"
+        viewBox="0 0 24 24"
         className="absolute inset-0 -rotate-90"
         aria-hidden="true"
       >
         <circle
-          cx="20"
-          cy="20"
+          cx="12"
+          cy="12"
           r={r}
           fill="none"
           stroke="#6D4AFF"
-          strokeWidth="2.6"
+          strokeWidth="2.4"
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - value / 100)}
           className="transition-[stroke-dashoffset] duration-700"
         />
       </svg>
-      <IcTarget size={15} className="text-[#6D4AFF] dark:text-purple-300" />
+      <IcTarget size={10} className="text-[#6D4AFF] dark:text-purple-300" />
     </span>
   );
 }
@@ -738,11 +746,12 @@ function RoundBadge({
   icon: IconC;
   className: string;
 }) {
+  useUILanguage();
   return (
     <span
-      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${className}`}
+      className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${className}`}
     >
-      <Icon size={16} />
+      <Icon size={11} />
     </span>
   );
 }
@@ -789,12 +798,27 @@ const CREATE_ITEMS: {
 ];
 
 function CreateNewMenu() {
+  useUILanguage();
   const navigate = useNavigate();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
   return (
     <nav
-      aria-label="Create new"
-      className="w-full rounded-xl border border-white/10 bg-[#141a33] p-1.5 text-white shadow-[0_16px_32px_-12px_rgba(15,21,53,0.6)] md:w-[150px] dark:bg-[#0d1226]"
+      ref={menuRef}
+      aria-label={translateText("Create new")}
+      className="relative w-full rounded-xl border border-white/10 bg-[#141a33] p-1.5 text-white shadow-[0_16px_32px_-12px_rgba(15,21,53,0.6)] md:w-[154px] dark:bg-[#0d1226]"
     >
       <button
         type="button"
@@ -802,46 +826,48 @@ function CreateNewMenu() {
         aria-expanded={open}
         aria-controls="hero-create-list"
         onClick={() => setOpen((o) => !o)}
-        className="group flex w-full items-center gap-2 rounded-lg p-0.5 transition hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+        className="group flex w-full items-center gap-2 rounded-lg p-1 transition hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
       >
         <span className="grid h-5 w-5 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#6D4AFF] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
           <Plus size={13} strokeWidth={3} />
         </span>
-        <span className="flex-1 text-xs font-semibold tracking-tight text-left">
-          Create New
-        </span>
+        <span className="flex-1 text-xs font-semibold tracking-tight text-start">{translateText("Create New")}</span>
         <ChevronDown
           size={13}
-          className={`text-slate-400 transition-transform duration-200 ${open ? "" : "-rotate-90"}`}
+          className={`text-slate-400 transition-transform duration-200 ${open ? "" : "-rotate-90 rtl:rotate-90"}`}
         />
       </button>
       <div
         id="hero-create-list"
-        className={`grid transition-all duration-300 ${open ? "mt-1 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+        aria-hidden={!open}
+        className={`grid transition-all duration-300 ${open ? "mt-1.5 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"}`}
       >
-        <ul className="min-h-0 overflow-hidden">
-          {CREATE_ITEMS.map((item) => (
+        <ul className="min-h-0 space-y-1.5 p-1">
+          {localizeNode(CREATE_ITEMS.map((item) => (
             <li key={item.label}>
               <button
                 type="button"
                 id={`hero-create-${item.label.toLowerCase()}`}
-                onClick={() => navigate(item.to)}
+                onClick={() => {
+                  setOpen(false);
+                  navigate(item.to);
+                }}
                 tabIndex={open ? 0 : -1}
-                className="group flex w-full items-center gap-2 rounded-md px-1 py-0 text-left text-[11px] font-medium leading-4 text-slate-200 transition hover:bg-white/10 hover:text-white"
+                className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-xs font-medium text-slate-200 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400"
               >
                 <span
-                  className="grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[4px] text-white transition-transform group-hover:scale-110"
+                  className="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] text-white transition-transform group-hover:scale-110"
                   style={{
                     backgroundColor: item.color,
                     ["--icon-cut" as string]: item.color,
                   }}
                 >
-                  <item.icon size={9} />
+                  <item.icon size={10} />
                 </span>
-                {item.label}
+                <span className="flex-1 font-medium">{localizeNode(item.label)}</span>
               </button>
             </li>
-          ))}
+          )))}
         </ul>
       </div>
     </nav>
@@ -852,17 +878,14 @@ function CreateNewMenu() {
 /* Sections                                                            */
 /* ------------------------------------------------------------------ */
 function HeroBanner() {
+  const language = useUILanguage();
+  const userName = useSelector((state: RootState) => state.auth.user?.name || 'Mohamed');
   const pills = [
     {
       key: "goal",
       node: <ProgressRing value={78} />,
-      title: "Keep going!",
-      sub: (
-        <>
-          <b className="font-bold text-[#6D4AFF] dark:text-purple-300">78%</b>{" "}
-          of your monthly goal
-        </>
-      ),
+      title: "78%",
+      sub: "monthly goal",
     },
     {
       key: "leads",
@@ -873,7 +896,7 @@ function HeroBanner() {
         />
       ),
       title: "1,240",
-      sub: "new leads this month",
+      sub: "leads",
     },
     {
       key: "revenue",
@@ -884,7 +907,7 @@ function HeroBanner() {
         />
       ),
       title: "€24,680",
-      sub: "total revenue",
+      sub: "revenue",
     },
     {
       key: "campaigns",
@@ -901,59 +924,62 @@ function HeroBanner() {
   return (
     <section
       aria-labelledby="dash-greeting"
-      className="relative isolate shrink-0 overflow-hidden rounded-2xl border border-[#e7e1ff] bg-[linear-gradient(100deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] shadow-sm dark:border-white/10 dark:bg-[linear-gradient(100deg,#121829_0%,#17163a_45%,#241a52_100%)]"
+      data-dashboard-section="hero"
+      className="relative z-30 shrink-0 rounded-2xl border border-[#e7e1ff] bg-[linear-gradient(100deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] rtl:bg-[linear-gradient(260deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] shadow-sm dark:border-white/10 dark:bg-[linear-gradient(100deg,#121829_0%,#17163a_45%,#241a52_100%)] rtl:dark:bg-[linear-gradient(260deg,#121829_0%,#17163a_45%,#241a52_100%)] min-h-[120px]"
     >
-      {/* Landscape art */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-full opacity-40 md:w-[62%] md:opacity-100 [mask-image:linear-gradient(to_right,transparent,black_30%)]">
-        <img
-          src="/dashboard/hero-landscape.png"
-          alt=""
-          className="h-full w-full object-cover object-[center_60%] contrast-[1.08] saturate-[1.2]"
-        />
+      {/* Landscape art and veil clipped within rounded container */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl -z-10">
+        <div className="pointer-events-none absolute inset-y-0 end-0 w-full opacity-50 md:w-[65%] md:opacity-100 [mask-image:linear-gradient(to_right,transparent,black_25%)] rtl:[mask-image:linear-gradient(to_left,transparent,black_25%)]">
+          <img
+            src="/dashboard/hero-landscape.png"
+            alt=""
+            className="h-full w-full object-cover object-[center_65%] contrast-[1.08] saturate-[1.2] rtl:scale-x-[-1]"
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 start-0 w-[58%] bg-gradient-to-r rtl:bg-gradient-to-l from-white via-white/85 to-transparent dark:from-[#121829] dark:via-[#121829]/80" />
       </div>
-      {/* Readability veil behind the copy */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-[58%] bg-gradient-to-r from-white via-white/85 to-transparent dark:from-[#121829] dark:via-[#121829]/80" />
 
-      {/* Motivation quote card — top area, clear of both the pills and the menu */}
-      <figure className="absolute right-[190px] top-3 hidden w-[196px] rotate-[5deg] rounded-xl border border-white/15 bg-gradient-to-br from-[#2b1d63]/95 to-[#1a1340]/95 px-4 py-2.5 text-white shadow-[0_14px_30px_-12px_rgba(43,29,99,0.7)] backdrop-blur-sm transition-transform duration-500 hover:rotate-[2deg] xl:block 2xl:right-[220px]">
-        <blockquote className="text-xs font-semibold leading-snug tracking-tight">
-          “Big progress comes from consistent action.”
+      {/* Motivation quote badge — top area */}
+      <figure className="absolute end-[180px] top-3 hidden w-[190px] rotate-[4deg] rtl:-rotate-[4deg] rounded-xl border border-white/15 bg-gradient-to-br from-[#2b1d63]/95 to-[#1a1340]/95 px-3.5 py-2 text-white shadow-[0_14px_30px_-12px_rgba(43,29,99,0.7)] backdrop-blur-sm transition-transform duration-500 hover:rotate-[1deg] xl:block 2xl:end-[200px]">
+        <blockquote className="text-[11px] font-semibold leading-snug tracking-tight">
+          {translateText("“Big progress comes from consistent action.”")}
         </blockquote>
       </figure>
 
-      {/* Floating Create New menu */}
-      <div className="relative z-10 px-5 pt-3 sm:px-6 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:p-0">
+      {/* Floating Create New menu on right */}
+      <div className="relative z-40 px-5 pt-3 sm:px-6 md:absolute md:end-4 md:top-1/2 md:-translate-y-1/2 md:p-0">
         <CreateNewMenu />
       </div>
 
-      <div className="relative flex flex-col justify-center px-5 pb-3 pt-2.5 sm:px-6 md:min-h-[128px] md:py-3 md:pr-[176px]">
+      {/* Greeting copy and stat pills */}
+      <div className="relative flex flex-col justify-center px-5 py-4 sm:px-6 md:min-h-[120px] md:pe-[180px] text-start">
         <h1
           id="dash-greeting"
-          className="text-[22px] font-extrabold leading-[30px] tracking-tight text-[#0f1535] sm:text-2xl dark:text-white"
+          className="text-lg font-extrabold leading-tight tracking-tight text-[#0f1535] sm:text-xl dark:text-white"
         >
-          Good morning, Mohamed <span aria-hidden="true">👋</span>
+          {language.startsWith('ar') ? 'صباح الخير، ' : 'Good morning, '}{userName} <span aria-hidden="true">👋</span>
         </h1>
-        <p className="text-[12.5px] font-medium leading-[18px] text-slate-600 dark:text-slate-300">
-          Here’s what’s happening with your business today.
+        <p className="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+          {translateText("Here’s what’s happening with your business today.")}
         </p>
 
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          {pills.map((p) => (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {localizeNode(pills.map((p) => (
             <div
               key={p.key}
-              className="flex items-center gap-2 rounded-xl border border-white bg-white py-1.5 pl-2 pr-3.5 shadow-[0_6px_18px_-8px_rgba(80,60,180,0.30)] ring-1 ring-[#ece7ff] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(80,60,180,0.4)] dark:border-white/10 dark:bg-[#161d31] dark:ring-white/5"
+              className="flex items-center gap-2 rounded-xl border border-white/80 bg-white/95 px-2.5 py-1 shadow-sm ring-1 ring-[#ece7ff] transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#161d31]/95 dark:ring-white/5"
             >
-              {p.node}
-              <div className="leading-tight">
-                <div className="whitespace-nowrap text-[12.5px] font-bold text-slate-900 dark:text-white">
-                  {p.title}
-                </div>
-                <div className="whitespace-nowrap text-[11px] text-slate-600 dark:text-slate-300">
-                  {p.sub}
-                </div>
+              {localizeNode(p.node)}
+              <div className="leading-tight text-start">
+                <span className="block whitespace-nowrap text-xs font-bold text-slate-900 dark:text-white">
+                  {localizeNode(p.title)}
+                </span>
+                <span className="block whitespace-nowrap text-[10.5px] text-slate-500 dark:text-slate-400">
+                  {localizeNode(p.sub)}
+                </span>
               </div>
             </div>
-          ))}
+          )))}
         </div>
       </div>
     </section>
@@ -961,128 +987,129 @@ function HeroBanner() {
 }
 
 function KpiRow() {
+  useUILanguage();
   return (
     <section
-      aria-label="Key metrics"
-      className="grid shrink-0 grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4"
+      aria-label={translateText("Key metrics")}
+      data-dashboard-section="metrics"
+      className="grid shrink-0 grid-cols-2 gap-2.5 xl:grid-cols-4"
     >
-      {KPIS.map((k) => (
+      {localizeNode(KPIS.map((k) => (
         <article
           key={k.label}
-          className={`${CARD} group relative flex items-start gap-3 overflow-hidden px-4 py-2 transition hover:-translate-y-0.5 hover:shadow-md`}
+          className={`${CARD} group relative flex items-center gap-2.5 overflow-hidden px-3 py-2 transition hover:-translate-y-0.5 hover:shadow-sm`}
         >
-          <IconTile icon={k.icon} tone={k.tone} />
-          <div className="flex-1 min-w-0">
-            <div
-              className={`truncate pr-[34%] text-xs font-medium leading-4 ${MUTED}`}
-            >
-              {k.label}
+          <IconTile icon={k.icon} tone={k.tone} size="xs" />
+          <div className="flex-1 min-w-0 text-start">
+            <div className={`truncate pe-[30%] text-[10px] font-medium leading-none ${MUTED}`}>
+              {localizeNode(k.label)}
             </div>
-            <div
-              className={`whitespace-nowrap text-xl font-extrabold leading-6 tracking-tight ${H}`}
-            >
-              {k.value}
-            </div>
-            <div className="flex items-center gap-1 whitespace-nowrap text-[11px] leading-4">
-              <span className="inline-flex items-center gap-0.5 font-semibold text-emerald-600 dark:text-emerald-400">
-                <ArrowUp size={12} strokeWidth={2.8} />
-                {k.change}
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className={`whitespace-nowrap text-[15px] font-extrabold tracking-tight leading-none ${H}`}>
+                {localizeNode(k.value)}
               </span>
-              <span className={MUTED}>from last month</span>
+              <span className="inline-flex items-center gap-0.5 font-semibold text-[10px] text-emerald-600 dark:text-emerald-400 leading-none">
+                <ArrowUp size={9} strokeWidth={2.8} />
+                {localizeNode(k.change)}
+              </span>
             </div>
           </div>
           <Sparkline
             points={k.points}
             color={TONES[k.tone].stroke}
-            className="pointer-events-none absolute right-4 top-2.5 h-9 w-[32%] max-w-[140px] transition-transform duration-300 group-hover:scale-[1.03]"
+            className="sparkline pointer-events-none absolute end-2.5 top-2 ltr:right-2.5 ltr:left-auto rtl:left-2.5 rtl:right-auto h-6 w-[26%] max-w-[80px] transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </article>
-      ))}
+      )))}
     </section>
   );
 }
 
 function QuickActions() {
+  useUILanguage();
   const navigate = useNavigate();
   return (
-    <section className={`${CARD} shrink-0 px-4 py-2.5`}>
-      <SectionHeader
-        title="Quick Actions"
-        subtitle="Create and manage your business tools."
-        action="View All Tools"
-        variant="button"
-        onAction={() => navigate("/dashboard/settings/tools")}
-      />
-      <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-7">
-        {QUICK_ACTIONS.map((a) => {
-          const t = TONES[a.tone];
-          return (
-            <button
-              key={a.label}
-              id={`quick-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
-              type="button"
-              onClick={() => navigate(a.to)}
-              className={`group flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 transition duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 ${t.tile}`}
-            >
-              <span
-                className={`transition-transform duration-200 group-hover:scale-110 ${t.text}`}
+    <section data-dashboard-section="quick-actions" className={`${CARD} shrink-0 px-3 py-1.5`}>
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
+          <span className={`text-xs font-bold whitespace-nowrap ${H}`}>{translateText("Quick Actions")}</span>
+          <span className="text-slate-300 dark:text-slate-700">|</span>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 flex-1 sm:grid-cols-4 lg:grid-cols-7">
+          {localizeNode(QUICK_ACTIONS.map((a) => {
+            const t = TONES[a.tone];
+            return (
+              <button
+                key={a.label}
+                id={`quick-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
+                type="button"
+                onClick={() => navigate(a.to)}
+                className={`group flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1 transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-300 ${t.tile}`}
               >
-                <a.icon size={20} />
-              </span>
-              <span
-                className={`text-center text-xs font-semibold leading-4 ${H}`}
-              >
-                {a.label}
-              </span>
-            </button>
-          );
-        })}
+                <span className={`transition-transform duration-150 group-hover:scale-110 ${t.text}`}>
+                  <a.icon size={12} />
+                </span>
+                <span className={`truncate text-[11px] font-semibold ${H}`}>
+                  {localizeNode(a.label)}
+                </span>
+              </button>
+            );
+          }))}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard/settings/tools")}
+          className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold text-[#6D4AFF] transition hover:text-purple-700 xl:inline-flex"
+        >
+          {translateText("All Tools")}
+          <ArrowRight size={11} />
+        </button>
       </div>
     </section>
   );
 }
 
 function ToolsGrid() {
+  useUILanguage();
   const navigate = useNavigate();
   return (
-    <section className={`${CARD} flex flex-col px-4 py-2.5`}>
+    <section data-dashboard-section="tools" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <SectionHeader
-        title="Your Tools & Products"
+        title={translateText("Your Tools & Products")}
         subtitle="Access and manage all your business tools in one place."
         action="View All"
         onAction={() => navigate("/dashboard/settings/tools")}
       />
-      <div className="grid flex-1 grid-cols-1 gap-2 mt-2 auto-rows-fr sm:grid-cols-2 lg:grid-cols-3">
-        {TOOLS.map((t) => (
+      <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-2.5 mt-2.5 auto-rows-fr min-h-0">
+        {localizeNode(TOOLS.map((t) => (
           <button
             key={t.name}
             type="button"
             onClick={() => navigate(t.to)}
-            className="group flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-md dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-purple-500/40"
+            className="group flex items-center gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 text-start transition hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-purple-500/40"
           >
-            <IconTile icon={t.icon} tone={t.tone} />
-            <span className="flex-1 min-w-0">
-              <span
-                className={`block truncate text-[13px] font-bold leading-[18px] ${H}`}
-              >
-                {t.name}
+            <IconTile icon={t.icon} tone={t.tone} size="sm" />
+            <span className="flex-1 min-w-0 text-start">
+              <span className={`block truncate text-xs font-bold leading-snug ${H}`}>
+                {localizeNode(t.name)}
               </span>
-              <span className={`block truncate text-[11px] leading-4 ${MUTED}`}>
-                {t.meta}
+              <span className={`block truncate text-[10.5px] font-medium leading-snug mt-0.5 ${MUTED}`}>
+                {localizeNode(t.meta)}
               </span>
             </span>
             <ChevronRight
-              size={16}
-              className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#6D4AFF]"
+              size={13}
+              className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 group-hover:text-[#6D4AFF]"
             />
           </button>
-        ))}
+        )))}
       </div>
     </section>
   );
 }
 
 function RevenueOverview() {
+  useUILanguage();
   const [range, setRange] = React.useState<RangeKey>("30");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -1114,27 +1141,24 @@ function RevenueOverview() {
   const linePts = data
     .map((d, i) => `${((i + 0.5) / data.length) * 100},${100 - pct(d.value)}`)
     .join(" ");
-  const activeDatum = data[activeIndex];
-
+  const activeDatum = activeIndex !== -1 ? data[activeIndex] : null;
   return (
-    <section className={`${CARD} flex flex-col px-4 py-2.5`}>
+    <section data-dashboard-section="revenue" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <div className="flex items-start justify-between gap-3 shrink-0">
-        <div className="min-w-0">
-          <h2 className={`text-[15px] font-bold leading-5 ${H}`}>
-            Revenue Overview
-          </h2>
-          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0">
+        <div className="min-w-0 text-start">
+          <h2 className={`text-xs font-bold leading-none ${H}`}>{translateText("Revenue Overview")}</h2>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
             <span
-              className={`text-[22px] font-extrabold leading-7 tracking-tight ${H}`}
+              className={`text-xl font-extrabold tracking-tight leading-none ${H}`}
             >
-              {eur(total)}
+              {localizeNode(eur(total))}
             </span>
-            <span className="inline-flex items-center gap-1 text-xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 text-[11px] whitespace-nowrap">
               <span className="inline-flex items-center gap-0.5 font-semibold text-emerald-600 dark:text-emerald-400">
-                <ArrowUp size={12} strokeWidth={2.8} />
-                {RANGES[range].growth}
+                <ArrowUp size={11} strokeWidth={2.8} />
+                {localizeNode(RANGES[range].growth)}
               </span>
-              <span className={MUTED}>{RANGES[range].compare}</span>
+              <span className={MUTED}>{localizeNode(RANGES[range].compare)}</span>
             </span>
           </div>
         </div>
@@ -1145,18 +1169,18 @@ function RevenueOverview() {
             aria-haspopup="listbox"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5"
+            className="inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-slate-200 bg-white transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
           >
-            {RANGES[range].label}
+            {localizeNode(RANGES[range].label)}
             <ChevronDown
-              size={14}
+              size={12}
               className={`transition-transform ${menuOpen ? "rotate-180" : ""}`}
             />
           </button>
           {menuOpen && (
             <ul
               role="listbox"
-              className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-xl border border-slate-100 bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#161d31]"
+              className="absolute end-0 z-20 mt-1 w-32 overflow-hidden rounded-lg border border-slate-100 bg-white p-0.5 shadow-lg dark:border-white/10 dark:bg-[#161d31] ltr:right-0 ltr:left-auto rtl:left-0 rtl:right-auto"
             >
               {(Object.keys(RANGES) as RangeKey[]).map((k) => (
                 <li key={k}>
@@ -1169,10 +1193,10 @@ function RevenueOverview() {
                       setActive(null);
                       setMenuOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition hover:bg-slate-50 dark:hover:bg-white/5 ${k === range ? "font-semibold text-[#6D4AFF]" : "text-slate-600 dark:text-slate-300"}`}
+                    className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-[11px] transition hover:bg-slate-50 dark:hover:bg-white/5 ${k === range ? "font-semibold text-[#6D4AFF]" : "text-slate-600 dark:text-slate-300"}`}
                   >
-                    {RANGES[k].label}
-                    {k === range && <Check size={13} />}
+                    {localizeNode(RANGES[k].label)}
+                    {k === range && <Check size={11} />}
                   </button>
                 </li>
               ))}
@@ -1181,40 +1205,40 @@ function RevenueOverview() {
         </div>
       </div>
 
-      {/* Chart canvas: guaranteed minimum height so axes never collide */}
-      <div className="mt-2 flex min-h-[104px] flex-1 gap-2">
+      {/* Chart canvas: balanced h-36 / max-h-40 container matching ToolsGrid height */}
+      <div className="analytics-chart mt-2 flex h-36 max-h-40 flex-1 gap-2 [direction:ltr] min-h-0">
         {/* Y axis */}
         <div className="relative w-7 shrink-0 text-[10px] font-medium text-slate-400">
           <div className="absolute inset-x-0 bottom-[18px] top-1.5">
-            {ticks.map((t, i) => (
+            {localizeNode(ticks.map((t, i) => (
               <span
                 key={t}
-                className="absolute right-0 leading-none -translate-y-1/2"
+                className="absolute end-0 leading-none -translate-y-1/2 text-right"
                 style={{ top: `${(i / (ticks.length - 1)) * 100}%` }}
               >
-                {t === 0 ? "0" : `${t / 1000}K`}
+                {localizeNode(t === 0 ? "0" : `${t / 1000}K`)}
               </span>
-            ))}
+            )))}
           </div>
         </div>
         <div className="relative flex-1 min-w-0">
           {/* Grid */}
           <div className="pointer-events-none absolute inset-x-0 bottom-[18px] top-1.5 flex flex-col justify-between">
-            {ticks.map((t) => (
+            {localizeNode(ticks.map((t) => (
               <div
                 key={t}
                 className="border-t border-dashed border-slate-100 dark:border-white/5"
               />
-            ))}
+            )))}
           </div>
           {/* Plot */}
           <div className="absolute inset-x-0 bottom-[18px] top-1.5">
             <div className="flex h-full items-end gap-[3px]">
-              {data.map((d, i) => (
+              {localizeNode(data.map((d, i) => (
                 <button
                   key={d.label}
                   type="button"
-                  aria-label={`${d.label}: ${eur(d.value)}`}
+                  aria-label={translateText(`${d.label}: ${eur(d.value)}`)}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                   className="relative flex items-end flex-1 h-full group focus:outline-none"
@@ -1224,7 +1248,7 @@ function RevenueOverview() {
                     className={`w-full rounded-t-[3px] bg-gradient-to-t transition-all duration-300 ${i === activeIndex ? "from-[#6D4AFF] to-[#a48bff] shadow-[0_6px_14px_-4px_rgba(109,74,255,0.6)]" : "from-[#c4b5ff] to-[#e3dbff] group-hover:from-[#a48bff] group-hover:to-[#cfc2ff] dark:from-purple-500/40 dark:to-purple-400/20"}`}
                   />
                 </button>
-              ))}
+              )))}
             </div>
             {/* Trend line */}
             <svg
@@ -1257,10 +1281,10 @@ function RevenueOverview() {
                   className={`absolute whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2 py-1 text-center shadow-lg dark:border-white/10 dark:bg-[#1b2238] ${pct(activeDatum.value) > 55 ? "top-2.5" : "bottom-2.5"} ${activeIndex >= data.length - 3 ? "right-[-6px]" : activeIndex <= 2 ? "left-[-6px]" : "left-1/2 -translate-x-1/2"}`}
                 >
                   <div className={`text-[11px] font-bold leading-4 ${H}`}>
-                    {eur(activeDatum.value)}
+                    {localizeNode(eur(activeDatum.value))}
                   </div>
                   <div className="text-[10px] leading-3 text-slate-400">
-                    {activeDatum.label}
+                    {localizeNode(activeDatum.label)}
                   </div>
                 </div>
               </div>
@@ -1268,18 +1292,18 @@ function RevenueOverview() {
           </div>
           {/* X axis */}
           <div className="absolute inset-x-0 bottom-0 flex h-3.5 gap-[3px]">
-            {data.map((d, i) => (
+            {localizeNode(data.map((d, i) => (
               <span
                 key={d.label}
                 className="relative flex-1 text-center text-[10px] font-medium leading-[14px] text-slate-400"
               >
-                {showLabel(i) && (
+                {localizeNode(showLabel(i) && (
                   <span className="absolute -translate-x-1/2 left-1/2 whitespace-nowrap">
-                    {d.label}
+                    {localizeNode(d.label)}
                   </span>
-                )}
+                ))}
               </span>
-            ))}
+            )))}
           </div>
         </div>
       </div>
@@ -1288,25 +1312,24 @@ function RevenueOverview() {
 }
 
 function RecentActivity() {
+  useUILanguage();
   const navigate = useNavigate();
   return (
-    <section className={`${CARD} flex flex-col px-4 py-2.5`}>
+    <section data-dashboard-section="activity" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <SectionHeader
-        title="Recent Activity"
+        title={translateText("Recent Activity")}
         action="View All"
         onAction={() => navigate("/dashboard/activity")}
       />
-      <ul className="mt-1.5 flex flex-1 flex-col justify-between divide-y divide-slate-50 dark:divide-white/5">
-        {ACTIVITY.map((a) => (
-          <li key={a.text} className="flex items-center gap-2.5 py-px">
+      <ul className="mt-2 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0">
+        {ACTIVITY.slice(0, 4).map((a) => (
+          <li key={a.text} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
             <IconTile icon={a.icon} tone={a.tone} size="xs" />
-            <span
-              className={`min-w-0 flex-1 truncate text-xs font-medium leading-6 ${H}`}
-            >
-              {a.text}
+            <span className={`min-w-0 flex-1 truncate text-[11.5px] font-medium leading-tight ${H} text-start`}>
+              {localizeNode(a.text)}
             </span>
-            <time className="shrink-0 whitespace-nowrap text-[11px] text-slate-400">
-              {a.time}
+            <time className="shrink-0 whitespace-nowrap text-[10.5px] text-slate-400">
+              {localizeNode(a.time)}
             </time>
           </li>
         ))}
@@ -1316,64 +1339,64 @@ function RecentActivity() {
 }
 
 function RankBadge({ n }: { n: number }) {
+  useUILanguage();
   return (
     <span
-      className={`grid h-5 w-5 shrink-0 place-items-center rounded-md text-[11px] font-bold ${n === 1 ? "bg-[#efeaff] text-[#6D4AFF] dark:bg-purple-500/15 dark:text-purple-300" : "text-slate-500 dark:text-slate-400"}`}
+      className={`grid h-5 w-5 shrink-0 place-items-center rounded text-[10px] font-bold ${n === 1 ? "bg-[#efeaff] text-[#6D4AFF] dark:bg-purple-500/15 dark:text-purple-300" : "text-slate-500 dark:text-slate-400"}`}
     >
-      {n}
+      {localizeNode(n)}
     </span>
   );
 }
 
 function TopFunnels() {
+  useUILanguage();
   const navigate = useNavigate();
   return (
-    <section className={`${CARD} flex flex-col px-4 py-2.5`}>
+    <section data-dashboard-section="funnels" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <SectionHeader
-        title="Top Funnels"
+        title={translateText("Top Funnels")}
         action="View All"
         onAction={() => navigate("/dashboard/funnels")}
       />
-      <ul className="mt-1.5 flex flex-1 flex-col justify-between">
-        {FUNNELS.map((f, i) => {
+      <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
+        {FUNNELS.slice(0, 3).map((f, i) => {
           const up = f.trend >= 0;
           return (
             <li
               key={f.name}
-              className="flex items-center gap-2.5 rounded-lg px-1 py-[3px] transition hover:bg-slate-50 dark:hover:bg-white/5"
+              className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"
             >
               <RankBadge n={i + 1} />
-              <span className="relative overflow-hidden rounded-md h-7 w-11 shrink-0 bg-slate-900 ring-1 ring-black/5">
+              <span className="relative h-7 w-11 shrink-0 overflow-hidden rounded-md bg-slate-900 ring-1 ring-black/5">
                 <img
                   src={f.img}
-                  alt={`${f.name} preview`}
+                  alt={translateText(`${f.name} preview`)}
                   loading="lazy"
-                  className="object-cover w-full h-full"
+                  className="h-full w-full object-cover block"
                 />
                 <span
-                  className={`absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full ring-2 ring-white/80 ${up ? "bg-emerald-400" : "bg-amber-400"}`}
-                  title={up ? "Performing well" : "Needs attention"}
+                  className={`absolute end-0.5 top-0.5 ltr:right-0.5 ltr:left-auto rtl:left-0.5 rtl:right-auto h-1.5 w-1.5 rounded-full ring-2 ring-white/80 ${up ? "bg-emerald-400" : "bg-amber-400"}`}
+                  title={translateText(up ? "Performing well" : "Needs attention")}
                 />
               </span>
-              <span className="flex-1 min-w-0 leading-tight">
-                <span className={`block truncate text-xs font-semibold ${H}`}>
-                  {f.name}
+              <span className="flex-1 min-w-0 leading-tight text-start">
+                <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
+                  {localizeNode(f.name)}
                 </span>
-                <span className={`block truncate text-[11px] ${MUTED}`}>
-                  {f.leads} Leads{" "}
-                  <span className="mx-0.5 text-slate-300">|</span> {f.conv}{" "}
-                  Conv.
-                </span>
+                <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
+                  {localizeNode(f.leads)}{translateText(" Leads")}{localizeNode(" ")}
+                  <span className="mx-0.5 text-slate-300">|</span> {localizeNode(f.conv)}{localizeNode(" ")}{translateText("Conv.")}</span>
               </span>
               <span
-                className={`inline-flex shrink-0 items-center gap-0.5 text-xs font-bold ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}
+                className={`inline-flex shrink-0 items-center gap-0.5 text-[10.5px] font-bold ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}
               >
                 {up ? (
-                  <ArrowUp size={12} strokeWidth={2.8} />
+                  <ArrowUp size={10} strokeWidth={2.8} />
                 ) : (
-                  <ArrowDown size={12} strokeWidth={2.8} />
+                  <ArrowDown size={10} strokeWidth={2.8} />
                 )}
-                {Math.abs(f.trend)}%
+                {localizeNode(Math.abs(f.trend))}%
               </span>
             </li>
           );
@@ -1384,37 +1407,37 @@ function TopFunnels() {
 }
 
 function TopProducts() {
+  useUILanguage();
   const navigate = useNavigate();
   return (
-    <section className={`${CARD} flex flex-col px-4 py-2.5`}>
+    <section data-dashboard-section="products" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <SectionHeader
-        title="Top Products"
+        title={translateText("Top Products")}
         action="View All"
         onAction={() => navigate("/dashboard/products")}
       />
-      <ul className="mt-1.5 flex flex-1 flex-col justify-between">
-        {PRODUCTS.map((p, i) => (
+      <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
+        {PRODUCTS.slice(0, 3).map((p, i) => (
           <li
             key={p.name}
-            className="flex items-center gap-2.5 rounded-lg px-1 py-[3px] transition hover:bg-slate-50 dark:hover:bg-white/5"
+            className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"
           >
             <RankBadge n={i + 1} />
             <img
               src={p.img}
-              alt={p.name}
+              alt={translateText(p.name)}
               loading="lazy"
-              className="object-cover rounded-lg h-7 w-7 shrink-0 ring-1 ring-black/5"
+              className="h-7 w-7 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
             />
-            <span className="flex-1 min-w-0 leading-tight">
-              <span className={`block truncate text-xs font-semibold ${H}`}>
-                {p.name}
+            <span className="flex-1 min-w-0 leading-tight text-start">
+              <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
+                {localizeNode(p.name)}
               </span>
-              <span className={`block truncate text-[11px] ${MUTED}`}>
-                {p.sales} sales
-              </span>
+              <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
+                {localizeNode(p.sales)}{translateText(" sales")}</span>
             </span>
-            <span className={`shrink-0 text-[13px] font-bold ${H}`}>
-              {p.revenue}
+            <span className={`shrink-0 text-xs font-bold ${H}`}>
+              {localizeNode(p.revenue)}
             </span>
           </li>
         ))}
@@ -1423,88 +1446,21 @@ function TopProducts() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Fit-to-screen: on desktop the dashboard always fills the workspace  */
-/* exactly. Rows grow to absorb spare height; if the screen is shorter */
-/* than the content, the whole board is scaled down proportionally so  */
-/* nothing is ever clipped and the page never scrolls. The media query */
-/* (min-height 620px) keeps the worst-case scale around 0.75.          */
-/* ------------------------------------------------------------------ */
-const LOCK_QUERY = "(min-width: 1280px) and (min-height: 620px)";
-
-function useFitToViewport(ref: React.RefObject<HTMLDivElement | null>) {
-  React.useLayoutEffect(() => {
-    const el = ref.current;
-    const host = el?.parentElement;
-    if (!el || !host) return;
-    const mq = window.matchMedia(LOCK_QUERY);
-    let frame = 0;
-
-    const reset = () => {
-      el.style.transform = "";
-      el.style.width = "";
-      el.style.height = "";
-      el.style.flex = "";
-    };
-    const fit = () => {
-      reset();
-      if (!mq.matches) return;
-      const availH = host.clientHeight,
-        availW = host.clientWidth;
-      el.style.flex = "none";
-      el.style.height = "auto";
-      const natural = el.scrollHeight;
-      el.style.flex = "";
-      el.style.height = "";
-      if (!availH || natural <= availH) {
-        el.style.height = `${availH}px`;
-        return;
-      }
-      const scale = availH / natural;
-      el.style.width = `${availW / scale}px`;
-      el.style.height = `${natural}px`;
-      el.style.transform = `scale(${scale})`;
-    };
-    const schedule = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(fit);
-    };
-
-    fit();
-    const ro = new ResizeObserver(schedule);
-    ro.observe(host);
-    window.addEventListener("resize", schedule);
-    mq.addEventListener("change", schedule);
-    document.fonts?.ready.then(schedule).catch(() => undefined);
-    return () => {
-      cancelAnimationFrame(frame);
-      ro.disconnect();
-      window.removeEventListener("resize", schedule);
-      mq.removeEventListener("change", schedule);
-      reset();
-    };
-  }, [ref]);
-}
-
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
 export function HomeDashboard() {
-  const ref = React.useRef<HTMLDivElement>(null);
-  useFitToViewport(ref);
+  useUILanguage();
+
   return (
     <div
-      ref={ref}
-      className="gos-home-dashboard flex origin-top-left flex-col gap-2.5 bg-slate-50/50 font-sans dark:bg-transparent"
+      className="gos-home-dashboard flex origin-top-left rtl:origin-top-right flex-col gap-2.5 bg-slate-50/50 font-sans dark:bg-transparent w-full flex-1 min-h-0"
     >
       <HeroBanner />
       <KpiRow />
       <QuickActions />
-      <div className="gos-row grid grid-cols-1 gap-2.5 xl:grid-cols-[1.45fr_1fr]">
+      <div className="gos-row grid grid-cols-1 lg:grid-cols-2 items-stretch gap-2.5 flex-1 min-h-0">
         <ToolsGrid />
         <RevenueOverview />
       </div>
-      <div className="gos-row grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="gos-row grid grid-cols-1 md:grid-cols-3 items-stretch gap-2.5 flex-1 min-h-0">
         <RecentActivity />
         <TopFunnels />
         <TopProducts />

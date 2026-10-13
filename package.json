@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && node --max-old-space-size=4096 node_modules/vite/bin/vite.js build",
+    "build": "node scripts/build-theme-surfaces.mjs && tsc -b && node --max-old-space-size=4096 node_modules/vite/bin/vite.js build",
     "lint": "oxlint",
+    "i18n:catalog": "node scripts/build-display-catalog.mjs",
+    "i18n:check": "node scripts/verify-localization.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

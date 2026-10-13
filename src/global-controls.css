@@ -1,6 +1,6 @@
 .layout-preference-controls,.sa-preferences{display:flex;align-items:center;gap:6px;flex:none}
 .global-language-control{box-sizing:border-box;display:flex;height:32px;align-items:center;gap:2px;border:1px solid #e7e9f0;border-radius:9px;background:#f7f8fb;padding:3px 4px;color:#84899a;transition:background .2s,border-color .2s}
-.global-language-control>svg{margin:0 3px 0 4px;color:#85899a}
+.global-language-control>svg{margin-block:0 0;margin-inline:4px 3px;color:#85899a}
 .global-language-control button{height:24px;min-width:25px;border:0;border-radius:6px;background:transparent;padding:0 5px;color:#818697;font-size:9px;font-weight:700;cursor:pointer;transition:background .18s,color .18s,transform .18s}
 .global-language-control button:hover{color:#5147d8}.global-language-control button.is-active{background:#fff;color:#554bd4;box-shadow:0 1px 3px #20244718}.global-language-control button:active{transform:scale(.94)}
 .global-theme-control{display:grid;width:33px;height:33px;flex:none;place-items:center;border:1px solid #e7e9f0;border-radius:9px;background:#fff;color:#687084;cursor:pointer;transition:background .18s,color .18s,border-color .18s,transform .18s}.global-theme-control:hover{transform:translateY(-1px);background:#f4f2ff;color:#6255dd;border-color:#dcd8ff}.global-theme-control svg{transition:transform .25s}.global-theme-control:active svg{transform:rotate(-20deg) scale(.92)}
@@ -63,7 +63,7 @@ html.dark .panel,html.dark .metric-card,html.dark .toolbar,html.dark .calendar-p
 html.dark .page-heading h1,html.dark .section-heading h2,html.dark .panel h2,html.dark .panel h3,html.dark .metric-value{color:#edf0f7}
 html.dark .page-heading p,html.dark .muted-caption,html.dark .eyebrow{color:#9ba4b5}
 html.dark input,html.dark select,html.dark textarea{border-color:#353c4d;background-color:#111622;color:#e4e7ef}
-html.dark .layout-mobile-sidebar{border-right:1px solid #2a3040;background:#111522}
+html.dark .layout-mobile-sidebar{border-inline-end:1px solid #2a3040;background:#111522}
 html.dark .global-language-control{border-color:#343b4c;background:#171c28;color:#a5adbf}
 html.dark .global-language-control button{color:#a5adbf}
 html.dark .global-language-control button.is-active{background:#33314f;color:#c9bdff;box-shadow:none}

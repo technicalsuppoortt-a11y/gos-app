@@ -5,6 +5,9 @@ import App from './App.tsx';
 import './index.css';
 import './layout-shell.css';
 import './global-controls.css';
+import './i18n/rtl.css';
+import './theme-surfaces.css';
+import './theme-controls.css';
 
 installChunkRecovery();
 

@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -100,7 +101,7 @@ const ICON_BTN =
 const POPOVER =
   "absolute z-40 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-[0_18px_45px_-12px_rgba(30,27,75,0.25)] dark:border-white/10 dark:bg-[#161b2b]";
 const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white";
+  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-[12.5px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white";
 
 const popIn = {
   initial: { opacity: 0, y: 6, scale: 0.98 },
@@ -158,6 +159,7 @@ function Toggle({
   size?: "sm" | "md";
   disabled?: boolean;
 }) {
+  useUILanguage();
   const track = size === "sm" ? "h-[18px] w-8" : "h-[22px] w-10";
   const knob = size === "sm" ? "h-3.5 w-3.5" : "h-[18px] w-[18px]";
   const shift = size === "sm" ? "translate-x-[14px]" : "translate-x-[18px]";
@@ -166,7 +168,7 @@ function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={label}
+      aria-label={translateText(label)}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex shrink-0 items-center px-[2px] rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:cursor-not-allowed disabled:opacity-50 ${track} ${
@@ -183,23 +185,24 @@ function Toggle({
 }
 
 function TagPill({ tag, onRemove, compact }: { tag: TagId; onRemove?: () => void; compact?: boolean }) {
+  useUILanguage();
   return (
     <span
       className={`group inline-flex items-center gap-1 whitespace-nowrap rounded-md font-semibold ${
         compact ? "h-[18px] px-1.5 text-[10px]" : "h-[22px] px-2 text-[11px]"
       } ${tagMeta[tag].className}`}
     >
-      {tagMeta[tag].label}
-      {onRemove && (
+      {localizeNode(tagMeta[tag].label)}
+      {localizeNode(onRemove && (
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${tagMeta[tag].label} tag`}
+          aria-label={translateText(`Remove ${tagMeta[tag].label} tag`)}
           className="-mr-1 hidden h-4 w-4 place-items-center rounded opacity-70 hover:opacity-100 group-hover:grid"
         >
           <X size={11} strokeWidth={2.5} />
         </button>
-      )}
+      ))}
     </span>
   );
 }
@@ -213,13 +216,14 @@ function Avatar({
   size?: number;
   channel?: ChannelId;
 }) {
+  useUILanguage();
   const badge = Math.max(14, Math.round(size * 0.42));
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
-      {person.avatar ? (
+      {localizeNode(person.avatar ? (
         <img
           src={person.avatar}
-          alt={person.name}
+          alt={translateText(person.name)}
           className="h-full w-full rounded-full object-cover ring-2 ring-white dark:ring-[#111522]"
           draggable={false}
         />
@@ -228,17 +232,17 @@ function Avatar({
           className="grid h-full w-full place-items-center rounded-full bg-gradient-to-br from-[#A48BFF] to-[#6D4DF2] font-semibold text-white ring-2 ring-white dark:ring-[#111522]"
           style={{ fontSize: Math.round(size * 0.36) }}
         >
-          {person.initials}
+          {localizeNode(person.initials)}
         </span>
-      )}
-      {channel && (
+      ))}
+      {localizeNode(channel && (
         <span
           className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-white p-[1.5px] shadow-sm dark:bg-[#111522]"
           style={{ width: badge + 3, height: badge + 3 }}
         >
           <ChannelIcon channel={channel} size={badge} />
         </span>
-      )}
+      ))}
     </span>
   );
 }
@@ -247,28 +251,29 @@ function renderInline(text: string) {
   return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
     part.startsWith("**") && part.endsWith("**") ? (
       <b key={index} className="font-semibold text-slate-900 dark:text-white">
-        {part.slice(2, -2)}
+        {localizeNode(part.slice(2, -2))}
       </b>
     ) : (
-      <React.Fragment key={index}>{part}</React.Fragment>
+      <React.Fragment key={index}>{localizeNode(part)}</React.Fragment>
     ),
   );
 }
 
 function RichText({ text }: { text: string }) {
+  useUILanguage();
   return (
     <div className="space-y-2.5">
-      {text.split("\n\n").map((block, blockIndex) => {
+      {localizeNode(text.split("\n\n").map((block, blockIndex) => {
         const lines = block.split("\n");
         const nodes: React.ReactNode[] = [];
         let list: string[] = [];
         const flush = () => {
           if (!list.length) return;
           nodes.push(
-            <ul key={`ul-${nodes.length}`} className="list-disc space-y-0.5 pl-5 marker:text-slate-400">
-              {list.map((item, i) => (
-                <li key={i}>{renderInline(item)}</li>
-              ))}
+            <ul key={`ul-${nodes.length}`} className="list-disc space-y-0.5 ps-5 marker:text-slate-400">
+              {localizeNode(list.map((item, i) => (
+                <li key={i}>{localizeNode(renderInline(item))}</li>
+              )))}
             </ul>,
           );
           list = [];
@@ -279,16 +284,17 @@ function RichText({ text }: { text: string }) {
             return;
           }
           flush();
-          nodes.push(<p key={`p-${lineIndex}`}>{renderInline(line)}</p>);
+          nodes.push(<p key={`p-${lineIndex}`}>{localizeNode(renderInline(line))}</p>);
         });
         flush();
-        return <div key={blockIndex}>{nodes}</div>;
-      })}
+        return <div key={blockIndex}>{localizeNode(nodes)}</div>;
+      }))}
     </div>
   );
 }
 
 function VoicePlayer({ note, tone = "light" }: { note: VoiceNote; tone?: "light" | "brand" }) {
+  useUILanguage();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   return (
@@ -307,21 +313,21 @@ function VoicePlayer({ note, tone = "light" }: { note: VoiceNote; tone?: "light"
             setPlaying(false);
           }
         }}
-        aria-label={playing ? "Pause voice message" : "Play voice message"}
+        aria-label={translateText(playing ? "Pause voice message" : "Play voice message")}
         className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#7C5CFC] text-white shadow-sm transition hover:bg-[#6a4bf0]"
       >
-        {playing ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" className="ml-0.5" />}
+        {localizeNode(playing ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" className="ms-0.5" />)}
       </button>
       <span className="flex h-6 flex-1 items-center gap-[2px]">
-        {Array.from({ length: 28 }, (_, i) => (
+        {localizeNode(Array.from({ length: 28 }, (_, i) => (
           <i
             key={i}
             className={`w-[3px] rounded-full ${tone === "brand" ? "bg-purple-300" : "bg-slate-300"} ${playing ? "animate-pulse" : ""}`}
             style={{ height: `${5 + ((i * 7) % 15)}px` }}
           />
-        ))}
+        )))}
       </span>
-      <small className={`text-[11px] tabular-nums ${MUTED}`}>{formatDuration(note.duration)}</small>
+      <small className={`text-[11px] tabular-nums ${MUTED}`}>{localizeNode(formatDuration(note.duration))}</small>
     </div>
   );
 }
@@ -340,6 +346,7 @@ const activityStyle: Record<ActivityKind, { icon: React.ElementType; className: 
 /* Inbox page                                                          */
 /* ------------------------------------------------------------------ */
 export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
+  useUILanguage();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const crmLead = useSelector((state: RootState) => state.crm.leads.find(lead => lead.id === params.get('leadId')));
@@ -643,8 +650,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     <div className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
       {/* ============ Channel filter strip ============ */}
       <div className={`${CARD} flex h-[54px] shrink-0 items-center gap-3 px-2.5`}>
-        <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label="Filter by channel">
-          {(["all", ...channelOrder] as const).map((id) => {
+        <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label={translateText("Filter by channel")}>
+          {localizeNode((["all", ...channelOrder] as const).map((id) => {
             const isActive = channelFilter === id;
             return (
               <button
@@ -659,22 +666,22 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5"
                 }`}
               >
-                {isActive && (
+                {localizeNode(isActive && (
                   <motion.span
                     layoutId="inbox-channel-pill"
                     className="absolute inset-0 rounded-xl bg-purple-50 ring-1 ring-inset ring-purple-200/70 dark:bg-purple-500/15 dark:ring-purple-400/25"
                     transition={{ type: "spring", bounce: 0.18, duration: 0.45 }}
                   />
-                )}
+                ))}
                 <span className="relative z-10 flex items-center gap-2">
-                  {id === "all" ? (
+                  {localizeNode(id === "all" ? (
                     <span className="grid h-5 w-5 place-items-center rounded-md bg-purple-100 text-purple-600 dark:bg-purple-500/25 dark:text-purple-200">
                       <MessageCircle size={12} strokeWidth={2.5} />
                     </span>
                   ) : (
                     <ChannelIcon channel={id} size={18} />
-                  )}
-                  {id === "all" ? "All" : channelMeta[id].label}
+                  ))}
+                  {localizeNode(id === "all" ? "All" : channelMeta[id].label)}
                   <span
                     className={`grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold tabular-nums ${
                       isActive
@@ -682,16 +689,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300"
                     }`}
                   >
-                    {channelCounts[id]}
+                    {localizeNode(channelCounts[id])}
                   </span>
                 </span>
               </button>
             );
-          })}
+          }))}
         </div>
-        <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 pl-3 pr-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
+        <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 ps-3 pe-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
           <Sparkles size={15} className="text-[#7C5CFC]" fill="currentColor" />
-          <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">AI Active</span>
+          <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText("AI Active")}</span>
           <Toggle
             checked={aiMode}
             onChange={(value) => {
@@ -706,9 +713,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       {/* ============ 3-column workspace ============ */}
       <div className="flex min-h-0 flex-1 gap-3 overflow-hidden">
         {/* ---------- Column 1: conversation list ---------- */}
-        <aside className={`${CARD} hidden min-h-0 w-[300px] shrink-0 flex-col md:flex 2xl:w-[340px]`} aria-label="Conversations">
+        <aside className={`${CARD} hidden min-h-0 w-[300px] shrink-0 flex-col md:flex 2xl:w-[340px]`} aria-label={translateText("Conversations")}>
           <div className="flex shrink-0 items-center gap-1 border-b border-slate-100 px-3 pt-2 dark:border-white/[0.06]" role="tablist">
-            {(
+            {localizeNode((
               [
                 ["all", "All"],
                 ["unread", "Unread"],
@@ -725,17 +732,17 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   folder === id ? "text-purple-700 dark:text-purple-300" : `${MUTED} hover:text-slate-800 dark:hover:text-slate-200`
                 }`}
               >
-                {label}
-                {id === "unread" && unreadTotal > 0 && (
+                {localizeNode(label)}
+                {localizeNode(id === "unread" && unreadTotal > 0 && (
                   <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-                    {unreadTotal}
+                    {localizeNode(unreadTotal)}
                   </span>
-                )}
-                {folder === id && (
+                ))}
+                {localizeNode(folder === id && (
                   <motion.span layoutId="inbox-folder-underline" className="absolute inset-x-1.5 -bottom-px h-[2px] rounded-full bg-[#7C5CFC]" />
-                )}
+                ))}
               </button>
-            ))}
+            )))}
           </div>
 
           <div className="flex shrink-0 items-center gap-2 p-3">
@@ -745,35 +752,35 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 id="inbox-search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search conversations..."
+                placeholder={translateText("Search conversations...")}
                 className="min-w-0 flex-1 bg-transparent text-[12.5px] text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-200"
               />
-              {search && (
-                <button onClick={() => setSearch("")} aria-label="Clear search" className={`${SUBTLE} hover:text-slate-600`}>
+              {localizeNode(search && (
+                <button onClick={() => setSearch("")} aria-label={translateText("Clear search")} className={`${SUBTLE} hover:text-slate-600`}>
                   <X size={14} />
                 </button>
-              )}
+              ))}
             </label>
             <div className="relative" ref={filterRef}>
               <button
                 id="inbox-filter"
                 onClick={() => setFilterOpen((v) => !v)}
-                aria-label="Filter conversations"
+                aria-label={translateText("Filter conversations")}
                 aria-expanded={filterOpen}
                 className={`${ICON_BTN} relative h-9 w-9 ${filterOpen || tagFilter.length ? "border-purple-200 bg-purple-50 text-purple-600" : ""}`}
               >
                 <SlidersHorizontal size={15} />
-                {tagFilter.length > 0 && (
+                {localizeNode(tagFilter.length > 0 && (
                   <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#7C5CFC] px-1 text-[9px] font-bold text-white">
-                    {tagFilter.length}
+                    {localizeNode(tagFilter.length)}
                   </span>
-                )}
+                ))}
               </button>
               <AnimatePresence>
-                {filterOpen && (
-                  <motion.div {...popIn} className={`${POPOVER} right-0 top-[calc(100%+6px)] w-52`}>
-                    <p className={`px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider ${SUBTLE}`}>Filter by tag</p>
-                    {(Object.keys(tagMeta) as TagId[]).map((tag) => {
+                {localizeNode(filterOpen && (
+                  <motion.div {...popIn} className={`${POPOVER} end-0 top-[calc(100%+6px)] w-52`}>
+                    <p className={`px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider ${SUBTLE}`}>{translateText("Filter by tag")}</p>
+                    {localizeNode((Object.keys(tagMeta) as TagId[]).map((tag) => {
                       const checked = tagFilter.includes(tag);
                       return (
                         <button
@@ -788,25 +795,23 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               checked ? "border-[#7C5CFC] bg-[#7C5CFC] text-white" : "border-slate-300 dark:border-white/20"
                             }`}
                           >
-                            {checked && <Check size={11} strokeWidth={3} />}
+                            {localizeNode(checked && <Check size={11} strokeWidth={3} />)}
                           </span>
                           <TagPill tag={tag} />
                         </button>
                       );
-                    })}
+                    }))}
                     <div className="mt-1 border-t border-slate-100 pt-1 dark:border-white/10">
-                      <button onClick={() => setTagFilter([])} className={`${MENU_ITEM} justify-center text-purple-600`}>
-                        Clear filters
-                      </button>
+                      <button onClick={() => setTagFilter([])} className={`${MENU_ITEM} justify-center text-purple-600`}>{translateText("Clear filters")}</button>
                     </div>
                   </motion.div>
-                )}
+                ))}
               </AnimatePresence>
             </div>
           </div>
 
           <ul className="inbox-scroll min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 pb-2">
-            {visible.map((c) => {
+            {localizeNode(visible.map((c) => {
               const isActive = c.id === active.id;
               return (
                 <li key={c.id}>
@@ -814,83 +819,82 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     id={`inbox-conversation-${c.id}`}
                     onClick={() => selectConversation(c.id)}
                     aria-current={isActive ? "true" : undefined}
-                    className={`group relative flex w-full items-start gap-3 rounded-xl border px-2.5 py-2.5 text-left overflow-hidden transition ${
+                    className={`group relative flex w-full items-start gap-3 rounded-xl border px-2.5 py-2.5 text-start overflow-hidden transition ${
                       isActive
                         ? "border-purple-100 bg-gradient-to-r from-purple-50/80 to-transparent shadow-[0_1px_2px_rgba(124,92,252,0.05)] dark:border-purple-500/20 dark:from-purple-500/10"
                         : "border-transparent hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                     }`}
                   >
-                    {isActive && <span className="absolute bottom-0 left-0 top-0 w-1 bg-[#7C5CFC]" />}
+                    {localizeNode(isActive && <span className="absolute bottom-0 start-0 top-0 w-1 bg-[#7C5CFC]" />)}
                     <Avatar person={c} size={40} channel={c.channel} />
                     <span className="min-w-0 flex-1 pt-0.5">
                       <span className={`block truncate text-[13px] font-bold ${HEADING}`}>
-                        {c.name}
+                        {localizeNode(c.name)}
                       </span>
                       <span
                         className={`mt-0.5 line-clamp-2 text-[12px] leading-[17px] ${
                           c.unread ? "text-slate-600 dark:text-slate-300" : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        {c.preview}
+                        {localizeNode(c.preview)}
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1 pt-0.5">
-                      <span className={`whitespace-nowrap text-[10.5px] leading-4 ${SUBTLE}`}>{c.time}</span>
+                      <span className={`whitespace-nowrap text-[10.5px] leading-4 ${SUBTLE}`}>{localizeNode(c.time)}</span>
                       <span className="flex h-[18px] items-center gap-1">
-                        {c.starred && <Star size={11} className="text-amber-400" fill="currentColor" />}
+                        {localizeNode(c.starred && <Star size={11} className="text-amber-400" fill="currentColor" />)}
                         <ChannelIcon channel={c.channel} size={15} />
-                        {c.unread > 0 && (
+                        {localizeNode(c.unread > 0 && (
                           <span className="grid h-[17px] min-w-[17px] place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
-                            {c.unread}
+                            {localizeNode(c.unread)}
                           </span>
-                        )}
+                        ))}
                       </span>
-                      {c.tags[0] && <TagPill tag={c.tags[0]} compact />}
+                      {localizeNode(c.tags[0] && <TagPill tag={c.tags[0]} compact />)}
                     </span>
                   </button>
                 </li>
               );
-            })}
-            {!visible.length && (
+            }))}
+            {localizeNode(!visible.length && (
               <li className="flex flex-col items-center px-6 py-14 text-center">
                 <span className="mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-purple-50 text-purple-500 dark:bg-purple-500/15">
                   <Search size={18} />
                 </span>
-                <b className={`text-[13px] ${HEADING}`}>No conversations found</b>
-                <p className={`mt-1 text-[12px] ${MUTED}`}>Try a different channel, folder or search term.</p>
+                <b className={`text-[13px] ${HEADING}`}>{translateText("No conversations found")}</b>
+                <p className={`mt-1 text-[12px] ${MUTED}`}>{translateText("Try a different channel, folder or search term.")}</p>
               </li>
-            )}
+            ))}
           </ul>
         </aside>
 
         {/* ---------- Column 2: chat thread ---------- */}
-        <section className={`${CARD} flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={`Conversation with ${active.name}`}>
+        <section className={`${CARD} flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={translateText(`Conversation with ${active.name}`)}>
           {/* chat header */}
           <header className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/[0.06]">
             <Avatar person={active} size={42} />
             <div className="min-w-0">
-              <h2 className={`truncate text-[15px] font-bold leading-5 ${HEADING}`}>{active.name}</h2>
+              <h2 className={`truncate text-[15px] font-bold leading-5 ${HEADING}`}>{localizeNode(active.name)}</h2>
               <p className={`mt-0.5 flex items-center gap-1.5 text-[12px] ${MUTED}`}>
                 <ChannelIcon channel={active.channel} size={14} />
-                {channelMeta[active.channel].label}
+                {localizeNode(channelMeta[active.channel].label)}
               </p>
             </div>
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 pl-2">
-              {active.tags[0] && <TagPill tag={active.tags[0]} />}
-              {aiReplying ? (
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 ps-2">
+              {localizeNode(active.tags[0] && <TagPill tag={active.tags[0]} />)}
+              {localizeNode(aiReplying ? (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-600 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-300">
-                  <Sparkles size={11} fill="currentColor" /> AI Active
-                </span>
+                  <Sparkles size={11} fill="currentColor" />{translateText(" AI Active")}</span>
               ) : (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-300">
-                  <UserRound size={11} /> {active.takenOver ? "You're handling" : "AI paused"}
+                  <UserRound size={11} /> {localizeNode(active.takenOver ? "You're handling" : "AI paused")}
                 </span>
-              )}
+              ))}
             </div>
             <button
               id="inbox-star"
               onClick={() => updateActive((c) => ({ starred: !c.starred }))}
-              aria-label={active.starred ? "Remove from favorites" : "Add to favorites"}
+              aria-label={translateText(active.starred ? "Remove from favorites" : "Add to favorites")}
               aria-pressed={active.starred}
               className={`${ICON_BTN} h-9 w-9 ${active.starred ? "border-amber-200 bg-amber-50 text-amber-500 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-500" : ""}`}
             >
@@ -900,15 +904,15 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               <button
                 id="inbox-more"
                 onClick={() => setMoreOpen((v) => !v)}
-                aria-label="More options"
+                aria-label={translateText("More options")}
                 aria-expanded={moreOpen}
                 className={`${ICON_BTN} h-9 w-9`}
               >
                 <MoreHorizontal size={16} />
               </button>
               <AnimatePresence>
-                {moreOpen && (
-                  <motion.div {...popIn} className={`${POPOVER} right-0 top-[calc(100%+6px)] w-56`}>
+                {localizeNode(moreOpen && (
+                  <motion.div {...popIn} className={`${POPOVER} end-0 top-[calc(100%+6px)] w-56`}>
                     <button
                       className={MENU_ITEM}
                       onClick={() => {
@@ -916,8 +920,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         setMoreOpen(false);
                       }}
                     >
-                      <MailOpen size={15} className={SUBTLE} /> Mark as unread
-                    </button>
+                      <MailOpen size={15} className={SUBTLE} />{translateText(" Mark as unread")}</button>
                     <button
                       className={MENU_ITEM}
                       onClick={() => {
@@ -926,8 +929,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         setMoreOpen(false);
                       }}
                     >
-                      <UserRoundCheck size={15} className={SUBTLE} /> Assign to me
-                    </button>
+                      <UserRoundCheck size={15} className={SUBTLE} />{translateText(" Assign to me")}</button>
                     <button
                       className={MENU_ITEM}
                       onClick={() => {
@@ -935,14 +937,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         showToast.success(`Notifications muted for ${active.name}.`);
                       }}
                     >
-                      <BellOff size={15} className={SUBTLE} /> Mute notifications
-                    </button>
+                      <BellOff size={15} className={SUBTLE} />{translateText(" Mute notifications")}</button>
                     <div className="my-1 border-t border-slate-100 dark:border-white/10" />
                     <button className={`${MENU_ITEM} text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400`} onClick={archiveActive}>
-                      <Archive size={15} /> Archive conversation
-                    </button>
+                      <Archive size={15} />{translateText(" Archive conversation")}</button>
                   </motion.div>
-                )}
+                ))}
               </AnimatePresence>
             </div>
           </header>
@@ -950,13 +950,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           {/* message thread */}
           <div ref={threadRef} className="inbox-scroll inbox-thread-bg min-h-0 flex-1 overflow-y-auto px-5 py-4 2xl:px-8">
             <div className="mb-4 flex justify-center">
-              <span className="rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                Today
-              </span>
+              <span className="rounded-full border border-slate-100 bg-white px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300">{translateText("Today")}</span>
             </div>
             <div className="space-y-4">
               <AnimatePresence initial={false}>
-                {active.messages.map((m) => {
+                {localizeNode(active.messages.map((m) => {
                   const incoming = m.sender === "customer";
                   const isNote = m.sender === "note";
                   return (
@@ -968,7 +966,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       transition={{ duration: 0.22, ease: "easeOut" }}
                       className={`flex items-end gap-2.5 ${incoming ? "justify-start" : "justify-end"}`}
                     >
-                      {incoming && <Avatar person={active} size={30} />}
+                      {localizeNode(incoming && <Avatar person={active} size={30} />)}
                       <div className={`flex max-w-[78%] flex-col ${incoming ? "items-start" : "items-end"} 2xl:max-w-[68%]`}>
                         <div
                           className={`rounded-2xl px-4 py-3 text-[13px] leading-[1.6] ${
@@ -979,23 +977,22 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                                 : "rounded-br-md border border-purple-100 bg-purple-50/70 text-[#2E2A4A] dark:border-purple-400/20 dark:bg-purple-500/15 dark:text-purple-100"
                           }`}
                         >
-                          {isNote && (
+                          {localizeNode(isNote && (
                             <span className="mb-1 flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300">
-                              <StickyNote size={11} /> Internal note
-                            </span>
-                          )}
-                          {m.text && <RichText text={m.text} />}
-                          {m.voice && (
+                              <StickyNote size={11} />{translateText(" Internal note")}</span>
+                          ))}
+                          {localizeNode(m.text && <RichText text={m.text} />)}
+                          {localizeNode(m.voice && (
                             <div className={m.text ? "mt-2" : ""}>
                               <VoicePlayer note={m.voice} tone={incoming ? "light" : "brand"} />
                             </div>
-                          )}
-                          {m.attachments && (
+                          ))}
+                          {localizeNode(m.attachments && (
                             <div className={`flex flex-wrap gap-2 ${m.text || m.voice ? "mt-2.5" : ""}`}>
-                              {m.attachments.map((file) =>
+                              {localizeNode(m.attachments.map((file) =>
                                 file.isImage ? (
                                   <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl ring-1 ring-black/5">
-                                    <img src={file.url} alt={file.name} className="h-32 w-44 object-cover" />
+                                    <img src={file.url} alt={translateText(file.name)} className="h-32 w-44 object-cover" />
                                   </a>
                                 ) : (
                                   <a
@@ -1008,52 +1005,51 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                                       <FileText size={15} />
                                     </span>
                                     <span className="min-w-0">
-                                      <b className={`block truncate text-[12px] font-semibold ${HEADING}`}>{file.name}</b>
-                                      <small className={`text-[11px] ${MUTED}`}>{bytesLabel(file.size)}</small>
+                                      <b className={`block truncate text-[12px] font-semibold ${HEADING}`}>{localizeNode(file.name)}</b>
+                                      <small className={`text-[11px] ${MUTED}`}>{localizeNode(bytesLabel(file.size))}</small>
                                     </span>
                                   </a>
                                 ),
-                              )}
+                              ))}
                             </div>
-                          )}
-                          {m.card === "consultation" && (
+                          ))}
+                          {localizeNode(m.card === "consultation" && (
                             <button
                               onClick={() => navigate("/dashboard/booking")}
-                              className="group mt-3 flex w-full items-center gap-3 rounded-xl border border-purple-100 bg-white p-3 text-left shadow-[0_1px_2px_rgba(124,92,252,0.08)] transition hover:-translate-y-px hover:border-purple-200 hover:shadow-md dark:border-purple-400/20 dark:bg-white/5"
+                              className="group mt-3 flex w-full items-center gap-3 rounded-xl border border-purple-100 bg-white p-3 text-start shadow-[0_1px_2px_rgba(124,92,252,0.08)] transition hover:-translate-y-px hover:border-purple-200 hover:shadow-md dark:border-purple-400/20 dark:bg-white/5"
                             >
                               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 text-[#7C5CFC] dark:from-purple-500/25 dark:to-purple-500/10">
                                 <CalendarDays size={19} strokeWidth={2.2} />
                               </span>
                               <span className="min-w-0 flex-1">
-                                <b className={`block text-[13px] font-semibold ${HEADING}`}>Book a Free Consultation</b>
-                                <small className={`text-[12px] ${MUTED}`}>Choose a time that works for you.</small>
+                                <b className={`block text-[13px] font-semibold ${HEADING}`}>{translateText("Book a Free Consultation")}</b>
+                                <small className={`text-[12px] ${MUTED}`}>{translateText("Choose a time that works for you.")}</small>
                               </span>
                               <ChevronRight size={16} className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-purple-500" />
                             </button>
-                          )}
+                          ))}
                         </div>
                         <span className={`mt-1 flex items-center gap-1 px-1 text-[10.5px] ${SUBTLE}`}>
-                          {m.sender === "ai" && (
+                          {localizeNode(m.sender === "ai" && (
                             <>
-                              <Sparkles size={10} className="text-purple-400" fill="currentColor" /> AI Assistant ·
-                            </>
-                          )}
-                          {m.sender === "agent" && <>{currentUser.name} ·</>}
-                          {m.time}
-                          {(m.sender === "ai" || m.sender === "agent") && <CheckCheck size={13} className="text-purple-400" />}
+                              <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}</>
+                          ))}
+                          {localizeNode(m.sender === "agent" && <>{localizeNode(currentUser.name)} ·</>)}
+                          {localizeNode(m.time)}
+                          {localizeNode((m.sender === "ai" || m.sender === "agent") && <CheckCheck size={13} className="text-purple-400" />)}
                         </span>
                       </div>
                     </motion.div>
                   );
-                })}
+                }))}
               </AnimatePresence>
             </div>
           </div>
 
           {/* composer */}
           <div className="shrink-0 border-t border-slate-100 px-4 pb-3 pt-2 dark:border-white/[0.06]">
-            <div className="flex items-center gap-1" role="tablist" aria-label="Composer mode">
-              {(
+            <div className="flex items-center gap-1" role="tablist" aria-label={translateText("Composer mode")}>
+              {localizeNode((
                 [
                   ["reply", "Reply"],
                   ["note", "Note"],
@@ -1073,15 +1069,15 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       : `${MUTED} hover:text-slate-800 dark:hover:text-slate-200`
                   }`}
                 >
-                  {label}
-                  {mode === id && (
+                  {localizeNode(label)}
+                  {localizeNode(mode === id && (
                     <motion.span
                       layoutId="inbox-mode-underline"
                       className={`absolute inset-x-2 bottom-0 h-[2px] rounded-full ${id === "note" ? "bg-amber-400" : "bg-[#7C5CFC]"}`}
                     />
-                  )}
+                  ))}
                 </button>
-              ))}
+              )))}
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -1095,7 +1091,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   e.target.value = "";
                 }}
               />
-              <button id="inbox-attach" onClick={() => fileInputRef.current?.click()} aria-label="Attach files" className={ICON_BTN}>
+              <button id="inbox-attach" onClick={() => fileInputRef.current?.click()} aria-label={translateText("Attach files")} className={ICON_BTN}>
                 <Paperclip size={15} />
               </button>
               <div className="relative" ref={templatesRef}>
@@ -1105,12 +1101,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   aria-expanded={templatesOpen}
                   className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-2.5 text-[12px] font-semibold text-slate-600 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300"
                 >
-                  <LayoutTemplate size={14} /> Templates
-                </button>
+                  <LayoutTemplate size={14} />{translateText(" Templates")}</button>
                 <AnimatePresence>
                   {templatesOpen && (
-                    <motion.div {...popIn} className={`${POPOVER} bottom-[calc(100%+6px)] left-0 w-72`}>
-                      <p className={`px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider ${SUBTLE}`}>Saved replies</p>
+                    <motion.div {...popIn} className={`${POPOVER} bottom-[calc(100%+6px)] start-0 w-72`}>
+                      <p className={`px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider ${SUBTLE}`}>{translateText("Saved replies")}</p>
                       {replyTemplates.map((t) => (
                         <button
                           key={t.title}
@@ -1122,7 +1117,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             inputRef.current?.focus();
                           }}
                         >
-                          <span className={`text-[12.5px] font-semibold ${HEADING}`}>{t.title}</span>
+                          <span className={`text-[12.5px] font-semibold ${HEADING}`}>{localizeNode(t.title)}</span>
                           <span className={`line-clamp-1 text-[11.5px] font-normal ${MUTED}`}>{t.body.replace(/\*\*/g, "").replace(/\n/g, " ")}</span>
                         </button>
                       ))}
@@ -1136,10 +1131,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 disabled={assistLoading}
                 className="flex h-8 items-center gap-1.5 rounded-lg border border-purple-100 bg-purple-50/70 px-2.5 text-[12px] font-semibold text-purple-700 transition hover:border-purple-200 hover:bg-purple-100 disabled:opacity-70 dark:border-purple-400/20 dark:bg-purple-500/10 dark:text-purple-200"
               >
-                {assistLoading ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                {assistLoading ? "Writing…" : "AI Assist"}
+                {localizeNode(assistLoading ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />)}
+                {localizeNode(assistLoading ? "Writing…" : "AI Assist")}
               </button>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ms-auto flex items-center gap-2">
                 <Toggle
                   size="sm"
                   checked={active.aiAutoReply && !active.takenOver}
@@ -1154,60 +1149,59 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   onClick={() => navigate("/dashboard/follow-up")}
                   className={`flex items-center gap-0.5 text-[12px] font-medium transition hover:text-purple-600 ${MUTED}`}
                 >
-                  {!aiMode ? "AI paused workspace-wide" : aiReplying ? "AI will reply automatically" : "AI auto-reply off"}
+                  {localizeNode(!aiMode ? "AI paused workspace-wide" : aiReplying ? "AI will reply automatically" : "AI auto-reply off")}
                   <ChevronRight size={14} />
                 </button>
               </div>
             </div>
 
-            {attachments.length > 0 && (
+            {localizeNode(attachments.length > 0 && (
               <div className="inbox-scroll-x mt-2 flex gap-2 overflow-x-auto pb-1">
-                {attachments.map((file) => (
-                  <div key={file.id} className="relative flex h-12 w-48 shrink-0 items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-1.5 pr-7 dark:border-white/10 dark:bg-white/5">
-                    {file.isImage ? (
-                      <img src={file.url} alt="" className="h-9 w-9 rounded-lg object-cover" />
+                {localizeNode(attachments.map((file) => (
+                  <div key={file.id} className="relative flex h-12 w-48 shrink-0 items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-1.5 pe-7 dark:border-white/10 dark:bg-white/5">
+                    {localizeNode(file.isImage ? (
+                      <img src={file.url} alt={translateText("")} className="h-9 w-9 rounded-lg object-cover" />
                     ) : (
                       <span className="grid h-9 w-9 place-items-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-500/15">
                         <FileText size={15} />
                       </span>
-                    )}
+                    ))}
                     <span className="min-w-0">
-                      <b className={`block truncate text-[11.5px] font-semibold ${HEADING}`}>{file.name}</b>
-                      <small className={`text-[10.5px] ${MUTED}`}>{bytesLabel(file.size)}</small>
+                      <b className={`block truncate text-[11.5px] font-semibold ${HEADING}`}>{localizeNode(file.name)}</b>
+                      <small className={`text-[10.5px] ${MUTED}`}>{localizeNode(bytesLabel(file.size))}</small>
                     </span>
-                    <button onClick={() => removeAttachment(file.id)} aria-label={`Remove ${file.name}`} className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-rose-50 hover:text-rose-500">
+                    <button onClick={() => removeAttachment(file.id)} aria-label={translateText(`Remove ${file.name}`)} className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-rose-50 hover:text-rose-500">
                       <X size={12} />
                     </button>
                   </div>
-                ))}
+                )))}
               </div>
-            )}
+            ))}
 
             <div className="mt-2 flex items-end gap-2">
-              {recording ? (
+              {localizeNode(recording ? (
                 <div className="flex h-11 flex-1 items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/60 px-3 dark:border-rose-400/20 dark:bg-rose-500/10">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
                   </span>
-                  <b className="text-[12.5px] font-semibold text-rose-600 dark:text-rose-300">Recording</b>
-                  <span className="text-[12.5px] font-bold tabular-nums text-rose-600 dark:text-rose-300">{formatDuration(elapsed)}</span>
+                  <b className="text-[12.5px] font-semibold text-rose-600 dark:text-rose-300">{translateText("Recording")}</b>
+                  <span className="text-[12.5px] font-bold tabular-nums text-rose-600 dark:text-rose-300">{localizeNode(formatDuration(elapsed))}</span>
                   <span className="flex flex-1 items-center gap-[3px]">
-                    {Array.from({ length: 22 }, (_, i) => (
+                    {localizeNode(Array.from({ length: 22 }, (_, i) => (
                       <i key={i} className="inbox-wave w-[3px] rounded-full bg-rose-300" style={{ animationDelay: `${(i % 7) * 90}ms` }} />
-                    ))}
+                    )))}
                   </span>
-                  <button onClick={cancelRecording} aria-label="Discard recording" className="grid h-7 w-7 place-items-center rounded-lg text-rose-500 hover:bg-rose-100">
+                  <button onClick={cancelRecording} aria-label={translateText("Discard recording")} className="grid h-7 w-7 place-items-center rounded-lg text-rose-500 hover:bg-rose-100">
                     <Trash size={14} />
                   </button>
                   <button onClick={stopRecording} className="flex h-7 items-center gap-1.5 rounded-lg bg-rose-500 px-2.5 text-[12px] font-semibold text-white hover:bg-rose-600">
-                    <span className="h-2 w-2 rounded-[2px] bg-white" /> Stop
-                  </button>
+                    <span className="h-2 w-2 rounded-[2px] bg-white" />{translateText(" Stop")}</button>
                 </div>
               ) : voiceDraft ? (
                 <div className="flex h-11 flex-1 items-center gap-3 rounded-xl border border-purple-100 bg-purple-50/50 px-3 dark:border-purple-400/20 dark:bg-purple-500/10">
                   <VoicePlayer note={voiceDraft} tone="brand" />
-                  <button onClick={cancelRecording} aria-label="Discard voice message" className="ml-auto grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500">
+                  <button onClick={cancelRecording} aria-label={translateText("Discard voice message")} className="ms-auto grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500">
                     <Trash size={14} />
                   </button>
                 </div>
@@ -1231,106 +1225,101 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         send();
                       }
                     }}
-                    placeholder={mode === "note" ? "Write an internal note — only your team can see this..." : "Type a message..."}
+                    placeholder={translateText(mode === "note" ? "Write an internal note — only your team can see this..." : "Type a message...")}
                     className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent text-[13px] leading-6 text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100"
                   />
                   <button
                     type="button"
                     id="inbox-voice"
                     onClick={startRecording}
-                    aria-label="Record voice message"
+                    aria-label={translateText("Record voice message")}
                     className="mb-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md text-slate-400 transition hover:bg-purple-50 hover:text-purple-600"
                   >
                     <Mic size={17} />
                   </button>
                 </label>
-              )}
+              ))}
               <button
                 id="inbox-send"
                 onClick={send}
                 disabled={recording}
                 aria-disabled={!canSend}
-                aria-label={mode === "note" ? "Add note" : "Send message"}
+                aria-label={translateText(mode === "note" ? "Add note" : "Send message")}
                 className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl p-3 text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 ${
                   mode === "note" ? "bg-amber-500 hover:bg-amber-600" : "bg-[#7C5CFC] hover:bg-[#6b4ce6]"
                 }`}
               >
-                {mode === "note" ? <StickyNote size={18} /> : <Send size={18} strokeWidth={2.2} />}
+                {localizeNode(mode === "note" ? <StickyNote size={18} /> : <Send size={18} strokeWidth={2.2} />)}
               </button>
             </div>
           </div>
         </section>
 
         {/* ---------- Column 3: CRM + AI context ---------- */}
-        <aside className="inbox-scroll hidden min-h-0 w-[300px] shrink-0 flex-col gap-2.5 overflow-y-auto min-[1200px]:flex 2xl:w-[330px]" aria-label="Lead details">
+        <aside className="inbox-scroll hidden min-h-0 w-[300px] shrink-0 flex-col gap-2.5 overflow-y-auto min-[1200px]:flex 2xl:w-[330px]" aria-label={translateText("Lead details")}>
           {/* contact summary */}
           <div className={`${CARD} shrink-0 p-3.5`}>
             <div className="flex items-start gap-3">
               <Avatar person={active} size={48} />
               <div className="min-w-0 flex-1">
-                <h3 className={`truncate text-[15px] font-bold ${HEADING}`}>{active.name}</h3>
+                <h3 className={`truncate text-[15px] font-bold ${HEADING}`}>{localizeNode(active.name)}</h3>
                 <p className={`mt-0.5 flex items-center gap-1.5 text-[12px] ${MUTED}`}>
-                  <ChannelIcon channel={active.channel} size={14} /> {channelMeta[active.channel].label}
+                  <ChannelIcon channel={active.channel} size={14} /> {localizeNode(channelMeta[active.channel].label)}
                 </p>
               </div>
               <div className="relative" ref={leadMenuRef}>
                 <button
                   id="inbox-lead-more"
                   onClick={() => setLeadMenuOpen((v) => !v)}
-                  aria-label="Contact options"
+                  aria-label={translateText("Contact options")}
                   aria-expanded={leadMenuOpen}
                   className={ICON_BTN}
                 >
                   <MoreHorizontal size={15} />
                 </button>
                 <AnimatePresence>
-                  {leadMenuOpen && (
-                    <motion.div {...popIn} className={`${POPOVER} right-0 top-[calc(100%+6px)] w-52`}>
+                  {localizeNode(leadMenuOpen && (
+                    <motion.div {...popIn} className={`${POPOVER} end-0 top-[calc(100%+6px)] w-52`}>
                       <button className={MENU_ITEM} onClick={() => { setEditingLead(true); setLeadMenuOpen(false); }}>
-                        <Pencil size={15} className={SUBTLE} /> Edit Lead Details
-                      </button>
+                        <Pencil size={15} className={SUBTLE} />{translateText(" Edit Lead Details")}</button>
                       <button className={MENU_ITEM} onClick={() => { setTagMenuOpen(true); setLeadMenuOpen(false); }}>
-                        <Tag size={15} className={SUBTLE} /> Manage Tags
-                      </button>
+                        <Tag size={15} className={SUBTLE} />{translateText(" Manage Tags")}</button>
                       <button className={MENU_ITEM} onClick={() => { setAssigneeOpen(true); setLeadMenuOpen(false); }}>
-                        <UserRound size={15} className={SUBTLE} /> Reassign Lead
-                      </button>
+                        <UserRound size={15} className={SUBTLE} />{translateText(" Reassign Lead")}</button>
                       <button className={MENU_ITEM} onClick={() => { showToast.success("Contact muted."); setLeadMenuOpen(false); }}>
-                        <BellOff size={15} className={SUBTLE} /> Block / Mute Contact
-                      </button>
+                        <BellOff size={15} className={SUBTLE} />{translateText(" Block / Mute Contact")}</button>
                       <div className="my-1 border-t border-slate-100 dark:border-white/10" />
                       <button className={`${MENU_ITEM} text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400`} onClick={() => { archiveActive(); setLeadMenuOpen(false); }}>
-                        <Trash size={15} /> Delete Conversation
-                      </button>
+                        <Trash size={15} />{translateText(" Delete Conversation")}</button>
                     </motion.div>
-                  )}
+                  ))}
                 </AnimatePresence>
               </div>
             </div>
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-[60px]">
-              {active.tags.map((tag) => (
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 ps-[60px]">
+              {localizeNode(active.tags.map((tag) => (
                 <TagPill key={tag} tag={tag} onRemove={() => removeTag(tag)} />
-              ))}
+              )))}
               <div className="relative" ref={tagMenuRef}>
                 <button
                   id="inbox-add-tag"
                   onClick={() => setTagMenuOpen((v) => !v)}
                   disabled={!availableTags.length}
-                  aria-label="Add tag"
+                  aria-label={translateText("Add tag")}
                   className="grid h-[22px] w-[22px] place-items-center rounded-md border border-dashed border-slate-300 text-slate-400 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-600 disabled:opacity-40 dark:border-white/20"
                 >
                   <Plus size={13} />
                 </button>
                 <AnimatePresence>
-                  {tagMenuOpen && (
-                    <motion.div {...popIn} className={`${POPOVER} left-0 top-[calc(100%+6px)] w-44`}>
-                      {availableTags.map((tag) => (
+                  {localizeNode(tagMenuOpen && (
+                    <motion.div {...popIn} className={`${POPOVER} start-0 top-[calc(100%+6px)] w-44`}>
+                      {localizeNode(availableTags.map((tag) => (
                         <button key={tag} onClick={() => addTag(tag)} className={MENU_ITEM}>
                           <TagPill tag={tag} />
                         </button>
-                      ))}
+                      )))}
                     </motion.div>
-                  )}
+                  ))}
                 </AnimatePresence>
               </div>
             </div>
@@ -1342,13 +1331,13 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               ].filter(item => item.value).map(({ key, icon: Icon, value, href }) => (
                 <li key={key} className="flex items-center gap-2.5 text-[12px]">
                   <Icon size={14} className={SUBTLE} />
-                  {href ? (
+                  {localizeNode(href ? (
                     <a href={href} className="truncate text-slate-700 transition hover:text-purple-600 dark:text-slate-200">
-                      {value}
+                      {localizeNode(value)}
                     </a>
                   ) : (
-                    <span className="truncate text-slate-700 dark:text-slate-200">{value}</span>
-                  )}
+                    <span className="truncate text-slate-700 dark:text-slate-200">{localizeNode(value)}</span>
+                  ))}
                 </li>
               ))}
             </ul>
@@ -1357,7 +1346,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           {/* lead details */}
           <div className={`${CARD} shrink-0 p-3.5`}>
             <div className="mb-2.5 flex items-center justify-between">
-              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>Lead Details</h3>
+              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>{translateText("Lead Details")}</h3>
               <button
                 id="inbox-edit-lead"
                 onClick={() => {
@@ -1370,25 +1359,25 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     : "bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-700 dark:bg-white/10 dark:text-slate-300"
                 }`}
               >
-                {editingLead ? <Check size={12} strokeWidth={3} /> : <Pencil size={11} />}
-                {editingLead ? "Save" : "Edit"}
+                {localizeNode(editingLead ? <Check size={12} strokeWidth={3} /> : <Pencil size={11} />)}
+                {localizeNode(editingLead ? "Save" : "Edit")}
               </button>
             </div>
             <dl className="grid grid-cols-[92px_1fr] items-center gap-x-2 gap-y-2 text-[12px]">
-              <dt className={MUTED}>Source</dt>
+              <dt className={MUTED}>{translateText("Source")}</dt>
               <dd className="min-w-0">
-                {editingLead ? (
+                {localizeNode(editingLead ? (
                   <input
                     value={active.source}
                     onChange={(e) => updateActive({ source: e.target.value })}
                     className="h-7 w-full rounded-lg border border-purple-200 bg-white px-2 text-[12.5px] text-slate-800 outline-none focus:ring-4 focus:ring-purple-100 dark:border-purple-400/30 dark:bg-white/5 dark:text-slate-100"
                   />
                 ) : (
-                  <span className={`block truncate font-medium ${HEADING}`}>{active.source}</span>
-                )}
+                  <span className={`block truncate font-medium ${HEADING}`}>{localizeNode(active.source)}</span>
+                ))}
               </dd>
 
-              <dt className={MUTED}>Stage</dt>
+              <dt className={MUTED}>{translateText("Stage")}</dt>
               <dd className="relative">
                 <Select
                   value={active.stage}
@@ -1402,28 +1391,28 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 />
               </dd>
 
-              <dt className={MUTED}>Assigned To</dt>
+              <dt className={MUTED}>{translateText("Assigned To")}</dt>
               <dd className="relative" ref={assigneeRef}>
                 <button
                   id="inbox-assignee"
                   onClick={() => setAssigneeOpen((v) => !v)}
                   aria-expanded={assigneeOpen}
-                  className="flex h-7 w-full items-center gap-2 rounded-lg border border-slate-200/80 bg-white pl-1 pr-2 text-left transition hover:border-purple-200 dark:border-white/10 dark:bg-white/[0.03]"
+                  className="flex h-7 w-full items-center gap-2 rounded-lg border border-slate-200/80 bg-white ps-1 pe-2 text-start transition hover:border-purple-200 dark:border-white/10 dark:bg-white/[0.03]"
                 >
-                  {assigneeMember.id === "ai" ? (
+                  {localizeNode(assigneeMember.id === "ai" ? (
                     <span className="grid h-5 w-5 place-items-center rounded-full bg-purple-100 text-purple-600">
                       <Bot size={11} />
                     </span>
                   ) : (
                     <Avatar person={assigneeMember} size={20} />
-                  )}
-                  <span className={`flex-1 truncate text-[12px] font-semibold ${HEADING}`}>{assigneeMember.name}</span>
+                  ))}
+                  <span className={`flex-1 truncate text-[12px] font-semibold ${HEADING}`}>{localizeNode(assigneeMember.name)}</span>
                   <ChevronDown size={13} className={`${SUBTLE} transition ${assigneeOpen ? "rotate-180" : ""}`} />
                 </button>
                 <AnimatePresence>
-                  {assigneeOpen && (
-                    <motion.div {...popIn} className={`${POPOVER} right-0 top-[calc(100%+6px)] w-full min-w-[180px]`}>
-                      {teamMembers.map((member) => (
+                  {localizeNode(assigneeOpen && (
+                    <motion.div {...popIn} className={`${POPOVER} end-0 top-[calc(100%+6px)] w-full min-w-[180px]`}>
+                      {localizeNode(teamMembers.map((member) => (
                         <button
                           key={member.id}
                           className={MENU_ITEM}
@@ -1433,31 +1422,31 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             setAssigneeOpen(false);
                           }}
                         >
-                          {member.id === "ai" ? (
+                          {localizeNode(member.id === "ai" ? (
                             <span className="grid h-6 w-6 place-items-center rounded-full bg-purple-100 text-purple-600">
                               <Bot size={13} />
                             </span>
                           ) : (
                             <Avatar person={member} size={24} />
-                          )}
-                          <span className="flex-1">{member.name}</span>
-                          {member.name === active.assignee && <Check size={14} className="text-purple-600" />}
+                          ))}
+                          <span className="flex-1">{localizeNode(member.name)}</span>
+                          {localizeNode(member.name === active.assignee && <Check size={14} className="text-purple-600" />)}
                         </button>
-                      ))}
+                      )))}
                     </motion.div>
-                  )}
+                  ))}
                 </AnimatePresence>
               </dd>
 
-              <dt className={MUTED}>Last Activity</dt>
-              <dd className={`font-medium ${HEADING}`}>{active.time}</dd>
+              <dt className={MUTED}>{translateText("Last Activity")}</dt>
+              <dd className={`font-medium ${HEADING}`}>{localizeNode(active.time)}</dd>
             </dl>
           </div>
 
           {/* AI follow-up */}
           <div className={`${CARD} shrink-0 p-3.5`}>
             <div className="flex items-center gap-2">
-              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>AI Follow-Up</h3>
+              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>{translateText("AI Follow-Up")}</h3>
               <span
                 className={`rounded-md border px-2 py-[1px] text-[10.5px] font-semibold ${
                   active.followUp
@@ -1465,9 +1454,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
                 }`}
               >
-                {active.followUp ? "Active" : "Paused"}
+                {localizeNode(active.followUp ? "Active" : "Paused")}
               </span>
-              <span className="ml-auto">
+              <span className="ms-auto">
                 <Toggle
                   checked={active.followUp}
                   onChange={(value) => {
@@ -1479,7 +1468,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               </span>
             </div>
             <ul className={`mt-2.5 space-y-1.5 transition-opacity ${active.followUp ? "" : "opacity-50"}`}>
-              {followUpRuleLabels.map((label, index) => {
+              {localizeNode(followUpRuleLabels.map((label, index) => {
                 const on = active.followUpRules[index];
                 return (
                   <li key={label}>
@@ -1490,26 +1479,24 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           followUpRules: c.followUpRules.map((r, i) => (i === index ? !r : r)),
                         }))
                       }
-                      className="flex w-full items-center gap-2.5 text-left text-[12px] text-slate-600 transition hover:text-slate-900 disabled:cursor-not-allowed dark:text-slate-300"
+                      className="flex w-full items-center gap-2.5 text-start text-[12px] text-slate-600 transition hover:text-slate-900 disabled:cursor-not-allowed dark:text-slate-300"
                     >
-                      {on ? (
+                      {localizeNode(on ? (
                         <CircleCheck size={15} className="shrink-0 text-emerald-500" />
                       ) : (
                         <Circle size={15} className="shrink-0 text-slate-300 dark:text-slate-600" />
-                      )}
-                      {label}
+                      ))}
+                      {localizeNode(label)}
                     </button>
                   </li>
                 );
-              })}
+              }))}
             </ul>
             <button
               onClick={() => navigate("/dashboard/follow-up")}
               className="mt-2.5 flex w-full items-center gap-2 rounded-lg border border-slate-200/80 px-2.5 py-1.5 text-[12px] font-medium text-purple-700 transition hover:border-purple-200 hover:bg-purple-50/60 dark:border-white/10 dark:text-purple-300"
             >
-              <SlidersHorizontal size={14} className="text-purple-500" />
-              Customize workflow
-              <ChevronRight size={15} className="ml-auto text-slate-400" />
+              <SlidersHorizontal size={14} className="text-purple-500" />{translateText("Customize workflow")}<ChevronRight size={15} className="ms-auto text-slate-400" />
             </button>
           </div>
 
@@ -1519,32 +1506,30 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               onClick={toggleTakeover}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7C5CFC] py-3 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#6b4ce6] active:scale-[0.99]"
             >
-              {active.takenOver ? <Bot size={16} /> : <UserRound size={16} />}
-              {active.takenOver ? "Hand back to AI" : "Take over conversation"}
+              {localizeNode(active.takenOver ? <Bot size={16} /> : <UserRound size={16} />)}
+              {localizeNode(active.takenOver ? "Hand back to AI" : "Take over conversation")}
             </button>
             <button
               id="inbox-open-crm"
               onClick={() => navigate("/dashboard/crm")}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-200 bg-white py-2.5 text-[13px] font-medium text-purple-600 transition hover:bg-purple-50 dark:border-purple-400/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
             >
-              <ExternalLink size={15} /> Open in CRM
-            </button>
+              <ExternalLink size={15} />{translateText(" Open in CRM")}</button>
           </div>
 
           {/* recent activity */}
           <div className={`${CARD} flex min-h-[168px] flex-1 flex-col p-3.5`}>
             <div className="mb-2.5 flex shrink-0 items-center justify-between">
-              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>Recent Activity</h3>
+              <h3 className={`text-[13.5px] font-bold ${HEADING}`}>{translateText("Recent Activity")}</h3>
               <button
                 id="inbox-activity-view-all"
                 onClick={() => navigate("/dashboard/activity")}
                 className="inline-flex items-center gap-0.5 text-[11.5px] font-semibold text-purple-600 transition hover:gap-1 hover:text-purple-700 dark:text-purple-300"
-              >
-                View all <ArrowRight size={12} strokeWidth={2.5} />
+              >{translateText("View all ")}<ArrowRight size={12} strokeWidth={2.5} />
               </button>
             </div>
             <ol className="inbox-scroll min-h-0 flex-1 space-y-2.5 overflow-y-auto">
-              {active.activity.map((item) => {
+              {localizeNode(active.activity.map((item) => {
                 const style = activityStyle[item.kind];
                 const Icon = style.icon;
                 return (
@@ -1552,11 +1537,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     <span className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full ${style.className}`}>
                       <Icon size={12} strokeWidth={2.4} />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">{item.text}</span>
-                    <time className={`shrink-0 text-[11px] ${SUBTLE}`}>{item.time}</time>
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">{localizeNode(item.text)}</span>
+                    <time className={`shrink-0 text-[11px] ${SUBTLE}`}>{localizeNode(item.time)}</time>
                   </li>
                 );
-              })}
+              }))}
             </ol>
           </div>
         </aside>

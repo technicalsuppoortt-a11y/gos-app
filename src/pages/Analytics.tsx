@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from 'react';
 import { ArrowRight, CalendarDays, ChartColumnBig, ChartNoAxesColumnIncreasing, CircleDollarSign, MessageSquareText, Package, ShoppingBag, Target, UserRound, UserRoundPlus, Users, UsersRound } from 'lucide-react';
 import aiCourseImg from '../assets/products/ai-course.jpg';
@@ -26,6 +27,7 @@ type TabName = typeof tabs[number]['name'];
 
 /* ───────────────────────── Page ───────────────────────── */
 export const Analytics: React.FC<Props> = ({ notify }) => {
+  useUILanguage();
   const [activeAnalyticsTab, setActiveAnalyticsTab] = React.useState<TabName>('Overview');
   const [range] = React.useState('Last 30 days');
   const compare = `vs ${range.toLowerCase()}`;
@@ -34,12 +36,12 @@ export const Analytics: React.FC<Props> = ({ notify }) => {
   return <main className="an-page">
 
 
-    <nav className="an-tabs" role="tablist" aria-label="Analytics sections">
-      {tabs.map(({ name, icon: Icon }) => <button key={name} role="tab" aria-selected={activeAnalyticsTab === name} className={activeAnalyticsTab === name ? 'active' : ''} onClick={() => setActiveAnalyticsTab(name)}><Icon size={15} />{name}</button>)}
+    <nav className="an-tabs" role="tablist" aria-label={translateText("Analytics sections")}>
+      {localizeNode(tabs.map(({ name, icon: Icon }) => <button key={name} role="tab" aria-selected={activeAnalyticsTab === name} className={activeAnalyticsTab === name ? 'active' : ''} onClick={() => setActiveAnalyticsTab(name)}><Icon size={15} />{localizeNode(name)}</button>))}
     </nav>
 
     {/* key forces a clean mount + fade-in per tab; each view owns its own local state */}
-    <div className="an-view-host" key={activeAnalyticsTab} role="tabpanel" aria-label={`${activeAnalyticsTab} analytics`}>
+    <div className="an-view-host" key={activeAnalyticsTab} role="tabpanel" aria-label={translateText(`${activeAnalyticsTab} analytics`)}>
       <ActiveView notify={notify} compare={compare} />
     </div>
   </main>;
@@ -94,81 +96,82 @@ const recentOrders = [
 ];
 
 function OverviewView({ notify, compare }: ViewProps) {
+  useUILanguage();
   return <div className="an-view">
     <KpiRow items={overviewKpis} compare={compare} />
 
     <div className="an-grid">
       {/* Revenue & Sales — bars + trend line */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Revenue &amp; Sales</h2><RangeSelect onChange={v => notify(`Revenue & Sales: ${v.toLowerCase()}.`)} /></div>
-        <div className="an-summary"><b>€12,430</b><Delta value="52%" /><span>{compare}</span><Legend items={[['Revenue', '#7c3aed'], ['Orders', '#c4b5fd']]} /></div>
+        <div className="an-card-head"><h2>{translateText("Revenue & Sales")}</h2><RangeSelect onChange={v => notify(`Revenue & Sales: ${v.toLowerCase()}.`)} /></div>
+        <div className="an-summary"><b>€12,430</b><Delta value="52%" /><span>{localizeNode(compare)}</span><Legend items={[['Revenue', '#7c3aed'], ['Orders', '#c4b5fd']]} /></div>
         <ChartFrame yLabels={['€2,000', '€1,500', '€1,000', '€500', '€0']} x={dayLabels(true)}>
           <defs>
             <linearGradient id="anRevBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" /><stop offset="1" stopColor="#a78bfa" /></linearGradient>
             <linearGradient id="anOrderBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#d8ccff" /><stop offset="1" stopColor="#ede8ff" /></linearGradient>
           </defs>
-          {revenueBars.map((v, i) => {
+          {localizeNode(revenueBars.map((v, i) => {
             const slot = VW / DAYS, rh = (v / 2000) * VH, oh = (orderBars[i] / 2000) * VH;
             return <g key={i} className="an-bar-group">
-              <title>{`Sep ${i + 1} · Revenue €${v.toLocaleString()} · Orders ${Math.round(orderBars[i] / 10)}`}</title>
+              <title>{localizeNode(`Sep ${i + 1} · Revenue €${v.toLocaleString()} · Orders ${Math.round(orderBars[i] / 10)}`)}</title>
               <rect x={i * slot + slot * 0.14} y={VH - rh} width={slot * 0.36} height={rh} rx="1.1" fill="url(#anRevBar)" />
               <rect x={i * slot + slot * 0.5} y={VH - oh} width={slot * 0.36} height={oh} rx="1.1" fill="url(#anOrderBar)" />
             </g>;
-          })}
-          {(() => { const pts = toPoints(orderTrend, 2000, true); return <>
+          }))}
+          {localizeNode((() => { const pts = toPoints(orderTrend, 2000, true); return <>
             <path d={smoothPath(pts)} fill="none" stroke="#c4b5fd" strokeWidth="1.6" vectorEffect="non-scaling-stroke" />
             <path d={dotsPath(pts)} stroke="#b9a6fb" strokeWidth="5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
             <path d={dotsPath(pts)} stroke="#fff" strokeWidth="2.4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          </>; })()}
+          </>; })())}
         </ChartFrame>
       </article>
 
       {/* Leads by Source — donut */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Leads by Source</h2><RangeSelect onChange={v => notify(`Leads by Source: ${v.toLowerCase()}.`)} /></div>
+        <div className="an-card-head"><h2>{translateText("Leads by Source")}</h2><RangeSelect onChange={v => notify(`Leads by Source: ${v.toLowerCase()}.`)} /></div>
         <div className="an-sources">
-          <Donut segments={sourceSegments} center={<><b>892</b><small>Total Leads</small></>} />
+          <Donut segments={sourceSegments} center={<><b>892</b><small>{translateText("Total Leads")}</small></>} />
           <ul className="an-source-list">
-            {sources.map(s => <li key={s.name}><i style={{ background: s.color }} /><ChannelIcon kind={s.kind} /><span>{s.name}</span><b>{s.count}</b><em>{s.pct}%</em></li>)}
+            {localizeNode(sources.map(s => <li key={s.name}><i style={{ background: s.color }} /><ChannelIcon kind={s.kind} /><span>{localizeNode(s.name)}</span><b>{localizeNode(s.count)}</b><em>{localizeNode(s.pct)}%</em></li>))}
           </ul>
         </div>
       </article>
 
       {/* Traffic Overview — multi-line */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Traffic Overview</h2><RangeSelect onChange={v => notify(`Traffic Overview: ${v.toLowerCase()}.`)} /></div>
+        <div className="an-card-head"><h2>{translateText("Traffic Overview")}</h2><RangeSelect onChange={v => notify(`Traffic Overview: ${v.toLowerCase()}.`)} /></div>
         <div className="an-summary"><b>18,432</b><Delta value="41%" /><Legend items={traffic.map(t => [t.name, t.color] as [string, string])} /></div>
         <ChartFrame yLabels={['2,000', '1,000', '0']}>
           <defs><linearGradient id="anTrafficFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" stopOpacity=".14" /><stop offset="1" stopColor="#7c3aed" stopOpacity="0" /></linearGradient></defs>
           <path d={areaPath(toPoints(traffic[0].data, 2000))} fill="url(#anTrafficFill)" />
-          {traffic.map(t => { const pts = toPoints(t.data, 2000); return <g key={t.name} className="an-series">
-            <title>{t.name}</title>
+          {localizeNode(traffic.map(t => { const pts = toPoints(t.data, 2000); return <g key={t.name} className="an-series">
+            <title>{localizeNode(t.name)}</title>
             <path d={smoothPath(pts)} fill="none" stroke={t.color} strokeWidth={t.name === 'Other' ? 1.3 : 1.7} vectorEffect="non-scaling-stroke" />
             <path d={dotsPath(pts)} stroke={t.color} strokeWidth="3.6" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          </g>; })}
+          </g>; }))}
         </ChartFrame>
       </article>
 
       {/* Top Performing Products */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Top Performing Products</h2><button className="an-link" onClick={() => notify('Opening all products.')}>View All <ArrowRight size={13} /></button></div>
+        <div className="an-card-head"><h2>{translateText("Top Performing Products")}</h2><button className="an-link" onClick={() => notify('Opening all products.')}>{translateText("View All ")}<ArrowRight size={13} /></button></div>
         <ul className="an-products">
-          {topProducts.map(p => <li key={p.name}><img src={p.image} alt="" /><span className="an-product-name">{p.name}</span><b>{p.price}</b><em>{p.sales}</em><Sparkline data={p.spark} color="#7c3aed" fill={false} className="an-product-spark" /></li>)}
+          {localizeNode(topProducts.map(p => <li key={p.name}><img src={p.image} alt={translateText("")} /><span className="an-product-name">{localizeNode(p.name)}</span><b>{localizeNode(p.price)}</b><em>{localizeNode(p.sales)}</em><Sparkline data={p.spark} color="#7c3aed" fill={false} className="an-product-spark" /></li>))}
         </ul>
       </article>
 
       {/* Recent Orders */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Recent Orders</h2><button className="an-link" onClick={() => notify('Opening all orders.')}>View All <ArrowRight size={13} /></button></div>
+        <div className="an-card-head"><h2>{translateText("Recent Orders")}</h2><button className="an-link" onClick={() => notify('Opening all orders.')}>{translateText("View All ")}<ArrowRight size={13} /></button></div>
         <div className="an-table-wrap">
           <table className="an-table fill">
             <colgroup><col style={{ width: '24%' }} /><col style={{ width: '36%' }} /><col style={{ width: '12%' }} /><col style={{ width: '16%' }} /><col style={{ width: '12%' }} /></colgroup>
-            <thead><tr><th>Customer</th><th>Product / Service</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th className="text-start">{translateText("Customer")}</th><th className="text-start">{translateText("Product / Service")}</th><th className="text-center">{translateText("Amount")}</th><th className="text-center">{translateText("Date")}</th><th className="text-center">{translateText("Status")}</th></tr></thead>
             <tbody>
-              {recentOrders.map(o => <tr key={o.customer}>
-                <td><span className="an-customer"><img src={avatar(o.avatar)} alt="" />{o.customer}</span></td>
-                <td>{o.product}</td><td>{o.amount}</td><td>{o.date}</td><td><span className="an-badge paid">Paid</span></td>
-              </tr>)}
+              {localizeNode(recentOrders.map(o => <tr key={o.customer}>
+                <td className="text-start"><span className="an-customer"><img src={avatar(o.avatar)} alt={translateText("")} />{localizeNode(o.customer)}</span></td>
+                <td className="text-start">{localizeNode(o.product)}</td><td className="text-center">{localizeNode(o.amount)}</td><td className="text-center">{localizeNode(o.date)}</td><td className="text-center"><span className="an-badge paid mx-auto">{translateText("Paid")}</span></td>
+              </tr>))}
             </tbody>
           </table>
         </div>
@@ -176,15 +179,15 @@ function OverviewView({ notify, compare }: ViewProps) {
 
       {/* Customer Growth — area */}
       <article className="an-card">
-        <div className="an-card-head"><h2>Customer Growth</h2><RangeSelect onChange={v => notify(`Customer Growth: ${v.toLowerCase()}.`)} /></div>
-        <div className="an-summary"><b>186</b><Delta value="24%" /><span>{compare}</span></div>
+        <div className="an-card-head"><h2>{translateText("Customer Growth")}</h2><RangeSelect onChange={v => notify(`Customer Growth: ${v.toLowerCase()}.`)} /></div>
+        <div className="an-summary"><b>186</b><Delta value="24%" /><span>{localizeNode(compare)}</span></div>
         <ChartFrame yLabels={['200', '100', '0']}>
           <defs><linearGradient id="anGrowthFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" stopOpacity=".26" /><stop offset="1" stopColor="#7c3aed" stopOpacity="0" /></linearGradient></defs>
-          {(() => { const pts = toPoints(customerGrowth, 200); return <>
+          {localizeNode((() => { const pts = toPoints(customerGrowth, 200); return <>
             <path d={areaPath(pts)} fill="url(#anGrowthFill)" />
             <path d={smoothPath(pts)} fill="none" stroke="#7c3aed" strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
             <path d={dotsPath(pts)} stroke="#7c3aed" strokeWidth="5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          </>; })()}
+          </>; })())}
         </ChartFrame>
       </article>
     </div>

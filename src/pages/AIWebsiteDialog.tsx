@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
@@ -14,6 +15,7 @@ const palettes = [
   { name: 'Rose', colors: ['#be185d', '#f472b6', '#fdf2f8'] },
 ];
 export function AIWebsiteDialog({ setWorkspace, close, go }: { setWorkspace: Dispatch<SetStateAction<Workspace>>; close: () => void; go: (path: string) => void }) {
+  useUILanguage();
   const [step, setStep] = useState(0), [name, setName] = useState(''), [niche, setNiche] = useState(''), [goal, setGoal] = useState('Generate leads'), [palette, setPalette] = useState(palettes[0]), [error, setError] = useState('');
   const create = () => {
     const title = name.trim(), industry = niche.trim();
@@ -38,15 +40,15 @@ export function AIWebsiteDialog({ setWorkspace, close, go }: { setWorkspace: Dis
     setWorkspace(current => ({ ...current, assets: [created, ...current.assets] }));
     close(); go('websites/' + created.id);
   };
-  return <Modal title="AI Website Generator" close={close}><div className="aw-modal-body aw-ai-generator">
-    <p className="aw-ai-notice">Create a personalized starter from your business brief. Live AI generation is not connected.</p>
-    <ol className="aw-ai-progress" aria-label="Creation progress">{['Business', 'Goal & brand', 'Review'].map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} className={step >= index ? 'active' : ''}><span>{step > index ? <Check size={13}/> : index + 1}</span>{label}</li>)}</ol>
+  return <Modal title={translateText("AI Website Generator")} close={close}><div className="aw-modal-body aw-ai-generator">
+    <p className="aw-ai-notice">{translateText("Create a personalized starter from your business brief. Live AI generation is not connected.")}</p>
+    <ol className="aw-ai-progress" aria-label={translateText("Creation progress")}>{localizeNode(['Business', 'Goal & brand', 'Review'].map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} className={step >= index ? 'active' : ''}><span>{localizeNode(step > index ? <Check size={13}/> : index + 1)}</span>{localizeNode(label)}</li>))}</ol>
     <form onSubmit={event => { event.preventDefault(); if (step === 0 && (!name.trim() || !niche.trim())) { setError('Enter your business name and niche.'); return; } setError(''); if (step < 2) setStep(step + 1); else create(); }}>
-      {step === 0 && <><h3>Tell us about your business</h3><label>Business Name<input autoFocus required maxLength={100} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Studio North"/></label><label>Niche<input required maxLength={150} value={niche} onChange={event => setNiche(event.target.value)} placeholder="e.g. Interior design for modern homes"/></label></>}
-      {step === 1 && <><h3>Make it yours</h3><label>Primary Goal<AssetSelect label="Primary Goal" value={goal} onChange={setGoal} options={['Generate leads', 'Sell products', 'Book appointments', 'Build brand awareness']}/></label><fieldset className="aw-ai-palettes"><legend>Brand Color Palette</legend>{palettes.map(item => <button type="button" key={item.name} aria-pressed={palette.name === item.name} onClick={() => setPalette(item)}><span className="aw-ai-swatches">{item.colors.map(color => <i key={color} style={{ background: color }}/>)}</span><span>{item.name}</span>{palette.name === item.name && <Check size={14}/>}</button>)}</fieldset></>}
-      {step === 2 && <><h3>Your website brief</h3><dl className="aw-ai-review"><dt>Business Name</dt><dd>{name.trim()}</dd><dt>Niche</dt><dd>{niche.trim()}</dd><dt>Primary Goal</dt><dd>{goal}</dd><dt>Brand Color Palette</dt><dd>{palette.name}<span className="aw-ai-swatches">{palette.colors.map(color => <i key={color} style={{ background: color }}/>)}</span></dd></dl><p>We’ll create seven editable pages with your business copy, goal and brand colors. Review your website before publishing.</p></>}
-      {error && <p className="aw-error" role="alert">{error}</p>}
-      <footer><button type="button" className="aw-secondary" onClick={() => { setError(''); if (step) setStep(step - 1); else close(); }}>{step ? 'Back' : 'Cancel'}</button><button className="aw-primary">{step === 2 ? <>Create Website <Sparkles size={15}/></> : <>Continue <ArrowRight size={15}/></>}</button></footer>
+      {localizeNode(step === 0 && <><h3>{translateText("Tell us about your business")}</h3><label>{translateText("Business Name")}<input autoFocus required maxLength={100} value={name} onChange={event => setName(event.target.value)} placeholder={translateText("e.g. Studio North")}/></label><label>{translateText("Niche")}<input required maxLength={150} value={niche} onChange={event => setNiche(event.target.value)} placeholder={translateText("e.g. Interior design for modern homes")}/></label></>)}
+      {localizeNode(step === 1 && <><h3>{translateText("Make it yours")}</h3><label>{translateText("Primary Goal")}<AssetSelect label="Primary Goal" value={goal} onChange={setGoal} options={['Generate leads', 'Sell products', 'Book appointments', 'Build brand awareness']}/></label><fieldset className="aw-ai-palettes"><legend>{translateText("Brand Color Palette")}</legend>{localizeNode(palettes.map(item => <button type="button" key={item.name} aria-pressed={palette.name === item.name} onClick={() => setPalette(item)}><span className="aw-ai-swatches">{localizeNode(item.colors.map(color => <i key={color} style={{ background: color }}/>))}</span><span>{localizeNode(item.name)}</span>{localizeNode(palette.name === item.name && <Check size={14}/>)}</button>))}</fieldset></>)}
+      {localizeNode(step === 2 && <><h3>{translateText("Your website brief")}</h3><dl className="aw-ai-review"><dt>{translateText("Business Name")}</dt><dd>{localizeNode(name.trim())}</dd><dt>{translateText("Niche")}</dt><dd>{localizeNode(niche.trim())}</dd><dt>{translateText("Primary Goal")}</dt><dd>{localizeNode(goal)}</dd><dt>{translateText("Brand Color Palette")}</dt><dd>{localizeNode(palette.name)}<span className="aw-ai-swatches">{localizeNode(palette.colors.map(color => <i key={color} style={{ background: color }}/>))}</span></dd></dl><p>{translateText("We’ll create seven editable pages with your business copy, goal and brand colors. Review your website before publishing.")}</p></>)}
+      {localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}
+      <footer><button type="button" className="aw-secondary" onClick={() => { setError(''); if (step) setStep(step - 1); else close(); }}>{localizeNode(step ? 'Back' : 'Cancel')}</button><button className="aw-primary">{localizeNode(step === 2 ? <>{translateText("Create Website ")}<Sparkles size={15}/></> : <>{translateText("Continue ")}<ArrowRight size={15}/></>)}</button></footer>
     </form>
   </div></Modal>;
 }

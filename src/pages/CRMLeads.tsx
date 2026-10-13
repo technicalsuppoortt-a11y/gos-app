@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -81,6 +82,7 @@ const tabs = [
 ];
 
 export function CRMLeads({ notify }: { notify: (message: string) => void }) {
+  useUILanguage();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -294,11 +296,11 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   );
   const filterPanel = (
     <div className="crm-filter-bar">
-      {(["source", "tag", "owner", "status", "stage"] as const).map((field) => (
+      {localizeNode((["source", "tag", "owner", "status", "stage"] as const).map((field) => (
         <label key={field}>
-          {field}
+          {localizeNode(field)}
           <CustomSelect
-            aria-label={`Filter by ${field}`}
+            aria-label={translateText(`Filter by ${field}`)}
             value={filters[field]}
             onChange={(val) => setFilters({ ...filters, [field]: val })}
             options={[
@@ -329,10 +331,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             ]}
           />
         </label>
-      ))}
-      <button className="crm2-btn-secondary" onClick={resetFilters}>
-        Clear filters
-      </button>
+      )))}
+      <button className="crm2-btn-secondary" onClick={resetFilters}>{translateText("Clear filters")}</button>
     </div>
   );
   return (
@@ -343,16 +343,14 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             <BarChart3 size={20} />
           </span>
           <div>
-            <h1 className="crm2-header-title">CRM &amp; Leads</h1>
-            <p className="crm2-header-sub">
-              Manage your leads, conversations and turn them into customers
-            </p>
+            <h1 className="crm2-header-title">{translateText("CRM & Leads")}</h1>
+            <p className="crm2-header-sub">{translateText("Manage your leads, conversations and turn them into customers")}</p>
           </div>
         </div>
         <div className="crm2-header-right">
           <CustomSelect
             className="w-[195px]"
-            aria-label="Pipeline selector"
+            aria-label={translateText("Pipeline selector")}
             value={pipeline.id}
             onChange={(val) => {
               setParams({ pipeline: val });
@@ -365,17 +363,13 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             className="crm2-btn-secondary"
             onClick={() => setDialog("settings")}
           >
-            <Settings2 size={14} />
-            Pipeline Settings
-          </button>
+            <Settings2 size={14} />{translateText("Pipeline Settings")}</button>
           <button className="crm2-btn-primary" onClick={() => newLead()}>
-            <Plus size={15} />
-            Add Lead
-          </button>
+            <Plus size={15} />{translateText("Add Lead")}</button>
         </div>
       </header>
-      <nav className="crm2-subnav" aria-label="CRM navigation">
-        {tabs.map((t) => (
+      <nav className="crm2-subnav" aria-label={translateText("CRM navigation")}>
+        {localizeNode(tabs.map((t) => (
           <button
             key={t.path}
             onClick={() => goTab(t.path)}
@@ -383,9 +377,9 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             aria-current={tab === t.path ? "page" : undefined}
           >
             <t.icon size={14} />
-            {t.label}
+            {localizeNode(t.label)}
           </button>
-        ))}
+        )))}
       </nav>
       {(tab === "pipeline" || tab === "contacts") && (
         <>
@@ -393,8 +387,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             <label className="crm-search w-64 md:w-80 min-w-[250px]">
               <Search size={16} />
               <input
-                aria-label="Search contacts"
-                placeholder="Search leads, name, company..."
+                aria-label={translateText("Search contacts")}
+                placeholder={translateText("Search leads, name, company...")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -405,15 +399,14 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 onClick={() => setFiltersOpen(!filtersOpen)}
                 aria-expanded={filtersOpen}
               >
-                <ListFilter size={16} />
-                Filters {filterCount > 0 && <span>{filterCount}</span>}
+                <ListFilter size={16} />{translateText("Filters ")}{localizeNode(filterCount > 0 && <span>{localizeNode(filterCount)}</span>)}
                 <ChevronDown size={13} />
               </button>
-              {filtersOpen && filterPanel}
+              {localizeNode(filtersOpen && filterPanel)}
             </div>
             <CustomSelect
               className="w-[155px]"
-              aria-label="Sort leads"
+              aria-label={translateText("Sort leads")}
               icon={ArrowDownUp}
               value={sort}
               onChange={(val) => setSort(val)}
@@ -424,7 +417,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
               ]}
             />
             <div className="crm-toolbar-right">
-              {tab === "pipeline" ? (
+              {localizeNode(tab === "pipeline" ? (
                 <>
                   <div className="crm-view-switch">
                     <button
@@ -432,17 +425,13 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                       className={!listView ? "active" : ""}
                       aria-pressed={!listView}
                     >
-                      <LayoutGrid size={15} />
-                      Kanban
-                    </button>
+                      <LayoutGrid size={15} />{translateText("Kanban")}</button>
                     <button
                       onClick={() => setListView(true)}
                       className={listView ? "active" : ""}
                       aria-pressed={listView}
                     >
-                      <List size={15} />
-                      List
-                    </button>
+                      <List size={15} />{translateText("List")}</button>
                   </div>
                   <OptionsMenu
                     label="Pipeline options"
@@ -468,30 +457,26 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     className="crm2-btn-secondary"
                     onClick={() => exportCSV(visible)}
                   >
-                    <Download size={13} />
-                    Export
-                  </button>
+                    <Download size={13} />{translateText("Export")}</button>
                   <button
                     className="crm2-btn-secondary"
                     onClick={() => setDialog("import")}
                   >
-                    <Upload size={13} />
-                    Import
-                  </button>
+                    <Upload size={13} />{translateText("Import")}</button>
                 </>
-              )}
+              ))}
             </div>
           </div>
 
           {tab === "pipeline" && !listView ? (
             <div
               className="crm-kanban"
-              aria-label="CRM pipeline board"
+              aria-label={translateText("CRM pipeline board")}
               style={{
                 gridTemplateColumns: `repeat(${pipeline.stages.length}, minmax(155px, 1fr))`,
               }}
             >
-              {pipeline.stages.map((stage) => {
+              {localizeNode(pipeline.stages.map((stage) => {
                 const cards = visible.filter(
                   (l) => displayStage(l, pipeline) === stage.id,
                 );
@@ -499,7 +484,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   <section
                     key={stage.id}
                     className={`crm-kanban-column ${over === stage.id ? "crm-drop-active" : ""}`}
-                    aria-label={`${stage.label} stage`}
+                    aria-label={translateText(`${stage.label} stage`)}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
@@ -524,8 +509,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     <div className="crm-stage-head">
                       <div>
                         <i style={{ background: stage.color }} />
-                        <b>{stage.label}</b>
-                        <span>{cards.length}</span>
+                        <b>{localizeNode(stage.label)}</b>
+                        <span>{localizeNode(cards.length)}</span>
                         <OptionsMenu
                           label={`Options for ${stage.label} stage`}
                           actions={[
@@ -541,19 +526,17 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                         />
                       </div>
                       <small>
-                        {euro(cards.reduce((s, l) => s + l.value, 0))}
+                        {localizeNode(euro(cards.reduce((s, l) => s + l.value, 0)))}
                       </small>
                       <button
                         className="crm-stage-add"
-                        aria-label={`Add lead to ${stage.label}`}
+                        aria-label={translateText(`Add lead to ${stage.label}`)}
                         onClick={() => newLead(stage.id)}
                       >
-                        <Plus size={12} />
-                        Add Lead
-                      </button>
+                        <Plus size={12} />{translateText("Add Lead")}</button>
                     </div>
                     <div className="min-h-0 overflow-y-auto crm-stage-cards">
-                      {cards.map((lead) => (
+                      {localizeNode(cards.map((lead) => (
                         <LeadCard
                           key={lead.id}
                           lead={lead}
@@ -570,18 +553,18 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                             notify("Lead stage updated.");
                           }}
                         />
-                      ))}
-                      {cards.length === 0 && (
+                      )))}
+                      {localizeNode(cards.length === 0 && (
                         <div className="crm-empty-stage">
                           <Users size={20} />
-                          <span>No leads yet</span>
-                          <small>Drop a lead or add one above</small>
+                          <span>{translateText("No leads yet")}</span>
+                          <small>{translateText("Drop a lead or add one above")}</small>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </section>
                 );
-              })}
+              }))}
             </div>
           ) : (
             <>
@@ -589,7 +572,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 <label>
                   <input
                     type="checkbox"
-                    aria-label="Select all visible contacts"
+                    aria-label={translateText("Select all visible contacts")}
                     checked={
                       visible.length > 0 && chosen.length === visible.length
                     }
@@ -599,11 +582,11 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                       )
                     }
                   />
-                  {chosen.length
+                  {localizeNode(chosen.length
                     ? `${chosen.length} selected`
-                    : "Select contacts for bulk actions"}
+                    : "Select contacts for bulk actions")}
                 </label>
-                {chosen.length > 0 && (
+                {localizeNode(chosen.length > 0 && (
                   <>
                     <button
                       onClick={() => {
@@ -611,34 +594,26 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                         setBulkValue("");
                         setDialog("bulk");
                       }}
-                    >
-                      Tag
-                    </button>
+                    >{translateText("Tag")}</button>
                     <button
                       onClick={() => {
                         setBulkAction("owner");
                         setBulkValue(owners[0]);
                         setDialog("bulk");
                       }}
-                    >
-                      Assign owner
-                    </button>
+                    >{translateText("Assign owner")}</button>
                     <button
                       onClick={() => {
                         setBulkAction("stage");
                         setBulkValue(pipeline.stages[0].id);
                         setDialog("bulk");
                       }}
-                    >
-                      Move stage
-                    </button>
+                    >{translateText("Move stage")}</button>
                     <button
                       onClick={() =>
                         exportCSV(visible.filter((l) => chosen.includes(l.id)))
                       }
-                    >
-                      Export
-                    </button>
+                    >{translateText("Export")}</button>
                     <button
                       onClick={() => {
                         chosen.forEach((id) =>
@@ -659,62 +634,60 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                         );
                       }}
                     >
-                      {filters.status === "archived" ? "Restore" : "Archive"}
+                      {localizeNode(filters.status === "archived" ? "Restore" : "Archive")}
                     </button>
                     <button
                       className="crm-danger"
                       onClick={() => setDialog("delete")}
-                    >
-                      Delete
-                    </button>
+                    >{translateText("Delete")}</button>
                   </>
-                )}
+                ))}
               </div>
               <div className="crm-contacts-table">
                 <table>
                   <thead>
                     <tr>
-                      <th />
-                      <th>Name</th>
-                      <th>Contact Info</th>
-                      <th>Company</th>
-                      <th>Source</th>
-                      <th>Stage</th>
-                      <th>Owner</th>
-                      <th>Last Activity</th>
-                      <th>Created Date</th>
-                      <th>Actions</th>
+                      <th className="text-center" style={{ width: 44 }} />
+                      <th className="text-start">{translateText("Name")}</th>
+                      <th className="text-start">{translateText("Contact Info")}</th>
+                      <th className="text-start">{translateText("Company")}</th>
+                      <th className="text-center">{translateText("Source")}</th>
+                      <th className="text-center">{translateText("Stage")}</th>
+                      <th className="text-start">{translateText("Owner")}</th>
+                      <th className="text-center">{translateText("Last Activity")}</th>
+                      <th className="text-center">{translateText("Created Date")}</th>
+                      <th className="text-center" style={{ width: 56 }}>{translateText("Actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pageContacts.map((lead) => (
                       <tr key={lead.id} onClick={() => openLead(lead.id)}>
-                        <td onClick={(e) => e.stopPropagation()}>
+                        <td className="text-center" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
-                            aria-label={`Select ${lead.name}`}
+                            aria-label={translateText(`Select ${lead.name}`)}
                             checked={chosen.includes(lead.id)}
                             onChange={() => toggleSelected(lead.id)}
                           />
                         </td>
-                        <td>
+                        <td className="text-start">
                           <Link
                             to={`${base}/contacts/${lead.id}`}
                             className="crm-table-person"
                           >
                             <CRMAvatar lead={lead} />
-                            <b>{lead.name}</b>
+                            <b>{localizeNode(lead.name)}</b>
                           </Link>
                         </td>
-                        <td>
+                        <td className="text-start">
                           <span>{lead.email}</span>
                           <small>{lead.phone || "No phone added"}</small>
                         </td>
-                        <td>{lead.company || "—"}</td>
-                        <td>
+                        <td className="text-start">{localizeNode(lead.company || "—")}</td>
+                        <td className="text-center">
                           <SourceBadge source={lead.source} />
                         </td>
-                        <td>
+                        <td className="text-center">
                           <span
                             className="crm-stage-pill"
                             style={{
@@ -724,22 +697,22 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                             }}
                           >
                             {
-                              pipeline.stages.find(
+                              localizeNode(pipeline.stages.find(
                                 (s) => s.id === displayStage(lead, pipeline),
-                              )!.label
+                              )!.label)
                             }
                           </span>
                         </td>
-                        <td>{lead.owner}</td>
-                        <td>{lead.lastActivity}</td>
-                        <td>
-                          {lead.createdAt
+                        <td className="text-start">{localizeNode(lead.owner)}</td>
+                        <td className="text-center">{localizeNode(lead.lastActivity)}</td>
+                        <td className="text-center">
+                          {localizeNode(lead.createdAt
                             ? new Date(lead.createdAt).toLocaleDateString()
-                            : "Not recorded"}
+                            : "Not recorded")}
                         </td>
-                        <td>
+                        <td className="text-center">
                           <button
-                            aria-label={`Open ${lead.name}`}
+                            aria-label={translateText(`Open ${lead.name}`)}
                             onClick={(e) => {
                               e.stopPropagation();
                               openLead(lead.id);
@@ -752,29 +725,25 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     ))}
                   </tbody>
                 </table>
-                {!visible.length && (
+                {localizeNode(!visible.length && (
                   <div className="crm-empty">
                     <Search size={28} />
-                    <h3>No matching contacts</h3>
-                    <p>Try another search or clear your filters.</p>
+                    <h3>{translateText("No matching contacts")}</h3>
+                    <p>{translateText("Try another search or clear your filters.")}</p>
                     <button
                       className="crm2-btn-secondary"
                       onClick={resetFilters}
-                    >
-                      Clear filters
-                    </button>
+                    >{translateText("Clear filters")}</button>
                   </div>
-                )}
+                ))}
               </div>
               <footer
                 className="crm-pagination"
-                aria-label="Contacts pagination"
+                aria-label={translateText("Contacts pagination")}
               >
-                <label>
-                  Rows per page
-                  <CustomSelect
+                <label>{translateText("Rows per page")}<CustomSelect
                     className="crm-page-size"
-                    aria-label="Contacts rows per page"
+                    aria-label={translateText("Contacts rows per page")}
                     value={String(rowsPerPage)}
                     onChange={(val) => setRowsPerPage(Number(val))}
                     options={[10, 25, 50, 100].map((n) => ({
@@ -783,52 +752,43 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     }))}
                   />
                 </label>
-                <span role="status">
-                  Showing {visible.length ? contactStart + 1 : 0}–
-                  {Math.min(contactStart + rowsPerPage, visible.length)} of{" "}
-                  {visible.length} contacts
-                </span>
+                <span role="status">{translateText("Showing ")}{localizeNode(visible.length ? contactStart + 1 : 0)}–
+                  {localizeNode(Math.min(contactStart + rowsPerPage, visible.length))}{translateText(" of")}{localizeNode(" ")}
+                  {localizeNode(visible.length)}{translateText(" contacts")}</span>
                 <div>
                   <button
                     className="crm2-btn-secondary"
                     disabled={currentContactPage === 1}
                     onClick={() => setContactPage(currentContactPage - 1)}
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    Page {currentContactPage} of {contactPages}
+                  >{translateText("Previous")}</button>
+                  <span>{translateText("Page ")}{localizeNode(currentContactPage)}{translateText(" of ")}{localizeNode(contactPages)}
                   </span>
                   <button
                     className="crm2-btn-secondary"
                     disabled={currentContactPage === contactPages}
                     onClick={() => setContactPage(currentContactPage + 1)}
-                  >
-                    Next
-                  </button>
+                  >{translateText("Next")}</button>
                 </div>
               </footer>
             </>
           )}
         </>
       )}
-      {tab === "templates" && (
+      {localizeNode(tab === "templates" && (
         <div className="crm-presets-viewport">
           <div className="crm-section-heading">
             <div>
-              <h2>A pipeline for every kind of business</h2>
-              <p>Choose a preset or create a template with your own stages.</p>
+              <h2>{translateText("A pipeline for every kind of business")}</h2>
+              <p>{translateText("Choose a preset or create a template with your own stages.")}</p>
             </div>
             <button
               className="crm2-btn-primary"
               onClick={() => setDialog("template")}
             >
-              <Plus size={14} />
-              New template
-            </button>
+              <Plus size={14} />{translateText("New template")}</button>
           </div>
           <div className="crm-presets">
-            {presetList
+            {localizeNode(presetList
               .slice(
                 (currentPresetPage - 1) * presetSize,
                 currentPresetPage * presetSize,
@@ -844,12 +804,12 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   >
                     <Workflow size={18} />
                   </span>
-                  <h3>{template.name}</h3>
-                  <p>{template.description}</p>
+                  <h3>{localizeNode(template.name)}</h3>
+                  <p>{localizeNode(template.description)}</p>
                   <div className="crm-preset-stages">
-                    {template.stages.map((s, i) => (
-                      <span key={i}>{s}</span>
-                    ))}
+                    {localizeNode(template.stages.map((s, i) => (
+                      <span key={i}>{localizeNode(s)}</span>
+                    )))}
                   </div>
                   <button
                     className="crm2-btn-primary"
@@ -869,47 +829,39 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                       );
                     }}
                   >
-                    <Plus size={13} />
-                    Use this pipeline
-                  </button>
+                    <Plus size={13} />{translateText("Use this pipeline")}</button>
                 </article>
-              ))}
+              )))}
           </div>
           <footer className="crm-pagination">
             <span>
-              {presetList.length} templates · {pipelines.length} saved pipelines
-            </span>
+              {localizeNode(presetList.length)}{translateText(" templates · ")}{localizeNode(pipelines.length)}{translateText(" saved pipelines")}</span>
             <div>
               <button
                 className="crm2-btn-secondary"
                 disabled={currentPresetPage === 1}
                 onClick={() => setPresetPage(currentPresetPage - 1)}
-              >
-                Previous
-              </button>
-              <span>
-                Page {currentPresetPage} of {presetPages}
+              >{translateText("Previous")}</button>
+              <span>{translateText("Page ")}{localizeNode(currentPresetPage)}{translateText(" of ")}{localizeNode(presetPages)}
               </span>
               <button
                 className="crm2-btn-secondary"
                 disabled={currentPresetPage === presetPages}
                 onClick={() => setPresetPage(currentPresetPage + 1)}
-              >
-                Next
-              </button>
+              >{translateText("Next")}</button>
             </div>
           </footer>
         </div>
-      )}
-      {tab === "activities" && (
+      ))}
+      {localizeNode(tab === "activities" && (
         <div className="crm-scroll-content">
           <div className="crm-section-heading">
             <div>
-              <h2>Activity feed</h2>
-              <p>Conversations, stage changes and notes in {pipeline.name}.</p>
+              <h2>{translateText("Activity feed")}</h2>
+              <p>{translateText("Conversations, stage changes and notes in ")}{localizeNode(pipeline.name)}.</p>
             </div>
           </div>
-          {active
+          {localizeNode(active
             .flatMap((l) => l.activities.map((a) => ({ ...a, lead: l })))
             .sort((a, b) => activityTime(b.at) - activityTime(a.at))
             .map((a) => (
@@ -922,30 +874,28 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   <Activity size={16} />
                 </span>
                 <div>
-                  <b>{a.title}</b>
+                  <b>{localizeNode(a.title)}</b>
                   <p>
-                    {a.lead.name} · {a.detail}
+                    {localizeNode(a.lead.name)} · {localizeNode(a.detail)}
                   </p>
                 </div>
                 <small>
-                  {a.at.includes("T") ? new Date(a.at).toLocaleString() : a.at}
+                  {localizeNode(a.at.includes("T") ? new Date(a.at).toLocaleString() : a.at)}
                 </small>
                 <ArrowRight size={14} />
               </Link>
-            ))}
-          {!active.some((l) => l.activities.length) && (
-            <div className="crm-empty">
-              No activities yet. Add a lead to get started.
-            </div>
-          )}
+            )))}
+          {localizeNode(!active.some((l) => l.activities.length) && (
+            <div className="crm-empty">{translateText("No activities yet. Add a lead to get started.")}</div>
+          ))}
         </div>
-      )}
-      {tab === "tasks" && (
+      ))}
+      {localizeNode(tab === "tasks" && (
         <div className="crm-scroll-content">
           <div className="crm-section-heading">
             <div>
-              <h2>Tasks &amp; follow-ups</h2>
-              <p>Keep the next step clear for every contact.</p>
+              <h2>{translateText("Tasks & follow-ups")}</h2>
+              <p>{translateText("Keep the next step clear for every contact.")}</p>
             </div>
           </div>
           <form
@@ -975,7 +925,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
           >
             <CustomSelect
               className="w-[180px]"
-              aria-label="Task contact"
+              aria-label={translateText("Task contact")}
               value={taskLead}
               onChange={(val) => setTaskLead(val)}
               options={[
@@ -985,10 +935,10 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             />
             <CustomDatePicker
               className="w-[130px]"
-              aria-label="Task due date"
+              aria-label={translateText("Task due date")}
               value={taskDue}
               onChange={(val) => setTaskDue(val)}
-              placeholder="Due date"
+              placeholder={translateText("Due date")}
             />
             <button
               className="crm2-btn-primary"
@@ -998,21 +948,19 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 !taskDue
               }
             >
-              <Plus size={14} />
-              Add task
-            </button>
+              <Plus size={14} />{translateText("Add task")}</button>
           </form>
           <label className="crm-search crm-task-search">
             <Search size={16} />
             <input
-              aria-label="Search tasks"
-              placeholder="Search task title, contact or status…"
+              aria-label={translateText("Search tasks")}
+              placeholder={translateText("Search task title, contact or status…")}
               value={taskQuery}
               onChange={(e) => setTaskQuery(e.target.value)}
             />
           </label>
           <div className="crm-task-filters">
-            {(
+            {localizeNode((
               ["all", "today", "upcoming", "overdue", "completed"] as const
             ).map((f) => (
               <button
@@ -1020,12 +968,12 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 className={`crm-task-pill ${taskFilter === f ? "active" : ""}`}
                 onClick={() => setTaskFilter(f)}
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                {localizeNode(f.charAt(0).toUpperCase() + f.slice(1))}
               </button>
-            ))}
+            )))}
           </div>
           <div className="crm-task-list">
-            {filteredTasks.map((task) => {
+            {localizeNode(filteredTasks.map((task) => {
               const status = taskStatus(task.done, task.due, today);
               return (
                 <div
@@ -1035,7 +983,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   <label className="crm-task-checkbox">
                     <input
                       type="checkbox"
-                      aria-label={`Complete ${task.title}`}
+                      aria-label={translateText(`Complete ${task.title}`)}
                       checked={task.done}
                       onChange={() =>
                         dispatch(
@@ -1053,17 +1001,17 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     <span className="crm-checkmark"></span>
                   </label>
                   <div className="crm-task-content">
-                    <b>{task.title}</b>
+                    <b>{localizeNode(task.title)}</b>
                     <div className="crm-task-meta">
                       <Link
                         to={`${base}/contacts/${task.lead.id}`}
                         className="crm-task-contact-badge"
                       >
                         <CRMAvatar lead={task.lead} />
-                        {task.lead.name}
+                        {localizeNode(task.lead.name)}
                       </Link>
                       <span className={`crm-task-due-pill ${status}`}>
-                        {task.due}
+                        {localizeNode(task.due)}
                       </span>
                     </div>
                   </div>
@@ -1082,38 +1030,35 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                           }),
                         )
                       }
-                    >
-                      Delete
-                    </button>
+                    >{translateText("Delete")}</button>
                     <Link
                       className="crm2-btn-primary"
                       to={`${base}/contacts/${task.lead.id}`}
                     >
-                      <ArrowRight size={14} /> Go to Contact
-                    </Link>
+                      <ArrowRight size={14} />{translateText(" Go to Contact")}</Link>
                   </div>
                 </div>
               );
-            })}
-            {filteredFollowUps.map((l) => (
+            }))}
+            {localizeNode(filteredFollowUps.map((l) => (
               <div className="crm-task-card" key={l.id}>
                 <div className="crm-task-icon">
                   <Clock3 size={18} />
                 </div>
                 <div className="crm-task-content">
-                  <b>Follow up with {l.name}</b>
+                  <b>{translateText("Follow up with ")}{localizeNode(l.name)}</b>
                   <div className="crm-task-meta">
                     <Link
                       to={`${base}/contacts/${l.id}`}
                       className="crm-task-contact-badge"
                     >
                       <CRMAvatar lead={l} />
-                      {l.name}
+                      {localizeNode(l.name)}
                     </Link>
                     <span
                       className={`crm-task-due-pill ${followUpStatus(l.nextFollowUp, l.nextFollowUpAt, today)}`}
                     >
-                      {l.nextFollowUp}
+                      {localizeNode(l.nextFollowUp)}
                     </span>
                   </div>
                 </div>
@@ -1122,31 +1067,30 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     className="crm2-btn-primary"
                     to={`${base}/contacts/${l.id}`}
                   >
-                    <ArrowRight size={14} /> Go to Contact
-                  </Link>
+                    <ArrowRight size={14} />{translateText(" Go to Contact")}</Link>
                 </div>
               </div>
-            ))}
-            {!filteredTasks.length && !filteredFollowUps.length && (
+            )))}
+            {localizeNode(!filteredTasks.length && !filteredFollowUps.length && (
               <div className="crm-empty">
                 <Search size={24} />
-                <h3>No matching tasks</h3>
-                <p>Try another search or status, or create a task above.</p>
+                <h3>{translateText("No matching tasks")}</h3>
+                <p>{translateText("Try another search or status, or create a task above.")}</p>
               </div>
-            )}
+            ))}
           </div>
         </div>
-      )}
-      {tab === "overview" && (
+      ))}
+      {localizeNode(tab === "overview" && (
         <div className="crm-scroll-content">
           <div className="crm-section-heading">
             <div>
-              <h2>Your pipeline at a glance</h2>
-              <p>Stage distribution and value from your current CRM records.</p>
+              <h2>{translateText("Your pipeline at a glance")}</h2>
+              <p>{translateText("Stage distribution and value from your current CRM records.")}</p>
             </div>
           </div>
           <div className="crm-overview-grid">
-            {pipeline.stages.map((stage) => {
+            {localizeNode(pipeline.stages.map((stage) => {
               const records = active.filter(
                 (l) => displayStage(l, pipeline) === stage.id,
               );
@@ -1154,15 +1098,14 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 <article key={stage.id}>
                   <h3>
                     <i style={{ background: stage.color }} />
-                    {stage.label}
+                    {localizeNode(stage.label)}
                   </h3>
                   <b>
-                    {records.length}
-                    <small> contacts</small>
+                    {localizeNode(records.length)}
+                    <small>{translateText(" contacts")}</small>
                   </b>
                   <p>
-                    {euro(records.reduce((s, l) => s + l.value, 0))} in stage
-                  </p>
+                    {localizeNode(euro(records.reduce((s, l) => s + l.value, 0)))}{translateText(" in stage")}</p>
                   <div className="crm-progress">
                     <span
                       style={{
@@ -1174,16 +1117,15 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   <button
                     className="crm-link-button"
                     onClick={() => goTab("pipeline")}
-                  >
-                    View pipeline <ArrowRight size={12} />
+                  >{translateText("View pipeline ")}<ArrowRight size={12} />
                   </button>
                 </article>
               );
-            })}
+            }))}
           </div>
         </div>
-      )}
-      {dialog === "template" && (
+      ))}
+      {localizeNode(dialog === "template" && (
         <TemplateDialog
           existingNames={presetList.map((t) => t.name)}
           close={close}
@@ -1194,8 +1136,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             notify("Custom template saved.");
           }}
         />
-      )}
-      {dialog === "add" && (
+      ))}
+      {localizeNode(dialog === "add" && (
         <AddLeadDialog
           pipeline={pipeline}
           initialStage={addStage}
@@ -1206,16 +1148,16 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             openLead(id);
           }}
         />
-      )}
-      {dialog === "settings" && (
+      ))}
+      {localizeNode(dialog === "settings" && (
         <SettingsDialog pipeline={pipeline} close={close} notify={notify} />
-      )}
-      {dialog === "import" && (
+      ))}
+      {localizeNode(dialog === "import" && (
         <ImportDialog pipeline={pipeline} close={close} notify={notify} />
-      )}
-      {dialog === "bulk" && (
+      ))}
+      {localizeNode(dialog === "bulk" && (
         <Dialog
-          title={`${bulkAction === "tag" ? "Tag" : bulkAction === "owner" ? "Assign owner to" : "Move"} ${chosen.length} contacts`}
+          title={translateText(`${bulkAction === "tag" ? "Tag" : bulkAction === "owner" ? "Assign owner to" : "Move"} ${chosen.length} contacts`)}
           close={close}
         >
           <form
@@ -1226,12 +1168,12 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
           >
             <div className="crm-dialog-content">
               <label className="crm-field">
-                {bulkAction === "tag"
+                {localizeNode(bulkAction === "tag"
                   ? "Tag name"
                   : bulkAction === "owner"
                     ? "Owner"
-                    : "Stage"}
-                {bulkAction === "tag" ? (
+                    : "Stage")}
+                {localizeNode(bulkAction === "tag" ? (
                   <input
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
@@ -1255,29 +1197,22 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                           }))
                     }
                   />
-                )}
+                ))}
               </label>
             </div>
             <div className="crm-dialog-footer">
-              <button className="crm2-btn-primary" disabled={!bulkValue.trim()}>
-                Apply changes
-              </button>
+              <button className="crm2-btn-primary" disabled={!bulkValue.trim()}>{translateText("Apply changes")}</button>
             </div>
           </form>
         </Dialog>
-      )}
-      {dialog === "delete" && (
-        <Dialog title="Delete selected contacts?" close={close}>
+      ))}
+      {localizeNode(dialog === "delete" && (
+        <Dialog title={translateText("Delete selected contacts?")} close={close}>
           <div className="crm-dialog-content">
-            <p>
-              This permanently deletes {chosen.length} contacts and their
-              activities, notes and tasks.
-            </p>
+            <p>{translateText("This permanently deletes ")}{localizeNode(chosen.length)}{translateText(" contacts and their activities, notes and tasks.")}</p>
           </div>
           <div className="crm-dialog-footer">
-            <button className="crm2-btn-secondary" onClick={close}>
-              Cancel
-            </button>
+            <button className="crm2-btn-secondary" onClick={close}>{translateText("Cancel")}</button>
             <button
               className="crm-delete-button"
               onClick={() => {
@@ -1286,12 +1221,10 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 close();
                 notify("Contacts deleted.");
               }}
-            >
-              Delete contacts
-            </button>
+            >{translateText("Delete contacts")}</button>
           </div>
         </Dialog>
-      )}
+      ))}
     </div>
   );
 }

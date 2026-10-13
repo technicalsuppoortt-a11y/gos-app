@@ -1,3 +1,4 @@
+import { useUILanguage } from '../../i18n/display';
 import React from 'react';
 import { Shell } from './Shell';
 import { LayoutDashboard, Settings, Users, Puzzle, DollarSign } from 'lucide-react';
@@ -11,5 +12,6 @@ const adminItems = [
 ];
 
 export const AdminLayout: React.FC = () => {
+  useUILanguage();
   return <Shell sidebarItems={adminItems} basePath="/admin" />;
 };

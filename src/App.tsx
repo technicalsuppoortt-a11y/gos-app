@@ -1,3 +1,4 @@
+import { useUILanguage } from './i18n/display';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -7,12 +8,14 @@ import { Toaster } from 'sonner';
 import './i18n/i18n';
 
 function App() {
+  const language = useUILanguage();
   return (
     <Provider store={store}>
       <ThemeProvider>
         <RouterProvider router={router} />
         <Toaster 
-          position="bottom-right" 
+          position={language === 'ar' ? 'bottom-left' : 'bottom-right'}
+          dir={language === 'ar' ? 'rtl' : 'ltr'}
           richColors 
           closeButton
           theme="light"

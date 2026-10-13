@@ -1,9 +1,11 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import {useLayoutEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {ArrowDown,ArrowUp,Copy,Settings,Trash2} from 'lucide-react';
 import type {BuilderSection} from './BuilderWorkspace';
 
 export function CanvasPartToolbar({selected,label,revision,canUp,canDown,reorder,duplicate,remove,settings}:{selected:string|null;label?:string;revision:BuilderSection[];canUp:boolean;canDown:boolean;reorder:(id:string,step:-1|1)=>void;duplicate:(id:string)=>void;remove:(id:string)=>void;settings:(id:string)=>void}) {
+  useUILanguage();
   const toolbar=useRef<HTMLDivElement>(null);
   const [position,setPosition]=useState<{left:number;top:number;type:string}|null>(null);
   useLayoutEffect(()=>{
@@ -18,5 +20,5 @@ export function CanvasPartToolbar({selected,label,revision,canUp,canDown,reorder
   },[selected,label,revision]);
   if(!position||!selected)return null;
   const name=label||position.type;
-  return createPortal(<div ref={toolbar} className="pf-part-toolbar" role="toolbar" aria-label={name+' selection actions'} data-selected-element={selected} style={{left:position.left,top:position.top}} onPointerDown={e=>e.preventDefault()} onClick={e=>e.stopPropagation()}><b title={name}>{name}</b><button aria-label={'Move selected '+name+' up'} disabled={!canUp} onClick={()=>reorder(selected,-1)}><ArrowUp size={13}/></button><button aria-label={'Move selected '+name+' down'} disabled={!canDown} onClick={()=>reorder(selected,1)}><ArrowDown size={13}/></button><button aria-label={'Duplicate selected '+name} onClick={()=>duplicate(selected)}><Copy size={13}/></button><button aria-label={'Settings for selected '+name} onClick={()=>settings(selected)}><Settings size={13}/></button><button aria-label={'Delete selected '+name} onClick={()=>remove(selected)}><Trash2 size={13}/></button></div>,document.body);
+  return createPortal(<div ref={toolbar} className="pf-part-toolbar" role="toolbar" aria-label={translateText(name+' selection actions')} data-selected-element={selected} style={{left:position.left,top:position.top}} onPointerDown={e=>e.preventDefault()} onClick={e=>e.stopPropagation()}><b title={translateText(name)}>{localizeNode(name)}</b><button aria-label={translateText('Move selected '+name+' up')} disabled={!canUp} onClick={()=>reorder(selected,-1)}><ArrowUp size={13}/></button><button aria-label={translateText('Move selected '+name+' down')} disabled={!canDown} onClick={()=>reorder(selected,1)}><ArrowDown size={13}/></button><button aria-label={translateText('Duplicate selected '+name)} onClick={()=>duplicate(selected)}><Copy size={13}/></button><button aria-label={translateText('Settings for selected '+name)} onClick={()=>settings(selected)}><Settings size={13}/></button><button aria-label={translateText('Delete selected '+name)} onClick={()=>remove(selected)}><Trash2 size={13}/></button></div>,document.body);
 }

@@ -1,0 +1,1876 @@
+Dashboard	لوحة التحكم
+Workspace	مساحة العمل
+Workspace settings	إعدادات مساحة العمل
+Settings	الإعدادات
+Home	الرئيسية
+Overview	نظرة عامة
+Navigation	التنقل
+Open navigation	فتح قائمة التنقل
+Close navigation	إغلاق قائمة التنقل
+Close navigation menu	إغلاق قائمة التنقل
+Toggle navigation	تبديل قائمة التنقل
+Search	بحث
+Search anything...	ابحث في كل شيء...
+Notifications	الإشعارات
+View Landing Page	عرض الصفحة الرئيسية
+View Profile	عرض الملف الشخصي
+Profile	الملف الشخصي
+Business Owner	صاحب النشاط التجاري
+Logout	تسجيل الخروج
+Log out	تسجيل الخروج
+Sign out	تسجيل الخروج
+Sign in	تسجيل الدخول
+Login	تسجيل الدخول
+Email	البريد الإلكتروني
+Email address	عنوان البريد الإلكتروني
+Password	كلمة المرور
+Remember me	تذكرني
+Forgot password?	هل نسيت كلمة المرور؟
+Create account	إنشاء حساب
+English	الإنجليزية
+Arabic	العربية
+Language	اللغة
+Theme	المظهر
+Light	فاتح
+Dark	داكن
+Light Mode	الوضع الفاتح
+Dark Mode	الوضع الداكن
+System	النظام
+General	عام
+Save	حفظ
+Save Changes	حفظ التغييرات
+Save changes	حفظ التغييرات
+Saving...	جارٍ الحفظ...
+Saved	تم الحفظ
+Saved successfully	تم الحفظ بنجاح
+Cancel	إلغاء
+Create	إنشاء
+Edit	تعديل
+Delete	حذف
+Remove	إزالة
+Add	إضافة
+Update	تحديث
+Done	تم
+Confirm	تأكيد
+Apply	تطبيق
+Apply changes	تطبيق التغييرات
+Reset	إعادة تعيين
+Clear	مسح
+Clear all	مسح الكل
+Clear filters	مسح عوامل التصفية
+Clear search	مسح البحث
+Close	إغلاق
+Open	فتح
+Back	رجوع
+Next	التالي
+Previous	السابق
+Continue	متابعة
+Continue →	متابعة ←
+Finish	إنهاء
+Submit	إرسال
+Send	إرسال
+Retry	إعادة المحاولة
+Try again	حاول مجددًا
+Refresh	تحديث
+Reload	إعادة تحميل
+Duplicate	إنشاء نسخة
+Clone	استنساخ
+Copy	نسخ
+Copy Link	نسخ الرابط
+Copy link	نسخ الرابط
+Copy Embed Code	نسخ كود التضمين
+Download	تنزيل
+Upload	رفع
+Import	استيراد
+Export	تصدير
+View	عرض
+Preview	معاينة
+Live Preview	معاينة مباشرة
+Publish	نشر
+Unpublish	إلغاء النشر
+Published	منشور
+Unpublished	غير منشور
+Draft	مسودة
+Drafts	المسودات
+Active	نشط
+Inactive	غير نشط
+Enabled	مفعّل
+Disabled	معطّل
+Enable	تفعيل
+Disable	تعطيل
+Activate	تفعيل
+Deactivate	إيقاف التفعيل
+Paused	متوقف مؤقتًا
+Pause	إيقاف مؤقت
+Resume	استئناف
+Pending	قيد الانتظار
+Completed	مكتمل
+Complete	إكمال
+Canceled	ملغى
+Cancelled	ملغى
+Confirmed	مؤكد
+Failed	فشل
+Success	نجاح
+Error	خطأ
+Warning	تنبيه
+Information	معلومات
+Required	مطلوب
+Optional	اختياري
+Loading...	جارٍ التحميل...
+Loading…	جارٍ التحميل...
+All	الكل
+None	لا شيء
+Yes	نعم
+No	لا
+On	مفعّل
+Off	معطّل
+New	جديد
+Default	افتراضي
+Custom	مخصص
+More	المزيد
+More options	المزيد من الخيارات
+Actions	الإجراءات
+Action	إجراء
+Action type	نوع الإجراء
+Action destination	وجهة الإجراء
+Details	التفاصيل
+Name	الاسم
+Title	العنوان
+Description	الوصف
+Type	النوع
+Status	الحالة
+Category	الفئة
+Categories	الفئات
+Date	التاريخ
+Time	الوقت
+Start date	تاريخ البدء
+End date	تاريخ الانتهاء
+Start time	وقت البدء
+End time	وقت الانتهاء
+Created	تاريخ الإنشاء
+Updated	تاريخ التحديث
+Created at	تاريخ الإنشاء
+Updated at	تاريخ التحديث
+Created by	أنشأه
+Sort	ترتيب
+Sort by	ترتيب حسب
+Filter	تصفية
+Filters	عوامل التصفية
+Search filters	عوامل تصفية البحث
+Newest	الأحدث
+Oldest	الأقدم
+Newest first	الأحدث أولًا
+Oldest first	الأقدم أولًا
+Alphabetical	أبجديًا
+A to Z	من أ إلى ي
+Z to A	من ي إلى أ
+Select	اختيار
+Select all	تحديد الكل
+Select an option	اختر خيارًا
+Choose an option	اختر خيارًا
+Select date	اختر تاريخًا
+Select a date	اختر تاريخًا
+Select time	اختر وقتًا
+Select a time	اختر وقتًا
+Today	اليوم
+Yesterday	أمس
+Tomorrow	غدًا
+This week	هذا الأسبوع
+Last week	الأسبوع الماضي
+This month	هذا الشهر
+Last month	الشهر الماضي
+This year	هذا العام
+Last year	العام الماضي
+Last 7 days	آخر 7 أيام
+Last 30 days	آخر 30 يومًا
+Last 90 days	آخر 90 يومًا
+All time	كل الفترات
+Custom range	نطاق مخصص
+Date range	النطاق الزمني
+Day	يوم
+Days	أيام
+Week	أسبوع
+Weeks	أسابيع
+Month	شهر
+Months	أشهر
+Year	عام
+Years	أعوام
+Hour	ساعة
+Hours	ساعات
+Minute	دقيقة
+Minutes	دقائق
+Second	ثانية
+Seconds	ثوانٍ
+Monday	الاثنين
+Tuesday	الثلاثاء
+Wednesday	الأربعاء
+Thursday	الخميس
+Friday	الجمعة
+Saturday	السبت
+Sunday	الأحد
+Mon	الاثنين
+Tue	الثلاثاء
+Wed	الأربعاء
+Thu	الخميس
+Fri	الجمعة
+Sat	السبت
+Sun	الأحد
+January	يناير
+February	فبراير
+March	مارس
+April	أبريل
+May	مايو
+June	يونيو
+July	يوليو
+August	أغسطس
+September	سبتمبر
+October	أكتوبر
+November	نوفمبر
+December	ديسمبر
+Jan	يناير
+Feb	فبراير
+Mar	مارس
+Apr	أبريل
+Jun	يونيو
+Jul	يوليو
+Aug	أغسطس
+Sep	سبتمبر
+Oct	أكتوبر
+Nov	نوفمبر
+Dec	ديسمبر
+AM	ص
+PM	م
+Timezone	المنطقة الزمنية
+Time zone	المنطقة الزمنية
+Local timezone	المنطقة الزمنية المحلية
+Funnels	أقماع المبيعات
+Funnel	قُمع مبيعات
+Funnel & Website	أقماع المبيعات والمواقع
+Funnels & Websites	أقماع المبيعات والمواقع
+Websites	المواقع الإلكترونية
+Website	موقع إلكتروني
+Pages	الصفحات
+Page	صفحة
+Page content	محتوى الصفحة
+Page Content	محتوى الصفحة
+Page settings	إعدادات الصفحة
+Page name	اسم الصفحة
+Page title	عنوان الصفحة
+Page type	نوع الصفحة
+Page URL	رابط الصفحة
+Page slug	مسار الصفحة
+Page status	حالة الصفحة
+Page options	خيارات الصفحة
+Landing Page	صفحة هبوط
+Landing page	صفحة هبوط
+Sales Page	صفحة مبيعات
+Sales page	صفحة مبيعات
+Thank You	شكرًا لك
+Thank you	شكرًا لك
+Thank You Page	صفحة الشكر
+Thank you page	صفحة الشكر
+Checkout Page	صفحة إتمام الشراء
+Opt-in Page	صفحة الاشتراك
+Lead capture	جمع بيانات العملاء المحتملين
+Lead generation	توليد العملاء المحتملين
+Funnel overview	نظرة عامة على قُمع المبيعات
+Funnel settings	إعدادات قُمع المبيعات
+Funnel name	اسم قُمع المبيعات
+Funnel steps	خطوات قُمع المبيعات
+Step	خطوة
+Steps	الخطوات
+Step name	اسم الخطوة
+Step type	نوع الخطوة
+Domains	النطاقات
+Domain	نطاق
+Domain name	اسم النطاق
+Domain status	حالة النطاق
+Connect Domain	ربط نطاق
+Connect domain	ربط نطاق
+Connect a domain	ربط نطاق
+Add New Domain	إضافة نطاق جديد
+Custom domain	نطاق مخصص
+Connected domain	النطاق المرتبط
+Available domains	النطاقات المتاحة
+DNS records	سجلات DNS
+Verify	تحقق
+Verify domain	التحقق من النطاق
+SSL status	حالة شهادة SSL
+Connected	مرتبط
+Not connected	غير مرتبط
+Disconnected	غير مرتبط
+Connect	ربط
+Disconnect	قطع الاتصال
+Connection status	حالة الاتصال
+Connection type	نوع الاتصال
+Templates	القوالب
+Template	قالب
+Use Template	استخدام القالب
+Use template	استخدام القالب
+View All Templates	عرض جميع القوالب
+All templates	جميع القوالب
+Template name	اسم القالب
+Template preview	معاينة القالب
+Template library	مكتبة القوالب
+Blank	فارغ
+Blank page	صفحة فارغة
+Blank section	قسم فارغ
+Blank block	كتلة فارغة
+Start from scratch	البدء من الصفر
+Build with AI	إنشاء بالذكاء الاصطناعي
+Build With AI	إنشاء بالذكاء الاصطناعي
+AI Website Generator	منشئ المواقع بالذكاء الاصطناعي
+Generate	إنشاء
+Generating...	جارٍ الإنشاء...
+Generate website	إنشاء موقع
+Content	المحتوى
+Style	النمط
+Styling	التنسيق
+Layout	التخطيط
+Design	التصميم
+Elements	العناصر
+Element	عنصر
+Element Tree	شجرة العناصر
+Element settings	إعدادات العنصر
+Add Elements	إضافة عناصر
+Add element	إضافة عنصر
+Add section	إضافة قسم
+Add a section	إضافة قسم
+Sections	الأقسام
+Section	قسم
+Section name	اسم القسم
+Section settings	إعدادات القسم
+Row	صف
+Rows	صفوف
+Column	عمود
+Columns	أعمدة
+Column layout	تخطيط الأعمدة
+Column visibility	إظهار الأعمدة
+Container	حاوية
+Containers	الحاويات
+Blocks	الكتل
+Block	كتلة
+Block label	اسم الكتلة
+Heading	عنوان
+Heading text	نص العنوان
+Heading tag	وسم العنوان
+Subheading	عنوان فرعي
+Paragraph	فقرة
+Text	نص
+Body text	نص المحتوى
+Text color	لون النص
+Text alignment	محاذاة النص
+Text style	نمط النص
+Button	زر
+Button text	نص الزر
+Button label	تسمية الزر
+Button trigger	مشغّل الزر
+Button with count	زر مع عدّاد
+Link	رابط
+Link URL	عنوان الرابط
+Link text	نص الرابط
+Link target	وجهة الرابط
+Open in new tab	فتح في تبويب جديد
+Image	صورة
+Images	الصور
+Image URL	رابط الصورة
+Image alt text	النص البديل للصورة
+Alt text	النص البديل
+Image size	حجم الصورة
+Image position	موضع الصورة
+Image fit	ملاءمة الصورة
+Gallery	معرض الصور
+Video	فيديو
+Video URL	رابط الفيديو
+Audio	صوت
+Icon	أيقونة
+Icons	الأيقونات
+Icon color	لون الأيقونة
+Icon size	حجم الأيقونة
+Divider	فاصل
+Spacer	مسافة فارغة
+Form	نموذج
+Forms	النماذج
+Form fields	حقول النموذج
+Form settings	إعدادات النموذج
+Input	حقل إدخال
+Input label	تسمية الحقل
+Label	التسمية
+Placeholder	النص الإرشادي
+Helper text	النص المساعد
+Field	حقل
+Fields	الحقول
+Field type	نوع الحقل
+Field label	تسمية الحقل
+Field name	اسم الحقل
+Required field	حقل مطلوب
+Checkbox	مربع اختيار
+Radio	اختيار واحد
+Dropdown	قائمة منسدلة
+Text area	منطقة نص
+Number	رقم
+Phone	الهاتف
+Phone number	رقم الهاتف
+Full name	الاسم الكامل
+First name	الاسم الأول
+Last name	اسم العائلة
+Company	الشركة
+Company name	اسم الشركة
+Address	العنوان
+City	المدينة
+Country	الدولة
+Postal code	الرمز البريدي
+Website URL	رابط الموقع الإلكتروني
+Background	الخلفية
+Background color	لون الخلفية
+Background color picker	اختيار لون الخلفية
+Background gradient	تدرّج الخلفية
+Background image	صورة الخلفية
+Background image URL	رابط صورة الخلفية
+Background overlay	طبقة الخلفية
+Background size	حجم الخلفية
+Background video URL (.mp4)	رابط فيديو الخلفية (.mp4)
+Color	اللون
+Colors	الألوان
+Border	الحدود
+Borders	الحدود
+Border color	لون الحدود
+Border radius	استدارة الزوايا
+Border style	نمط الحدود
+Border width	عرض الحدود
+Shadow	الظل
+Box shadow	ظل العنصر
+Opacity	الشفافية
+Spacing	المسافات
+Margin	الهامش الخارجي
+Padding	الهامش الداخلي
+Width	العرض
+Height	الارتفاع
+Min width	الحد الأدنى للعرض
+Max width	الحد الأقصى للعرض
+Min height	الحد الأدنى للارتفاع
+Max height	الحد الأقصى للارتفاع
+Size	الحجم
+Position	الموضع
+Top	أعلى
+Bottom	أسفل
+Left	يسار
+Right	يمين
+Center	وسط
+Align	محاذاة
+Alignment	المحاذاة
+Horizontal	أفقي
+Vertical	عمودي
+Direction	الاتجاه
+Gap	المسافة بين العناصر
+Font	الخط
+Font family	نوع الخط
+Font size	حجم الخط
+Font weight	سُمك الخط
+Typography	إعدادات الخط
+Line height	ارتفاع السطر
+Letter spacing	تباعد الحروف
+Text decoration	زخرفة النص
+Bold	عريض
+Italic	مائل
+Underline	تسطير
+Uppercase	أحرف كبيرة
+Lowercase	أحرف صغيرة
+Normal	عادي
+Regular	عادي
+Small	صغير
+Medium	متوسط
+Large	كبير
+Desktop	سطح المكتب
+Tablet	جهاز لوحي
+Mobile	هاتف محمول
+Responsive	متجاوب
+Device	الجهاز
+Devices	الأجهزة
+Undo	تراجع
+Redo	إعادة
+Move up	نقل لأعلى
+Move down	نقل لأسفل
+Move left	نقل لليسار
+Move right	نقل لليمين
+Drag to reorder	اسحب لإعادة الترتيب
+Collapse	طي
+Expand	توسيع
+Hidden	مخفي
+Visible	ظاهر
+Visibility	الإظهار
+Advanced	متقدم
+Advanced Settings	إعدادات متقدمة
+Advanced Configuration	إعدادات متقدمة
+Custom CSS	تنسيق CSS مخصص
+Custom HTML	كود HTML مخصص
+CSS code	كود CSS
+HTML code	كود HTML
+Code	الكود
+Code color	لون الكود
+Attributes	السمات
+Animation	الحركة
+Transition	الانتقال
+Autoplay	تشغيل تلقائي
+Loop	تكرار
+Controls	عناصر التحكم
+Accordion	قسم قابل للطي
+Accordion item	عنصر قابل للطي
+Tabs	التبويبات
+Tab	تبويب
+Popup	نافذة منبثقة
+Popups	النوافذ المنبثقة
+Open popup	فتح نافذة منبثقة
+Close popup	إغلاق النافذة المنبثقة
+Countdown	عدّ تنازلي
+List	قائمة
+Bullet list	قائمة نقطية
+Bulleted list	قائمة نقطية
+Bullet	نقطة
+Badge	شارة
+Cards	بطاقات
+Card	بطاقة
+Grid	شبكة
+Aspect ratio	نسبة الأبعاد
+Contain	احتواء
+Cover	تغطية
+Fill	ملء
+Auto	تلقائي
+None selected	لم يتم اختيار شيء
+Page saved	تم حفظ الصفحة
+All changes saved	تم حفظ جميع التغييرات
+All changes saved in this browser	تم حفظ جميع التغييرات في هذا المتصفح
+Changes saved	تم حفظ التغييرات
+Changes saved in this browser	تم حفظ التغييرات في هذا المتصفح
+Booking	حجز المواعيد
+Booking & Calendar	حجز المواعيد والتقويم
+Booking & calendar	حجز المواعيد والتقويم
+Booking Calendar	تقويم الحجوزات
+Booking calendar	تقويم الحجوزات
+Booking Pages	صفحات الحجز
+Booking pages	صفحات الحجز
+Booking page	صفحة حجز
+Booking page title	عنوان صفحة الحجز
+Booking page template	قالب صفحة الحجز
+Booking page filter	تصفية صفحات الحجز
+Booking page media	وسائط صفحة الحجز
+Booking page not found	صفحة الحجز غير موجودة
+Booking page is active	صفحة الحجز نشطة
+Booking page cloned.	تم إنشاء نسخة من صفحة الحجز.
+Booking page created.	تم إنشاء صفحة الحجز.
+Booking page updated.	تم تحديث صفحة الحجز.
+Booking page deleted. Existing appointment records are retained.	تم حذف صفحة الحجز مع الاحتفاظ بسجلات المواعيد الحالية.
+Booking Configuration	إعدادات الحجز
+Booking ID	معرّف الحجز
+Booking URL	رابط الحجز
+Booking / calendar URL	رابط الحجز أو التقويم
+Booking link	رابط الحجز
+Booking form	نموذج الحجز
+Booking form & questions	نموذج الحجز والأسئلة
+Booking availability	مواعيد الحجز المتاحة
+Booking limits	حدود الحجز
+Booking navigation	التنقل في الحجوزات
+Booking status	حالة الحجز
+Booking statuses	حالات الحجز
+Booking steps	خطوات الحجز
+Booking templates	قوالب الحجز
+Booking template ID	معرّف قالب الحجز
+Booking offered	تم عرض الحجز
+Booking Offered	تم عرض الحجز
+Booking offered / booked	الحجوزات المعروضة والمؤكدة
+Booking confirmed	تم تأكيد الحجز
+Booking canceled	تم إلغاء الحجز
+Booking recorded	تم تسجيل الحجز
+Booking request received	تم استلام طلب الحجز
+Booking request submitted successfully	تم إرسال طلب الحجز بنجاح
+Bookings	الحجوزات
+Bookings & availability	الحجوزات والمواعيد المتاحة
+Bookings by Service	الحجوزات حسب الخدمة
+Appointment	موعد
+Appointments	المواعيد
+Appointment Booking	حجز موعد
+Appointment Reminder	تذكير بالموعد
+Appointment Reminder Flow	سير عمل تذكير بالموعد
+Appointment details	تفاصيل الموعد
+Appointment details / reschedule	تفاصيل الموعد وإعادة جدولته
+Appointment not found	الموعد غير موجود
+Appointment picker	اختيار الموعد
+Appointment type	نوع الموعد
+Appointment types	أنواع المواعيد
+Appointment confirmed	تم تأكيد الموعد
+Appointment canceled.	تم إلغاء الموعد.
+Appointment saved.	تم حفظ الموعد.
+Appointments Booked	المواعيد المحجوزة
+Book Appointment	حجز موعد
+Book an Appointment	حجز موعد
+Book an appointment	حجز موعد
+Book appointments	حجز المواعيد
+Book another appointment	حجز موعد آخر
+Book another time	حجز وقت آخر
+Book Now	احجز الآن
+Book a Call	حجز مكالمة
+Book a call	حجز مكالمة
+Book a consultation	حجز استشارة
+Book a demo	حجز عرض توضيحي
+Book a session	حجز جلسة
+Book session	حجز جلسة
+Book a visit	حجز زيارة
+Book a strategy session	حجز جلسة استراتيجية
+Book a Free Consultation	حجز استشارة مجانية
+Book a free consultation	حجز استشارة مجانية
+Book free consultation	حجز استشارة مجانية
+Book Free Session	حجز جلسة مجانية
+Book a Free Session	حجز جلسة مجانية
+Book your appointment	احجز موعدك
+Book your session	احجز جلستك
+Book your visit	احجز زيارتك
+Book your first session	احجز جلستك الأولى
+Book your free consultation	احجز استشارتك المجانية
+Booked	محجوز
+Reschedule	إعادة الجدولة
+Reschedule appointment	إعادة جدولة الموعد
+Cancel appointment	إلغاء الموعد
+Cancel booking	إلغاء الحجز
+Confirm booking	تأكيد الحجز
+Confirm new time	تأكيد الوقت الجديد
+Confirmation	التأكيد
+Confirmation & rescheduling	التأكيد وإعادة الجدولة
+Confirmation email	رسالة تأكيد بالبريد الإلكتروني
+Confirmation message	رسالة التأكيد
+Confirmation template ID	معرّف قالب التأكيد
+Availability	المواعيد المتاحة
+Availability diagnostics	فحص المواعيد المتاحة
+Availability sync is on	مزامنة المواعيد المتاحة مفعّلة
+Available time	الوقت المتاح
+Available times	المواعيد المتاحة
+Available times (comma separated)	المواعيد المتاحة (مفصولة بفواصل)
+Available times ·	المواعيد المتاحة ·
+Weekly availability	المواعيد الأسبوعية المتاحة
+Working hours	ساعات العمل
+Business hours	ساعات العمل
+Opening hours	ساعات العمل
+Specific dates	تواريخ محددة
+Date overrides	استثناءات التواريخ
+Unavailable	غير متاح
+Available	متاح
+Busy	مشغول
+Free	مجاني
+Buffer	وقت فاصل
+Buffer time	الوقت الفاصل
+Before	قبل
+After	بعد
+Before booking	قبل الحجز
+After booking	بعد الحجز
+Break	استراحة
+Break Intervals	فترات الاستراحة
+Break date (optional)	تاريخ الاستراحة (اختياري)
+Break start	بداية الاستراحة
+Break end	نهاية الاستراحة
+Duration	المدة
+Duration options	خيارات المدة
+Meeting duration	مدة الاجتماع
+Meeting location	مكان الاجتماع
+Location	المكان
+Locations	الأماكن
+Meeting link	رابط الاجتماع
+Meeting URL	رابط الاجتماع
+Online meeting	اجتماع عبر الإنترنت
+In person	حضوري
+At Location	في الموقع
+Host	المضيف
+Hosts	المضيفون
+Invitee	المدعو
+Invitees	المدعوون
+Guest	ضيف
+Guests	الضيوف
+Invite guests	دعوة ضيوف
+Guest email	بريد الضيف الإلكتروني
+Guest name	اسم الضيف
+Invitee questions	أسئلة المدعو
+Reminder	تذكير
+Reminders	التذكيرات
+Notifications & reminders	الإشعارات والتذكيرات
+Email notifications	إشعارات البريد الإلكتروني
+SMS notifications	إشعارات الرسائل النصية
+Calendar	التقويم
+Calendars	التقويمات
+Calendar view	عرض التقويم
+Calendar ID (API/Webhooks)	معرّف التقويم (API/Webhooks)
+Calendar connected	تم ربط التقويم
+Calendar linked	تم ربط التقويم
+Calendar slots offered	المواعيد المعروضة في التقويم
+Calendar invitation added in this demo	تمت إضافة دعوة التقويم في هذا العرض التجريبي
+Connect your calendar	اربط تقويمك
+Connected calendar	التقويم المرتبط
+Google Calendar	تقويم Google
+Apple Calendar	تقويم Apple
+Outlook Calendar	تقويم Outlook
+Apple iCal	تقويم Apple iCal
+System calendar	تقويم النظام
+Team calendar	تقويم الفريق
+Calendar settings	إعدادات التقويم
+Month view	عرض شهري
+Week view	عرض أسبوعي
+Day view	عرض يومي
+Agenda	جدول المواعيد
+Schedule	الجدول
+Scheduling	الجدولة
+Event	حدث
+Events	الأحداث
+Event name	اسم الحدث
+Event type	نوع الحدث
+Event details	تفاصيل الحدث
+All Events	جميع الأحداث
+All calendars	جميع التقويمات
+All booking pages	جميع صفحات الحجز
+All dates	جميع التواريخ
+All devices	جميع الأجهزة
+All categories	جميع الفئات
+All statuses	جميع الحالات
+All Status	جميع الحالات
+All Types	جميع الأنواع
+All roles	جميع الأدوار
+All tags	جميع الوسوم
+All conversations	جميع المحادثات
+CRM & Leads	إدارة العملاء والعملاء المحتملين
+CRM & leads	إدارة العملاء والعملاء المحتملين
+CRM Pipelines	مسارات إدارة العملاء
+CRM navigation	التنقل في إدارة العملاء
+CRM pipeline board	لوحة مسار العملاء
+CRM update	تحديث إدارة العملاء
+CRM updated	تم تحديث إدارة العملاء
+Leads	العملاء المحتملون
+Lead	عميل محتمل
+New leads	العملاء المحتملون الجدد
+Total leads	إجمالي العملاء المحتملين
+Qualified leads	العملاء المحتملون المؤهلون
+Lead details	تفاصيل العميل المحتمل
+Lead source	مصدر العميل المحتمل
+Lead score	تقييم العميل المحتمل
+Lead status	حالة العميل المحتمل
+Contacts	جهات الاتصال
+Contact	جهة اتصال
+Contact information	معلومات الاتصال
+Contact Info	معلومات الاتصال
+Contact Form	نموذج تواصل
+Contact created	تم إنشاء جهة الاتصال
+Contact not found	جهة الاتصال غير موجودة
+Contact options	خيارات جهة الاتصال
+Contact saved.	تم حفظ جهة الاتصال.
+Contact updated.	تم تحديث جهة الاتصال.
+Contact muted.	تم كتم جهة الاتصال.
+Contact source	مصدر جهة الاتصال
+Contact pipeline	مسار جهة الاتصال
+Contact pipeline stage	مرحلة جهة الاتصال في المسار
+Contact record tabs	تبويبات سجل جهة الاتصال
+Contacts archived.	تمت أرشفة جهات الاتصال.
+Contacts deleted.	تم حذف جهات الاتصال.
+Contacts restored.	تمت استعادة جهات الاتصال.
+Contacts pagination	التنقل بين صفحات جهات الاتصال
+Contacts rows per page	عدد جهات الاتصال في الصفحة
+Clients	العملاء
+Client	عميل
+Customers	العملاء
+Customer	عميل
+Customer details	تفاصيل العميل
+Customer name	اسم العميل
+Customer email	بريد العميل الإلكتروني
+Customer journey	رحلة العميل
+Customer journeys	رحلات العملاء
+Customer support	دعم العملاء
+Pipeline	مسار المبيعات
+Pipelines	مسارات المبيعات
+Pipeline name	اسم المسار
+Pipeline stage	مرحلة المسار
+Stage	مرحلة
+Stages	المراحل
+Stage name	اسم المرحلة
+Stage color	لون المرحلة
+Add stage	إضافة مرحلة
+Add lead to stage	إضافة عميل محتمل إلى المرحلة
+New Lead	عميل محتمل جديد
+Cold Lead	عميل محتمل غير متفاعل
+Cold	غير متفاعل
+Warm	متفاعل
+Hot	مهتم جدًا
+Qualified	مؤهل
+Unqualified	غير مؤهل
+Contacted	تم التواصل
+Negotiation	تفاوض
+Proposal	عرض
+Won	مكتسب
+Lost	مفقود
+Closed	مغلق
+Closed / lost	مغلق أو مفقود
+Converted	تحوّل إلى عميل
+Conversing	المحادثة جارية
+Interested	مهتم
+Needs attention	يحتاج إلى متابعة
+Human attention	متابعة بشرية
+Owner	المسؤول
+Assigned To	مُسند إلى
+Assigned owner	المسؤول المعيّن
+Assigned to me	مُسند إليّ
+Assigned when saved	يتم الإسناد عند الحفظ
+Assign owner	تعيين مسؤول
+Assign to me	إسناد إليّ
+Tags	الوسوم
+Tag	وسم
+Notes	الملاحظات
+Note	ملاحظة
+Internal note	ملاحظة داخلية
+Internal Note	ملاحظة داخلية
+Tasks	المهام
+Task	مهمة
+Task title	عنوان المهمة
+Due date	تاريخ الاستحقاق
+Due today	مستحق اليوم
+Overdue	متأخر
+Priority	الأولوية
+High	عالية
+Low	منخفضة
+Urgent	عاجلة
+Activity	النشاط
+Activities	الأنشطة
+Activity Log	سجل النشاط
+Activity Timeline	التسلسل الزمني للنشاط
+Activity timeline	التسلسل الزمني للنشاط
+Activity feed	سجل النشاط
+Activity events	أحداث النشاط
+Activity filters	تصفية الأنشطة
+Actor	المنفّذ
+Timeline	التسلسل الزمني
+History	السجل
+Audit logs	سجلات التدقيق
+Archive	أرشفة
+Archived	مؤرشف
+Archive contact	أرشفة جهة الاتصال
+Archive conversation	أرشفة المحادثة
+Restore	استعادة
+Inbox	صندوق الوارد
+Conversation	محادثة
+Conversations	المحادثات
+Conversation History	سجل المحادثات
+Conversation history	سجل المحادثات
+Conversation Outcomes	نتائج المحادثات
+Conversation Quality	جودة المحادثات
+Conversation filters	تصفية المحادثات
+Conversation created	تم إنشاء المحادثة
+Conversation started	بدأت المحادثة
+Conversation handed back to AI	أُعيدت المحادثة إلى الذكاء الاصطناعي
+Conversations Handled	المحادثات التي تمت معالجتها
+Chat History	سجل الدردشة
+Messages	الرسائل
+Message	رسالة
+Message text	نص الرسالة
+Type a message...	اكتب رسالة...
+Type your message...	اكتب رسالتك...
+Send message	إرسال رسالة
+Reply	رد
+Reply to customer	الرد على العميل
+Unread	غير مقروء
+Read	مقروء
+Mark as read	تحديد كمقروء
+Mark as unread	تحديد كغير مقروء
+Unassigned	غير مُسند
+Assigned	مُسند
+Resolved	تم الحل
+Resolve	حل
+Reopen	إعادة فتح
+Channel	القناة
+Channels	القنوات
+Channel status	حالة القناة
+Channel Distribution	توزيع القنوات
+Channel attribution	إسناد القنوات
+Channel preferences saved.	تم حفظ تفضيلات القنوات.
+Attach a file	إرفاق ملف
+Attach files	إرفاق ملفات
+Attachment	مرفق
+Attachments	المرفقات
+Take over	تولّي المحادثة
+Human takeover	تولّي المحادثة بشريًا
+Hand back to AI	إعادة المحادثة إلى الذكاء الاصطناعي
+AI Copilot	المساعد الذكي
+AI Business Copilot	مساعد الأعمال الذكي
+AI Follow-Up	المتابعة بالذكاء الاصطناعي
+AI Follow-up	المتابعة بالذكاء الاصطناعي
+AI Follow-Up sections	أقسام المتابعة بالذكاء الاصطناعي
+AI Follow-Up sequence	تسلسل المتابعة بالذكاء الاصطناعي
+AI Agent	وكيل الذكاء الاصطناعي
+AI Assist	مساعدة ذكية
+AI Assistant Setup	إعداد المساعد الذكي
+AI Assistant ·	المساعد الذكي ·
+AI Assistants	المساعدون الأذكياء
+AI Auto-reply Rate	معدل الرد الآلي الذكي
+AI Automation	الأتمتة بالذكاء الاصطناعي
+AI Automation Status	حالة الأتمتة بالذكاء الاصطناعي
+AI Performance	أداء الذكاء الاصطناعي
+AI Provider	مزوّد الذكاء الاصطناعي
+AI Sales	مبيعات الذكاء الاصطناعي
+AI Templates	قوالب الذكاء الاصطناعي
+AI Tools & Setup	أدوات الذكاء الاصطناعي وإعداداته
+AI Image Generation	إنشاء الصور بالذكاء الاصطناعي
+AI Knowledge Packs	حزم المعرفة للذكاء الاصطناعي
+AI Active	الذكاء الاصطناعي نشط
+AI handled	عالجها الذكاء الاصطناعي
+AI paused	الذكاء الاصطناعي متوقف مؤقتًا
+AI sent message	أرسل الذكاء الاصطناعي رسالة
+AI suggestion ready to review	اقتراح الذكاء الاصطناعي جاهز للمراجعة
+AI tone / personality	نبرة المساعد الذكي وشخصيته
+AI response boundaries	ضوابط ردود الذكاء الاصطناعي
+AI vs human	الذكاء الاصطناعي مقارنة بالموظفين
+AI weekly reports	تقارير أسبوعية بالذكاء الاصطناعي
+AI conversations	محادثات الذكاء الاصطناعي
+AI documents	مستندات الذكاء الاصطناعي
+AI auto-reply off	الرد الآلي الذكي معطّل
+AI auto-reply enabled	تم تفعيل الرد الآلي الذكي
+AI auto-reply disabled	تم تعطيل الرد الآلي الذكي
+AI auto-reply for this conversation	الرد الآلي الذكي لهذه المحادثة
+AI will reply automatically	سيرد الذكاء الاصطناعي تلقائيًا
+AI follow-up activated	تم تفعيل المتابعة الذكية
+AI follow-up paused	تم إيقاف المتابعة الذكية مؤقتًا
+AI can make mistakes. Review before taking action.	قد يخطئ الذكاء الاصطناعي. راجع النتائج قبل اتخاذ إجراء.
+Copilot can make mistakes. Review drafts before confirming.	قد يخطئ المساعد الذكي. راجع المسودات قبل التأكيد.
+Copilot is working…	المساعد الذكي يعمل...
+Ask the AI Copilot	اسأل المساعد الذكي
+Ask me anything about your business...	اسألني أي شيء عن نشاطك التجاري...
+Ask a test question	اطرح سؤالًا تجريبيًا
+Assistant name	اسم المساعد
+Assistant settings	إعدادات المساعد
+Assistant templates	قوالب المساعد
+Assistant is paused	المساعد متوقف مؤقتًا
+Knowledge Center	مركز المعرفة
+Knowledge Base	قاعدة المعرفة
+Knowledge base	قاعدة المعرفة
+Knowledge	المعرفة
+Knowledge sources	مصادر المعرفة
+Knowledge source	مصدر معرفة
+Source	المصدر
+Sources	المصادر
+Source name	اسم المصدر
+Source type	نوع المصدر
+Source URL	رابط المصدر
+Approved content	محتوى معتمد
+Approved answers	إجابات معتمدة
+Answer	إجابة
+Answer type	نوع الإجابة
+Answer FAQ	الإجابة عن الأسئلة الشائعة
+FAQ	الأسئلة الشائعة
+FAQs	الأسئلة الشائعة
+Question	سؤال
+Questions	الأسئلة
+Brand voice guidelines	إرشادات نبرة العلامة التجارية
+Brand voice & writing guidelines	نبرة العلامة التجارية وإرشادات الكتابة
+Brand tone	نبرة العلامة التجارية
+Business knowledge	معرفة النشاط التجاري
+Business description	وصف النشاط التجاري
+Business brief	نبذة عن النشاط التجاري
+Business context connected	تم ربط سياق النشاط التجاري
+Automation	الأتمتة
+Automations	عمليات الأتمتة
+Automation Flow	سير الأتمتة
+Automation Workflows	سير عمل الأتمتة
+Automation templates	قوالب الأتمتة
+Automated	آلي
+Automatic	تلقائي
+Automatically detect	اكتشاف تلقائي
+Automated replies	ردود آلية
+Automated reports	تقارير آلية
+Automatic escalation	تصعيد تلقائي
+Automatic sync	مزامنة تلقائية
+Workflow	سير عمل
+Workflows	عمليات سير العمل
+Workflow name	اسم سير العمل
+Trigger	المشغّل
+Triggers	المشغّلات
+Trigger type	نوع المشغّل
+Conditions	الشروط
+Condition	شرط
+Delay	تأخير
+Sequence	تسلسل
+Sequences	التسلسلات
+Follow-up	متابعة
+Follow-Up	متابعة
+Follow-up sequence	تسلسل المتابعة
+Message variables	متغيرات الرسالة
+Subject	الموضوع
+Subject line	عنوان الرسالة
+Campaign	حملة
+Campaigns	الحملات
+Campaign name	اسم الحملة
+Campaign draft	مسودة حملة
+Audience	الجمهور
+Audience Breakdown	توزيع الجمهور
+Audience ID	معرّف الجمهور
+Audience / list name	اسم الجمهور أو القائمة
+Consent	الموافقة
+Consent policy	سياسة الموافقة
+Consent recorded	تم تسجيل الموافقة
+Consent guard enabled.	تم تفعيل حماية الموافقة.
+Consent-first messaging	مراسلات مبنية على الموافقة
+Unsubscribe	إلغاء الاشتراك
+Subscribed	مشترك
+Unsubscribed	ألغى الاشتراك
+Products & Payments	المنتجات والمدفوعات
+Products	المنتجات
+Product	منتج
+Product name	اسم المنتج
+Product type	نوع المنتج
+Product status	حالة المنتج
+Product description	وصف المنتج
+Product details	تفاصيل المنتج
+Product information	معلومات المنتج
+Product image	صورة المنتج
+Product images	صور المنتج
+Product thumbnail	الصورة المصغّرة للمنتج
+Product URL	رابط المنتج
+Product link	رابط المنتج
+Product options	خيارات المنتج
+Create Product	إنشاء منتج
+All Products	جميع المنتجات
+All products	جميع المنتجات
+All your products	جميع منتجاتك
+Catalog product	منتج الكتالوج
+Digital Product	منتج رقمي
+Digital product	منتج رقمي
+Digital Products	منتجات رقمية
+Digital products	منتجات رقمية
+Digital assets	الأصول الرقمية
+Digital file	ملف رقمي
+Digital files	الملفات الرقمية
+Physical Product	منتج ملموس
+Physical product	منتج ملموس
+Service	خدمة
+Services	الخدمات
+Service name	اسم الخدمة
+Service details	تفاصيل الخدمة
+Service duration	مدة الخدمة
+Service type	نوع الخدمة
+Active service	خدمة نشطة
+Course	دورة تدريبية
+Courses	الدورات التدريبية
+Course / Membership	دورة تدريبية أو عضوية
+Course Content	محتوى الدورة
+Course Cover	غلاف الدورة
+Course Details	تفاصيل الدورة
+Course Information	معلومات الدورة
+Course Orders	طلبات الدورة
+Course Performance	أداء الدورة
+Course Sales Page	صفحة بيع الدورة
+Course name	اسم الدورة
+Course title	عنوان الدورة
+Course description	وصف الدورة
+Course status	حالة الدورة
+Curriculum	المنهج
+Modules	الوحدات
+Module	وحدة
+Module title	عنوان الوحدة
+Module name	اسم الوحدة
+Lessons	الدروس
+Lesson	درس
+Lesson title	عنوان الدرس
+Lesson name	اسم الدرس
+Lesson type	نوع الدرس
+Lesson content	محتوى الدرس
+Lesson duration	مدة الدرس
+Students	الطلاب
+Student	طالب
+Student name	اسم الطالب
+Student email	بريد الطالب الإلكتروني
+Student details	تفاصيل الطالب
+Enrollment	تسجيل
+Enrollments	التسجيلات
+Enrollment date	تاريخ التسجيل
+Enrollment status	حالة التسجيل
+Enrollment limit	حد التسجيل
+Progress	التقدم
+Average progress	متوسط التقدم
+Completion	الإكمال
+Completion rate	معدل الإكمال
+Completed · Mark incomplete	مكتمل · تحديد كغير مكتمل
+Completed in preview	مكتمل في المعاينة
+Instructor	المدرّب
+Instructor name	اسم المدرّب
+Instructor bio	نبذة عن المدرّب
+Certificate	شهادة
+Certificates	الشهادات
+Community	المجتمع
+Community URL	رابط المجتمع
+Membership	عضوية
+Memberships	العضويات
+Bundle	حزمة
+Bundles	الحزم
+Bundle Information	معلومات الحزمة
+Bundle offer	عرض الحزمة
+Component Products	المنتجات المضمّنة
+Component Items	العناصر المضمّنة
+Pricing	التسعير
+Price	السعر
+Base Price	السعر الأساسي
+Regular price	السعر المعتاد
+Sale price	سعر العرض
+Selling price	سعر البيع
+Compare-at price	السعر قبل الخصم
+Compare Price (Optional)	السعر قبل الخصم (اختياري)
+Currency	العملة
+Amount	المبلغ
+Quantity	الكمية
+Stock	المخزون
+SKU	رمز المنتج
+Inventory	إدارة المخزون
+Taxes	الضرائب
+Tax	الضريبة
+Tax rate	نسبة الضريبة
+Shipping	الشحن
+Delivery	التسليم
+Delivery URL	رابط التسليم
+Delivery instructions	تعليمات التسليم
+Access	الوصول
+Access & Delivery	الوصول والتسليم
+Access & Download Settings	إعدادات الوصول والتنزيل
+Access Type	نوع الوصول
+Access duration	مدة الوصول
+Access release date	تاريخ إتاحة الوصول
+Access delivered	تم منح الوصول
+Lifetime	مدى الحياة
+Lifetime access	وصول مدى الحياة
+Limited	محدود
+Unlimited	غير محدود
+One-time	لمرة واحدة
+One-time payment	دفعة واحدة
+Recurring	متكرر
+Subscription	اشتراك
+Subscriptions	الاشتراكات
+Monthly	شهري
+Yearly	سنوي
+Annually	سنوي
+Weekly	أسبوعي
+Daily	يومي
+Billing Interval	دورة الفوترة
+Billing period	فترة الفوترة
+Installments	أقساط
+Free trial	تجربة مجانية
+Trial period	فترة التجربة
+Trial days	أيام التجربة
+Discount	خصم
+Discounts	الخصومات
+Discount code	كود الخصم
+Discount Code	كود الخصم
+Discount name	اسم الخصم
+Discount type	نوع الخصم
+Discount value	قيمة الخصم
+Discount amount	مبلغ الخصم
+Discount percentage	نسبة الخصم
+Create Discount	إنشاء خصم
+Create New Discount	إنشاء خصم جديد
+Edit Discount	تعديل الخصم
+Add Another Discount	إضافة خصم آخر
+Automatic Discount	خصم تلقائي
+Percentage	نسبة مئوية
+Fixed amount	مبلغ ثابت
+Applies To	ينطبق على
+Applies to	ينطبق على
+Usage limit	حد الاستخدام
+Usage limits	حدود الاستخدام
+Coupon usage limit	حد استخدام القسيمة
+Start Date	تاريخ البدء
+End Date	تاريخ الانتهاء
+Expiration date	تاريخ انتهاء الصلاحية
+Expired	منتهي الصلاحية
+Scheduled	مجدول
+Scheduled date	التاريخ المجدول
+Minimum purchase	الحد الأدنى للشراء
+Minimum purchase amount	الحد الأدنى لمبلغ الشراء
+Payments	المدفوعات
+Payment	دفعة
+Payment status	حالة الدفع
+Payment method	طريقة الدفع
+Payment methods	طرق الدفع
+Payment provider	مزوّد الدفع
+Payment providers	مزوّدو الدفع
+Connected payment provider	مزوّد الدفع المرتبط
+Accepted payment methods	طرق الدفع المقبولة
+Paid	مدفوع
+Unpaid	غير مدفوع
+Refunded	مسترد
+Refund	استرداد
+Refunds	المبالغ المستردة
+Awaiting payment	بانتظار الدفع
+Payment successful	تم الدفع بنجاح
+Payment failed	فشل الدفع
+Checkout	إتمام الشراء
+Checkout Preview	معاينة إتمام الشراء
+Checkout Settings	إعدادات إتمام الشراء
+Checkout preferences	تفضيلات إتمام الشراء
+Checkout preview submitted successfully	تم إرسال معاينة إتمام الشراء بنجاح
+Cart	سلة التسوق
+Order	طلب
+Orders	الطلبات
+Order details	تفاصيل الطلب
+Order summary	ملخص الطلب
+Order ID	معرّف الطلب
+Order date	تاريخ الطلب
+Order status	حالة الطلب
+Order total	إجمالي الطلب
+Total	الإجمالي
+Subtotal	المجموع الفرعي
+Total amount	المبلغ الإجمالي
+Total price	السعر الإجمالي
+Total revenue	إجمالي الإيرادات
+Revenue	الإيرادات
+Sales	المبيعات
+Total sales	إجمالي المبيعات
+Transactions	المعاملات
+Transaction	معاملة
+Transaction history	سجل المعاملات
+Invoice	فاتورة
+Invoices	الفواتير
+Receipt	إيصال
+Billing	الفوترة
+Billing & Payments	الفوترة والمدفوعات
+Billing email	بريد الفوترة الإلكتروني
+Billing navigation	التنقل في الفوترة
+Wallet	المحفظة
+Balance	الرصيد
+Credits	الرصيد المتاح
+Available credits	الرصيد المتاح
+Add Credits	إضافة رصيد
+Top up	شحن الرصيد
+Top-up	شحن الرصيد
+Auto Recharge	شحن تلقائي
+Auto recharge	شحن تلقائي
+Bank Transfer	تحويل بنكي
+Bank transfer	تحويل بنكي
+Credit card	بطاقة ائتمان
+Card number	رقم البطاقة
+Cardholder name	اسم حامل البطاقة
+Expiry date	تاريخ انتهاء البطاقة
+CVC	رمز التحقق
+Secure checkout	إتمام شراء آمن
+Continue to checkout	متابعة إتمام الشراء
+Continue to payment	متابعة الدفع
+Continue to secure checkout	متابعة إتمام الشراء الآمن
+Continue securely	متابعة بأمان
+Continue shopping	متابعة التسوق
+Complete my order	إتمام طلبي
+Buy now	اشترِ الآن
+Add to cart	إضافة إلى السلة
+Upsell	عرض ترقية
+Downsell	عرض بديل أقل سعرًا
+Order bump	عرض إضافي عند الدفع
+Add Upsell or Downsell	إضافة عرض ترقية أو عرض بديل
+Analytics	التحليلات
+Analytics overview	نظرة عامة على التحليلات
+Analytics sections	أقسام التحليلات
+Analytics event fired	تم تسجيل حدث تحليلي
+Performance	الأداء
+Insights	الرؤى
+Reports	التقارير
+Report	تقرير
+Export report	تصدير التقرير
+Export CSV	تصدير ملف CSV
+Conversion	تحويل
+Conversions	التحويلات
+Conversion Rate	معدل التحويل
+Conversion rate	معدل التحويل
+Conversion by page	التحويل حسب الصفحة
+Conversion goal	هدف التحويل
+Average Conversion	متوسط التحويل
+Average Order Value	متوسط قيمة الطلب
+Avg. Response Time	متوسط وقت الاستجابة
+Avg. Session Duration	متوسط مدة الجلسة
+Bounce Rate	معدل الارتداد
+Cost Per Lead (CPL)	تكلفة العميل المحتمل (CPL)
+Cost per lead	تكلفة العميل المحتمل
+Visitors	الزوار
+Visits	الزيارات
+Unique visitors	الزوار الفريدون
+Page views	مشاهدات الصفحة
+Sessions	الجلسات
+Session	جلسة
+Traffic	الزيارات
+Traffic sources	مصادر الزيارات
+Traffic source	مصدر الزيارات
+Engagement	التفاعل
+Engagement rate	معدل التفاعل
+Click rate	معدل النقر
+Clicks	النقرات
+Click-through rate	معدل النقر إلى الظهور
+Open rate	معدل فتح الرسائل
+Drop-off	الانسحاب
+Drop-off rate	معدل الانسحاب
+Retention	الاحتفاظ بالعملاء
+Churn	تسرب العملاء
+Cohorts	شرائح العملاء
+Returning customers	العملاء العائدون
+New customers	العملاء الجدد
+Customer lifetime value	القيمة الدائمة للعميل
+Attendance	الحضور
+Attendance Rate	معدل الحضور
+Cancellation Rate	معدل الإلغاء
+Cancellations	الإلغاءات
+No-show	لم يحضر
+No show	لم يحضر
+No-shows	حالات عدم الحضور
+Attended	حضر
+Booking Performance	أداء الحجوزات
+Average meeting time	متوسط وقت الاجتماع
+Busiest hours	أكثر الساعات ازدحامًا
+Top products	أفضل المنتجات
+Top pages	أفضل الصفحات
+Top sources	أفضل المصادر
+Best Selling Product	المنتج الأكثر مبيعًا
+Best converting	الأعلى تحويلًا
+Change vs previous period	التغير مقارنة بالفترة السابقة
+Compare	مقارنة
+Comparison	مقارنة
+Previous period	الفترة السابقة
+Growth	النمو
+Average revenue growth	متوسط نمو الإيرادات
+Metric	مؤشر
+Metrics	المؤشرات
+Chart	مخطط
+Settings navigation	التنقل في الإعدادات
+Account Settings	إعدادات الحساب
+Account Overview	نظرة عامة على الحساب
+Business Settings	إعدادات النشاط التجاري
+Business Name	اسم النشاط التجاري
+Business name	اسم النشاط التجاري
+Business type	نوع النشاط التجاري
+Business email	البريد الإلكتروني للنشاط التجاري
+Business address	عنوان النشاط التجاري
+Business identity	هوية النشاط التجاري
+Business logo URL	رابط شعار النشاط التجاري
+Business tools	أدوات الأعمال
+Business services	خدمات النشاط التجاري
+Business	نشاط تجاري
+Team	الفريق
+Team members	أعضاء الفريق
+Team member	عضو فريق
+Members	الأعضاء
+Member	عضو
+Role	الدور
+Roles	الأدوار
+Permissions	الصلاحيات
+Permission	صلاحية
+Admin	مدير
+Administrator	مدير النظام
+Super Admin	المدير العام
+User	مستخدم
+Users	المستخدمون
+Viewer	مشاهد
+Editor	محرر
+Invite	دعوة
+Invite member	دعوة عضو
+Invite team member	دعوة عضو فريق
+Send invitation	إرسال دعوة
+Invitations	الدعوات
+Pending invitation	دعوة معلّقة
+Security	الأمان
+Security settings	إعدادات الأمان
+Current password	كلمة المرور الحالية
+New password	كلمة المرور الجديدة
+Confirm new password	تأكيد كلمة المرور الجديدة
+Confirm password	تأكيد كلمة المرور
+Change password	تغيير كلمة المرور
+Update password	تحديث كلمة المرور
+Two-factor authentication	المصادقة الثنائية
+Active sessions	الجلسات النشطة
+Login history	سجل تسجيل الدخول
+Delete account	حذف الحساب
+Account deletion	حذف الحساب
+Integrations	التكاملات
+Integration	تكامل
+Integration settings	إعدادات التكامل
+Connected Tools	الأدوات المرتبطة
+Connected tools	الأدوات المرتبطة
+Connected account	الحساب المرتبط
+Connected and ready	مرتبط وجاهز
+Connection needs attention	الاتصال يحتاج إلى متابعة
+Connection preferences	تفضيلات الاتصال
+Connection test passed.	نجح اختبار الاتصال.
+Test connection	اختبار الاتصال
+Connect / Authorize	ربط ومنح إذن الوصول
+Confirm disconnect	تأكيد قطع الاتصال
+API access	الوصول إلى API
+API key	مفتاح API
+API keys	مفاتيح API
+Webhooks	إشعارات Webhook
+Webhook URL	رابط Webhook
+Endpoint	نقطة الاتصال
+Secret key	المفتاح السري
+Access token	رمز الوصول
+Tools	الأدوات
+Tools & Setup	الأدوات والإعداد
+Appearance	المظهر
+Appearance Mode	وضع المظهر
+Branding	الهوية البصرية
+Brand color	لون العلامة التجارية
+Brand Color Palette	لوحة ألوان العلامة التجارية
+Brand heading	خط عناوين العلامة التجارية
+Brand body	خط محتوى العلامة التجارية
+Logo	الشعار
+Logo URL	رابط الشعار
+Upload logo	رفع شعار
+Change Photo	تغيير الصورة
+Change Image	تغيير الصورة
+Change Cover	تغيير الغلاف
+Profile photo	صورة الملف الشخصي
+Change profile photo	تغيير صورة الملف الشخصي
+Bio	نبذة تعريفية
+Personal information	المعلومات الشخصية
+Contact Support	التواصل مع الدعم
+Contact support	التواصل مع الدعم
+Help	المساعدة
+Support	الدعم
+Help center	مركز المساعدة
+Documentation	التوثيق
+Terms of Service	شروط الخدمة
+Terms of service	شروط الخدمة
+Privacy Policy	سياسة الخصوصية
+Privacy policy	سياسة الخصوصية
+Terms & Conditions	الشروط والأحكام
+Basic	أساسي
+Basic Information	المعلومات الأساسية
+Basic analytics	تحليلات أساسية
+Advanced analytics	تحليلات متقدمة
+Basic automations	أتمتة أساسية
+Advanced automations	أتمتة متقدمة
+Plan	خطة
+Plans	الخطط
+Current plan	الخطة الحالية
+Upgrade	ترقية
+Upgrade plan	ترقية الخطة
+Downgrade	خفض الخطة
+Cancel subscription	إلغاء الاشتراك
+Cancel anytime	إلغاء في أي وقت
+Usage	الاستخدام
+Usage & limits	الاستخدام والحدود
+Storage	التخزين
+Storage usage	استخدام التخزين
+Limit	الحد
+Limits	الحدود
+Unlimited access	وصول غير محدود
+Feature	ميزة
+Features	الميزات
+Included	مضمّن
+Not included	غير مضمّن
+Enabled modules	الوحدات المفعّلة
+Modules & access	الوحدات والوصول
+Active filters	عوامل التصفية المفعّلة
+Active users	المستخدمون النشطون
+Active Students	الطلاب النشطون
+Active Customers	العملاء النشطون
+Active customer	عميل نشط
+Active now	نشط الآن
+Active item	العنصر النشط
+All Clients	جميع العملاء
+All Connections	جميع الاتصالات
+All integrations	جميع التكاملات
+All industries	جميع القطاعات
+All goals	جميع الأهداف
+All states	جميع الحالات
+All pricing options	جميع خيارات التسعير
+All tracked sessions	جميع الجلسات المسجلة
+All systems operational	جميع الأنظمة تعمل
+All systems go	جميع الأنظمة جاهزة
+Amount	المبلغ
+Access your WhatsApp Business account	الوصول إلى حسابك في WhatsApp Business
+Access only the API scopes you approve	الوصول إلى صلاحيات API التي توافق عليها فقط
+Automatically add credits when your balance is low.	أضف رصيدًا تلقائيًا عند انخفاض رصيدك.
+Automatically create meeting links for your booked calls.	أنشئ روابط اجتماعات تلقائيًا للمكالمات المحجوزة.
+A clear view of what’s happening across your workspace.	نظرة واضحة على ما يحدث في مساحة عملك.
+Create booking links, manage your availability and let clients book appointments with you.	أنشئ روابط الحجز وأدر مواعيدك المتاحة، وأتح للعملاء حجز مواعيد معك.
+Build and manage the paths that turn visitors into customers.	أنشئ وأدر المسارات التي تحوّل الزوار إلى عملاء.
+Connect the tools that keep your business in sync.	اربط الأدوات التي تحافظ على تناغم أعمالك.
+Manage all your customer conversations in one place.	أدر جميع محادثات عملائك في مكان واحد.
+Build relationships and keep your pipeline moving.	عزّز علاقاتك بالعملاء وحافظ على تقدم مسار المبيعات.
+Thoughtful follow-ups that help every lead move forward.	متابعات مدروسة تساعد كل عميل محتمل على الانتقال إلى الخطوة التالية.
+Manage your offers, products and connected payments.	أدر عروضك ومنتجاتك والمدفوعات المرتبطة بها.
+Understand performance across your business.	تابع أداء جميع جوانب نشاطك التجاري.
+Manage your workspace and business preferences.	أدر تفضيلات مساحة العمل والنشاط التجاري.
+Based on your workspace data	بناءً على بيانات مساحة عملك
+Back to dashboard	العودة إلى لوحة التحكم
+Back to Products	العودة إلى المنتجات
+Back to products	العودة إلى المنتجات
+Back to product	العودة إلى المنتج
+Back to Discounts	العودة إلى الخصومات
+Back to booking pages	العودة إلى صفحات الحجز
+Back to bookings	العودة إلى الحجوزات
+Back to calendar	العودة إلى التقويم
+Back to contacts	العودة إلى جهات الاتصال
+Back to pipeline	العودة إلى المسار
+Back to overview	العودة إلى النظرة العامة
+Back to asset list	العودة إلى قائمة الأصول
+Back to website	العودة إلى الموقع
+Back to AI Copilot	العودة إلى المساعد الذكي
+Close Preview	إغلاق المعاينة
+Close dialog	إغلاق مربع الحوار
+Close menu	إغلاق القائمة
+Close edit menu	إغلاق قائمة التعديل
+Close checkout	إغلاق إتمام الشراء
+Close variants	إغلاق خيارات المنتج
+Close appointment editor	إغلاق محرر الموعد
+Close course menu	إغلاق قائمة الدورة
+Close course actions	إغلاق إجراءات الدورة
+Close curriculum actions	إغلاق إجراءات المنهج
+Close all conversations	إغلاق جميع المحادثات
+Close when clicking outside	الإغلاق عند النقر خارج النافذة
+Collapse chat history	طي سجل الدردشة
+All changes saved	تم حفظ جميع التغييرات
+Additional details	تفاصيل إضافية
+Additional workflows	عمليات سير عمل إضافية
+Address or location instructions	العنوان أو إرشادات الوصول
+Address or meeting details	العنوان أو تفاصيل الاجتماع
+Address or place	العنوان أو المكان
+After a delay	بعد فترة انتظار
+After approval	بعد الموافقة
+After manual approval	بعد الموافقة اليدوية
+After specific date	بعد تاريخ محدد
+After event — attended	بعد الحدث — عند الحضور
+After event — no show	بعد الحدث — عند عدم الحضور
+After-booking action	إجراء ما بعد الحجز
+Allow direct download after purchase	السماح بالتنزيل المباشر بعد الشراء
+Allow guest checkout	السماح بإتمام الشراء دون حساب
+Allow multiple bookings	السماح بحجوزات متعددة
+Allow multiple items open	السماح بفتح عناصر متعددة
+Allow recurring bookings	السماح بحجوزات متكررة
+Allow self-cancel / reschedule	السماح بالإلغاء أو إعادة الجدولة ذاتيًا
+Always enforced	يُطبّق دائمًا
+Apply enrollment	تطبيق التسجيل
+Apply now	قدّم الآن
+Apply range	تطبيق النطاق
+Apply styles to	تطبيق التنسيق على
+Apply to all pages	تطبيق على جميع الصفحات
+Asset	أصل
+Assets	الأصول
+Asset URL	رابط الأصل
+Asset configuration	إعدادات الأصل
+Asset duplicated	تم إنشاء نسخة من الأصل
+Asset management	إدارة الأصول
+Asset name	اسم الأصل
+Asset not found	الأصل غير موجود
+Asset options	خيارات الأصل
+Asset status	حالة الأصل
+Asset type	نوع الأصل
+Assigned asset	الأصل المُسند
+Assign a provider	تعيين مزوّد
+Assigned To	مُسند إلى
+Author name	اسم الكاتب
+Avatar image	الصورة الشخصية
+Average cost / year	متوسط التكلفة سنويًا
+Automatic Discount	خصم تلقائي
+Automation & Scaling	الأتمتة والتوسع
+Automation paused for team attention	أُوقفت الأتمتة مؤقتًا لمتابعة الفريق
+Automation sequence created as a draft.	تم إنشاء تسلسل الأتمتة كمسودة.
+Automation sequence updated.	تم تحديث تسلسل الأتمتة.
+Available to assign	متاح للإسناد
+Before image	صورة قبل
+After image	صورة بعد
+Before label	تسمية قبل
+After label	تسمية بعد
+Before & after	قبل وبعد
+Before / after slider	شريط مقارنة قبل وبعد
+Bar color	لون الشريط
+Bar height	ارتفاع الشريط
+Best Value	أفضل قيمة
+Best seller	الأكثر مبيعًا
+Box count	عدد الصناديق
+Boxed	داخل صندوق
+Boxed tabs	تبويبات داخل صناديق
+Boxes	صناديق
+Bordered cards	بطاقات بحدود
+Both	كلاهما
+Brand Story	قصة العلامة التجارية
+Brand strategy	استراتيجية العلامة التجارية
+Brand strategy funnel	قُمع استراتيجية العلامة التجارية
+Brand strategy session	جلسة استراتيجية العلامة التجارية
+Brand theme applied to all funnel pages	تم تطبيق هوية العلامة التجارية على جميع صفحات القُمع
+Brand designer	مصمم هوية تجارية
+Breadcrumb	مسار التنقل
+Build Follow-Up Sequence	إنشاء تسلسل متابعة
+Build and sell your content	أنشئ محتواك وبعه
+Build and sell your online course	أنشئ دورتك عبر الإنترنت وبعها
+Build your curriculum with modules and lessons.	أنشئ منهجك باستخدام الوحدات والدروس.
+Business / website name	اسم النشاط التجاري أو الموقع
+Business-specific assistants, configured for your workspace.	مساعدون متخصصون لنشاطك التجاري ومُعدّون لمساحة عملك.
+Button preview · set a label in the Content panel	معاينة الزر · أضف تسمية في لوحة المحتوى
+Cancellation Trigger	مشغّل الإلغاء
+Cancellation access trigger	مشغّل إلغاء الوصول
+Cancellation settings	إعدادات الإلغاء
+Capability	القدرة
+Caption	الوصف المختصر
+Captured	تم الالتقاط
+Captured leads	العملاء المحتملون المسجّلون
+Change date or time	تغيير التاريخ أو الوقت
+Change product thumbnail	تغيير الصورة المصغّرة للمنتج
+Change product type	تغيير نوع المنتج
+Change time	تغيير الوقت
+Changelog	سجل التغييرات
+Changes appear as you edit.	تظهر التغييرات أثناء التعديل.
+Changes apply to this browser's demo workspace.	تُطبّق التغييرات على مساحة العمل التجريبية في هذا المتصفح.
+Changes are available for this session; browser storage is unavailable.	التغييرات متاحة لهذه الجلسة؛ تخزين المتصفح غير متاح.
+Changes could not be saved. Browser storage is full or unavailable.	تعذّر حفظ التغييرات. تخزين المتصفح ممتلئ أو غير متاح.
+Check conditions	التحقق من الشروط
+Check consent & record demo	التحقق من الموافقة وتسجيل تجربة
+Check list	قائمة تحقق
+Check provider status	التحقق من حالة المزوّد
+Checking approved business context…	جارٍ التحقق من سياق النشاط التجاري المعتمد...
+Checking lead records…	جارٍ التحقق من سجلات العملاء المحتملين...
+Checking required service details…	جارٍ التحقق من تفاصيل الخدمة المطلوبة...
+Choose	اختيار
+Choose a CSV file	اختر ملف CSV
+Choose a file	اختر ملفًا
+Choose a file to upload	اختر ملفًا لرفعه
+Choose a page	اختر صفحة
+Choose a page type	اختر نوع الصفحة
+Choose an asset	اختر أصلًا
+Choose contact	اختر جهة اتصال
+Choose document	اختر مستندًا
+Choose icon	اختر أيقونة
+Choose page	اختر صفحة
+Choose page color	اختر لون الصفحة
+Choose plan	اختر خطة
+Choose your plan	اختر خطتك
+Choose a booking page.	اختر صفحة حجز.
+Choose a date to see available times	اختر تاريخًا لعرض المواعيد المتاحة
+Choose a highlighted date to see available times.	اختر تاريخًا مميزًا لعرض المواعيد المتاحة.
+Choose a time that works for you	اختر الوقت المناسب لك
+Choose a time that works for you.	اختر الوقت المناسب لك.
+Clear date	مسح التاريخ
+Clear dates	مسح التواريخ
+Clear discount code	مسح كود الخصم
+Clear pricing	تسعير واضح
+Click a time slot to add an appointment	انقر على وقت لإضافة موعد
+Click or drag an image to upload	انقر أو اسحب صورة لرفعها
+Click or drop images to add	انقر أو أفلت الصور لإضافتها
+Click the microphone to stop	انقر على الميكروفون للإيقاف
+Click to toggle between % and €	انقر للتبديل بين % و€
+Collect customer information	جمع معلومات العميل
+Collect customer name	جمع اسم العميل
+Collect lead details	جمع تفاصيل العميل المحتمل
+Collect preferences	جمع التفضيلات
+Color	اللون
+Commercial use license	ترخيص للاستخدام التجاري
+Communication	التواصل
+Company FAQs	الأسئلة الشائعة للشركة
+Company or website	الشركة أو الموقع
+Company, Phone number	الشركة، رقم الهاتف
+Compare currency	عملة المقارنة
+Comparison position	موضع المقارنة
+Comparison table	جدول مقارنة
+Composer mode	وضع كتابة الرسالة
+Concise and direct	موجز ومباشر
+Confident	واثق
+Configure	إعداد
+Configure action	إعداد الإجراء
+Configure automation	إعداد الأتمتة
+Configured	تم الإعداد
+Confirm & create	تأكيد وإنشاء
+Confirm & send	تأكيد وإرسال
+Confirm the calendar invite	تأكيد دعوة التقويم
+Conflict Details:	تفاصيل التعارض:
+Conflict details for	تفاصيل التعارض لـ
+Connected Funnel URL	رابط قُمع المبيعات المرتبط
+Connected To	مرتبط بـ
+Connected funnel page	صفحة القُمع المرتبطة
+Connected offer	العرض المرتبط
+Connected page	الصفحة المرتبطة
+Connected products	المنتجات المرتبطة
+Connected project funnel	قُمع المشروع المرتبط
+Connected service	الخدمة المرتبطة
+Connected to your business	مرتبط بنشاطك التجاري
+Connect to	ربط بـ
+Consultation	استشارة
+Consultations	الاستشارات
+Consultation Call	مكالمة استشارية
+Consultation Funnel	قُمع حجز الاستشارات
+Consultation follow-up	متابعة الاستشارة
+Consultation / Booking Pipeline	مسار الاستشارات والحجوزات
+Consulting	الاستشارات
+Consulting Session	جلسة استشارية
+Consulting and coaching	الاستشارات والتدريب
+Consulting, coaching and bookable sessions	استشارات وتدريب وجلسات قابلة للحجز
+Contact sales	التواصل مع المبيعات
+Contact task due date	تاريخ استحقاق مهمة جهة الاتصال
+Contact task title	عنوان مهمة جهة الاتصال
+Contact tasks	مهام جهة الاتصال
+Content (URL or text)	المحتوى (رابط أو نص)
+Content Generator	منشئ المحتوى
+Content List	قائمة المحتوى
+Content list	قائمة المحتوى
+Content color	لون المحتوى
+Content width	عرض المحتوى
+Continue to Destination	المتابعة إلى الوجهة
+Continue to verification	متابعة التحقق
+Continue with	المتابعة باستخدام
+Contracted	تم التعاقد
+Converted customer sequence	تسلسل العميل المكتسب
+Copy Product Link	نسخ رابط المنتج
+Core Values	القيم الأساسية
+Corner style	نمط الزوايا
+Count	العدد
+Counter	عدّاد
+Current	الحالي
+Custom fields	حقول مخصصة
+Data	البيانات
+Delete permanently	حذف نهائي
+Dismiss	تجاهل
+Display	العرض
+Display name	الاسم الظاهر
+Document	مستند
+Documents	المستندات
+Download file	تنزيل الملف
+Download invoice	تنزيل الفاتورة
+Download receipt	تنزيل الإيصال
+Empty	فارغ
+Enabled	مفعّل
+Export data	تصدير البيانات
+External link	رابط خارجي
+Favorites	المفضلة
+File	ملف
+Files	الملفات
+File name	اسم الملف
+File size	حجم الملف
+File type	نوع الملف
+Folder	مجلد
+Footer	تذييل الصفحة
+Header	رأس الصفحة
+Header & Footer	رأس الصفحة وتذييلها
+Global styles	التنسيقات العامة
+Group	مجموعة
+Groups	المجموعات
+Horizontal alignment	المحاذاة الأفقية
+Vertical alignment	المحاذاة العمودية
+Image gallery	معرض الصور
+Insights & analytics	الرؤى والتحليلات
+Instructions	التعليمات
+Integrate	ربط
+Items	العناصر
+Item	عنصر
+Item name	اسم العنصر
+Language settings	إعدادات اللغة
+Manage	إدارة
+Manage products	إدارة المنتجات
+Manage team	إدارة الفريق
+Manual	يدوي
+Manual payment	دفع يدوي
+Maximum	الحد الأقصى
+Minimum	الحد الأدنى
+Menu	القائمة
+Mobile preview	معاينة الهاتف المحمول
+Desktop preview	معاينة سطح المكتب
+Tablet preview	معاينة الجهاز اللوحي
+New message	رسالة جديدة
+No data	لا توجد بيانات
+No results	لا توجد نتائج
+No results found	لم يتم العثور على نتائج
+No products found	لم يتم العثور على منتجات
+No contacts found	لم يتم العثور على جهات اتصال
+No conversations found	لم يتم العثور على محادثات
+No appointments	لا توجد مواعيد
+No appointments found	لم يتم العثور على مواعيد
+Not available	غير متاح
+Not set	غير محدد
+Not configured	غير مُعدّ
+Options	الخيارات
+Page preview	معاينة الصفحة
+Pagination	التنقل بين الصفحات
+Rows per page	الصفوف في الصفحة
+Per page	في الصفحة
+Personal	شخصي
+Preferences	التفضيلات
+Primary	أساسي
+Primary color	اللون الأساسي
+Secondary	ثانوي
+Secondary color	اللون الثانوي
+Public	عام
+Private	خاص
+Published URL	رابط الصفحة المنشورة
+Publish changes	نشر التغييرات
+Publish page	نشر الصفحة
+Publish website	نشر الموقع
+Recent activity	النشاط الأخير
+Recent orders	الطلبات الأخيرة
+Recent conversations	المحادثات الأخيرة
+Record	سجل
+Records	السجلات
+Redirect	إعادة توجيه
+Redirect URL	رابط إعادة التوجيه
+Remove image	إزالة الصورة
+Rename	إعادة تسمية
+Reorder	إعادة ترتيب
+Replace	استبدال
+Request	طلب
+Requests	الطلبات
+Resend	إعادة إرسال
+Resend invitation	إعادة إرسال الدعوة
+Reset filters	إعادة تعيين عوامل التصفية
+Return	عودة
+Review	مراجعة
+Reviews	التقييمات
+Review draft	مراجعة المسودة
+Run	تشغيل
+Run demo	تشغيل العرض التجريبي
+Sample	نموذج
+Search products	البحث عن منتجات
+Search contacts	البحث عن جهات اتصال
+Search templates	البحث عن قوالب
+Search pages	البحث عن صفحات
+Search leads	البحث عن عملاء محتملين
+Select product	اختر منتجًا
+Select products	اختر منتجات
+Select a product	اختر منتجًا
+Select template	اختر قالبًا
+Select a template	اختر قالبًا
+Select page	اختر صفحة
+Select a page	اختر صفحة
+Select category	اختر فئة
+Select a category	اختر فئة
+Select status	اختر حالة
+Select a status	اختر حالة
+Select language	اختر لغة
+Select a language	اختر لغة
+Send email	إرسال بريد إلكتروني
+Send test	إرسال تجربة
+Settings saved	تم حفظ الإعدادات
+Settings saved.	تم حفظ الإعدادات.
+Show	عرض
+Hide	إخفاء
+Show all	عرض الكل
+Show more	عرض المزيد
+Show less	عرض أقل
+Show details	عرض التفاصيل
+Sort order	ترتيب العرض
+Statistics	الإحصاءات
+Stop	إيقاف
+Summary	الملخص
+Sync	مزامنة
+Sync now	مزامنة الآن
+Sync status	حالة المزامنة
+Synced	تمت المزامنة
+Syncing...	جارٍ المزامنة...
+Target	الهدف
+Test	اختبار
+Test mode	وضع الاختبار
+Text size	حجم النص
+Text weight	سُمك النص
+Tracking	التتبع
+Tracking code	كود التتبع
+Tracking settings	إعدادات التتبع
+Trigger event	الحدث المشغّل
+Unselect all	إلغاء تحديد الكل
+URL	الرابط
+Value	القيمة
+Values	القيم
+View all	عرض الكل
+View details	عرض التفاصيل
+View website	عرض الموقع
+View page	عرض الصفحة
+View product	عرض المنتج
+Welcome back	مرحبًا بعودتك
+Your profile	ملفك الشخصي
+Your workspace	مساحة عملك
+Zoom	التكبير
+Zoom in	تكبير
+Zoom out	تصغير

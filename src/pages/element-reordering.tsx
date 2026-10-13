@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode } from '../i18n/display';
 import React from 'react';
 import type {ReactNode,ReactElement} from 'react';
 import type {BuilderSection} from './BuilderWorkspace';
@@ -50,4 +51,5 @@ export function orderedCompositeOutput(item:BuilderSection,output:ReactNode):Rea
   const sort=(children:ReactNode[])=>{const positions=children.map((child,index)=>marker(child)?index:-1).filter(index=>index>=0);const sorted=positions.map(index=>children[index]).sort((a,b)=>order.indexOf(marker(a)!)-order.indexOf(marker(b)!));const result=[...children];positions.forEach((index,i)=>{result[index]=sorted[i];});return result;};
   return visit(output);
 }
-export function OrderedElementParts({item,children}:{item:BuilderSection;children:ReactNode}) {return <>{orderedCompositeOutput(item,children)}</>;}
+export function OrderedElementParts({item,children}:{item:BuilderSection;children:ReactNode}) {
+  useUILanguage();return <>{localizeNode(orderedCompositeOutput(item,children))}</>;}

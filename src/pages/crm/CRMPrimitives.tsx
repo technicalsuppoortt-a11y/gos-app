@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import { useEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Link } from 'react-router-dom';
@@ -21,14 +22,16 @@ const demoPhotos: Record<string, string> = {
 };
 
 export function CRMAvatar({ lead }: { lead: CanonicalLead }) {
+  useUILanguage();
   const [failed, setFailed] = useState(false);
   const photo = lead.photoUrl || demoPhotos[lead.id];
   return photo && !failed
-    ? <img className="crm-person-avatar crm-person-photo w-8 h-8 rounded-full" src={photo} alt="" onError={() => setFailed(true)} />
-    : <span className={`crm-person-avatar crm-person-${lead.color}`}>{lead.avatar}</span>;
+    ? <img className="crm-person-avatar crm-person-photo w-8 h-8 rounded-full" src={photo} alt={translateText("")} onError={() => setFailed(true)} />
+    : <span className={`crm-person-avatar crm-person-${lead.color}`}>{localizeNode(lead.avatar)}</span>;
 }
 
 export function SourceBadge({ source }: { source: string }) {
+  useUILanguage();
   const normalized = source.toLowerCase();
   const channel = normalized.includes('instagram') ? { tone: 'instagram', label: 'Instagram', icon: Instagram }
     : normalized.includes('whatsapp') ? { tone: 'whatsapp', label: 'WhatsApp', icon: MessageCircle }
@@ -37,16 +40,17 @@ export function SourceBadge({ source }: { source: string }) {
     : normalized.includes('call') ? { tone: 'call', label: 'Call', icon: Phone }
     : normalized.includes('referral') ? { tone: 'referral', label: 'Referral', icon: BadgeCheck }
     : { tone: 'website', label: /website|funnel|landing/i.test(source) ? 'Website' : source, icon: Globe };
-  return <span className={`crm-source crm-source-${channel.tone}`}><span className="crm-source-symbol"><channel.icon size={10} strokeWidth={2}/></span>{channel.label}</span>;
+  return <span className={`crm-source crm-source-${channel.tone}`}><span className="crm-source-symbol"><channel.icon size={10} strokeWidth={2}/></span>{localizeNode(channel.label)}</span>;
 }
 
 export function TagBadge({ tag }: { tag: string }) {
+  useUILanguage();
   const text = tag.toLowerCase();
   const tone = /high.?intent|qualified|priority/.test(text) && !text.includes('unqualified') ? 'green'
     : /interested|warm/.test(text) ? 'orange'
     : /hot|unqualified/.test(text) ? 'red'
     : /coaching|consultation/.test(text) ? 'purple' : 'neutral';
-  return <span className={`crm-tag crm-tag-${tone}`}>{tone === 'green' && <BadgeCheck size={9}/>} {tone === 'orange' && <Phone size={9}/>} {tone === 'red' && <Flame size={9}/>} {tag}</span>;
+  return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {localizeNode(tag)}</span>;
 }
 
 function followUp(lead: CanonicalLead): { label: string; tone: string } {
@@ -71,6 +75,7 @@ function compactActivity(activity: string) {
 }
 
 export function OptionsMenu({ label, actions }: { label: string; actions: { label: string; onSelect: () => void }[] }) {
+  useUILanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -80,13 +85,14 @@ export function OptionsMenu({ label, actions }: { label: string; actions: { labe
     document.addEventListener('pointerdown', outside); document.addEventListener('keydown', escape);
     return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
   }, [open]);
-  return <div className="crm-options" ref={ref}><button className="crm-options-trigger" aria-label={label} aria-expanded={open} onClick={() => setOpen(!open)}><MoreHorizontal size={16}/></button>{open && <div className="crm-options-popup" aria-label={label}>{actions.map(action => <button key={action.label} onClick={() => { setOpen(false); action.onSelect(); }}>{action.label}</button>)}</div>}</div>;
+  return <div className="crm-options" ref={ref}><button className="crm-options-trigger" aria-label={translateText(label)} aria-expanded={open} onClick={() => setOpen(!open)}><MoreHorizontal size={16}/></button>{localizeNode(open && <div className="crm-options-popup" aria-label={translateText(label)}>{localizeNode(actions.map(action => <button key={action.label} onClick={() => { setOpen(false); action.onSelect(); }}>{localizeNode(action.label)}</button>))}</div>)}</div>;
 }
 
 export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEnd, onMove }: {
   lead: CanonicalLead; pipeline: Pipeline; base: string; dragging: boolean;
   onDragStart: (id: string) => void; onDragEnd: () => void; onMove: (id: string, stage: LeadStage) => void;
 }) {
+  useUILanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const status = followUp(lead);
@@ -100,16 +106,16 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   }, [menuOpen]);
   return <article className={`crm-lead-card ${dragging ? 'crm-is-dragging' : ''}`} draggable={!menuOpen}
     onDragStart={e => { e.dataTransfer.setData('text/plain', lead.id); e.dataTransfer.effectAllowed = 'move'; onDragStart(lead.id); }} onDragEnd={onDragEnd}>
-    <Link className="crm-card-link" draggable={false} to={`${base}/opportunities/${encodeURIComponent(lead.id)}`} aria-label={`Open opportunity for ${lead.name}`}/>
+    <Link className="crm-card-link" draggable={false} to={`${base}/opportunities/${encodeURIComponent(lead.id)}`} aria-label={translateText(`Open opportunity for ${lead.name}`)}/>
     <div className="crm-card-content">
-      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{lead.name}</b><small>{lead.company || 'Independent contact'}</small><SourceBadge source={lead.source}/></div></div>
-      <div className="crm-card-tags">{lead.tags.slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>)}</div>
-      <div className="crm-card-bottom"><strong>{euro(lead.value)}</strong>{status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>}</div>
-      <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{compactActivity(lead.lastActivity)}</small><span className={`crm-followup crm-followup-${status.tone}`} title={lead.nextFollowUp}>{status.label}</span></div>
+      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name)}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
+      <div className="crm-card-tags">{localizeNode(lead.tags.slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
+      <div className="crm-card-bottom"><strong>{localizeNode(euro(lead.value))}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
+      <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{localizeNode(compactActivity(lead.lastActivity))}</small><span className={`crm-followup crm-followup-${status.tone}`} title={translateText(lead.nextFollowUp)}>{localizeNode(status.label)}</span></div>
     </div>
     <div className="crm-card-options" ref={menuRef}>
-      <button className="crm-card-menu-button" aria-label={`Options for ${lead.name}`} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
-      {menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>Open contact</Link><label>Move to stage<CustomSelect aria-label={`Move ${lead.name} to stage`} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: s.label }))} /></label></div>}
+      <button className="crm-card-menu-button" aria-label={translateText(`Options for ${lead.name}`)} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
+      {localizeNode(menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>{translateText("Open contact")}</Link><label>{translateText("Move to stage")}<CustomSelect aria-label={translateText(`Move ${lead.name} to stage`)} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: s.label }))} /></label></div>)}
     </div>
   </article>;
 }
@@ -125,6 +131,7 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   icon?: React.ElementType;
   name?: string;
 }) {
+  useUILanguage();
   const [internalValue, setInternalValue] = useState(defaultValue ?? options[0]?.value ?? "");
   const value = propValue !== undefined ? propValue : internalValue;
   const onChange = propOnChange || setInternalValue;
@@ -132,15 +139,15 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   // Radix portals prevent menus from being clipped by the fixed CRM viewport.
   const encode = (v: string) => 'crm:' + v;
   return <div className={`crm-custom-select ${className}`}>
-    {name && <input type="hidden" name={name} value={value}/>}
-    <Select.Root value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
-      <Select.Trigger className="crm-custom-select-trigger" aria-label={ariaLabel}>
-        {Icon && <Icon size={14} className="crm-custom-select-icon"/>}
-        <Select.Value placeholder={placeholder || 'Select…'}/><Select.Icon asChild><ChevronDown size={14} className="crm-custom-select-chevron"/></Select.Icon>
+    {localizeNode(name && <input type="hidden" name={name} value={value}/>)}
+    <Select.Root dir={uiDirection()} value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
+      <Select.Trigger className="crm-custom-select-trigger" aria-label={translateText(ariaLabel)}>
+        {localizeNode(Icon && <Icon size={14} className="crm-custom-select-icon"/>)}
+        <Select.Value placeholder={translateText(placeholder || 'Select…')}/><Select.Icon asChild><ChevronDown size={14} className="crm-custom-select-chevron"/></Select.Icon>
       </Select.Trigger>
       <Select.Portal><Select.Content className="crm-select-content" position="popper" sideOffset={6} collisionPadding={10}>
         <Select.ScrollUpButton className="crm-select-scroll"><ChevronDown size={14} style={{ transform: 'rotate(180deg)' }}/></Select.ScrollUpButton>
-        <Select.Viewport>{options.map(opt => <Select.Item className="crm-select-item" key={opt.value} value={encode(opt.value)}><Select.ItemText>{opt.label}</Select.ItemText><Select.ItemIndicator><Check size={14}/></Select.ItemIndicator></Select.Item>)}</Select.Viewport>
+        <Select.Viewport>{localizeNode(options.map(opt => <Select.Item className="crm-select-item" key={opt.value} value={encode(opt.value)}><Select.ItemText>{localizeNode(opt.label)}</Select.ItemText><Select.ItemIndicator><Check size={14}/></Select.ItemIndicator></Select.Item>))}</Select.Viewport>
         <Select.ScrollDownButton className="crm-select-scroll"><ChevronDown size={14}/></Select.ScrollDownButton>
       </Select.Content></Select.Portal>
     </Select.Root>
@@ -148,16 +155,17 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
 }
 
 export function CustomDatePicker({ value, onChange, placeholder = "Select date...", className = "", name, type = "date", 'aria-label': ariaLabel }: { 'aria-label'?: string, value: string, onChange: (v: string) => void, placeholder?: string, className?: string, name?: string, type?: "date" | "datetime-local" }) {
+  useUILanguage();
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div className={`crm-custom-select crm-custom-date ${className}`} onClick={() => { try { ref.current?.showPicker?.() } catch { /* Native picker may be unavailable in this browser. */ } }}>
-      <button type="button" className="crm-custom-select-trigger" aria-label={ariaLabel || placeholder} onClick={e => e.preventDefault()}>
+      <button type="button" className="crm-custom-select-trigger" aria-label={translateText(ariaLabel || placeholder)} onClick={e => e.preventDefault()}>
         <Calendar size={14} className="crm-custom-select-icon"/>
-        <span>{value || placeholder}</span>
+        <span>{localizeNode(value || placeholder)}</span>
       </button>
       <input 
         ref={ref}
-        aria-label={ariaLabel || placeholder}
+        aria-label={translateText(ariaLabel || placeholder)}
         type={type} 
         name={name}
         value={value} 

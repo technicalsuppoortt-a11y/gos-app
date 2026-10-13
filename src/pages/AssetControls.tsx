@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode, uiDirection } from '../i18n/display';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
@@ -19,6 +20,7 @@ const emptyOption = '__aw_empty__';
 
 /** The module uses the same Radix select primitive as the shared commerce controls. */
 export function AssetSelect({ value, defaultValue = '', options, onChange, label, placeholder = 'Choose an option', className = '', required, disabled }: SelectProps) {
+  useUILanguage();
   const [internal, setInternal] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   useLayoutEffect(() => {
@@ -35,17 +37,17 @@ export function AssetSelect({ value, defaultValue = '', options, onChange, label
   const items = options.map(item => typeof item === 'string' ? { value: item, label: item } : item);
   const selected = items.find(item => item.value === current);
   return <span className={`aw-select ${className}`}>
-    <Select.Root open={open} onOpenChange={setOpen} value={current || (selected && !selected.disabled && !required ? emptyOption : '')} onValueChange={next => { const value = next === emptyOption ? '' : next; setInternal(value); onChange?.(value); }} required={required} disabled={disabled}>
-      <Select.Trigger className="aw-select-trigger" aria-label={label}>
-        <Select.Value placeholder={placeholder}>{selected?.label || placeholder}</Select.Value>
+    <Select.Root dir={uiDirection()} open={open} onOpenChange={setOpen} value={current || (selected && !selected.disabled && !required ? emptyOption : '')} onValueChange={next => { const value = next === emptyOption ? '' : next; setInternal(value); onChange?.(value); }} required={required} disabled={disabled}>
+      <Select.Trigger className="aw-select-trigger" aria-label={translateText(label)}>
+        <Select.Value placeholder={translateText(placeholder)}>{localizeNode(selected?.label || placeholder)}</Select.Value>
         <Select.Icon><ChevronDown size={14}/></Select.Icon>
       </Select.Trigger>
       <Select.Portal><Select.Content className="aw-select-popup" position="popper" align="start" sideOffset={6} collisionPadding={10} onEscapeKeyDown={event => { event.preventDefault(); event.stopPropagation(); setOpen(false); }}>
         <Select.ScrollUpButton className="aw-select-scroll"><ChevronUp size={14}/></Select.ScrollUpButton>
-        <Select.Viewport className="aw-select-options">{items.map(item => <Select.Item key={item.value} value={item.value || emptyOption} textValue={item.label || placeholder} disabled={item.disabled} className="aw-select-option">
-          <Select.ItemText>{item.label || placeholder}</Select.ItemText>
+        <Select.Viewport className="aw-select-options">{localizeNode(items.map(item => <Select.Item key={item.value} value={item.value || emptyOption} textValue={translateText(item.label || placeholder)} disabled={item.disabled} className="aw-select-option">
+          <Select.ItemText>{localizeNode(item.label || placeholder)}</Select.ItemText>
           <Select.ItemIndicator><Check size={14}/></Select.ItemIndicator>
-        </Select.Item>)}</Select.Viewport>
+        </Select.Item>))}</Select.Viewport>
         <Select.ScrollDownButton className="aw-select-scroll"><ChevronDown size={14}/></Select.ScrollDownButton>
       </Select.Content></Select.Portal>
     </Select.Root>
@@ -53,6 +55,7 @@ export function AssetSelect({ value, defaultValue = '', options, onChange, label
 }
 
 export function AssetSearch({ value, onChange, placeholder, label = placeholder, className = '', shortcut = false }: { value: string; onChange: (value: string) => void; placeholder: string; label?: string; className?: string; shortcut?: boolean }) {
+  useUILanguage();
   const input = useRef<HTMLInputElement>(null), id = useId();
   useEffect(() => {
     if (!shortcut) return;
@@ -66,16 +69,17 @@ export function AssetSearch({ value, onChange, placeholder, label = placeholder,
   }, [shortcut]);
   return <div className={`aw-search ${className}`}>
     <Search size={15} aria-hidden="true"/>
-    <input ref={input} id={id} aria-label={label} aria-keyshortcuts={shortcut ? '/' : undefined} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder}/>
-    {value && <button type="button" className="aw-search-clear" aria-label={`Clear ${label}`} onClick={() => { onChange(''); input.current?.focus(); }}><X size={13}/></button>}
-    {shortcut && <kbd aria-hidden="true">/</kbd>}
+    <input ref={input} id={id} aria-label={translateText(label)} aria-keyshortcuts={shortcut ? '/' : undefined} value={value} onChange={event => onChange(event.target.value)} placeholder={translateText(placeholder)}/>
+    {localizeNode(value && <button type="button" className="aw-search-clear" aria-label={translateText(`Clear ${label}`)} onClick={() => { onChange(''); input.current?.focus(); }}><X size={13}/></button>)}
+    {localizeNode(shortcut && <kbd aria-hidden="true">/</kbd>)}
   </div>;
 }
 
 export function FilterChips({ filters, clear }: { filters: { label: string; remove: () => void }[]; clear: () => void }) {
+  useUILanguage();
   if (!filters.length) return null;
-  return <div className="aw-filter-chips" aria-label="Active filters">
-    {filters.map(filter => <button type="button" className="aw-filter-chip" key={filter.label} aria-label={`Remove ${filter.label} filter`} onClick={filter.remove}>{filter.label}<X size={11}/></button>)}
-    <button type="button" className="aw-clear-filters" onClick={clear}>Clear all</button>
+  return <div className="aw-filter-chips" aria-label={translateText("Active filters")}>
+    {localizeNode(filters.map(filter => <button type="button" className="aw-filter-chip" key={filter.label} aria-label={translateText(`Remove ${filter.label} filter`)} onClick={filter.remove}>{localizeNode(filter.label)}<X size={11}/></button>))}
+    <button type="button" className="aw-clear-filters" onClick={clear}>{translateText("Clear all")}</button>
   </div>;
 }

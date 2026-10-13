@@ -179,10 +179,10 @@ export const ELEMENTS: ElementDef[] = [
   { type: 'button', label: 'Button', icon: SquareMousePointer, category: 'basic', clickable: true, variants: [
     v('btn-primary', 'Primary', () => el.button('Shop now')),
     v('btn-outline', 'Outline', () => el.button('Learn more', { backgroundColor: 'transparent', color: 'var(--pf-accent)', borderWidth: '2px', borderStyle: 'solid', borderColor: 'var(--pf-accent)' })),
-    v('btn-pill', 'Pill', () => el.button('Get started', { borderRadius: '999px', paddingLeft: '32px', paddingRight: '32px' })),
+    v('btn-pill', 'Pill', () => el.button('Get started', { borderRadius: '999px', paddingInlineStart: '32px', paddingInlineEnd: '32px' })),
     v('btn-dark', 'Dark', () => el.button('DOCTOR CONSULTATION', { backgroundColor: '#111111', borderRadius: '0px', fontSize: '12px', letterSpacing: '1px' })),
     v('btn-icon', 'With icon', () => el.button('Book a call', {}, { iconRight: 'arrow' })),
-    v('btn-link', 'Text link', () => el.button('Read the full article', { backgroundColor: 'transparent', color: 'var(--pf-accent)', paddingLeft: '0px', paddingRight: '0px', textDecoration: 'underline' })),
+    v('btn-link', 'Text link', () => el.button('Read the full article', { backgroundColor: 'transparent', color: 'var(--pf-accent)', paddingInlineStart: '0px', paddingInlineEnd: '0px', textDecoration: 'underline' })),
   ], fields: [
     { key: 'label', label: 'Button text', type: 'text' },
     { key: 'iconLeft', label: 'Icon before text', type: 'icon' },

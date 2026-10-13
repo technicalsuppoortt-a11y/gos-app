@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { MoreHorizontal } from 'lucide-react';
@@ -5,6 +6,7 @@ import { MoreHorizontal } from 'lucide-react';
 type Props = { id: string; code: string; open: boolean; onOpenChange: (id: string | null) => void; children: React.ReactNode };
 
 export function DiscountActionMenu({ id, code, open, onOpenChange, children }: Props) {
+  useUILanguage();
  const trigger = React.useRef<HTMLButtonElement>(null);
  const popup = React.useRef<HTMLDivElement>(null);
  const menuId = React.useId();
@@ -39,7 +41,7 @@ export function DiscountActionMenu({ id, code, open, onOpenChange, children }: P
   else if (event.key === 'Tab') { event.preventDefault(); close(); }
  };
  return <>
-  <button ref={trigger} type="button" aria-label={`Actions for ${code}`} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => onOpenChange(open ? null : id)} onKeyDown={event => { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); onOpenChange(id); } }}><MoreHorizontal size={14}/></button>
-  {open && createPortal(<div ref={popup} id={menuId} className="dc-action-menu dc-action-menu-portal" role="menu" aria-label={`${code} actions`} style={{ position: 'fixed', ...position, zIndex: 9999 }} onKeyDown={keyboard} onClick={() => onOpenChange(null)}>{children}</div>, document.body)}
+  <button ref={trigger} type="button" aria-label={translateText(`Actions for ${code}`)} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => onOpenChange(open ? null : id)} onKeyDown={event => { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); onOpenChange(id); } }}><MoreHorizontal size={14}/></button>
+  {open && createPortal(<div ref={popup} id={menuId} className="dc-action-menu dc-action-menu-portal" role="menu" aria-label={translateText(`${code} actions`)} style={{ position: 'fixed', ...position, zIndex: 9999 }} onKeyDown={keyboard} onClick={() => onOpenChange(null)}>{localizeNode(children)}</div>, document.body)}
  </>;
 }

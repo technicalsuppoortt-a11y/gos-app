@@ -43,7 +43,7 @@
 .tw-type-picker .cw-type-options>button b{font-size:13px;font-weight:650;line-height:1.35;color:#0f172a}
 .tw-type-picker .cw-type-options>button small{font-size:11px;line-height:1.5;color:#64748b}
 .tw-type-selected{display:inline-flex;align-items:center;gap:4px;margin-top:auto;padding-top:4px;color:#7c5cfc;font-size:9px;font-weight:600}
-.tw-type-arrow{position:absolute;right:13px;top:19px;color:#94a3b8}
+.tw-type-arrow{position:absolute;inset-inline-end:13px;top:19px;color:#94a3b8}
 .tw-page .tw-rich-editor textarea{min-height:118px;padding:9px 10px;font-size:12px;line-height:1.65}
 .tw-rich-toolbar{padding:3px 5px;gap:2px}
 .tw-rich-toolbar>.tw-block-select{width:96px;flex:none}

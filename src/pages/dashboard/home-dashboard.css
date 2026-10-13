@@ -1,19 +1,137 @@
-/* ───────── Home dashboard: single-screen viewport lock ─────────
-   On desktop the dashboard fills the workspace exactly (no page-level
-   scroll). Rows never shrink below their content (so nothing is ever
-   clipped) and grow to absorb spare height, keeping the bottom cards
-   flush with the bottom edge. If a screen is shorter than the content,
-   `useFitToViewport` (HomeDashboard.tsx) scales the board to fit.
-   Keep this media query in sync with LOCK_QUERY in HomeDashboard.tsx. */
-@media (min-width: 1280px) and (min-height: 620px) {
-  .layout-workspace:has(.gos-home-dashboard) { height: 100vh; min-height: 0; overflow: hidden; }
-  .layout-workspace:has(.gos-home-dashboard) .layout-footer { display: none; }
-  .layout-main:has(.gos-home-dashboard) { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 12px 20px 14px; }
-  .layout-route-content:has(.gos-home-dashboard) { display: flex; flex: 1; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
-
-  .gos-home-dashboard { flex: 1; height: 100%; }
-  .gos-home-dashboard .gos-row { flex: 1 0 auto; }
+/* Fluid, natural layout for dashboard workspace */
+.layout-dashboard-shell:has(.gos-home-dashboard),
+.is-dashboard-route {
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
-/* Dark theme: knock-out colour for inner details of solid icons */
+@media (min-width: 1024px) {
+  .layout-workspace:has(.gos-home-dashboard),
+  .is-dashboard-route .layout-workspace {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+  .layout-workspace:has(.gos-home-dashboard) > .layout-footer,
+  .is-dashboard-route .layout-footer {
+    display: none;
+  }
+  .layout-main:has(.gos-home-dashboard),
+  .is-dashboard-route .layout-main {
+    height: calc(100vh - 54px);
+    max-height: calc(100vh - 54px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 18px 10px;
+    overflow: hidden;
+  }
+  .layout-route-content:has(.gos-home-dashboard),
+  .is-dashboard-route .layout-route-content {
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .gos-home-dashboard {
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .gos-home-dashboard .gos-row {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  .layout-workspace:has(.gos-home-dashboard) {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .layout-main:has(.gos-home-dashboard) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+    overflow: visible;
+  }
+  .gos-home-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: auto !important;
+  }
+}
+
+.layout-main:has(.gos-home-dashboard) > .ob-progress {
+  position: relative;
+  margin: 0;
+  flex: none;
+  width: 100%;
+  border-radius: 10px;
+}
+.layout-main:has(.gos-home-dashboard) .ob-progress-header {
+  padding: 6px 14px;
+}
+.layout-main:has(.gos-home-dashboard) .ob-progress-icon {
+  height: 26px;
+  width: 26px;
+}
+.layout-main:has(.gos-home-dashboard) .ob-progress-header b {
+  font-size: 11px;
+}
+.layout-main:has(.gos-home-dashboard) .ob-progress-header small {
+  font-size: 9.5px;
+}
+.layout-main:has(.gos-home-dashboard) .ob-progress-details {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline: 0;
+  z-index: 60;
+  background: var(--ob-surface, #fff);
+  border: 1px solid var(--ob-border, #e0e3ef);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px -10px rgba(15, 21, 53, 0.4);
+  max-height: min(420px, calc(100vh - 120px));
+  overflow-y: auto;
+}
+
+.gos-home-dashboard section {
+  min-width: 0;
+  max-width: 100%;
+}
+.gos-home-dashboard svg {
+  max-width: 100%;
+}
+
 html.dark .gos-home-dashboard { --icon-cut: #121829; }
+
+.gos-home-dashboard [data-dashboard-section=hero]{position:relative;z-index:30;overflow:visible}
+.gos-home-dashboard [data-dashboard-section=hero] nav{position:relative}
+.gos-home-dashboard #hero-create-list{
+  position:absolute;
+  top:calc(100% + 6px);
+  inset-inline-end:0;
+  min-width:160px;
+  width:max-content;
+  background:#141a33;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px;
+  padding:4px;
+  box-shadow:0 16px 36px -10px rgba(15,21,53,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+  z-index:50
+}
+html.dark .gos-home-dashboard #hero-create-list{background:#0d1226;border-color:rgba(255,255,255,0.12)}
+.gos-home-dashboard #hero-create-list:not(.opacity-100){pointer-events:none}
+
+

@@ -1,7 +1,8 @@
+import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { readWorkspacePreferences } from './workspacePreferences';
 import React from 'react';
 import { Link, useBeforeUnload, useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, ChevronDown, Copy, CreditCard, ExternalLink, Eye, FileText, GitBranch, Layers3, Link2, LockKeyhole, Package, Save, Settings2, ShoppingCart, Sparkles, Tag, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Copy, CreditCard, ExternalLink, Eye, FileText, GitBranch, GraduationCap, Layers3, Link2, LockKeyhole, Package, Save, Send, Settings2, ShieldCheck, ShoppingCart, Sparkles, Tag, Users, Video, Zap } from 'lucide-react';
 import { defaultConfig, defaultExperience, formatPrice, hydrateProduct, kindLabels, newProduct, productKind, validateProduct } from './model';
 import type { Billing, CommerceConfig, Product, ProductExperience, ProductKind } from './model';
 import { deleteProduct, duplicateProduct, saveProduct, storageKey, useProducts } from './repository';
@@ -56,8 +57,124 @@ function createDraft(kind?: ProductKind) {
   return hydrateProduct(p);
 }
 
+const PRESET_TEMPLATES = [
+  {
+    id: 'ebook',
+    name: 'The Modern Creator Playbook (eBook)',
+    kind: 'digital' as const,
+    label: 'Digital eBook',
+    badge: 'Quick Launch',
+    amount: 29,
+    period: '',
+    icon: BookOpen,
+    description: 'Instant PDF download with chapter action blueprints, license key, and automated delivery.',
+    features: ['Instant PDF delivery', 'Automated receipt', 'Download tracking']
+  },
+  {
+    id: 'coaching',
+    name: '1-on-1 Strategy & Coaching Session',
+    kind: 'service' as const,
+    label: '1-on-1 Coaching Session',
+    badge: 'High Touch',
+    amount: 150,
+    period: '',
+    icon: Video,
+    description: '60-minute private strategy consultation with integrated calendar booking and intake review.',
+    features: ['Calendar scheduling', 'Client intake form', 'Automated reminders']
+  },
+  {
+    id: 'subscription',
+    name: 'Growth Suite Pro Membership',
+    kind: 'digital' as const,
+    label: 'SaaS Subscription',
+    badge: 'Recurring MRR',
+    amount: 49,
+    period: '/mo',
+    icon: Zap,
+    description: 'Monthly recurring software or community subscription with automated Stripe recurring billing.',
+    features: ['Monthly recurring billing', 'Self-service cancel', 'Member portal']
+  },
+  {
+    id: 'masterclass',
+    name: 'Full-Stack Creator Video Masterclass',
+    kind: 'course' as const,
+    label: 'Video Masterclass',
+    badge: 'Comprehensive',
+    amount: 199,
+    period: '',
+    icon: GraduationCap,
+    description: 'Structured multi-module video course with student portal, downloadable assets, and certificates.',
+    features: ['6 HD video modules', 'Resource downloads', 'Student progress tracking']
+  }
+];
+
+const PIPELINE_STEPS = [
+  {
+    id: 'setup',
+    stepNumber: '01',
+    title: 'Product Setup & Pricing',
+    tagline: 'Multi-Tier Offer Creation',
+    icon: Package,
+    badge: 'Step 01',
+    summary: 'Configure pricing models, localized currencies, file uploads or video modules in minutes.',
+    metrics: [{ label: 'Supported Currencies', value: '135+' }, { label: 'Product Types', value: 'Course, Digital, Service' }],
+    highlights: [
+      'Instant SKU & payment route generation',
+      'Flexible one-time or recurring billing models',
+      'Custom customer delivery instructions & access limits'
+    ]
+  },
+  {
+    id: 'checkout',
+    stepNumber: '02',
+    title: 'Hosted 1-Click Checkout',
+    tagline: 'Theme-Synced High Conversion',
+    icon: CreditCard,
+    badge: 'Step 02',
+    summary: 'High-converting checkout pages with Dark Mode synchronization, Stripe, Apple Pay, and 1-click order bumps.',
+    metrics: [{ label: 'Payment Gateways', value: 'Stripe, PayPal, Apple Pay' }, { label: 'Theme Mode', value: 'Light & Dark Synced' }],
+    highlights: [
+      'Automatic theme matching (Dark/Light mode)',
+      '1-click frictionless mobile express pay',
+      'Order bumps and automated tax calculations'
+    ]
+  },
+  {
+    id: 'delivery',
+    stepNumber: '03',
+    title: 'Automated Instant Delivery',
+    tagline: 'Zero-Touch Fulfillment',
+    icon: Send,
+    badge: 'Step 03',
+    summary: 'Deliver downloadable files, video lesson access, or calendar booking links immediately after payment confirmation.',
+    metrics: [{ label: 'Delivery Latency', value: '< 2 Seconds' }, { label: 'Security', value: 'Signed Download URLs' }],
+    highlights: [
+      'Secure signed expiring download links',
+      'Calendar booking sync with Google & Apple iCal',
+      'Branded confirmation receipts and onboarding emails'
+    ]
+  },
+  {
+    id: 'crm',
+    stepNumber: '04',
+    title: 'CRM Lead & Lifetime Value',
+    tagline: 'Automated Contact Tracking',
+    icon: Users,
+    badge: 'Step 04',
+    summary: 'Every buyer and abandoned cart seamlessly updates your CRM pipeline with tags, transactions, and activity history.',
+    metrics: [{ label: 'CRM Sync', value: '100% Real-time' }, { label: 'Retention', value: 'Automated Follow-up' }],
+    highlights: [
+      'Automatic lead creation and customer tagging',
+      'Direct synchronization with GOS AI Follow-Up',
+      'Customer lifetime value (LTV) and revenue analytics'
+    ]
+  }
+];
+
 export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit' | 'detail'; defaultTab?: WorkspaceTab }) {
+  useUILanguage();
   const products = useProducts(), { id } = useParams(), navigate = useNavigate();
+  const [activePipelineStep, setActivePipelineStep] = React.useState(0);
   const [params, setParams] = useSearchParams();
   const existing = products.find(product => product.id === id), editing = true;
   const requestedType = types.find(type => type.kind === params.get('type'))?.kind;
@@ -99,6 +216,38 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
       setParams({ type: nextKind });
     }
   }
+  function applyPresetTemplate(template: typeof PRESET_TEMPLATES[number]) {
+    const effectiveKind = (template.id === 'subscription' ? 'digital' : template.kind) as ProductKind;
+    const type = kindLabels[effectiveKind];
+    const isSub = template.id === 'subscription';
+
+    setDraft(current => ({
+      ...current,
+      name: template.name,
+      type,
+      tag: type,
+      description: template.description,
+      price: `$${template.amount}${template.period || ''}`,
+      config: {
+        ...current.config!,
+        amount: template.amount,
+        billing: isSub ? 'Subscription' : 'One-time',
+        access: isSub ? 'While subscribed' : 'Lifetime access',
+        modules: effectiveKind === 'course' ? sampleCourseModules() : current.config!.modules,
+        experience: {
+          ...current.config!.experience!,
+          shortDescription: template.description,
+          recurringEnabled: isSub,
+          recurringAmount: isSub ? template.amount : 0,
+        }
+      }
+    }));
+
+    setChosen(true);
+    setErrors([]);
+    setParams({ type: effectiveKind, tab: 'information' });
+    showToast.success(translateText(`Loaded ${template.label} template`));
+  }
   function tab(next: WorkspaceTab) { setParams(current => { const nextParams = new URLSearchParams(current); nextParams.delete('section'); nextParams.set('tab', next); return nextParams; }); }
   function editTab(next: WorkspaceTab) {
     if (editing) tab(next);
@@ -131,7 +280,7 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
   function book() { if (/^https?:\/\//i.test(c.bookingUrl)) window.open(c.bookingUrl, '_blank', 'noopener,noreferrer'); else { tab('booking'); if (!editing) showToast.error('A booking calendar has not been connected yet.'); } }
   const props: FormProps = { product: { ...p, price: editing ? formatPrice(c) : p.price }, products, config: c, experience: e, editing, update, configure, customize, error, busy: value => setPendingUploads(count => Math.max(0, count + (value ? 1 : -1))) };
   const productPreview = useProductPreview(p, error);
-  if (mode !== 'create' && !existing) return <div className="cw-page cw-not-found"><Package size={40}/><h1>Product not found</h1><p>This product is unavailable in your catalog.</p><Link className="cw-button primary" to={base}><ArrowLeft size={16}/> Back to Products</Link></div>;
+  if (mode !== 'create' && !existing) return <div className="cw-page cw-not-found"><Package size={40}/><h1>{translateText("Product not found")}</h1><p>{translateText("This product is unavailable in your catalog.")}</p><Link className="cw-button primary" to={base}><ArrowLeft size={16}/>{translateText(" Back to Products")}</Link></div>;
   const disabled = saving || pendingUploads > 0;
   // Legacy Course / Membership catalog entries are courses; standalone memberships keep their existing workspace.
   const courseLayout = chosen && kind === 'course' && existing?.type.toLowerCase() !== 'membership';
@@ -144,106 +293,209 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
   } };
   const navigationTabs: ReadonlyArray<readonly [WorkspaceTab, string, React.ElementType]> = view.tabs;
   const digitalOverview = chosen && kind === 'digital' && active === 'information';
-  const editAction = (target: WorkspaceTab) => !editing && <button className="cw-text-link" onClick={() => editTab(target)}>Edit <ArrowRight size={12}/></button>;
-  const accessSummary = <Card title="Access & Delivery" action={editAction('access')}><div className="tw-sidebar-summary"><div><LockKeyhole size={14}/><span>Access Type</span><b>{c.access}</b></div><div><GlobeIcon/><span>Delivery Method</span><b>{e.accessRule}</b></div>{kind === 'course' && <div><Users size={14}/><span>Student Limit</span><b>{e.studentLimit || 'Unlimited'}</b></div>}{kind === 'digital' && <div><FileText size={14}/><span>Downloads</span><b>{c.downloadLimit} per customer</b></div>}</div></Card>;
+  const editAction = (target: WorkspaceTab) => !editing && <button className="cw-text-link" onClick={() => editTab(target)}>{translateText("Edit ")}<ArrowRight size={12}/></button>;
+  const accessSummary = <Card title={translateText("Access & Delivery")} action={editAction('access')}><div className="tw-sidebar-summary"><div><LockKeyhole size={14}/><span>{translateText("Access Type")}</span><b>{localizeNode(c.access)}</b></div><div><GlobeIcon/><span>{translateText("Delivery Method")}</span><b>{localizeNode(e.accessRule)}</b></div>{localizeNode(kind === 'course' && <div><Users size={14}/><span>{translateText("Student Limit")}</span><b>{localizeNode(e.studentLimit || 'Unlimited')}</b></div>)}{localizeNode(kind === 'digital' && <div><FileText size={14}/><span>{translateText("Downloads")}</span><b>{localizeNode(c.downloadLimit)}{translateText(" per customer")}</b></div>)}</div></Card>;
 
   return <div className={`cw-page tw-page tw-${kind}${courseLayout ? ' course-page' : ''}${courseLayout && ['orders', 'access'].includes(active) ? ' course-records-page' : ''}${kind === 'service' && active === 'information' ? ' sw-content-page' : ''}${active === 'pricing' ? ' pricing-page' : ''}`}>
-    {courseLayout && !editing && active === 'information' ? <CourseViewHeader {...props} {...courseActions}/> : <header className="cw-action-bar tw-action-bar"><div className="tw-product-heading"><Link className="cw-back" to={base}><ArrowLeft size={14}/> {kind === 'service' || kind === 'digital' ? 'Back' : 'Back to Products'}</Link>{p.image ? <img className="tw-heading-image" src={p.image} alt={p.name || view.title}/> : <div className="tw-heading-image tw-heading-placeholder"><Package size={24}/></div>}<div className="cw-heading"><div><h1>{mode === 'create' ? `Create ${chosen ? view.title : 'Product'}` : courseLayout && editing ? `Edit ${p.name}` : p.name}</h1>{courseLayout && !editing && <span className="course-type-badge">Online Course</span>}{!digitalOverview && <Status status={p.status}/>}</div><p>{!chosen ? 'Choose a product type to start your tailored commerce workflow.' : kind === 'course' ? !editing ? e.shortDescription || p.description : 'Build and sell your online course with lessons, resources and student access.' : kind === 'digital' ? 'Upload your digital files, set pricing and start selling.' : kind === 'service' ? 'Offer your services, connect booking and start getting clients.' : kind === 'subscription' ? 'Build recurring value for your members and subscribers.' : 'Bring your products together in one offer.'}</p></div></div><div className="cw-header-actions"><>{editing && chosen && <button disabled={disabled} className="cw-button" onClick={() => save(false)}><Save size={14}/>{mode === 'create' ? 'Save as Draft' : 'Save Changes'}</button>}<a className="cw-button primary" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>Preview Product</a>{!editing && <button className="cw-button" onClick={salesPage}><ExternalLink size={14}/> View Sales Page</button>}{editing && chosen ? <button disabled={disabled} className="cw-button primary" onClick={() => save(true)}>Publish {kind === 'course' ? 'Course' : kind === 'service' ? 'Service' : 'Product'}<ArrowRight size={14}/></button> : !editing && <div className="tw-edit-menu"><button className="cw-button primary" aria-expanded={menu} onClick={() => setMenu(!menu)}>Edit Product <ChevronDown size={14}/></button>{menu && <><button className="tw-menu-scrim" aria-label="Close edit menu" onClick={() => setMenu(false)}/><div className="tw-edit-options">{view.tabs.map(([target, label]) => <button key={target} onClick={() => editTab(target)}>{label === 'Overview' ? 'Product Information' : label}</button>)}</div></>}</div>}{courseLayout && !editing && <div className="tw-edit-menu"><button className="cw-icon-button" aria-label="More course actions" aria-expanded={courseMenu} onClick={() => setCourseMenu(!courseMenu)}>⋯</button>{courseMenu && <><button className="tw-menu-scrim" aria-label="Close course actions" onClick={() => setCourseMenu(false)}/><div className="tw-edit-options"><button onClick={() => { setCourseMenu(false); duplicate(false); }}>Duplicate Product</button><button onClick={() => { setCourseMenu(false); duplicate(true); }}>Create New Version</button><button onClick={() => { setCourseMenu(false); setDeleting(true); }}>Delete Product</button></div></>}</div>}</></div></header>}
-    {!chosen ? <div className="cw-wizard-layout">
+    {localizeNode(courseLayout && !editing && active === 'information' ? <CourseViewHeader {...props} {...courseActions}/> : <header className="cw-action-bar tw-action-bar"><div className="tw-product-heading"><Link className="cw-back" to={base}><ArrowLeft size={14}/> {localizeNode(kind === 'service' || kind === 'digital' ? 'Back' : 'Back to Products')}</Link>{localizeNode(p.image ? <img className="tw-heading-image" src={p.image} alt={translateText(p.name || view.title)}/> : <div className="tw-heading-image tw-heading-placeholder"><Package size={24}/></div>)}<div className="cw-heading"><div><h1>{localizeNode(mode === 'create' ? `Create ${chosen ? view.title : 'Product'}` : courseLayout && editing ? `Edit ${p.name}` : p.name)}</h1>{localizeNode(courseLayout && !editing && <span className="course-type-badge">{translateText("Online Course")}</span>)}{localizeNode(!digitalOverview && <Status status={p.status}/>)}</div><p>{localizeNode(!chosen ? 'Choose a product type to start your tailored commerce workflow.' : kind === 'course' ? !editing ? e.shortDescription || p.description : 'Build and sell your online course with lessons, resources and student access.' : kind === 'digital' ? 'Upload your digital files, set pricing and start selling.' : kind === 'service' ? 'Offer your services, connect booking and start getting clients.' : kind === 'subscription' ? 'Build recurring value for your members and subscribers.' : 'Bring your products together in one offer.')}</p></div></div><div className="cw-header-actions"><>{localizeNode(editing && chosen && <button disabled={disabled} className="cw-button" onClick={() => save(false)}><Save size={14}/>{localizeNode(mode === 'create' ? 'Save as Draft' : 'Save Changes')}</button>)}<a className="cw-button primary" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a>{localizeNode(!editing && <button className="cw-button" onClick={salesPage}><ExternalLink size={14}/>{translateText(" View Sales Page")}</button>)}{localizeNode(editing && chosen ? <button disabled={disabled} className="cw-button primary" onClick={() => save(true)}>{translateText("Publish ")}{localizeNode(kind === 'course' ? 'Course' : kind === 'service' ? 'Service' : 'Product')}<ArrowRight size={14}/></button> : !editing && <div className="tw-edit-menu"><button className="cw-button primary" aria-expanded={menu} onClick={() => setMenu(!menu)}>{translateText("Edit Product ")}<ChevronDown size={14}/></button>{localizeNode(menu && <><button className="tw-menu-scrim" aria-label={translateText("Close edit menu")} onClick={() => setMenu(false)}/><div className="tw-edit-options">{localizeNode(view.tabs.map(([target, label]) => <button key={target} onClick={() => editTab(target)}>{localizeNode(label === 'Overview' ? 'Product Information' : label)}</button>))}</div></>)}</div>)}{localizeNode(courseLayout && !editing && <div className="tw-edit-menu"><button className="cw-icon-button" aria-label={translateText("More course actions")} aria-expanded={courseMenu} onClick={() => setCourseMenu(!courseMenu)}>⋯</button>{localizeNode(courseMenu && <><button className="tw-menu-scrim" aria-label={translateText("Close course actions")} onClick={() => setCourseMenu(false)}/><div className="tw-edit-options"><button onClick={() => { setCourseMenu(false); duplicate(false); }}>{translateText("Duplicate Product")}</button><button onClick={() => { setCourseMenu(false); duplicate(true); }}>{translateText("Create New Version")}</button><button onClick={() => { setCourseMenu(false); setDeleting(true); }}>{translateText("Delete Product")}</button></div></>)}</div>)}</></div></header>)}
+    {localizeNode(!chosen ? <div className="cw-wizard-layout">
       <main className="cw-wizard-main">
         <div className="tw-section-heading cw-wizard-header">
-          <h2>Create a New Product</h2>
-          <p>Step 1 of 3: Select your product type and basic information.</p>
+          <h2>{translateText("Create a New Product")}</h2>
+          <p>{translateText("Step 1 of 3: Select your product type and basic information.")}</p>
         </div>
         <div className="cw-type-options">
-          {types.map(({ kind, icon: Icon, label, description }) => {
+          {localizeNode(types.map(({ kind, icon: Icon, label, description }) => {
             const isSelected = params.get('type') === kind;
             return <button key={kind} className={isSelected ? 'selected' : ''} aria-pressed={isSelected} onClick={() => selectType(kind, false)}>
-              {kind === 'course' && <span className="cw-wizard-badge popular">Most Popular</span>}
-              {kind === 'digital' && <span className="cw-wizard-badge setup">Quickest Setup</span>}
+              {localizeNode(kind === 'course' && <span className="cw-wizard-badge popular">{translateText("Most Popular")}</span>)}
+              {localizeNode(kind === 'digital' && <span className="cw-wizard-badge setup">{translateText("Quickest Setup")}</span>)}
               <span className="tw-type-icon"><Icon size={20}/></span>
-              <b>{label}</b>
-              <small>{description}</small>
+              <b>{localizeNode(label)}</b>
+              <small>{localizeNode(description)}</small>
             </button>;
-          })}
+          }))}
         </div>
-        {requestedType && <div className="cw-wizard-basics tw-stack">
+        {localizeNode(requestedType && <div className="cw-wizard-basics tw-stack">
           <div className="tw-section-heading">
-            <h3>Basic Information</h3>
-            <p>Set up the initial details for your {draft.type}. You can change these later.</p>
+            <h3>{translateText("Basic Information")}</h3>
+            <p>{translateText("Set up the initial details for your ")}{localizeNode(draft.type)}{translateText(". You can change these later.")}</p>
           </div>
-          <Card title="Basic Information">
+          <Card title={translateText("Basic Information")}>
             <div className="cw-form-grid">
-              <Field label="Product Title"><input autoFocus value={p.name} onChange={e => update({ name: e.target.value })} placeholder="e.g., AI Marketing Toolkit"/></Field>
+              <Field label="Product Title"><input autoFocus value={p.name} onChange={e => update({ name: e.target.value })} placeholder={translateText("e.g., AI Marketing Toolkit")}/></Field>
               <Field label="Base Price"><input type="number" min="0" value={c.amount} onChange={e => configure({ amount: parseFloat(e.target.value) || 0 })}/></Field>
               <div style={{ gridColumn: '1 / -1' }}>
-                <Field label="Short Description"><textarea value={e.shortDescription || p.description} onChange={ev => customize({ shortDescription: ev.target.value })} placeholder="Briefly describe what customers will get..."/></Field>
+                <Field label="Short Description"><textarea value={e.shortDescription || p.description} onChange={ev => customize({ shortDescription: ev.target.value })} placeholder={translateText("Briefly describe what customers will get...")}/></Field>
               </div>
             </div>
             <div className="cw-header-actions" style={{ marginTop: 24, justifyContent: 'flex-end', borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
-              <button className="cw-button primary" onClick={() => selectType(requestedType!, true)}>Continue with {draft.type} <ArrowRight size={14}/></button>
+              <button className="cw-button primary" onClick={() => selectType(requestedType!, true)}>{translateText("Continue with ")}{localizeNode(draft.type)} <ArrowRight size={14}/></button>
             </div>
           </Card>
-        </div>}
+        </div>)}
+
+        <div className="cw-preset-section">
+          <div className="tw-section-heading">
+            <h3>{translateText("Quick-Start Preset Templates")}</h3>
+            <p>{translateText("Pick a ready-made template to pre-configure pricing, delivery structure, and sales settings instantly.")}</p>
+          </div>
+          <div className="cw-preset-grid">
+            {localizeNode(PRESET_TEMPLATES.map(tpl => {
+              const Icon = tpl.icon;
+              return (
+                <div key={tpl.id} className="cw-preset-card" onClick={() => applyPresetTemplate(tpl)}>
+                  <div>
+                    <div className="cw-preset-card-top">
+                      <span className="cw-preset-icon"><Icon size={18} /></span>
+                      <span className="cw-preset-price">${tpl.amount}{tpl.period || ''}</span>
+                    </div>
+                    <span className="cw-preset-badge">{translateText(tpl.badge)}</span>
+                    <h4 className="cw-preset-title">{localizeNode(tpl.label)}</h4>
+                    <p className="cw-preset-desc">{localizeNode(tpl.description)}</p>
+                    <ul className="cw-preset-features">
+                      {tpl.features.map(f => (
+                        <li key={f}><CheckCircle2 size={13} /> <span>{translateText(f)}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                  <button type="button" className="cw-preset-cta">
+                    <span>{translateText("Use Template")}</span> <ArrowRight size={12} />
+                  </button>
+                </div>
+              );
+            }))}
+          </div>
+        </div>
+
+        <div className="cw-pipeline-section">
+          <div className="tw-section-heading">
+            <h3>{translateText("Automated Sales & Delivery Pipeline")}</h3>
+            <p>{translateText("Every product you create connects out of the box with checkout, delivery, and CRM lead capture.")}</p>
+          </div>
+          <div className="cw-pipeline-card">
+            <div className="cw-pipeline-track">
+              {localizeNode(PIPELINE_STEPS.map((step, idx) => {
+                const Icon = step.icon;
+                const isActive = activePipelineStep === idx;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    className={`cw-pipeline-step-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => setActivePipelineStep(idx)}
+                  >
+                    <div className="cw-pipeline-step-head">
+                      <span className="cw-pipeline-step-icon"><Icon size={14} /></span>
+                      <span className="cw-pipeline-step-num">{step.stepNumber}</span>
+                    </div>
+                    <div className="cw-pipeline-step-title">{translateText(step.title)}</div>
+                    <div className="cw-pipeline-step-tagline">{translateText(step.tagline)}</div>
+                  </button>
+                );
+              }))}
+            </div>
+
+            {localizeNode(
+              <div className="cw-pipeline-detail">
+                <div className="cw-pipeline-detail-info">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400 px-2 py-0.5 rounded">
+                      {translateText(PIPELINE_STEPS[activePipelineStep].badge)}
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      {translateText(`Stage 0${activePipelineStep + 1} of 04`)}
+                    </span>
+                  </div>
+                  <h4>{translateText(PIPELINE_STEPS[activePipelineStep].title)}</h4>
+                  <p>{translateText(PIPELINE_STEPS[activePipelineStep].summary)}</p>
+                  <ul className="cw-pipeline-checklist">
+                    {PIPELINE_STEPS[activePipelineStep].highlights.map(hl => (
+                      <li key={hl}>
+                        <Check size={14} />
+                        <span>{translateText(hl)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="cw-pipeline-metrics">
+                  {PIPELINE_STEPS[activePipelineStep].metrics.map(m => (
+                    <div key={m.label} className="cw-pipeline-metric-box">
+                      <span>{translateText(m.label)}</span>
+                      <b>{localizeNode(m.value)}</b>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
       <aside className="cw-wizard-sidebar tw-stack">
-        <Card title="Which Product Type?">
+        <Card title={translateText("Which Product Type?")}>
           <div className="tw-sidebar-summary">
-            <div><LockKeyhole size={14}/><span>Instant Download</span><b>Digital Product</b></div>
-            <div><GlobeIcon/><span>Hosted Content</span><b>Online Course</b></div>
-            <div><CalendarDays size={14}/><span>Expert Guidance</span><b>Service</b></div>
+            <div><LockKeyhole size={14}/><span>{translateText("Instant Download")}</span><b>{translateText("Digital Product")}</b></div>
+            <div><GlobeIcon/><span>{translateText("Hosted Content")}</span><b>{translateText("Online Course")}</b></div>
+            <div><CalendarDays size={14}/><span>{translateText("Expert Guidance")}</span><b>{translateText("Service")}</b></div>
           </div>
         </Card>
-        <Card title="Pro Tip" subtitle="Complete the basics now to instantly unlock your tailored workspace, containing all the specific commerce and delivery tools you need.">{null}</Card>
+        <Card title={translateText("Pro Tip")} subtitle="Complete the basics now to instantly unlock your tailored workspace, containing all the specific commerce and delivery tools you need.">{localizeNode(null)}</Card>
       </aside>
     </div> : <>
-      {mode === 'create' && kind !== 'service' && !digitalOverview && <div className="tw-create-type"><span>Creating a {view.title}</span><CommerceSelect label="Change product type" value={kind} onChange={value => selectType(value as ProductKind)} options={types.map(type => ({ value: type.kind, label: type.label }))}/></div>}
-      {!editing && kind !== 'service' && !digitalOverview && !courseLayout && active === 'information' && <div className="tw-top-metrics">{[[Tag, p.price, 'Price'], [ShoppingCart, p.sales, 'Total Sales'], [CreditCard, p.revenue, 'Total Revenue'], [Users, kind === 'course' ? e.studentLimit ? String(e.studentLimit) : 'Unlimited' : kind === 'digital' ? String(c.assets.length) : String(c.components.length), kind === 'course' ? 'Student Capacity' : kind === 'digital' ? 'Digital Files' : 'Component Items']].map(([Icon, value, label], index) => { const MetricIcon = Icon as React.ElementType; return <div key={String(label)} className={`metric-${index}`}><span><MetricIcon size={19}/></span><div><b>{String(value)}</b><small>{String(label)}</small></div></div>; })}</div>}
-      {courseLayout && !editing && active !== 'information' && <CourseMetrics {...props}/>}
-      <nav className="cw-tabs tw-tabs" aria-label={`${view.title} navigation`}>{navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => { if (defaultTab) navigate(`${base}/products/${p.id}/edit?tab=${target}`); else tab(target); }}><Icon size={14}/>{label}</button>)}</nav>
-      {errors.length > 0 && <div className="cw-errors" role="alert"><b>Please review these fields</b><ul>{errors.map(message => <li key={message}>{message}</li>)}</ul></div>}
-      {courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={c} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={c}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
-        {active === 'information' && <>
-          {kind === 'service' ? <><div className="tw-service-layout"><div className="tw-stack"><InformationForm {...props}/><MediaCard {...props}/><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div><DescriptionCard {...props}/></> : <>
-            <div className="tw-information-layout"><div className="tw-stack"><InformationForm {...props}/>{!editing && <DescriptionCard {...props}/>}</div><div className="tw-stack"><MediaCard {...props}/>{kind === 'course' ? <InstructorCard {...props}/> : <ProductTags {...props}/>}<IncludedItems {...props}/></div></div>
-            {kind === 'course' && <CourseCurriculum {...props}/>}
-            {kind === 'digital' && <div className="tw-equal-columns"><DigitalFiles {...props}/><AccessForm {...props}/></div>}
-            {kind === 'bundle' && <BundleComponents {...props}/>}
-            {kind === 'subscription' && <><IncludedItems {...props}/><SubscriberFulfillment {...props}/></>}
-          </>}
-        </>}
-        {active === 'content' && (kind === 'course' ? <><CourseCurriculum {...props}/><InstructorCard {...props}/>{courseLayout && <IncludedItems {...props}/>}</> : kind === 'digital' ? <><DigitalFiles {...props}/><IncludedItems {...props}/></> : <><IncludedItems {...props}/><SubscriberFulfillment {...props}/></>)}
-        {active === 'booking' && <div className="tw-service-layout"><div className="tw-stack"><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div>}
-        {active === 'components' && <BundleComponents {...props}/>}
-        {active === 'pricing' && <><div className="tw-pricing-layout"><div className="tw-stack"><div className="tw-section-heading"><h2>Pricing &amp; Offers</h2><p>Create pricing options, discounts, and special offers for your product.</p>{!editing && <button className="cw-button" onClick={() => editTab('pricing')}><Settings2 size={14}/> Edit pricing</button>}</div><PricingForm {...props}/></div><CheckoutPreview {...props} onCheckout={setCheckoutPreview}/></div><DiscountsAndCoupons {...props}/></>}
-        {active === 'checkout' && <><div className="tw-pricing-layout"><div className="tw-stack"><CheckoutSettings {...props}/><OfferSettings {...props}/></div><CheckoutPreview {...props} onCheckout={setCheckoutPreview}/></div><CheckoutScreen product={p}/></>}
-        {active === 'access' && <AccessForm {...props}/>}
-        {active === 'funnel' && <FunnelConnections {...props}/>}
-        {active === 'automation' && <AutomationForm {...props}/>}
-        {active === 'settings' && <><ProductSettings {...props}/><CurrencySettings {...props}/></>}
+      {localizeNode(mode === 'create' && kind !== 'service' && !digitalOverview && <div className="tw-create-type"><span>{translateText("Creating a ")}{localizeNode(view.title)}</span><CommerceSelect label="Change product type" value={kind} onChange={value => selectType(value as ProductKind)} options={types.map(type => ({ value: type.kind, label: type.label }))}/></div>)}
+      {localizeNode(!editing && kind !== 'service' && !digitalOverview && !courseLayout && active === 'information' && <div className="tw-top-metrics">{localizeNode([[Tag, p.price, 'Price'], [ShoppingCart, p.sales, 'Total Sales'], [CreditCard, p.revenue, 'Total Revenue'], [Users, kind === 'course' ? e.studentLimit ? String(e.studentLimit) : 'Unlimited' : kind === 'digital' ? String(c.assets.length) : String(c.components.length), kind === 'course' ? 'Student Capacity' : kind === 'digital' ? 'Digital Files' : 'Component Items']].map(([Icon, value, label], index) => { const MetricIcon = Icon as React.ElementType; return <div key={String(label)} className={`metric-${index}`}><span><MetricIcon size={19}/></span><div><b>{localizeNode(String(value))}</b><small>{localizeNode(String(label))}</small></div></div>; }))}</div>)}
+      {localizeNode(courseLayout && !editing && active !== 'information' && <CourseMetrics {...props}/>)}
+      <nav className="cw-tabs tw-tabs" aria-label={translateText(`${view.title} navigation`)}>{localizeNode(navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => { if (defaultTab) navigate(`${base}/products/${p.id}/edit?tab=${target}`); else tab(target); }}><Icon size={14}/>{localizeNode(label)}</button>))}</nav>
+      {localizeNode(errors.length > 0 && <div className="cw-errors" role="alert"><b>{translateText("Please review these fields")}</b><ul>{localizeNode(errors.map(message => <li key={message}>{localizeNode(message)}</li>))}</ul></div>)}
+      {localizeNode(courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={c} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={c}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
+        {localizeNode(active === 'information' && <>
+          {localizeNode(kind === 'service' ? <><div className="tw-service-layout"><div className="tw-stack"><InformationForm {...props}/><MediaCard {...props}/><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div><DescriptionCard {...props}/></> : <>
+            <div className="tw-information-layout"><div className="tw-stack"><InformationForm {...props}/>{localizeNode(!editing && <DescriptionCard {...props}/>)}</div><div className="tw-stack"><MediaCard {...props}/>{localizeNode(kind === 'course' ? <InstructorCard {...props}/> : <ProductTags {...props}/>)}<IncludedItems {...props}/></div></div>
+            {localizeNode(kind === 'course' && <CourseCurriculum {...props}/>)}
+            {localizeNode(kind === 'digital' && <div className="tw-equal-columns"><DigitalFiles {...props}/><AccessForm {...props}/></div>)}
+            {localizeNode(kind === 'bundle' && <BundleComponents {...props}/>)}
+            {localizeNode(kind === 'subscription' && <><IncludedItems {...props}/><SubscriberFulfillment {...props}/></>)}
+          </>)}
+        </>)}
+        {localizeNode(active === 'content' && (kind === 'course' ? <><CourseCurriculum {...props}/><InstructorCard {...props}/>{localizeNode(courseLayout && <IncludedItems {...props}/>)}</> : kind === 'digital' ? <><DigitalFiles {...props}/><IncludedItems {...props}/></> : <><IncludedItems {...props}/><SubscriberFulfillment {...props}/></>))}
+        {localizeNode(active === 'booking' && <div className="tw-service-layout"><div className="tw-stack"><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div>)}
+        {localizeNode(active === 'components' && <BundleComponents {...props}/>)}
+        {localizeNode(active === 'pricing' && <><div className="tw-pricing-layout"><div className="tw-stack"><div className="tw-section-heading"><h2>{translateText("Pricing & Offers")}</h2><p>{translateText("Create pricing options, discounts, and special offers for your product.")}</p>{localizeNode(!editing && <button className="cw-button" onClick={() => editTab('pricing')}><Settings2 size={14}/>{translateText(" Edit pricing")}</button>)}</div><PricingForm {...props}/></div><CheckoutPreview {...props} onCheckout={setCheckoutPreview}/></div><DiscountsAndCoupons {...props}/></>)}
+        {localizeNode(active === 'checkout' && <><div className="tw-pricing-layout"><div className="tw-stack"><CheckoutSettings {...props}/><OfferSettings {...props}/></div><CheckoutPreview {...props} onCheckout={setCheckoutPreview}/></div><CheckoutScreen product={p}/></>)}
+        {localizeNode(active === 'access' && <AccessForm {...props}/>)}
+        {localizeNode(active === 'funnel' && <FunnelConnections {...props}/>)}
+        {localizeNode(active === 'automation' && <AutomationForm {...props}/>)}
+        {localizeNode(active === 'settings' && <><ProductSettings {...props}/><CurrencySettings {...props}/></>)}
       </main><aside className="tw-workspace-sidebar">
-        {kind === 'service' && active !== 'pricing' ? <ServiceSidebar {...props} onTab={target => target === 'checkout' ? tab('checkout') : editTab(target)} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }}/> : active === 'pricing' ? <><CurrencySettings {...props}/><CheckoutSettings {...props}/><OfferSettings {...props}/><ProductAccessRules {...props}/></> : <>
-          <Card title={kind === 'course' ? 'Course Status' : 'Product Status'}><div className="cw-publish-status"><span>{editing ? 'Publishing status' : 'Status'}</span><Status status={p.status}/></div>{editing && <><Field label="Publishing status"><Select value={p.status} options={['Draft', 'Active']} onChange={status => { if (status === 'Active') { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: status as Product['status'] }); }}/></Field></>}{editing && <Field label="Visibility"><Select value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field>}{!editing && <div className="tw-dates"><span>Created <b>{p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB') : 'Catalog product'}</b></span><span>Last updated <b>{e.updatedAt ? new Date(e.updatedAt).toLocaleDateString('en-GB') : '—'}</b></span></div>}{editing && <p className="cw-help">{p.status === 'Draft' ? 'Your product stays private until you publish.' : 'Save your changes to update this active product.'}</p>}</Card>
-          {editing && kind !== 'service' && <ProductDetails {...props}/>}
-          <Card title="Quick Actions"><div className="tw-quick-actions"><button onClick={salesPage}><Eye size={14}/><span>View Sales Page</span><ArrowRight size={12}/></button><button onClick={() => { void copyLink(); }}><Link2 size={14}/><span>Copy Link</span><Copy size={12}/></button><button disabled={disabled} onClick={() => duplicate(false)}><Copy size={14}/><span>Duplicate {kind === 'course' ? 'Course' : 'Product'}</span><ArrowRight size={12}/></button><button disabled={disabled} onClick={() => duplicate(true)}><GitBranch size={14}/><span>Create Version</span><ArrowRight size={12}/></button></div></Card>
-          <Card title="Connected Tools"><div className="tw-connected-tools"><Tool icon={Layers3} title="Funnel" description={e.funnelUrl ? 'Sales funnel linked' : 'Connect a sales funnel'} connected={!!e.funnelUrl} onClick={() => /^https?:\/\//i.test(e.funnelUrl) ? window.open(e.funnelUrl, '_blank', 'noopener,noreferrer') : navigate('/dashboard/funnels')}/><Tool icon={CalendarDays} title="Booking" description={c.bookingUrl ? 'Calendar linked' : 'Booking calendar'} connected={!!c.bookingUrl} onClick={() => kind === 'service' ? editTab('booking') : navigate('/dashboard/booking')}/><Tool icon={Sparkles} title="Automation" description="Post-purchase workflows" connected={c.automations.confirmation || c.automations.grantAccess} onClick={() => tab('automation')}/></div></Card>
-          {kind === 'service' ? <IncludedItems {...props}/> : accessSummary}
-        </>}
-      </aside></div>}
-      {active === 'information' && <div className="ce-insights-grid ce-overview-insights"><ProductRecentActivity config={c}/><ProductOrders config={c} limit={5} course={kind === 'course'}/></div>}
-      {editing && !digitalOverview && kind !== 'service' && active !== 'pricing' && <footer className="cw-editor-footer"><span><i className={dirty ? 'dirty' : ''}/>{pendingUploads ? 'Uploading…' : dirty ? 'Unsaved changes' : 'All changes saved'}</span><div><a className="cw-button" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>Preview Product</a><button disabled={disabled} className="cw-button primary" onClick={() => save(false)}><Save size={14}/> Save Changes</button></div></footer>}
-    </>}
-    {deleting && <Dialog title="Delete product?" onClose={() => setDeleting(false)}><p>Delete {p.name} from your catalog? This action cannot be undone.</p><div className="cw-header-actions"><button className="cw-button" onClick={() => setDeleting(false)}>Cancel</button><button className="cw-button primary" disabled={disabled} onClick={() => { try { deleteProduct(p.id); setBaseline(JSON.stringify(draft)); setDeleting(false); setPendingNavigation(base); showToast.success('Product deleted.'); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not delete product.'); } }}>Delete Product</button></div></Dialog>}
-    {checkoutPreview && <Dialog title="Checkout Preview" onClose={() => setCheckoutPreview(null)} wide><CheckoutScreen product={p} billing={checkoutPreview}/></Dialog>}
-    {blocker.state === 'blocked' && <Dialog title="Leave without saving?" onClose={() => blocker.reset()}><p>Your latest product changes have not been saved.</p><div className="cw-header-actions"><button className="cw-button" onClick={() => blocker.reset()}>Keep editing</button><button className="cw-button primary" disabled={pendingUploads > 0} onClick={() => blocker.proceed()}>Discard changes</button></div></Dialog>}
+        {localizeNode(kind === 'service' && active !== 'pricing' ? <ServiceSidebar {...props} onTab={target => target === 'checkout' ? tab('checkout') : editTab(target)} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }}/> : active === 'pricing' ? <><CurrencySettings {...props}/><CheckoutSettings {...props}/><OfferSettings {...props}/><ProductAccessRules {...props}/></> : <>
+          <Card title={translateText(kind === 'course' ? 'Course Status' : 'Product Status')}><div className="cw-publish-status"><span>{localizeNode(editing ? 'Publishing status' : 'Status')}</span><Status status={p.status}/></div>{localizeNode(editing && <><Field label="Publishing status"><Select value={p.status} options={['Draft', 'Active']} onChange={status => { if (status === 'Active') { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: status as Product['status'] }); }}/></Field></>)}{localizeNode(editing && <Field label="Visibility"><Select value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field>)}{localizeNode(!editing && <div className="tw-dates"><span>{translateText("Created ")}<b>{localizeNode(p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB') : 'Catalog product')}</b></span><span>{translateText("Last updated ")}<b>{localizeNode(e.updatedAt ? new Date(e.updatedAt).toLocaleDateString('en-GB') : '—')}</b></span></div>)}{localizeNode(editing && <p className="cw-help">{localizeNode(p.status === 'Draft' ? 'Your product stays private until you publish.' : 'Save your changes to update this active product.')}</p>)}</Card>
+          {localizeNode(editing && kind !== 'service' && <ProductDetails {...props}/>)}
+          <Card title={translateText("Quick Actions")}><div className="tw-quick-actions"><button onClick={salesPage}><Eye size={14}/><span>{translateText("View Sales Page")}</span><ArrowRight size={12}/></button><button onClick={() => { void copyLink(); }}><Link2 size={14}/><span>{translateText("Copy Link")}</span><Copy size={12}/></button><button disabled={disabled} onClick={() => duplicate(false)}><Copy size={14}/><span>{translateText("Duplicate ")}{localizeNode(kind === 'course' ? 'Course' : 'Product')}</span><ArrowRight size={12}/></button><button disabled={disabled} onClick={() => duplicate(true)}><GitBranch size={14}/><span>{translateText("Create Version")}</span><ArrowRight size={12}/></button></div></Card>
+          <Card title={translateText("Connected Tools")}><div className="tw-connected-tools"><Tool icon={Layers3} title={translateText("Funnel")} description={e.funnelUrl ? 'Sales funnel linked' : 'Connect a sales funnel'} connected={!!e.funnelUrl} onClick={() => /^https?:\/\//i.test(e.funnelUrl) ? window.open(e.funnelUrl, '_blank', 'noopener,noreferrer') : navigate('/dashboard/funnels')}/><Tool icon={CalendarDays} title={translateText("Booking")} description={c.bookingUrl ? 'Calendar linked' : 'Booking calendar'} connected={!!c.bookingUrl} onClick={() => kind === 'service' ? editTab('booking') : navigate('/dashboard/booking')}/><Tool icon={Sparkles} title={translateText("Automation")} description="Post-purchase workflows" connected={c.automations.confirmation || c.automations.grantAccess} onClick={() => tab('automation')}/></div></Card>
+          {localizeNode(kind === 'service' ? <IncludedItems {...props}/> : accessSummary)}
+        </>)}
+      </aside></div>)}
+      {localizeNode(active === 'information' && <div className="ce-insights-grid ce-overview-insights"><ProductRecentActivity config={c}/><ProductOrders config={c} limit={5} course={kind === 'course'}/></div>)}
+      {localizeNode(editing && !digitalOverview && kind !== 'service' && active !== 'pricing' && <footer className="cw-editor-footer"><span><i className={dirty ? 'dirty' : ''}/>{localizeNode(pendingUploads ? 'Uploading…' : dirty ? 'Unsaved changes' : 'All changes saved')}</span><div><a className="cw-button" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a><button disabled={disabled} className="cw-button primary" onClick={() => save(false)}><Save size={14}/>{translateText(" Save Changes")}</button></div></footer>)}
+    </>)}
+    {deleting && <Dialog title={translateText("Delete product?")} onClose={() => setDeleting(false)}><p>{translateText("Delete ")}{localizeNode(p.name)}{translateText(" from your catalog? This action cannot be undone.")}</p><div className="cw-header-actions"><button className="cw-button" onClick={() => setDeleting(false)}>{translateText("Cancel")}</button><button className="cw-button primary" disabled={disabled} onClick={() => { try { deleteProduct(p.id); setBaseline(JSON.stringify(draft)); setDeleting(false); setPendingNavigation(base); showToast.success('Product deleted.'); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not delete product.'); } }}>{translateText("Delete Product")}</button></div></Dialog>}
+    {localizeNode(checkoutPreview && <Dialog title={translateText("Checkout Preview")} onClose={() => setCheckoutPreview(null)} wide><CheckoutScreen product={p} billing={checkoutPreview}/></Dialog>)}
+    {localizeNode(blocker.state === 'blocked' && <Dialog title={translateText("Leave without saving?")} onClose={() => blocker.reset()}><p>{translateText("Your latest product changes have not been saved.")}</p><div className="cw-header-actions"><button className="cw-button" onClick={() => blocker.reset()}>{translateText("Keep editing")}</button><button className="cw-button primary" disabled={pendingUploads > 0} onClick={() => blocker.proceed()}>{translateText("Discard changes")}</button></div></Dialog>)}
   </div>;
 }
-function GlobeIcon() { return <Package size={14}/>; }
-function Tool({ icon: Icon, title, description, connected, onClick }: { icon: React.ElementType; title: string; description: string; connected: boolean; onClick: () => void }) { return <button onClick={onClick}><span><Icon size={17}/></span><div><b>{title}</b><small>{description}</small></div><em className={connected ? 'connected' : ''}>{connected ? 'Configured' : 'Connect'}</em><ArrowRight size={12}/></button>; }
+function GlobeIcon() {
+  useUILanguage(); return <Package size={14}/>; }
+function Tool({ icon: Icon, title, description, connected, onClick }: { icon: React.ElementType; title: string; description: string; connected: boolean; onClick: () => void }) {
+  useUILanguage(); return <button onClick={onClick}><span><Icon size={17}/></span><div><b>{localizeNode(title)}</b><small>{localizeNode(description)}</small></div><em className={connected ? 'connected' : ''}>{localizeNode(connected ? 'Configured' : 'Connect')}</em><ArrowRight size={12}/></button>; }
 function ProductTags({ experience: e, customize, editing }: FormProps) {
-  return <Card title="Product Tags">{editing ? <Field label="Tags / Keywords" hint="Separate tags with commas."><input value={e.tags.join(', ')} onChange={event => customize({ tags: event.target.value.split(',').map(tag => tag.trim()) })} placeholder="Templates, Marketing, Design"/></Field> : <div className="tw-tags">{e.tags.filter(Boolean).map((tag, i) => <span key={i}>{tag}</span>)}{!e.tags.length && <small>No tags added</small>}</div>}</Card>;
+  useUILanguage();
+  return <Card title={translateText("Product Tags")}>{localizeNode(editing ? <Field label="Tags / Keywords" hint="Separate tags with commas."><input value={e.tags.join(', ')} onChange={event => customize({ tags: event.target.value.split(',').map(tag => tag.trim()) })} placeholder={translateText("Templates, Marketing, Design")}/></Field> : <div className="tw-tags">{localizeNode(e.tags.filter(Boolean).map((tag, i) => <span key={i}>{localizeNode(tag)}</span>))}{localizeNode(!e.tags.length && <small>{translateText("No tags added")}</small>)}</div>)}</Card>;
 }
-function ProductDetails({ experience: e, customize, editing, product }: FormProps) { return <Card title={productKind(product.type) === 'course' ? 'Course Details' : 'Product Details'}><div className="cw-form-grid"><Field label="Category"><input disabled={!editing} value={e.category} placeholder="e.g. Marketing" onChange={event => customize({ category: event.target.value })}/></Field><Field label="Language"><Select disabled={!editing} value={e.language} options={['English', 'Arabic', 'French', 'German', 'Spanish']} onChange={language => customize({ language })}/></Field></div><Field label="Tags"><input value={e.tags.join(', ')} disabled={!editing} onChange={event => customize({ tags: event.target.value.split(',').map(tag => tag.trim()) })} placeholder="Separate tags with commas"/></Field><Field label="Version"><input value={e.version} readOnly/></Field></Card>; }
-function AutomationForm({ config: c, configure, editing }: FormProps) { return <Card title="Post-purchase Automations" subtitle="Configure what happens after a successful purchase.">{([['grantAccess', 'Grant product access'], ['confirmation', 'Send purchase confirmation'], ['followUp', 'Start customer follow-up']] as const).map(([key, label]) => <Toggle key={key} label={label} checked={c.automations[key]} disabled={!editing} onChange={value => configure({ automations: { ...c.automations, [key]: value } })}/>)}<Field label="CRM tag after purchase"><input disabled={!editing} value={c.automations.crmTag} onChange={event => configure({ automations: { ...c.automations, crmTag: event.target.value } })} placeholder="e.g. course-student"/></Field><div className="cw-notice"><Sparkles size={17}/> Triggers run after a confirmed payment and follow your configured access rules.</div></Card>; }
-function ProductSettings({ config: c, configure, experience: e, customize, editing, product: p }: FormProps) { return <Card title="Product Settings" subtitle="Save Changes applies these settings to the product."><Field label="Sales Page URL"><input type="url" disabled={!editing} value={c.salesUrl} onChange={event => configure({ salesUrl: event.target.value })} placeholder="https://"/></Field><Field label="Thank-you redirect URL"><input type="url" disabled={!editing} value={c.thankYouUrl} onChange={event => configure({ thankYouUrl: event.target.value })} placeholder="https://"/></Field><Field label="Custom domain" hint="Domain assignment is saved locally. Connect DNS and hosting in Domains."><input disabled={!editing} value={c.customDomain || ''} onChange={event => configure({ customDomain: event.target.value.trim() })} placeholder="shop.example.com"/></Field><Field label="Webhook endpoint" hint="Saved configuration; delivery requires a connected payment backend."><input type="url" disabled={!editing} value={c.webhookUrl || ''} onChange={event => configure({ webhookUrl: event.target.value })} placeholder="https://api.example.com/webhook"/></Field><div className="ce-webhooks">{['order.paid', 'order.refunded', 'enrollment.created', 'subscription.renewed'].map(event => <label key={event}><input type="checkbox" disabled={!editing} checked={(c.webhookEvents || []).includes(event)} onChange={ev => configure({ webhookEvents: ev.target.checked ? [...(c.webhookEvents || []), event] : (c.webhookEvents || []).filter(value => value !== event) })}/>{event}</label>)}</div><Field label="Visibility"><Select disabled={!editing} value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field><div className="cw-review"><div><span>Product ID</span><b>{p.id || 'Assigned when saved'}</b></div><div><span>Publishing status</span><Status status={p.status}/></div></div></Card>; }
-function SubscriberFulfillment({ config: c, configure, editing }: FormProps) { return <Card title="Member Benefits & Fulfillment"><Field label="Subscriber delivery instructions"><textarea disabled={!editing} value={c.fulfillment} onChange={event => configure({ fulfillment: event.target.value })} placeholder="Describe the resources, services and benefits delivered each billing period."/></Field><Field label="Member community URL"><input type="url" disabled={!editing} value={c.communityUrl} placeholder="https://" onChange={event => configure({ communityUrl: event.target.value })}/></Field></Card>; }
+function ProductDetails({ experience: e, customize, editing, product }: FormProps) {
+  useUILanguage(); return <Card title={translateText(productKind(product.type) === 'course' ? 'Course Details' : 'Product Details')}><div className="cw-form-grid"><Field label="Category"><input disabled={!editing} value={e.category} placeholder={translateText("e.g. Marketing")} onChange={event => customize({ category: event.target.value })}/></Field><Field label="Language"><Select disabled={!editing} value={e.language} options={['English', 'Arabic', 'French', 'German', 'Spanish']} onChange={language => customize({ language })}/></Field></div><Field label="Tags"><input value={e.tags.join(', ')} disabled={!editing} onChange={event => customize({ tags: event.target.value.split(',').map(tag => tag.trim()) })} placeholder={translateText("Separate tags with commas")}/></Field><Field label="Version"><input value={e.version} readOnly/></Field></Card>; }
+function AutomationForm({ config: c, configure, editing }: FormProps) {
+  useUILanguage(); return <Card title={translateText("Post-purchase Automations")} subtitle="Configure what happens after a successful purchase.">{localizeNode(([['grantAccess', 'Grant product access'], ['confirmation', 'Send purchase confirmation'], ['followUp', 'Start customer follow-up']] as const).map(([key, label]) => <Toggle key={key} label={label} checked={c.automations[key]} disabled={!editing} onChange={value => configure({ automations: { ...c.automations, [key]: value } })}/>))}<Field label="CRM tag after purchase"><input disabled={!editing} value={c.automations.crmTag} onChange={event => configure({ automations: { ...c.automations, crmTag: event.target.value } })} placeholder={translateText("e.g. course-student")}/></Field><div className="cw-notice"><Sparkles size={17}/>{translateText(" Triggers run after a confirmed payment and follow your configured access rules.")}</div></Card>; }
+function ProductSettings({ config: c, configure, experience: e, customize, editing, product: p }: FormProps) {
+  useUILanguage(); return <Card title={translateText("Product Settings")} subtitle="Save Changes applies these settings to the product."><Field label="Sales Page URL"><input type="url" disabled={!editing} value={c.salesUrl} onChange={event => configure({ salesUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Thank-you redirect URL"><input type="url" disabled={!editing} value={c.thankYouUrl} onChange={event => configure({ thankYouUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Custom domain" hint="Domain assignment is saved locally. Connect DNS and hosting in Domains."><input disabled={!editing} value={c.customDomain || ''} onChange={event => configure({ customDomain: event.target.value.trim() })} placeholder={translateText("shop.example.com")}/></Field><Field label="Webhook endpoint" hint="Saved configuration; delivery requires a connected payment backend."><input type="url" disabled={!editing} value={c.webhookUrl || ''} onChange={event => configure({ webhookUrl: event.target.value })} placeholder={translateText("https://api.example.com/webhook")}/></Field><div className="ce-webhooks">{localizeNode(['order.paid', 'order.refunded', 'enrollment.created', 'subscription.renewed'].map(event => <label key={event}><input type="checkbox" disabled={!editing} checked={(c.webhookEvents || []).includes(event)} onChange={ev => configure({ webhookEvents: ev.target.checked ? [...(c.webhookEvents || []), event] : (c.webhookEvents || []).filter(value => value !== event) })}/>{localizeNode(event)}</label>))}</div><Field label="Visibility"><Select disabled={!editing} value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field><div className="cw-review"><div><span>{translateText("Product ID")}</span><b>{localizeNode(p.id || 'Assigned when saved')}</b></div><div><span>{translateText("Publishing status")}</span><Status status={p.status}/></div></div></Card>; }
+function SubscriberFulfillment({ config: c, configure, editing }: FormProps) {
+  useUILanguage(); return <Card title={translateText("Member Benefits & Fulfillment")}><Field label="Subscriber delivery instructions"><textarea disabled={!editing} value={c.fulfillment} onChange={event => configure({ fulfillment: event.target.value })} placeholder={translateText("Describe the resources, services and benefits delivered each billing period.")}/></Field><Field label="Member community URL"><input type="url" disabled={!editing} value={c.communityUrl} placeholder={translateText("https://")} onChange={event => configure({ communityUrl: event.target.value })}/></Field></Card>; }

@@ -32,7 +32,7 @@ export interface CommerceActivity { id: string; title: string; at: string }
 export interface CommerceConfig {
   students?: Student[]; orders?: CommerceOrder[]; activities?: CommerceActivity[];
   funnelId?: string; funnelPageId?: string; customDomain?: string; webhookUrl?: string; webhookEvents?: string[];
-  amount: number; currency: 'EUR' | 'USD' | 'GBP'; billing: Billing;
+  amount: number; currency: string; billing: Billing;
   installments: number; frequency: 'Monthly' | 'Quarterly' | 'Yearly'; trialDays: number;
   cancellation: 'End of billing period' | 'Immediately'; taxRate: number;
   access: 'Lifetime access' | '12 months' | 'While subscribed'; delivery: 'Instant' | 'After approval';

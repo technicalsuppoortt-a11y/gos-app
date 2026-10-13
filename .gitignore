@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+artifacts/localization/
+artifacts/theme-audit/
+scripts/localization-*.json
+scripts/localization-*.txt
 *.local
 
 # Editor directories and files

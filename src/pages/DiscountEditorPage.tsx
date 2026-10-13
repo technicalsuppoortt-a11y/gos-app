@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useId } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Percent, Tag, Ticket, X, Zap, Calendar, AlertCircle } from 'lucide-react';
@@ -11,11 +12,13 @@ function generateCode() {
 }
 
 export function DiscountEditorPage() {
+  useUILanguage();
   const { id } = useParams();
   return <DiscountEditor key={id ?? 'new'} id={id}/>;
 }
 
 function DiscountEditor({ id }: { id?: string }) {
+  useUILanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const existing = id ? readDiscounts().find(d => d.id === id) : undefined;
@@ -52,11 +55,9 @@ function DiscountEditor({ id }: { id?: string }) {
       <main className="dc-editor-route bg-slate-50 flex items-center justify-center">
         <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md w-full">
           <Ticket size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Discount not found</h2>
-          <p className="text-slate-500 mb-6">This discount may have been deleted.</p>
-          <button className="w-full bg-slate-900 text-white rounded-lg py-2.5 font-medium hover:bg-slate-800 transition-colors" onClick={() => navigate(discountsPath)}>
-            Back to Discounts
-          </button>
+          <h2 className="text-xl font-bold text-slate-800 mb-2">{translateText("Discount not found")}</h2>
+          <p className="text-slate-500 mb-6">{translateText("This discount may have been deleted.")}</p>
+          <button className="w-full bg-slate-900 text-white rounded-lg py-2.5 font-medium hover:bg-slate-800 transition-colors" onClick={() => navigate(discountsPath)}>{translateText("Back to Discounts")}</button>
         </section>
       </main>
     );
@@ -73,14 +74,13 @@ function DiscountEditor({ id }: { id?: string }) {
             {/* Section 1: Basic Information */}
             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">Basic Information</h2>
-                <p className="text-sm text-slate-500 mt-1">Define the code and how the discount is applied.</p>
+                <h2 className="text-base font-semibold text-slate-900">{translateText("Basic Information")}</h2>
+                <p className="text-sm text-slate-500 mt-1">{translateText("Define the code and how the discount is applied.")}</p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor={`${idPrefix}-code`} className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Discount Code <span className="text-red-500">*</span>
+                  <label htmlFor={`${idPrefix}-code`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Discount Code ")}<span className="text-red-500">*</span>
                   </label>
                   <div className="flex rounded-lg shadow-sm border border-slate-300 focus-within:ring-2 focus-within:ring-[#7C5CFC]/20 focus-within:border-[#7C5CFC] bg-white overflow-hidden transition-shadow">
                     <input
@@ -89,7 +89,7 @@ function DiscountEditor({ id }: { id?: string }) {
                       required
                       className="flex-1 block w-full min-w-0 border-none px-3.5 py-2.5 text-slate-900 text-sm font-medium bg-transparent focus:ring-0 placeholder:text-slate-400 font-mono uppercase"
                       value={form.code}
-                      placeholder="e.g. SUMMER25"
+                      placeholder={translateText("e.g. SUMMER25")}
                       onChange={e => update('code', e.target.value.toUpperCase())}
                     />
                     <div className="w-px bg-slate-200"></div>
@@ -98,15 +98,14 @@ function DiscountEditor({ id }: { id?: string }) {
                       className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium text-sm transition-colors focus:outline-none"
                       onClick={() => update('code', generateCode())}
                     >
-                      <Zap size={14} className="text-yellow-500" /> Generate
-                    </button>
+                      <Zap size={14} className="text-yellow-500" />{translateText(" Generate")}</button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Discount Type</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{translateText("Discount Type")}</label>
                   <div className="grid grid-cols-2 gap-3">
-                    {(['Percentage', 'Fixed Amount'] as const).map(t => (
+                    {localizeNode((['Percentage', 'Fixed Amount'] as const).map(t => (
                       <label
                         key={t}
                         className={`relative flex cursor-pointer rounded-xl border p-4 focus:outline-none transition-all ${
@@ -127,17 +126,17 @@ function DiscountEditor({ id }: { id?: string }) {
                         />
                         <span className="flex items-center gap-3">
                           <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${form.type === t ? 'bg-[#7C5CFC] text-white' : 'bg-slate-100 text-slate-500'}`}>
-                            {t === 'Percentage' ? <Percent size={16} /> : <span className="font-bold">€</span>}
+                            {localizeNode(t === 'Percentage' ? <Percent size={16} /> : <span className="font-bold">€</span>)}
                           </span>
                           <span className="flex flex-col">
-                            <span className={`block text-sm font-semibold ${form.type === t ? 'text-purple-900' : 'text-slate-900'}`}>{t}</span>
+                            <span className={`block text-sm font-semibold ${form.type === t ? 'text-purple-900' : 'text-slate-900'}`}>{localizeNode(t)}</span>
                             <span className={`block text-xs mt-0.5 ${form.type === t ? 'text-purple-700' : 'text-slate-500'}`}>
-                              {t === 'Percentage' ? 'Percentage off total' : 'Fixed amount off total'}
+                              {localizeNode(t === 'Percentage' ? 'Percentage off total' : 'Fixed amount off total')}
                             </span>
                           </span>
                         </span>
                       </label>
-                    ))}
+                    )))}
                   </div>
                 </div>
               </div>
@@ -146,14 +145,13 @@ function DiscountEditor({ id }: { id?: string }) {
             {/* Section 2: Value & Restrictions */}
             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">Value & Restrictions</h2>
-                <p className="text-sm text-slate-500 mt-1">Set the discount amount and usage rules.</p>
+                <h2 className="text-base font-semibold text-slate-900">{translateText("Value & Restrictions")}</h2>
+                <p className="text-sm text-slate-500 mt-1">{translateText("Set the discount amount and usage rules.")}</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor={`${idPrefix}-val`} className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Discount Value <span className="text-red-500">*</span>
+                  <label htmlFor={`${idPrefix}-val`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Discount Value ")}<span className="text-red-500">*</span>
                   </label>
                   <div className="relative rounded-lg shadow-sm">
                     <input
@@ -163,25 +161,25 @@ function DiscountEditor({ id }: { id?: string }) {
                       step="0.01"
                       max={form.type === 'Percentage' ? 100 : undefined}
                       required
-                      className="block w-full pr-12 px-3.5 py-2.5 text-slate-900 text-sm font-medium border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white rounded-lg shadow-sm placeholder:text-slate-400"
+                      className="block w-full pe-12 px-3.5 py-2.5 text-slate-900 text-sm font-medium border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white rounded-lg shadow-sm placeholder:text-slate-400"
                       value={form.value}
                       onChange={e => update('value', Number(e.target.value))}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center">
+                    <div className="absolute inset-y-0 end-0 flex items-center">
                       <button
                         type="button"
-                        className="h-full px-3.5 text-slate-600 font-semibold text-sm border-l border-slate-200 hover:bg-slate-50 transition-colors rounded-r-lg"
+                        className="h-full px-3.5 text-slate-600 font-semibold text-sm border-l border-slate-200 hover:bg-slate-50 transition-colors rounded-e-lg"
                         onClick={() => update('type', form.type === 'Percentage' ? 'Fixed Amount' : 'Percentage')}
-                        title="Click to toggle between % and €"
+                        title={translateText("Click to toggle between % and €")}
                       >
-                        {form.type === 'Percentage' ? '%' : '€'}
+                        {localizeNode(form.type === 'Percentage' ? '%' : '€')}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Applies To</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Applies To")}</label>
                   <Select
                     label="Discount applies to"
                     value={form.applies}
@@ -189,15 +187,13 @@ function DiscountEditor({ id }: { id?: string }) {
                     onChange={value => update('applies', value)}
                     buttonClassName="!px-3.5 !py-2.5 !h-auto text-slate-900 text-sm font-medium border border-slate-300 bg-white rounded-lg shadow-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 hover:bg-slate-50 transition-colors w-full flex items-center"
                   />
-                  {form.applies === 'Specific Products' && (
-                    <p className="mt-2 text-xs text-purple-600 bg-purple-50 py-1 px-2 rounded font-medium border border-purple-100">
-                      Applies to AI Marketing Course, Social Media Templates...
-                    </p>
-                  )}
+                  {localizeNode(form.applies === 'Specific Products' && (
+                    <p className="mt-2 text-xs text-purple-600 bg-purple-50 py-1 px-2 rounded font-medium border border-purple-100">{translateText("Applies to AI Marketing Course, Social Media Templates...")}</p>
+                  ))}
                 </div>
 
                 <div>
-                  <label htmlFor={`${idPrefix}-min`} className="block text-sm font-medium text-slate-700 mb-1.5">Minimum Purchase (€)</label>
+                  <label htmlFor={`${idPrefix}-min`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Minimum Purchase (€)")}</label>
                   <input
                     id={`${idPrefix}-min`}
                     type="number"
@@ -206,12 +202,12 @@ function DiscountEditor({ id }: { id?: string }) {
                     className="block w-full px-3.5 py-2.5 text-slate-900 text-sm font-medium border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white rounded-lg shadow-sm placeholder:text-slate-400"
                     value={form.minimum}
                     onChange={e => update('minimum', Number(e.target.value))}
-                    placeholder="0.00"
+                    placeholder={translateText("0.00")}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor={`${idPrefix}-limit`} className="block text-sm font-medium text-slate-700 mb-1.5">Usage Limit</label>
+                  <label htmlFor={`${idPrefix}-limit`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Usage Limit")}</label>
                   <input
                     id={`${idPrefix}-limit`}
                     type="number"
@@ -220,7 +216,7 @@ function DiscountEditor({ id }: { id?: string }) {
                     className="block w-full px-3.5 py-2.5 text-slate-900 text-sm font-medium border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white rounded-lg shadow-sm placeholder:text-slate-400"
                     value={form.limit}
                     onChange={e => update('limit', Number(e.target.value))}
-                    placeholder="Unlimited"
+                    placeholder={translateText("Unlimited")}
                   />
                 </div>
               </div>
@@ -230,13 +226,13 @@ function DiscountEditor({ id }: { id?: string }) {
             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">Validity & Status</h2>
-                  <p className="text-sm text-slate-500 mt-1">Control when and how this discount is shown.</p>
+                  <h2 className="text-base font-semibold text-slate-900">{translateText("Validity & Status")}</h2>
+                  <p className="text-sm text-slate-500 mt-1">{translateText("Control when and how this discount is shown.")}</p>
                 </div>
                 <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
                   <span className={`flex h-2.5 w-2.5 rounded-full ${form.active ? 'bg-green-500' : 'bg-slate-400'}`}></span>
                   <label className="flex items-center cursor-pointer gap-2">
-                    <span className="text-sm font-medium text-slate-700">{form.active ? 'Active' : 'Inactive'}</span>
+                    <span className="text-sm font-medium text-slate-700">{localizeNode(form.active ? 'Active' : 'Inactive')}</span>
                     <div className="relative inline-block w-10 h-5 align-middle select-none">
                       <input type="checkbox" className="sr-only peer" checked={form.active} onChange={e => update('active', e.target.checked)} />
                       <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:bg-[#7C5CFC] transition-colors"></div>
@@ -248,7 +244,7 @@ function DiscountEditor({ id }: { id?: string }) {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor={`${idPrefix}-exp`} className="block text-sm font-medium text-slate-700 mb-1.5">Expiration Date</label>
+                  <label htmlFor={`${idPrefix}-exp`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Expiration Date")}</label>
                   <div className="flex gap-2">
                     <input
                       id={`${idPrefix}-exp`}
@@ -257,24 +253,24 @@ function DiscountEditor({ id }: { id?: string }) {
                       value={form.expiry}
                       onChange={e => update('expiry', e.target.value)}
                     />
-                    {form.expiry && (
+                    {localizeNode(form.expiry && (
                       <button
                         type="button"
                         className="px-3 border border-slate-300 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-50 bg-white shadow-sm"
                         onClick={() => update('expiry', '')}
-                        title="Clear date"
+                        title={translateText("Clear date")}
                       >
                         <X size={16} />
                       </button>
-                    )}
+                    ))}
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between items-end mb-1.5">
-                    <label htmlFor={`${idPrefix}-desc`} className="block text-sm font-medium text-slate-700">Internal Description</label>
+                    <label htmlFor={`${idPrefix}-desc`} className="block text-sm font-medium text-slate-700">{translateText("Internal Description")}</label>
                     <span className={`text-xs ${form.description.length > 1900 ? 'text-orange-500' : 'text-slate-400'}`}>
-                      {form.description.length}/2000
+                      {localizeNode(form.description.length)}/2000
                     </span>
                   </div>
                   <textarea
@@ -283,7 +279,7 @@ function DiscountEditor({ id }: { id?: string }) {
                     rows={3}
                     className="block w-full px-3.5 py-2.5 text-slate-900 text-sm font-medium border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 bg-white rounded-lg shadow-sm placeholder:text-slate-400 resize-y"
                     value={form.description}
-                    placeholder="E.g., Summer sale promotion 2026..."
+                    placeholder={translateText("E.g., Summer sale promotion 2026...")}
                     onChange={e => update('description', e.target.value)}
                   />
                 </div>
@@ -299,8 +295,7 @@ function DiscountEditor({ id }: { id?: string }) {
             <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="bg-slate-50 border-b border-slate-200 px-5 py-4">
                 <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                  <Tag size={16} className="text-slate-400"/> Live Preview
-                </h3>
+                  <Tag size={16} className="text-slate-400"/>{translateText(" Live Preview")}</h3>
               </div>
               <div className="p-6">
                 <div className="bg-slate-50 rounded-xl p-5 border border-slate-200/60 relative overflow-hidden group">
@@ -311,42 +306,40 @@ function DiscountEditor({ id }: { id?: string }) {
                     <div className="flex justify-between items-start mb-3">
                       <div className="inline-flex items-center gap-2 bg-white border-2 border-slate-200 border-dashed text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg tracking-widest shadow-sm">
                         <Ticket size={14} className="text-slate-400"/>
-                        {form.code || 'CODE'}
+                        {localizeNode(form.code || 'CODE')}
                       </div>
-                      {form.active ? (
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#7C5CFC] bg-[#7C5CFC]/10 px-2 py-1 rounded-md border border-[#7C5CFC]/20">Active</span>
+                      {localizeNode(form.active ? (
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#7C5CFC] bg-[#7C5CFC]/10 px-2 py-1 rounded-md border border-[#7C5CFC]/20">{translateText("Active")}</span>
                       ) : (
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-slate-200 px-2 py-1 rounded-md border border-slate-300">Inactive</span>
-                      )}
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-slate-200 px-2 py-1 rounded-md border border-slate-300">{translateText("Inactive")}</span>
+                      ))}
                     </div>
                     
                     <div className="flex items-baseline gap-1.5 mb-1">
                       <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                        {form.type === 'Percentage' ? `${form.value}%` : `€${form.value}`}
+                        {localizeNode(form.type === 'Percentage' ? `${form.value}%` : `€${form.value}`)}
                       </span>
-                      <span className="text-sm font-medium text-slate-500">OFF</span>
+                      <span className="text-sm font-medium text-slate-500">{translateText("OFF")}</span>
                     </div>
                     
                     <p className="text-sm text-slate-600 font-medium">
-                      {form.applies === 'All Products' ? 'Storewide discount' : `Applies to ${form.applies.toLowerCase()}`}
+                      {localizeNode(form.applies === 'All Products' ? 'Storewide discount' : `Applies to ${form.applies.toLowerCase()}`)}
                     </p>
 
-                    {(form.minimum > 0 || form.expiry) && (
+                    {localizeNode((form.minimum > 0 || form.expiry) && (
                       <div className="mt-4 pt-4 border-t border-slate-200/80 space-y-2">
-                        {form.minimum > 0 && (
+                        {localizeNode(form.minimum > 0 && (
                           <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full bg-slate-400"></span>
-                            Valid on orders over €{form.minimum}
+                            <span className="w-1 h-1 rounded-full bg-slate-400"></span>{translateText("Valid on orders over €")}{localizeNode(form.minimum)}
                           </p>
-                        )}
-                        {form.expiry && (
+                        ))}
+                        {localizeNode(form.expiry && (
                           <p className="text-xs text-orange-600 flex items-center gap-1.5 font-medium">
-                            <Calendar size={12}/>
-                            Expires {new Date(`${form.expiry}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            <Calendar size={12}/>{translateText("Expires ")}{localizeNode(new Date(`${form.expiry}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}
                           </p>
-                        )}
+                        ))}
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               </div>
@@ -355,22 +348,14 @@ function DiscountEditor({ id }: { id?: string }) {
             {/* Quick Tips */}
             <section className="bg-purple-50/50 rounded-2xl border border-purple-100 p-5">
               <h4 className="text-xs font-bold uppercase tracking-wider text-purple-800 mb-3 flex items-center gap-1.5">
-                <AlertCircle size={14}/>
-                Quick Tips
-              </h4>
+                <AlertCircle size={14}/>{translateText("Quick Tips")}</h4>
               <ul className="text-sm text-purple-900/80 space-y-2.5">
                 <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-0.5">•</span>
-                  Use clear, memorable codes (e.g., BLACKFRIDAY20).
-                </li>
+                  <span className="text-purple-400 mt-0.5">•</span>{translateText("Use clear, memorable codes (e.g., BLACKFRIDAY20).")}</li>
                 <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-0.5">•</span>
-                  Percentage discounts often convert better for items under €100.
-                </li>
+                  <span className="text-purple-400 mt-0.5">•</span>{translateText("Percentage discounts often convert better for items under €100.")}</li>
                 <li className="flex items-start gap-2">
-                  <span className="text-purple-400 mt-0.5">•</span>
-                  Setting an expiration date creates urgency and boosts sales.
-                </li>
+                  <span className="text-purple-400 mt-0.5">•</span>{translateText("Setting an expiration date creates urgency and boosts sales.")}</li>
               </ul>
             </section>
 

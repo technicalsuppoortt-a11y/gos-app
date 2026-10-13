@@ -1,6 +1,7 @@
-import React from 'react';
+import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Activity, AppWindow, BarChart3, Bell, CreditCard, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck } from 'lucide-react';
+import { Activity, AppWindow, BarChart3, Bell, CreditCard, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
@@ -21,21 +22,48 @@ const navigation = [
 ];
 
 export const SuperAdminLayout: React.FC = () => {
+  useUILanguage();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const controls = () => Array.from(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? []).filter(node => node.getClientRects().length);
+    const frame = requestAnimationFrame(() => controls()[0]?.focus());
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+      if (event.key !== 'Tab') return;
+      const nodes = controls(), first = nodes[0], last = nodes.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    const resize = () => { if (innerWidth >= 768) setMobileOpen(false); };
+    document.addEventListener('keydown', keydown); window.addEventListener('resize', resize);
+    return () => {
+      cancelAnimationFrame(frame); document.body.style.overflow = overflow;
+      document.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize);
+      previous?.focus();
+    };
+  }, [mobileOpen]);
   const signOut = () => { showToast.success('You have been logged out successfully.'); dispatch(logout()); navigate('/auth/login', { replace: true }); };
 
   return <div className="sa-shell">
-    <aside className="sa-sidebar">
-      <a className="sa-brand" href="/super-admin"><span className="sa-brand-mark">G</span><span><b>AI Sales OS</b><small>Platform control</small></span></a>
-      <div className="sa-nav-label">PLATFORM</div>
-      <nav className="sa-nav" aria-label="Super admin navigation">
-        {navigation.map(({ label, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{label}</span></NavLink>)}
+    {mobileOpen && <button className="sa-mobile-scrim" aria-label={translateText("Close navigation")} onClick={() => setMobileOpen(false)}/>}
+    <aside ref={sidebarRef} className={`sa-sidebar${mobileOpen ? ' is-mobile-open' : ''}`} role={mobileOpen ? 'dialog' : undefined} aria-modal={mobileOpen || undefined} aria-label={translateText("Platform navigation")} onClick={event => { if ((event.target as HTMLElement).closest('a')) setMobileOpen(false); }}>
+      <button className="sa-mobile-close" aria-label={translateText("Close menu")} onClick={() => setMobileOpen(false)}><X size={18}/></button>
+      <a className="sa-brand" href="/super-admin"><span className="sa-brand-mark">{translateText("G")}</span><span><b>{translateText("AI Sales OS")}</b><small>{translateText("Platform control")}</small></span></a>
+      <div className="sa-nav-label">{translateText("PLATFORM")}</div>
+      <nav className="sa-nav" aria-label={translateText("Super admin navigation")}>
+        {localizeNode(navigation.map(({ label, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{localizeNode(label)}</span></NavLink>))}
       </nav>
-      <button className="sa-logout" onClick={signOut}><LogOut size={15}/>Log out</button>
+      <button className="sa-logout" onClick={signOut}><LogOut size={15}/>{translateText("Log out")}</button>
     </aside>
     <main className="sa-main">
-      <header className="sa-topbar"><span className="sa-breadcrumb">Platform <i>/</i> Super Admin</span><label className="sa-search"><Search size={14}/><input placeholder="Search..." aria-label="Search platform"/><kbd>⌘ K</kbd></label><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><button className="sa-notifications" aria-label="Notifications"><Bell size={17}/><i/></button><button className="sa-account"><span>JA</span><b>Jordan Admin</b></button></header>
+      <header className="sa-topbar"><button className="sa-menu-button" aria-label={translateText("Open navigation")} aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19}/></button><span className="sa-breadcrumb">{translateText("Platform ")}<i>/</i>{translateText(" Super Admin")}</span><label className="sa-search"><Search size={14}/><input placeholder={translateText("Search...")} aria-label={translateText("Search platform")}/><kbd>{translateText("⌘ K")}</kbd></label><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><button className="sa-notifications" aria-label={translateText("Notifications")}><Bell size={17}/><i/></button><button className="sa-account"><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button></header>
       <div className="sa-content"><Outlet/></div>
     </main>
   </div>;

@@ -1,3 +1,4 @@
+import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -7,6 +8,7 @@ import { showToast } from '../../utils/toast';
 import { motion } from 'framer-motion';
 
 export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
+  useUILanguage();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,17 +24,17 @@ export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white capitalize">
-            {title.replace('-', ' ')}
+            {localizeNode(title.replace('-', ' '))}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            {t('welcome')}
+            {localizeNode(t('welcome'))}
           </p>
         </div>
         <button
           onClick={handleLogout}
           className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 font-medium transition-colors"
         >
-          {t('logout')}
+          {localizeNode(t('logout'))}
         </button>
       </div>
 
@@ -45,12 +47,8 @@ export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
         >
           <span className="text-3xl text-primary-500">✨</span>
         </motion.div>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-          Coming Soon
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-          This is a placeholder for the {title.replace('-', ' ')} module. In a real application, this would contain the actual feature implementation.
-        </p>
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{translateText("Coming Soon")}</h3>
+        <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">{translateText("This is a placeholder for the ")}{localizeNode(title.replace('-', ' '))}{translateText(" module. In a real application, this would contain the actual feature implementation.")}</p>
         
         {/* Placeholder Skeleton */}
         <div className="w-full max-w-2xl mt-12 space-y-4">

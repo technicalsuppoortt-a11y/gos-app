@@ -1,3 +1,4 @@
+import { useUILanguage } from '../../i18n/display';
 import type { SVGProps } from 'react';
 import {
   Activity, Award, BadgeCheck, Bell, BookOpen, Briefcase, CalendarDays, Camera, Check, CircleCheck, Clock3, CreditCard, Dumbbell, Flame, Gift, Globe, GraduationCap,
@@ -7,6 +8,7 @@ import {
 
 type BrandProps = SVGProps<SVGSVGElement> & { size?: number | string };
 const brand = (path: string, viewBox = '0 0 24 24') => function BrandIcon({ size = 16, ...props }: BrandProps) {
+  useUILanguage();
   return <svg width={size} height={size} viewBox={viewBox} fill="currentColor" aria-hidden="true" {...props}><path d={path}/></svg>;
 };
 
@@ -33,6 +35,7 @@ export const ICONS: Record<string, React.ElementType> = {
 export const ICON_NAMES = Object.keys(ICONS);
 
 export function PFIcon({ name, size = 18, color, strokeWidth }: { name?: string; size?: number; color?: string; strokeWidth?: number }) {
+  useUILanguage();
   const Icon = ICONS[name ?? ''] ?? Star;
   return <Icon size={size} color={color} strokeWidth={strokeWidth} style={color ? { color } : undefined}/>;
 }

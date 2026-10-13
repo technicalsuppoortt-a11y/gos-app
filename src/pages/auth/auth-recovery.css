@@ -1,0 +1,209 @@
+/* ==========================================================================
+   GOS Auth Recovery Styles (Forgot Password & Reset Password)
+   High-density, WCAG accessible, sleek dark mode styling
+   ========================================================================== */
+
+/* Password Strength Indicator */
+.auth-strength-meter {
+  margin-top: 8px;
+}
+
+.auth-strength-bars {
+  display: flex;
+  gap: 6px;
+  height: 4px;
+  width: 100%;
+}
+
+.auth-strength-bar {
+  flex: 1;
+  height: 100%;
+  border-radius: 999px;
+  background: #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .auth-strength-bar {
+  background: #2a2c3d;
+}
+
+.auth-strength-bar.is-weak {
+  background: #f43f5e;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+}
+
+.auth-strength-bar.is-fair {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.auth-strength-bar.is-good {
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.auth-strength-bar.is-strong {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.45);
+}
+
+/* Real-time Checklist */
+.auth-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.dark .auth-checklist {
+  border-color: #2e324a;
+  background: #161725;
+}
+
+.auth-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.dark .auth-checklist-item {
+  color: #94a3b8;
+}
+
+.auth-checklist-item.is-valid {
+  color: #0f766e;
+  font-weight: 500;
+}
+
+.dark .auth-checklist-item.is-valid {
+  color: #34d399;
+}
+
+.auth-checklist-icon {
+  display: grid;
+  height: 16px;
+  width: 16px;
+  place-items: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid #cbd5e1;
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.dark .auth-checklist-icon {
+  border-color: #475569;
+}
+
+.auth-checklist-item.is-valid .auth-checklist-icon {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+/* Recovery Cards & Feedback */
+.auth-feedback-card {
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 24px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.dark .auth-feedback-card {
+  border-color: #2e324a;
+  background: #181926;
+  box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.4);
+}
+
+.auth-pulse-icon {
+  display: grid;
+  height: 56px;
+  width: 56px;
+  place-items: center;
+  border-radius: 18px;
+  position: relative;
+}
+
+.auth-pulse-icon::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  background: inherit;
+  opacity: 0.25;
+  animation: authPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes authPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.1;
+  }
+}
+
+/* Primary Recovery Button with subtle glow */
+.auth-primary-btn {
+  display: flex;
+  height: 48px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-primary-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.48);
+  transform: translateY(-1px);
+}
+
+.auth-primary-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.auth-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Resend Timer Pill */
+.auth-timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.dark .auth-timer-pill {
+  background: #1e2030;
+  color: #cbd5e1;
+}

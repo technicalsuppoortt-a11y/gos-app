@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { Bold, Code, ImagePlus, Italic, Link2, List, ListOrdered, Quote, Underline } from 'lucide-react';
 import { CommerceSelect } from '../../components/ui/CommerceSelect';
@@ -38,6 +39,7 @@ function serialize(node: Node): string {
 }
 
 export function DigitalDescription({ value, onChange, editing }: { value: string; onChange: (value: string) => void; editing: boolean }) {
+  useUILanguage();
   const editor = React.useRef<HTMLDivElement>(null), initial = React.useRef<HTMLDivElement>(null);
   const emitted = React.useRef<string | null>(null), validHtml = React.useRef('');
   const range = React.useRef<Range | null>(null);
@@ -81,12 +83,12 @@ export function DigitalDescription({ value, onChange, editing }: { value: string
   }
   return <div className="dw-editor">
     <div hidden aria-hidden="true" ref={initial}><Description text={value}/></div>
-    <div className="dw-editor-toolbar" role="toolbar" aria-label="Description formatting">
+    <div className="dw-editor-toolbar" role="toolbar" aria-label={translateText("Description formatting")}>
       <CommerceSelect label="Description block style" value="Paragraph" options={['Paragraph', 'Quote', 'Code']} disabled={!editing} onChange={block => command('formatBlock', block === 'Quote' ? 'blockquote' : block === 'Code' ? 'pre' : 'p')}/>
-      {formats.map(({ label, icon: Icon, name, argument }) => <button key={label} type="button" aria-label={label} title={label} disabled={!editing} onMouseDown={event => event.preventDefault()} onClick={() => { if (name === 'link' || name === 'image') openInsert(name); else command(name, argument); }}><Icon size={12}/></button>)}
+      {localizeNode(formats.map(({ label, icon: Icon, name, argument }) => <button key={label} type="button" aria-label={translateText(label)} title={translateText(label)} disabled={!editing} onMouseDown={event => event.preventDefault()} onClick={() => { if (name === 'link' || name === 'image') openInsert(name); else command(name, argument); }}><Icon size={12}/></button>))}
     </div>
-    <div ref={editor} className="dw-editor-content" contentEditable={editing} suppressContentEditableWarning role="textbox" aria-label="Full description" aria-multiline="true" aria-readonly={!editing} tabIndex={0} onInput={change} onPaste={event => { if (!editing) return; event.preventDefault(); command('insertText', event.clipboardData.getData('text/plain')); }} onClick={event => { if ((event.target as HTMLElement).closest('a')) event.preventDefault(); }}/>
-    <small className="dw-editor-counter">{value.length}/2000</small>
-    {insert && <Dialog title={insert === 'image' ? 'Add image' : 'Add link'} onClose={() => setInsert(null)}><label className="cw-field"><span>{insert === 'image' ? 'Image URL' : 'Link URL'}</span><input type="url" aria-label={insert === 'image' ? 'Description image URL' : 'Description link URL'} autoFocus value={url} onChange={event => setUrl(event.target.value)} placeholder="https://"/></label><button className="cw-button primary" disabled={!/^https?:\/\//i.test(url)} onClick={addResource}>{insert === 'image' ? 'Add image' : 'Add link'}</button></Dialog>}
+    <div ref={editor} className="dw-editor-content" contentEditable={editing} suppressContentEditableWarning role="textbox" aria-label={translateText("Full description")} aria-multiline="true" aria-readonly={!editing} tabIndex={0} onInput={change} onPaste={event => { if (!editing) return; event.preventDefault(); command('insertText', event.clipboardData.getData('text/plain')); }} onClick={event => { if ((event.target as HTMLElement).closest('a')) event.preventDefault(); }}/>
+    <small className="dw-editor-counter">{localizeNode(value.length)}/2000</small>
+    {localizeNode(insert && <Dialog title={translateText(insert === 'image' ? 'Add image' : 'Add link')} onClose={() => setInsert(null)}><label className="cw-field"><span>{localizeNode(insert === 'image' ? 'Image URL' : 'Link URL')}</span><input type="url" aria-label={translateText(insert === 'image' ? 'Description image URL' : 'Description link URL')} autoFocus value={url} onChange={event => setUrl(event.target.value)} placeholder={translateText("https://")}/></label><button className="cw-button primary" disabled={!/^https?:\/\//i.test(url)} onClick={addResource}>{localizeNode(insert === 'image' ? 'Add image' : 'Add link')}</button></Dialog>)}
   </div>;
 }

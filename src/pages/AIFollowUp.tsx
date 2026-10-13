@@ -1,3 +1,4 @@
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -184,6 +185,7 @@ const MenuSelect = ({
   ariaLabel?: string;
   iconOnly?: boolean;
 }) => {
+  useUILanguage();
   const [open, setOpen] = React.useState(false);
   const [placement, setPlacement] = React.useState<{
     top: number;
@@ -236,12 +238,12 @@ const MenuSelect = ({
         ref={buttonRef}
         type="button"
         className={`af-select-trigger ${iconOnly ? "af-select-icon-trigger" : ""}`}
-        aria-label={ariaLabel}
+        aria-label={translateText(ariaLabel)}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((state) => !state)}
       >
-        {iconOnly ? <SlidersHorizontal size={15} /> : <span>{current}</span>}
+        {localizeNode(iconOnly ? <SlidersHorizontal size={15} /> : <span>{localizeNode(current)}</span>)}
         <ChevronDown size={14} />
       </button>
       {open &&
@@ -262,7 +264,7 @@ const MenuSelect = ({
               transform: placement.upward ? "translateY(-100%)" : undefined,
             }}
           >
-            {options.map((option) => (
+            {localizeNode(options.map((option) => (
               <button
                 type="button"
                 role="option"
@@ -274,17 +276,17 @@ const MenuSelect = ({
                   setOpen(false);
                 }}
               >
-                <span>{option.label}</span>
-                {option.value === value && <CheckCircle2 size={14} />}
+                <span>{localizeNode(option.label)}</span>
+                {localizeNode(option.value === value && <CheckCircle2 size={14} />)}
               </button>
-            ))}
+            )))}
           </div>,
           document.body,
         )}
     </div>
   );
 };
-const InstagramBrand = ({ size = 18 }: { size?: number }) => (
+const InstagramBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <rect
       x="3.5"
@@ -306,16 +308,16 @@ const InstagramBrand = ({ size = 18 }: { size?: number }) => (
     />
     <circle cx="17.4" cy="6.8" r="1.1" fill="white" />
   </svg>
-);
-const FacebookBrand = ({ size = 18 }: { size?: number }) => (
+)); };
+const FacebookBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <path
       fill="white"
       d="M13.9 21v-8.1h2.72l.4-3.16H13.9V7.72c0-.91.25-1.53 1.57-1.53h1.67V3.36c-.29-.04-1.28-.12-2.43-.12-2.4 0-4.04 1.47-4.04 4.17v2.32H7.95v3.16h2.72V21h3.23Z"
     />
   </svg>
-);
-const WhatsAppBrand = ({ size = 18 }: { size?: number }) => (
+)); };
+const WhatsAppBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <path
       fill="none"
@@ -330,16 +332,16 @@ const WhatsAppBrand = ({ size = 18 }: { size?: number }) => (
       d="M16.6 14.1c-.23-.12-1.36-.67-1.57-.75-.21-.08-.36-.12-.52.12-.15.23-.6.75-.74.9-.13.15-.27.17-.5.06-.23-.12-.97-.36-1.85-1.13-.68-.61-1.14-1.36-1.28-1.59-.13-.23-.01-.36.1-.48.1-.1.23-.27.35-.41.12-.13.15-.23.23-.38.08-.15.04-.29-.02-.41-.06-.12-.52-1.26-.72-1.72-.19-.45-.38-.39-.52-.4h-.44c-.15 0-.4.06-.62.29-.21.23-.81.79-.81 1.93s.84 2.24.95 2.4c.12.15 1.65 2.51 3.99 3.51.56.24.99.39 1.33.5.56.18 1.06.15 1.46.09.45-.07 1.37-.56 1.56-1.1.2-.54.2-1 .14-1.1-.06-.09-.21-.15-.44-.27Z"
     />
   </svg>
-);
-const MessengerBrand = ({ size = 18 }: { size?: number }) => (
+)); };
+const MessengerBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <path
       fill="white"
       d="M12 3.2c-5.12 0-9.2 3.77-9.2 8.68 0 2.6 1.2 4.91 3.14 6.49.16.13.25.31.26.51l.06 1.67c.02.52.56.87 1.04.66l1.87-.83c.16-.07.33-.08.5-.04.74.21 1.52.32 2.33.32 5.12 0 9.2-3.77 9.2-8.68S17.12 3.2 12 3.2Zm4.52 6.54-2.7 4.29a1.3 1.3 0 0 1-1.98.35l-1.94-1.42a.65.65 0 0 0-.78 0l-2.88 2.18c-.38.29-.89-.17-.63-.57l2.7-4.29a1.3 1.3 0 0 1 1.98-.35l1.94 1.42c.24.18.55.18.78 0l2.88-2.18c.38-.29.89.17.63.57Z"
     />
   </svg>
-);
-const WebsiteChatBrand = ({ size = 18 }: { size?: number }) => (
+)); };
+const WebsiteChatBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <circle
       cx="12"
@@ -356,13 +358,13 @@ const WebsiteChatBrand = ({ size = 18 }: { size?: number }) => (
       strokeWidth="1.35"
     />
   </svg>
-);
-const AssistantRobot = () => (
+)); };
+const AssistantRobot = () => { useUILanguage(); return ((
   <svg
     className="af-robot-render"
     viewBox="0 0 64 64"
     role="img"
-    aria-label="GOS assistant robot"
+    aria-label={translateText("GOS assistant robot")}
   >
     <defs>
       <linearGradient id="af-robot-shell" x1="10%" y1="8%" x2="90%" y2="100%">
@@ -427,7 +429,7 @@ const AssistantRobot = () => (
     <rect x="5" y="27" width="5" height="13" rx="2.5" fill="#d9e0e9" />
     <rect x="54" y="27" width="5" height="13" rx="2.5" fill="#d9e0e9" />
   </svg>
-);
+)); };
 const tabs: Tab[] = [
   "Overview",
   "Conversations",
@@ -724,6 +726,7 @@ const workflowIconFor = (action: string): React.ElementType =>
           : Mail;
 
 const ChannelMark = ({ channel }: { channel: string }) => {
+  useUILanguage();
   const Brand =
     channel === "instagram"
       ? InstagramBrand
@@ -754,22 +757,23 @@ const Avatar = ({
   small?: boolean;
   channel?: string;
   altName?: string;
-}) => (
+}) => { useUILanguage(); return ((
   <span className="af-avatar-wrap">
     <img
       src={`https://i.pravatar.cc/150?u=${lead.id}`}
-      alt={altName ?? lead.name}
+      alt={translateText(altName ?? lead.name)}
       className={`af-avatar ${small ? "af-avatar-small" : ""}`}
       style={{ objectFit: "cover" }}
     />
-    {channel && (
+    {localizeNode(channel && (
       <span className="af-avatar-badge">
         <ChannelMark channel={channel} />
       </span>
-    )}
+    ))}
   </span>
-);
+)); };
 const StateBadge = ({ state }: { state: FollowUpLifecycleState }) => {
+  useUILanguage();
   const group =
     state === "NEW"
       ? "new"
@@ -790,7 +794,7 @@ const StateBadge = ({ state }: { state: FollowUpLifecycleState }) => {
           : group === "question"
             ? "Question"
             : stateLabel(state);
-  return <span className={`af-state af-state-${group}`}>{label}</span>;
+  return <span className={`af-state af-state-${group}`}>{localizeNode(label)}</span>;
 };
 const Modal = ({
   title,
@@ -800,7 +804,7 @@ const Modal = ({
   title: string;
   children: React.ReactNode;
   close: () => void;
-}) => (
+}) => { useUILanguage(); return ((
   <div
     className="af-modal-backdrop"
     onMouseDown={(event) => {
@@ -815,19 +819,20 @@ const Modal = ({
     >
       <div className="af-modal-head">
         <div>
-          <h3>{title}</h3>
-          <p>Demo workspace · changes stay in local app state</p>
+          <h3>{localizeNode(title)}</h3>
+          <p>{translateText("Demo workspace · changes stay in local app state")}</p>
         </div>
-        <button className="af-icon-button" onClick={close} aria-label="Close">
+        <button className="af-icon-button" onClick={close} aria-label={translateText("Close")}>
           <X size={18} />
         </button>
       </div>
-      {children}
+      {localizeNode(children)}
     </div>
   </div>
-);
+)); };
 
 export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
+  useUILanguage();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const leads = useSelector((state: RootState) => state.crm.leads);
@@ -1306,7 +1311,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
 
   const renderChannelCards = () => (
     <div className="af-channel-grid">
-      {channels.map((channel) => {
+      {localizeNode(channels.map((channel) => {
         const Icon = channel.icon;
         const active = channelsOn[channel.id];
         return (
@@ -1316,10 +1321,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             </span>
             <div className="af-channel-main">
               <div className="af-channel-title">
-                <b>{channel.name}</b>
+                <b>{localizeNode(channel.name)}</b>
                 <button
                   className={`af-switch ${active ? "on" : ""}`}
-                  aria-label={`${active ? "Disconnect" : "Connect"} ${channel.name}`}
+                  type="button" role="switch" aria-checked={active}
+                  aria-label={translateText(`${active ? "Disconnect" : "Connect"} ${channel.name}`)}
                   onClick={() => {
                     setChannelsOn((s) => ({
                       ...s,
@@ -1336,36 +1342,32 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <span
                 className={`af-connected ${active ? "" : "af-disconnected"}`}
               >
-                {active ? (
+                {localizeNode(active ? (
                   <>
-                    <b aria-hidden="true">✓</b>Connected
-                  </>
+                    <b aria-hidden="true">✓</b>{translateText("Connected")}</>
                 ) : (
                   <>
-                    <i />
-                    Paused
-                  </>
-                )}
+                    <i />{translateText("Paused")}</>
+                ))}
               </span>
-              <small>{channel.conversations}</small>
+              <small>{localizeNode(channel.conversations)}</small>
               <button
                 className="af-link"
                 onClick={() => {
                   setSelectedChannel(channel.id);
                   setModal("channel");
                 }}
-              >
-                Settings <ArrowRight size={12} />
+              >{translateText("Settings ")}<ArrowRight size={12} />
               </button>
             </div>
           </article>
         );
-      })}
+      }))}
     </div>
   );
   const renderKpis = () => (
     <div className="af-kpis">
-      {[
+      {localizeNode([
         {
           label: "Total Conversations",
           value: "3,471",
@@ -1407,44 +1409,42 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <kpi.icon size={18} />
           </span>
           <div>
-            <span>{kpi.label}</span>
-            <b>{kpi.value}</b>
+            <span>{localizeNode(kpi.label)}</span>
+            <b>{localizeNode(kpi.value)}</b>
             <small>
               <ArrowUpRight size={12} />
-              {kpi.delta}
-              <i> vs. last 7 days</i>
+              {localizeNode(kpi.delta)}
+              <i>{translateText(" vs. last 7 days")}</i>
             </small>
           </div>
         </div>
-      ))}
+      )))}
     </div>
   );
   const renderConversationFeed = () => (
     <section className="af-panel af-feed-panel flex flex-col flex-1 min-h-0 h-full">
       <div className="af-panel-heading flex-none">
         <div>
-          <h2>Recent Conversations</h2>
+          <h2>{translateText("Recent Conversations")}</h2>
         </div>
         <button
           className="af-text-action"
           onClick={() => setTab("Conversations")}
-        >
-          View all <ArrowRight size={13} />
+        >{translateText("View all ")}<ArrowRight size={13} />
         </button>
       </div>
-      {leadFilter === "Needs attention" && (
+      {localizeNode(leadFilter === "Needs attention" && (
         <div className="af-filter-notice">
           <Activity size={12} />
-          {needsAttention} CRM records need human attention
-          <button onClick={() => setLeadFilter("All states")}>Clear</button>
+          {localizeNode(needsAttention)}{translateText(" CRM records need human attention")}<button onClick={() => setLeadFilter("All states")}>{translateText("Clear")}</button>
         </div>
-      )}
+      ))}
       <div
         className="af-channel-filters flex-none"
         role="group"
-        aria-label="Filter conversations by channel"
+        aria-label={translateText("Filter conversations by channel")}
       >
-        {[
+        {localizeNode([
           { value: "All", label: "All (12)" },
           { value: "Instagram", label: "Instagram", channel: "instagram" },
           { value: "Facebook", label: "Facebook", channel: "facebook" },
@@ -1460,24 +1460,24 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 : `af-channel-filter-button ${conversationChannel === item.value ? "active" : ""}`
             }
             key={item.value}
-            title={item.label}
-            aria-label={`Show ${item.label} conversations`}
+            title={translateText(item.label)}
+            aria-label={translateText(`Show ${item.label} conversations`)}
             aria-pressed={conversationChannel === item.value}
             onClick={() => setConversationChannel(item.value)}
           >
-            {item.value === "All" ? (
+            {localizeNode(item.value === "All" ? (
               <>
                 <Inbox size={14} />
-                <span>{item.label}</span>
+                <span>{localizeNode(item.label)}</span>
               </>
             ) : (
               <ChannelMark channel={item.channel!} />
-            )}
+            ))}
           </button>
-        ))}
+        )))}
       </div>
       <div className="af-feed-list flex-1 min-h-0 overflow-y-auto">
-        {visibleRows.slice(0, 8).map((item) => (
+        {localizeNode(visibleRows.slice(0, 8).map((item) => (
           <button
             className="af-conversation-row"
             key={item.lead.id}
@@ -1489,22 +1489,22 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               altName={item.displayName}
             />
             <div className="af-conversation-copy">
-              <b className="af-conversation-name">{item.displayName}</b>
-              <p>{item.excerpt}</p>
+              <b className="af-conversation-name">{localizeNode(item.displayName)}</b>
+              <p>{localizeNode(item.excerpt)}</p>
             </div>
             <div className="af-conversation-side">
-              <time>{item.time}</time>
+              <time>{localizeNode(item.time)}</time>
               <StateBadge state={item.state} />
             </div>
           </button>
-        ))}
-        {visibleRows.length === 0 && (
+        )))}
+        {localizeNode(visibleRows.length === 0 && (
           <div className="af-empty">
             <Search size={18} />
-            <b>No conversations found</b>
-            <span>Try another channel or state filter.</span>
+            <b>{translateText("No conversations found")}</b>
+            <span>{translateText("Try another channel or state filter.")}</span>
           </div>
-        )}
+        ))}
       </div>
     </section>
   );
@@ -1515,20 +1515,19 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           <h2>
             <span className="af-section-heading-icon">
               <Bot size={15} />
-            </span>
-            AI Assistant Setup
-          </h2>
+            </span>{translateText("AI Assistant Setup")}</h2>
         </div>
         <div className="af-assistant-status">
           <span className={assistantEnabled ? "active" : "paused"}>
-            {assistantEnabled ? "Active" : "Paused"}
+            {localizeNode(assistantEnabled ? "Active" : "Paused")}
           </span>
           <button
             className={`af-switch ${assistantEnabled ? "on af-green-switch" : ""}`}
+            type="button" role="switch" aria-checked={assistantEnabled}
             aria-label={
-              assistantEnabled
+              translateText(assistantEnabled
                 ? "Pause GOS Assistant"
-                : "Activate GOS Assistant"
+                : "Activate GOS Assistant")
             }
             onClick={() => {
               setAssistantEnabled(!assistantEnabled);
@@ -1549,11 +1548,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <i />
             </div>
             <div>
-              <b>{assistantProfile.name}</b>
+              <b>{localizeNode(assistantProfile.name)}</b>
               <span>
-                {assistantEnabled
+                {localizeNode(assistantEnabled
                   ? `${assistantProfile.role} · ready to help conversations, answer questions, book appointments, and follow up with leads.`
-                  : "Assistant is paused"}
+                  : "Assistant is paused")}
               </span>
             </div>
           </div>
@@ -1562,8 +1561,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               className="af-button-primary"
               onClick={() => setModal("test")}
             >
-              <Sparkles size={13} /> Test AI Assistant
-            </button>
+              <Sparkles size={13} />{translateText(" Test AI Assistant")}</button>
             <button
               className="af-button-secondary"
               onClick={() => {
@@ -1575,8 +1573,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 setModal("edit-assistant");
               }}
             >
-              <Pencil size={13} /> Edit Assistant
-            </button>
+              <Pencil size={13} />{translateText(" Edit Assistant")}</button>
           </div>
           <div className="af-assistant-config">
             <div>
@@ -1584,8 +1581,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <Users size={15} />
               </span>
               <span className="af-attribute-copy">
-                <b>Personality</b>
-                <small>{assistantProfile.role}</small>
+                <b>{translateText("Personality")}</b>
+                <small>{localizeNode(assistantProfile.role)}</small>
               </span>
             </div>
             <div>
@@ -1593,8 +1590,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <Globe2 size={15} />
               </span>
               <span className="af-attribute-copy">
-                <b>Language</b>
-                <small>{assistantLanguage}</small>
+                <b>{translateText("Language")}</b>
+                <small>{localizeNode(assistantLanguage)}</small>
               </span>
             </div>
             <div>
@@ -1602,11 +1599,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <Target size={15} />
               </span>
               <span className="af-attribute-copy">
-                <b>Goal</b>
+                <b>{translateText("Goal")}</b>
                 <small>
-                  {assistantGoal === "Appointments"
+                  {localizeNode(assistantGoal === "Appointments"
                     ? "Book appointments & convert leads"
-                    : assistantGoal}
+                    : assistantGoal)}
                 </small>
               </span>
             </div>
@@ -1618,28 +1615,27 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <Archive className="w-5 h-5" />
             </div>
             <div>
-              <b>Knowledge Base</b>
-              <small>{knowledgeItems.length} sources</small>
+              <b>{translateText("Knowledge Base")}</b>
+              <small>{localizeNode(knowledgeItems.length)}{translateText(" sources")}</small>
             </div>
           </div>
           <div className="af-knowledge-compact-list overflow-y-auto max-h-[120px]">
-            {knowledgeItems.slice(0, 5).map((item) => {
+            {localizeNode(knowledgeItems.slice(0, 5).map((item) => {
               const SourceIcon = knowledgeIconFor(item.type);
               return (
                 <div className="af-knowledge-item" key={item.id}>
                   <span className="af-knowledge-check">
                     <SourceIcon size={10} strokeWidth={2.5} />
                   </span>
-                  <b>{item.name}</b>
+                  <b>{localizeNode(item.name)}</b>
                 </div>
               );
-            })}
+            }))}
           </div>
           <button
             className="af-knowledge-manage"
             onClick={() => setTab("Knowledge")}
-          >
-            Manage Knowledge <ArrowRight size={13} />
+          >{translateText("Manage Knowledge ")}<ArrowRight size={13} />
           </button>
         </div>
       </div>
@@ -1650,19 +1646,16 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     <section className="af-panel af-workflows-panel">
       <div className="af-panel-heading">
         <div>
-          <h3 className="text-lg font-bold text-slate-900">
-            Automation Workflows
-          </h3>
+          <h3 className="text-lg font-bold text-slate-900">{translateText("Automation Workflows")}</h3>
         </div>
         <button
           className="af-text-action"
           onClick={() => setTab("Automations")}
-        >
-          View all <ArrowRight size={13} />
+        >{translateText("View all ")}<ArrowRight size={13} />
         </button>
       </div>
       <div className="af-workflow-list overflow-y-auto max-h-[160px]">
-        {workflows.map((flow) => {
+        {localizeNode(workflows.map((flow) => {
           const FlowIcon = workflowIconFor(flow.actionType);
           return (
             <div className="af-workflow-row" key={flow.id}>
@@ -1670,17 +1663,18 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <FlowIcon size={15} />
               </span>
               <div>
-                <b>{flow.name}</b>
-                <small>{flow.description}</small>
+                <b>{localizeNode(flow.name)}</b>
+                <small>{localizeNode(flow.description)}</small>
               </div>
               <span
                 className={`af-trigger-count ${flow.active ? "" : "inactive"}`}
               >
-                {flow.trigger}
+                {localizeNode(flow.trigger)}
               </span>
               <button
                 className={`af-switch ${flow.active ? "on" : ""}`}
-                aria-label={`${flow.active ? "Pause" : "Activate"} ${flow.name}`}
+                type="button" role="switch" aria-checked={flow.active}
+                aria-label={translateText(`${flow.active ? "Pause" : "Activate"} ${flow.name}`)}
                 onClick={() => {
                   const next = workflows.map((item) =>
                     item.id === flow.id
@@ -1695,14 +1689,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               </button>
             </div>
           );
-        })}
+        }))}
       </div>
     </section>
   );
   const renderAnalytics = () => (
     <section className="af-panel af-performance-panel flex flex-col flex-1 min-h-0 h-full">
       <div className="af-panel-heading flex-none">
-        <h2>AI Performance</h2>
+        <h2>{translateText("AI Performance")}</h2>
         <button
           className="af-select-button"
           onClick={() =>
@@ -1711,12 +1705,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             )
           }
         >
-          {dateRange}
+          {localizeNode(dateRange)}
           <ChevronDown size={13} />
         </button>
       </div>
       <div className="af-performance-rows flex-1 min-h-0 overflow-y-auto">
-        {[
+        {localizeNode([
           {
             label: "Conversations Handled",
             value: "3,471",
@@ -1754,26 +1748,26 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               size={15}
               strokeWidth={1.8}
             />
-            <span>{metric.label}</span>
-            <b>{metric.value}</b>
-            <small className="af-trend-pill">↑ {metric.change}</small>
+            <span>{localizeNode(metric.label)}</span>
+            <b>{localizeNode(metric.value)}</b>
+            <small className="af-trend-pill">↑ {localizeNode(metric.change)}</small>
           </div>
-        ))}
+        )))}
       </div>
       <div className="af-perf-chart flex-1 min-h-0 w-full relative">
         <div className="af-perf-chart-y">
-          {["600", "400", "200", "0"].map((label, index) => (
+          {localizeNode(["600", "400", "200", "0"].map((label, index) => (
             <span key={label} style={{ top: `${(index / 3) * 100}%` }}>
-              {label}
+              {localizeNode(label)}
             </span>
-          ))}
+          )))}
         </div>
         <div className="af-perf-chart-plot">
           <svg
             viewBox="0 0 600 120"
             preserveAspectRatio="none"
             role="img"
-            aria-label="AI conversations handled over time"
+            aria-label={translateText("AI conversations handled over time")}
           >
             <defs>
               <linearGradient id="af-fill" x1="0" x2="0" y1="0" y2="1">
@@ -1781,7 +1775,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <stop offset="1" stopColor="#7c6cf0" stopOpacity=".02" />
               </linearGradient>
             </defs>
-            {[0, 40, 80, 120].map((y) => (
+            {localizeNode([0, 40, 80, 120].map((y) => (
               <line
                 key={`h${y}`}
                 x1="0"
@@ -1792,8 +1786,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
-            ))}
-            {[0, 100, 200, 300, 400, 500, 600].map((x) => (
+            )))}
+            {localizeNode([0, 100, 200, 300, 400, 500, 600].map((x) => (
               <line
                 key={`v${x}`}
                 x1={x}
@@ -1804,7 +1798,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
-            ))}
+            )))}
             <path
               d="M0 76 L100 64 L200 76 L300 52 L400 41 L500 62 L600 32 L600 120 L0 120Z"
               fill="url(#af-fill)"
@@ -1832,12 +1826,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               top: `${(41 / 120) * 100}%`,
             }}
           >
-            <b>423 conversations</b>
-            <span>Oct 24</span>
+            <b>{translateText("423 conversations")}</b>
+            <span>{translateText("Oct 24")}</span>
           </div>
         </div>
         <div className="af-perf-chart-x">
-          {[
+          {localizeNode([
             "Oct 20",
             "Oct 21",
             "Oct 22",
@@ -1847,9 +1841,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             "Oct 26",
           ].map((label, index) => (
             <span key={label} style={{ left: `${(index / 6) * 100}%` }}>
-              {label}
+              {localizeNode(label)}
             </span>
-          ))}
+          )))}
         </div>
       </div>
     </section>
@@ -1858,13 +1852,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const renderTemplates = () => (
     <section className="af-panel af-templates-panel">
       <div className="af-panel-heading">
-        <h2>AI Templates</h2>
-        <button className="af-text-action" onClick={() => setTab("Templates")}>
-          View All <ArrowRight size={13} />
+        <h2>{translateText("AI Templates")}</h2>
+        <button className="af-text-action" onClick={() => setTab("Templates")}>{translateText("View All ")}<ArrowRight size={13} />
         </button>
       </div>
       <div className="af-template-grid">
-        {templates.map((item) => {
+        {localizeNode(templates.map((item) => {
           const Icon = templateIconFor(item.iconKey);
           return (
             <button
@@ -1879,23 +1872,23 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <span className="af-template-icon">
                 <Icon size={14} strokeWidth={2} />
               </span>
-              <b>{item.title}</b>
-              <small>{item.description}</small>
+              <b>{localizeNode(item.title)}</b>
+              <small>{localizeNode(item.description)}</small>
             </button>
           );
-        })}
+        }))}
       </div>
     </section>
   );
 
   const renderOverview = () => (
     <div className="af-overview-grid flex-1 min-h-0 h-full">
-      <div className="af-column af-column-feed flex-1 min-h-0 flex flex-col h-full">{renderConversationFeed()}</div>
+      <div className="af-column af-column-feed flex-1 min-h-0 flex flex-col h-full">{localizeNode(renderConversationFeed())}</div>
       <div className="af-column af-column-assistant flex-1 min-h-0 flex flex-col h-full">
-        {renderAssistant()}
+        {localizeNode(renderAssistant())}
       </div>
       <div className="af-column af-column-insights flex-1 min-h-0 flex flex-col h-full">
-        {renderAnalytics()}
+        {localizeNode(renderAnalytics())}
       </div>
     </div>
   );
@@ -1903,8 +1896,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     <section className="af-panel af-full-panel">
       <div className="af-panel-heading">
         <div>
-          <h2>Conversations</h2>
-          <p>Messages are shown from mock logs linked to canonical leads.</p>
+          <h2>{translateText("Conversations")}</h2>
+          <p>{translateText("Messages are shown from mock logs linked to canonical leads.")}</p>
         </div>
         <div className="af-inline-controls">
           <MenuSelect
@@ -1924,27 +1917,21 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             className="af-button-secondary"
             onClick={() => openWorkflowEditor(undefined, "new-sequence")}
           >
-            <Plus size={14} /> New sequence
-          </button>
+            <Plus size={14} />{translateText(" New sequence")}</button>
         </div>
       </div>
-      {renderConversationFeed()}
+      {localizeNode(renderConversationFeed())}
     </section>
   );
   const renderKnowledgeTab = () => (
     <section className="af-panel af-full-panel">
       <div className="af-panel-heading">
         <div>
-          <h2>
-            Knowledge Base{" "}
+          <h2>{translateText("Knowledge Base")}{localizeNode(" ")}
             <span className="af-count-badge">
-              {knowledgeItems.length} sources
-            </span>
+              {localizeNode(knowledgeItems.length)}{translateText(" sources")}</span>
           </h2>
-          <p>
-            Sources available to the assistant; add a URL, file, or text
-            snippet.
-          </p>
+          <p>{translateText("Sources available to the assistant; add a URL, file, or text snippet.")}</p>
         </div>
         <button
           className="af-button-primary"
@@ -1956,11 +1943,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             setModal("knowledge-source");
           }}
         >
-          <Plus size={14} /> Add source
-        </button>
+          <Plus size={14} />{translateText(" Add source")}</button>
       </div>
       <div className="af-knowledge-grid">
-        {knowledgeItems.map((item) => {
+        {localizeNode(knowledgeItems.map((item) => {
           const Icon = knowledgeIconFor(item.type);
           return (
             <div key={item.id}>
@@ -1968,12 +1954,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <Icon size={16} />
               </span>
               <span>
-                <b>{item.name}</b>
-                <small>{item.detail}</small>
+                <b>{localizeNode(item.name)}</b>
+                <small>{localizeNode(item.detail)}</small>
               </span>
               <button
                 className="af-icon-button"
-                title="Remove source"
+                title={translateText("Remove source")}
                 onClick={() => {
                   const next = knowledgeItems.filter(
                     (source) => source.id !== item.id,
@@ -1987,7 +1973,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               </button>
             </div>
           );
-        })}
+        }))}
       </div>
     </section>
   );
@@ -1995,20 +1981,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     <section className="af-panel af-full-panel">
       <div className="af-panel-heading">
         <div>
-          <h2>Response Templates</h2>
-          <p>
-            Create and maintain prompts for consistent, consent-aware responses.
-          </p>
+          <h2>{translateText("Response Templates")}</h2>
+          <p>{translateText("Create and maintain prompts for consistent, consent-aware responses.")}</p>
         </div>
         <button
           className="af-button-primary"
           onClick={() => openTemplateEditor()}
         >
-          <Plus size={14} /> Custom template
-        </button>
+          <Plus size={14} />{translateText(" Custom template")}</button>
       </div>
       <div className="af-template-grid af-template-grid-large">
-        {templates.map((item) => {
+        {localizeNode(templates.map((item) => {
           const Icon = templateIconFor(item.iconKey);
           return (
             <article
@@ -2027,38 +2010,38 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <span className="af-template-icon af-tone-violet">
                   <Icon size={16} strokeWidth={2.4} />
                 </span>
-                <b>{item.title}</b>
-                <small>{item.description}</small>
+                <b>{localizeNode(item.title)}</b>
+                <small>{localizeNode(item.description)}</small>
                 <span className="af-link">
-                  {item.custom
+                  {localizeNode(item.custom
                     ? "Edit template"
                     : item.id === "custom-template-action"
                       ? "Create your own"
-                      : "Configure"}{" "}
+                      : "Configure")}{localizeNode(" ")}
                   <ArrowRight size={12} />
                 </span>
               </button>
-              {item.custom && (
+              {localizeNode(item.custom && (
                 <div className="af-template-actions">
                   <button
                     className="af-icon-button"
-                    title="Edit template"
+                    title={translateText("Edit template")}
                     onClick={() => openTemplateEditor(item)}
                   >
                     <PencilLine size={14} />
                   </button>
                   <button
                     className="af-icon-button"
-                    title="Delete template"
+                    title={translateText("Delete template")}
                     onClick={() => deleteTemplate(item.id)}
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
-              )}
+              ))}
             </article>
           );
-        })}
+        }))}
       </div>
     </section>
   );
@@ -2066,29 +2049,24 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     <section className="af-panel af-full-panel">
       <div className="af-panel-heading">
         <div>
-          <h2>Automation Workflows</h2>
-          <p>
-            Create trigger-based rules or multi-step follow-up sequences. All
-            messaging remains consent checked.
-          </p>
+          <h2>{translateText("Automation Workflows")}</h2>
+          <p>{translateText("Create trigger-based rules or multi-step follow-up sequences. All messaging remains consent checked.")}</p>
         </div>
         <div className="af-inline-controls">
           <button
             className="af-button-secondary"
             onClick={() => openWorkflowEditor(undefined, "new-sequence")}
           >
-            <Plus size={14} /> New sequence
-          </button>
+            <Plus size={14} />{translateText(" New sequence")}</button>
           <button
             className="af-button-primary"
             onClick={() => openWorkflowEditor()}
           >
-            <Plus size={14} /> Create workflow
-          </button>
+            <Plus size={14} />{translateText(" Create workflow")}</button>
         </div>
       </div>
       <div className="af-automation-table">
-        {workflows.map((flow) => {
+        {localizeNode(workflows.map((flow) => {
           const FlowIcon = workflowIconFor(flow.actionType);
           return (
             <div className="af-automation-card" key={flow.id}>
@@ -2096,30 +2074,28 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <FlowIcon size={17} />
               </span>
               <div className="af-automation-main">
-                <b>{flow.name}</b>
-                <small>{flow.description}</small>
-                <span>
-                  Trigger: {stateLabel(flow.from as FollowUpLifecycleState)}{" "}
-                  <ArrowRight size={12} />{" "}
-                  {stateLabel(flow.to as FollowUpLifecycleState)} ·{" "}
-                  {flow.sequenceSteps.length} step
-                  {flow.sequenceSteps.length === 1 ? "" : "s"}
+                <b>{localizeNode(flow.name)}</b>
+                <small>{localizeNode(flow.description)}</small>
+                <span>{translateText("Trigger: ")}{localizeNode(stateLabel(flow.from as FollowUpLifecycleState))}{localizeNode(" ")}
+                  <ArrowRight size={12} />{localizeNode(" ")}
+                  {localizeNode(stateLabel(flow.to as FollowUpLifecycleState))} ·{localizeNode(" ")}
+                  {localizeNode(flow.sequenceSteps.length)}{translateText(" step")}{localizeNode(flow.sequenceSteps.length === 1 ? "" : "s")}
                 </span>
               </div>
               <span
                 className={`af-trigger-count ${flow.active ? "" : "inactive"}`}
               >
-                {flow.trigger}
+                {localizeNode(flow.trigger)}
               </span>
               <button
                 className="af-button-secondary"
                 onClick={() => runWorkflow(flow)}
               >
-                <Send size={13} /> Run demo
-              </button>
+                <Send size={13} />{translateText(" Run demo")}</button>
               <button
                 className={`af-switch ${flow.active ? "on" : ""}`}
-                aria-label={`${flow.active ? "Pause" : "Activate"} ${flow.name}`}
+                type="button" role="switch" aria-checked={flow.active}
+                aria-label={translateText(`${flow.active ? "Pause" : "Activate"} ${flow.name}`)}
                 onClick={() => {
                   const next = workflows.map((item) =>
                     item.id === flow.id
@@ -2133,15 +2109,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <i />
               </button>
               <details className="af-action-menu">
-                <summary aria-label={`${flow.name} actions`}>
+                <summary aria-label={translateText(`${flow.name} actions`)}>
                   <MoreHorizontal size={16} />
                 </summary>
                 <div>
                   <button
                     onClick={() => openWorkflowEditor(flow, "edit-workflow")}
                   >
-                    <PencilLine size={13} /> Edit workflow
-                  </button>
+                    <PencilLine size={13} />{translateText(" Edit workflow")}</button>
                   <button
                     onClick={() => {
                       const next = workflows.filter(
@@ -2152,20 +2127,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       tell(`${flow.name} deleted.`);
                     }}
                   >
-                    <Trash2 size={13} /> Delete workflow
-                  </button>
+                    <Trash2 size={13} />{translateText(" Delete workflow")}</button>
                 </div>
               </details>
             </div>
           );
-        })}
+        }))}
       </div>
       <div className="af-safety-note">
         <ShieldCheck size={16} />
         <span>
-          <b>Consent guard enabled.</b> WhatsApp and social messages require
-          explicit channel consent. Missing permission blocks sends.
-        </span>
+          <b>{translateText("Consent guard enabled.")}</b>{translateText(" WhatsApp and social messages require explicit channel consent. Missing permission blocks sends.")}</span>
       </div>
     </section>
   );
@@ -2173,21 +2145,19 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     <section className="af-panel af-full-panel">
       <div className="af-panel-heading">
         <div>
-          <h2>Follow-Up Settings</h2>
-          <p>
-            Control the response pace, assistant tone, retry limits, and human
-            escalation rules.
-          </p>
+          <h2>{translateText("Follow-Up Settings")}</h2>
+          <p>{translateText("Control the response pace, assistant tone, retry limits, and human escalation rules.")}</p>
         </div>
         <button
           className={`af-status-switch ${engineEnabled ? "on" : ""}`}
+          type="button" role="switch" aria-checked={engineEnabled} aria-label={translateText("Follow-up engine")}
           onClick={() => {
             setEngineEnabled(!engineEnabled);
             tell(`Follow-up engine ${engineEnabled ? "paused" : "running"}.`);
           }}
         >
-          <i />
-          {engineEnabled ? "Engine active" : "Engine paused"}
+          <i className="bk-switch-track" aria-hidden="true" />
+          {localizeNode(engineEnabled ? "Engine active" : "Engine paused")}
         </button>
       </div>
       <div className="af-settings-grid">
@@ -2196,8 +2166,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <Timer size={17} />
           </span>
           <div>
-            <b>Response delay</b>
-            <p>Wait before the assistant sends its first response.</p>
+            <b>{translateText("Response delay")}</b>
+            <p>{translateText("Wait before the assistant sends its first response.")}</p>
             <MenuSelect
               value={followUpSettings.responseDelay}
               onChange={(value) =>
@@ -2221,8 +2191,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <Sparkles size={17} />
           </span>
           <div>
-            <b>AI tone / personality</b>
-            <p>Default voice used across follow-up messages.</p>
+            <b>{translateText("AI tone / personality")}</b>
+            <p>{translateText("Default voice used across follow-up messages.")}</p>
             <MenuSelect
               value={followUpSettings.tone}
               onChange={(value) =>
@@ -2242,10 +2212,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <Repeat size={17} />
           </span>
           <div>
-            <b>Maximum follow-up attempts</b>
-            <p>
-              Stop the automated sequence after this many unanswered attempts.
-            </p>
+            <b>{translateText("Maximum follow-up attempts")}</b>
+            <p>{translateText("Stop the automated sequence after this many unanswered attempts.")}</p>
             <input
               type="number"
               min={1}
@@ -2268,14 +2236,13 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <BellRing size={17} />
           </span>
           <div>
-            <b>Automatic escalation</b>
-            <p>
-              Pause AI and request a human when the lead needs personal support.
-            </p>
+            <b>{translateText("Automatic escalation")}</b>
+            <p>{translateText("Pause AI and request a human when the lead needs personal support.")}</p>
           </div>
           <button
             className={`af-switch ${followUpSettings.autoEscalation ? "on" : ""}`}
-            aria-label="Toggle automatic escalation"
+            type="button" role="switch" aria-checked={followUpSettings.autoEscalation}
+            aria-label={translateText("Toggle automatic escalation")}
             onClick={() =>
               setFollowUpSettings((current) => ({
                 ...current,
@@ -2291,20 +2258,16 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <ShieldCheck size={17} />
           </span>
           <div>
-            <b>Consent-first messaging</b>
-            <p>
-              Phone capture never grants WhatsApp or promotional messaging
-              consent.
-            </p>
+            <b>{translateText("Consent-first messaging")}</b>
+            <p>{translateText("Phone capture never grants WhatsApp or promotional messaging consent.")}</p>
           </div>
-          <span className="af-safe-label">Always enforced</span>
+          <span className="af-safe-label">{translateText("Always enforced")}</span>
         </article>
       </div>
       <div className="af-settings-save">
-        <span>Changes apply to this browser's demo workspace.</span>
+        <span>{translateText("Changes apply to this browser's demo workspace.")}</span>
         <button className="af-button-primary" onClick={saveSettings}>
-          <Save size={14} /> Save Settings
-        </button>
+          <Save size={14} />{translateText(" Save Settings")}</button>
       </div>
     </section>
   );
@@ -2314,10 +2277,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         <section className="af-panel af-full-panel">
           <div className="af-panel-heading">
             <div>
-              <h2>AI Assistants</h2>
-              <p>
-                Business-specific assistants, configured for your workspace.
-              </p>
+              <h2>{translateText("AI Assistants")}</h2>
+              <p>{translateText("Business-specific assistants, configured for your workspace.")}</p>
             </div>
             <button
               className="af-button-primary"
@@ -2328,8 +2289,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 setModal("create-assistant");
               }}
             >
-              <Plus size={14} /> Create AI Assistant
-            </button>
+              <Plus size={14} />{translateText(" Create AI Assistant")}</button>
           </div>
           <div className="af-assistant-wide">
             <div className="af-bot-avatar">
@@ -2337,22 +2297,21 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <i />
             </div>
             <div>
-              <b>{assistantProfile.name}</b>
+              <b>{localizeNode(assistantProfile.name)}</b>
               <p>
-                {assistantProfile.role} · {assistantProfile.language}
+                {localizeNode(assistantProfile.role)} · {localizeNode(assistantProfile.language)}
               </p>
               <div className="af-assistant-tags">
-                <span>{assistantProfile.goal}</span>
-                <span>{assistantEnabled ? "Active" : "Paused"}</span>
-                <span>Knowledge base · {knowledgeItems.length} sources</span>
+                <span>{localizeNode(assistantProfile.goal)}</span>
+                <span>{localizeNode(assistantEnabled ? "Active" : "Paused")}</span>
+                <span>{translateText("Knowledge base · ")}{localizeNode(knowledgeItems.length)}{translateText(" sources")}</span>
               </div>
             </div>
             <button
               className="af-button-secondary"
               onClick={() => setModal("test")}
             >
-              <Sparkles size={14} /> Test assistant
-            </button>
+              <Sparkles size={14} />{translateText(" Test assistant")}</button>
             <button
               className="af-button-secondary"
               onClick={() => {
@@ -2364,8 +2323,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 setModal("edit-assistant");
               }}
             >
-              <Settings2 size={14} /> Edit
-            </button>
+              <Settings2 size={14} />{translateText(" Edit")}</button>
           </div>
         </section>
       );
@@ -2376,14 +2334,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     if (tab === "Analytics")
       return (
         <div className="af-analytics-page">
-          {renderKpis()}
-          {renderAnalytics()}
+          {localizeNode(renderKpis())}
+          {localizeNode(renderAnalytics())}
           <div className="af-panel af-performance-detail">
-            <h2>Lifecycle outcomes</h2>
+            <h2>{translateText("Lifecycle outcomes")}</h2>
             <div className="af-outcome-list">
-              {FOLLOW_UP_LIFECYCLE.map((item) => (
+              {localizeNode(FOLLOW_UP_LIFECYCLE.map((item) => (
                 <div key={item.state}>
-                  <span>{item.label}</span>
+                  <span>{localizeNode(item.label)}</span>
                   <i>
                     <b
                       style={{
@@ -2393,12 +2351,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   </i>
                   <strong>
                     {
-                      leads.filter((lead) => lead.followUpState === item.state)
-                        .length
+                      localizeNode(leads.filter((lead) => lead.followUpState === item.state)
+                        .length)
                     }
                   </strong>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         </div>
@@ -2411,11 +2369,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       <div className="af-page-title">
         <div>
           <h1>
-            <Sparkles size={21} /> AI Follow-Up
-          </h1>
-          <p>
-            Conversations, follow up with leads and turn them into customers
-          </p>
+            <Sparkles size={21} />{translateText(" AI Follow-Up")}</h1>
+          <p>{translateText("Conversations, follow up with leads and turn them into customers")}</p>
         </div>
         <button
           className="af-button-primary"
@@ -2426,13 +2381,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             setModal("create-assistant");
           }}
         >
-          <Plus size={15} /> Create AI Assistant
-        </button>
+          <Plus size={15} />{translateText(" Create AI Assistant")}</button>
       </div>
-      <div className="af-channel-row">{renderChannelCards()}</div>
+      <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>
       <div className="af-tabs-row">
-        <nav className="af-tabs" aria-label="AI Follow-Up sections">
-          {tabs.map((item) => {
+        <nav className="af-tabs" aria-label={translateText("AI Follow-Up sections")}>
+          {localizeNode(tabs.map((item) => {
             const Icon = tabIcons[item];
             return (
               <button
@@ -2440,20 +2394,20 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 className={`relative ${tab === item ? "active" : ""}`}
                 onClick={() => setTab(item)}
               >
-                {tab === item && (
+                {localizeNode(tab === item && (
                   <motion.div
                     layoutId="activeAIFollowUpTab"
                     className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#735be6] rounded-full"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
-                )}
+                ))}
                 <span className="relative z-10 flex items-center gap-[6px]">
-                  {Icon && <Icon size={16} strokeWidth={1.75} />}
-                  {item}
+                  {localizeNode(Icon && <Icon size={16} strokeWidth={1.75} />)}
+                  {localizeNode(item)}
                 </span>
               </button>
             );
-          })}
+          }))}
         </nav>
         <div className="af-date-filter">
           <CalendarDays size={14} />
@@ -2467,7 +2421,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           />
         </div>
       </div>
-      {renderKpis()}
+      {localizeNode(renderKpis())}
       <AnimatePresence mode="wait">
         <motion.div
           className="flex-1 min-h-0 w-full h-full flex flex-col"
@@ -2477,11 +2431,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {tab === "Overview"
+          {localizeNode(tab === "Overview"
             ? renderOverview()
             : tab === "Conversations"
               ? renderConversationTab()
-              : renderOtherTab()}
+              : renderOtherTab())}
         </motion.div>
       </AnimatePresence>
       {selectedLead && (
@@ -2494,8 +2448,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           <aside className="af-lead-drawer">
             <div className="af-drawer-head">
               <div>
-                <span className="af-eyebrow">CANONICAL CRM RECORD</span>
-                <h2>Follow-up details</h2>
+                <span className="af-eyebrow">{translateText("CANONICAL CRM RECORD")}</span>
+                <h2>{translateText("Follow-up details")}</h2>
               </div>
               <button
                 className="af-icon-button"
@@ -2507,15 +2461,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <div className="af-lead-profile">
               <Avatar lead={selectedLead} />
               <div>
-                <b>{selectedLead.name}</b>
+                <b>{localizeNode(selectedLead.name)}</b>
                 <span>
-                  {selectedLead.company} · {selectedLead.email}
+                  {localizeNode(selectedLead.company)} · {selectedLead.email}
                 </span>
-                <small>Lead ID · {selectedLead.id}</small>
+                <small>{translateText("Lead ID · ")}{localizeNode(selectedLead.id)}</small>
               </div>
             </div>
             <div className="af-drawer-status">
-              <span>Lifecycle state</span>
+              <span>{translateText("Lifecycle state")}</span>
               <MenuSelect
                 className="af-drawer-select"
                 value={selectedLead.followUpState}
@@ -2533,12 +2487,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 }))}
               />
             </div>
-            <h3>Explicit channel consent</h3>
-            <p className="af-drawer-note">
-              Phone number capture is not messaging permission. Toggle only when
-              consent has been recorded.
-            </p>
-            {(
+            <h3>{translateText("Explicit channel consent")}</h3>
+            <p className="af-drawer-note">{translateText("Phone number capture is not messaging permission. Toggle only when consent has been recorded.")}</p>
+            {localizeNode((
               [
                 {
                   key: "hasWhatsAppConsent",
@@ -2553,15 +2504,16 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             ).map((item) => (
               <label className="af-consent-row" key={item.key}>
                 <span>
-                  <b>{item.label}</b>
+                  <b>{localizeNode(item.label)}</b>
                   <small>
-                    {selectedLead[item.key]
+                    {localizeNode(selectedLead[item.key]
                       ? "Consent recorded"
-                      : "No consent recorded"}
+                      : "No consent recorded")}
                   </small>
                 </span>
                 <button
                   className={`af-switch ${selectedLead[item.key] ? "on" : ""}`}
+                  type="button" role="switch" aria-checked={Boolean(selectedLead[item.key])}
                   onClick={() =>
                     dispatch(
                       setLeadConsent({
@@ -2570,18 +2522,18 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       }),
                     )
                   }
-                  aria-label={`Toggle ${item.label}`}
+                  aria-label={translateText(`Toggle ${item.label}`)}
                 >
                   <i />
                 </button>
               </label>
-            ))}
+            )))}
             <div className="af-message-demo">
-              <label>Demo message</label>
+              <label>{translateText("Demo message")}</label>
               <textarea
                 value={messageText}
                 onChange={(event) => setMessageText(event.target.value)}
-                placeholder="Write a consent-checked follow-up..."
+                placeholder={translateText("Write a consent-checked follow-up...")}
               />
               <MenuSelect
                 className="af-channel-select"
@@ -2592,32 +2544,28 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     value: "whatsapp",
                     label: (
                       <>
-                        <WhatsAppBrand size={16} /> WhatsApp
-                      </>
+                        <WhatsAppBrand size={16} />{translateText(" WhatsApp")}</>
                     ),
                   },
                   {
                     value: "instagram",
                     label: (
                       <>
-                        <InstagramBrand size={16} /> Instagram
-                      </>
+                        <InstagramBrand size={16} />{translateText(" Instagram")}</>
                     ),
                   },
                   {
                     value: "messenger",
                     label: (
                       <>
-                        <MessengerBrand size={16} /> Messenger
-                      </>
+                        <MessengerBrand size={16} />{translateText(" Messenger")}</>
                     ),
                   },
                   {
                     value: "email",
                     label: (
                       <>
-                        <Mail size={15} /> Email
-                      </>
+                        <Mail size={15} />{translateText(" Email")}</>
                     ),
                   },
                 ]}
@@ -2631,25 +2579,22 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   } else tell("Write a message before recording a demo send.");
                 }}
               >
-                <Send size={14} /> Check consent &amp; record demo
-              </button>
-              <small>
-                Demo only: no message is delivered to an external channel.
-              </small>
+                <Send size={14} />{translateText(" Check consent & record demo")}</button>
+              <small>{translateText("Demo only: no message is delivered to an external channel.")}</small>
             </div>
             <div className="af-lead-activity">
-              <h3>Recent CRM activity</h3>
-              {selectedLead.activities.slice(0, 5).map((activity) => (
+              <h3>{translateText("Recent CRM activity")}</h3>
+              {localizeNode(selectedLead.activities.slice(0, 5).map((activity) => (
                 <div key={activity.id}>
                   <i />
                   <span>
-                    <b>{activity.title}</b>
+                    <b>{localizeNode(activity.title)}</b>
                     <small>
-                      {activity.detail} · {activity.at}
+                      {localizeNode(activity.detail)} · {localizeNode(activity.at)}
                     </small>
                   </span>
                 </div>
-              ))}
+              )))}
             </div>
             <button
               className="af-button-secondary af-open-crm"
@@ -2658,16 +2603,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   `/dashboard/crm?leadId=${encodeURIComponent(selectedLead.id)}`,
                 )
               }
-            >
-              Open canonical record <ArrowRight size={14} />
+            >{translateText("Open canonical record ")}<ArrowRight size={14} />
             </button>
           </aside>
         </div>
       )}
-      {modal && (
+      {localizeNode(modal && (
         <Modal
           title={
-            modal === "create-assistant"
+            translateText(modal === "create-assistant"
               ? "Create AI Assistant"
               : modal === "edit-assistant"
                 ? "Edit AI Assistant"
@@ -2687,49 +2631,39 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                               : "Create Prompt Template"
                             : modal === "channel"
                               ? `${channels.find((channel) => channel.id === selectedChannel)?.name ?? "Channel"} settings`
-                              : "Assistant settings"
+                              : "Assistant settings")
           }
           close={() => setModal("")}
         >
-          {(modal === "create-assistant" || modal === "edit-assistant") && (
+          {localizeNode((modal === "create-assistant" || modal === "edit-assistant") && (
             <div className="af-modal-form">
-              {modal === "create-assistant" && (
+              {localizeNode(modal === "create-assistant" && (
                 <div className="af-wizard-progress">
-                  <span className={assistantStep >= 1 ? "active" : ""}>
-                    1 · Profile
-                  </span>
+                  <span className={assistantStep >= 1 ? "active" : ""}>{translateText("1 · Profile")}</span>
                   <i />
-                  <span className={assistantStep >= 2 ? "active" : ""}>
-                    2 · Configure
-                  </span>
+                  <span className={assistantStep >= 2 ? "active" : ""}>{translateText("2 · Configure")}</span>
                 </div>
-              )}
-              {modal === "edit-assistant" || assistantStep === 1 ? (
+              ))}
+              {localizeNode(modal === "edit-assistant" || assistantStep === 1 ? (
                 <>
-                  <label>
-                    Assistant name
-                    <input
+                  <label>{translateText("Assistant name")}<input
                       value={newAssistantName}
                       onChange={(event) =>
                         setNewAssistantName(event.target.value)
                       }
-                      placeholder="e.g. GOS Fitness Coach"
+                      placeholder={translateText("e.g. GOS Fitness Coach")}
                     />
                   </label>
-                  <label>
-                    Role / persona
-                    <input
+                  <label>{translateText("Role / persona")}<input
                       value={assistantRole}
                       onChange={(event) => setAssistantRole(event.target.value)}
-                      placeholder="e.g. Friendly fitness coach"
+                      placeholder={translateText("e.g. Friendly fitness coach")}
                     />
                   </label>
                 </>
               ) : (
                 <>
-                  <label>
-                    Language
-                    <MenuSelect
+                  <label>{translateText("Language")}<MenuSelect
                       value={assistantLanguage}
                       onChange={setAssistantLanguage}
                       options={[
@@ -2739,9 +2673,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       ].map((item) => ({ value: item, label: item }))}
                     />
                   </label>
-                  <label>
-                    Primary goal
-                    <MenuSelect
+                  <label>{translateText("Primary goal")}<MenuSelect
                       value={assistantGoal}
                       onChange={setAssistantGoal}
                       options={[
@@ -2754,30 +2686,23 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   </label>
                   <div className="af-safety-note">
                     <ShieldCheck size={16} />
-                    <span>
-                      The assistant uses your {knowledgeItems.length} configured
-                      knowledge sources and respects each lead's messaging
-                      consent.
-                    </span>
+                    <span>{translateText("The assistant uses your ")}{localizeNode(knowledgeItems.length)}{translateText(" configured knowledge sources and respects each lead's messaging consent.")}</span>
                   </div>
                 </>
-              )}
+              ))}
               <div className="af-modal-actions">
-                {modal === "create-assistant" && assistantStep === 2 && (
+                {localizeNode(modal === "create-assistant" && assistantStep === 2 && (
                   <button
                     className="af-button-secondary"
                     onClick={() => setAssistantStep(1)}
-                  >
-                    Back
-                  </button>
-                )}
-                {modal === "create-assistant" && assistantStep === 1 ? (
+                  >{translateText("Back")}</button>
+                ))}
+                {localizeNode(modal === "create-assistant" && assistantStep === 1 ? (
                   <button
                     className="af-button-primary"
                     disabled={!newAssistantName.trim() || !assistantRole.trim()}
                     onClick={() => setAssistantStep(2)}
-                  >
-                    Continue <ArrowRight size={14} />
+                  >{translateText("Continue ")}<ArrowRight size={14} />
                   </button>
                 ) : (
                   <button
@@ -2785,31 +2710,26 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     disabled={!newAssistantName.trim() || !assistantRole.trim()}
                     onClick={saveAssistant}
                   >
-                    {modal === "edit-assistant"
+                    {localizeNode(modal === "edit-assistant"
                       ? "Save changes"
-                      : "Create active assistant"}
+                      : "Create active assistant")}
                   </button>
-                )}
+                ))}
               </div>
             </div>
-          )}
-          {modal === "test" && (
+          ))}
+          {localizeNode(modal === "test" && (
             <div className="af-modal-form">
               <div className="af-test-preview">
                 <span className="af-bot-avatar">
                   <Bot size={23} />
                 </span>
                 <div>
-                  <b>{assistantProfile.name} is ready</b>
-                  <p>
-                    Test a sample question against the configured demo knowledge
-                    base.
-                  </p>
+                  <b>{localizeNode(assistantProfile.name)}{translateText(" is ready")}</b>
+                  <p>{translateText("Test a sample question against the configured demo knowledge base.")}</p>
                 </div>
               </div>
-              <label>
-                Ask a test question
-                <input placeholder="What services do you offer?" />
+              <label>{translateText("Ask a test question")}<input placeholder={translateText("What services do you offer?")} />
               </label>
               <button
                 className="af-button-primary"
@@ -2819,43 +2739,35 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     `Demo response from ${assistantProfile.name}: I can help with the services listed in the connected knowledge base.`,
                   );
                 }}
-              >
-                Run test
-              </button>
+              >{translateText("Run test")}</button>
             </div>
-          )}
-          {(modal === "new-sequence" ||
+          ))}
+          {localizeNode((modal === "new-sequence" ||
             modal === "new-workflow" ||
             modal === "edit-workflow") && (
             <div className="af-modal-form">
-              {modal === "new-workflow" && (
+              {localizeNode(modal === "new-workflow" && (
                 <div className="af-wizard-progress">
-                  <span className={workflowWizardStep >= 1 ? "active" : ""}>
-                    1 · Trigger
-                  </span>
+                  <span className={workflowWizardStep >= 1 ? "active" : ""}>{translateText("1 · Trigger")}</span>
                   <i />
-                  <span className={workflowWizardStep >= 2 ? "active" : ""}>
-                    2 · Actions
-                  </span>
+                  <span className={workflowWizardStep >= 2 ? "active" : ""}>{translateText("2 · Actions")}</span>
                 </div>
-              )}
-              {(modal !== "new-workflow" || workflowWizardStep === 1) && (
+              ))}
+              {localizeNode((modal !== "new-workflow" || workflowWizardStep === 1) && (
                 <>
                   <label>
-                    {modal === "new-sequence"
+                    {localizeNode(modal === "new-sequence"
                       ? "Sequence name"
-                      : "Workflow name"}
+                      : "Workflow name")}
                     <input
                       value={newWorkflowName}
                       onChange={(event) =>
                         setNewWorkflowName(event.target.value)
                       }
-                      placeholder="e.g. Qualified lead follow-up"
+                      placeholder={translateText("e.g. Qualified lead follow-up")}
                     />
                   </label>
-                  <label>
-                    Trigger event
-                    <MenuSelect
+                  <label>{translateText("Trigger event")}<MenuSelect
                       value={workflowFrom}
                       onChange={setWorkflowFrom}
                       options={FOLLOW_UP_LIFECYCLE.map((item) => ({
@@ -2864,9 +2776,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       }))}
                     />
                   </label>
-                  <label>
-                    Lifecycle outcome
-                    <MenuSelect
+                  <label>{translateText("Lifecycle outcome")}<MenuSelect
                       value={workflowTo}
                       onChange={setWorkflowTo}
                       options={FOLLOW_UP_LIFECYCLE.map((item) => ({
@@ -2876,12 +2786,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     />
                   </label>
                 </>
-              )}
-              {(modal === "edit-workflow" ||
+              ))}
+              {localizeNode((modal === "edit-workflow" ||
                 (modal === "new-workflow" && workflowWizardStep === 2)) && (
-                <label>
-                  Action type
-                  <MenuSelect
+                <label>{translateText("Action type")}<MenuSelect
                     value={workflowAction}
                     onChange={setWorkflowAction}
                     options={[
@@ -2894,11 +2802,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     ].map((item) => ({ value: item, label: item }))}
                   />
                 </label>
-              )}
-              {modal === "new-sequence" && (
+              ))}
+              {localizeNode(modal === "new-sequence" && (
                 <div className="af-sequence-builder">
                   <div className="af-sequence-title">
-                    <b>Follow-up timeline</b>
+                    <b>{translateText("Follow-up timeline")}</b>
                     <button
                       type="button"
                       className="af-button-secondary"
@@ -2914,15 +2822,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                         ])
                       }
                     >
-                      <Plus size={13} /> Add step
-                    </button>
+                      <Plus size={13} />{translateText(" Add step")}</button>
                   </div>
-                  {sequenceSteps.map((step, index) => (
+                  {localizeNode(sequenceSteps.map((step, index) => (
                     <div className="af-sequence-step" key={step.id}>
-                      <span className="af-sequence-number">{index + 1}</span>
-                      <label>
-                        Wait
-                        <input
+                      <span className="af-sequence-number">{localizeNode(index + 1)}</span>
+                      <label>{translateText("Wait")}<input
                           type="number"
                           min="0"
                           value={step.delay}
@@ -2969,10 +2874,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                           "CRM update",
                         ].map((action) => ({ value: action, label: action }))}
                       />
-                      {sequenceSteps.length > 1 && (
+                      {localizeNode(sequenceSteps.length > 1 && (
                         <button
                           className="af-icon-button"
-                          title="Remove step"
+                          title={translateText("Remove step")}
                           onClick={() =>
                             setSequenceSteps((current) =>
                               current.filter((item) => item.id !== step.id),
@@ -2981,12 +2886,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                         >
                           <X size={14} />
                         </button>
-                      )}
+                      ))}
                     </div>
-                  ))}
+                  )))}
                 </div>
-              )}
-              {(modal !== "new-workflow" || workflowWizardStep === 2) && (
+              ))}
+              {localizeNode((modal !== "new-workflow" || workflowWizardStep === 2) && (
                 <>
                   <label className="af-check-row">
                     <input
@@ -2995,58 +2900,48 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       onChange={(event) =>
                         setWorkflowActive(event.target.checked)
                       }
-                    />{" "}
-                    Activate immediately
-                  </label>
+                    />{localizeNode(" ")}{translateText("Activate immediately")}</label>
                   <div className="af-safety-note">
                     <ShieldCheck size={16} />
-                    <span>
-                      Messaging actions check channel-specific consent before
-                      they run. No external sends occur in this local demo.
-                    </span>
+                    <span>{translateText("Messaging actions check channel-specific consent before they run. No external sends occur in this local demo.")}</span>
                   </div>
                 </>
-              )}
-              {modal === "new-workflow" && workflowWizardStep === 1 ? (
+              ))}
+              {localizeNode(modal === "new-workflow" && workflowWizardStep === 1 ? (
                 <div className="af-modal-actions">
                   <button
                     className="af-button-primary"
                     disabled={!newWorkflowName.trim()}
                     onClick={() => setWorkflowWizardStep(2)}
-                  >
-                    Configure action <ArrowRight size={14} />
+                  >{translateText("Configure action ")}<ArrowRight size={14} />
                   </button>
                 </div>
               ) : (
                 <div className="af-modal-actions">
-                  {modal === "new-workflow" && (
+                  {localizeNode(modal === "new-workflow" && (
                     <button
                       className="af-button-secondary"
                       onClick={() => setWorkflowWizardStep(1)}
-                    >
-                      Back
-                    </button>
-                  )}
+                    >{translateText("Back")}</button>
+                  ))}
                   <button
                     className="af-button-primary"
                     disabled={!newWorkflowName.trim()}
                     onClick={addWorkflow}
                   >
-                    {modal === "edit-workflow"
+                    {localizeNode(modal === "edit-workflow"
                       ? "Save changes"
                       : modal === "new-sequence"
                         ? "Save sequence"
-                        : "Create workflow"}
+                        : "Create workflow")}
                   </button>
                 </div>
-              )}
+              ))}
             </div>
-          )}
-          {modal === "knowledge-source" && (
+          ))}
+          {localizeNode(modal === "knowledge-source" && (
             <div className="af-modal-form">
-              <label>
-                Source type
-                <MenuSelect
+              <label>{translateText("Source type")}<MenuSelect
                   value={knowledgeType}
                   onChange={(value) => {
                     setKnowledgeType(value as "url" | "file" | "text");
@@ -3058,62 +2953,51 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       value: "url",
                       label: (
                         <>
-                          <Link2 size={14} /> Website URL
-                        </>
+                          <Link2 size={14} />{translateText(" Website URL")}</>
                       ),
                     },
                     {
                       value: "file",
                       label: (
                         <>
-                          <FileText size={14} /> File upload
-                        </>
+                          <FileText size={14} />{translateText(" File upload")}</>
                       ),
                     },
                     {
                       value: "text",
                       label: (
                         <>
-                          <ScanText size={14} /> Text snippet
-                        </>
+                          <ScanText size={14} />{translateText(" Text snippet")}</>
                       ),
                     },
                   ]}
                 />
               </label>
-              <label>
-                Source name
-                <input
+              <label>{translateText("Source name")}<input
                   value={knowledgeName}
                   onChange={(event) => setKnowledgeName(event.target.value)}
-                  placeholder="e.g. Pricing and membership"
+                  placeholder={translateText("e.g. Pricing and membership")}
                 />
               </label>
-              {knowledgeType === "url" && (
-                <label>
-                  Website URL
-                  <input
+              {localizeNode(knowledgeType === "url" && (
+                <label>{translateText("Website URL")}<input
                     type="url"
                     value={knowledgeValue}
                     onChange={(event) => setKnowledgeValue(event.target.value)}
-                    placeholder="https://example.com/services"
+                    placeholder={translateText("https://example.com/services")}
                   />
                 </label>
-              )}
-              {knowledgeType === "text" && (
-                <label>
-                  Text snippet
-                  <textarea
+              ))}
+              {localizeNode(knowledgeType === "text" && (
+                <label>{translateText("Text snippet")}<textarea
                     value={knowledgeValue}
                     onChange={(event) => setKnowledgeValue(event.target.value)}
-                    placeholder="Paste verified business information for the assistant..."
+                    placeholder={translateText("Paste verified business information for the assistant...")}
                   />
                 </label>
-              )}
-              {knowledgeType === "file" && (
-                <label>
-                  Choose document
-                  <input
+              ))}
+              {localizeNode(knowledgeType === "file" && (
+                <label>{translateText("Choose document")}<input
                     type="file"
                     accept=".pdf,.doc,.docx,.txt,.md"
                     onChange={(event) => {
@@ -3128,36 +3012,27 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     }}
                   />
                 </label>
-              )}
+              ))}
               <div className="af-safety-note">
                 <ShieldCheck size={16} />
-                <span>
-                  Only verified business content should be added. This demo
-                  stores source details locally and does not upload files to a
-                  provider.
-                </span>
+                <span>{translateText("Only verified business content should be added. This demo stores source details locally and does not upload files to a provider.")}</span>
               </div>
               <button
                 className="af-button-primary"
                 onClick={saveKnowledgeSource}
               >
-                <Plus size={14} /> Add to Knowledge Base
-              </button>
+                <Plus size={14} />{translateText(" Add to Knowledge Base")}</button>
             </div>
-          )}
-          {modal === "template" && (
+          ))}
+          {localizeNode(modal === "template" && (
             <div className="af-modal-form">
-              <label>
-                Template title
-                <input
+              <label>{translateText("Template title")}<input
                   value={templateTitle}
                   onChange={(event) => setTemplateTitle(event.target.value)}
-                  placeholder="e.g. Friendly appointment follow-up"
+                  placeholder={translateText("e.g. Friendly appointment follow-up")}
                 />
               </label>
-              <label>
-                Category
-                <MenuSelect
+              <label>{translateText("Category")}<MenuSelect
                   value={templateCategory}
                   onChange={setTemplateCategory}
                   options={[
@@ -3169,43 +3044,31 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   ].map((value) => ({ value, label: value }))}
                 />
               </label>
-              <label>
-                Prompt instructions
-                <textarea
+              <label>{translateText("Prompt instructions")}<textarea
                   value={templatePrompt}
                   onChange={(event) => setTemplatePrompt(event.target.value)}
-                  placeholder="Describe the assistant's response goal, tone, and boundaries..."
+                  placeholder={translateText("Describe the assistant's response goal, tone, and boundaries...")}
                 />
               </label>
-              <label>
-                Variable tags
-                <input
+              <label>{translateText("Variable tags")}<input
                   value={templateVariables}
                   onChange={(event) => setTemplateVariables(event.target.value)}
-                  placeholder="{customer_name}, {appointment_time}"
+                  placeholder={translateText("{customer_name}, {appointment_time}")}
                 />
               </label>
-              <div className="af-modal-copy">
-                Use variable tags such as <code>{"{customer_name}"}</code> in
-                your prompt. Consent is checked when a message is sent.
-              </div>
+              <div className="af-modal-copy">{translateText("Use variable tags such as ")}<code>{"{customer_name}"}</code>{translateText(" in your prompt. Consent is checked when a message is sent.")}</div>
               <button className="af-button-primary" onClick={saveTemplate}>
-                <Save size={14} />{" "}
-                {editingTemplateId
+                <Save size={14} />{localizeNode(" ")}
+                {localizeNode(editingTemplateId
                   ? "Save template changes"
-                  : "Create prompt template"}
+                  : "Create prompt template")}
               </button>
             </div>
-          )}
-          {modal === "channel" && (
+          ))}
+          {localizeNode(modal === "channel" && (
             <div className="af-modal-form">
-              <p className="af-modal-copy">
-                Connection status is simulated locally for this demo. No
-                external provider credentials are used.
-              </p>
-              <label>
-                Channel status
-                <MenuSelect
+              <p className="af-modal-copy">{translateText("Connection status is simulated locally for this demo. No external provider credentials are used.")}</p>
+              <label>{translateText("Channel status")}<MenuSelect
                   value={channelsOn[selectedChannel] ? "Connected" : "Paused"}
                   onChange={(value) =>
                     setChannelsOn((state) => ({
@@ -3219,9 +3082,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   }))}
                 />
               </label>
-              <label>
-                Consent policy
-                <MenuSelect
+              <label>{translateText("Consent policy")}<MenuSelect
                   value={channelPolicy}
                   onChange={setChannelPolicy}
                   options={[
@@ -3237,13 +3098,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   setModal("");
                   tell("Channel preferences saved.");
                 }}
-              >
-                Save channel settings
-              </button>
+              >{translateText("Save channel settings")}</button>
             </div>
-          )}
+          ))}
         </Modal>
-      )}{" "}
+      ))}{localizeNode(" ")}
     </main>
   );
 };

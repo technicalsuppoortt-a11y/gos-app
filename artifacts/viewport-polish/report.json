@@ -1,0 +1,5325 @@
+{
+  "errors": [],
+  "results": [
+    {
+      "theme": "light",
+      "language": "en",
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "scrollHeight": 900,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1424,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1247,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1424,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 534.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 542.5,
+              "right": 831,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 839,
+              "right": 1127.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1135.5,
+              "right": 1424,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1424,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 246,
+          "right": 896,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 904,
+          "right": 1424,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 917,
+              "right": 1088.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 634.5,
+              "left": 917,
+              "right": 1411,
+              "height": 175.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 246,
+          "right": 633.328125,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 704.5,
+              "left": 259,
+              "right": 620.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 748.625,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 792.75,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 836.875,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 641.328125,
+          "right": 1028.65625,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 654.328125,
+              "right": 727.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 1036.65625,
+          "right": 1424,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 1049.65625,
+              "right": 1129.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "en",
+      "width": 1440,
+      "height": 768,
+      "scrollWidth": 1440,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1424,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1247,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1424,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 534.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 542.5,
+              "right": 831,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 839,
+              "right": 1127.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1135.5,
+              "right": 1424,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1424,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 896,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 904,
+          "right": 1424,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 917,
+              "right": 1088.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 917,
+              "right": 1411,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 633.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 620.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 641.328125,
+          "right": 1028.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 654.328125,
+              "right": 727.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 1036.65625,
+          "right": 1424,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 1049.65625,
+              "right": 1129.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "en",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1064,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 887,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1064,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 444.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 452.5,
+              "right": 651,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 659,
+              "right": 857.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 865.5,
+              "right": 1064,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1064,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 696,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 704,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 717,
+              "right": 888.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 717,
+              "right": 1051,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 513.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 500.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 521.328125,
+          "right": 788.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 534.328125,
+              "right": 607.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 796.65625,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 809.65625,
+              "right": 889.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "en",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1064,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 887,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1064,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 444.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 452.5,
+              "right": 651,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 659,
+              "right": 857.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 865.5,
+              "right": 1064,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1064,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 696,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 704,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 717,
+              "right": 888.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 717,
+              "right": 1051,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 513.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 500.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 521.328125,
+          "right": 788.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 534.328125,
+              "right": 607.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 796.65625,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 809.65625,
+              "right": 889.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "en",
+      "width": 1280,
+      "height": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 720,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1264,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1087,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1264,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 494.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 502.5,
+              "right": 751,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 759,
+              "right": 1007.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1015.5,
+              "right": 1264,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1264,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 542,
+          "left": 246,
+          "right": 807.109375,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 542,
+          "left": 815.109375,
+          "right": 1263.984375,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 828.109375,
+              "right": 999.8125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 533,
+              "left": 828.109375,
+              "right": 1250.984375,
+              "height": 74
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 548,
+          "bottom": 710,
+          "left": 246,
+          "right": 580,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 603,
+              "left": 259,
+              "right": 567,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 628,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 653,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 678,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 703,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 548,
+          "bottom": 710,
+          "left": 588,
+          "right": 922,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 601,
+              "right": 673.859375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 548,
+          "bottom": 710,
+          "left": 930,
+          "right": 1264,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 943,
+              "right": 1023.03125,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "ar",
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "scrollHeight": 900,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1194,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1173.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1194,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 905.5,
+              "right": 1194,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 609,
+              "right": 897.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 312.5,
+              "right": 601,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 304.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1194,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 1091.6875,
+              "right": 1181,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 544,
+          "right": 1194,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 1093.8125,
+              "right": 1181,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 16,
+          "right": 536,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 322.828125,
+              "right": 523,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 634.5,
+              "left": 29,
+              "right": 523,
+              "height": 175.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 806.671875,
+          "right": 1194,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 1112.28125,
+              "right": 1181,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 704.5,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 748.625,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 792.75,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 836.875,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 411.34375,
+          "right": 798.671875,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 673.203125,
+              "right": 785.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 16,
+          "right": 403.34375,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 308.59375,
+              "right": 390.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "ar",
+      "width": 1440,
+      "height": 768,
+      "scrollWidth": 1440,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1194,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1173.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1194,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 905.5,
+              "right": 1194,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 609,
+              "right": 897.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 312.5,
+              "right": 601,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 304.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1194,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 1091.6875,
+              "right": 1181,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 544,
+          "right": 1194,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 1093.8125,
+              "right": 1181,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 536,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 322.828125,
+              "right": 523,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 523,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 806.671875,
+          "right": 1194,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 1112.28125,
+              "right": 1181,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 411.34375,
+          "right": 798.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 673.203125,
+              "right": 785.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 403.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 308.59375,
+              "right": 390.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "ar",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 834,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 813.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 834,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 635.5,
+              "right": 834,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 429,
+              "right": 627.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 222.5,
+              "right": 421,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 214.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 834,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 731.6875,
+              "right": 821,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 384,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 733.8125,
+              "right": 821,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 376,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 162.828125,
+              "right": 363,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 363,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 566.671875,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 752.28125,
+              "right": 821,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 579.671875,
+              "right": 821,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 291.34375,
+          "right": 558.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 433.203125,
+              "right": 545.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 283.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 188.59375,
+              "right": 270.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "ar",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 834,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 813.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 834,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 635.5,
+              "right": 834,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 429,
+              "right": 627.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 222.5,
+              "right": 421,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 214.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 834,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 731.6875,
+              "right": 821,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 384,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 733.8125,
+              "right": 821,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 376,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 162.828125,
+              "right": 363,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 363,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 566.671875,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 752.28125,
+              "right": 821,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 579.671875,
+              "right": 821,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 291.34375,
+          "right": 558.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 433.203125,
+              "right": 545.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 283.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 188.59375,
+              "right": 270.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "language": "ar",
+      "width": 1280,
+      "height": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 720,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1034,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1013.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1034,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 785.5,
+              "right": 1034,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 529,
+              "right": 777.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 272.5,
+              "right": 521,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 264.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1034,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 931.6875,
+              "right": 1021,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 542,
+          "left": 472.890625,
+          "right": 1034,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 933.8125,
+              "right": 1021,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 542,
+          "left": 16.015625,
+          "right": 464.890625,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 251.71875,
+              "right": 451.890625,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 533,
+              "left": 29.015625,
+              "right": 451.890625,
+              "height": 74
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 548,
+          "bottom": 710,
+          "left": 700,
+          "right": 1034,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 952.28125,
+              "right": 1021,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 603,
+              "left": 713,
+              "right": 1021,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 628,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 653,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 678,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 703,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 548,
+          "bottom": 710,
+          "left": 358,
+          "right": 692,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 566.53125,
+              "right": 679,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 548,
+          "bottom": 710,
+          "left": 16,
+          "right": 350,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 255.25,
+              "right": 337,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "en",
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "scrollHeight": 900,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1424,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1247,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1424,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 534.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 542.5,
+              "right": 831,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 839,
+              "right": 1127.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1135.5,
+              "right": 1424,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1424,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 246,
+          "right": 896,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 904,
+          "right": 1424,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 917,
+              "right": 1088.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 634.5,
+              "left": 917,
+              "right": 1411,
+              "height": 175.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 246,
+          "right": 633.328125,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 704.5,
+              "left": 259,
+              "right": 620.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 748.625,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 792.75,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 836.875,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 641.328125,
+          "right": 1028.65625,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 654.328125,
+              "right": 727.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 1036.65625,
+          "right": 1424,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 1049.65625,
+              "right": 1129.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "en",
+      "width": 1440,
+      "height": 768,
+      "scrollWidth": 1440,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1424,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1247,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1424,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 534.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 542.5,
+              "right": 831,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 839,
+              "right": 1127.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1135.5,
+              "right": 1424,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1424,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 896,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 904,
+          "right": 1424,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 917,
+              "right": 1088.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 917,
+              "right": 1411,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 633.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 620.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 620.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 641.328125,
+          "right": 1028.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 654.328125,
+              "right": 727.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 654.328125,
+              "right": 1015.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 1036.65625,
+          "right": 1424,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 1049.65625,
+              "right": 1129.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 1049.65625,
+              "right": 1411,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "en",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1064,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 887,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1064,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 444.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 452.5,
+              "right": 651,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 659,
+              "right": 857.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 865.5,
+              "right": 1064,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1064,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 696,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 704,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 717,
+              "right": 888.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 717,
+              "right": 1051,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 513.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 500.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 521.328125,
+          "right": 788.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 534.328125,
+              "right": 607.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 796.65625,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 809.65625,
+              "right": 889.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "en",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1064,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 887,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1064,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 444.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 452.5,
+              "right": 651,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 659,
+              "right": 857.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 865.5,
+              "right": 1064,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1064,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 246,
+          "right": 696,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 704,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 717,
+              "right": 888.703125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 717,
+              "right": 1051,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 246,
+          "right": 513.328125,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 259,
+              "right": 500.328125,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 259,
+              "right": 500.328125,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 521.328125,
+          "right": 788.65625,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 534.328125,
+              "right": 607.1875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 534.328125,
+              "right": 775.65625,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 796.65625,
+          "right": 1064,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 809.65625,
+              "right": 889.6875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 809.65625,
+              "right": 1051,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "en",
+      "width": 1280,
+      "height": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 720,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 246,
+          "right": 1264,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 266.5,
+              "right": 1087,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 246,
+          "right": 1264,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 246,
+              "right": 494.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 502.5,
+              "right": 751,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 759,
+              "right": 1007.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 1015.5,
+              "right": 1264,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 246,
+          "right": 1264,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 259,
+              "right": 356.140625,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 542,
+          "left": 246,
+          "right": 807.109375,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 259,
+              "right": 394.265625,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 542,
+          "left": 815.109375,
+          "right": 1263.984375,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 828.109375,
+              "right": 999.8125,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 533,
+              "left": 828.109375,
+              "right": 1250.984375,
+              "height": 74
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 548,
+          "bottom": 710,
+          "left": 246,
+          "right": 580,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 259,
+              "right": 350.921875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 603,
+              "left": 259,
+              "right": 567,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 628,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 653,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 678,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 703,
+              "left": 259,
+              "right": 567,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 548,
+          "bottom": 710,
+          "left": 588,
+          "right": 922,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 601,
+              "right": 673.859375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 601,
+              "right": 909,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 548,
+          "bottom": 710,
+          "left": 930,
+          "right": 1264,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 943,
+              "right": 1023.03125,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 943,
+              "right": 1251,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "ar",
+      "width": 1440,
+      "height": 900,
+      "scrollWidth": 1440,
+      "scrollHeight": 900,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1194,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1173.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1194,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 905.5,
+              "right": 1194,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 609,
+              "right": 897.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 312.5,
+              "right": 601,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 304.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1194,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 1091.6875,
+              "right": 1181,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 544,
+          "right": 1194,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 1093.8125,
+              "right": 1181,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 643.5,
+          "left": 16,
+          "right": 536,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 322.828125,
+              "right": 523,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 634.5,
+              "left": 29,
+              "right": 523,
+              "height": 175.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 806.671875,
+          "right": 1194,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 1112.28125,
+              "right": 1181,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 704.5,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 748.625,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 792.75,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 836.875,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 411.34375,
+          "right": 798.671875,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 673.203125,
+              "right": 785.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 649.5,
+          "bottom": 890,
+          "left": 16,
+          "right": 403.34375,
+          "height": 240.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 676.5,
+              "left": 308.59375,
+              "right": 390.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 710.5,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 767.328125,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 824.171875,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 881,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "ar",
+      "width": 1440,
+      "height": 768,
+      "scrollWidth": 1440,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1194,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1173.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1194,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 905.5,
+              "right": 1194,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 609,
+              "right": 897.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 312.5,
+              "right": 601,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 304.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1194,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 1091.6875,
+              "right": 1181,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 544,
+          "right": 1194,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 1093.8125,
+              "right": 1181,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 536,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 322.828125,
+              "right": 523,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 523,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 806.671875,
+          "right": 1194,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 1112.28125,
+              "right": 1181,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 819.671875,
+              "right": 1181,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 411.34375,
+          "right": 798.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 673.203125,
+              "right": 785.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 424.34375,
+              "right": 785.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 403.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 308.59375,
+              "right": 390.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 390.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "ar",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 834,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 813.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 834,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 635.5,
+              "right": 834,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 429,
+              "right": 627.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 222.5,
+              "right": 421,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 214.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 834,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 731.6875,
+              "right": 821,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 384,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 733.8125,
+              "right": 821,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 376,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 162.828125,
+              "right": 363,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 363,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 566.671875,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 752.28125,
+              "right": 821,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 579.671875,
+              "right": 821,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 291.34375,
+          "right": 558.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 433.203125,
+              "right": 545.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 283.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 188.59375,
+              "right": 270.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "ar",
+      "width": 1080,
+      "height": 768,
+      "scrollWidth": 1080,
+      "scrollHeight": 768,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 834,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 813.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 834,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 635.5,
+              "right": 834,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 429,
+              "right": 627.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 222.5,
+              "right": 421,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 214.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 834,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 731.6875,
+              "right": 821,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 384,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 733.8125,
+              "right": 821,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 577.5,
+          "left": 16,
+          "right": 376,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 162.828125,
+              "right": 363,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 568.5,
+              "left": 29,
+              "right": 363,
+              "height": 109.5
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 566.671875,
+          "right": 834,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 752.28125,
+              "right": 821,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 638.5,
+              "left": 579.671875,
+              "right": 821,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 666.125,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 693.75,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 721.375,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 579.671875,
+              "right": 821,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 291.34375,
+          "right": 558.671875,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 433.203125,
+              "right": 545.671875,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 304.34375,
+              "right": 545.671875,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 583.5,
+          "bottom": 758,
+          "left": 16,
+          "right": 283.34375,
+          "height": 174.5,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 610.5,
+              "left": 188.59375,
+              "right": 270.34375,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 644.5,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 679.328125,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 714.171875,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 749,
+              "left": 29,
+              "right": 270.34375,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "language": "ar",
+      "width": 1280,
+      "height": 720,
+      "scrollWidth": 1280,
+      "scrollHeight": 720,
+      "boardTransform": "none",
+      "sections": [
+        {
+          "id": "hero",
+          "top": 141,
+          "bottom": 245,
+          "left": 16,
+          "right": 1034,
+          "height": 104,
+          "descendants": [
+            {
+              "tag": "H1",
+              "bottom": 175.5,
+              "left": 193,
+              "right": 1013.5,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "metrics",
+          "top": 251,
+          "bottom": 311,
+          "left": 16,
+          "right": 1034,
+          "height": 60,
+          "descendants": [
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 785.5,
+              "right": 1034,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 529,
+              "right": 777.5,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 272.5,
+              "right": 521,
+              "height": 60
+            },
+            {
+              "tag": "ARTICLE",
+              "bottom": 311,
+              "left": 16,
+              "right": 264.5,
+              "height": 60
+            }
+          ]
+        },
+        {
+          "id": "quick-actions",
+          "top": 317,
+          "bottom": 397,
+          "left": 16,
+          "right": 1034,
+          "height": 80,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 341.25,
+              "left": 931.6875,
+              "right": 1021,
+              "height": 16.25
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "top": 403,
+          "bottom": 542,
+          "left": 472.890625,
+          "right": 1034,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 933.8125,
+              "right": 1021,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "id": "revenue",
+          "top": 403,
+          "bottom": 542,
+          "left": 16.015625,
+          "right": 464.890625,
+          "height": 139,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 430,
+              "left": 251.71875,
+              "right": 451.890625,
+              "height": 18
+            },
+            {
+              "tag": "DIV",
+              "bottom": 533,
+              "left": 29.015625,
+              "right": 451.890625,
+              "height": 74
+            }
+          ]
+        },
+        {
+          "id": "activity",
+          "top": 548,
+          "bottom": 710,
+          "left": 700,
+          "right": 1034,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 952.28125,
+              "right": 1021,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 603,
+              "left": 713,
+              "right": 1021,
+              "height": 24
+            },
+            {
+              "tag": "LI",
+              "bottom": 628,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 653,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 678,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            },
+            {
+              "tag": "LI",
+              "bottom": 703,
+              "left": 713,
+              "right": 1021,
+              "height": 25
+            }
+          ]
+        },
+        {
+          "id": "funnels",
+          "top": 548,
+          "bottom": 710,
+          "left": 358,
+          "right": 692,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 566.53125,
+              "right": 679,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 371,
+              "right": 679,
+              "height": 30
+            }
+          ]
+        },
+        {
+          "id": "products",
+          "top": 548,
+          "bottom": 710,
+          "left": 16,
+          "right": 350,
+          "height": 162,
+          "descendants": [
+            {
+              "tag": "H2",
+              "bottom": 575,
+              "left": 255.25,
+              "right": 337,
+              "height": 18
+            },
+            {
+              "tag": "LI",
+              "bottom": 609,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 639.671875,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 670.328125,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            },
+            {
+              "tag": "LI",
+              "bottom": 701,
+              "left": 29,
+              "right": 337,
+              "height": 30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

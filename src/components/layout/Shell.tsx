@@ -1,3 +1,4 @@
+import { useUILanguage } from '../../i18n/display';
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
@@ -10,6 +11,7 @@ interface ShellProps {
 }
 
 export const Shell: React.FC<ShellProps> = ({ sidebarItems, basePath }) => {
+  useUILanguage();
   return (
     <div className={`role-shell flex min-h-screen bg-slate-50 dark:bg-dark-bg transition-colors duration-300 ${basePath === '/super-admin' ? 'super-admin-shell' : ''}`}>
       <Sidebar items={sidebarItems} basePath={basePath} />
