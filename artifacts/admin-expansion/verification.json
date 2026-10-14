@@ -381,5 +381,6 @@
       "theme": "dark"
     }
   ],
-  "errors": []
+  "errors": [],
+  "offlineFonts": true
 }

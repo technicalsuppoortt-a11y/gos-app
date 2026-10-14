@@ -14,6 +14,7 @@ import { useProducts } from '../../pages/commerce/repository';
 import { NotificationCenter } from './NotificationCenter';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
+  '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
   '/admin/users': { title: 'Users Management', description: 'Invite and manage your workspace users.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },

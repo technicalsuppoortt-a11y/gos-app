@@ -15,6 +15,7 @@ import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
 import { type LandingCopy, type PreviewView } from './landing-content';
 import { cmsEvent, readCMS, type LandingCMS } from './cms';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
 
 
@@ -162,6 +163,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
           ))}
         </nav>
         <div className="lp-header__actions">
+          <ThemeToggle />
           <button id="lp-lang-toggle" type="button" className="lp-lang" onClick={onLanguage} lang={language === 'ar' ? 'en' : 'ar'} aria-label={copy.nav.langLabel}>
             <Globe size={14} aria-hidden="true" />
             <span>{copy.nav.langLabel}</span>
@@ -176,6 +178,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
       <div className="lp-mobile-nav" hidden={!open}>
         {copy.nav.links.map(link => <a key={link.id} href={`#${link.id}`} onClick={event => go(event, link.id)}>{link.label}</a>)}
         <div className="lp-mobile-nav__actions">
+          <ThemeToggle />
           <Link to={readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl} className="lp-btn lp-btn--ghost lp-btn--md">{copy.nav.login}</Link>
           <BookButton id="lp-mobile-book" label={copy.nav.book} />
         </div>
@@ -518,11 +521,11 @@ function EngineDiagram({ copy }: { copy: LandingCopy }) {
             <svg className="lp-pod__shape" viewBox="0 0 200 170" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <linearGradient id={`lp-pod-fill-${key}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f1ecff" />
-                  <stop offset="100%" stopColor="#f8f6ff" />
+                  <stop offset="0%" stopColor="var(--lp-pod-stop-1, #f1ecff)" />
+                  <stop offset="100%" stopColor="var(--lp-pod-stop-2, #f8f6ff)" />
                 </linearGradient>
               </defs>
-              <path d={POD_PATH} fill={`url(#lp-pod-fill-${key})`} stroke="rgba(107,70,254,0.08)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <path d={POD_PATH} fill={`url(#lp-pod-fill-${key})`} stroke="var(--lp-pod-stroke, rgba(107,70,254,0.08))" strokeWidth="1" vectorEffect="non-scaling-stroke" />
             </svg>
             <span className="lp-pod__icon"><Icon size={17} strokeWidth={2.3} aria-hidden="true" /></span>
             <b>{node.title}</b>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, MessagesSquare, Rocket, Contact, Layers, CreditCard, Receipt, Globe, Kanban, CalendarDays, Package, LayoutTemplate, BarChart3, PanelTop, Bot, ShieldCheck, Plug, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, MessagesSquare, Rocket, Contact, Layers, CreditCard, Receipt, Globe, Kanban, CalendarDays, Package, LayoutTemplate, BarChart3, PanelTop, Bot, ShieldCheck, Plug, Settings, Grid2X2 } from 'lucide-react';
 export type Copy = readonly [string, string];
 export type Field = { key: string; label: Copy; options?: string[]; type?: 'number' | 'url' | 'email' | 'time'; };
 export type RecordRow = { id: string; name: string; tenant: string; status: string; [key: string]: string };
@@ -8,6 +8,7 @@ const tenant = f('tenant', 'Workspace', 'مساحة العمل', ['Nova Studio',
 const status = (values: string[]) => f('status', 'Status', 'الحالة', values);
 export const modules = [
  { id:'dashboard', title:['Dashboard','لوحة التحكم'], icon:LayoutDashboard, description:['Your platform, at a glance.','نظرة شاملة على أداء المنصة.'], tabs:[] },
+ { id:'tools', title:['All Tools','كل الأدوات'], icon:Grid2X2, description:['Centralized platform features & native tools control center.','مركز التحكم الموحد لميزات وأدوات المنصة.'], tabs:[] },
  { id:'users', title:['Users Management','إدارة المستخدمين'], icon:Users, description:['',''], tabs:[] },
  { id:'conversations', title:['Conversations','المحادثات'], icon:MessagesSquare, description:['Monitor channels, conversations and human handoffs.','راقب القنوات والمحادثات والتحويل إلى الفريق.'], tabs:[
  tab('Inbox','صندوق الوارد',[tenant,f('channel','Channel','القناة',['WhatsApp','Instagram','Email']),f('owner','Assigned to','المسؤول',['AI','Human']),f('message','Last message','آخر رسالة'),status(['Open','Resolved'])],[['Pricing inquiry','Nova Studio','Open','WhatsApp','AI','Can I book a consultation?'],['Course access','Atlas Agency','Open','Email','Human','Please help with my order.'],['New appointment','Cairo Growth','Resolved','Instagram','AI','Thank you for confirming.']]),

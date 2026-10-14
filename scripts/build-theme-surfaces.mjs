@@ -5,7 +5,7 @@ import postcss from 'postcss';
 // Only app chrome is themed. Authored sites, thumbnails and customer previews
 // retain their own palette, even when they are displayed inside an editor.
 const excluded = ':where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)';
-const guard = '';
+const guard = `:not(${excluded}):not(${excluded} *)`;
 const files = [];
 function visit(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

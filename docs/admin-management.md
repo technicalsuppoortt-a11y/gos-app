@@ -1,5 +1,33 @@
 # Admin management workspace
 
+## Compact desktop layout
+
+The 18 editable modules use compact cards, 140px chart canvases, five-row table
+pages, and the same shared Header component as Users Management. Desktop
+navigation can collapse to an icon rail. All admin filters and select fields use
+keyboard-accessible, RTL-aware Radix dropdowns; search has a visible clear action.
+Users Management and its shared header implementation and styles are unchanged.
+Budget and gateway widgets also paginate, maintaining their compact dimensions
+when records are added. `scripts/verify-admin-widget-growth.mjs` verifies this with
+12 budgets, gateways and operational events in both themes and languages.
+
+The landing CMS presents six fields per page in two desktop columns. Explicit
+Previous/Next controls expose every field. Pricing uses separate content/link
+and plan panels, keeping all editor actions visible without page scrolling.
+Smaller screens retain scrolling rather than clipping content.
+
+For the sequential 1920×1080 layout audit, run
+`node scripts/verify-admin-compact.mjs` with `PLAYWRIGHT_MODULE_PATH` configured.
+`ADMIN_AUDIT_URL` defaults to `http://127.0.0.1:5177`. The audit visits each module
+in order and checks every sub-tab and CMS field page in both themes and languages.
+It measures actual document/main scroll heights and content bounds, rather than
+passing on the presence of `overflow: hidden`. Reports and screenshots are in
+`artifacts/admin-compact`.
+
+In restricted networks, `ADMIN_AUDIT_OFFLINE_FONTS=1` lets the interaction suite
+stub only Google Fonts CSS and use system fallback fonts. The verification report
+records this setting. Application styles and production font requests are unchanged.
+
 The platform admin navigation contains 19 routes. `/admin` redirects to
 `/admin/dashboard`; the legacy `/admin/billing` route redirects to transactions.
 The existing Users Management component, stylesheet, shared header and shell are

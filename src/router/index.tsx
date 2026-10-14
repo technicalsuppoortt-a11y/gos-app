@@ -20,6 +20,7 @@ const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(m
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
+const AdminTools = lazy(() => import('../pages/admin/AdminTools').then(module => ({ default: module.AdminTools })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
 const AppointmentEditorPage = lazy(() => import('../pages/booking/AppointmentEditorPage'));
@@ -107,6 +108,7 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" replace/> },
+      { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
       ...['dashboard','conversations','onboarding','leads','plans','payments-gateways','transactions','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },

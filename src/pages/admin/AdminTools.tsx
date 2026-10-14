@@ -1,0 +1,737 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Search,
+  X,
+  Settings,
+  ArrowUpRight,
+  RotateCcw,
+  Download,
+  Power,
+  Check,
+  AlertTriangle,
+  Layers,
+  Sparkles,
+  ShieldAlert,
+} from 'lucide-react';
+import { useUILanguage } from '../../i18n/display';
+import { showToast } from '../../utils/toast';
+import {
+  type ToolItem,
+  type ToolStatus,
+  loadTools,
+  toggleToolEnabled,
+  updateTool,
+  resetTools,
+} from './tools-data';
+import './admin-tools.css';
+
+export function AdminTools() {
+  const language = useUILanguage();
+  const ar = language.startsWith('ar');
+  const t = (en: string, arabic: string) => (ar ? arabic : en);
+
+  const [tools, setTools] = useState<ToolItem[]>(() => loadTools());
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All' | ToolStatus>('All');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [configuringTool, setConfiguringTool] = useState<ToolItem | null>(null);
+
+  // Sync tools on mount
+  useEffect(() => {
+    setTools(loadTools());
+  }, []);
+
+  // Compute status counts
+  const totalCount = tools.length;
+  const activeCount = tools.filter((t) => t.status === 'Active').length;
+  const maintenanceCount = tools.filter((t) => t.status === 'Maintenance').length;
+  const disabledCount = tools.filter((t) => t.status === 'Disabled').length;
+
+  // Filter tools
+  const visibleTools = tools.filter((tool) => {
+    const matchesStatus = statusFilter === 'All' || tool.status === statusFilter;
+    const matchesCategory = categoryFilter === 'All' || tool.category === categoryFilter;
+    const searchLower = search.toLowerCase().trim();
+    const matchesSearch =
+      !searchLower ||
+      tool.name[0].toLowerCase().includes(searchLower) ||
+      tool.name[1].includes(searchLower) ||
+      tool.description[0].toLowerCase().includes(searchLower) ||
+      tool.description[1].includes(searchLower) ||
+      tool.category.toLowerCase().includes(searchLower) ||
+      tool.id.toLowerCase().includes(searchLower);
+
+    return matchesStatus && matchesCategory && matchesSearch;
+  });
+
+  // Toggle quick switch on card
+  const handleQuickToggle = (tool: ToolItem) => {
+    const updated = toggleToolEnabled(tool.id, tools);
+    setTools(updated);
+    const wasEnabled = tool.enabled;
+    const toolTitle = tool.name[ar ? 1 : 0];
+    if (wasEnabled) {
+      showToast.info(
+        ar ? `تم تعطيل ${toolTitle} عالمياً.` : `${toolTitle} disabled globally across all tenants.`
+      );
+    } else {
+      showToast.success(
+        ar ? `تم تفعيل ${toolTitle} عالمياً.` : `${toolTitle} activated globally across all tenants.`
+      );
+    }
+  };
+
+  // Bulk enable all
+  const handleEnableAll = () => {
+    const next = tools.map((t) => ({
+      ...t,
+      enabled: true,
+      status: (t.status === 'Maintenance' ? 'Maintenance' : 'Active') as ToolStatus,
+    }));
+    setTools(next);
+    loadTools(); // save next
+    localStorage.setItem('gos.admin.tools.v1', JSON.stringify(next.map(({ icon, ...rest }) => rest)));
+    showToast.success(
+      ar ? 'تم تفعيل جميع الأدوات عالمياً.' : 'All platform tools enabled globally.'
+    );
+  };
+
+  // Reset to factory defaults
+  const handleResetDefaults = () => {
+    if (
+      window.confirm(
+        ar
+          ? 'هل أنت متأكد من استعادة الإعدادات الافتراضية لجميع الأدوات؟'
+          : 'Are you sure you want to reset all platform tools to default settings?'
+      )
+    ) {
+      const reset = resetTools();
+      setTools(reset);
+      showToast.info(
+        ar ? 'تمت استعادة الإعدادات الافتراضية بنجاح.' : 'Tools reset to factory defaults.'
+      );
+    }
+  };
+
+  // Export JSON configuration
+  const handleExportConfig = () => {
+    const serializable = tools.map(({ icon, ...rest }) => rest);
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(serializable, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `gos-platform-tools-config.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast.success(
+      ar ? 'تم تصدير ملف إعدادات الأدوات بنجاح.' : 'Tools configuration exported to JSON.'
+    );
+  };
+
+  // Save drawer edits
+  const handleSaveDrawer = (updatedTool: ToolItem) => {
+    const updatedList = updateTool(updatedTool, tools);
+    setTools(updatedList);
+    setConfiguringTool(null);
+    showToast.success(
+      ar
+        ? `تم حفظ إعدادات ${updatedTool.name[1]} بنجاح.`
+        : `Configuration for ${updatedTool.name[0]} saved successfully.`
+    );
+  };
+
+  return (
+    <div className="adm-tools-workspace">
+      {/* Page Header & Global Toolbar */}
+      <header className="adm-tools-head">
+        <div className="adm-tools-title-row">
+          <div className="adm-tools-title-wrap">
+            <span className="adm-eyebrow">{t('PLATFORM OPERATIONS', 'عمليات المنصة')}</span>
+            <h1>{t('All Tools Management', 'إدارة كل الأدوات')}</h1>
+            <p>
+              {t(
+                'Centralized control center to monitor, toggle, and configure platform features across all tenants.',
+                'مركز التحكم الموحد لمراقبة وتفعيل وتهيئة ميزات المنصة عبر كافة مساحات العمل.'
+              )}
+            </p>
+          </div>
+
+          <div className="adm-tools-chips">
+            <span className="adm-tool-chip">
+              <Layers size={13} />
+              {t('Total Tools:', 'إجمالي الأدوات:')} <b>{totalCount}</b>
+            </span>
+            <span className="adm-tool-chip active">
+              <i />
+              {t('Active:', 'نشطة:')} <b>{activeCount}</b>
+            </span>
+            <span className="adm-tool-chip maintenance">
+              <i />
+              {t('Maintenance:', 'صيانة:')} <b>{maintenanceCount}</b>
+            </span>
+            <span className="adm-tool-chip disabled">
+              <i />
+              {t('Disabled:', 'معطلة:')} <b>{disabledCount}</b>
+            </span>
+            <span className="adm-tool-chip">
+              <Sparkles size={12} />
+              {t('SLA: 99.9%', 'الاستقرار: 99.9%')}
+            </span>
+          </div>
+        </div>
+
+        {/* Filter & Action Row */}
+        <div className="adm-tools-bar">
+          <div className="adm-tools-filters">
+            {/* Search */}
+            <div className="adm-tools-search">
+              <Search size={14} />
+              <input
+                type="text"
+                placeholder={t('Search tools (e.g., AI, Funnel, CRM)...', 'ابحث في الأدوات (ذكاء، قمع، CRM)...')}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  className="adm-tools-search-clear"
+                  onClick={() => setSearch('')}
+                  aria-label={t('Clear search', 'مسح البحث')}
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Status Pills */}
+            <div className="adm-tools-status-tabs" role="tablist" aria-label={t('Filter by status', 'تصفية حسب الحالة')}>
+              {(['All', 'Active', 'Maintenance', 'Disabled'] as const).map((status) => {
+                const count =
+                  status === 'All'
+                    ? totalCount
+                    : status === 'Active'
+                    ? activeCount
+                    : status === 'Maintenance'
+                    ? maintenanceCount
+                    : disabledCount;
+                const label =
+                  status === 'All'
+                    ? t('All', 'الكل')
+                    : status === 'Active'
+                    ? t('Active', 'نشط')
+                    : status === 'Maintenance'
+                    ? t('Maintenance', 'صيانة')
+                    : t('Disabled', 'معطل');
+                return (
+                  <button
+                    key={status}
+                    role="tab"
+                    aria-selected={statusFilter === status}
+                    className={`adm-tools-status-tab ${statusFilter === status ? 'active' : ''}`}
+                    onClick={() => setStatusFilter(status)}
+                  >
+                    {label}
+                    <span>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Category Select */}
+            <select
+              className="adm-tools-category-select"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              aria-label={t('Filter by category', 'تصفية حسب الفئة')}
+            >
+              <option value="All">{t('All Categories', 'جميع الفئات')}</option>
+              <option value="Intelligence">{t('Intelligence (AI)', 'الذكاء الاصطناعي')}</option>
+              <option value="Growth">{t('Growth & Sales', 'النمو والمبيعات')}</option>
+              <option value="Core">{t('Core Platform', 'الأساسيات')}</option>
+              <option value="Operations">{t('Operations & Booking', 'العمليات والحجوزات')}</option>
+              <option value="Commerce">{t('Commerce & Payments', 'التجارة والمدفوعات')}</option>
+              <option value="Infrastructure">{t('Infrastructure & Domains', 'البنية التحتية والنطاقات')}</option>
+              <option value="Developer">{t('Developer Tools', 'أدوات المطورين')}</option>
+            </select>
+          </div>
+
+          <div className="adm-tools-actions">
+            <button
+              className="adm-tools-action-btn"
+              onClick={handleEnableAll}
+              title={t('Enable all tools globally', 'تفعيل جميع الأدوات')}
+            >
+              <Power size={13} />
+              {t('Enable All', 'تفعيل الكل')}
+            </button>
+            <button
+              className="adm-tools-action-btn"
+              onClick={handleExportConfig}
+              title={t('Export JSON config', 'تصدير ملف الإعدادات')}
+            >
+              <Download size={13} />
+              {t('Export', 'تصدير')}
+            </button>
+            <button
+              className="adm-tools-action-btn"
+              onClick={handleResetDefaults}
+              title={t('Reset tools to defaults', 'إعادة تعيين للافتراضي')}
+            >
+              <RotateCcw size={13} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 4x3 Zero-Scroll Grid Container */}
+      <main className="adm-tools-grid" role="region" aria-label={t('Platform Tools Grid', 'شبكة أدوات المنصة')}>
+        {visibleTools.map((tool) => {
+          const Icon = tool.icon;
+          const statusClass = tool.status.toLowerCase();
+          const cardClass = `adm-tool-card ${tool.enabled ? '' : 'is-disabled'} ${
+            tool.status === 'Maintenance' ? 'is-maintenance' : ''
+          }`;
+
+          return (
+            <article
+              key={tool.id}
+              className={cardClass}
+              data-category={tool.category}
+              data-tool-id={tool.id}
+            >
+              {/* Card Top: Identity & Status Badge */}
+              <div className="adm-tool-card-head">
+                <div className="adm-tool-identity">
+                  <div className="adm-tool-icon-orb" aria-hidden="true">
+                    <Icon size={17} />
+                  </div>
+                  <div className="adm-tool-text">
+                    <h2 className="adm-tool-name" title={tool.name[ar ? 1 : 0]}>
+                      {tool.name[ar ? 1 : 0]}
+                    </h2>
+                    <span className="adm-tool-cat-badge">{tool.categoryLabel[ar ? 1 : 0]}</span>
+                  </div>
+                </div>
+
+                <span className={`adm-tool-badge ${statusClass}`}>
+                  <i />
+                  {tool.status === 'Active'
+                    ? t('Active', 'نشط')
+                    : tool.status === 'Maintenance'
+                    ? t('Maintenance', 'صيانة')
+                    : t('Disabled', 'معطل')}
+                </span>
+              </div>
+
+              {/* Card Middle: Description & Micro-Telemetry */}
+              <div className="adm-tool-card-body">
+                <p className="adm-tool-desc" title={tool.description[ar ? 1 : 0]}>
+                  {tool.description[ar ? 1 : 0]}
+                </p>
+
+                <div className="adm-tool-telemetry">
+                  <span>
+                    {t('Tenants:', 'المساحات:')}{' '}
+                    <b>
+                      {tool.stats.activeTenants} / {tool.stats.totalTenants}
+                    </b>
+                  </span>
+                  <span>
+                    {t('Uptime:', 'الاستقرار:')} <b>{tool.stats.uptime}</b>
+                  </span>
+                </div>
+              </div>
+
+              {/* Card Bottom: Quick Toggle & Configure Action */}
+              <div className="adm-tool-card-foot">
+                <label
+                  className="adm-tool-switch-wrap"
+                  title={
+                    tool.enabled
+                      ? t('Disable globally across tenants', 'تعطيل عالمياً لجميع مساحات العمل')
+                      : t('Enable globally across tenants', 'تفعيل عالمياً لجميع مساحات العمل')
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleQuickToggle(tool);
+                  }}
+                >
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tool.enabled}
+                    aria-label={`${t('Toggle', 'تبديل')} ${tool.name[ar ? 1 : 0]}`}
+                    className={`adm-tool-switch ${tool.enabled ? 'on' : ''}`}
+                  >
+                    <span className="adm-tool-switch-knob" />
+                  </button>
+                  <span className="adm-tool-switch-label">
+                    {tool.enabled ? t('Enabled', 'مفعل') : t('Disabled', 'معطل')}
+                  </span>
+                </label>
+
+                <button
+                  type="button"
+                  className="adm-tool-config-btn"
+                  onClick={() => setConfiguringTool(tool)}
+                  aria-label={`${t('Configure', 'تهيئة')} ${tool.name[ar ? 1 : 0]}`}
+                >
+                  <Settings size={13} />
+                  <span>{t('Configure', 'تهيئة')}</span>
+                </button>
+              </div>
+            </article>
+          );
+        })}
+
+        {/* Empty State */}
+        {visibleTools.length === 0 && (
+          <div className="adm-tools-empty">
+            <Search size={28} />
+            <h3>{t('No tools matching criteria', 'لا توجد أدوات مطابقة للبحث')}</h3>
+            <p>
+              {t(
+                'Try clearing your search query or adjusting your status and category filters.',
+                'جرّب مسح نص البحث أو تغيير فلاتر الحالة والفئات.'
+              )}
+            </p>
+            <button
+              className="adm-primary"
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('All');
+                setCategoryFilter('All');
+              }}
+            >
+              {t('Reset Filters', 'إعادة تعيين الفلاتر')}
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* Drawer / Compact Modal for Configuration */}
+      {configuringTool && (
+        <ToolConfigDrawer
+          tool={configuringTool}
+          ar={ar}
+          t={t}
+          onClose={() => setConfiguringTool(null)}
+          onSave={handleSaveDrawer}
+        />
+      )}
+    </div>
+  );
+}
+
+// Drawer Component
+interface ToolConfigDrawerProps {
+  tool: ToolItem;
+  ar: boolean;
+  t: (en: string, ar: string) => string;
+  onClose: () => void;
+  onSave: (tool: ToolItem) => void;
+}
+
+function ToolConfigDrawer({ tool, ar, t, onClose, onSave }: ToolConfigDrawerProps) {
+  const [draft, setDraft] = useState<ToolItem>({ ...tool });
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const Icon = tool.icon;
+
+  // Keyboard navigation & trap
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), input, select, textarea, a[href]'
+          )
+        );
+        if (focusable.length > 0) {
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const updateSettingValue = (key: string, value: string | number | boolean) => {
+    setDraft((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [key]: value,
+      },
+    }));
+  };
+
+  return (
+    <div
+      className="adm-dialog-scrim"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={drawerRef}
+        className="adm-tool-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tool-drawer-title"
+      >
+        {/* Drawer Header */}
+        <div className="adm-drawer-head">
+          <div className="adm-drawer-head-info">
+            <div className="adm-tool-icon-orb" aria-hidden="true">
+              <Icon size={20} />
+            </div>
+            <div>
+              <span className="adm-eyebrow">{t('TOOL CONFIGURATION', 'إعدادات الأداة')}</span>
+              <h2 id="tool-drawer-title">{draft.name[ar ? 1 : 0]}</h2>
+            </div>
+          </div>
+          <button
+            className="adm-drawer-close"
+            onClick={onClose}
+            aria-label={t('Close drawer', 'إغلاق النافذة')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Operational Status Section */}
+        <section className="adm-drawer-section">
+          <h3 className="adm-drawer-section-title">{t('Operational Status', 'الحالة التشغيلية')}</h3>
+
+          <div className="adm-drawer-status-grid">
+            <div
+              className={`adm-drawer-status-opt ${
+                draft.status === 'Active' ? 'active status-active' : ''
+              }`}
+              onClick={() => setDraft((p) => ({ ...p, status: 'Active', enabled: true }))}
+            >
+              <Check size={16} />
+              <span>{t('Active (Live)', 'نشط (متاح)')}</span>
+            </div>
+
+            <div
+              className={`adm-drawer-status-opt ${
+                draft.status === 'Maintenance' ? 'active status-maintenance' : ''
+              }`}
+              onClick={() => setDraft((p) => ({ ...p, status: 'Maintenance' }))}
+            >
+              <AlertTriangle size={16} />
+              <span>{t('Maintenance', 'تحت الصيانة')}</span>
+            </div>
+
+            <div
+              className={`adm-drawer-status-opt ${
+                draft.status === 'Disabled' ? 'active' : ''
+              }`}
+              onClick={() => setDraft((p) => ({ ...p, status: 'Disabled', enabled: false }))}
+            >
+              <Power size={16} />
+              <span>{t('Disabled', 'معطل')}</span>
+            </div>
+          </div>
+
+          {/* Master Global Switch */}
+          <div className="adm-drawer-master-toggle">
+            <div className="adm-drawer-master-toggle-text">
+              <b>{t('Global Availability', 'الإتاحة العامة')}</b>
+              <small>
+                {t(
+                  'When disabled, this feature is completely suppressed across all workspaces.',
+                  'عند التعطيل، تحجب هذه الميزة بالكامل عن جميع مساحات العمل.'
+                )}
+              </small>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={draft.enabled}
+              className={`adm-tool-switch ${draft.enabled ? 'on' : ''}`}
+              onClick={() =>
+                setDraft((p) => {
+                  const nextEn = !p.enabled;
+                  return {
+                    ...p,
+                    enabled: nextEn,
+                    status: nextEn ? (p.status === 'Disabled' ? 'Active' : p.status) : 'Disabled',
+                  };
+                })
+              }
+            >
+              <span className="adm-tool-switch-knob" />
+            </button>
+          </div>
+
+          {draft.status === 'Maintenance' && (
+            <div className="adm-drawer-field">
+              <label>
+                <ShieldAlert size={12} style={{ display: 'inline', marginInlineEnd: 4 }} />
+                {t('Maintenance Banner Message', 'رسالة تنبيه الصيانة للعملاء')}
+              </label>
+              <textarea
+                value={draft.maintenanceNotice ?? ''}
+                placeholder={t(
+                  'e.g., Scheduled infrastructure upgrade in progress...',
+                  'مثال: ترقية دورية للبنية التحتية قيد التنفيذ...'
+                )}
+                onChange={(e) => setDraft((p) => ({ ...p, maintenanceNotice: e.target.value }))}
+              />
+            </div>
+          )}
+        </section>
+
+        {/* Configurable Parameters Section */}
+        <section className="adm-drawer-section">
+          <h3 className="adm-drawer-section-title">
+            {t('Engine Parameters & Defaults', 'معلمات المحرك والإعدادات الافتراضية')}
+          </h3>
+
+          <div className="adm-drawer-fields">
+            {draft.settingFields.map((field) => {
+              const currentValue = draft.settings[field.key] ?? field.value;
+
+              if (field.type === 'boolean') {
+                return (
+                  <label key={field.key} className="adm-drawer-field-bool">
+                    <span>{field.label[ar ? 1 : 0]}</span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(currentValue)}
+                      onChange={(e) => updateSettingValue(field.key, e.target.checked)}
+                    />
+                  </label>
+                );
+              }
+
+              if (field.type === 'select') {
+                return (
+                  <div key={field.key} className="adm-drawer-field">
+                    <label>{field.label[ar ? 1 : 0]}</label>
+                    <select
+                      value={String(currentValue)}
+                      onChange={(e) => updateSettingValue(field.key, e.target.value)}
+                    >
+                      {field.options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={field.key} className="adm-drawer-field">
+                  <label>{field.label[ar ? 1 : 0]}</label>
+                  <input
+                    type={field.type === 'number' ? 'number' : 'text'}
+                    value={String(currentValue)}
+                    onChange={(e) =>
+                      updateSettingValue(
+                        field.key,
+                        field.type === 'number' ? Number(e.target.value) : e.target.value
+                      )
+                    }
+                  />
+                </div>
+              );
+            })}
+
+            {/* Tenant Access Tier Restriction */}
+            <div className="adm-drawer-field">
+              <label>{t('Tenant Plan Access Tier', 'مستوى خطة الوصول المسموحة')}</label>
+              <select
+                value={draft.accessTier}
+                onChange={(e) =>
+                  setDraft((p) => ({ ...p, accessTier: e.target.value as ToolItem['accessTier'] }))
+                }
+              >
+                <option value="all">{t('All Plans (Starter, Pro, Agency)', 'جميع الخطط (الأساسية، الاحترافية، الوكالات)')}</option>
+                <option value="pro_agency">{t('Pro & Agency Tiers Only', 'الخطط الاحترافية والوكالات فقط')}</option>
+                <option value="agency_only">{t('Agency White-Label Tier Only', 'خطط الوكالات فقط')}</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        {/* Telemetry & Direct Link Section */}
+        <section className="adm-drawer-section">
+          <h3 className="adm-drawer-section-title">
+            {t('Telemetry & Native Module', 'مؤشرات الأداء والصفحة الأصلية')}
+          </h3>
+
+          <div className="adm-drawer-telemetry">
+            <div className="adm-drawer-tele-item">
+              <small>{t('Current Version', 'الإصدار الحالي')}</small>
+              <strong>{draft.stats.version}</strong>
+            </div>
+            <div className="adm-drawer-tele-item">
+              <small>{t('30-Day SLA Uptime', 'الاستقرار (30 يوماً)')}</small>
+              <strong>{draft.stats.uptime}</strong>
+            </div>
+            <div className="adm-drawer-tele-item">
+              <small>{t('Tenant Adoption', 'المساحات المستخدمة')}</small>
+              <strong>
+                {draft.stats.activeTenants} / {draft.stats.totalTenants} (
+                {Math.round((draft.stats.activeTenants / draft.stats.totalTenants) * 100)}%)
+              </strong>
+            </div>
+            <div className="adm-drawer-tele-item">
+              <small>{t('Native Route', 'المسار المباشر')}</small>
+              <Link to={draft.route} className="adm-drawer-deep-link" onClick={onClose}>
+                <span>{t('Open Workspace', 'فتح مساحة العمل')}</span>
+                <ArrowUpRight size={13} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Drawer Actions */}
+        <div className="adm-drawer-foot">
+          <button
+            type="button"
+            className="adm-tools-action-btn"
+            onClick={() => {
+              const initial = loadTools().find((t) => t.id === tool.id) ?? tool;
+              setDraft(initial);
+              showToast.info(t('Reverted to loaded values.', 'تمت استعادة القيم المحفوظة.'));
+            }}
+          >
+            <RotateCcw size={13} />
+            {t('Reset', 'استعادة')}
+          </button>
+
+          <div className="adm-drawer-foot-actions">
+            <button type="button" onClick={onClose}>
+              {t('Cancel', 'إلغاء')}
+            </button>
+            <button
+              type="button"
+              className="adm-primary"
+              onClick={() => onSave(draft)}
+            >
+              <Check size={14} />
+              {t('Save Changes', 'حفظ التغييرات')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,145 @@
+{
+  "results": [
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "light",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "dark",
+      "client": 1022,
+      "scroll": 1022
+    }
+  ],
+  "errors": []
+}
