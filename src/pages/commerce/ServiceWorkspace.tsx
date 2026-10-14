@@ -1,7 +1,7 @@
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import React from 'react';
 import * as RadixSelect from '@radix-ui/react-select';
-import { AppleLogo } from '@phosphor-icons/react';
+import { AppleLogo } from '@phosphor-icons/react/dist/csr/AppleLogo';
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, ImagePlus, MapPin, Monitor, Pencil, Plus, ShieldCheck, Sparkles, Star, Trash2, UserRound } from 'lucide-react';
 import type { FormProps } from './TypeForms';
 import type { WorkspaceTab } from './views';
