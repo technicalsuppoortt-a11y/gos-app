@@ -1,1 +1,212 @@
-.gos-combo{width:100%;min-width:0;margin-top:7px;font-family:Inter,system-ui,sans-serif}.gos-combo-trigger{width:100%;display:flex;align-items:center;gap:9px;min-height:38px;padding:9px 12px;border:1px solid #dce0eb;border-radius:8px;background:#fff;color:#28324a;font:500 12px/1.5 Inter,system-ui,sans-serif;text-align:start;cursor:pointer;transition:border-color .18s,box-shadow .18s}.gos-combo-trigger>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gos-combo-trigger>svg{color:#6f7890;flex:none;transition:transform .18s}.gos-combo-trigger[aria-expanded=true]>svg{transform:rotate(180deg)}.gos-combo-trigger:hover{border-color:#a89be7}.gos-combo-trigger:focus-visible,.gos-combo-trigger[aria-expanded=true]{outline:none;border-color:#7760dc;box-shadow:0 0 0 3px #7760dc20}.gos-combo-panel{position:fixed;z-index:10050;max-height:300px;display:flex;flex-direction:column;padding:5px;border-radius:11px;background:#fffffffa;border:1px solid #e0dff0;box-shadow:0 16px 50px #22203d26,0 2px 8px #22203d10;backdrop-filter:blur(20px);font-family:Inter,system-ui,sans-serif;outline:none}.gos-combo-search{display:flex;align-items:center;gap:8px;padding:9px;color:#738097;border-bottom:1px solid #e9eaf1}.gos-combo-search input{width:100%;min-width:0;border:0!important;outline:none!important;box-shadow:none!important;background:transparent!important;padding:0!important;height:23px!important;margin:0!important;color:#28324a!important;font:12px Inter,system-ui,sans-serif!important}.gos-combo-search input::placeholder{color:#758099}.gos-combo-options{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:3px 0;scrollbar-width:thin}.gos-combo-option{display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:0;border-radius:6px;padding:9px;background:transparent;color:#3f4962;font:12px/1.5 Inter,system-ui,sans-serif;cursor:pointer;min-height:35px}.gos-combo-option>span{flex:1;min-width:0}.gos-combo-option>svg{flex:none;color:#7254d4}.gos-combo-option.is-highlighted{background:#f1edfc;color:#6143b7}.gos-combo-option[aria-selected=true]{font-weight:600}.gos-combo-empty{text-align:center;font-size:12px;color:#738097;padding:16px}.dark .gos-combo-trigger{background:#192033;border-color:#354057;color:#e7ebf5}.dark .gos-combo-panel{background:#171e30f7;border-color:#354057;box-shadow:0 20px 60px #0007}.dark .gos-combo-search{border-color:#313a4e}.dark .gos-combo-search input{color:#e7ebf5!important}.dark .gos-combo-search input::placeholder,.dark .gos-combo-empty{color:#aab5cb}.dark .gos-combo-option{color:#cbd3e5}.dark .gos-combo-option.is-highlighted{background:#30284d;color:#d4c7ff}.dark .gos-combo-option>svg{color:#bca5ff}.dark .gos-combo-trigger>svg{color:#b1bad1}
+.gos-combo {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  margin-top: 7px;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.gos-combo-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 1px solid #dce0eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #28324a;
+  font: 500 12px/1.5 Inter, system-ui, sans-serif;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.gos-combo-trigger > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gos-combo-trigger > svg {
+  color: #6f7890;
+  flex: none;
+  transition: transform .18s;
+}
+
+.gos-combo-trigger[aria-expanded=true] > svg {
+  transform: rotate(180deg);
+}
+
+.gos-combo-trigger:hover {
+  border-color: #a89be7;
+}
+
+.gos-combo-trigger:focus-visible,
+.gos-combo-trigger[aria-expanded=true] {
+  outline: none;
+  border-color: #7760dc;
+  box-shadow: 0 0 0 3px #7760dc20;
+}
+
+.gos-combo.is-open {
+  z-index: 60;
+}
+
+.gos-combo-panel {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  inset-inline-start: 0;
+  left: 0;
+  width: 100%;
+  min-width: 100%;
+  z-index: 50;
+  box-sizing: border-box;
+  max-height: 300px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  border-radius: 11px;
+  background: #fffffffa;
+  border: 1px solid #e0dff0;
+  box-shadow: 0 16px 50px #22203d26, 0 2px 8px #22203d10;
+  backdrop-filter: blur(20px);
+  font-family: Inter, system-ui, sans-serif;
+  outline: none;
+}
+
+[dir="rtl"] .gos-combo-panel,
+.gos-combo[dir="rtl"] .gos-combo-panel,
+.gos-combo-panel[dir="rtl"] {
+  left: auto;
+  right: 0;
+}
+
+.gos-combo-panel.is-portaled {
+  position: fixed;
+  z-index: 10050;
+  margin-top: 0;
+}
+
+.gos-combo-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  color: #738097;
+  border-bottom: 1px solid #e9eaf1;
+}
+
+.gos-combo-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  height: 23px !important;
+  margin: 0 !important;
+  color: #28324a !important;
+  font: 12px Inter, system-ui, sans-serif !important;
+}
+
+.gos-combo-search input::placeholder {
+  color: #758099;
+}
+
+.gos-combo-options {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  padding: 3px 0;
+  scrollbar-width: thin;
+}
+
+.gos-combo-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: start;
+  border: 0;
+  border-radius: 6px;
+  padding: 9px;
+  background: transparent;
+  color: #3f4962;
+  font: 12px/1.5 Inter, system-ui, sans-serif;
+  cursor: pointer;
+  min-height: 35px;
+}
+
+.gos-combo-option > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.gos-combo-option > svg {
+  flex: none;
+  color: #7254d4;
+}
+
+.gos-combo-option.is-highlighted {
+  background: #f1edfc;
+  color: #6143b7;
+}
+
+.gos-combo-option[aria-selected=true] {
+  font-weight: 600;
+}
+
+.gos-combo-empty {
+  text-align: center;
+  font-size: 12px;
+  color: #738097;
+  padding: 16px;
+}
+
+.dark .gos-combo-trigger {
+  background: #192033;
+  border-color: #354057;
+  color: #e7ebf5;
+}
+
+.dark .gos-combo-panel {
+  background: #171e30f7;
+  border-color: #354057;
+  box-shadow: 0 20px 60px #0007;
+}
+
+.dark .gos-combo-search {
+  border-color: #313a4e;
+}
+
+.dark .gos-combo-search input {
+  color: #e7ebf5 !important;
+}
+
+.dark .gos-combo-search input::placeholder,
+.dark .gos-combo-empty {
+  color: #aab5cb;
+}
+
+.dark .gos-combo-option {
+  color: #cbd3e5;
+}
+
+.dark .gos-combo-option.is-highlighted {
+  background: #30284d;
+  color: #d4c7ff;
+}
+
+.dark .gos-combo-option > svg {
+  color: #bca5ff;
+}
+
+.dark .gos-combo-trigger > svg {
+  color: #b1bad1;
+}
