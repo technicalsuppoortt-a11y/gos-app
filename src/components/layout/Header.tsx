@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { toggleSidebar } from '../../store/slices/uiSlice';
+import { toggleSidebar, toggleSidebarCollapse } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
@@ -72,7 +72,20 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
 
   return <header className={`layout-header${isDiscountEditor ? ' discount-flow-header' : ''}`}>
     <div className="layout-header-title">
-      <button className="layout-menu-button" onClick={onMenu ?? (() => dispatch(toggleSidebar()))} aria-label={translateText("Open navigation")}><Menu size={19}/></button>
+      <button 
+        className="layout-menu-button" 
+        onClick={onMenu ?? (() => {
+          if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+            dispatch(toggleSidebarCollapse());
+          } else {
+            dispatch(toggleSidebar());
+          }
+        })} 
+        aria-label={translateText("Toggle navigation")}
+        title={translateText("Toggle navigation")}
+      >
+        <Menu size={19}/>
+      </button>
       {localizeNode(isDiscountEditor && <button type="button" className="discount-header-back" onClick={backToDiscounts} aria-label={translateText("Back to Discounts")}><ArrowLeft size={18}/></button>)}
       {localizeNode(isProductWorkspace && <button type="button" className="discount-header-back" onClick={() => navigate('/dashboard/products-payments')} aria-label={translateText("Back to Products")}><ArrowLeft size={18}/></button>)}
       {localizeNode(isProductWorkspace ? (

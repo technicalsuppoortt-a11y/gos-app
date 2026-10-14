@@ -1,4 +1,4 @@
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, uiDirection } from '../../i18n/display';
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
@@ -13,7 +13,10 @@ interface ShellProps {
 export const Shell: React.FC<ShellProps> = ({ sidebarItems, basePath }) => {
   useUILanguage();
   return (
-    <div className={`role-shell flex min-h-screen bg-slate-50 dark:bg-dark-bg transition-colors duration-300 ${basePath === '/super-admin' ? 'super-admin-shell' : ''}`}>
+    <div 
+      className={`role-shell flex min-h-screen bg-slate-50 dark:bg-dark-bg transition-colors duration-300 ${basePath === '/super-admin' ? 'super-admin-shell' : ''}`}
+      dir={uiDirection()}
+    >
       <Sidebar items={sidebarItems} basePath={basePath} />
       
       <div className="role-shell-main flex-1 flex flex-col min-w-0">

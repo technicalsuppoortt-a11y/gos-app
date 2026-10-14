@@ -8,12 +8,14 @@ interface UIState {
   theme: Theme;
   language: Language;
   sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
 }
 
 const initialState: UIState = {
   theme: storageGet('theme') === 'dark' ? 'dark' : 'light',
   language: storageGet('i18nextLng') === 'en' ? 'en' : 'ar',
   sidebarOpen: false,
+  sidebarCollapsed: storageGet('sidebar_collapsed') === 'true',
 };
 
 const uiSlice = createSlice({
@@ -39,9 +41,25 @@ const uiSlice = createSlice({
     },
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
        state.sidebarOpen = action.payload;
+    },
+    toggleSidebarCollapse: (state) => {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
+      storageSet('sidebar_collapsed', state.sidebarCollapsed ? 'true' : 'false');
+    },
+    setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
+      state.sidebarCollapsed = action.payload;
+      storageSet('sidebar_collapsed', action.payload ? 'true' : 'false');
     }
   },
 });
 
-export const { toggleTheme, setLanguage, toggleSidebar, setSidebarOpen } = uiSlice.actions;
+export const { 
+  toggleTheme, 
+  setLanguage, 
+  toggleSidebar, 
+  setSidebarOpen, 
+  toggleSidebarCollapse, 
+  setSidebarCollapsed 
+} = uiSlice.actions;
 export default uiSlice.reducer;
+

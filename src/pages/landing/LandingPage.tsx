@@ -13,7 +13,8 @@ import type { RootState } from '../../store';
 import type { LeadActivity } from '../../store/slices/crmSlice';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
-import { landingContent, type LandingCopy, type PreviewView } from './landing-content';
+import { type LandingCopy, type PreviewView } from './landing-content';
+import { cmsEvent, readCMS, type LandingCMS } from './cms';
 import './landing.css';
 
 
@@ -74,8 +75,9 @@ function SectionBadge({ children, num, tone = 'default' }: React.PropsWithChildr
 }
 
 function BookButton({ label, id, size = 'md', className = '' }: { label: string; id: string; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+  const destination = readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').bookingUrl;
   return (
-    <Link id={id} to="/dashboard/booking" className={`lp-btn lp-btn--primary lp-btn--${size} ${className}`}>
+    <Link id={id} to={destination} className={`lp-btn lp-btn--primary lp-btn--${size} ${className}`}>
       <span>{label}</span>
       <ArrowRight size={size === 'sm' ? 14 : 16} strokeWidth={2.4} className="lp-flip" aria-hidden="true" />
     </Link>
@@ -164,7 +166,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
             <Globe size={14} aria-hidden="true" />
             <span>{copy.nav.langLabel}</span>
           </button>
-          <Link id="lp-login" to="/login" className="lp-header__login">{copy.nav.login}</Link>
+          <Link id="lp-login" to={readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl} className="lp-header__login">{copy.nav.login}</Link>
           <BookButton id="lp-header-book" label={copy.nav.book} size="sm" className="lp-header__book" />
           <button id="lp-menu-toggle" type="button" className="lp-header__menu" aria-expanded={open} aria-label={copy.nav.menu} onClick={() => setOpen(value => !value)}>
             {open ? <X size={20} /> : <Menu size={20} />}
@@ -174,7 +176,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
       <div className="lp-mobile-nav" hidden={!open}>
         {copy.nav.links.map(link => <a key={link.id} href={`#${link.id}`} onClick={event => go(event, link.id)}>{link.label}</a>)}
         <div className="lp-mobile-nav__actions">
-          <Link to="/login" className="lp-btn lp-btn--ghost lp-btn--md">{copy.nav.login}</Link>
+          <Link to={readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl} className="lp-btn lp-btn--ghost lp-btn--md">{copy.nav.login}</Link>
           <BookButton id="lp-mobile-book" label={copy.nav.book} />
         </div>
       </div>
@@ -893,7 +895,7 @@ function CtaWaves({ side }: { side: 'start' | 'end' }) {
 
 function FinalCta({ copy, onVideo }: { copy: LandingCopy; onVideo: () => void }) {
   return (
-    <section className="lp-cta" id="pricing" aria-labelledby="lp-cta-title">
+    <section className="lp-cta" id="get-started" aria-labelledby="lp-cta-title">
       <div className="lp-cta__glow" aria-hidden="true" />
       <CtaWaves side="start" />
       <CtaWaves side="end" />
@@ -1019,7 +1021,10 @@ function VideoModal({ copy, onClose }: { copy: LandingCopy; onClose: () => void 
 export const LandingPage: React.FC = () => {
   const dispatch = useDispatch();
   const language = useSelector((state: RootState) => state.ui.language);
-  const copy = landingContent[language] ?? landingContent.en;
+  const preview = new URLSearchParams(window.location.search).get('cms-preview') === '1';
+  const [cms, setCMS] = useState(() => readCMS(preview));
+  useEffect(() => { const refresh = () => setCMS(readCMS(preview)); window.addEventListener(cmsEvent, refresh); window.addEventListener('storage', refresh); return () => { window.removeEventListener(cmsEvent, refresh); window.removeEventListener('storage', refresh); }; }, [preview]);
+  const copy = cms[language] ?? cms.en;
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
@@ -1072,6 +1077,7 @@ export const LandingPage: React.FC = () => {
     <div ref={rootRef} className="lp" dir={dir} lang={language}>
       <Header copy={copy} language={language} onLanguage={toggleLanguage} activeId={activeId} />
       <main>
+        {preview && <div className="lp-cms-preview">{language === 'ar' ? 'معاينة المسودة — لم ينشر هذا المحتوى بعد' : 'Draft preview — this content has not been published'}</div>}
         <Hero copy={copy} onVideo={openVideo} />
         <Problem copy={copy} />
         <Solution copy={copy} />
@@ -1081,8 +1087,10 @@ export const LandingPage: React.FC = () => {
         <Toolkit copy={copy} />
         <Testimonials copy={copy} />
         <Faq copy={copy} />
+        <Pricing cms={cms} language={language} />
         <FinalCta copy={copy} onVideo={openVideo} />
       </main>
+      <footer className="lp-cms-footer lp-container">{copy.footer.rights}</footer>
       {videoOpen && <VideoModal copy={copy} onClose={closeVideo} />}
       <ScrollTopButton label={copy.nav.top} />
     </div>
@@ -1090,3 +1098,8 @@ export const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+
+function Pricing({cms,language}:{cms:LandingCMS;language:Language}) {
+  const [annual,setAnnual] = useState(false); const ar=language==='ar';
+  return <section className="lp-section" id="pricing"><div className="lp-container"><div className="lp-section-head"><h2 className="lp-h2">{cms.pricingTitle[language]}</h2><p className="lp-lead">{cms.pricingDescription[language]}</p><div className="lp-pricing-cycle"><button aria-pressed={!annual} onClick={()=>setAnnual(false)}>{ar?'شهري':'Monthly'}</button><button aria-pressed={annual} onClick={()=>setAnnual(true)}>{ar?'سنوي':'Annual'}</button></div></div><div className="lp-pricing-grid">{cms.pricing.map((p,i)=><article className="lp-pricing-card" key={i}><h3>{ar?p.nameAr:p.name}</h3><strong>{new Intl.NumberFormat(ar?'ar-EG':'en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(annual?p.annual:p.monthly)}<small> / {annual?(ar?'سنة':'year'):(ar?'شهر':'month')}</small></strong><p>{ar?p.featuresAr:p.features}</p><BookButton id={`lp-pricing-${i}`} label={cms.pricingCTA[language]}/></article>)}</div></div></section>;
+}

@@ -19,7 +19,7 @@ const UserLayout = lazy(() => import('../components/layout/UserLayout').then(mod
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
-const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
 const AppointmentEditorPage = lazy(() => import('../pages/booking/AppointmentEditorPage'));
@@ -106,11 +106,10 @@ export const router = createBrowserRouter([
     path: '/admin',
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
     children: [
-      { index: true, element: <Suspended><AdminDashboard/></Suspended> },
+      { index: true, element: <Navigate to="/admin/dashboard" replace/> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
-      { path: 'integrations', element: <Suspended><PagePlaceholder title={translateText("Integrations")}/></Suspended> },
-      { path: 'billing', element: <Suspended><PagePlaceholder title={translateText("Billing")}/></Suspended> },
-      { path: 'settings', element: <Suspended><PagePlaceholder title={translateText("Tenant Settings")}/></Suspended> },
+      ...['dashboard','conversations','onboarding','leads','plans','payments-gateways','transactions','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
+      { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },
     ],
   },
   {

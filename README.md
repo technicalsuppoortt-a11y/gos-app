@@ -3,25 +3,6 @@
 
 ## User Dashboard
 
-
-
-  
- 
-
-
-  
-  6- Booking & Calendar
-    - Add Booking Page
-      - Make inputs more small
-      - compare exisit all inputs
-    - New Booking
-      - make in isolated page and make inputs small
-  
-
-  
-  8- Analysis
-    - Add Sales Cards in overview
-    - Review analysis from document
   
 
       
@@ -36,6 +17,24 @@
     - Payments Methods
     - Products must be connect with calander
     - Pixel
+
+  - Admin Dashboard
+    - Dashboard
+    - Users Mangement
+    - Conversitions
+    - onBoarding
+    - Leads
+    - Plans
+    - Payments Methods
+    - Funnels & Websites Mangement
+    - CRM & Leads Mangement
+    - Booking & Calendar Mangement
+    - Products & Payments Mangemnt
+    - Templetes
+    - Analysis
+    - Landing Mangement
+    - Settings
+  
 
 ==========================
 
@@ -108,8 +107,16 @@
       - 
     - Domains 
       - Make Create Domains more Professional
+  
+  6- Booking & Calendar
+    - Add Booking Page
+      - Make inputs more small
+      - compare exisit all inputs
+    - New Booking
+      - make in isolated page and make inputs small
+  
 
-
-      ================
-
-
+  
+  8- Analysis
+    - Add Sales Cards in overview
+    - Review analysis from document

@@ -1,0 +1,385 @@
+{
+  "results": [
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "users",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "conversations",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "onboarding",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "leads",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "plans",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "payments-gateways",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "transactions",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "funnels-websites",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "crm",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "booking",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "products",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "templates",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "landing",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "ai-usage",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "domains",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "integrations",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "settings",
+      "language": "en",
+      "theme": "light"
+    },
+    {
+      "route": "dashboard",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "users",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "conversations",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "onboarding",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "leads",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "plans",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "payments-gateways",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "transactions",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "funnels-websites",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "crm",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "booking",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "products",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "templates",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "analytics",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "landing",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "ai-usage",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "domains",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "integrations",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "settings",
+      "language": "en",
+      "theme": "dark"
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "users",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "conversations",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "onboarding",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "leads",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "plans",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "payments-gateways",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "transactions",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "funnels-websites",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "crm",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "booking",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "products",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "templates",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "landing",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "ai-usage",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "domains",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "integrations",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "settings",
+      "language": "ar",
+      "theme": "light"
+    },
+    {
+      "route": "dashboard",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "users",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "conversations",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "onboarding",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "leads",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "plans",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "payments-gateways",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "transactions",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "funnels-websites",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "crm",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "booking",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "products",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "templates",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "analytics",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "landing",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "ai-usage",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "domains",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "integrations",
+      "language": "ar",
+      "theme": "dark"
+    },
+    {
+      "route": "settings",
+      "language": "ar",
+      "theme": "dark"
+    }
+  ],
+  "errors": []
+}
