@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import * as Select from '@radix-ui/react-select';
 import {
   Search,
   X,
@@ -13,6 +14,8 @@ import {
   Layers,
   Sparkles,
   ShieldAlert,
+  ChevronDown,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
@@ -25,6 +28,17 @@ import {
   resetTools,
 } from './tools-data';
 import './admin-tools.css';
+
+const CATEGORY_OPTIONS = [
+  { id: 'All', labelEn: 'All Categories', labelAr: 'جميع الفئات' },
+  { id: 'Intelligence', labelEn: 'Intelligence (AI)', labelAr: 'الذكاء الاصطناعي' },
+  { id: 'Growth', labelEn: 'Growth & Sales', labelAr: 'النمو والمبيعات' },
+  { id: 'Core', labelEn: 'Core Platform', labelAr: 'الأساسيات' },
+  { id: 'Operations', labelEn: 'Operations & Booking', labelAr: 'العمليات والحجوزات' },
+  { id: 'Commerce', labelEn: 'Commerce & Payments', labelAr: 'التجارة والمدفوعات' },
+  { id: 'Infrastructure', labelEn: 'Infrastructure & Domains', labelAr: 'البنية التحتية والنطاقات' },
+  { id: 'Developer', labelEn: 'Developer Tools', labelAr: 'أدوات المطورين' },
+] as const;
 
 export function AdminTools() {
   const language = useUILanguage();
@@ -47,6 +61,18 @@ export function AdminTools() {
   const activeCount = tools.filter((t) => t.status === 'Active').length;
   const maintenanceCount = tools.filter((t) => t.status === 'Maintenance').length;
   const disabledCount = tools.filter((t) => t.status === 'Disabled').length;
+
+  // Compute category counts
+  const categoryCounts: Record<string, number> = {
+    All: totalCount,
+    Intelligence: tools.filter((t) => t.category === 'Intelligence').length,
+    Growth: tools.filter((t) => t.category === 'Growth').length,
+    Core: tools.filter((t) => t.category === 'Core').length,
+    Operations: tools.filter((t) => t.category === 'Operations').length,
+    Commerce: tools.filter((t) => t.category === 'Commerce').length,
+    Infrastructure: tools.filter((t) => t.category === 'Infrastructure').length,
+    Developer: tools.filter((t) => t.category === 'Developer').length,
+  };
 
   // Filter tools
   const visibleTools = tools.filter((tool) => {
@@ -186,7 +212,7 @@ export function AdminTools() {
           <div className="adm-tools-filters">
             {/* Search */}
             <div className="adm-tools-search">
-              <Search size={14} />
+              <Search size={14} className="adm-tools-search-icon" />
               <input
                 type="text"
                 placeholder={t('Search tools (e.g., AI, Funnel, CRM)...', 'ابحث في الأدوات (ذكاء، قمع، CRM)...')}
@@ -195,6 +221,7 @@ export function AdminTools() {
               />
               {search && (
                 <button
+                  type="button"
                   className="adm-tools-search-clear"
                   onClick={() => setSearch('')}
                   aria-label={t('Clear search', 'مسح البحث')}
@@ -226,6 +253,7 @@ export function AdminTools() {
                 return (
                   <button
                     key={status}
+                    type="button"
                     role="tab"
                     aria-selected={statusFilter === status}
                     className={`adm-tools-status-tab ${statusFilter === status ? 'active' : ''}`}
@@ -238,47 +266,96 @@ export function AdminTools() {
               })}
             </div>
 
-            {/* Category Select */}
-            <select
-              className="adm-tools-category-select"
+            {/* Professional Category Filter Dropdown */}
+            <Select.Root
+              dir={ar ? 'rtl' : 'ltr'}
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label={t('Filter by category', 'تصفية حسب الفئة')}
+              onValueChange={(val) => setCategoryFilter(val)}
             >
-              <option value="All">{t('All Categories', 'جميع الفئات')}</option>
-              <option value="Intelligence">{t('Intelligence (AI)', 'الذكاء الاصطناعي')}</option>
-              <option value="Growth">{t('Growth & Sales', 'النمو والمبيعات')}</option>
-              <option value="Core">{t('Core Platform', 'الأساسيات')}</option>
-              <option value="Operations">{t('Operations & Booking', 'العمليات والحجوزات')}</option>
-              <option value="Commerce">{t('Commerce & Payments', 'التجارة والمدفوعات')}</option>
-              <option value="Infrastructure">{t('Infrastructure & Domains', 'البنية التحتية والنطاقات')}</option>
-              <option value="Developer">{t('Developer Tools', 'أدوات المطورين')}</option>
-            </select>
+              <Select.Trigger
+                className={`adm-tools-cat-trigger ${categoryFilter !== 'All' ? 'is-active' : ''}`}
+                aria-label={t('Filter by category', 'تصفية حسب الفئة')}
+              >
+                <div className="adm-tools-cat-trigger-content">
+                  <SlidersHorizontal size={13} className="adm-tools-cat-icon" />
+                  <span className="adm-tools-cat-prefix">{t('Category:', 'الفئة:')}</span>
+                  <Select.Value>
+                    {categoryFilter === 'All'
+                      ? t('All Categories', 'جميع الفئات')
+                      : (CATEGORY_OPTIONS.find((c) => c.id === categoryFilter)?.[ar ? 'labelAr' : 'labelEn'] ?? categoryFilter)}
+                  </Select.Value>
+                </div>
+                <Select.Icon className="adm-tools-cat-chevron">
+                  <ChevronDown size={13} />
+                </Select.Icon>
+              </Select.Trigger>
+
+              <Select.Portal>
+                <Select.Content
+                  dir={ar ? 'rtl' : 'ltr'}
+                  className="adm-tools-cat-popup"
+                  position="popper"
+                  sideOffset={6}
+                  collisionPadding={12}
+                  align="start"
+                >
+                  <Select.Viewport className="adm-tools-cat-viewport">
+                    {CATEGORY_OPTIONS.map((cat) => {
+                      const count = categoryCounts[cat.id] ?? 0;
+                      const label = ar ? cat.labelAr : cat.labelEn;
+                      return (
+                        <Select.Item
+                          key={cat.id}
+                          value={cat.id}
+                          className="adm-tools-cat-item"
+                          textValue={label}
+                        >
+                          <div className="adm-tools-cat-item-left">
+                            <Select.ItemText>{label}</Select.ItemText>
+                          </div>
+                          <div className="adm-tools-cat-item-right">
+                            <span className="adm-tools-cat-item-count">{count}</span>
+                            <Select.ItemIndicator className="adm-tools-cat-check">
+                              <Check size={13} />
+                            </Select.ItemIndicator>
+                          </div>
+                        </Select.Item>
+                      );
+                    })}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select.Portal>
+            </Select.Root>
           </div>
 
+          {/* Professional Action Buttons */}
           <div className="adm-tools-actions">
             <button
-              className="adm-tools-action-btn"
+              type="button"
+              className="adm-tools-btn adm-tools-btn-enable"
               onClick={handleEnableAll}
-              title={t('Enable all tools globally', 'تفعيل جميع الأدوات')}
+              title={t('Enable all tools globally across all tenants', 'تفعيل جميع الأدوات عبر كافة مساحات العمل')}
             >
-              <Power size={13} />
-              {t('Enable All', 'تفعيل الكل')}
+              <Power size={13} className="adm-btn-power-icon" />
+              <span>{t('Enable All', 'تفعيل الكل')}</span>
             </button>
             <button
-              className="adm-tools-action-btn"
+              type="button"
+              className="adm-tools-btn adm-tools-btn-export"
               onClick={handleExportConfig}
-              title={t('Export JSON config', 'تصدير ملف الإعدادات')}
+              title={t('Export configuration as JSON', 'تصدير ملف الإعدادات كـ JSON')}
             >
-              <Download size={13} />
-              {t('Export', 'تصدير')}
+              <Download size={13} className="adm-btn-download-icon" />
+              <span>{t('Export', 'تصدير')}</span>
             </button>
             <button
-              className="adm-tools-action-btn"
+              type="button"
+              className="adm-tools-btn adm-tools-btn-reset"
               onClick={handleResetDefaults}
               title={t('Reset tools to defaults', 'إعادة تعيين للافتراضي')}
+              aria-label={t('Reset tools to defaults', 'إعادة تعيين للافتراضي')}
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={13} className="adm-btn-reset-icon" />
             </button>
           </div>
         </div>
