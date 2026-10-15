@@ -1,8 +1,55 @@
 # Admin management workspace
 
+## CRM consolidation, templates hub and booking monitoring
+
+`/admin/crm` contains Leads Database, Pipeline stages, Custom fields and CRM
+defaults. The standalone Leads navigation entry is removed from the platform
+sidebar; `/admin/leads` redirects to CRM. Leads continue using the original
+`gos.admin.v1.leads.0` storage key, and the other three tabs retain their original
+CRM storage addresses, so tab insertion does not overwrite existing data.
+
+`/admin/templates` is the only admin surface for system templates. Its horizontal
+tabs cover Funnels, Websites, Landing Pages, Booking Pages, CRM Pipelines,
+AI Assistants, AI Knowledge Packs, Automations, Products and Messages.
+The Messages tab groups Email, SMS and WhatsApp with a channel filter. New assets
+inherit the active tab's category; editing/deleting an asset preserves the other
+categories. All tabs read and edit the same `gos.system.templates.v2` library.
+`/admin/funnels` (also available at `/admin/funnels-websites`) displays only active
+tenant sites. Its former Templates tab is removed, legacy template-tab URLs
+redirect to the hub, and the repository rejects the old template-tab writes.
+CRM has no template views or template creation actions.
+The first read migrates both legacy template stores and the built-in page designs;
+subsequent reads preserve edits, publication states and deletions. The hub supports
+Funnel, Website, Landing Page, Booking Page, CRM Pipeline, AI Assistant,
+AI Knowledge Pack, Automation, Product Layout, Email, SMS and WhatsApp categories.
+`publishedSystemTemplates(category)` exposes published defaults. Existing
+funnel/website galleries use `publishedPageTemplates()`, and the shared tenant
+template workspace uses `publishedWorkspaceTemplates()` across its module scopes.
+Built-in defaults from both libraries are registered in the admin hub. Tenant-owned
+copies remain independent when a system template changes or is unpublished.
+Structured workspace configurations are stored as JSON in Content; plain text
+is also supported, using the category's default configuration for its structure.
+
+All booking tabs are monitoring views. Neither row names nor table actions open
+editors, and the repository rejects booking saves. Search, filters, pagination
+and CSV export remain available. This is a frontend guard; a production backend
+must enforce the same permissions.
+
+These four modules use viewport-sized layouts and table page sizes calculated
+from available height. Menu direction is explicit on portaled admin selects;
+native menu and profile alignment rules are scoped to `.adm-shell`, excluding
+the Users Management shell. Users Management files and styles are untouched.
+
+Run `node scripts/verify-admin-template-library.mjs` against a Vite server on
+port 5181 (or set `ADMIN_AUDIT_URL`). Configure `PLAYWRIGHT_MODULE_PATH` when
+Playwright is installed outside the project. It checks 216 combinations of
+route/tab, viewport, theme and language, ten-category CRUD, message filtering,
+CRM/lead data preservation, template isolation, legacy redirects and booking
+write rejection. Screenshots and results are saved under `artifacts/admin-template-hub`.
+
 ## Compact desktop layout
 
-The 18 editable modules use compact cards, 140px chart canvases, five-row table
+The operational modules use compact cards, 140px chart canvases, five-row table
 pages, and the same shared Header component as Users Management. Desktop
 navigation can collapse to an icon rail. All admin filters and select fields use
 keyboard-accessible, RTL-aware Radix dropdowns; search has a visible clear action.

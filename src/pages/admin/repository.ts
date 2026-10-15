@@ -1,10 +1,24 @@
 import { storageGet, storageSet } from '../../utils/browserStorage';
 import { seedRows, type RecordRow } from './catalog';
-export function readRows(moduleId:string, tab:number):RecordRow[] {
- try { const value=JSON.parse(storageGet(`gos.admin.v1.${moduleId}.${tab}`)??'null'); if(Array.isArray(value) && value.every(r=>r && typeof r.id==='string' && typeof r.name==='string' && typeof r.status==='string')) return value; } catch { /* Recover to sample records. */ }
- return seedRows(moduleId,tab);
+import { readSystemTemplates, saveSystemTemplates } from './template-library';
+// Keep original storage addresses so inserting Leads cannot shift existing CRM data.
+function recordKey(moduleId:string,tab:number) {
+ if(moduleId==='crm') return tab===0?'gos.admin.v1.leads.0':`gos.admin.v1.crm.${tab-1}`;
+ return `gos.admin.v1.${moduleId}.${tab}`;
 }
-export function saveRows(moduleId:string,tab:number,rows:RecordRow[]) { return storageSet(`gos.admin.v1.${moduleId}.${tab}`,JSON.stringify(rows)); }
+function liveSites(rows:RecordRow[]) { return rows.filter(row=>row.status==='Published' && row.tenant!=='Platform' && !row.category && !!row.domain); }
+export function readRows(moduleId:string, tab:number):RecordRow[] {
+ if(moduleId==='templates') return readSystemTemplates();
+ if(moduleId==='funnels-websites' && tab!==0) return [];
+ try { const value=JSON.parse(storageGet(recordKey(moduleId,tab))??'null'); if(Array.isArray(value) && value.every(r=>r && typeof r.id==='string' && typeof r.name==='string' && typeof r.status==='string')) return moduleId==='funnels-websites' && tab===0?liveSites(value):value; } catch { /* Recover to sample records. */ }
+ const rows=seedRows(moduleId,tab); return moduleId==='funnels-websites' && tab===0?liveSites(rows):rows;
+}
+export function saveRows(moduleId:string,tab:number,rows:RecordRow[]) {
+ if(moduleId==='booking') return false;
+ if(moduleId==='templates') return saveSystemTemplates(rows);
+ if(moduleId==='funnels-websites' && tab!==0) return false;
+ return storageSet(recordKey(moduleId,tab),JSON.stringify(rows));
+}
 export function downloadCSV(rows:RecordRow[], filename:string) {
  const keys=Array.from(new Set(rows.flatMap(Object.keys)));
  const cell=(value:string)=>`"${(/^[=+@\-\t\r]/.test(value)?"'":"")+value.replaceAll('"','""')}"`;

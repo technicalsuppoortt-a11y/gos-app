@@ -111,7 +111,7 @@ export const initialTools: ToolItem[] = [
     categoryLabel: ['Growth & Sales', 'النمو والمبيعات'],
     status: 'Active',
     enabled: true,
-    route: '/admin/funnels-websites',
+    route: '/admin/funnels',
     stats: {
       activeTenants: 29,
       totalTenants: 32,

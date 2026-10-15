@@ -13,3 +13,58 @@
  .adm-main{padding:16px 20px;overflow-y:auto}.adm-workspace{max-width:none}.adm-page-head{gap:12px;margin-bottom:10px}.adm-page-head h1{font-size:23px;line-height:1.25;margin:4px 0}.adm-page-head p{font-size:11px;line-height:1.5}.adm-eyebrow{font-size:9px}.adm-demo{padding:6px 10px;font-size:10px;line-height:1.5;margin-bottom:12px}.adm-notice{padding:7px 10px;font-size:11px;margin:8px 0}.adm-metrics{gap:12px;margin-bottom:12px}.adm-metric{padding:12px 14px}.adm-metric>div{font-size:11px}.adm-metric i{width:28px;height:28px}.adm-metric strong{font-size:24px;line-height:1.15;margin:5px 0}.adm-metric small{font-size:10px}.adm-tabs{gap:20px;margin-bottom:12px}.adm-shell .adm-tabs button{padding:8px 0;min-height:32px;font-size:12px}.adm-panel-heading{padding:12px 14px}.adm-panel-heading h2{font-size:14px}.adm-panel-heading p{font-size:10px;line-height:1.5;margin-top:3px}.adm-filters{gap:8px;padding:0 14px 12px}.adm-shell :where(.adm-workspace) button{min-height:30px;padding:6px 10px;font-size:11px}.adm-shell :where(.adm-workspace) input,.adm-shell :where(.adm-workspace) select{min-height:34px;padding:7px 10px;font-size:12px}.adm-shell .adm-select-trigger{min-height:34px;padding:7px 10px;font-size:12px}.adm-table-wrap table{font-size:11px}.adm-table-wrap th{padding:8px 12px;font-size:10px}.adm-table-wrap td{padding:7px 12px;max-width:none;white-space:normal;overflow:visible}.adm-record-name b{white-space:normal;text-align:start}.adm-avatar{width:28px;height:28px;font-size:9px;border-radius:8px}.adm-shell .adm-record-name{font-size:11px;min-height:28px;padding:0}.adm-shell .adm-row-actions button{padding:4px;min-height:26px;font-size:10px}.adm-row-actions{white-space:nowrap}.adm-badge{padding:4px 7px;font-size:10px}.adm-pagination{padding:8px 14px;font-size:10px}.adm-empty{padding:24px}.adm-overview-tools{margin-bottom:10px}.adm-chart-grid{gap:12px;margin-bottom:12px}.adm-bar-chart{height:140px;padding:8px 18px 14px;gap:10px}.adm-budget-list{padding:4px 14px}.adm-budget-list>div{margin-bottom:12px}.adm-budget-list span{font-size:11px;margin-bottom:6px}.adm-budget-list small{font-size:9px;margin-top:4px}.adm-shell .adm-link{margin:8px 14px 12px;font-size:10px}.adm-health{padding:9px 14px}.adm-health>span{font-size:11px}.adm-shortcut{padding:9px 14px;font-size:11px}.adm-cms-toolbar{margin-bottom:12px}.adm-cms-grid{grid-template-columns:195px minmax(0,1fr);gap:12px}.adm-cms-nav{padding:6px;gap:1px}.adm-shell .adm-cms-nav button{padding:7px 9px;min-height:29px;font-size:11px}.adm-cms-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 14px 14px}.adm-cms-fields label{font-size:11px;gap:5px;line-height:1.5;min-width:0}.adm-cms-fields textarea{min-height:74px;height:74px;max-height:74px;padding:7px 9px;resize:none;font-size:12px;line-height:1.6}.adm-cms-fields fieldset{grid-column:1/-1;padding:12px;gap:12px}.adm-cms-fields fieldset input{width:100%}.adm-dialog{padding:18px;width:min(520px,100%)}.adm-dialog>header{margin-bottom:16px}.adm-dialog h2{font-size:20px}.adm-form:not(.adm-cms-fields){gap:11px}.adm-form-foot{padding-top:12px}.adm-sidebar{padding:18px 12px 12px}.adm-brand{padding-bottom:14px}.adm-admin-label{padding-bottom:10px}.adm-sidebar nav a{padding:8px 11px;min-height:35px;margin-bottom:2px}.adm-sidebar footer{padding-top:12px}
 }
 @media(min-width:769px){.adm-scrim{display:none}}@media(max-width:1100px){.adm-sidebar{width:220px}.adm-metrics{gap:10px}.adm-metric{padding:15px}.adm-metric strong{font-size:25px}.adm-chart-grid{grid-template-columns:1fr 1fr}.adm-page-head{align-items:flex-start}}@media(max-width:768px){.adm-shell .adm-mobile{display:inline-flex;border:0;background:transparent;padding:5px}.adm-sidebar{position:fixed;inset-block:0;inset-inline-start:0;z-index:70;width:260px;display:none}.adm-sidebar.is-open{display:flex}.adm-shell .adm-scrim{position:fixed;inset:0;z-index:60;border:0;border-radius:0;background:#090a1a88;width:100%;height:100%}.adm-topbar{height:64px;padding:0 16px}.adm-topbar>span{display:none}.adm-topbar a{display:none}.adm-main{padding:18px 14px}.adm-page-head{flex-direction:column;gap:13px}.adm-page-head h1{font-size:25px}.adm-metrics{grid-template-columns:1fr 1fr}.adm-chart-grid{grid-template-columns:1fr}.adm-tabs{gap:18px}.adm-cms-grid{grid-template-columns:1fr}.adm-cms-nav{flex-direction:row;overflow-x:auto}.adm-cms-nav button{white-space:nowrap;flex:none}.adm-filters{padding-inline:14px}.adm-filters>label{flex:1}.adm-filters select{width:100%}.adm-panel-heading{padding:18px 14px}.adm-dialog-scrim{padding:8px}.adm-dialog{padding:20px}.adm-cms-fields{padding-inline:14px}.adm-cms-fields fieldset{grid-template-columns:1fr}.adm-metric strong{font-size:23px}.adm-metric>div{font-size:11px}}
+/* Direction and sizing rules are scoped away from the Users Management shell. */
+.adm-select-popup,.adm-select-option{text-align:start}
+.adm-select-option>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
+.adm-select-popup [data-radix-select-viewport]{max-height:var(--radix-select-content-available-height)}
+.adm-shell :is(select,option,[role=menu],[role=listbox],[role=option]){text-align:start}
+.adm-shell[dir=rtl] :is(select,[role=menu],[role=listbox]){direction:rtl}
+.adm-shell[dir=ltr] :is(select,[role=menu],[role=listbox]){direction:ltr}
+.adm-shell .layout-header-actions > .relative > .absolute{max-width:calc(100vw - 24px);text-align:start}
+.adm-readonly-name{display:flex;align-items:center;gap:10px}
+.adm-main:has(>.adm-workspace[data-compact]){overflow:hidden;padding:12px 16px}
+.adm-workspace[data-compact]{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px}
+.adm-workspace[data-compact]>:is(.adm-page-head,.adm-demo,.adm-metrics,.adm-tabs,.adm-notice){margin:0;flex:none}
+.adm-workspace[data-compact] .adm-page-head h1{font-size:22px;margin:3px 0}
+.adm-workspace[data-compact] .adm-page-head p{font-size:11px;line-height:1.4}
+.adm-workspace[data-compact] .adm-demo{padding:5px 10px;font-size:10px}
+.adm-workspace[data-compact] .adm-metrics{gap:8px}
+.adm-workspace[data-compact] .adm-metric{padding:8px 12px}
+.adm-workspace[data-compact] .adm-metric strong{font-size:22px;margin:4px 0}
+.adm-workspace[data-compact] .adm-metric small{display:none}
+.adm-workspace[data-compact] .adm-tabs button{padding-block:6px;min-height:30px}
+.adm-workspace[data-compact]>.adm-panel{flex:1;min-height:0;display:flex;flex-direction:column}
+.adm-workspace[data-compact] .adm-panel-heading{padding:8px 12px;flex:none}
+.adm-workspace[data-compact] .adm-panel-heading p{margin-top:2px;font-size:10px}
+.adm-workspace[data-compact] .adm-filters{padding:0 12px 8px;gap:6px;flex:none}
+.adm-workspace[data-compact] .adm-table-wrap{flex:1;min-height:76px;overflow-y:hidden}
+.adm-workspace[data-compact] table{table-layout:fixed;font-size:11px}
+.adm-workspace[data-compact] th{height:34px;padding:5px 10px}
+.adm-workspace[data-compact] td{height:40px;padding:5px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-workspace[data-compact] .adm-record-name{max-width:100%;display:flex;min-width:0}
+.adm-workspace[data-compact] .adm-record-name b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start}
+.adm-workspace[data-compact] .adm-row-actions{gap:3px}
+.adm-workspace[data-compact] .adm-pagination{flex:none;padding:6px 12px}
+.adm-workspace[data-compact] .adm-empty{padding:8px}
+.adm-workspace[data-compact] .adm-empty svg{display:none}
+@media(max-height:750px){.adm-workspace[data-compact] .adm-metrics{display:none}.adm-workspace[data-compact] .adm-eyebrow{display:none}}
+@media(max-width:768px){
+ .adm-workspace[data-compact] .adm-metrics,.adm-workspace[data-compact] .adm-eyebrow{display:none}
+ .adm-workspace[data-compact] .adm-page-head{flex-direction:row;gap:8px;align-items:center}
+ .adm-workspace[data-compact] .adm-page-head p{display:none}
+ .adm-workspace[data-compact] .adm-page-head h1{font-size:18px}
+ .adm-workspace[data-compact] .adm-actions{flex:none}
+ .adm-workspace[data-compact] .adm-actions button{font-size:0;padding:6px;min-height:30px}
+ .adm-workspace[data-compact] .adm-panel-heading p{display:none}
+ .adm-workspace[data-compact] .adm-filters>label{min-width:0;flex:1 1 90px}
+ .adm-workspace[data-compact] .adm-search{flex-basis:100%}
+ .adm-workspace[data-compact] .adm-select{min-width:0}
+ .adm-workspace[data-compact] .adm-select-trigger{font-size:10px;padding:5px;min-height:30px}
+ .adm-workspace[data-compact] table{min-width:600px}
+}
+/* The master hub keeps its category navigation in one horizontal, scrollable row. */
+.adm-workspace[data-module=templates] .adm-tabs{gap:5px;padding:4px;min-width:0;border:1px solid var(--adm-border);border-radius:10px;background:var(--adm-surface);scrollbar-width:thin;overscroll-behavior-inline:contain;scroll-padding-inline:4px}
+.adm-shell .adm-workspace[data-module=templates] .adm-tabs button{flex:none;border:0;border-radius:6px;padding:8px 10px;min-height:32px;font-size:11px}
+.adm-shell .adm-workspace[data-module=templates] .adm-tabs button.active{background:var(--adm-accent-soft);color:var(--adm-accent)}
+.adm-shell .adm-workspace[data-module=templates] .adm-tabs button:focus-visible{outline:2px solid var(--adm-accent);outline-offset:-2px}
+.adm-workspace[data-compact] .adm-table-wrap{overflow-y:auto;overscroll-behavior:contain}
