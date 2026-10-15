@@ -1,9 +1,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Search } from 'lucide-react';
+import { Check, ChevronDown, Search, X } from 'lucide-react';
 import './combobox.css';
 
-export type ComboOption = { value: string; label: string; search?: string };
+export type ComboOption = {
+  value: string;
+  label: string;
+  badge?: string;
+  sublabel?: string;
+  search?: string;
+};
 
 export function Combobox({
   value,
@@ -33,27 +39,80 @@ export function Combobox({
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [active, setActive] = React.useState(0);
-  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 250 });
+  const [position, setPosition] = React.useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight?: number;
+  }>({ top: 0, left: 0, width: 240, maxHeight: 280 });
   const [usePortal, setUsePortal] = React.useState(false);
   const trigger = React.useRef<HTMLButtonElement>(null);
   const panel = React.useRef<HTMLDivElement>(null);
   const input = React.useRef<HTMLInputElement>(null);
   const id = React.useId();
 
-  const filtered = options.filter(o =>
-    `${o.label} ${o.value} ${o.search || ''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-  );
-  const selected = options.find(o => o.value === value);
+  const filtered = React.useMemo(() => {
+    const q = query.trim().toLocaleLowerCase();
+    if (!q) return options;
+    return options.filter(o =>
+      `${o.label} ${o.value} ${o.badge || ''} ${o.sublabel || ''} ${o.search || ''}`
+        .toLocaleLowerCase()
+        .includes(q)
+    );
+  }, [options, query]);
 
-  const close = () => {
+  const selected = options.find(
+    o => o.value === value || o.value.toLowerCase() === value.toLowerCase()
+  );
+
+  const close = React.useCallback(() => {
     setOpen(false);
     trigger.current?.focus();
-  };
+  }, []);
 
   const choose = (next: string) => {
     onChange(next);
     close();
   };
+
+  const updatePosition = React.useCallback(() => {
+    const anchor = trigger.current;
+    if (!anchor) return;
+    const r = anchor.getBoundingClientRect();
+
+    // If anchor is scrolled off-screen, close
+    if (r.bottom < -40 || r.top > window.innerHeight + 40) {
+      setOpen(false);
+      return;
+    }
+
+    const triggerWidth = r.width;
+    // Strictly match trigger width, with safe bounds
+    const width = Math.min(Math.max(triggerWidth, 180), window.innerWidth - 24);
+
+    const maxMenuHeight = 280;
+    const spaceBelow = window.innerHeight - r.bottom - 8;
+    const spaceAbove = r.top - 8;
+
+    const placeAbove = spaceBelow < 180 && spaceAbove > spaceBelow;
+    const availableSpace = placeAbove ? spaceAbove : spaceBelow;
+    const maxHeight = Math.max(120, Math.min(maxMenuHeight, availableSpace));
+
+    const top = placeAbove
+      ? Math.max(8, r.top - maxHeight - 4)
+      : Math.min(window.innerHeight - maxHeight - 8, r.bottom + 4);
+
+    const left = dir === 'rtl'
+      ? Math.max(12, Math.min(r.right - width, window.innerWidth - width - 12))
+      : Math.max(12, Math.min(r.left, window.innerWidth - width - 12));
+
+    setPosition({
+      top: Math.round(top),
+      left: Math.round(left),
+      width: Math.round(width),
+      maxHeight: Math.round(maxHeight),
+    });
+  }, [dir]);
 
   const openPanel = () => {
     const anchor = trigger.current;
@@ -64,38 +123,56 @@ export function Combobox({
     setUsePortal(shouldPortal);
 
     if (shouldPortal) {
-      const r = anchor.getBoundingClientRect();
-      const width = Math.min(Math.max(r.width, 245), window.innerWidth - 24);
-      const height = Math.min(options.length * 40 + 20, 250);
-      setPosition({
-        top: r.bottom + height > window.innerHeight ? Math.max(12, r.top - height - 7) : r.bottom + 7,
-        left: Math.max(12, Math.min(dir === 'rtl' ? r.right - width : r.left, window.innerWidth - width - 12)),
-        width,
-      });
+      updatePosition();
     }
 
     setQuery('');
-    setActive(Math.max(0, options.findIndex(o => o.value === value)));
+    const selectedIdx = options.findIndex(
+      o => o.value === value || o.value.toLowerCase() === value.toLowerCase()
+    );
+    setActive(Math.max(0, selectedIdx));
     setOpen(true);
   };
 
   React.useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => (searchable ? input.current?.focus() : panel.current?.focus()));
+
     const outside = (event: PointerEvent) => {
-      if (!panel.current?.contains(event.target as Node) && !trigger.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!panel.current?.contains(target) && !trigger.current?.contains(target)) {
         setOpen(false);
       }
     };
-    const resize = () => setOpen(false);
+
+    const handleScroll = (event: Event) => {
+      if (panel.current && panel.current.contains(event.target as Node)) {
+        return;
+      }
+      if (usePortal) {
+        updatePosition();
+      }
+    };
+
+    const handleResize = () => {
+      if (usePortal) {
+        updatePosition();
+      } else {
+        setOpen(false);
+      }
+    };
+
     document.addEventListener('pointerdown', outside);
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll, true);
+
     return () => {
       cancelAnimationFrame(frame);
       document.removeEventListener('pointerdown', outside);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll, true);
     };
-  }, [open, searchable]);
+  }, [open, searchable, usePortal, updatePosition]);
 
   React.useEffect(() => {
     if (open) {
@@ -133,26 +210,48 @@ export function Combobox({
       tabIndex={-1}
       className={`gos-combo-panel ${usePortal ? 'is-portaled' : 'absolute top-full left-0 mt-1 w-full z-50'}`}
       dir={dir}
-      style={usePortal ? position : undefined}
+      style={usePortal ? {
+        top: position.top,
+        left: position.left,
+        width: position.width,
+        maxHeight: position.maxHeight,
+      } : undefined}
       onKeyDown={keyboard}
     >
       {searchable && (
-        <div className="gos-combo-search">
-          <Search size={15} />
-          <input
-            ref={input}
-            aria-label={searchLabel}
-            role="combobox"
-            aria-controls={`${id}-list`}
-            aria-expanded="true"
-            aria-activedescendant={filtered.length ? `${id}-${active}` : undefined}
-            value={query}
-            onChange={e => {
-              setQuery(e.target.value);
-              setActive(0);
-            }}
-            placeholder={searchLabel}
-          />
+        <div className="gos-combo-search-wrapper">
+          <div className="gos-combo-search">
+            <Search size={14} className="gos-combo-search-icon" />
+            <input
+              ref={input}
+              aria-label={searchLabel}
+              role="combobox"
+              aria-controls={`${id}-list`}
+              aria-expanded="true"
+              aria-activedescendant={filtered.length ? `${id}-${active}` : undefined}
+              value={query}
+              onChange={e => {
+                setQuery(e.target.value);
+                setActive(0);
+              }}
+              placeholder={searchLabel}
+            />
+            {query && (
+              <button
+                type="button"
+                tabIndex={-1}
+                className="gos-combo-search-clear"
+                onClick={() => {
+                  setQuery('');
+                  setActive(0);
+                  input.current?.focus();
+                }}
+                aria-label="Clear search"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
         </div>
       )}
       <div
@@ -162,24 +261,35 @@ export function Combobox({
         className="gos-combo-options"
         aria-activedescendant={!searchable && filtered.length ? `${id}-${active}` : undefined}
       >
-        {filtered.map((o, i) => (
-          <button
-            type="button"
-            role="option"
-            id={`${id}-${i}`}
-            key={o.value}
-            data-index={i}
-            aria-selected={value === o.value}
-            tabIndex={-1}
-            className={`gos-combo-option ${active === i ? 'is-highlighted' : ''}`}
-            onPointerMove={() => setActive(i)}
-            onClick={() => choose(o.value)}
-          >
-            <span>{o.label}</span>
-            {o.value === value && <Check size={14} />}
-          </button>
-        ))}
-        {!filtered.length && <p className="gos-combo-empty">{emptyLabel}</p>}
+        {filtered.map((o, i) => {
+          const isSelected = o.value === value || o.value.toLowerCase() === value.toLowerCase();
+          return (
+            <button
+              type="button"
+              role="option"
+              id={`${id}-${i}`}
+              key={o.value}
+              data-index={i}
+              aria-selected={isSelected}
+              tabIndex={-1}
+              className={`gos-combo-option ${active === i ? 'is-highlighted' : ''} ${isSelected ? 'is-selected' : ''}`}
+              onPointerMove={() => setActive(i)}
+              onClick={() => choose(o.value)}
+            >
+              {o.badge && <span className="gos-combo-pill">{o.badge}</span>}
+              <span className="gos-combo-option-content">
+                <span className="gos-combo-option-title">{o.label}</span>
+                {o.sublabel && <span className="gos-combo-option-sub">{o.sublabel}</span>}
+              </span>
+              {isSelected && <Check size={14} className="gos-combo-check" />}
+            </button>
+          );
+        })}
+        {!filtered.length && (
+          <div className="gos-combo-empty">
+            <p>{emptyLabel}</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -205,8 +315,11 @@ export function Combobox({
           }
         }}
       >
-        <span>{selected?.label || value}</span>
-        <ChevronDown size={15} />
+        <span className="gos-combo-trigger-content">
+          {selected?.badge && <span className="gos-combo-pill">{selected.badge}</span>}
+          <span className="gos-combo-label">{selected?.label || value}</span>
+        </span>
+        <ChevronDown size={15} className="gos-combo-chevron" />
       </button>
       {open && (usePortal ? createPortal(menuContent, document.body) : menuContent)}
     </div>

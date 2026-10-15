@@ -2,28 +2,57 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  margin-top: 7px;
-  font-family: Inter, system-ui, sans-serif;
+  margin-top: 6px;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .gos-combo-trigger {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-height: 38px;
-  padding: 9px 12px;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
   border: 1px solid #dce0eb;
-  border-radius: 8px;
-  background: #fff;
-  color: #28324a;
-  font: 500 12px/1.5 Inter, system-ui, sans-serif;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #242c3f;
+  font: 500 12.5px/1.5 Inter, system-ui, -apple-system, sans-serif;
   text-align: start;
   cursor: pointer;
-  transition: border-color .18s, box-shadow .18s;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
 
-.gos-combo-trigger > span {
+.gos-combo-trigger:hover:not(:disabled) {
+  border-color: #9d8df1;
+  background-color: #fdfcff;
+}
+
+.gos-combo-trigger:focus-visible,
+.gos-combo-trigger[aria-expanded="true"] {
+  outline: none;
+  border-color: #7560eb;
+  box-shadow: 0 0 0 3px rgba(117, 96, 235, 0.16), 0 1px 2px rgba(16, 24, 40, 0.04);
+  background-color: #ffffff;
+}
+
+.gos-combo-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f7f8fa;
+}
+
+.gos-combo-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.gos-combo-label {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -31,29 +60,37 @@
   white-space: nowrap;
 }
 
-.gos-combo-trigger > svg {
-  color: #6f7890;
+.gos-combo-chevron {
+  color: #7e879c;
   flex: none;
-  transition: transform .18s;
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), color .18s ease;
 }
 
-.gos-combo-trigger[aria-expanded=true] > svg {
+.gos-combo-trigger[aria-expanded="true"] .gos-combo-chevron {
   transform: rotate(180deg);
-}
-
-.gos-combo-trigger:hover {
-  border-color: #a89be7;
-}
-
-.gos-combo-trigger:focus-visible,
-.gos-combo-trigger[aria-expanded=true] {
-  outline: none;
-  border-color: #7760dc;
-  box-shadow: 0 0 0 3px #7760dc20;
+  color: #7560eb;
 }
 
 .gos-combo.is-open {
   z-index: 60;
+}
+
+.gos-combo-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  background: #f3effe;
+  color: #6a4cd7;
+  border: 1px solid #e2dbf7;
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .gos-combo-panel {
@@ -66,39 +103,75 @@
   min-width: 100%;
   z-index: 50;
   box-sizing: border-box;
-  max-height: 300px;
+  max-height: 280px;
   display: flex;
   flex-direction: column;
-  padding: 5px;
-  border-radius: 11px;
-  background: #fffffffa;
-  border: 1px solid #e0dff0;
-  box-shadow: 0 16px 50px #22203d26, 0 2px 8px #22203d10;
-  backdrop-filter: blur(20px);
-  font-family: Inter, system-ui, sans-serif;
+  padding: 6px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e1e4ee;
+  box-shadow: 0 16px 40px -8px rgba(18, 24, 40, 0.16), 0 4px 12px -2px rgba(18, 24, 40, 0.06);
+  backdrop-filter: blur(16px);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
   outline: none;
+  animation: gos-combo-in .15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[dir="rtl"] .gos-combo-panel,
-.gos-combo[dir="rtl"] .gos-combo-panel,
-.gos-combo-panel[dir="rtl"] {
+@keyframes gos-combo-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+[dir="rtl"] .gos-combo-panel:not(.is-portaled),
+.gos-combo[dir="rtl"] .gos-combo-panel:not(.is-portaled),
+.gos-combo-panel[dir="rtl"]:not(.is-portaled) {
   left: auto;
   right: 0;
 }
 
 .gos-combo-panel.is-portaled {
-  position: fixed;
-  z-index: 10050;
-  margin-top: 0;
+  position: fixed !important;
+  z-index: 10050 !important;
+  margin-top: 0 !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
+  right: auto !important;
+  box-sizing: border-box !important;
+}
+
+.gos-combo-search-wrapper {
+  padding: 2px 2px 6px 2px;
+  border-bottom: 1px solid #edf0f6;
+  margin-bottom: 4px;
 }
 
 .gos-combo-search {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px;
-  color: #738097;
-  border-bottom: 1px solid #e9eaf1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f7f8fc;
+  border: 1px solid #e3e7f1;
+  color: #6e7990;
+  transition: border-color .15s, background-color .15s;
+}
+
+.gos-combo-search:focus-within {
+  background: #ffffff;
+  border-color: #8c77fc;
+  box-shadow: 0 0 0 2px rgba(140, 119, 252, 0.12);
+}
+
+.gos-combo-search-icon {
+  color: #8692a8;
+  flex: none;
 }
 
 .gos-combo-search input {
@@ -109,104 +182,249 @@
   box-shadow: none !important;
   background: transparent !important;
   padding: 0 !important;
-  height: 23px !important;
+  height: 22px !important;
   margin: 0 !important;
-  color: #28324a !important;
-  font: 12px Inter, system-ui, sans-serif !important;
+  color: #242c3f !important;
+  font: 12px/1.4 Inter, system-ui, -apple-system, sans-serif !important;
 }
 
 .gos-combo-search input::placeholder {
-  color: #758099;
+  color: #8692a8 !important;
+}
+
+.gos-combo-search-clear {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 0;
+  background: #e5e9f2;
+  color: #606d86;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+  transition: background .15s, color .15s;
+}
+
+.gos-combo-search-clear:hover {
+  background: #d4dbe8;
+  color: #1e2538;
 }
 
 .gos-combo-options {
   overflow-y: auto;
   overscroll-behavior: contain;
   min-height: 0;
-  padding: 3px 0;
+  flex: 1;
+  padding: 1px 0;
   scrollbar-width: thin;
+  scrollbar-color: #cbd3e1 transparent;
+}
+
+.gos-combo-options::-webkit-scrollbar {
+  width: 5px;
+}
+
+.gos-combo-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gos-combo-options::-webkit-scrollbar-thumb {
+  background: #cbd3e1;
+  border-radius: 4px;
+}
+
+.gos-combo-options::-webkit-scrollbar-thumb:hover {
+  background: #b5bfd1;
 }
 
 .gos-combo-option {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   width: 100%;
   text-align: start;
   border: 0;
-  border-radius: 6px;
-  padding: 9px;
+  border-radius: 7px;
+  padding: 7px 9px;
   background: transparent;
-  color: #3f4962;
-  font: 12px/1.5 Inter, system-ui, sans-serif;
+  color: #313a4f;
+  font: 12px/1.4 Inter, system-ui, -apple-system, sans-serif;
   cursor: pointer;
   min-height: 35px;
+  transition: background-color .12s ease, color .12s ease;
+  user-select: none;
 }
 
-.gos-combo-option > span {
+.gos-combo-option-content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
 }
 
-.gos-combo-option > svg {
+.gos-combo-option-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gos-combo-option-sub {
+  font-size: 10px;
+  color: #808b9f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gos-combo-check {
   flex: none;
   color: #7254d4;
+  margin-inline-start: auto;
 }
 
 .gos-combo-option.is-highlighted {
   background: #f1edfc;
-  color: #6143b7;
+  color: #553bb4;
 }
 
-.gos-combo-option[aria-selected=true] {
+.gos-combo-option.is-highlighted .gos-combo-pill {
+  background: #ffffff;
+  border-color: #cdbffa;
+  color: #553bb4;
+}
+
+.gos-combo-option.is-highlighted .gos-combo-option-sub {
+  color: #6e58b8;
+}
+
+.gos-combo-option.is-selected {
   font-weight: 600;
+  color: #2b254a;
 }
 
 .gos-combo-empty {
   text-align: center;
   font-size: 12px;
-  color: #738097;
-  padding: 16px;
+  color: #828ca0;
+  padding: 24px 12px;
 }
 
+/* Dark theme tokens */
 .dark .gos-combo-trigger {
-  background: #192033;
-  border-color: #354057;
-  color: #e7ebf5;
+  background: #171f30;
+  border-color: #2f3a50;
+  color: #e6ebf5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.dark .gos-combo-trigger:hover:not(:disabled) {
+  border-color: #4b5a7b;
+  background-color: #1c263b;
+}
+
+.dark .gos-combo-trigger:focus-visible,
+.dark .gos-combo-trigger[aria-expanded="true"] {
+  border-color: #8c76fc;
+  box-shadow: 0 0 0 3px rgba(140, 118, 252, 0.22);
+  background-color: #171f30;
+}
+
+.dark .gos-combo-chevron {
+  color: #9aa5bc;
+}
+
+.dark .gos-combo-trigger[aria-expanded="true"] .gos-combo-chevron {
+  color: #a494fd;
+}
+
+.dark .gos-combo-pill {
+  background: #25223e;
+  color: #c4b5fd;
+  border-color: #3d3566;
 }
 
 .dark .gos-combo-panel {
-  background: #171e30f7;
-  border-color: #354057;
-  box-shadow: 0 20px 60px #0007;
+  background: #151c2c;
+  border-color: #2a3449;
+  box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.65), 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.dark .gos-combo-search-wrapper {
+  border-bottom-color: #242e42;
 }
 
 .dark .gos-combo-search {
-  border-color: #313a4e;
+  background: #111724;
+  border-color: #263146;
+  color: #94a1b8;
+}
+
+.dark .gos-combo-search:focus-within {
+  background: #151d2d;
+  border-color: #8c76fc;
+  box-shadow: 0 0 0 2px rgba(140, 118, 252, 0.2);
+}
+
+.dark .gos-combo-search-icon {
+  color: #7b88a1;
 }
 
 .dark .gos-combo-search input {
-  color: #e7ebf5 !important;
+  color: #e6ebf5 !important;
 }
 
-.dark .gos-combo-search input::placeholder,
-.dark .gos-combo-empty {
-  color: #aab5cb;
+.dark .gos-combo-search input::placeholder {
+  color: #7b88a1 !important;
+}
+
+.dark .gos-combo-search-clear {
+  background: #232c3f;
+  color: #94a1b8;
+}
+
+.dark .gos-combo-search-clear:hover {
+  background: #2f3b54;
+  color: #e6ebf5;
+}
+
+.dark .gos-combo-options::-webkit-scrollbar-thumb {
+  background: #2e3a52;
+}
+
+.dark .gos-combo-options::-webkit-scrollbar-thumb:hover {
+  background: #3f4e6d;
 }
 
 .dark .gos-combo-option {
-  color: #cbd3e5;
+  color: #cdd5e5;
 }
 
 .dark .gos-combo-option.is-highlighted {
-  background: #30284d;
-  color: #d4c7ff;
+  background: #272242;
+  color: #d4c8ff;
 }
 
-.dark .gos-combo-option > svg {
-  color: #bca5ff;
+.dark .gos-combo-option.is-highlighted .gos-combo-pill {
+  background: #1b1731;
+  border-color: #483d78;
+  color: #ddd6fe;
 }
 
-.dark .gos-combo-trigger > svg {
-  color: #b1bad1;
+.dark .gos-combo-option.is-highlighted .gos-combo-option-sub {
+  color: #ab9be0;
 }
+
+.dark .gos-combo-option.is-selected {
+  color: #f1edff;
+}
+
+.dark .gos-combo-check {
+  color: #b7a0ff;
+}
+
+.dark .gos-combo-empty {
+  color: #8895ad;
+}
+
