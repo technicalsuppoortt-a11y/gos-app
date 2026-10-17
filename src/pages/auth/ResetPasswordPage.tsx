@@ -317,7 +317,7 @@ export const ResetPasswordPage: React.FC = () => {
         <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400">
           <span>{translateText("© 2025 GOS Inc.")}</span>
           <div className="flex gap-4">
-            <a className="transition hover:text-slate-700 dark:hover:text-white" href="#privacy">
+            <a className="transition hover:text-slate-700 dark:hover:text-white" href="/privacy">
               {translateText("Privacy")}
             </a>
             <a className="transition hover:text-slate-700 dark:hover:text-white" href="#help">

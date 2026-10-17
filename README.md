@@ -120,3 +120,14 @@
   8- Analysis
     - Add Sales Cards in overview
     - Review analysis from document
+
+    ================
+    # phonix Saas
+    - Remove
+      - المهام والإنجاز
+      - التسويق
+      - المجتمع
+      - الفوترة والاشتراك
+    - merge ادارة المواعيد مع الرسائل => mentor , Schedule Mangment
+
+    - 

@@ -16,6 +16,7 @@ import { IntegrationsPanel } from './IntegrationsPanel';
 import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
 import { KnowledgePanel } from './KnowledgePanel';
+import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
 import './settings.css';
 
 export function SettingsWorkspace() {
@@ -44,10 +45,10 @@ function SettingsWorkspaceView() {
     setData(next);
     showToast.success(settingsApiEnabled ? 'Changes saved' : 'Preferences saved on this device');
   }
-  return <div className="st-workspace">
-    <div className="st-layout">
-      <div className={`st-content st-${active.slug}`} key={active.slug}>
-        {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")}><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
+  return <div className="st-workspace w-full">
+    <div className="st-layout w-full">
+      <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
+        {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'billing' && <><BillingPanel data={data} refresh={refresh} saveLocal={save}/><PaymentsPanel data={data} save={save}/></>)}
           {localizeNode(active.slug === 'integrations' && <IntegrationsPanel data={data} refresh={refresh}/>)}
@@ -56,6 +57,7 @@ function SettingsWorkspaceView() {
           {localizeNode(active.slug === 'security' && <SecurityPanel/>)}
           {localizeNode(active.slug === 'tools' && <><PanelHeading title={translateText("Tools")} description="Access and manage all your business tools, products, and features."/><ToolsSettingsPanel/></>)}
           {localizeNode(active.slug === 'knowledge' && <KnowledgePanel/>)}
+          {localizeNode(active.slug === 'privacy' && <PrivacyPolicyPanel/>)}
         </>)}
       </div>
     </div>
@@ -66,20 +68,34 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
   useUILanguage();
   const [draft, setDraft] = useState(data.business), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const update = (key: keyof typeof draft, value: string) => setDraft(p => ({ ...p, [key]: value }));
-  return <><PanelHeading title={translateText("Business Settings")} description="Your business identity and defaults used across GOS."/><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, business: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
-    <Card title={translateText("Business identity")} description="Your brand appears on customer-facing pages and communications."><div className="st-form-grid two">
-      <Field label="Business name"><input required value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
-      <Field label="Business type"><Select value={draft.type} onChange={value => update('type', value)} options={['Creative services', 'Consulting', 'Education', 'Retail', 'Other']} /></Field>
-      <Field label="Business email"><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
-      <Field label="Phone number"><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
-      <Field label="Business address"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
-      <Field label="Brand color"><input type="color" value={draft.color} onChange={e => update('color', e.target.value)}/></Field>
-      <Field label="Public description"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
-      <Field label="Business logo URL"><input type="url" value={draft.logo} onChange={e => update('logo', e.target.value)} placeholder={translateText("https://…")}/></Field>
-    </div></Card>
-    <Card title={translateText("Regional defaults")} description="Used for dates, payments and customer experiences."><div className="st-form-grid two"><Field label="Default currency"><Select value={draft.currency} onChange={value => update('currency', value)} options={['EUR', 'USD', 'EGP', 'GBP']} /></Field><Field label="Default timezone"><Select value={draft.timezone} onChange={value => update('timezone', value)} options={['Africa/Cairo', 'Europe/London', 'America/New_York', 'Asia/Dubai', 'UTC']} /></Field></div></Card>
-    {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}<div className="st-form-footer"><span/><button disabled={busy} className="st-primary"><Check size={15}/>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div>
-  </form></>;
+  return <div className="st-business w-full">
+    <PanelHeading title={translateText("Business Settings")} description="Your business identity and defaults used across GOS."/>
+    <form className="st-business-form w-full" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, business: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
+      <Card title={translateText("Business identity")} description="Your brand appears on customer-facing pages and communications." className="w-full">
+        <div className="st-form-grid two">
+          <Field label="Business name"><input required value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
+          <Field label="Business type"><Select value={draft.type} onChange={value => update('type', value)} options={['Creative services', 'Consulting', 'Education', 'Retail', 'Other']} /></Field>
+          <Field label="Business email"><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
+          <Field label="Phone number"><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
+          <Field label="Business address"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
+          <Field label="Business logo URL"><input type="url" value={draft.logo} onChange={e => update('logo', e.target.value)} placeholder={translateText("https://…")}/></Field>
+          <Field label="Brand color"><input type="color" value={draft.color} onChange={e => update('color', e.target.value)}/></Field>
+          <Field label="Public description" className="full-span"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
+        </div>
+      </Card>
+      <Card title={translateText("Regional defaults")} description="Used for dates, payments and customer experiences." className="w-full">
+        <div className="st-form-grid two">
+          <Field label="Default currency"><Select value={draft.currency} onChange={value => update('currency', value)} options={['EUR', 'USD', 'EGP', 'GBP']} /></Field>
+          <Field label="Default timezone"><Select value={draft.timezone} onChange={value => update('timezone', value)} options={['Africa/Cairo', 'Europe/London', 'America/New_York', 'Asia/Dubai', 'UTC']} /></Field>
+        </div>
+      </Card>
+      {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
+      <div className="st-form-footer">
+        <span/>
+        <button disabled={busy} className="st-primary"><Check size={15}/>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button>
+      </div>
+    </form>
+  </div>;
 }
 function PaymentsPanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
   useUILanguage();

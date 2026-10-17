@@ -1,6 +1,42 @@
+/* Lock root viewport when dashboard shell or role shell is active */
+html:has(.layout-dashboard-shell),
+body:has(.layout-dashboard-shell),
+html:has(.role-shell),
+body:has(.role-shell),
+html.layout-locked,
+body.layout-locked {
+  height: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100% !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+#root:has(.layout-dashboard-shell),
+#root:has(.role-shell),
+body.layout-locked #root {
+  height: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100% !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 .layout-dashboard-shell,
 .role-shell {
-  min-height: 100vh;
+  height: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   display: flex !important;
   flex-direction: row !important;
   background: var(--app-canvas, #f8f9fd);
@@ -10,29 +46,37 @@
   position: relative;
 }
 
-/* Sidebar - Sticky in-flow flex child, zero overlap with main workspace */
+/* Sidebar - Fixed stationary non-shrinking flex item at full height */
 .layout-sidebar {
   position: sticky !important;
   top: 0 !important;
-  inset: auto !important;
+  inset-block-start: 0 !important;
+  height: 100% !important;
   height: 100vh !important;
+  height: 100dvh !important;
   max-height: 100vh !important;
+  max-height: 100dvh !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  flex: 0 0 var(--app-sidebar-width, 240px) !important;
   flex-shrink: 0 !important;
+  flex-grow: 0 !important;
   z-index: 35;
-  width: var(--app-sidebar-width, 240px);
+  width: var(--app-sidebar-width, 240px) !important;
   border-inline-end: 1px solid #e9ebf2;
   background: linear-gradient(180deg, #f7faff 0%, #f3f7fc 100%);
   border-inline-end-color: #e5ebf4;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 .layout-sidebar.is-collapsed {
   --app-sidebar-width: 72px;
   width: 72px !important;
+  flex: 0 0 72px !important;
 }
 
 /* Sidebar Content & Structure */
@@ -534,7 +578,13 @@
   box-sizing: border-box;
   display: flex !important;
   min-width: 0 !important;
-  min-height: 100vh;
+  height: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   flex: 1 1 0% !important;
   flex-direction: column !important;
   margin-inline-start: 0 !important;
@@ -544,7 +594,7 @@
   position: relative;
 }
 
-/* Header & Controls */
+/* Header & Controls - Stationary pinned at top of workspace */
 .layout-header {
   box-sizing: border-box;
   position: relative;
@@ -552,6 +602,9 @@
   display: flex;
   height: 58px;
   min-height: 58px;
+  max-height: 58px;
+  flex: 0 0 58px !important;
+  flex-shrink: 0 !important;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -634,21 +687,32 @@
 .layout-search {
   box-sizing: border-box;
   display: flex;
-  width: 178px;
-  height: 36px;
+  width: clamp(210px, 22vw, 320px);
+  height: 38px;
   align-items: center;
-  gap: 8px;
-  border: 1px solid transparent;
+  gap: 9px;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  background: #f4f5f9;
-  padding: 0 10px;
-  color: #85899a;
+  background: #f8fafc;
+  padding: 0 12px;
+  color: #71768b;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-search:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
 }
 
 .layout-search:focus-within {
-  border-color: #c9c4ff;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.08);
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.layout-search:focus-within svg {
+  color: #6366f1;
 }
 
 .layout-search input {
@@ -657,22 +721,37 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #303245;
-  font-size: 9px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.4;
 }
 
 .layout-search input::placeholder {
-  color: #999cac;
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 13px;
 }
 
 .layout-search kbd {
-  border: 1px solid #e4e6ee;
-  border-radius: 4px;
-  background: #fff;
-  padding: 2px 4px;
-  color: #9699a7;
-  font-size: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 24px;
+  padding: 0 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
   white-space: nowrap;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+  user-select: none;
 }
 
 .layout-notifications {
@@ -768,12 +847,14 @@
 .layout-booking-tabs {
   box-sizing: border-box;
   display: flex;
-  min-height: 49px;
+  flex-wrap: wrap;
+  min-height: 48px;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   border-bottom: 1px solid #eaecf2;
   background: #fff;
-  padding: 0 22px;
+  padding: 6px 20px;
+  overflow: visible;
 }
 
 .layout-booking-tab {
@@ -814,11 +895,34 @@
 .layout-main {
   box-sizing: border-box;
   width: 100%;
-  min-width: 0;
-  flex: 1;
-  overflow: auto;
+  min-width: 0 !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   padding: 16px 24px 28px;
   background: var(--app-canvas, #f8f9fd);
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.layout-main::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.layout-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.layout-main::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.layout-main::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .layout-route-content {
@@ -828,10 +932,23 @@
   margin: 0 auto;
 }
 
+.is-settings-route .layout-main {
+  padding: 20px 24px;
+}
+
+.is-settings-route .layout-route-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
 .layout-footer {
   box-sizing: border-box;
   display: flex;
   min-height: 36px;
+  max-height: 36px;
+  flex: 0 0 36px !important;
+  flex-shrink: 0 !important;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid #e9ebf1;
@@ -1073,10 +1190,11 @@ html.dark .layout-header-breadcrumb h1 {
     height: 30px;
   }
   .layout-booking-tabs {
-    min-height: 47px;
-    gap: 2px;
-    overflow-x: auto;
-    padding: 0 8px;
+    min-height: 44px;
+    gap: 4px;
+    flex-wrap: wrap;
+    overflow: visible;
+    padding: 6px 8px;
   }
   .layout-booking-tab {
     height: 32px;
@@ -1147,10 +1265,10 @@ html.dark .layout-header-breadcrumb h1 {
 }
 
 .layout-main-inbox {
-  display: flex;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0;
+  display: flex !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
 .layout-route-content-inbox {

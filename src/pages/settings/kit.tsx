@@ -34,7 +34,7 @@ export function Modal({ title, children, close }: { title: string; children: Rea
   }, [close]);
   return <div className="st-modal-scrim" onMouseDown={e => { if (e.target === e.currentTarget) close(); }}><div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className="st-modal"><div className="st-modal-heading"><h2 id={titleId}>{localizeNode(title)}</h2><button className="st-icon-button" aria-label={translateText("Close dialog")} onClick={close}><X size={18}/></button></div>{localizeNode(children)}</div></div>;
 }
-export function Field({ label, children }: { label: string; children: ReactNode }) {
-  useUILanguage(); return <label className="st-field"><span>{localizeNode(label)}</span>{localizeNode(children)}</label>; }
+export function Field({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
+  useUILanguage(); return <label className={`st-field ${className}`.trim()}><span>{localizeNode(label)}</span>{localizeNode(children)}</label>; }
 export function PanelHeading({ title, description }: { title: string; description: string }) {
   useUILanguage(); return <div className="st-panel-heading"><h2>{localizeNode(title)}</h2><p>{localizeNode(description)}</p></div>; }

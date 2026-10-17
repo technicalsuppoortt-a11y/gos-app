@@ -39,8 +39,8 @@
 @keyframes an-pop{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 
 /* Section tabs */
-.an-tabs{display:flex;flex:none;min-height:38px;align-items:stretch;gap:4px;overflow-x:auto;border-bottom:1px solid #e6e9f0;scrollbar-width:none}
-.an-tabs button{position:relative;display:flex;flex:none;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:9px 9px 0 0;background:transparent;color:#566079;font:inherit;font-size:11px;cursor:pointer;transition:background .15s,color .15s}
+.an-tabs{display:flex;flex:none;min-height:38px;align-items:stretch;gap:4px;flex-wrap:wrap;overflow:visible;border-bottom:1px solid #e6e9f0}
+.an-tabs button{position:relative;display:flex;flex:0 1 auto;white-space:nowrap;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:9px 9px 0 0;background:transparent;color:#566079;font:inherit;font-size:11px;cursor:pointer;transition:background .15s,color .15s}
 .an-tabs button:hover{background:#faf9ff;color:#6240e8}
 .an-tabs button.active{background:#f3efff;color:#5f38e8;font-weight:700}
 .an-tabs button.active:after{position:absolute;inset-inline-end:0;bottom:-1px;inset-inline-start:0;height:2px;border-radius:2px;background:#673bed;content:""}

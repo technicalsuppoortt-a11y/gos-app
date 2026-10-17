@@ -14,8 +14,8 @@
 .crm-workspace .crm2-btn-primary:hover{background:#6744f9;color:#fff !important;}
 .crm-workspace .crm2-btn-secondary{color:#5e687d;border-color:#e9edf5;border-radius:6px;font-weight:500}
 .crm-workspace .crm2-pipeline-selector{border-color:#e9edf5;background:#fff;border-radius:6px;max-width:195px;color:#526078;font-size:11px}
-.crm-workspace .crm2-subnav{padding:0 20px;border-color:#e9edf5;background:#fcfdff;overflow-x:auto;min-height:40px}
-.crm-workspace .crm2-subnav-btn{display:flex;gap:6px;font-size:11px;padding:11px 13px;color:#8390a5;white-space:nowrap;font-weight:500}
+.crm-workspace .crm2-subnav{padding:0 20px;border-color:#e9edf5;background:#fcfdff;display:flex;flex-wrap:wrap;overflow:visible;min-height:40px;gap:4px}
+.crm-workspace .crm2-subnav-btn{display:flex;gap:6px;font-size:12px;padding:10px 14px;color:#8390a5;white-space:nowrap;font-weight:500;flex:0 1 auto}
 .crm-workspace .crm2-subnav-btn.active{color:#7c5cfc;background:transparent;border-bottom:2px solid #7c5cfc}
 .crm-workspace-summary{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;gap:0;margin:12px 18px 0;border:1px solid #e8edf6;border-radius:9px;background:#fff;flex:none}
 .crm-workspace-summary>div{display:flex;align-items:center;gap:10px;padding:0 12px;border-inline-end:1px solid #edf0f7;min-width:0}
@@ -27,8 +27,10 @@
 .crm-connection i{width:7px;height:7px;border-radius:50%;background:#10b981;flex:none}
 .crm-connection b{font-size:11px}.crm-connection a{display:flex;align-items:center;gap:4px;font-size:10px;color:#7c5cfc;margin-inline-start:auto}
 .crm-toolbar{display:flex;align-items:center;gap:8px;padding:12px 18px;flex:none}
-.crm-search{display:flex;align-items:center;gap:8px;border:1px solid #e8edf6;background:#fff;border-radius:6px;padding:7px 10px;flex:1;max-width:390px;color:#8a96ac}
-.crm-search input{border:0;outline:0;width:100%;min-width:0;font-size:11px;background:transparent;color:#334155}.crm-search input::placeholder{color:#97a2b5}
+.crm-search{display:flex;align-items:center;gap:10px;border:1px solid #e2e8f0;background:#fff;border-radius:9px;padding:0 12px;height:38px;min-height:38px;flex:1;max-width:390px;color:#8a96ac;box-shadow:0 1px 2px rgba(15,23,42,0.03);transition:border-color .18s,box-shadow .18s}
+.crm-search:hover{border-color:#cbd5e1}
+.crm-search:focus-within{border-color:#7c5cfc;box-shadow:0 0 0 3px rgba(124,92,252,0.12);color:#334155}
+.crm-search input{border:0;outline:0;width:100%;min-width:0;font-size:13px;background:transparent;color:#334155}.crm-search input::placeholder{color:#97a2b5}
 .crm-sort{border:1px solid #e8edf6;background:#fff;padding:7px;border-radius:6px;color:#64748b;font-size:11px;max-width:135px}
 .crm-result{margin-inline-start:auto;color:#8b98ad;font-size:10px;white-space:nowrap}
 .crm-view-switch{display:flex;border:1px solid #e8edf6;border-radius:6px;padding:3px;background:#fff;gap:2px}
@@ -227,10 +229,12 @@
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  overflow: visible;
   padding-bottom: 4px;
 }
 .crm-task-pill {
+  flex: 0 1 auto;
   padding: 6px 14px;
   border-radius: 20px;
   background: #f1f5f9;

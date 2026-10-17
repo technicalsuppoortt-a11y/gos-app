@@ -33,6 +33,7 @@ const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ defa
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
 const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
+const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 
 const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
   { path: '/onboarding', element: <Suspended><OnboardingWizard/></Suspended> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><Suspended><ProductLivePreview/></Suspended></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
+  { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
+  { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
+  { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
+  { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace/> },
   // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
   { path: '/', element: <Suspended><LandingPage/></Suspended> },
   { path: '/login', element: <Suspended><LoginPage/></Suspended> },

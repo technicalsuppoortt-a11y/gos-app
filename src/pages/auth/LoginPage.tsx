@@ -1,7 +1,7 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, ArrowRight, ArrowUpRight, BadgeCheck, Building2, CalendarDays, Check, Eye, EyeOff, LayoutDashboard, LoaderCircle, LockKeyhole, Mail, Shield, Sparkles, UserRound, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { authenticateDemo } from '../../data/mockData';
@@ -120,10 +120,27 @@ export const LoginPage: React.FC = () => {
           </button>; }))}
         </div>
         <p className="login-demo-note mt-3 text-center text-[11px] leading-5 text-slate-500 dark:text-slate-300">{translateText("Choose a role to auto-fill credentials (password: ")}<b className="font-semibold text-slate-700 dark:text-white">12345678</b>{translateText("). Then click ")}<b className="font-semibold text-slate-700 dark:text-white">{translateText("Sign in")}</b>.</p>
-        <div className="login-trust mt-5 flex items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-slate-300"><BadgeCheck size={15} className="text-emerald-500 dark:text-emerald-400"/>{translateText(" Secure access to your workspace")}</div>
+        <div className="login-trust mt-5 flex items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-slate-300">
+          <BadgeCheck size={15} className="text-emerald-500 dark:text-emerald-400"/>
+          <span>{translateText("Secure access to your workspace")}</span>
+          <span className="text-slate-300 dark:text-slate-600">•</span>
+          <Link to="/privacy" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
+            {translateText("Privacy Policy")}
+          </Link>
+        </div>
       </motion.div>
 
-      <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400"><span>{translateText("© 2025 GOS Inc.")}</span><div className="flex gap-4"><a className="transition hover:text-slate-700 dark:hover:text-white" href="#privacy">{translateText("Privacy")}</a><a className="transition hover:text-slate-700 dark:hover:text-white" href="#help">{translateText("Help")}</a></div></footer>
+      <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400">
+        <span>{translateText("© 2026 GOS Inc.")}</span>
+        <div className="flex items-center gap-4">
+          <Link to="/privacy" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
+            {translateText("Privacy Policy")}
+          </Link>
+          <a className="transition hover:text-slate-700 dark:hover:text-white" href="#help">
+            {translateText("Help")}
+          </a>
+        </div>
+      </footer>
     </section>
 
     <motion.aside className="login-showcase relative hidden min-h-[100dvh] overflow-hidden bg-[#201d3b] text-white lg:flex lg:flex-col lg:justify-between lg:px-10 lg:py-8 xl:px-14" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .6 }}>
@@ -153,7 +170,16 @@ export const LoginPage: React.FC = () => {
 
         <div className="login-showcase-proof mt-5 flex items-center gap-2 text-[11px] text-indigo-100/60"><Check size={14} className="text-emerald-300"/>{translateText(" Leads, conversations, bookings, and payments work together.")}</div>
       </div>
-      <div className="login-showcase-footer relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-indigo-100/45"><span>{translateText("Built for the people building what’s next.")}</span><span className="flex items-center gap-1.5"><Shield size={12}/>{translateText(" Your data stays yours")}</span></div>
+      <div className="login-showcase-footer relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-indigo-100/45">
+        <span>{translateText("Built for the people building what’s next.")}</span>
+        <div className="flex items-center gap-3">
+          <Link to="/privacy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+            {translateText("Privacy Policy")}
+          </Link>
+          <span>•</span>
+          <span className="flex items-center gap-1.5"><Shield size={12}/>{translateText("Your data stays yours")}</span>
+        </div>
+      </div>
     </motion.aside>
   </main>;
 };

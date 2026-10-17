@@ -1,5 +1,5 @@
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -66,10 +66,19 @@ export const UserLayout: React.FC = () => {
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/(?:products|course)\/[^/]+(?:\/(?:edit|pricing|orders|students))?$/.test(location.pathname);
 
+  useEffect(() => {
+    document.documentElement.classList.add('layout-locked');
+    document.body.classList.add('layout-locked');
+    return () => {
+      document.documentElement.classList.remove('layout-locked');
+      document.body.classList.remove('layout-locked');
+    };
+  }, []);
+
   const isNativeTemplates = new URLSearchParams(location.search).get('tab') === 'templates';
   const isDashboard = location.pathname === '/dashboard';
   const isFullPage = isInbox || isCRM || isBooking || isNativeTemplates;
-  return <div className={`layout-dashboard-shell user-dashboard-shell${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route h-screen max-h-screen overflow-hidden' : ''}`} dir={uiDirection()}>
+  return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route' : ''}`} dir={uiDirection()}>
     <Sidebar items={visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace flex-1 flex flex-col min-w-0${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={translateText(isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>

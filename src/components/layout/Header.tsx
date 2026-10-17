@@ -26,6 +26,7 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/follow-up': { title: 'AI Follow-up', description: 'Thoughtful follow-ups that help every lead move forward.' },
   '/dashboard/products': { title: 'Products & Payments', description: 'Manage your offers, products and connected payments.' },
   '/dashboard/analytics': { title: 'Analytics', description: 'Understand performance across your business.' },
+  '/dashboard/settings/privacy': { title: 'Privacy Policy', description: 'Review how we protect your personal and business data.' },
 };
 
 interface HeaderProps {

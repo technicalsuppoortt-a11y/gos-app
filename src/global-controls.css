@@ -52,8 +52,11 @@ html.dark .layout-workspace{background:#0b1020}
 html.dark .layout-header,html.dark .layout-booking-tabs{border-color:#252b3a;background:#111522}
 html.dark .layout-header-breadcrumb>span,html.dark .layout-header-breadcrumb h1{color:#e6e9f1}
 html.dark .layout-header-breadcrumb>i{color:#767f92}
-html.dark .layout-search{background:#1b2030;color:#929bb0}
-html.dark .layout-search input{color:#e7eaf2}html.dark .layout-search input::placeholder{color:#8e97aa}
+html.dark .layout-search{background:#181d2d;border-color:#2c3149;color:#94a3b8}
+html.dark .layout-search:hover{border-color:#3b4363;background:#1b2134}
+html.dark .layout-search:focus-within{border-color:#818cf8;background:#1a2033;box-shadow:0 0 0 3px rgba(129,140,248,0.2)}
+html.dark .layout-search input{color:#f1f5f9}html.dark .layout-search input::placeholder{color:#64748b}
+html.dark .layout-search kbd{background:#22283d;border-color:#363c54;color:#94a3b8}
 html.dark .layout-notifications,html.dark .layout-header-user{color:#aab2c3}
 html.dark .layout-header-user b{color:#f0f2f8}html.dark .layout-header-user small{color:#a0a8b8}
 html.dark .layout-booking-tab{color:#aab1c1}html.dark .layout-booking-tab svg{color:#8e97aa}
