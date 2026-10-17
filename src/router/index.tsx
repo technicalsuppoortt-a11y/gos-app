@@ -6,6 +6,7 @@ import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
+import PhoenixSignIn from '../pages/auth/PhoenixSignIn';
 import '../route-loading.css';
 const ActivationPage = lazy(() => import('../pages/onboarding/ActivationPage').then(module => ({ default: module.ActivationPage })));
 const OnboardingWizard = lazy(() => import('../pages/onboarding/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
@@ -51,6 +52,7 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
+  { path: '/auth/phoenix', element: <PhoenixSignIn/> },
   { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
   { path: '/onboarding', element: <Suspended><OnboardingWizard/></Suspended> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><Suspended><ProductLivePreview/></Suspended></ProtectedRoute> },

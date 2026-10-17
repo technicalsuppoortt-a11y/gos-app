@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function platformOwner(uid) {
+      return request.auth != null && request.auth.uid == uid
+        && request.auth.token.phoenixUid is string;
+    }
+    match /users/{uid} {
+      allow read: if platformOwner(uid);
+      allow write: if false;
+      match /brandEngine/current {
+        allow read: if platformOwner(uid);
+        allow write: if false;
+      }
+      match /brandEngineSnapshots/{snapshotId} {
+        allow read: if platformOwner(uid);
+        allow write: if false;
+        match /{document=**} {
+          allow read: if platformOwner(uid);
+          allow write: if false;
+        }
+      }
+    }
+    match /tenants/{tenantId} {
+      allow read: if request.auth != null && request.auth.token.tenantId == tenantId
+        && resource.data.ownerUid == request.auth.uid;
+      allow write: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -1,4 +1,6 @@
 {
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "functions": [{ "source": "functions", "codebase": "phoenix-bridge", "runtime": "nodejs22" }],
   "hosting": {
     "public": "dist",
     "ignore": [

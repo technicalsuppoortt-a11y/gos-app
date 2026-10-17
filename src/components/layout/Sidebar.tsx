@@ -119,6 +119,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   useUILanguage();
   const dispatch = useDispatch();
+  const platformTenant = useSelector((state: RootState) => state.auth.tenant);
+  const phoenixBrand = platformTenant?.id.startsWith('phoenix_') ? platformTenant : null;
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
@@ -176,10 +178,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           title={collapsed ? translateText("Growth Operating System") : undefined}
         >
           <span className="layout-brand-icon">
-            <Rocket size={20} strokeWidth={2.2} className="layout-brand-rocket" />
+            {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <Rocket size={20} strokeWidth={2.2} className="layout-brand-rocket" />}
           </span>
           <div className="layout-brand-copy">
-            <span className="layout-brand-wordmark"><b>{translateText("GOS")}</b></span>
+            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || translateText("GOS")}</b></span>
             <small>{translateText("Growth Operating System")}</small>
           </div>
         </NavLink>
