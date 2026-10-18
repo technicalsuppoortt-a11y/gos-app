@@ -7,6 +7,7 @@ import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
+import PhoenixSignIn from '../pages/auth/PhoenixSignIn';
 import '../route-loading.css';
 const ActivationPage = lazy(() => import('../pages/auth/ActivationLinkPage').then(module => ({ default: module.ActivationPage })));
 // OnboardingWizard is temporarily disabled.
@@ -52,6 +53,7 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
+  { path: '/auth/phoenix', element: <PhoenixSignIn/> },
   { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
   // Keep activation links usable while the onboarding cycle is disabled.
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },

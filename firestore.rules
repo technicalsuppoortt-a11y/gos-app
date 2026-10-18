@@ -1,6 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function platformOwner(uid) {
+      return request.auth != null && request.auth.uid == uid
+        && request.auth.token.phoenixUid is string;
+    }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function signedIn() { return request.auth != null && profile().status == 'Active'; }
     function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
@@ -21,6 +25,19 @@ service cloud.firestore {
     }
     match /templateCatalog/{templateId} { allow read: if signedIn(); allow write: if false; }
     match /users/{userId} {
+      // Phoenix snapshots are server-owned; only the linked user may read them.
+      match /brandEngine/current {
+        allow read: if platformOwner(userId);
+        allow write: if false;
+      }
+      match /brandEngineSnapshots/{snapshotId} {
+        allow read: if platformOwner(userId);
+        allow write: if false;
+        match /{document=**} {
+          allow read: if platformOwner(userId);
+          allow write: if false;
+        }
+      }
       // An invited user may read (and mark consumed) the invitation addressed to their own email,
       // even if it was provisioned under a different document ID.
       function ownInvite() { return request.auth != null && request.auth.token.email != null && resource.data.email == request.auth.token.email; }
@@ -31,6 +48,8 @@ service cloud.firestore {
       allow delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
     }
     match /tenants/{tenantId} {
+      allow read: if request.auth != null && request.auth.token.tenantId == tenantId
+        && platformOwner(resource.data.ownerUid);
       allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
       allow create, update, delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
       match /members/{userId} {

@@ -311,3 +311,6 @@ export const pauseFollowUpOnConversationChange = onDocumentWritten('tenants/{ten
     tx.update(ref, { ...(handoff ? { followUpState: 'HUMAN_HANDOFF' } : {}), ...(inbound ? { lastInboundAt: after.lastInboundAt } : {}) });
   });
 });
+
+// Keep the Phoenix bridge alongside the workspace callable services.
+export { phoenixPlatform } from './phoenix.js';

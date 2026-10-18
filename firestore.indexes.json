@@ -1,6 +1,30 @@
 {
   "indexes": [
-    { "collectionGroup": "scheduledActions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "leadId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] }
+    {
+      "collectionGroup": "scheduledActions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "leadId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "pages",
+      "fieldPath": "parameters",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "assets",
+      "fieldPath": "dataUrl",
+      "indexes": []
+    }
+  ]
 }
