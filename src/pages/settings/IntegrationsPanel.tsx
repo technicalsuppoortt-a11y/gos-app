@@ -9,6 +9,7 @@ import { Badge, Card, Field, Modal, Toggle } from './kit';
 import { friendlyError, safeExternalUrl, settingsApiEnabled, settingsRequest } from './data';
 import type { IntegrationState, SettingsData } from './data';
 import { PanelHeading } from './kit';
+import { localDemoEnabled, useDemoState } from '../../backend/localDemo';
 
 const providers = [
   { id: 'meta', name: 'Facebook & Instagram', category: 'Communication', description: 'Manage Facebook and Instagram conversations in your unified inbox.', scopes: ['Read connected pages and business accounts', 'Receive and reply to customer messages'], icon: FacebookIcon, color: 'blue', status: 'https://metastatus.com/' },
@@ -26,6 +27,8 @@ const providers = [
 type Provider = typeof providers[number];
 export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refresh: () => Promise<void> }) {
   useUILanguage();
+  const [demoConnections] = useDemoState<Record<string, IntegrationState>>('integrations', {});
+  if (localDemoEnabled) data = { ...data, integrations: { ...data.integrations, ...demoConnections } };
   const [category, setCategory] = useState('All integrations'), [search, setSearch] = useState(''), [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<Provider | null>(providers.find(p => p.id === params.get('provider')) ?? null);
   const [logs, setLogs] = useState<string[] | null>(null), [logError, setLogError] = useState('');
@@ -33,6 +36,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
   const close = useCallback(() => { setSelected(null); setParams(p => { p.delete('provider'); p.delete('connection'); return p; }, { replace: true }); }, [setParams]);
   const list = providers.filter(p => (category === 'All integrations' || p.category === category) && `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase()));
   return <><PanelHeading title={translateText("Integrations")} description="Connect your favorite tools and keep your business in sync."/>
+    {localDemoEnabled && <p className="st-note" role="status">{translateText('Local demo: connections are simulated and saved in this browser.')}</p>}
     <div className="st-integration-toolbar"><div className="st-category-tabs" aria-label={translateText("Integration categories")}>{localizeNode(['All integrations', 'Communication', 'Scheduling', 'Payments', 'Infrastructure'].map(c => <button key={c} aria-pressed={category === c} className={category === c ? 'active' : ''} onClick={() => setCategory(c)}>{localizeNode(c)}</button>))}</div><label className="st-search"><Search size={15}/><input aria-label={translateText("Search integrations")} placeholder={translateText("Search integrations…")} value={search} onChange={e => setSearch(e.target.value)}/></label></div>
     <div className="st-integration-grid">{localizeNode(list.map(p => { const state = data.integrations[p.id] ?? { status: 'Not Connected' }; return <Card key={p.id} className="st-integration-card"><div className="st-integration-top"><span className={`st-service-icon ${p.color}`}>{localizeNode(p.id === 'stripe' ? <b className="st-stripe-logo">{translateText("stripe")}</b> : p.id === 'meta' ? <span className="st-meta-icons"><FacebookIcon size={21}/><InstagramIcon size={21}/></span> : <p.icon size={25}/>)}</span><Badge tone={state.status === 'Connected' ? 'green' : state.status === 'Needs Attention' ? 'orange' : 'neutral'}>{localizeNode(state.status)}</Badge></div><h3>{localizeNode(p.name)}</h3><p>{localizeNode(p.description)}</p>{localizeNode(state.status === 'Needs Attention' && <div className="st-integration-problem"><AlertCircle size={15}/><span>{localizeNode(state.problem || 'Your access needs to be renewed. Reconnect to resume syncing.')}</span></div>)}<div className="st-integration-bottom"><small><i className={state.providerStatus === 'outage' ? 'outage' : ''}/>{localizeNode(state.providerStatus === 'outage' ? 'Provider disruption' : state.providerStatus === 'operational' ? 'Provider operational' : 'Status not checked')}</small><button className={state.status === 'Needs Attention' ? 'st-primary' : 'st-secondary'} onClick={() => setSelected(p)}>{localizeNode(state.status === 'Connected' ? 'Manage' : state.status === 'Needs Attention' ? 'Fix connection' : 'Connect')}<ChevronRight size={14}/></button></div></Card>; }))}</div>
     {localizeNode(!list.length && <div className="st-empty"><Search size={30}/><h3>{translateText("No integrations found")}</h3><p>{translateText("Try a different search or category.")}</p><button className="st-secondary" onClick={() => { setSearch(''); setCategory('All integrations'); }}>{translateText("Clear filters")}</button></div>)}
@@ -49,9 +53,23 @@ function ConnectionModal({ provider, state, returned, close, refresh }: { provid
     try { const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}`); if (result.status !== 'Connected') throw new Error(result.problem || 'Authorization is not complete. Return to the provider and approve the requested access.'); setConnection(result); setStep(1); await refresh(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); }
   }, [provider.id, refresh]);
   useEffect(() => { if (returned) void validate(); }, [returned, validate]);
+  // Clicking Connect in local development completes a simulated authorization immediately.
+  useEffect(() => {
+    if (!localDemoEnabled || returned || state?.status === 'Connected') return;
+    let cancelled = false;
+    void settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {}).then(result => {
+      if (!cancelled) { setConnection(result); setStep(1); }
+    }).catch(e => { if (!cancelled) setError(friendlyError(e)); });
+    return () => { cancelled = true; };
+  }, [provider.id]);
   async function authorize() {
     setBusy(true); setError('');
     try {
+      if (localDemoEnabled) {
+        const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {});
+        setConnection(result); setStep(1); setBusy(false);
+        return;
+      }
       const result = await settingsRequest<{ authorizeUrl: string }>(`/integrations/${provider.id}/authorize`, { returnUrl: `${window.location.origin}/dashboard/settings/integrations?provider=${provider.id}&connection=return` });
       window.location.assign(safeExternalUrl(result.authorizeUrl));
     } catch (e) { setError(friendlyError(e)); setBusy(false); }

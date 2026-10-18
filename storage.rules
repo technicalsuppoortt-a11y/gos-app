@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function authorized(tenantId) {
+      let user = firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+      let member = firestore.get(/databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data;
+      return user.status == 'Active' && user.tenantId == tenantId && member.active == true && member.permissions.hasAny(['*', 'products']);
+    }
+    match /tenants/{tenantId}/commerce/{fileId} {
+      allow read, delete: if request.auth != null && authorized(tenantId);
+      allow create, update: if request.auth != null && authorized(tenantId) && request.resource.size <= 100 * 1024 * 1024;
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { leads as demoLeads } from '../../data/mockData';
-import type { Lead, LeadStage } from '../../data/mockData';
+
+import type { Lead, LeadStage } from '../../types/business';
 import { mainPipeline, type Pipeline } from '../../pages/crm/model';
 
 export type LeadActivity = { id: string; type: 'capture' | 'stage' | 'message' | 'booking' | 'payment' | 'note' | 'system'; title: string; detail: string; at: string };
@@ -26,48 +26,11 @@ export const FOLLOW_UP_LIFECYCLE: { state: FollowUpLifecycleState; label: string
 const stageFromLegacy: Record<string, LeadStage> = { NEW: 'LEAD_CAPTURED', CONTACTED: 'CONTACT_CREATED', QUALIFIED: 'QUALIFIED', BOOKING_OFFERED: 'BOOKING', BOOKED: 'BOOKING', CUSTOMER: 'ACTIVE_CUSTOMER', CLOSED: 'CLOSED_LOST' };
 const bookingFromStage = (stage: string): CanonicalLead['bookingStatus'] => stage === 'BOOKED' ? 'Booked' : stage === 'BOOKING_OFFERED' ? 'Offer Sent' : stage === 'CUSTOMER' ? 'Completed' : 'Not Scheduled';
 const followUpFromStage = (stage: string): FollowUpLifecycleState => ({ NEW: 'NEW', CONTACTED: 'CONTACTED', QUALIFIED: 'QUALIFIED', BOOKING_OFFERED: 'BOOKING_OFFERED', BOOKED: 'BOOKED', CUSTOMER: 'CUSTOMER', CLOSED: 'STOPPED_INELIGIBLE' }[stage] as FollowUpLifecycleState | undefined) ?? 'NEW';
-const makeInitialLeads = (): CanonicalLead[] => demoLeads.map(lead => ({
-  ...lead,
-  lifecycleStage: stageFromLegacy[lead.stage] ?? 'LEAD_CAPTURED',
-  bookingStatus: bookingFromStage(lead.stage),
-  followUpState: followUpFromStage(lead.stage),
-  hasWhatsAppConsent: lead.id === 'ld-101',
-  hasMessagingConsent: lead.id === 'ld-102',
-  hasEmailConsent: lead.id === 'ld-103',
-  qualificationStatus: lead.tags.some(tag => tag.toLowerCase() === 'unqualified') ? 'Unqualified' : lead.stage === 'QUALIFIED' ? 'Qualified' : 'Pending',
-  role: 'Contact',
-  activities: [{ id: `${lead.id}-captured`, type: 'capture', title: 'Lead captured', detail: `Via ${lead.source} · ${lead.lastActivity}`, at: lead.lastActivity }, { id: `${lead.id}-page`, type: 'system', title: 'Funnel page viewed', detail: 'Landing page viewed · fitness/brand-strategy offer', at: lead.lastActivity }, ...(lead.stage === 'CONTACTED' || lead.stage === 'QUALIFIED' || lead.stage === 'BOOKING_OFFERED' || lead.stage === 'BOOKED' || lead.stage === 'CUSTOMER' ? [{ id: `${lead.id}-conversation`, type: 'message' as const, title: 'Conversation started', detail: `First touch via ${lead.source}`, at: lead.lastActivity }] : []), ...(lead.stage === 'BOOKED' || lead.stage === 'CUSTOMER' ? [{ id: `${lead.id}-booking`, type: 'booking' as const, title: 'Booking recorded', detail: lead.nextFollowUp ?? 'Booking linked to this contact', at: lead.lastActivity }] : [])],
-  notes: [],
-  stage: stageFromLegacy[lead.stage] ?? 'CONTACT_CREATED',
-  source: /website|landing/i.test(lead.source) ? 'Website Funnel' : lead.source === 'Referral' ? 'Referral' : lead.source,
-}));
-const loadSaved = (): CanonicalLead[] => {
-  try {
-    const saved = localStorage.getItem('gos-crm-leads-v1');
-    if (!saved) return makeInitialLeads();
-    const parsed = JSON.parse(saved) as CanonicalLead[];
-    if (!Array.isArray(parsed)) return makeInitialLeads();
-    return parsed.map(lead => ({ ...lead, followUpState: lead.followUpState ?? followUpFromStage(lead.stage), hasWhatsAppConsent: lead.hasWhatsAppConsent ?? false, hasMessagingConsent: lead.hasMessagingConsent ?? false, hasEmailConsent: lead.hasEmailConsent ?? false, qualificationStatus: lead.qualificationStatus ?? 'Pending', bookingStatus: lead.bookingStatus ?? bookingFromStage(lead.stage), activities: lead.activities ?? [], notes: lead.notes ?? [] }));
-  } catch { return makeInitialLeads(); }
-};
-
-const loadPipelines = (): Pipeline[] => {
-  try {
-    const saved = JSON.parse(localStorage.getItem('gos-crm-pipelines-v1') ?? 'null') as Pipeline[] | null;
-    if (Array.isArray(saved) && saved.some(p => p.id === 'main') && saved.every(p => typeof p.name === 'string' && p.stages?.length && p.stages.every(s => typeof s.id === 'string' && typeof s.label === 'string'))) {
-      return saved.map(p => {
-        // Upgrade the original default palette while preserving customized stages.
-        const originalDefault = p.id === 'main' && p.stages.length === mainPipeline.stages.length && p.stages.every((s, i) => s.id === mainPipeline.stages[i].id && s.label === mainPipeline.stages[i].label && s.color === ['#7C5CFC', '#38bdf8', '#10b981', '#f59e0b', '#22c55e'][i]);
-        return originalDefault ? { ...p, stages: mainPipeline.stages } : p;
-      });
-    }
-  } catch { /* Fall back to the default pipeline. */ }
-  return [mainPipeline];
-};
 const crmSlice = createSlice({
   name: 'crm',
-  initialState: { leads: loadSaved(), pipelines: loadPipelines() },
+  initialState: { leads: [] as CanonicalLead[], pipelines: [mainPipeline] },
   reducers: {
+    hydrateCRM(state, action: PayloadAction<{ leads: CanonicalLead[]; pipelines: Pipeline[] }>) { state.leads = action.payload.leads; state.pipelines = action.payload.pipelines.length ? action.payload.pipelines : [mainPipeline]; },
     savePipeline(state, action: PayloadAction<Pipeline>) {
       const index = state.pipelines.findIndex(p => p.id === action.payload.id);
       if (index < 0) state.pipelines.push(action.payload); else state.pipelines[index] = action.payload;
@@ -117,5 +80,5 @@ const crmSlice = createSlice({
   },
 });
 
-export const { savePipeline, deleteLeads, updateLead, addLead, moveLead, addLeadNote, addLeadActivity, setLeadFollowUpState, setLeadConsent } = crmSlice.actions;
+export const { hydrateCRM, savePipeline, deleteLeads, updateLead, addLead, moveLead, addLeadNote, addLeadActivity, setLeadFollowUpState, setLeadConsent } = crmSlice.actions;
 export default crmSlice.reducer;

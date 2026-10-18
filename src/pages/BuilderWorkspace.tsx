@@ -1,3 +1,4 @@
+import { cloudStorage } from '../backend/workspace';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
@@ -10,7 +11,7 @@ import type { ElementItem } from './element-properties';
 import { PageContentTree } from './PageContentTree';
 import './pagefly-editor.css';
 import { FunnelCanvas } from './FunnelCanvas';
-import { changeSection, findSection, insertSection, moveSection } from './funnel-tree';
+import { changeSection, findSection, insertSection, moveSection, sectionPlacement } from './funnel-tree';
 import type { DropTarget } from './funnel-tree';
 import { AssetSelect, AssetSearch } from './AssetControls';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -45,7 +46,7 @@ const programImages = [
 
 function readLocalDraft() {
   try {
-    const saved = localStorage.getItem('gos.funnel-builder.demo');
+    const saved = cloudStorage.getItem('gos.funnel-builder.demo');
     if (saved) {
       const parsed = JSON.parse(saved) as { pages?: BuilderPage[]; funnel?: FunnelModel };
       if (parsed.pages) parsed.pages = parsed.pages.map((page: BuilderPage & { blocks?: { kind: BlockKind; label: string; text: string }[] }) => {
@@ -100,7 +101,7 @@ const defaultFunnelSteps: FunnelStep[] = [
 ];
 function readFunnelSteps(): FunnelStep[] {
   try {
-    const stored = JSON.parse(localStorage.getItem('gos.funnel-steps') || 'null') as FunnelStep[] | null;
+    const stored = JSON.parse(cloudStorage.getItem('gos.funnel-steps') || 'null') as FunnelStep[] | null;
     if (!Array.isArray(stored)) return defaultFunnelSteps;
     const canonical = defaultFunnelSteps.map(base => stored.find(step=>step.id===base.id) ?? base);
     const extras = stored.filter(step=>!defaultFunnelSteps.some(base=>base.id===step.id));
@@ -163,7 +164,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   const [pagesData, setPagesData] = useState<BuilderPage[]>(savedDemo?.pages?.length ? savedDemo.pages : initialPages);
   const [activePageId, setActivePageId] = useState(selectedPageId ?? 'home');
   const [funnelSteps, setFunnelSteps] = useState<FunnelStep[]>(() => assetDocument?.steps ?? readFunnelSteps());
-  const [activeFunnelStepId, setActiveFunnelStepId] = useState(() => { if(assetDocument) return assetDocument.steps.find(step=>step.pageId===selectedPageId)?.id ?? assetDocument.steps[0]?.id ?? 'landing'; try { return localStorage.getItem('gos.active-funnel-step') || 'landing'; } catch { return 'landing'; } });
+  const [activeFunnelStepId, setActiveFunnelStepId] = useState(() => { if(assetDocument) return assetDocument.steps.find(step=>step.pageId===selectedPageId)?.id ?? assetDocument.steps[0]?.id ?? 'landing'; try { return cloudStorage.getItem('gos.active-funnel-step') || 'landing'; } catch { return 'landing'; } });
   const [funnel, setFunnel] = useState<FunnelModel>(savedDemo?.funnel ?? { name: 'Fitness Website', goal: 'Lead generation', audience: 'People looking to improve their fitness', offer: 'Brand strategy session', pagesFlow: defaultFunnelSteps.map(step=>step.pageId), events: ['Form Submit', 'Booking', 'Checkout'], status: 'Published' });
   const [leftTab, setLeftTab] = useState<BuilderTab>('Page content');
   const [variantKind, setVariantKind] = useState<BlockKind | null>(null);
@@ -267,7 +268,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   const activateFunnelStep = (step: FunnelStep) => {
     if(assetDocument && onStepChange && step.pageId!==selectedPageId){onStepChange(step.pageId);return;}
     setActiveFunnelStepId(step.id);
-    try { if(!assetDocument) localStorage.setItem('gos.active-funnel-step', step.id); } catch { /* The current editor session remains functional without storage. */ }
+    try { if(!assetDocument) cloudStorage.setItem('gos.active-funnel-step', step.id); } catch { /* The current editor session remains functional without storage. */ }
     if (!pagesData.some(page => page.id === step.pageId)) updatePages(list => [...list, createFunnelStepPage(step)]);
     setFunnel(value => value.pagesFlow.join('|') === funnelSteps.map(item=>item.pageId).join('|') ? value : { ...value, pagesFlow:funnelSteps.map(item=>item.pageId), status:'Draft' });
     setActivePageId(step.pageId); setSelectedBlockId(null);
@@ -293,7 +294,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
       setActiveFunnelStepId(adjacentStep.id);
       setActivePageId(adjacentStep.pageId);
       setSelectedBlockId(null);
-      try { if(!assetDocument) localStorage.setItem('gos.active-funnel-step', adjacentStep.id); } catch { /* Keep the active step for this editor session. */ }
+      try { if(!assetDocument) cloudStorage.setItem('gos.active-funnel-step', adjacentStep.id); } catch { /* Keep the active step for this editor session. */ }
     }
     setPendingDeleteStepId(null);
     notify('Step deleted successfully');
@@ -313,8 +314,8 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   useEffect(() => {
     try {
       if(initialAsset.current) { onChangeRef.current?.({appBlocks:enabledApps,pages:pagesData, funnel, steps:funnelSteps, theme:{color:themeColor,font:headingFont,corners:cornerStyle}}); return; }
-      localStorage.setItem('gos.funnel-builder.demo', JSON.stringify({ pages: pagesData, funnel }));
-      localStorage.setItem('gos.funnel-steps', JSON.stringify(funnelSteps));
+      cloudStorage.setItem('gos.funnel-builder.demo', JSON.stringify({ pages: pagesData, funnel }));
+      cloudStorage.setItem('gos.funnel-steps', JSON.stringify(funnelSteps));
     } catch { /* The editor remains usable when browser storage is unavailable. */ }
   }, [pagesData, funnel, funnelSteps, themeColor, headingFont, cornerStyle, enabledApps]);
   useEffect(() => {
@@ -350,7 +351,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
       block.children = Array.from({length:columnCount(block)},()=>[]);
     }
     if (variant === 'Outline') block.content.buttonVariant = 'Outline';
-    updatePages(list => list.map(page => page.id === activePageId ? { ...page, sections: insertSection(page.sections,block,dropTarget??{beforeId:targetId}) } : page));
+    updatePages(list => list.map(page => page.id === activePageId ? { ...page, sections: insertSection(page.sections,block,dropTarget ?? (targetId ? {beforeId:targetId} : sectionPlacement(page.sections, selectedBlockId) ?? {})) } : page));
     setSelectedBlockId(block.id); setScrollTargetId(block.id); setInspectorTab('Content'); notify(`${label} added to the page`);
   };
   const addPresetSection = (type: SectionType) => {
@@ -372,7 +373,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
     };
     const preset = { title:'', body:'', content:presets[type] ?? {} };
     const block = section(type, preset.title, preset.body, preset.content);
-    updatePages(list => list.map(page => page.id === activePageId ? { ...page, sections: [...page.sections, block] } : page));
+    updatePages(list => list.map(page => page.id === activePageId ? { ...page, sections: insertSection(page.sections, block, sectionPlacement(page.sections, selectedBlockId) ?? {}) } : page));
     setSelectedBlockId(block.id); setScrollTargetId(block.id); setInspectorTab('Content'); notify(`${type} section added`);
   };
   const undo = () => { if (!undoStack.length) return; const previous = undoStack[undoStack.length - 1]; setRedoStack(stack => [...stack, pagesData]); setPagesData(previous); setUndoStack(stack => stack.slice(0, -1)); setFunnel(value => ({ ...value, status: 'Draft' })); };
@@ -380,7 +381,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   const addPage = () => { const id = `page-${Date.now()}`; const page: BuilderPage = { id, name: `Page ${pagesData.length + 1}`, path: `/page-${pagesData.length + 1}`, seoTitle: '', seoDescription: '', headline: 'Your new page headline', subheadline: 'Add a clear message for your visitors.', cta: 'Get started', showHeader: true, header: 'Header 1', showFooter: true, footer: 'Footer 1', featuredImage: '', sections: [section('Hero','Your new page headline','Add a clear message for your visitors.',{button:'Get started'})] }; updatePages(list => [...list, page]); setActivePageId(id); notify('New page added'); };
   const persistLocal = (status: FunnelModel['status']) => {
     const snapshot = { pages: pagesData, funnel: { ...funnel, status } };
-    try { if(!assetDocument) localStorage.setItem('gos.funnel-builder.demo', JSON.stringify(snapshot)); } catch { /* The visible demo remains usable when storage is blocked. */ }
+    try { if(!assetDocument) cloudStorage.setItem('gos.funnel-builder.demo', JSON.stringify(snapshot)); } catch { /* The visible demo remains usable when storage is blocked. */ }
     return snapshot;
   };
   const saveDraft = () => { const snapshot = persistLocal('Draft'); setFunnel(snapshot.funnel); setShowPublishMenu(false); notify(`Draft saved just now · ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`); };

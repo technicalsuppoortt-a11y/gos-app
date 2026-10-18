@@ -12,24 +12,7 @@ export const store = configureStore({
   },
 });
 
-store.subscribe(() => {
-  const { isAuthenticated, user, role, tenant, token } = store.getState().auth;
-  try {
-    if (isAuthenticated && user && role && token) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, role, tenant, token }));
-    } else {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-  } catch {
-    // Authentication remains available in memory if browser storage is unavailable.
-  }
-  try {
-    localStorage.setItem('gos-crm-leads-v1', JSON.stringify(store.getState().crm.leads));
-    localStorage.setItem('gos-crm-pipelines-v1', JSON.stringify(store.getState().crm.pipelines));
-  } catch {
-    // Canonical lead updates remain available in memory when storage is unavailable.
-  }
-});
+// Firebase Auth owns session persistence; workspace listeners own CRM persistence.
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

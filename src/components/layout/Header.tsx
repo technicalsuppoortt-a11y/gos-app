@@ -1,3 +1,4 @@
+import { logoutFirebase } from '../../backend/session';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -148,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                   <Settings size={15} className="text-gray-400" />{translateText(" Account Settings")}</button>
               </div>
               <div className="p-1.5 border-t border-gray-100 dark:border-gray-800">
-                <button onClick={() => { showToast.success('You have been logged out successfully.'); dispatch(logout()); navigate('/auth/login', { replace: true }); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors dark:text-red-400 dark:hover:bg-red-500/10">
+                <button onClick={() => { showToast.success('You have been logged out successfully.'); void logoutFirebase().catch(error => showToast.error(error.message)); navigate('/auth/login', { replace: true }); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors dark:text-red-400 dark:hover:bg-red-500/10">
                   <LogOut size={15} />{translateText(" Log Out")}</button>
               </div>
             </motion.div>

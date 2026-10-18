@@ -1,3 +1,4 @@
+import { cloudStorage } from '../../backend/workspace';
 import { useSyncExternalStore, useCallback } from 'react';
 
 const FAVORITES_STORAGE_KEY = 'gos_favorite_products';
@@ -6,7 +7,7 @@ const listeners = new Set<() => void>();
 
 function readFavorites(): string[] {
   try {
-    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    const raw = cloudStorage.getItem(FAVORITES_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
@@ -44,9 +45,9 @@ export function getFavorites(): string[] {
 
 export function setFavorites(ids: string[]): void {
   try {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(ids));
+    cloudStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(ids));
   } catch (err) {
-    console.error('Failed to save favorites to localStorage:', err);
+    console.error('Failed to save favorites to cloudStorage:', err);
   }
   favoritesCache = ids;
   notifyListeners();

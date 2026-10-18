@@ -22,7 +22,9 @@ import {
 } from 'lucide-react';
 import type { RootState } from '../../store';
 import { Combobox } from '../../components/ui/Combobox';
-import { useOnboarding, updateOnboarding, activationUrl, type Invite } from './onboarding-store';
+import type { Invite } from './onboarding-store';
+import { useAdminUsers, manageAccount, activationUrl, getActivationLink, generateActivationLink } from '../../backend/adminUsers';
+import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import './onboarding.css';
 
@@ -161,14 +163,16 @@ function UserActions({
               <Copy size={14} />
               {t('Copy activation link', 'نسخ رابط التفعيل')}
             </button>
-            <Link
+            <a
               role="menuitem"
-              to={`/activate?invite=${invite.id}`}
+              href={activationUrl(invite.id) || generateActivationLink(invite.id, invite.email)}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setOpen(false)}
             >
               <ArrowUpRight size={14} />
               {t('Open activation', 'فتح صفحة التفعيل')}
-            </Link>
+            </a>
             <button
               role="menuitem"
               onClick={() => {
@@ -199,7 +203,8 @@ function UserActions({
 }
 
 export function AdminUsers() {
-  const { invites } = useOnboarding();
+  const { invites, loading, error: loadError } = useAdminUsers();
+  const [busy, setBusy] = React.useState(false);
   const ar = useSelector((s: RootState) => s.ui.language === 'ar');
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const dir = ar ? 'rtl' : 'ltr';
@@ -230,10 +235,15 @@ export function AdminUsers() {
     else deleteDialog.current?.close();
   }, [deletingUser]);
 
-  const copy = async (id: string) => {
+  const copy = async (id: string, email?: string) => {
     try {
-      await navigator.clipboard.writeText(activationUrl(id));
-      showToast.success(t('Activation link copied', 'تم نسخ رابط التفعيل'));
+      const link = (await getActivationLink(id)) || (email ? generateActivationLink(id, email) : '');
+      if (link) {
+        await navigator.clipboard.writeText(link);
+        showToast.success(t('Activation link copied', 'تم نسخ رابط التفعيل'));
+      } else {
+        throw new Error('Link unavailable');
+      }
     } catch {
       showToast.error(t('Copy the activation link from the invitation dialog.', 'انسخ رابط التفعيل من نافذة الدعوة.'));
     }
@@ -258,13 +268,10 @@ export function AdminUsers() {
     { value: 'USER', label: t('Team member', 'عضو الفريق') },
   ];
 
-  const handleToggleStatus = (invite: Invite) => {
+  const handleToggleStatus = async (invite: Invite) => {
     const isCurrentlyActive = invite.status === 'Active' || invite.status === 'Activated';
     const nextStatus = isCurrentlyActive ? 'Deactivated' : 'Active';
-    updateOnboarding(s => ({
-      ...s,
-      invites: s.invites.map(item => (item.id === invite.id ? { ...item, status: nextStatus } : item)),
-    }));
+    try { await manageAccount('status', { id: invite.id, status: nextStatus }); } catch (error) { showToast.error(backendError(error)); return; }
     if (nextStatus === 'Active') {
       showToast.success(t(`Activated account for ${invite.name || invite.email}`, `تم تفعيل حساب ${invite.name || invite.email}`));
     } else {
@@ -272,14 +279,11 @@ export function AdminUsers() {
     }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deletingUser) return;
     const targetId = deletingUser.id;
     const targetName = deletingUser.name || deletingUser.email;
-    updateOnboarding(s => ({
-      ...s,
-      invites: s.invites.filter(item => item.id !== targetId),
-    }));
+    try { await manageAccount('delete', { id: targetId }); } catch (error) { showToast.error(backendError(error)); return; }
     setDeletingUser(null);
     deleteDialog.current?.close();
     showToast.success(t(`Deleted user ${targetName}`, `تم حذف المستخدم ${targetName}`));
@@ -317,7 +321,7 @@ export function AdminUsers() {
 
   return (
     <section className="ob-admin" dir={dir}>
-      <div className="ob-page-head">
+      <div role="status">{loading ? 'Loading accounts…' : loadError}</div><div className="ob-page-head">
         <div>
           <span className="ob-eyebrow">{t('WORKSPACE ADMINISTRATION', 'إدارة مساحة العمل')}</span>
           <h1>{t('Good teams start here.', 'الفرق الرائعة تبدأ هنا.')}</h1>
@@ -419,15 +423,7 @@ export function AdminUsers() {
                         dir={dir}
                         options={roles}
                         portal={false}
-                        onChange={value => {
-                          updateOnboarding(s => ({
-                            ...s,
-                            invites: s.invites.map(item =>
-                              item.id === i.id ? { ...item, role: value as Invite['role'] } : item
-                            ),
-                          }));
-                          showToast.success(t('User role updated', 'تم تحديث دور المستخدم'));
-                        }}
+                        onChange={async value => { try { await manageAccount('role', { id: i.id, role: value }); showToast.success(t(`Role updated for ${i.name || i.email}`, `تم تحديث دور ${i.name || i.email}`)); } catch (error) { showToast.error(backendError(error)); } }}
                       />
                     </td>
                     <td>
@@ -458,7 +454,7 @@ export function AdminUsers() {
                       <UserActions
                         ar={ar}
                         invite={i}
-                        copy={() => copy(i.id)}
+                        copy={() => copy(i.id, i.email)}
                         resend={() => {
                           setSent(i);
                           setOpen(true);
@@ -566,15 +562,27 @@ export function AdminUsers() {
         ref={dialog}
         className="ob-dialog"
         dir={dir}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setSent(null);
+          setError('');
+        }}
         onClick={e => {
-          if (e.target === e.currentTarget) setOpen(false);
+          if (e.target === e.currentTarget) {
+            setOpen(false);
+            setSent(null);
+            setError('');
+          }
         }}
       >
         <button
           className="ob-close ob-icon"
           aria-label={t('Close invitation', 'إغلاق الدعوة')}
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            setOpen(false);
+            setSent(null);
+            setError('');
+          }}
         >
           <X size={19} />
         </button>
@@ -583,32 +591,70 @@ export function AdminUsers() {
             <span className="ob-orb success">
               <Check />
             </span>
-            <h2>{t('Invitation ready to go.', 'الدعوة جاهزة.')}</h2>
+            <h2>{t('User Provisioned & Invitation Ready', 'تم إنشاء المستخدم والدعوة جاهزة')}</h2>
             <p>
-              {t('Share this activation link with', 'شارك رابط التفعيل مع')}{' '}
-              <strong dir="ltr">{sent.email}</strong> {t('to get them started.', 'ليبدأ إعداد حسابه.')}
+              {t('A pending user profile has been created for', 'تم إنشاء ملف مستخدم معلق لـ')}{' '}
+              <strong dir="ltr">{sent.email}</strong>.
             </p>
+            <div className="ob-callout" style={{ margin: '14px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="ob-badge amber" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+                  {t('Status: Pending', 'الحالة: قيد الانتظار')}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--ob-muted)' }}>
+                  {t('Registered in Firebase Auth & Firestore with status: "Pending"', 'تم التسجيل في Firebase Auth وقاعدة البيانات بحالة Pending')}
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Check size={14} />
+                <span>{t('Official password setup email triggered via Firebase Auth', 'تم إرسال بريد إعداد كلمة المرور الرسمي من Firebase')}</span>
+              </div>
+            </div>
             <label className="ob-field">
-              {t('Activation link', 'رابط التفعيل')}
-              <input dir="ltr" readOnly value={activationUrl(sent.id)} onFocus={e => e.target.select()} />
+              {t('Direct Activation / Password Setup Link', 'رابط التفعيل وإعداد كلمة المرور المباشر')}
+              <input
+                dir="ltr"
+                readOnly
+                value={activationUrl(sent.id) || generateActivationLink(sent.id, sent.email)}
+                onFocus={e => e.target.select()}
+              />
             </label>
-            <button className="ob-secondary ob-full" onClick={() => copy(sent.id)}>
+            <button className="ob-secondary ob-full" onClick={() => copy(sent.id, sent.email)}>
               <Copy size={16} />
               {t('Copy activation link', 'نسخ رابط التفعيل')}
             </button>
-            <Link className="ob-primary ob-full" to={`/activate?invite=${sent.id}`}>
+            <a
+              className="ob-primary ob-full"
+              href={activationUrl(sent.id) || generateActivationLink(sent.id, sent.email)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t('Preview user activation', 'معاينة تفعيل المستخدم')}
               <ArrowUpRight size={16} />
-            </Link>
+            </a>
             <p className="ob-demo-note">
-              {t('Simulated send complete. No email was delivered.', 'اكتملت محاكاة الإرسال دون إرسال رسالة بريد.')}
+              {t('When the user sets their password and logs in, their status automatically transitions from Pending to Active.', 'عندما يقوم المستخدم بإعداد كلمة المرور وتسجيل الدخول، ستتغير حالته تلقائياً من Pending إلى Active.')}
             </p>
+            <button
+              type="button"
+              className="ob-secondary ob-full"
+              style={{ marginTop: '12px' }}
+              onClick={() => {
+                setOpen(false);
+                setSent(null);
+                setError('');
+              }}
+            >
+              {t('Done', 'تم')}
+            </button>
           </div>
         ) : (
           <form
-            onSubmit={e => {
+            onSubmit={async e => {
               e.preventDefault();
-              const data = new FormData(e.currentTarget);
+              if (busy) return;
+              const form = e.currentTarget;
+              const data = new FormData(form);
               const name = String(data.get('name') || '').trim();
               const email = String(data.get('email') || '').trim().toLowerCase();
               if (invites.some(i => i.email === email)) {
@@ -624,9 +670,24 @@ export function AdminUsers() {
                 created: new Date().toISOString(),
                 mfa: false,
               };
-              updateOnboarding(s => ({ ...s, invites: [invite, ...s.invites] }));
-              setSent(invite);
-              showToast.success(t('User invited successfully', 'تم إرسال الدعوة بنجاح'));
+              setBusy(true);
+              try {
+                const result = await manageAccount('create', { email, name: invite.name, role });
+                const createdId = result?.id || invite.id;
+                setSent({ ...invite, id: createdId });
+                form.reset();
+                if (result?.alreadyExists) {
+                  showToast.info(t('This email already has an account. It was set to Pending and a password reset email was sent — the user must finish activation from that email.', 'هذا البريد مسجل مسبقًا. تم تعيين حالته إلى قيد الانتظار وإرسال رسالة لإعادة تعيين كلمة المرور — يجب على المستخدم إكمال التفعيل من خلالها.'));
+                } else {
+                  showToast.success(t('User invited successfully! Activation link generated.', 'تمت دعوة المستخدم بنجاح! تم إنشاء رابط التفعيل.'));
+                }
+              } catch (error) {
+                setError(backendError(error));
+                showToast.error(backendError(error));
+                return;
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             <span className="ob-orb">
@@ -668,7 +729,7 @@ export function AdminUsers() {
                 {error}
               </p>
             )}
-            <button className="ob-primary ob-full" type="submit">
+            <button className="ob-primary ob-full" type="submit" disabled={busy}>
               <Mail size={16} />
               {t('Send invite & activation link', 'إرسال دعوة ورابط التفعيل')}
             </button>

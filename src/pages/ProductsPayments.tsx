@@ -5,11 +5,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CommerceSelect } from '../components/ui/CommerceSelect';
 import { WorkspaceSettings } from './commerce/WorkspaceSettings';
 import { DiscountsWorkspace } from './DiscountsWorkspace';
-import { useProductFavorites } from './commerce/favorites';
+
 import { useTransactions } from './commerce/transactions';
 import { usePurchasedProducts } from './commerce/purchases';
 
 import {
+  ArrowRight,
   ArrowUpDown,
   Box,
   CalendarClock,
@@ -20,7 +21,7 @@ import {
   CreditCard,
   FileText,
   Grid2X2,
-  Heart,
+
   LayoutGrid,
   PackageCheck,
   Pencil,
@@ -57,7 +58,7 @@ type Props = {
 
 const productTabs = [
   ['Products', ShoppingBag],
-  ['Favorites', Heart],
+
   ['Transactions', Receipt],
   ['Orders', FileText],
   ['Customers', Users],
@@ -78,7 +79,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   const [tabParams, setTabParams] = useSearchParams();
   const navigate = useNavigate();
   const products = useProducts();
-  const { favorites, isFavorite, toggleFavorite } = useProductFavorites();
+
   const { isPurchased } = usePurchasedProducts();
 
   const rawTab = tabParams.get('tab')?.toLowerCase();
@@ -86,7 +87,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
     if (!rawTab || rawTab === 'products' || rawTab === 'my-products' || rawTab === 'my-purchases') {
       return 'Products';
     }
-    if (rawTab === 'favorites' || rawTab === 'favorite-products') return 'Favorites';
+
     if (rawTab === 'transactions') return 'Transactions';
     if (rawTab === 'payments') return 'Payments';
     if (rawTab === 'orders') return 'Orders';
@@ -128,9 +129,6 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
 
   // Compute products according to active view
   const baseProducts = useMemo(() => {
-    if (selectedTab === 'Favorites') {
-      return products.filter(p => isFavorite(p.id));
-    }
     if (selectedTab === 'Products') {
       if (activeSubTab === 'purchases') {
         return purchasedProducts;
@@ -138,7 +136,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
       return products;
     }
     return products;
-  }, [selectedTab, activeSubTab, products, purchasedProducts, isFavorite]);
+  }, [selectedTab, activeSubTab, products, purchasedProducts]);
 
   const displayed = useMemo(() => {
     return baseProducts
@@ -193,7 +191,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
         {localizeNode(
           productTabs.map(([name, Icon]) => {
             const isActive = selectedTab === name;
-            const favCount = name === 'Favorites' ? favorites.length : 0;
+
             return (
               <button
                 key={name}
@@ -202,28 +200,23 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
               >
                 <Icon size={15} />
                 <span>{localizeNode(name)}</span>
-                {favCount > 0 && (
-                  <span className="pp-tab-counter" aria-label={`${favCount} favorites`}>
-                    {favCount}
-                  </span>
-                )}
               </button>
             );
           })
         )}
-        <button
+        <div className="module-header-actions pp-header-actions"><button className="st-secondary" onClick={() => navigate("/dashboard/products?tab=templates")}>{translateText("Templates")} <ArrowRight size={14}/></button><button
           className="pp-create"
           onClick={() => navigate('/dashboard/products-payments/products/new')}
         >
           <Plus size={15} />
           {translateText(' Create Product ')}
           <ChevronDown size={13} />
-        </button>
+        </button></div>
       </div>
 
       {/* Main Workspace content based on selected tab */}
       {localizeNode(
-        selectedTab === 'Products' || selectedTab === 'Favorites' ? (
+        selectedTab === 'Products' ? (
           <>
             {/* Products Main View: Horizontal Sub-View Filter */}
             {selectedTab === 'Products' && (
@@ -298,29 +291,6 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
               </section>
             )}
 
-            {/* Favorites Header Banner if in Favorites Tab */}
-            {selectedTab === 'Favorites' && (
-              <div className="pp-favorites-banner">
-                <div className="pp-favorites-banner-left">
-                  <div className="pp-favorites-badge-icon">
-                    <Heart size={16} fill="#f43f5e" color="#f43f5e" />
-                  </div>
-                  <div>
-                    <h3>{translateText('Favorite Products')}</h3>
-                    <p>
-                      {translateText(
-                        'Quick access to your curated and starred digital assets, courses, and consulting services.'
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="pp-favorites-counter-badge">
-                  <span>{translateText('Saved:')}</span>
-                  <b>{favorites.length}</b>
-                </div>
-              </div>
-            )}
-
             {/* Catalog Toolbar and Products Grid */}
             <div className="pp-workspace">
               <section className="pp-catalog">
@@ -331,9 +301,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                       value={search}
                       onChange={e => setSearch(e.target.value)}
                       placeholder={
-                        selectedTab === 'Favorites'
-                          ? translateText('Search favorite products...')
-                          : activeSubTab === 'purchases'
+                        activeSubTab === 'purchases'
                           ? translateText('Search your purchased products...')
                           : translateText('Search products...')
                       }
@@ -381,43 +349,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                   {localizeNode(
                     displayed.length === 0 && (
                       <div className="pp-empty-results">
-                        {selectedTab === 'Favorites' ? (
-                          <div className="pp-empty-favorites">
-                            <div className="pp-empty-icon-wrap">
-                              <Heart size={38} strokeWidth={1.8} className="pp-heart-empty-icon" />
-                            </div>
-                            <b>{translateText('No favorite products found')}</b>
-                            <span>
-                              {favorites.length === 0
-                                ? translateText(
-                                    'Click the heart toggle on any product card to bookmark it here.'
-                                  )
-                                : translateText('No favorites match your active search filters.')}
-                            </span>
-                            {favorites.length === 0 ? (
-                              <button
-                                type="button"
-                                className="pp-browse-btn"
-                                onClick={() => handleTabChange('Products')}
-                              >
-                                <ShoppingBag size={14} />
-                                {translateText('Browse Products')}
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSearch('');
-                                  setType('All Types');
-                                  setStatus('All Status');
-                                  setFilterMetric('All Products');
-                                }}
-                              >
-                                {translateText('Clear filters')}
-                              </button>
-                            )}
-                          </div>
-                        ) : activeSubTab === 'purchases' ? (
+                        {activeSubTab === 'purchases' ? (
                           <div className="pp-empty-favorites">
                             <div
                               className="pp-empty-icon-wrap pp-purchases-empty-icon"
@@ -487,9 +419,9 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                       <ProductCard
                         key={item.id}
                         item={item}
-                        isFavorite={isFavorite(item.id)}
+
                         isPurchased={isPurchased(item)}
-                        onToggleFavorite={toggleFavorite}
+
                         onSelect={() =>
                           navigate(`/dashboard/products-payments/products/${item.id}/edit`)
                         }
@@ -520,38 +452,25 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
 
 function ProductCard({
   item,
-  isFavorite = false,
+
   isPurchased = false,
-  onToggleFavorite,
+
   onSelect,
   onEdit,
   notify,
 }: {
   item: Product;
-  isFavorite?: boolean;
+
   isPurchased?: boolean;
-  onToggleFavorite?: (id: string, e: React.MouseEvent) => boolean;
+
   onSelect: () => void;
   onEdit: () => void;
   notify: (message: string) => void;
 }) {
   useUILanguage();
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (onToggleFavorite) {
-      const added = onToggleFavorite(item.id, e);
-      notify(
-        added
-          ? translateText(`Added "${item.name}" to favorites`)
-          : translateText(`Removed "${item.name}" from favorites`)
-      );
-    }
-  };
-
   return (
-    <article className={`pp-product-card ${isFavorite ? 'has-favorite' : ''}`} onClick={onSelect}>
+    <article className="pp-product-card" onClick={onSelect}>
       <button
         className="pp-art"
         onClick={event => {
@@ -573,28 +492,6 @@ function ProductCard({
           )
         )}
       </button>
-
-      {/* Favorite Toggle Button */}
-      {onToggleFavorite && (
-        <button
-          type="button"
-          className={`pp-favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
-          title={isFavorite ? translateText('Remove from favorites') : translateText('Add to favorites')}
-          aria-label={
-            isFavorite
-              ? translateText(`Remove ${item.name} from favorites`)
-              : translateText(`Add ${item.name} to favorites`)
-          }
-          onClick={handleFavoriteClick}
-        >
-          <Heart
-            size={14}
-            fill={isFavorite ? '#f43f5e' : 'none'}
-            color={isFavorite ? '#f43f5e' : 'currentColor'}
-            strokeWidth={isFavorite ? 0 : 2.2}
-          />
-        </button>
-      )}
 
       <ProductCardActions product={item} onEdit={onEdit} notify={notify} />
 
@@ -679,15 +576,19 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
   }, [transactions, statusFilter, txnSearch]);
 
   const totalVolume = useMemo(() => {
-    let sum = 0;
-    transactions.forEach(t => {
-      if (t.status === 'Completed') {
-        const num = parseFloat(t.amount.replace(/[^0-9.]/g, ''));
-        if (!isNaN(num)) sum += num;
-      }
-    });
-    return `€${sum.toFixed(2)}`;
+    const completed = transactions.filter(t => t.status === 'Completed');
+    const currency = completed[0]?.currency ?? 'USD';
+    // Never mix currencies into one figure.
+    const sum = completed.filter(t => t.currency === currency).reduce((total, t) => total + t.amountValue, 0);
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(sum); } catch { return `${sum.toFixed(2)} ${currency}`; }
   }, [transactions]);
+  const exportCsv = () => {
+    const cell = (value: unknown) => '"' + String(value ?? '').replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"';
+    const csv = '\uFEFF' + [['Transaction ID', 'Date', 'Product', 'Customer', 'Email', 'Method', 'Amount', 'Currency', 'Status'], ...filteredTxns.map(t => [t.id, t.date, t.productName, t.customerName, t.customerEmail, t.method, t.amountValue, t.currency, t.status])].map(row => row.map(cell).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), link = document.createElement('a');
+    link.href = url; link.download = `gos-transactions-${new Date().toISOString().slice(0, 10)}.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    notify?.(translateText('Transactions exported to CSV.'));
+  };
 
   const completedCount = transactions.filter(t => t.status === 'Completed').length;
   const rate = transactions.length > 0 ? Math.round((completedCount / transactions.length) * 100) : 100;
@@ -714,7 +615,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
           <div>
             <small>{translateText('Settled Volume')}</small>
             <b>{totalVolume}</b>
-            <em>{translateText('Completed mock revenue')}</em>
+            <em>{translateText('Verified completed revenue')}</em>
           </div>
         </div>
 
@@ -760,7 +661,8 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
               type="button"
               className="pp-txn-filter-btn"
               title={translateText('Export transactions')}
-              onClick={() => notify(translateText('Transactions exported to CSV.'))}
+              disabled={!filteredTxns.length}
+              onClick={exportCsv}
             >
               {translateText('Export')}
             </button>
@@ -784,7 +686,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
           <div className="pp-txn-empty">
             <Receipt size={28} />
             <b>{translateText('No transactions found')}</b>
-            <span>{translateText('Transactions from preview checkouts will automatically appear here.')}</span>
+            <span>{translateText('Verified payments from your connected payment provider will appear here.')}</span>
           </div>
         ) : (
           filteredTxns.map(t => (
@@ -795,10 +697,10 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                 {t.date}
               </span>
               <b className="pp-txn-product">{localizeNode(t.productName)}</b>
-              <span className="pp-txn-customer">{localizeNode(t.customerName || 'Demo Customer')}</span>
+              <span className="pp-txn-customer">{localizeNode(t.customerName || t.customerEmail || '—')}</span>
               <span className="pp-txn-method">
                 <CreditCard size={12} className="inline me-1 opacity-60" />
-                {localizeNode(t.method || 'Credit Card')}
+                {localizeNode(t.method || '—')}
               </span>
               <b className="pp-txn-amount text-end">{localizeNode(t.amount)}</b>
               <span className="text-center">

@@ -1,3 +1,9 @@
+import { readSettings } from './settings/data';
+import { callBackend, backendError } from '../backend/firebase';
+import { useEntities } from '../backend/workspace';
+import { useProducts } from './commerce/repository';
+import { newProduct, defaultConfig, formatPrice } from './commerce/model';
+import { createBuilderDocument } from './BuilderWorkspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X } from 'lucide-react';
@@ -5,7 +11,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { RootState } from '../store';
-import { bookings, calendars, leads, products, stageLabel } from '../data/mockData';
+import { stageLabel } from '../types/business';
+import type { CanonicalLead } from '../store/slices/crmSlice';
 import { showToast } from '../utils/toast';
 import { TemplatesWorkspace } from './TemplatesWorkspace';
 import { Select } from '../components/ui/Select';
@@ -13,31 +20,13 @@ import './ai-copilot.css';
 
 type Kind = 'landing' | 'leads' | 'campaign' | 'booking' | 'product' | 'analytics' | 'question';
 type MediaAttachment = { id: string; name: string; type: string; size: number; url: string; kind: 'image' | 'file' | 'audio'; };
-type Message = { id: string; role: 'user' | 'assistant'; text: string; kind?: Kind; leads?: typeof leads; draftId?: string; href?: string; hrefLabel?: string; media?: MediaAttachment; };
+type Message = { id: string; role: 'user' | 'assistant'; text: string; kind?: Kind; leads?: CanonicalLead[]; draftId?: string; href?: string; hrefLabel?: string; media?: MediaAttachment; };
 type Draft = { id: string; kind: 'landing' | 'booking' | 'product' | 'campaign'; name: string; price: string; duration: string; channel: string; content: string; status: 'draft' | 'executing' | 'published' | 'failed'; };
 type ToolResult<T> = { status: 'success'; statusCode: 200; data: T } | { status: 'error'; statusCode: number; error: string };
 type ToolContext = { tenantId: string; userRole: string };
 
-const pause = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
+// Responses are produced by the `copilot` Cloud Function using approved tenant records.
 
-// Local demo adapters use the same explicit success contract expected from a backend.
-const demoTools = {
-  async fetchLeads(context: ToolContext, canonicalLeads: typeof leads): Promise<ToolResult<typeof leads>> {
-    await pause(480);
-    if (!context.tenantId) return { status: 'error', statusCode: 403, error: 'Workspace context is missing.' };
-    return { status: 'success', statusCode: 200, data: canonicalLeads.filter(lead => !['CLOSED', 'CLOSED_LOST', 'CUSTOMER', 'ACTIVE_CUSTOMER'].includes(lead.stage)) };
-  },
-  async createDraft(context: ToolContext, draft: Draft): Promise<ToolResult<{ id: string; name: string }>> {
-    await pause(700);
-    if (!context.tenantId) return { status: 'error', statusCode: 403, error: 'Workspace context is missing.' };
-    if (!draft.name.trim()) return { status: 'error', statusCode: 422, error: 'A name is required.' };
-    if ((draft.kind === 'booking' || draft.kind === 'product') && (!draft.price.trim() || !draft.duration.trim() && draft.kind === 'booking')) {
-      return { status: 'error', statusCode: 422, error: 'Required service details are incomplete.' };
-    }
-    // Demo execution is scoped to the current tenant and intentionally does not mutate shared fixtures.
-    return { status: 'success', statusCode: 200, data: { id: `demo-${draft.kind}-${Date.now()}`, name: draft.name.trim() } };
-  },
-};
 
 const suggestions = [
   { title: 'Create a landing page', description: 'Build a high-converting page for your offer', icon: FileText, color: 'violet', prompt: 'Create a landing page for my offer' },
@@ -48,16 +37,7 @@ const suggestions = [
   { title: 'Analyze my performance', description: 'Get insights and recommendations', icon: BarChart3, color: 'purple', prompt: 'Analyze my performance' },
 ];
 
-const starterHistory = [
-  { id: 'hist-0', title: 'Create a Ramadan campaign', group: 'Today', category: 'Campaigns', time: '10:24 AM', prompt: 'Create a campaign for Ramadan' },
-  { id: 'hist-1', title: 'Show my hot leads', group: 'Today', category: 'Leads', time: '09:15 AM', prompt: 'Show my hot leads' },
-  { id: 'hist-2', title: 'Build a landing page for my offer', group: 'Yesterday', category: 'Landing Pages', time: '04:32 PM', prompt: 'Create a landing page for my offer' },
-  { id: 'hist-3', title: 'Analyze last week performance', group: 'Yesterday', category: 'Leads', time: '05:21 PM', prompt: 'Analyze my performance' },
-  { id: 'hist-4', title: 'Write follow-up messages', group: 'Yesterday', category: 'Campaigns', time: '03:10 PM', prompt: 'Create a follow-up campaign' },
-  { id: 'hist-5', title: 'Set up booking for consultations', group: 'This week', category: 'General', time: 'Mon', prompt: 'Set up a booking flow' },
-  { id: 'hist-6', title: 'Improve my website', group: 'This week', category: 'Landing Pages', time: 'Mon', prompt: 'Create a landing page to improve my website' },
-  { id: 'hist-7', title: 'Create an email campaign', group: 'This month', category: 'Campaigns', time: 'Apr 20', prompt: 'Create an email campaign' },
-];
+const starterHistory = [] as { id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }[];
 
 function classifyIntent(prompt: string): Kind {
   const text = prompt.toLowerCase();
@@ -92,6 +72,7 @@ export const AICopilot: React.FC = () => {
   const leads = useSelector((state: RootState) => state.crm.leads);
   const tenantId = tenant?.id ?? (role === 'SUPER_ADMIN' ? 'platform-demo' : '');
   const context: ToolContext = { tenantId, userRole: role ?? 'USER' };
+  const starterHistory = useEntities<{ id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }>('copilotConversations');
   const [messages, setMessages] = useState<Message[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [prompt, setPrompt] = useState('');
@@ -125,7 +106,7 @@ export const AICopilot: React.FC = () => {
     if (sortOrder === 'Oldest') return [...filtered].reverse();
     if (sortOrder === 'Unread') return [...filtered].sort((a, b) => Number(b.id === 'hist-0') - Number(a.id === 'hist-0'));
     return filtered;
-  }, [historySearch, dateFilter, categoryFilter, sortOrder]);
+  }, [starterHistory, historySearch, dateFilter, categoryFilter, sortOrder]);
 
   useEffect(() => () => {
     if (recordingTimerRef.current !== null) window.clearInterval(recordingTimerRef.current);
@@ -142,89 +123,49 @@ export const AICopilot: React.FC = () => {
   const chooseHistory = (item: typeof starterHistory[number]) => {
     setActiveConversation(item.id);
     setShowWelcome(false);
-    const response = item.category === 'Leads' ? 'I can review the lead records currently available in your workspace. No customer messages have been sent.' : item.category === 'Landing Pages' ? 'I can prepare a page draft for your review. It remains unpublished until you confirm.' : 'I can prepare a campaign draft for your review. Nothing has been sent.';
-    setMessages([{ id: `h-${item.id}`, role: 'user', text: item.prompt }, { id: `a-${item.id}`, role: 'assistant', text: response }]);
+    setMessages(item.messages ?? []);
   };
 
   async function runPrompt(rawPrompt: string) {
-    const attachmentToSend = pendingMedia;
-    const text = rawPrompt.trim() || (attachmentToSend ? `Review the attached file: ${attachmentToSend.name}` : '');
+    const text = rawPrompt.trim();
     if (!text || busy) return;
-    setPrompt(''); setPendingMedia(null); setShowWelcome(false); setActiveConversation(null); setBusy(true);
-    pushMessage({ id: `u-${Date.now()}`, role: 'user', text, media: attachmentToSend ?? undefined });
-    const kind = classifyIntent(text);
-    await pause(300); setStatusText('Understanding your request…');
-    await pause(350); setStatusText('Resolving workspace and permissions…');
-    if (!tenantId && role !== 'SUPER_ADMIN') {
-      pushMessage({ id: `a-${Date.now()}`, role: 'assistant', text: 'I can’t access workspace data because no tenant is available in this session. Please sign in to a workspace and try again.' });
-      setStatusText(''); setBusy(false); return;
-    }
-    if (kind === 'analytics' && role === 'USER' && /revenue|payment|financial/i.test(text)) {
-      pushMessage({ id: `a-${Date.now()}`, role: 'assistant', text: 'Your current role does not have permission to view financial data. Ask a workspace admin to grant access.' });
-      setStatusText(''); setBusy(false); return;
-    }
-    await pause(320); setStatusText('Checking approved business context…');
-    await pause(320);
-    if (kind === 'leads') {
-      setStatusText('Checking lead records…');
-      const result = await demoTools.fetchLeads(context, leads);
-      if (result.status !== 'success' || result.statusCode !== 200) {
-        pushMessage({ id: `a-${Date.now()}`, role: 'assistant', text: result.status === 'error' ? `I couldn’t fetch leads: ${result.error}` : 'I could not verify the lead records.' });
-      } else {
-        const matches = result.data;
-        const names = matches.slice(0, 3).map(lead => lead.name).join(', ');
-        pushMessage({ id: `a-${Date.now()}`, role: 'assistant', kind, leads: matches, text: `I found ${matches.length} leads in active follow-up stages: ${names}${matches.length > 3 ? ', and more' : ''}. These are existing CRM records; I have not sent any messages.`, href: '/dashboard/crm', hrefLabel: 'Open CRM' });
-      }
-    } else if (kind === 'analytics') {
-      const activeLeads = leads.filter(lead => !['CLOSED', 'CUSTOMER'].includes(lead.stage)).length;
-      const upcomingBookings = bookings.filter(booking => booking.status === 'Confirmed').length;
-      const catalogValue = products.reduce((sum, product) => sum + product.price * product.sales, 0);
-      const canReadRevenue = role === 'ADMIN' || role === 'SUPER_ADMIN';
-      pushMessage({ id: `a-${Date.now()}`, role: 'assistant', kind, text: `From the current demo records, ${activeLeads} leads are in open pipeline stages and ${upcomingBookings} bookings are confirmed. ${canReadRevenue ? `The catalog's listed prices multiplied by recorded sales total ${catalogValue.toLocaleString()} ${products[0]?.currency ?? ''}; this is a catalog calculation, not verified revenue.` : 'I have not included financial data because your role does not have financial access.'}`, href: '/dashboard/analytics', hrefLabel: 'Open Analytics' });
-    } else if (kind === 'question') {
-      const knownService = products.find(product => product.type === 'Service');
-      pushMessage({ id: `a-${Date.now()}`, role: 'assistant', text: `I can help with that. I’m using the available workspace context: ${products.length} listed products and ${calendars.length} calendars. Tell me which outcome you want, and I’ll prepare a reviewable draft or inspect a specific record. ${knownService ? `Known service: ${knownService.name}.` : ''}` });
-    } else {
-      const draftKind: Draft['kind'] = kind;
-      const draft = makeDraft(draftKind, text);
-      setDrafts(current => ({ ...current, [draft.id]: draft }));
-      const clarification = kind === 'booking' ? 'A service name, price, and appointment duration are needed before I can create this service. Enter those values in the draft.' : kind === 'product' ? 'A product name and price are needed before I can create this product. Enter those values in the draft.' : kind === 'campaign' ? 'Review the message and delivery channel before confirming. Nothing will be sent until you confirm.' : 'Review the page name and copy before publishing. Nothing will be published until you confirm.';
-      setStatusText(kind === 'booking' || kind === 'product' ? 'Checking required service details…' : 'Preparing a reviewable draft…');
-      await pause(350);
-      pushMessage({ id: `a-${Date.now()}`, role: 'assistant', kind, draftId: draft.id, text: `${clarification} I have not invented any pricing, availability, or customer details.` });
-    }
-    setStatusText(''); setBusy(false);
-    window.setTimeout(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }), 50);
+    if (pendingMedia) { showToast.info('Upload this file to Knowledge before asking the assistant to use it.'); return; }
+    const conversationId = activeConversation || crypto.randomUUID();
+    setActiveConversation(conversationId); setPrompt(''); setShowWelcome(false); setBusy(true); setStatusText('Reviewing your workspace…');
+    pushMessage({ id: crypto.randomUUID(), role: 'user', text });
+    try {
+      const answer = await callBackend<{ text: string; draft?: Omit<Draft, 'id' | 'status'> }>('copilot', { text, conversationId });
+      const draftId = answer.draft ? crypto.randomUUID() : undefined;
+      if (answer.draft && draftId) setDrafts(current => ({ ...current, [draftId]: { ...answer.draft!, id: draftId, status: 'draft' } }));
+      pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: answer.text, draftId });
+      showToast.success('Assistant response received');
+    } catch (error) { showToast.error(backendError(error)); pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: backendError(error) }); }
+    finally { setBusy(false); setStatusText(''); }
   }
 
   async function confirmDraft(draftId: string) {
     const draft = drafts[draftId];
     if (!draft || busy) return;
-    const serviceNeeds = draft.kind === 'booking' && (!draft.name.trim() || !draft.price.trim() || !draft.duration.trim());
-    const productNeeds = draft.kind === 'product' && (!draft.name.trim() || !draft.price.trim());
-    const campaignNeeds = draft.kind === 'campaign' && (!draft.name.trim() || !draft.content.trim());
-    const pageNeeds = draft.kind === 'landing' && !draft.name.trim();
-    if (serviceNeeds || productNeeds || campaignNeeds || pageNeeds) {
-      flash(serviceNeeds ? 'Add a service name, price, and duration first.' : productNeeds ? 'Add a product name and price first.' : campaignNeeds ? 'Add a campaign name and message first.' : 'Add a page name first.');
-      return;
-    }
-    if ((draft.kind === 'booking' || draft.kind === 'product') && role === 'USER') {
-      flash('Only workspace admins can publish services or products.'); return;
-    }
-    setBusy(true); setStatusText('Executing the confirmed demo tool…');
-    setDrafts(current => ({ ...current, [draftId]: { ...current[draftId], status: 'executing' } }));
-    const result = await demoTools.createDraft(context, draft);
-    await pause(200);
-    if (result.status === 'success' && result.statusCode === 200) {
-      setDrafts(current => ({ ...current, [draftId]: { ...current[draftId], status: 'published' } }));
-      const destination = draft.kind === 'booking' ? '/dashboard/booking' : draft.kind === 'product' ? '/dashboard/products' : '/dashboard/funnels';
-      pushMessage({ id: `result-${Date.now()}`, role: 'assistant', text: `Demo tool confirmed the ${draft.kind === 'booking' ? 'service' : draft.kind} “${result.data.name}” was created successfully (200 OK). This prototype confirms the local demo action only; canonical production records were not changed.`, href: destination, hrefLabel: draft.kind === 'booking' ? 'View booking services' : draft.kind === 'product' ? 'View products' : 'View funnels' });
-      flash('Demo action confirmed');
-    } else {
-      setDrafts(current => ({ ...current, [draftId]: { ...current[draftId], status: 'failed' } }));
-      pushMessage({ id: `error-${Date.now()}`, role: 'assistant', text: result.status === 'error' ? `The demo tool did not confirm this action: ${result.error}. Nothing was published.` : 'The demo tool returned an unverified result. Nothing was published.' });
-    }
-    setBusy(false); setStatusText('');
+    if (!draft.name?.trim()) { showToast.error('Enter a name first.'); return; }
+    setBusy(true); setStatusText('Saving your draft…');
+    try {
+      let record: Record<string, unknown>;
+      if (draft.kind === 'product' || draft.kind === 'booking') {
+        if (!draft.price?.trim() || !Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) throw new Error('Enter a valid numeric price.');
+        const product = newProduct(); product.name = draft.name; product.description = draft.content || ''; product.type = draft.kind === 'booking' ? 'Service' : 'Digital Product'; product.config = defaultConfig(product.type); product.config.amount = Number(draft.price); product.config.currency = readSettings().business.currency; if (product.config.experience) product.config.experience.visibility = 'Private'; if (draft.kind === 'booking') product.config.duration = Number(draft.duration); product.price = formatPrice(product.config); product.tag = product.type;
+        if (draft.kind === 'booking' && (!Number.isFinite(Number(draft.duration)) || Number(draft.duration) <= 0)) throw new Error('Enter the service duration in minutes.');
+        record = { ...product };
+      } else if (draft.kind === 'landing') {
+        const document = createBuilderDocument('funnel', draft.name, '', 1);
+        document.funnel.status = 'Draft'; document.pages.forEach(page => { page.status = 'Draft'; });
+        record = { id: draftId, name: draft.name, kind: 'funnel', domain: '', image: '', updated: new Date().toISOString(), document, description: draft.content || '', settings: { seo: draft.name, navigation: '', color: '#6366f1' } };
+      } else record = { name: draft.name, title: draft.name, description: draft.content || '', prompt: draft.content || '', iconKey: 'message', custom: true, category: 'Campaign', status: 'Draft' };
+      await callBackend('createCopilotDraft', { draft, record, requestId: draftId });
+      setDrafts(current => ({ ...current, [draftId]: { ...draft, status: 'published' } }));
+      pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: 'Your draft was saved. Open the workspace to review it before publishing.', href: draft.kind === 'landing' ? '/dashboard/funnels' : draft.kind === 'campaign' ? '/dashboard/ai-followup' : '/dashboard/products', hrefLabel: 'Review draft' });
+      showToast.success('Draft saved');
+    } catch (error) { setDrafts(current => ({ ...current, [draftId]: { ...draft, status: 'failed' } })); showToast.error(backendError(error)); }
+    finally { setBusy(false); setStatusText(''); }
   }
 
   function updateDraft(id: string, key: keyof Draft, value: string) {
@@ -310,7 +251,7 @@ export const AICopilot: React.FC = () => {
               {localizeNode(message.leads && <div className="ai-lead-results">{localizeNode(message.leads.slice(0, 4).map(lead => <div key={lead.id}><span className="ai-lead-avatar">{localizeNode(lead.avatar)}</span><b>{localizeNode(lead.name)}</b><span>{localizeNode(lead.company)}</span><em>{localizeNode(stageLabel[lead.stage])}</em><small>{localizeNode(lead.lastActivity)}</small></div>))}</div>)}
               {localizeNode(message.draftId && drafts[message.draftId] && <DraftPreview draft={drafts[message.draftId]} update={(key, value) => updateDraft(message.draftId!, key, value)} confirm={() => void confirmDraft(message.draftId!)} busy={busy}/>)}
               {localizeNode(message.href && <button className="ai-result-link" onClick={() => navigate(message.href!)}>{localizeNode(message.hrefLabel)}<ArrowUpRight size={14}/></button>)}
-              {localizeNode(message.role === 'assistant' && <div className="ai-source-note"><ShieldCheck size={12}/>{translateText(" Uses current workspace demo records")}</div>)}
+              {localizeNode(message.role === 'assistant' && <div className="ai-source-note"><ShieldCheck size={12}/>{translateText(" Grounded in approved workspace records")}</div>)}
             </div>
           </div>)}
           {localizeNode(busy && <div className="ai-thinking"><span className="ai-message-avatar"><Sparkles size={14}/></span><div><LoaderCircle size={14} className="ai-spinner"/>{localizeNode(statusText || 'Copilot is working…')}</div></div>)}

@@ -1,3 +1,4 @@
+import { FirebaseSession } from './backend/session';
 import { useUILanguage } from './i18n/display';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -12,7 +13,7 @@ function App() {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <FirebaseSession><RouterProvider router={router} /></FirebaseSession>
         <Toaster 
           position={language === 'ar' ? 'bottom-left' : 'bottom-right'}
           dir={language === 'ar' ? 'rtl' : 'ltr'}

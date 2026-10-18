@@ -50,5 +50,22 @@
         ]
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "user-dashboard",
+      "ignore": [
+        "node_modules",
+        "*.test.js"
+      ]
+    }
+  ],
+  "storage": {
+    "rules": "storage.rules"
   }
 }

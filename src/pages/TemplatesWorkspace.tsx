@@ -1,3 +1,5 @@
+import { cloudStorage, useCloudState } from '../backend/workspace';
+import { useTemplateCatalog } from '../backend/templateCatalog';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Check, Copy, Eye, LayoutGrid, Library, List, Pencil, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
@@ -6,10 +8,9 @@ import { Select } from '../components/ui/Select';
 import './templates-workspace.css';
 
 import { categories, industries, goals, destinations, colors, MASTER_TEMPLATES, type Template, type Category } from './system-template-data';
-import { publishedWorkspaceTemplates } from './admin/template-library';
+
 export { MASTER_TEMPLATES, type Template } from './system-template-data';
-const ownedSeed: Template = { ...structuredClone(MASTER_TEMPLATES[0]), id: 'owned-coaching', name: 'My Coaching Discovery', source: 'mine', destination: destinations[0], masterId: 'master-0', popularity: 0 };
-const storageKey = 'gos.templates.assets.v1';
+const storageKey = 'entity:userTemplates';
 function validContent(value: unknown): value is Template['content'] {
  if (!value || typeof value !== 'object') return false;
  const c = value as Partial<Template['content']>;
@@ -17,10 +18,10 @@ function validContent(value: unknown): value is Template['content'] {
 }
 function loadAssets(): Template[] {
  try {
-  const stored: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null');
+  const stored: unknown = JSON.parse(cloudStorage.getItem(storageKey) ?? 'null');
   if (Array.isArray(stored)) return stored.filter((a): a is Template => a && typeof a.id === 'string' && typeof a.name === 'string' && typeof a.description === 'string' && categories.includes(a.category) && a.source === 'mine' && industries.includes(a.industry) && goals.includes(a.goal) && Array.isArray(a.tags) && a.tags.every((tag: unknown) => typeof tag === 'string') && typeof a.updated === 'string' && Number.isFinite(Date.parse(a.updated)) && typeof a.popularity === 'number' && colors.includes(a.color) && validContent(a.content));
  } catch { /* Browsing remains available with blocked or malformed storage. */ }
- return [structuredClone(ownedSeed)];
+ return [];
 }
 function thumbnail(t: Template) {
  const flow = ['CRM Pipelines', 'Automations', 'AI Assistants', 'AI Knowledge Packs'].includes(t.category);
@@ -44,7 +45,8 @@ export function TemplatesWorkspace({ scope = 'funnels', onInstall }: { scope?: T
  const nativeCategories = scopeCategories[scope];
  const tabs = ['All', ...nativeCategories];
  const destinations = [scope + ' / Templates'];
- const [assets, setAssets] = useState(loadAssets);
+ const [assets, setAssets] = useCloudState<Template[]>(storageKey, []);
+ const catalog = useTemplateCatalog();
  const [query, setQuery] = useState('');
  const [category, setCategory] = useState('All');
  const [industry, setIndustry] = useState('All industries');
@@ -62,7 +64,7 @@ export function TemplatesWorkspace({ scope = 'funnels', onInstall }: { scope?: T
  const searchRef = useRef<HTMLInputElement>(null);
  const modalRef = useRef<HTMLDialogElement>(null);
  const actionLock = useRef(false);
- const all = useMemo(() => [...publishedWorkspaceTemplates(), ...assets].filter(template => nativeCategories.includes(template.category)), [assets, nativeCategories]);
+ const all = useMemo(() => [...catalog, ...assets].filter(template => nativeCategories.includes(template.category)), [assets, nativeCategories, catalog]);
  const filtered = useMemo(() => all.filter(t => (category === 'All' || t.category === category) && (industry === 'All industries' || t.industry === industry) && (goal === 'All goals' || t.goal === goal) && (source === 'All' || (source === 'System/GOS Official' ? t.source === 'official' : source === 'Owned by Me' ? t.source === 'mine' : t.source !== 'official')) && (t.name + ' ' + t.category + ' ' + t.tags.join(' ')).toLowerCase().includes(query.trim().toLowerCase())).sort((a, b) => sort === 'Alphabetical' ? a.name.localeCompare(b.name) : sort === 'Most Popular' ? b.popularity - a.popularity : b.updated.localeCompare(a.updated)), [all, category, industry, goal, source, query, sort]);
  useEffect(() => {
   const listener = (event: KeyboardEvent) => {
@@ -80,7 +82,7 @@ export function TemplatesWorkspace({ scope = 'funnels', onInstall }: { scope?: T
  }
  function close() { modalRef.current?.close(); setDialog(null); }
  function persist(next: Template[]) {
-  try { localStorage.setItem(storageKey, JSON.stringify(next)); setAssets(next); return true; }
+  try { setAssets(next); return true; }
   catch { setError('Your browser could not save this asset. Free storage or allow local storage, then try again.'); return false; }
  }
  function install() {

@@ -17,13 +17,13 @@ export default function AppointmentEditorPage() {
   const appointment = bookings.find(item => item.id === appointmentId);
   const close = () => navigate('/dashboard/booking?tab=' + (params.get('returnTo') === 'bookings' ? 'bookings' : 'calendar'));
   if (appointmentId && !appointment) return <main className="bk-workspace"><Empty title={translateText("Appointment not found")} detail="This appointment may have been removed."/><button className="bk-button" onClick={close}>{translateText("Back to bookings")}</button></main>;
-  return <AppointmentEditor key={appointmentId || 'new'} pages={pages} bookings={bookings} value={appointment || {date:params.get('date') || undefined,time:params.get('time') || undefined}} close={close} save={value => {
+  return <AppointmentEditor key={appointmentId || 'new'} pages={pages} bookings={bookings} value={appointment || {date:params.get('date') || undefined,time:params.get('time') || undefined}} close={close} save={async value => {
     try {
-      saveBookings([...readAppointments().filter(item => item.id !== value.id), value]);
+      await saveBookings([...readAppointments().filter(item => item.id !== value.id), value]);
       const contacts = readContacts();
       if (!contacts.some(item => item.email.toLowerCase() === value.email.toLowerCase())) saveContacts([...contacts, {id:uid(),name:value.name,email:value.email,phone:value.whatsapp,company:''}]);
       showToast.success('Appointment saved.');
       close();
-    } catch { showToast.error('Could not save changes. Browser storage may be full or unavailable.'); }
+    } catch (error) { showToast.error(error instanceof Error ? error.message : 'Could not save this appointment.'); }
   }}/>;
 }

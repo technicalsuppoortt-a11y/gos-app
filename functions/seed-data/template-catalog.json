@@ -1,0 +1,878 @@
+[
+  {
+    "id": "master-0",
+    "name": "Coaching Discovery Funnel",
+    "description": "Turn warm leads into booked discovery calls.",
+    "category": "Funnels",
+    "industry": "Fitness/Coaching",
+    "goal": "Appointment Booking",
+    "tags": [
+      "coaching",
+      "consultation",
+      "3 steps"
+    ],
+    "source": "official",
+    "updated": "2026-10-07",
+    "popularity": 2400,
+    "color": "#6458c9",
+    "content": {
+      "headline": "Coaching Discovery Funnel",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-1",
+    "name": "Product Launch Funnel",
+    "description": "Build anticipation and convert your next launch.",
+    "category": "Funnels",
+    "industry": "E-commerce",
+    "goal": "Direct Sale",
+    "tags": [
+      "launch",
+      "checkout",
+      "4 steps"
+    ],
+    "source": "official",
+    "updated": "2026-10-06",
+    "popularity": 2353,
+    "color": "#367c73",
+    "content": {
+      "headline": "Product Launch Funnel",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-2",
+    "name": "Property Lead Engine",
+    "description": "Capture and qualify buyers for your listings.",
+    "category": "Funnels",
+    "industry": "Real Estate",
+    "goal": "Lead Generation",
+    "tags": [
+      "property",
+      "buyers",
+      "qualification"
+    ],
+    "source": "official",
+    "updated": "2026-10-05",
+    "popularity": 2306,
+    "color": "#ab6b4c",
+    "content": {
+      "headline": "Property Lead Engine",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-3",
+    "name": "Modern Agency Studio",
+    "description": "A polished home for your services and case studies.",
+    "category": "Websites",
+    "industry": "SaaS/Agency",
+    "goal": "Lead Generation",
+    "tags": [
+      "portfolio",
+      "agency",
+      "5 pages"
+    ],
+    "source": "official",
+    "updated": "2026-10-04",
+    "popularity": 2259,
+    "color": "#485785",
+    "content": {
+      "headline": "Modern Agency Studio",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-4",
+    "name": "Wellness Clinic",
+    "description": "Introduce your practitioners and grow patient bookings.",
+    "category": "Websites",
+    "industry": "Healthcare/Clinic",
+    "goal": "Appointment Booking",
+    "tags": [
+      "clinic",
+      "care",
+      "4 pages"
+    ],
+    "source": "official",
+    "updated": "2026-10-03",
+    "popularity": 2212,
+    "color": "#8059a0",
+    "content": {
+      "headline": "Wellness Clinic",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-5",
+    "name": "Boutique Storefront",
+    "description": "Showcase your collection with a refined storefront.",
+    "category": "Websites",
+    "industry": "E-commerce",
+    "goal": "Direct Sale",
+    "tags": [
+      "shop",
+      "collection",
+      "commerce"
+    ],
+    "source": "team",
+    "updated": "2026-10-02",
+    "popularity": 2165,
+    "color": "#386b9a",
+    "content": {
+      "headline": "Boutique Storefront",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-6",
+    "name": "SaaS Waitlist",
+    "description": "Validate your next product with a focused waitlist.",
+    "category": "Landing Pages",
+    "industry": "SaaS/Agency",
+    "goal": "Lead Generation",
+    "tags": [
+      "waitlist",
+      "startup",
+      "conversion"
+    ],
+    "source": "official",
+    "updated": "2026-10-01",
+    "popularity": 2118,
+    "color": "#6458c9",
+    "content": {
+      "headline": "SaaS Waitlist",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-7",
+    "name": "Fitness Challenge",
+    "description": "Fill your next 30-day coaching program.",
+    "category": "Landing Pages",
+    "industry": "Fitness/Coaching",
+    "goal": "Direct Sale",
+    "tags": [
+      "challenge",
+      "fitness",
+      "enrollment"
+    ],
+    "source": "official",
+    "updated": "2026-10-07",
+    "popularity": 2071,
+    "color": "#367c73",
+    "content": {
+      "headline": "Fitness Challenge",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-8",
+    "name": "Free Market Report",
+    "description": "Exchange local insights for qualified buyer leads.",
+    "category": "Landing Pages",
+    "industry": "Real Estate",
+    "goal": "Lead Generation",
+    "tags": [
+      "lead magnet",
+      "report",
+      "property"
+    ],
+    "source": "official",
+    "updated": "2026-10-06",
+    "popularity": 2024,
+    "color": "#ab6b4c",
+    "content": {
+      "headline": "Free Market Report",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-9",
+    "name": "Strategy Session",
+    "description": "Let prospects book a high-value strategy call.",
+    "category": "Booking Pages",
+    "industry": "Professional Services",
+    "goal": "Appointment Booking",
+    "tags": [
+      "calendar",
+      "consultation",
+      "30 minutes"
+    ],
+    "source": "official",
+    "updated": "2026-10-05",
+    "popularity": 1977,
+    "color": "#485785",
+    "content": {
+      "headline": "Strategy Session",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-10",
+    "name": "Clinic Appointment",
+    "description": "Simplify patient scheduling and visit preparation.",
+    "category": "Booking Pages",
+    "industry": "Healthcare/Clinic",
+    "goal": "Appointment Booking",
+    "tags": [
+      "patient",
+      "calendar",
+      "reminders"
+    ],
+    "source": "official",
+    "updated": "2026-10-04",
+    "popularity": 1930,
+    "color": "#8059a0",
+    "content": {
+      "headline": "Clinic Appointment",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-11",
+    "name": "Personal Training Intro",
+    "description": "Match new members with the right coach.",
+    "category": "Booking Pages",
+    "industry": "Fitness/Coaching",
+    "goal": "Appointment Booking",
+    "tags": [
+      "training",
+      "coach",
+      "intro"
+    ],
+    "source": "official",
+    "updated": "2026-10-03",
+    "popularity": 1883,
+    "color": "#386b9a",
+    "content": {
+      "headline": "Personal Training Intro",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-12",
+    "name": "Agency Sales Pipeline",
+    "description": "Move opportunities from first contact to signed deal.",
+    "category": "CRM Pipelines",
+    "industry": "SaaS/Agency",
+    "goal": "Lead Generation",
+    "tags": [
+      "sales",
+      "qualification",
+      "6 stages"
+    ],
+    "source": "team",
+    "updated": "2026-10-02",
+    "popularity": 1836,
+    "color": "#6458c9",
+    "content": {
+      "headline": "Agency Sales Pipeline",
+      "steps": [
+        "New lead",
+        "Qualified",
+        "Proposal",
+        "Won"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-13",
+    "name": "Property Buyer Journey",
+    "description": "Track viewings, offers, and closing milestones.",
+    "category": "CRM Pipelines",
+    "industry": "Real Estate",
+    "goal": "Direct Sale",
+    "tags": [
+      "viewings",
+      "buyers",
+      "5 stages"
+    ],
+    "source": "official",
+    "updated": "2026-10-01",
+    "popularity": 1789,
+    "color": "#367c73",
+    "content": {
+      "headline": "Property Buyer Journey",
+      "steps": [
+        "New lead",
+        "Qualified",
+        "Proposal",
+        "Won"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-14",
+    "name": "Client Onboarding Board",
+    "description": "Give every new client a consistent first experience.",
+    "category": "CRM Pipelines",
+    "industry": "Professional Services",
+    "goal": "Customer Onboarding",
+    "tags": [
+      "handoff",
+      "client success",
+      "4 stages"
+    ],
+    "source": "official",
+    "updated": "2026-10-07",
+    "popularity": 1742,
+    "color": "#ab6b4c",
+    "content": {
+      "headline": "Client Onboarding Board",
+      "steps": [
+        "New lead",
+        "Qualified",
+        "Proposal",
+        "Won"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-15",
+    "name": "Store Shopping Concierge",
+    "description": "Help customers discover products and resolve questions.",
+    "category": "AI Assistants",
+    "industry": "E-commerce",
+    "goal": "Direct Sale",
+    "tags": [
+      "support",
+      "recommendations",
+      "AI"
+    ],
+    "source": "official",
+    "updated": "2026-10-06",
+    "popularity": 1695,
+    "color": "#485785",
+    "content": {
+      "headline": "Store Shopping Concierge",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-16",
+    "name": "Lead Qualification Agent",
+    "description": "Ask the right questions before your sales team steps in.",
+    "category": "AI Assistants",
+    "industry": "SaaS/Agency",
+    "goal": "Lead Generation",
+    "tags": [
+      "qualification",
+      "sales",
+      "AI"
+    ],
+    "source": "official",
+    "updated": "2026-10-05",
+    "popularity": 1648,
+    "color": "#8059a0",
+    "content": {
+      "headline": "Lead Qualification Agent",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-17",
+    "name": "Clinic Reception Assistant",
+    "description": "Answer visit questions and guide appointment requests.",
+    "category": "AI Assistants",
+    "industry": "Healthcare/Clinic",
+    "goal": "Appointment Booking",
+    "tags": [
+      "reception",
+      "booking",
+      "AI"
+    ],
+    "source": "official",
+    "updated": "2026-10-04",
+    "popularity": 1601,
+    "color": "#386b9a",
+    "content": {
+      "headline": "Clinic Reception Assistant",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-18",
+    "name": "Agency Services Playbook",
+    "description": "Ground your assistant in services, scope, and FAQs.",
+    "category": "AI Knowledge Packs",
+    "industry": "SaaS/Agency",
+    "goal": "Customer Onboarding",
+    "tags": [
+      "knowledge",
+      "services",
+      "FAQ"
+    ],
+    "source": "official",
+    "updated": "2026-10-03",
+    "popularity": 1554,
+    "color": "#6458c9",
+    "content": {
+      "headline": "Agency Services Playbook",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-19",
+    "name": "Store Policies & Returns",
+    "description": "Give consistent answers on delivery and returns.",
+    "category": "AI Knowledge Packs",
+    "industry": "E-commerce",
+    "goal": "Automation Flow",
+    "tags": [
+      "policies",
+      "shipping",
+      "knowledge"
+    ],
+    "source": "team",
+    "updated": "2026-10-02",
+    "popularity": 1507,
+    "color": "#367c73",
+    "content": {
+      "headline": "Store Policies & Returns",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-20",
+    "name": "Coaching Program Guide",
+    "description": "Equip your assistant with program and session details.",
+    "category": "AI Knowledge Packs",
+    "industry": "Fitness/Coaching",
+    "goal": "Customer Onboarding",
+    "tags": [
+      "program",
+      "knowledge",
+      "FAQ"
+    ],
+    "source": "official",
+    "updated": "2026-10-01",
+    "popularity": 1460,
+    "color": "#ab6b4c",
+    "content": {
+      "headline": "Coaching Program Guide",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-21",
+    "name": "New Lead Welcome Flow",
+    "description": "Welcome, qualify, and route every incoming lead.",
+    "category": "Automations",
+    "industry": "Professional Services",
+    "goal": "Automation Flow",
+    "tags": [
+      "workflow",
+      "routing",
+      "welcome"
+    ],
+    "source": "official",
+    "updated": "2026-10-07",
+    "popularity": 1413,
+    "color": "#485785",
+    "content": {
+      "headline": "New Lead Welcome Flow",
+      "steps": [
+        "Trigger received",
+        "Check conditions",
+        "Send message",
+        "Assign owner"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-22",
+    "name": "Abandoned Cart Recovery",
+    "description": "Bring shoppers back with timely follow-up messages.",
+    "category": "Automations",
+    "industry": "E-commerce",
+    "goal": "Automation Flow",
+    "tags": [
+      "cart",
+      "recovery",
+      "3 triggers"
+    ],
+    "source": "official",
+    "updated": "2026-10-06",
+    "popularity": 1366,
+    "color": "#8059a0",
+    "content": {
+      "headline": "Abandoned Cart Recovery",
+      "steps": [
+        "Trigger received",
+        "Check conditions",
+        "Send message",
+        "Assign owner"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-23",
+    "name": "Appointment Reminder Flow",
+    "description": "Reduce no-shows with a sequence of helpful reminders.",
+    "category": "Automations",
+    "industry": "Healthcare/Clinic",
+    "goal": "Automation Flow",
+    "tags": [
+      "reminders",
+      "calendar",
+      "workflow"
+    ],
+    "source": "official",
+    "updated": "2026-10-05",
+    "popularity": 1319,
+    "color": "#386b9a",
+    "content": {
+      "headline": "Appointment Reminder Flow",
+      "steps": [
+        "Trigger received",
+        "Check conditions",
+        "Send message",
+        "Assign owner"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-24",
+    "name": "Digital Course Bundle",
+    "description": "Package lessons and resources into a ready-to-sell offer.",
+    "category": "Products",
+    "industry": "Fitness/Coaching",
+    "goal": "Direct Sale",
+    "tags": [
+      "course",
+      "bundle",
+      "digital"
+    ],
+    "source": "official",
+    "updated": "2026-10-04",
+    "popularity": 1272,
+    "color": "#6458c9",
+    "content": {
+      "headline": "Digital Course Bundle",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-25",
+    "name": "Agency Retainer",
+    "description": "Standardize your recurring service subscription.",
+    "category": "Products",
+    "industry": "SaaS/Agency",
+    "goal": "Direct Sale",
+    "tags": [
+      "subscription",
+      "retainer",
+      "service"
+    ],
+    "source": "official",
+    "updated": "2026-10-03",
+    "popularity": 1225,
+    "color": "#367c73",
+    "content": {
+      "headline": "Agency Retainer",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-26",
+    "name": "Consulting Session",
+    "description": "Sell a focused one-to-one expert consultation.",
+    "category": "Products",
+    "industry": "Professional Services",
+    "goal": "Direct Sale",
+    "tags": [
+      "consulting",
+      "session",
+      "service"
+    ],
+    "source": "team",
+    "updated": "2026-10-02",
+    "popularity": 1178,
+    "color": "#ab6b4c",
+    "content": {
+      "headline": "Consulting Session",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-27",
+    "name": "Welcome Email Sequence",
+    "description": "Introduce your brand and guide the first next step.",
+    "category": "Email/SMS/WhatsApp",
+    "industry": "SaaS/Agency",
+    "goal": "Customer Onboarding",
+    "tags": [
+      "email",
+      "welcome",
+      "5 messages"
+    ],
+    "source": "official",
+    "updated": "2026-10-01",
+    "popularity": 1131,
+    "color": "#485785",
+    "content": {
+      "headline": "Welcome Email Sequence",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-28",
+    "name": "SMS Booking Reminder",
+    "description": "Keep appointments top of mind with a concise SMS.",
+    "category": "Email/SMS/WhatsApp",
+    "industry": "Healthcare/Clinic",
+    "goal": "Appointment Booking",
+    "tags": [
+      "SMS",
+      "reminder",
+      "booking"
+    ],
+    "source": "official",
+    "updated": "2026-10-07",
+    "popularity": 1084,
+    "color": "#8059a0",
+    "content": {
+      "headline": "SMS Booking Reminder",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "master-29",
+    "name": "WhatsApp Lead Follow-Up",
+    "description": "Re-engage interested prospects with a personal message.",
+    "category": "Email/SMS/WhatsApp",
+    "industry": "Real Estate",
+    "goal": "Lead Generation",
+    "tags": [
+      "WhatsApp",
+      "follow-up",
+      "leads"
+    ],
+    "source": "official",
+    "updated": "2026-10-06",
+    "popularity": 1037,
+    "color": "#386b9a",
+    "content": {
+      "headline": "WhatsApp Lead Follow-Up",
+      "steps": [
+        "Welcome",
+        "Explore offer",
+        "Take action"
+      ],
+      "settings": {
+        "enabled": false,
+        "language": "en"
+      }
+    }
+  }
+]

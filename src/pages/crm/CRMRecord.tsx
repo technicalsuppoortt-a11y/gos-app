@@ -5,11 +5,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft, ArrowRight, CalendarDays, CheckSquare, Clock3, Mail, MessageCircle, Phone, Plus, Sparkles, Users, LayoutDashboard, Activity, MessageSquare, Calendar, Briefcase, Package, MoreHorizontal } from 'lucide-react';
 import type { AppDispatch, RootState } from '../../store';
 import { addLeadNote, moveLead, setLeadConsent, setLeadFollowUpState, updateLead, FOLLOW_UP_LIFECYCLE, type CanonicalLead, type FollowUpLifecycleState } from '../../store/slices/crmSlice';
-import { bookings, products } from '../../data/mockData';
+import { useBusinessMetrics } from '../../backend/metrics';
 import { CRMAvatar, SourceBadge } from '../CRMLeads';
 import { CustomSelect, CustomDatePicker } from './CRMPrimitives';
 import { displayStage, euro, owners } from './model';
-import { DemoConversations, DemoAppointments, DemoOrders } from './RecordDemoPanels';
+import { LiveConversations as DemoConversations, LiveAppointments as DemoAppointments, LiveOrders as DemoOrders } from './LiveRecordPanels';
 import { showToast } from '../../utils/toast';
 import '../crm-leads.css';
 import './crm-workspace.css';
@@ -42,6 +42,9 @@ const tileClass = 'crm-record-action w-16 h-16 flex flex-col items-center justif
 const tileLabel = 'text-[11px] font-medium leading-none text-slate-600';
 
 export function CRMRecord() {
+  const metrics = useBusinessMetrics();
+  const products = metrics.products.map(product => ({ id: product.id, name: product.name, type: product.type, price: product.config?.amount ?? 0, currency: product.config?.currency ?? 'USD' }));
+  const bookings = metrics.bookings as (typeof metrics.bookings[number] & { leadId?: string; productId?: string })[];
   useUILanguage();
   const { id } = useParams(); const location = useLocation(); const dispatch = useDispatch<AppDispatch>(); const [params, setParams] = useSearchParams();
   const { leads, pipelines } = useSelector((s: RootState) => s.crm); const lead = leads.find(l => l.id === id);

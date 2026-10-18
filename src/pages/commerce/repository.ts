@@ -1,6 +1,7 @@
-import { populateCommerceDemo } from './demoData';
+import { cloudStorage } from '../../backend/workspace';
+
 import { useSyncExternalStore } from 'react';
-import { seedProducts } from './seeds';
+
 import { defaultConfig, formatPrice, hydrateProduct, validateProduct } from './model';
 import type { Product } from './model';
 import { store } from '../../store';
@@ -14,10 +15,10 @@ export function storageKey() {
 const listeners = new Set<() => void>();
 function read(key: string): Product[] {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(key) ?? 'null');
-    if (Array.isArray(saved) && saved.every(p => p && typeof p.id === 'string' && typeof p.name === 'string' && Array.isArray(p.stats) && typeof p.price === 'string')) return saved.map(product => populateCommerceDemo(hydrateProduct(product)));
+    const saved: unknown = JSON.parse(cloudStorage.getItem(key) ?? 'null');
+    if (Array.isArray(saved) && saved.every(p => p && typeof p.id === 'string' && typeof p.name === 'string' && Array.isArray(p.stats) && typeof p.price === 'string')) return saved.map(product => hydrateProduct(product));
   } catch { /* Use the catalog defaults when storage is unavailable or corrupt. */ }
-  return seedProducts.map(product => populateCommerceDemo(hydrateProduct(product)));
+  return [];
 }
 let key = storageKey();
 let products = read(key);
@@ -36,7 +37,7 @@ export function saveProduct(product: Product): Product {
   const saved = { ...normalized, id: product.id || `product-${crypto.randomUUID()}`, name: product.name.trim(), tag: normalized.type,
     createdAt: product.createdAt ?? new Date().toISOString(), config, price: formatPrice(config) };
   const next = products.some(p => p.id === saved.id) ? products.map(p => p.id === saved.id ? saved : p) : [saved, ...products];
-  try { localStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be saved. Browser storage is unavailable or full.'); }
+  try { cloudStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be saved. Browser storage is unavailable or full.'); }
   products = next;
   listeners.forEach(fn => fn());
   return saved;
@@ -53,7 +54,7 @@ export function duplicateProduct(product: Product, version = false): Product {
 }
 export function deleteProduct(id: string) {
   const next = products.filter(product => product.id !== id);
-  try { localStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be deleted. Browser storage is unavailable.'); }
+  try { cloudStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be deleted. Browser storage is unavailable.'); }
   products = next;
   listeners.forEach(fn => fn());
 }

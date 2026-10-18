@@ -1,0 +1,14 @@
+The email or password is incorrect.	البريد الإلكتروني أو كلمة المرور غير صحيحة.
+The email or password is incorrect	البريد الإلكتروني أو كلمة المرور غير صحيحة
+Please enter your work email.	يرجى إدخال البريد الإلكتروني للعمل.
+Please enter your password.	يرجى إدخال كلمة المرور.
+Password must be at least 8 characters long.	يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.
+Please fill out this field.	يرجى ملء هذا الحقل.
+Please enter a valid email address.	يرجى إدخال عنوان بريد إلكتروني صالح.
+Please lengthen this password to 8 characters or more.	يجب ألا تقل كلمة المرور عن 8 أحرف.
+Too many attempts. Please try again later.	محاولات كثيرة خاطئة. يرجى المحاولة مرة أخرى لاحقًا.
+Connection lost. Check your network and try again.	انقطع الاتصال. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.
+You do not have permission for this action.	ليس لديك الصلاحية المطلوبة لتسجيل الدخول.
+This account has been disabled. Please contact support.	تم تعطيل هذا الحساب. يرجى التواصل مع الدعم الفني.
+Invalid credentials. Please try again.	البريد الإلكتروني أو كلمة المرور غير صحيحة.
+Cloud Function is not deployed or unreachable. Please deploy Firebase Functions (requires Blaze plan).	خدمة Cloud Function غير منشورة أو غير متاحة. يرجى نشر دوال Firebase (يتطلب خطة Blaze).

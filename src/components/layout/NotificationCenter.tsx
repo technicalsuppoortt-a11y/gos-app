@@ -1,3 +1,6 @@
+import { useCloudState, useEntities } from '../../backend/workspace';
+import { eventLabel, resourceLabel, type BusinessEvent } from '../../backend/metrics';
+import { useLocation } from 'react-router-dom';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, CalendarDays, CheckCheck, Inbox, Sparkles, Users, X } from 'lucide-react';
@@ -9,13 +12,9 @@ import './notification-center.css';
 type Category = 'All' | 'Leads' | 'Bookings' | 'System';
 type Notice = { id: string; category: Exclude<Category, 'All'>; en: string; ar: string; detail: string; detailAr: string; at: string; read: boolean };
 function initial(key: string): Notice[] {
-  try { const saved = JSON.parse(localStorage.getItem(key) || 'null'); if (Array.isArray(saved) && saved.every(n => typeof n.id === 'string' && typeof n.read === 'boolean' && Number.isFinite(Date.parse(n.at)))) return saved; } catch {}
-  return [
-    { id: 'lead', category: 'Leads', en: 'A new lead is ready to meet you', ar: 'عميل محتمل جديد بانتظارك', detail: 'Sarah Chen submitted your contact form.', detailAr: 'أرسلت سارة بياناتها عبر نموذج التواصل.', minutes: 4 },
-    { id: 'booking', category: 'Bookings', en: 'You have a new booking', ar: 'لديك حجز جديد', detail: 'A discovery call was added to your calendar.', detailAr: 'تمت إضافة مكالمة استكشافية إلى تقويمك.', minutes: 18 },
-    { id: 'workspace', category: 'System', en: 'Your workspace is ready to grow', ar: 'مساحة عملك جاهزة للنمو', detail: 'Review your setup progress and discover your tools.', detailAr: 'راجع تقدم الإعداد واستكشف أدواتك.', minutes: 45 },
-    { id: 'reminder', category: 'Bookings', en: 'Your next appointment is coming up', ar: 'موعدك القادم يقترب', detail: 'Check your calendar for today’s appointments.', detailAr: 'راجع تقويمك للاطلاع على مواعيد اليوم.', minutes: 90 },
-  ].map(({ minutes, ...n }, i) => ({ ...n, category: n.category as Notice['category'], at: new Date(Date.now() - minutes * 60000).toISOString(), read: i === 3 }));
+  try { const saved = JSON.parse(localStorage.getItem(key) || 'null'); if (Array.isArray(saved) && saved.every(n => typeof n.id === 'string' && typeof n.read === 'boolean' && Number.isFinite(Date.parse(n.at)))) return saved.filter(n => !['lead', 'booking', 'workspace', 'reminder'].includes(n.id)); } catch {}
+  // No sample notifications: outside the user workspace the list stays empty until real events exist.
+  return [];
 }
 export function NotificationCenter() {
   const userId = useSelector((s: RootState) => s.auth.user?.id || 'demo');
@@ -25,11 +24,15 @@ function NotificationCenterContent() {
   const { user, role } = useSelector((s: RootState) => s.auth); const ar = useSelector((s: RootState) => s.ui.language === 'ar');
   const t = (en: string, arabic: string) => ar ? arabic : en; const navigate = useNavigate();
   const key = `gos.notifications.v1:${user?.id || 'demo'}`;
-  const [notices, setNotices] = React.useState(() => initial(key)), [open, setOpen] = React.useState(false), [tab, setTab] = React.useState<Category>('All');
+  const [legacyNotices, setNotices] = React.useState(() => initial(key)), [open, setOpen] = React.useState(false), [tab, setTab] = React.useState<Category>('All');
+  const isUserWorkspace = useLocation().pathname.startsWith('/dashboard');
+  const events = useEntities<BusinessEvent>('events');
+  const [readIds, setReadIds] = useCloudState<string[]>(key, []);
+  const notices: Notice[] = isUserWorkspace ? [...events].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,100).map(event => ({ id:event.id, category: /booking/.test(event.type) ? 'Bookings' : /lead/.test(event.type) ? 'Leads' : 'System', en:eventLabel(event.type), ar:eventLabel(event.type), detail:resourceLabel(event.resource), detailAr:resourceLabel(event.resource), at:event.createdAt, read:readIds.includes(event.id) })) : legacyNotices;
   const [position, setPosition] = React.useState({ top: 65, left: 0, width: 400 });
   const trigger = React.useRef<HTMLButtonElement>(null), panel = React.useRef<HTMLElement>(null); const id = React.useId();
-  React.useEffect(() => { try { localStorage.setItem(key, JSON.stringify(notices)); } catch {} }, [key, notices]);
-  const save = (next: Notice[]) => setNotices(next);
+  React.useEffect(() => { if (isUserWorkspace) return; try { localStorage.setItem(key, JSON.stringify(notices)); } catch {} }, [key, legacyNotices, isUserWorkspace]);
+  const save = (next: Notice[]) => { if (isUserWorkspace) setReadIds(next.filter(item => item.read).map(item => item.id)); else setNotices(next); };
   const unread = notices.filter(n => !n.read).length;
   React.useLayoutEffect(() => { if (open && trigger.current) { const r = trigger.current.getBoundingClientRect(); const width = Math.min(410, innerWidth - 24); setPosition({ top: r.bottom + 12, left: Math.max(12, Math.min(ar ? r.left : r.right - width, innerWidth - width - 12)), width }); } }, [open, ar]);
   React.useEffect(() => {
@@ -49,7 +52,7 @@ function NotificationCenterContent() {
       <div className="nc-heading"><div><h2>{t('Notifications', 'الإشعارات')}<span>{unread}</span></h2><p>{t('Your workspace, at a glance.', 'نظرة سريعة على مساحة عملك.')}</p></div><button aria-label={t('Close notifications', 'إغلاق الإشعارات')} onClick={() => { setOpen(false); trigger.current?.focus(); }}><X size={17}/></button></div>
       <div className="nc-tabs" role="tablist" aria-label={t('Notification categories', 'تصنيفات الإشعارات')}>{(['All', 'Leads', 'Bookings', 'System'] as Category[]).map((c, i, tabs) => <button key={c} role="tab" aria-selected={tab === c} aria-controls={`${id}-items`} id={`${id}-${c}`} tabIndex={tab === c ? 0 : -1} onClick={() => setTab(c)} onKeyDown={e => { if (['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); const offset = (e.key === 'ArrowRight') !== ar ? 1 : -1; const next = tabs[(i + offset + tabs.length) % tabs.length]; setTab(next); document.getElementById(`${id}-${next}`)?.focus(); } }}>{categoryName(c)}</button>)}</div>
       <div className="nc-items" role="tabpanel" id={`${id}-items`} aria-labelledby={`${id}-${tab}`}>{filtered.map(n => { const Icon = n.category === 'Leads' ? Users : n.category === 'Bookings' ? CalendarDays : Sparkles; return <button key={n.id} className={`nc-item ${n.read ? '' : 'unread'}`} onClick={() => { save(notices.map(v => v.id === n.id ? { ...v, read: true } : v)); setOpen(false); navigate(n.category === 'Leads' ? '/dashboard/crm' : n.category === 'Bookings' ? '/dashboard/booking' : role === 'ADMIN' || role === 'SUPER_ADMIN' ? '/admin/users' : '/dashboard'); }}><span className={`nc-icon ${n.category.toLowerCase()}`}><Icon size={17}/></span><div><b>{ar ? n.ar : n.en}</b><p>{ar ? n.detailAr : n.detail}</p><time dateTime={n.at}>{timestamp(n.at)}</time></div>{!n.read && <span className="nc-unread-dot"/>}</button>; })}{!filtered.length && <div className="nc-empty"><Inbox size={25}/><b>{t('You’re all caught up', 'أنت مطلع على كل المستجدات')}</b></div>}</div>
-      <footer><span>{t('Demo workspace updates', 'تحديثات مساحة العمل التجريبية')}</span><button disabled={!unread} onClick={() => save(notices.map(n => ({ ...n, read: true })))}><CheckCheck size={14}/>{t('Mark all as read', 'تحديد الكل كمقروء')}</button></footer>
+      <footer><span>{t('Workspace activity', 'نشاط مساحة العمل')}</span><button disabled={!unread} onClick={() => save(notices.map(n => ({ ...n, read: true })))}><CheckCheck size={14}/>{t('Mark all as read', 'تحديد الكل كمقروء')}</button></footer>
     </section>, document.body)}
   </>;
 }

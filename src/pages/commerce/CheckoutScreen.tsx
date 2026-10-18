@@ -6,7 +6,6 @@ import type { Billing, Product } from './model';
 import { defaultExperience, productKind } from './model';
 import { checkoutTotals } from './checkout-model';
 import { showToast } from '../../utils/toast';
-import { recordTransaction } from './transactions';
 import { addPurchasedProduct } from './purchases';
 
 export function CheckoutScreen({ product, billing }: { product: Product; billing?: Billing }) {
@@ -30,30 +29,7 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (isSubmitting) return;
-    setIsSubmitting(true);
-    setSubmitted(true);
-
-    // 1. Automatically append that product to the "My Purchases" list
-    if (product.id) addPurchasedProduct(product.id);
-    if (product.name) addPurchasedProduct(product.name);
-
-    // 2. Register purchase into transactions repository
-    recordTransaction({
-      productName: product.name,
-      amount: money(totals.dueToday),
-      status: 'Completed',
-      customerName: fullName.trim() || 'Demo Customer',
-      customerEmail: email.trim() || 'customer@example.com',
-      method: method || 'Credit Card',
-    });
-
-    // 3. High-fidelity toast notification
-    showToast.success('Payment Successful! Product added to your account');
-
-    // 4. Smooth redirection back to Products & Payments dashboard focused on "My Purchases" tab
-    setTimeout(() => {
-      navigate('/dashboard/products-payments?tab=products&sub=purchases');
-    }, 450);
+    showToast.info('Connect a payment provider in Settings before accepting payments.');
   };
 
   return (
@@ -63,7 +39,7 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
           <LockKeyhole size={14}/>{translateText("CHECKOUT PREVIEW")}
         </div>
         <h1>{product.name}</h1>
-        <p>{translateText("Secure checkout · Live transaction sync with your account.")}</p>
+        <p>{translateText("Checkout preview · connect a payment provider to accept payments.")}</p>
 
         <form onSubmit={handleSubmit}>
           <fieldset>

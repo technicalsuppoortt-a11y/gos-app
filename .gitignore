@@ -12,6 +12,7 @@ dist
 dist-ssr
 artifacts/localization/
 artifacts/theme-audit/
+artifacts/firebase-ui/
 scripts/localization-*.json
 scripts/localization-*.txt
 *.local

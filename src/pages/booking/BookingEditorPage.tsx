@@ -15,9 +15,9 @@ export default function BookingEditorPage() {
   const page = pages.find(p=>p.id===pageId);
   const close = ()=>navigate('/dashboard/booking?tab=dashboard');
   if(pageId && !page) return <section className="bk-workspace"><Empty title={translateText("Booking page not found")} detail="The page may have been removed."/><button className="bk-button" onClick={close}>{translateText("Back to booking pages")}</button></section>;
-  return <BookingBuilder key={pageId||'new'} page={page} pages={pages} close={close} save={draft=>{
-    try {savePages([...readPages().filter(p=>p.id!==draft.id),draft]);showToast.success(page?'Booking page updated.':'Booking page created.');close()}
-    catch {showToast.error('Could not save changes. Browser storage may be full or unavailable.')}
+  return <BookingBuilder key={pageId||'new'} page={page} pages={pages} close={close} save={async draft=>{
+    try {await savePages([...readPages().filter(p=>p.id!==draft.id),draft]);showToast.success(page?'Booking page updated.':'Booking page created.');close()}
+    catch (error) {showToast.error(error instanceof Error ? error.message : 'Could not save this calendar.')}
   }}/>;
 }
 

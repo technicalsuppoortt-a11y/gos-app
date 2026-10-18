@@ -57,11 +57,11 @@ export function CourseOverview(props: FormProps & CourseActions) {
         </> : <div className="cw-review"><div><span>{translateText("Product Name")}</span><b>{localizeNode(p.name)}</b></div><div><span>{translateText("Product Type")}</span><b>{translateText("Online Course")}</b></div><div><span>{translateText("Short Description")}</span><b>{localizeNode(e.shortDescription || p.description)}</b></div><div><span>{translateText("Tags")}</span><div className="tw-tags">{localizeNode(e.tags.filter(Boolean).map((tag, i) => <span key={i}>{localizeNode(tag)}</span>))}</div></div></div>)}
       </Card>
       {localizeNode(!editing && <Card title={translateText("Product Description")} action={edit('information')}><Description text={p.description}/></Card>)}
-      {localizeNode(!editing && <CourseOrders demo onView={() => props.onTab('orders')}/>)}
+      {localizeNode(!editing && <CourseOrders onView={() => props.onTab('orders')}/>)}
     </div>
     <div className="course-media tw-stack">
       <div className="course-media-card"><MediaCard {...props} title={translateText(editing ? 'Course Cover' : 'Product Media')}/>{localizeNode(!editing && <div className="course-included-edit">{localizeNode(edit('information'))}</div>)}</div>
-      {localizeNode(editing ? <CourseInstructor {...props}/> : <><div className="course-included"><IncludedItems {...props}/><div className="course-included-edit">{localizeNode(edit('content'))}</div></div><CourseAnalytics {...props} demo/></>)}
+      {localizeNode(editing ? <CourseInstructor {...props}/> : <><div className="course-included"><IncludedItems {...props}/><div className="course-included-edit">{localizeNode(edit('content'))}</div></div><CourseAnalytics {...props}/></>)}
     </div>
     <aside className="course-sidebar tw-stack"><CourseSidebar {...props}/></aside>
     {localizeNode(editing && <div className="course-curriculum"><CourseCurriculum {...props}/></div>)}

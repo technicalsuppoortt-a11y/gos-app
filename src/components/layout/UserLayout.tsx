@@ -1,3 +1,4 @@
+import { WorkspaceData } from '../../backend/workspace';
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -8,13 +9,13 @@ import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
 import { settingsTabs } from '../../pages/settings/navigation';
-import { OnboardingProgress } from '../../pages/onboarding/OnboardingProgress';
+// OnboardingProgress is temporarily disabled with the onboarding cycle.
 
 const userItems: SidebarItem[] = [
   { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'AI Copilot', href: '/copilot', icon: Sparkles },
   { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/domains', '/funnels', '/websites', '/domains'] },
-  { name: 'Inbox', href: '/inbox', icon: MessageCircle, badge: '12' },
+  { name: 'Inbox', href: '/inbox', icon: MessageCircle,  },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },
   { name: 'AI Follow-Up', href: '/follow-up', icon: Send },
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
@@ -84,8 +85,8 @@ export const UserLayout: React.FC = () => {
       <Header title={translateText(isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
       {localizeNode(isBooking && <BookingTabs/>)}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
-        {isDashboard && <OnboardingProgress/>}
-        <div key={location.pathname} className={`layout-route-content${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><h1>{translateText("Module access restricted")}</h1><p>{translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p></section>)}</div>
+        {/* Onboarding progress is temporarily disabled. */}
+        <WorkspaceData><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><h1>{translateText("Module access restricted")}</h1><p>{translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p></section>)}</div></WorkspaceData>
       </main>
       {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 GOS Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
     </div>

@@ -1,3 +1,5 @@
+import { logoutFirebase } from '../../backend/session';
+import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +17,7 @@ export const PagePlaceholder: React.FC<{ title: string }> = ({ title }) => {
 
   const handleLogout = () => {
     showToast.success('You have been logged out successfully.');
-    dispatch(logout());
+    void logoutFirebase().catch(error => authToast.error(error.message));
     navigate('/auth/login');
   };
 

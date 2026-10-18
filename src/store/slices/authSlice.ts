@@ -3,22 +3,8 @@ import type { AuthState, Role, StoredAuth, Tenant, User } from '../../types/auth
 
 const AUTH_STORAGE_KEY = 'gos.auth';
 
-function loadAuth(): AuthState {
-  try {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (stored) {
-      const value = JSON.parse(stored) as StoredAuth;
-      if (value.user?.email && value.token && ['USER', 'ADMIN', 'SUPER_ADMIN'].includes(value.role)) {
-        return { ...value, isAuthenticated: true };
-      }
-    }
-  } catch {
-    // Continue signed out if storage is blocked or contains malformed session data.
-  }
-  return { isAuthenticated: false, user: null, role: null, tenant: null, token: null };
-}
 
-const initialState = loadAuth();
+const initialState: AuthState = { isAuthenticated: false, user: null, role: null, tenant: null, token: null };
 
 const authSlice = createSlice({
   name: 'auth',

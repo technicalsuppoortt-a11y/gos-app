@@ -1,3 +1,4 @@
+import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
@@ -7,8 +8,8 @@ import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
 import '../route-loading.css';
-const ActivationPage = lazy(() => import('../pages/onboarding/ActivationPage').then(module => ({ default: module.ActivationPage })));
-const OnboardingWizard = lazy(() => import('../pages/onboarding/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
+const ActivationPage = lazy(() => import('../pages/auth/ActivationLinkPage').then(module => ({ default: module.ActivationPage })));
+// OnboardingWizard is temporarily disabled.
 const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(module => ({ default: module.AdminUsers })));
 
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
@@ -52,8 +53,9 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 
 export const router = createBrowserRouter([
   { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
-  { path: '/onboarding', element: <Suspended><OnboardingWizard/></Suspended> },
-  { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><Suspended><ProductLivePreview/></Suspended></ProtectedRoute> },
+  // Keep activation links usable while the onboarding cycle is disabled.
+  { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
+  { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
   { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
@@ -81,6 +83,7 @@ export const router = createBrowserRouter([
       { path: 'crm', children: crmChildren },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
+      { path: 'ai-followup', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'booking/new', element: <Suspended><BookingEditorPage/></Suspended> },
       { path: 'booking/appointments/new', element: <Suspended><AppointmentEditorPage/></Suspended> },
       { path: 'booking/appointments/:appointmentId/edit', element: <Suspended><AppointmentEditorPage/></Suspended> },

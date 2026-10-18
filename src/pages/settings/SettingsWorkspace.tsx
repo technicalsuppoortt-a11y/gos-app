@@ -1,3 +1,4 @@
+import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -38,12 +39,13 @@ function SettingsWorkspaceView() {
   useEffect(() => { void refresh(); }, [refresh]);
   async function save(next: SettingsData) {
     if (settingsApiEnabled) {
-      await settingsRequest('/settings', { profile: next.profile, business: next.business, payment: next.payment }, 'PATCH');
+      const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', { profile: next.profile, business: next.business, payment: next.payment }, 'PATCH');
+      next = { ...next, profile: { ...next.profile, ...result.profile } };
     } else {
-      try { localStorage.setItem(settingsKey(), JSON.stringify({ profile: next.profile, business: next.business, payment: next.payment, recharge: next.recharge })); } catch { throw new Error('Your changes could not be saved. Browser storage is full or unavailable.'); }
+      try { await cloudStorage.setItem(settingsKey(), JSON.stringify({ profile: next.profile, business: next.business, payment: next.payment, recharge: next.recharge })); } catch { throw new Error('Your changes could not be saved. Browser storage is full or unavailable.'); }
     }
     setData(next);
-    showToast.success(settingsApiEnabled ? 'Changes saved' : 'Preferences saved on this device');
+    showToast.success('Changes saved');
   }
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">

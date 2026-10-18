@@ -1,3 +1,6 @@
+import { eventLabel, resourceLabel, useBusinessMetrics } from '../../backend/metrics';
+import { useEntities } from '../../backend/workspace';
+import type { Asset } from '../asset-model';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -330,40 +333,7 @@ const KPIS: {
   icon: IconC;
   tone: Tone;
   points: number[];
-}[] = [
-  {
-    label: "Total Leads",
-    value: "1,240",
-    change: "12%",
-    icon: IcUsers,
-    tone: "purple",
-    points: [8, 10, 9, 13, 12, 15, 14, 18, 17, 22, 21, 26],
-  },
-  {
-    label: "Revenue",
-    value: "€24,680",
-    change: "28%",
-    icon: IcEuro,
-    tone: "green",
-    points: [6, 8, 7, 9, 12, 11, 14, 13, 17, 19, 22, 27],
-  },
-  {
-    label: "Active Customers",
-    value: "320",
-    change: "18%",
-    icon: IcUserCheck,
-    tone: "blue",
-    points: [10, 12, 11, 13, 12, 15, 17, 16, 19, 18, 22, 25],
-  },
-  {
-    label: "Conversion Rate",
-    value: "3.8%",
-    change: "0.6%",
-    icon: IcFunnel,
-    tone: "orange",
-    points: [9, 11, 10, 12, 14, 13, 15, 14, 17, 19, 18, 24],
-  },
-];
+}[] = [];
 
 const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
   [
@@ -420,155 +390,60 @@ const TOOLS: {
 }[] = [
   {
     name: "Funnels",
-    meta: "4 Funnels",
+    meta: "Open workspace",
     icon: IcFunnel,
     tone: "purple",
     to: "/dashboard/funnels",
   },
   {
     name: "Websites",
-    meta: "4 Websites",
+    meta: "Open workspace",
     icon: IcWebsite,
     tone: "purple",
     to: "/dashboard/funnels",
   },
   {
     name: "CRM & Leads",
-    meta: "1,240 Leads",
+    meta: "Open workspace",
     icon: IcUsers,
     tone: "purple",
     to: "/dashboard/crm",
   },
   {
     name: "Calendars",
-    meta: "3 Calendars",
+    meta: "Open workspace",
     icon: IcCalendar,
     tone: "green",
     to: "/dashboard/booking",
   },
   {
     name: "Products",
-    meta: "12 Products",
+    meta: "Open workspace",
     icon: IcBag,
     tone: "rose",
     to: "/dashboard/products",
   },
   {
     name: "Automations",
-    meta: "18 Workflows",
+    meta: "Open workspace",
     icon: IcWorkflow,
     tone: "green",
     to: "/dashboard/follow-up",
   },
 ];
 
-const ACTIVITY: { text: string; time: string; icon: IconC; tone: Tone }[] = [
-  {
-    text: "New lead from Fitness Coaching Funnel",
-    time: "2 minutes ago",
-    icon: IcFunnel,
-    tone: "blue",
-  },
-  {
-    text: "Payment received €97 from Online Program",
-    time: "12 minutes ago",
-    icon: IcWallet,
-    tone: "green",
-  },
-  {
-    text: "New booking with Ahmed Khaled",
-    time: "1 hour ago",
-    icon: IcCalendar,
-    tone: "indigo",
-  },
-  {
-    text: "Contact subscribed to Newsletter",
-    time: "2 hours ago",
-    icon: IcUserPlus,
-    tone: "purple",
-  },
-  {
-    text: "Website page updated (Home)",
-    time: "3 hours ago",
-    icon: IcGlobe,
-    tone: "purple",
-  },
-];
+const ACTIVITY: { text: string; time: string; icon: IconC; tone: Tone }[] = [];
 
-const FUNNELS = [
-  {
-    name: "Fitness Coaching Funnel",
-    leads: 312,
-    conv: "12%",
-    trend: 18,
-    img: "/dashboard/funnel-fitness.png",
-  },
-  {
-    name: "Nutrition Program Funnel",
-    leads: 284,
-    conv: "9%",
-    trend: 12,
-    img: "/dashboard/funnel-nutrition.png",
-  },
-  {
-    name: "Consultation Funnel",
-    leads: 198,
-    conv: "12%",
-    trend: -4,
-    img: "/dashboard/funnel-consultation.png",
-  },
-  {
-    name: "Webinar Funnel",
-    leads: 156,
-    conv: "8%",
-    trend: 22,
-    img: "/dashboard/funnel-webinar.png",
-  },
-];
+const FUNNELS = [];
 
-const PRODUCTS = [
-  {
-    name: "Online Coaching Program",
-    sales: 128,
-    revenue: "€12,480",
-    img: "/dashboard/product-coaching.png",
-  },
-  {
-    name: "Nutrition Plan",
-    sales: 96,
-    revenue: "€6,720",
-    img: "/dashboard/product-nutrition.png",
-  },
-  {
-    name: "Workout Templates",
-    sales: 84,
-    revenue: "€4,200",
-    img: "/dashboard/product-workout.png",
-  },
-  {
-    name: "Consultation Call",
-    sales: 52,
-    revenue: "€3,120",
-    img: "/dashboard/product-consultation.png",
-  },
-];
+const PRODUCTS = [];
 
 /* Daily revenue (Oct 1 → Oct 31), scaled so the period totals exactly €24,680 */
-const REVENUE_DAYS: number[] = (() => {
-  const shape = [
-    4, 8, 5, 11, 7, 12, 9, 13, 10, 14, 9, 15, 11, 17, 12, 19, 14, 21, 16, 24,
-    18, 26, 22, 28, 21, 30, 24, 33, 26, 35, 38,
-  ];
-  const total = 24680;
-  const sum = shape.reduce((a, b) => a + b, 0);
-  const values = shape.map((v) => Math.round((v * total) / sum));
-  values[values.length - 1] += total - values.reduce((a, b) => a + b, 0);
-  return values;
-})();
+const REVENUE_DAYS: number[] = Array.from({ length: 30 }, () => 0);
 
 const RANGES = {
   "7": { label: "Last 7 Days", growth: "9.4%", compare: "vs previous week" },
-  "30": { label: "Last 30 Days", growth: "28%", compare: "vs last month" },
+  "30": { label: "Last 30 Days", growth: "—", compare: "vs last month" },
 } as const;
 type RangeKey = keyof typeof RANGES;
 
@@ -878,13 +753,14 @@ function CreateNewMenu() {
 /* Sections                                                            */
 /* ------------------------------------------------------------------ */
 function HeroBanner() {
+  const m = useBusinessMetrics();
   const language = useUILanguage();
   const userName = useSelector((state: RootState) => state.auth.user?.name || 'Mohamed');
   const pills = [
     {
       key: "goal",
-      node: <ProgressRing value={78} />,
-      title: "78%",
+      node: <ProgressRing value={0} />,
+      title: "—",
       sub: "monthly goal",
     },
     {
@@ -895,7 +771,7 @@ function HeroBanner() {
           className="bg-[#efeaff] text-[#6D4AFF] dark:bg-purple-500/20 dark:text-purple-300"
         />
       ),
-      title: "1,240",
+      title: String(m.leads.length),
       sub: "leads",
     },
     {
@@ -906,7 +782,7 @@ function HeroBanner() {
           className="bg-emerald-100 text-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-300"
         />
       ),
-      title: "€24,680",
+      title: m.money(m.revenue),
       sub: "revenue",
     },
     {
@@ -917,7 +793,7 @@ function HeroBanner() {
           className="text-orange-500 bg-orange-100 dark:bg-orange-500/20 dark:text-orange-300"
         />
       ),
-      title: "3 active",
+      title: String(m.conversations.filter(thread => thread.aiAutoReply && !thread.takenOver).length) + " active",
       sub: "campaigns",
     },
   ];
@@ -987,6 +863,13 @@ function HeroBanner() {
 }
 
 function KpiRow() {
+  const m = useBusinessMetrics();
+  const KPIS = [
+    { label: 'Total Leads', value: String(m.leads.length), icon: IcUsers, tone: 'purple' as Tone, change: '—', points: m.daily.map(day => day.events) },
+    { label: 'Verified Revenue', value: m.money(m.revenue), icon: IcEuro, tone: 'green' as Tone, change: '—', points: m.daily.map(day => day.revenue) },
+    { label: 'Active Customers', value: String(m.customers), icon: IcUserCheck, tone: 'blue' as Tone, change: '—', points: m.daily.map(day => day.events) },
+    { label: 'Bookings', value: String(m.bookings.length), icon: IcCalendar, tone: 'orange' as Tone, change: '—', points: m.daily.map(day => day.events) },
+  ];
   useUILanguage();
   return (
     <section
@@ -997,7 +880,7 @@ function KpiRow() {
       {localizeNode(KPIS.map((k) => (
         <article
           key={k.label}
-          className={`${CARD} group relative flex items-center gap-2.5 overflow-hidden px-3 py-2 transition hover:-translate-y-0.5 hover:shadow-sm`}
+          className={`${CARD} group relative flex items-center gap-2.5 overflow-hidden px-4 py-4 min-h-[90px] transition hover:-translate-y-0.5 hover:shadow-sm`}
         >
           <IconTile icon={k.icon} tone={k.tone} size="xs" />
           <div className="flex-1 min-w-0 text-start">
@@ -1005,7 +888,7 @@ function KpiRow() {
               {localizeNode(k.label)}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className={`whitespace-nowrap text-[15px] font-extrabold tracking-tight leading-none ${H}`}>
+              <span className={`whitespace-nowrap text-[24px] font-extrabold tracking-tight leading-none ${H}`}>
                 {localizeNode(k.value)}
               </span>
               <span className="inline-flex items-center gap-0.5 font-semibold text-[10px] text-emerald-600 dark:text-emerald-400 leading-none">
@@ -1109,6 +992,8 @@ function ToolsGrid() {
 }
 
 function RevenueOverview() {
+  const m = useBusinessMetrics();
+  const REVENUE_DAYS = m.daily.map(day => day.revenue);
   useUILanguage();
   const [range, setRange] = React.useState<RangeKey>("30");
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -1116,16 +1001,19 @@ function RevenueOverview() {
   const data = React.useMemo(() => {
     const days = range === "30" ? REVENUE_DAYS : REVENUE_DAYS.slice(-7);
     const offset = REVENUE_DAYS.length - days.length;
-    return days.map((v, i) => ({ value: v, label: `Oct ${offset + i + 1}` }));
-  }, [range]);
+    return days.map((v, i) => ({ value: v, label: m.daily[offset + i].label }));
+  }, [range, JSON.stringify(REVENUE_DAYS)]);
   // Fallback (before any interaction) is the latest date; afterwards the last hovered/focused
   // bar stays selected because `active` is intentionally never cleared on mouse leave / blur.
   const defaultActive = data.length - 1;
   const [active, setActive] = React.useState<number | null>(null);
   const activeIndex = active !== null && active < data.length ? active : defaultActive;
   const total = data.reduce((a, d) => a + d.value, 0);
-  const max = 2000;
-  const ticks = [2000, 1500, 1000, 500, 0];
+  // Scale to the largest verified daily revenue, rounded up to a clean step (min 100).
+  const peak = Math.max(0, ...data.map(d => d.value));
+  const step = Math.pow(10, Math.max(2, Math.floor(Math.log10(Math.max(1, peak)))));
+  const max = Math.max(100, Math.ceil(peak / step) * step);
+  const ticks = [max, max * 0.75, max * 0.5, max * 0.25, 0].map(v => Math.round(v));
   const showLabel = (i: number) => range === "7" || i % 5 === 0;
 
   React.useEffect(() => {
@@ -1151,7 +1039,7 @@ function RevenueOverview() {
             <span
               className={`text-xl font-extrabold tracking-tight leading-none ${H}`}
             >
-              {localizeNode(eur(total))}
+              {localizeNode(m.money(total))}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] whitespace-nowrap">
               <span className="inline-flex items-center gap-0.5 font-semibold text-emerald-600 dark:text-emerald-400">
@@ -1281,7 +1169,7 @@ function RevenueOverview() {
                   className={`absolute whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2 py-1 text-center shadow-lg dark:border-white/10 dark:bg-[#1b2238] ${pct(activeDatum.value) > 55 ? "top-2.5" : "bottom-2.5"} ${activeIndex >= data.length - 3 ? "right-[-6px]" : activeIndex <= 2 ? "left-[-6px]" : "left-1/2 -translate-x-1/2"}`}
                 >
                   <div className={`text-[11px] font-bold leading-4 ${H}`}>
-                    {localizeNode(eur(activeDatum.value))}
+                    {localizeNode(m.money(activeDatum.value))}
                   </div>
                   <div className="text-[10px] leading-3 text-slate-400">
                     {localizeNode(activeDatum.label)}
@@ -1312,6 +1200,8 @@ function RevenueOverview() {
 }
 
 function RecentActivity() {
+  const m = useBusinessMetrics();
+  const ACTIVITY = [...m.events].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map(event => ({ text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(event.createdAt).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
   useUILanguage();
   const navigate = useNavigate();
   return (
@@ -1322,7 +1212,7 @@ function RecentActivity() {
         onAction={() => navigate("/dashboard/activity")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0">
-        {ACTIVITY.slice(0, 4).map((a) => (
+        {!ACTIVITY.length && <li className="py-4 text-xs text-slate-500">No activity yet. Your recent changes will appear here.</li>}{ACTIVITY.slice(0, 4).map((a) => (
           <li key={a.text} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
             <IconTile icon={a.icon} tone={a.tone} size="xs" />
             <span className={`min-w-0 flex-1 truncate text-[11.5px] font-medium leading-tight ${H} text-start`}>
@@ -1350,6 +1240,9 @@ function RankBadge({ n }: { n: number }) {
 }
 
 function TopFunnels() {
+  const assets = useEntities<Asset>('assets');
+  const m = useBusinessMetrics();
+  const FUNNELS = assets.filter(asset => asset.kind === 'funnel').map(asset => ({ name: asset.name, leads: m.events.filter(event => event.type === 'lead.captured' && event.resourceId === asset.id).length, conv: '—', trend: 0, img: asset.image }));
   useUILanguage();
   const navigate = useNavigate();
   return (
@@ -1360,7 +1253,7 @@ function TopFunnels() {
         onAction={() => navigate("/dashboard/funnels")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {FUNNELS.slice(0, 3).map((f, i) => {
+        {!FUNNELS.length && <li className="py-4 text-xs text-slate-500">Create your first funnel to see its results here.</li>}{FUNNELS.slice(0, 3).map((f, i) => {
           const up = f.trend >= 0;
           return (
             <li
@@ -1407,6 +1300,8 @@ function TopFunnels() {
 }
 
 function TopProducts() {
+  const m = useBusinessMetrics();
+  const PRODUCTS = m.products.map(product => ({ name: product.name, sales: m.paid.filter(order => order.productId === product.id).length, revenue: m.money(m.paid.filter(order => order.productId === product.id && order.currency === m.currency).reduce((sum, order) => sum + (typeof order.amount === 'number' ? order.amount : 0), 0)), img: product.image ?? '' })).sort((a,b) => b.sales - a.sales);
   useUILanguage();
   const navigate = useNavigate();
   return (
@@ -1417,7 +1312,7 @@ function TopProducts() {
         onAction={() => navigate("/dashboard/products")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {PRODUCTS.slice(0, 3).map((p, i) => (
+        {!PRODUCTS.length && <li className="py-4 text-xs text-slate-500">Create a product to start tracking sales.</li>}{PRODUCTS.slice(0, 3).map((p, i) => (
           <li
             key={p.name}
             className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"

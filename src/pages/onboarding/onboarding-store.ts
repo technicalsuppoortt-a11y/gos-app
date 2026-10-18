@@ -31,100 +31,10 @@ export type Invite = {
   mfa: boolean;
   avatar?: string;
   passwordDigest?: string;
+  tenantId?: string;
 };
 
-export const INITIAL_MOCK_USERS: Invite[] = [
-  {
-    id: 'usr-1',
-    name: 'Sarah Jenkins',
-    email: 'sarah.jenkins@acme.io',
-    role: 'ADMIN',
-    status: 'Active',
-    created: '2026-09-12T09:30:00.000Z',
-    mfa: true,
-  },
-  {
-    id: 'usr-2',
-    name: 'Alex Morgan',
-    email: 'alex.morgan@company.com',
-    role: 'ADMIN',
-    status: 'Active',
-    created: '2026-09-18T11:15:00.000Z',
-    mfa: true,
-  },
-  {
-    id: 'usr-3',
-    name: 'Tariq Mahmoud',
-    email: 'tariq.m@gos-workspace.dev',
-    role: 'ADMIN',
-    status: 'Active',
-    created: '2026-09-25T14:20:00.000Z',
-    mfa: false,
-  },
-  {
-    id: 'usr-4',
-    name: 'Elena Rostova',
-    email: 'elena.rostova@designcraft.co',
-    role: 'USER',
-    status: 'Active',
-    created: '2026-10-01T08:45:00.000Z',
-    mfa: true,
-  },
-  {
-    id: 'usr-5',
-    name: 'David Chen',
-    email: 'david.chen@enterprise.tech',
-    role: 'USER',
-    status: 'Pending',
-    created: '2026-10-05T16:10:00.000Z',
-    mfa: false,
-  },
-  {
-    id: 'usr-6',
-    name: 'Layla Al-Mansoor',
-    email: 'layla.mansoor@gulfcreative.ae',
-    role: 'USER',
-    status: 'Active',
-    created: '2026-10-07T10:00:00.000Z',
-    mfa: true,
-  },
-  {
-    id: 'usr-7',
-    name: 'Marcus Vance',
-    email: 'marcus.v@cloudscale.net',
-    role: 'USER',
-    status: 'Pending',
-    created: '2026-10-09T13:30:00.000Z',
-    mfa: false,
-  },
-  {
-    id: 'usr-8',
-    name: 'Sofia Rossi',
-    email: 'sofia.rossi@milanodesign.it',
-    role: 'USER',
-    status: 'Deactivated',
-    created: '2026-10-10T15:20:00.000Z',
-    mfa: false,
-  },
-  {
-    id: 'usr-9',
-    name: 'James Wilson',
-    email: 'james.w@growthpulse.io',
-    role: 'ADMIN',
-    status: 'Active',
-    created: '2026-10-11T12:00:00.000Z',
-    mfa: true,
-  },
-  {
-    id: 'usr-10',
-    name: 'Amira Hassan',
-    email: 'amira.hassan@fintechstudio.eg',
-    role: 'USER',
-    status: 'Pending',
-    created: '2026-10-12T17:40:00.000Z',
-    mfa: false,
-  },
-];
+export const INITIAL_MOCK_USERS: Invite[] = [];
 
 type State = { invites: Invite[]; setups: Record<string, Setup> };
 

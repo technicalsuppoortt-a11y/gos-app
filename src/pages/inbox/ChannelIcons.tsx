@@ -1,6 +1,7 @@
 import { useUILanguage } from '../../i18n/display';
 import React, { useId } from "react";
 import type { ChannelId } from "./inboxData";
+import { Mail } from 'lucide-react';
 
 type IconProps = { size?: number; className?: string };
 
@@ -92,6 +93,7 @@ export const WebChatIcon: React.FC<IconProps> = ({ size = 16, className }) => { 
 )); };
 
 const iconMap: Record<ChannelId, React.FC<IconProps>> = {
+  email: Mail,
   instagram: InstagramIcon,
   facebook: FacebookIcon,
   whatsapp: WhatsAppIcon,

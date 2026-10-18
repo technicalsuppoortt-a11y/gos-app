@@ -55,6 +55,8 @@ export function removeNode(nodes: PFNode[], id: string): PFNode[] {
 }
 
 export function insertNode(nodes: PFNode[], parentId: string | null, index: number, node: PFNode): PFNode[] {
+  const parent = parentId === null ? null : findNode(nodes, parentId);
+  if ((parentId !== null && !parent) || !canContain(parent?.type ?? null, node.type)) return nodes;
   if (parentId === null) { const next = [...nodes]; next.splice(Math.max(0, Math.min(index, next.length)), 0, node); return next; }
   return updateNode(nodes, parentId, parent => { const children = [...(parent.children ?? [])]; children.splice(Math.max(0, Math.min(index, children.length)), 0, node); return { ...parent, children }; });
 }
@@ -66,6 +68,8 @@ export function containsNode(node: PFNode, id: string): boolean {
 export function moveNode(nodes: PFNode[], id: string, parentId: string | null, index: number): PFNode[] {
   const node = findNode(nodes, id);
   if (!node || id === parentId || (parentId && containsNode(node, parentId))) return nodes;
+  const parent = parentId === null ? null : findNode(nodes, parentId);
+  if ((parentId !== null && !parent) || !canContain(parent?.type ?? null, node.type)) return nodes;
   const origin = findParent(nodes, id);
   let target = index;
   if (origin && (origin.parent?.id ?? null) === parentId && origin.index < index) target -= 1;
@@ -100,10 +104,6 @@ export function effectiveStyle(style: ResponsiveStyle, device: Device): StyleMap
 
 /** Find the nearest valid placement for a new element of `type` relative to the current selection. */
 export function placementFor(nodes: PFNode[], selectedId: string | null, type: PFType): { parentId: string | null; index: number } | null {
-  if (type === 'section') {
-    const top = selectedId ? getPath(nodes, selectedId)[0] : undefined;
-    return { parentId: null, index: top ? nodes.findIndex(item => item.id === top.id) + 1 : nodes.length };
-  }
   if (selectedId) {
     const selected = findNode(nodes, selectedId);
     if (selected && canContain(selected.type, type)) return { parentId: selected.id, index: selected.children?.length ?? 0 };

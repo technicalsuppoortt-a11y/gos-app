@@ -1,3 +1,4 @@
+import { eventLabel, resourceLabel, useBusinessMetrics } from '../backend/metrics';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from 'react';
 import { ArrowDownToLine, CalendarDays, Check, CircleX, Clock3, CreditCard, Search, Settings2, Users, Zap } from 'lucide-react';
@@ -17,20 +18,7 @@ interface ActivityEvent {
   minutesAgo: number;
 }
 
-const eventData: ActivityEvent[] = [
-  { id: 1, type: 'Booking', actor: 'Sarah Chen', description: 'booked a Brand Strategy Session', status: 'Completed', minutesAgo: 12 },
-  { id: 2, type: 'Lead', actor: 'Marcus Johnson', description: 'was added from Instagram', status: 'Completed', minutesAgo: 48 },
-  { id: 3, type: 'Payment', actor: 'Olivia Reed', description: 'paid $349 for Brand Foundations', status: 'Completed', minutesAgo: 126 },
-  { id: 4, type: 'Automation', actor: 'AI Follow-Up', description: 'sent a follow-up to Daniel Brooks', status: 'Completed', minutesAgo: 205 },
-  { id: 5, type: 'Booking', actor: 'Lina Mansour', description: 'requested a Product Demo appointment', status: 'Pending', minutesAgo: 365 },
-  { id: 6, type: 'System', actor: 'Alex Morgan', description: 'updated workspace availability settings', status: 'Completed', minutesAgo: 780 },
-  { id: 7, type: 'Lead', actor: 'Nour Hassan', description: 'moved to Qualified in the sales pipeline', status: 'Completed', minutesAgo: 1650 },
-  { id: 8, type: 'Payment', actor: 'Payment provider', description: 'could not confirm invoice #INV-2048', status: 'Failed', minutesAgo: 2890 },
-  { id: 9, type: 'Automation', actor: 'AI Follow-Up', description: 'scheduled a check-in for Monday morning', status: 'Pending', minutesAgo: 4280 },
-  { id: 10, type: 'Booking', actor: 'Mohamed Joe', description: 'published the Free Consultation booking link', status: 'Completed', minutesAgo: 7200 },
-  { id: 11, type: 'Lead', actor: 'Workspace system', description: 'captured a new lead from the website form', status: 'Completed', minutesAgo: 10800 },
-  { id: 12, type: 'System', actor: 'Alex Morgan', description: 'connected Google Calendar', status: 'Completed', minutesAgo: 19000 },
-];
+const eventData: ActivityEvent[] = [];
 
 const eventIcon: Record<EventType, React.ElementType> = {
   Booking: CalendarDays,
@@ -55,6 +43,8 @@ function quoteCsv(value: string) {
 }
 
 export const ActivityPage: React.FC = () => {
+  const metrics = useBusinessMetrics(30);
+  const eventData: ActivityEvent[] = metrics.events.map((event,index) => ({ id:index, type: /booking/.test(event.type) ? 'Booking' : /lead/.test(event.type) ? 'Lead' : /payment/.test(event.type) ? 'Payment' : /workflow/.test(event.type) ? 'Automation' : 'System', actor: event.actorId || 'Workspace', description:eventLabel(event.type) + ' · ' + resourceLabel(event.resource), status:'Completed', minutesAgo: Math.max(0,(Date.now()-Date.parse(event.createdAt))/60000) }));
   useUILanguage();
   const [query, setQuery] = React.useState('');
   const [type, setType] = React.useState<EventType | 'All Events'>('All Events');
@@ -67,7 +57,7 @@ export const ActivityPage: React.FC = () => {
     const daysOld = event.minutesAgo / (60 * 24);
     const matchesDate = datePreset === 'Today' ? daysOld < 1 : datePreset === 'Last 7 Days' ? daysOld < 7 : daysOld < 30;
     return matchesType && matchesSearch && matchesDate;
-  }), [datePreset, query, type]);
+  }), [datePreset, query, type, JSON.stringify(eventData)]);
 
   const exportCsv = () => {
     const header = ['Timestamp', 'Event Type', 'Actor', 'Description', 'Status'];

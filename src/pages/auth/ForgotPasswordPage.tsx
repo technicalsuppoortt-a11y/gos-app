@@ -1,3 +1,5 @@
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth, backendError } from '../../backend/firebase';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -33,27 +35,18 @@ export const ForgotPasswordPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy || !email) return;
 
     setBusy(true);
-    window.setTimeout(() => {
-      setBusy(false);
-      setSubmitted(true);
-      setResendCooldown(30);
-      showToast.success('Password reset link sent to your email.');
-    }, 600);
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: window.location.origin + '/auth/login' }); setSubmitted(true); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (resendCooldown > 0 || busy) return;
     setBusy(true);
-    window.setTimeout(() => {
-      setBusy(false);
-      setResendCooldown(30);
-      showToast.success('A new reset link has been dispatched.');
-    }, 500);
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: window.location.origin + '/auth/login' }); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
   return (
@@ -200,15 +193,7 @@ export const ForgotPasswordPage: React.FC = () => {
                   )}
                 </button>
 
-                {/* Convenient demo action to instantly test reset-password view */}
-                <button
-                  type="button"
-                  onClick={() => navigate(`/reset-password?email=${encodeURIComponent(email)}`)}
-                  className="auth-primary-btn h-11 text-xs"
-                >
-                  <span>{translateText("Proceed to Reset Password (Demo)")}</span>
-                  <ArrowRight size={14} />
-                </button>
+
 
                 <button
                   type="button"

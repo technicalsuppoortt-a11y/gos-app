@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function signedIn() { return request.auth != null && profile().status == 'Active'; }
+    function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
+    function tenant(tenantId) { return signedIn() && profile().tenantId == tenantId && member(tenantId).active == true; }
+    function permit(tenantId, permission) { return tenant(tenantId) && (member(tenantId).permissions.hasAny(['*', permission])); }
+    function canRead(tenantId, collectionName) {
+      return permit(tenantId, 'analytics') ||
+        collectionName in ['products', 'discounts', 'transactions', 'orders'] && permit(tenantId, 'products') ||
+        collectionName in ['calendars', 'bookings'] && permit(tenantId, 'booking') ||
+        collectionName in ['leads', 'contacts', 'pipelines'] && permit(tenantId, 'crm') ||
+        collectionName in ['conversations', 'messages'] && permit(tenantId, 'inbox') ||
+        collectionName in ['workflows', 'templates', 'workflowRuns', 'scheduledActions'] && permit(tenantId, 'follow-up') ||
+        collectionName in ['knowledge', 'integrations', 'auditLogs'] && permit(tenantId, 'settings') ||
+        collectionName in ['assets', 'domains'] && permit(tenantId, 'funnels') ||
+        collectionName == 'copilotConversations' && permit(tenantId, 'copilot') ||
+        collectionName in ['events', 'userTemplates'] && permit(tenantId, 'home') ||
+        collectionName == 'files' && permit(tenantId, 'products');
+    }
+    match /templateCatalog/{templateId} { allow read: if signedIn(); allow write: if false; }
+    match /users/{userId} {
+      // An invited user may read (and mark consumed) the invitation addressed to their own email,
+      // even if it was provisioned under a different document ID.
+      function ownInvite() { return request.auth != null && request.auth.token.email != null && resource.data.email == request.auth.token.email; }
+      allow get: if request.auth != null && (request.auth.uid == userId || ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER'));
+      allow list: if ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER');
+      allow create, update: if request.auth != null && request.auth.uid == userId || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      allow update: if ownInvite() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'activatedAt', 'activatedUid', 'tempAuthKey']) && request.resource.data.status == 'Active';
+      allow delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+    }
+    match /tenants/{tenantId} {
+      allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      allow create, update, delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      match /members/{userId} {
+        allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+        allow create, update: if request.auth != null && request.auth.uid == userId || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+        allow delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      }
+      match /workspaceState/{stateId} {
+        allow read: if tenant(tenantId);
+        // Transitional editor preferences. Canonical financial/access records are never writable here.
+        allow create, update: if (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
+        allow delete: if permit(tenantId, 'settings');
+      }
+      match /{collectionName}/{id} {
+        allow read: if tenant(tenantId) && canRead(tenantId, collectionName) && (collectionName != 'copilotConversations' || resource.data.actorId == request.auth.uid) && collectionName in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'copilotConversations', 'userTemplates', 'files'];
+        allow create, update, delete: if (
+          collectionName == 'products' && permit(tenantId, 'products') ||
+          collectionName == 'calendars' && permit(tenantId, 'booking') ||
+          collectionName in ['leads', 'contacts', 'pipelines'] && permit(tenantId, 'crm') ||
+          collectionName == 'conversations' && permit(tenantId, 'inbox') ||
+          collectionName in ['workflows', 'templates'] && permit(tenantId, 'follow-up') ||
+          collectionName == 'knowledge' && permit(tenantId, 'settings') ||
+          collectionName == 'discounts' && permit(tenantId, 'products') ||
+          collectionName in ['assets', 'domains'] && permit(tenantId, 'funnels') ||
+           collectionName == 'userTemplates' && permit(tenantId, 'home')
+          || collectionName == 'files' && permit(tenantId, 'products')
+        );
+        allow create: if collectionName == 'events' && tenant(tenantId) && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'workspace.updated';
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+

@@ -1,3 +1,5 @@
+import { logoutFirebase } from '../../backend/session';
+import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
@@ -49,7 +51,7 @@ export const SuperAdminLayout: React.FC = () => {
       previous?.focus();
     };
   }, [mobileOpen]);
-  const signOut = () => { showToast.success('You have been logged out successfully.'); dispatch(logout()); navigate('/auth/login', { replace: true }); };
+  const signOut = () => { showToast.success('You have been logged out successfully.'); void logoutFirebase().catch(error => authToast.error(error.message)); navigate('/auth/login', { replace: true }); };
 
   return <div className="sa-shell">
     {mobileOpen && <button className="sa-mobile-scrim" aria-label={translateText("Close navigation")} onClick={() => setMobileOpen(false)}/>}

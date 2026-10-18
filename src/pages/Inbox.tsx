@@ -1,3 +1,6 @@
+import { useCloudState, useEntities } from '../backend/workspace';
+import { callBackend, backendError } from '../backend/firebase';
+import { localDemoEnabled, useDemoState } from '../backend/localDemo';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -45,21 +48,19 @@ import {
   UserRoundCheck,
   X,
 } from "lucide-react";
-import type { Lead } from "../data/mockData";
+import type { Lead } from "../types/business";
 import { showToast } from "../utils/toast";
 import { Select } from "../components/ui/Select";
 import { ChannelIcon } from "./inbox/ChannelIcons";
 import {
   channelMeta,
   channelOrder,
-  currentUser,
   followUpRuleLabels,
-  initialConversations,
   makeId,
-  replyTemplates,
   stages,
   tagMeta,
-  teamMembers,
+  demoConversations,
+  demoReplyTemplates,
 } from "./inbox/inboxData";
 import type {
   Activity,
@@ -346,20 +347,32 @@ const activityStyle: Record<ActivityKind, { icon: React.ElementType; className: 
 /* Inbox page                                                          */
 /* ------------------------------------------------------------------ */
 export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
-  useUILanguage();
+  const language = useUILanguage();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const crmLead = useSelector((state: RootState) => state.crm.leads.find(lead => lead.id === params.get('leadId')));
   const requestedChannel = params.get('channel');
   const linkedChannel: ChannelId = channelOrder.includes(requestedChannel as ChannelId) ? requestedChannel as ChannelId : 'webchat';
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const currentUser = { id: authUser?.id ?? '', name: authUser?.name ?? '', initials: (authUser?.name ?? '').slice(0,2), avatar: authUser?.avatar };
+  const members = useEntities<{ id: string; name?: string; email?: string; active: boolean }>('members');
+  const teamMembers = [currentUser, ...members.filter(member => member.id !== currentUser.id && member.active && member.name).map(member => ({ id: member.id, name: member.name!, initials: member.name!.slice(0,2), avatar: undefined }))];
+  const liveTemplates = useEntities<{ title: string; prompt?: string; content?: string }>('templates').map(item => ({ title: item.title, body: item.prompt || item.content || '' }));
+  const initialConversations = useEntities<Conversation>('conversations');
+  const demoInbox = localDemoEnabled && initialConversations.length === 0;
+  const samples = useMemo(() => demoConversations(currentUser.name || 'Alex Morgan'), [currentUser.name]);
+  const [localConversations, setLocalConversations] = useDemoState<Conversation[]>('inbox', samples);
+  const replyTemplates = demoInbox && !liveTemplates.length ? demoReplyTemplates : liveTemplates;
   const linkedConversation: Conversation | undefined = crmLead ? initialConversations.find(c => c.email === crmLead.email && (!requestedChannel || c.channel === linkedChannel)) ?? {
     id: `crm-${crmLead.id}-${linkedChannel}`, name: crmLead.name, initials: crmLead.avatar, channel: linkedChannel,
     preview: 'No messages yet', time: 'Just now', unread: 0, tags: [], stage: crmLead.lifecycleStage,
     source: crmLead.source, phone: crmLead.phone ?? '', email: crmLead.email, location: '', assignee: crmLead.owner,
     aiAutoReply: false, takenOver: true, followUp: Boolean(crmLead.nextFollowUp), followUpRules: [], starred: false, messages: [], activity: [],
   } : undefined;
-  const [conversations, setConversations] = useState<Conversation[]>(() => linkedConversation && !initialConversations.some(c => c.id === linkedConversation.id) ? [linkedConversation, ...initialConversations] : initialConversations);
-  const [activeId, setActiveId] = useState(() => linkedConversation?.id ?? initialConversations[0].id);
+  const [liveConversations, setLiveConversations] = useCloudState<Conversation[]>('gos.inbox.conversations.v1', []);
+  const conversations = demoInbox ? localConversations : liveConversations;
+  const setConversations = demoInbox ? setLocalConversations : setLiveConversations;
+  const [activeId, setActiveId] = useState(() => linkedConversation?.id ?? initialConversations[0]?.id ?? '');
   const [channelFilter, setChannelFilter] = useState<ChannelId | "all">(() => requestedChannel && crmLead ? linkedChannel : 'all');
   const [folder, setFolder] = useState<Folder>("all");
   const [search, setSearch] = useState("");
@@ -377,6 +390,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [assistLoading, setAssistLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [recording, setRecording] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState<VoiceNote | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -405,7 +419,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   useClickOutside(assigneeRef, assigneeOpen, () => setAssigneeOpen(false));
   useClickOutside(leadMenuRef, leadMenuOpen, () => setLeadMenuOpen(false));
 
-  const active = conversations.find((c) => c.id === activeId) ?? conversations[0];
+  const active = conversations.find((c) => c.id === activeId) ?? conversations[0] ?? { id: '', name: '', initials: '', channel: 'webchat', preview: '', time: '', unread: 0, tags: [], stage: '', source: '', phone: '', email: '', location: '', assignee: '', aiAutoReply: false, takenOver: true, followUp: false, followUpRules: [], starred: false, messages: [], activity: [] } as Conversation;
   const aiReplying = aiMode && active.aiAutoReply && !active.takenOver;
 
   const channelCounts = useMemo(() => {
@@ -552,13 +566,23 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     timerRef.current = null;
   };
 
-  const canSend = Boolean(draft.trim() || attachments.length || voiceDraft);
+  const canSend = !sending && Boolean(draft.trim() || attachments.length || voiceDraft);
 
-  const send = () => {
+  const send = async () => {
     if (!canSend) return;
     const text = draft.trim();
+    const requestId = crypto.randomUUID();
+    if (mode === 'reply' && !demoInbox) {
+      if (attachments.length || voiceDraft) { showToast.error('Media delivery requires a connected upload adapter.'); return; }
+      setSending(true);
+      try {
+        await callBackend('queueMessage', { conversationId: active.id, text, requestId });
+        showToast.info('Message queued for delivery');
+      } catch (error) { showToast.error(backendError(error)); return; }
+      finally { setSending(false); }
+    }
     const message: Message = {
-      id: makeId("m"),
+      id: requestId,
       sender: mode === "note" ? "note" : "agent",
       text: text || undefined,
       time: nowTime(),
@@ -577,7 +601,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         {
           id: makeId("a"),
           kind: mode === "note" ? "note" : "agent",
-          text: mode === "note" ? "Internal note added" : "You sent a message",
+          text: mode === "note" ? "Internal note added" : demoInbox ? "Demo reply saved locally" : "Message queued for delivery",
           time: "Just now",
         },
         ...c.activity,
@@ -588,30 +612,25 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     setVoiceDraft(null);
     setElapsed(0);
     if (mode === "reply") setSent(true);
+    if (mode === 'reply' && demoInbox) showToast.info('Demo reply saved locally');
   };
 
-  const runAiAssist = () => {
+  const runAiAssist = async () => {
     if (assistLoading) return;
+    if (demoInbox) {
+      setDraft(active.id === 'demo-sarah'
+        ? 'Yes, Sarah! The discovery call is online and takes about 30 minutes. I’ll send the meeting details once we confirm Thursday at 2 PM Cairo time. Feel free to bring any questions about your launch.'
+        : active.id === 'demo-omar' ? demoReplyTemplates[1].body : demoReplyTemplates[2].body);
+      showToast.info('Demo draft ready for review');
+      return;
+    }
     setAssistLoading(true);
-    const lastCustomer = [...active.messages].reverse().find((m) => m.sender === "customer")?.text ?? "";
-    const first = active.name.split(" ")[0];
-    const lower = lastCustomer.toLowerCase();
-    const suggestion = lower.includes("price") || lower.includes("cost")
-      ? `Hi ${first}! Our plans start at €97/month (Basic), €197/month for Pro — our most popular — and €297/month for VIP. Would you like me to book you a free consultation to find the right fit?`
-      : lower.includes("book") || lower.includes("session") || lower.includes("time")
-        ? `Of course, ${first}! I have openings this Thursday at 6 PM and Saturday at 11 AM. Which one works best for you?`
-        : lower.includes("online") || lower.includes("dubai") || lower.includes("city")
-          ? `Great question, ${first}! Our coaching is 100% online, so you can join from anywhere with weekly video check-ins.`
-          : `Thanks for reaching out, ${first}! I'd be happy to help — could you tell me a bit more about your goals so I can recommend the best plan?`;
-    window.setTimeout(() => {
-      setDraft(suggestion);
-      setMode("reply");
-      setAssistLoading(false);
-      inputRef.current?.focus();
-    }, 750);
+    try {
+      const result = await callBackend<{ text: string }>('copilot', { text: 'Draft a response for this conversation using approved business facts. Do not send anything. Customer message: ' + ([...active.messages].reverse().find(message => message.sender === 'customer')?.text ?? ''), conversationId: 'inbox-assist-' + active.id });
+      setDraft(result.text); showToast.success('AI draft ready for review');
+    } catch (error) { showToast.error(backendError(error)); } finally { setAssistLoading(false); }
   };
 
-  /* ---------------- right panel actions ---------------- */
   const addTag = (tag: TagId) => {
     updateActive((c) => ({ tags: [...c.tags, tag] }));
     logActivity("tag", `Tag added: ${tagMeta[tag].label}`);
@@ -642,6 +661,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     showToast.success(`Conversation with ${active.name} archived.`);
   };
 
+  if (!conversations.length) return <div className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"><h2>{language === 'ar' ? 'لا توجد محادثات بعد' : 'No conversations yet'}</h2><p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : 'Connect a channel in Settings to start receiving messages.'}</p><button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : 'Connect a channel'}</button></div>;
   const assigneeMember = teamMembers.find((m) => m.name === active.assignee) ?? teamMembers[0];
   const availableTags = (Object.keys(tagMeta) as TagId[]).filter((t) => !active.tags.includes(t));
 
@@ -698,7 +718,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         </div>
         <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 ps-3 pe-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
           <Sparkles size={15} className="text-[#7C5CFC]" fill="currentColor" />
-          <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText("AI Active")}</span>
+          <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : 'AI Active')}</span>
           <Toggle
             checked={aiMode}
             onChange={(value) => {

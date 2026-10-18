@@ -1,0 +1,6 @@
+{
+  "indexes": [
+    { "collectionGroup": "scheduledActions", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "leadId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" }] }
+  ],
+  "fieldOverrides": []
+}

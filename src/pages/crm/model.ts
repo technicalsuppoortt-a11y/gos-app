@@ -1,5 +1,5 @@
 import type { CanonicalLead } from '../../store/slices/crmSlice';
-import type { LeadStage } from '../../data/mockData';
+import type { LeadStage } from '../../types/business';
 
 export type PipelineStage = { id: LeadStage; label: string; color: string };
 export type Pipeline = { id: string; name: string; stages: PipelineStage[] };
@@ -14,7 +14,7 @@ export const templates = [
 ];
 export const mainPipeline: Pipeline = { id: 'main', name: 'Main Pipeline', stages: templates[0].stages.map((label, i) => ({ id: stageIds[i], label, color: colors[i] })) };
 export const templateStages = (labels: string[]): PipelineStage[] => labels.map((label, i) => ({ id: i === labels.length - 1 ? 'PAYMENT_COMPLETED' : stageIds.filter(id => id !== 'PAYMENT_COMPLETED')[i], label, color: colors[i] }));
-export const owners = ['Mohamed Joe', 'Alex Morgan', 'Jamie Park', 'Taylor Reed'];
+export const owners = ['Unassigned'];
 export const sources = ['Website', 'Instagram', 'WhatsApp', 'Referral', 'LinkedIn', 'Facebook', 'Email'];
 export const euro = (value: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
 export function activityTime(at: string): number {

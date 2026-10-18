@@ -2,12 +2,12 @@ let recoveryTimer: ReturnType<typeof setTimeout> | undefined;
 function clearRecoveryTimer() { if (recoveryTimer !== undefined) { clearTimeout(recoveryTimer); recoveryTimer = undefined; } }
 export function isChunkError(error: unknown): boolean {
  const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
- return /ChunkLoadError|Loading chunk|dynamically imported module|Importing a module script failed|Unable to preload CSS/i.test(message);
+ return /ChunkLoadError|Loading chunk|dynamically imported module|Importing a module script failed|Unable to preload CSS|504|Outdated Optimize Dep/i.test(message);
 }
 export async function retryImport<T>(loader: () => Promise<T>, delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))): Promise<T> {
  for (let attempt = 0; ; attempt++) {
   try { const result = await loader(); clearRecoveryTimer(); return result; }
-  catch (error) { if (attempt >= 2 || !isChunkError(error)) throw error; await delay(250 * (attempt + 1)); }
+  catch (error) { if (attempt >= 3 || !isChunkError(error)) throw error; await delay(300 * (attempt + 1)); }
  }
 }
 const reloadKey = 'gos.chunk-reload.at';
@@ -16,7 +16,7 @@ export function reloadForChunkError(error: unknown): boolean {
  try {
   const storage = window.sessionStorage;
   const last = Number(storage.getItem(reloadKey));
-  if (last && Date.now() - last < 600000) return false;
+  if (last && Date.now() - last < 5000) return false;
   storage.setItem(reloadKey, String(Date.now()));
  } catch { return false; } // A persistent marker is required to prevent reload loops.
  try { window.location.reload(); return true; } catch { return false; }

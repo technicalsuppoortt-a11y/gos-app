@@ -1,3 +1,7 @@
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import { auth, backendError } from '../../backend/firebase';
+import { activateInvitedUser, ActivationError } from '../../backend/adminUsers';
+import { routeForRole } from '../../router/ProtectedRoute';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -16,10 +20,40 @@ interface PasswordCriteria {
 }
 
 export const ResetPasswordPage: React.FC = () => {
-  useUILanguage();
+  const uiLang = useUILanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const emailParam = searchParams.get('email') || '';
+  const code = searchParams.get('oobCode') || '';
+  const mode = searchParams.get('mode') || '';
+  const emailQuery = searchParams.get('email') || '';
+  // Returning from Firebase's reset page: the password already exists, so we just sign in with it.
+  const finishStage = searchParams.get('stage') === 'finish';
+  const ar = uiLang === 'ar';
+  const [emailParam, setVerifiedEmail] = React.useState('');
+  const [codeValid, setCodeValid] = React.useState(false);
+  React.useEffect(() => {
+    let active = true;
+    if (!code) {
+      if (mode === 'activation' || emailQuery) {
+        setVerifiedEmail(emailQuery);
+        setCodeValid(true);
+        return;
+      }
+      showToast.error('Open the reset link from your email.');
+      return;
+    }
+    verifyPasswordResetCode(auth, code)
+      .then(email => {
+        if (active) {
+          setVerifiedEmail(email);
+          setCodeValid(true);
+        }
+      })
+      .catch(error => showToast.error(backendError(error)));
+    return () => {
+      active = false;
+    };
+  }, [code, mode, emailQuery]);
 
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -28,6 +62,7 @@ export const ResetPasswordPage: React.FC = () => {
   const [busy, setBusy] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
   const [redirectCountdown, setRedirectCountdown] = React.useState(3);
+  const [redirectTo, setRedirectTo] = React.useState('/auth/login');
 
   // Criteria calculations
   const criteria: PasswordCriteria = React.useMemo(() => {
@@ -58,7 +93,7 @@ export const ResetPasswordPage: React.FC = () => {
     return { text: 'Strong', color: 'text-emerald-500' };
   }, [password, strengthScore]);
 
-  const canSubmit = criteria.length && criteria.mixedCase && criteria.number && criteria.special && criteria.matches;
+  const canSubmit = finishStage ? codeValid && password.length > 0 : codeValid && criteria.length && criteria.matches;
 
   // Auto redirect countdown on success
   React.useEffect(() => {
@@ -67,25 +102,46 @@ export const ResetPasswordPage: React.FC = () => {
       setRedirectCountdown(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          navigate('/auth/login', { replace: true });
+          navigate(redirectTo, { replace: true });
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [success, navigate]);
+  }, [success, navigate, redirectTo]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit || busy) return;
 
     setBusy(true);
-    window.setTimeout(() => {
-      setBusy(false);
+    const targetEmail = emailParam || searchParams.get('email') || '';
+    try {
+      if (code) {
+        // Official Firebase reset link: set the password, then activate with it.
+        await confirmPasswordReset(auth, code, password);
+        const result = await activateInvitedUser({ email: targetEmail, id: searchParams.get('id') || '', password, afterReset: true });
+        setRedirectTo(routeForRole(result.role));
+        showToast.success(translateText('Password updated successfully!'));
+      } else {
+        // Direct activation link generated for the admin.
+        const result = await activateInvitedUser({ email: targetEmail, id: searchParams.get('id') || '', password, afterReset: finishStage });
+        setRedirectTo(routeForRole(result.role));
+        showToast.success(translateText('Account activated successfully! Entering your workspace...'));
+      }
       setSuccess(true);
-      showToast.success('Password updated successfully!');
-    }, 650);
+    } catch (error) {
+      if (error instanceof ActivationError) {
+        showToast.error(error.localizedMessage());
+        if (error.code !== 'EXISTING_ACCOUNT') setCodeValid(false);
+      } else {
+        setCodeValid(false);
+        showToast.error(backendError(error));
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -118,13 +174,17 @@ export const ResetPasswordPage: React.FC = () => {
               <div className="login-heading mb-6">
                 <div className="login-tenant-pill mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50/80 px-3 py-1.5 text-[11px] font-semibold text-indigo-700 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-200">
                   <ShieldCheck size={13} className="text-indigo-600 dark:text-indigo-400" />
-                  {translateText(" CREDENTIAL RESET")}
+                  {mode === 'activation' ? translateText("ACCOUNT ACTIVATION") : translateText("CREDENTIAL RESET")}
                 </div>
                 <h1 className="text-3xl font-bold tracking-[-1.2px] text-slate-900 dark:text-white">
-                  {translateText("Create new password")}
+                  {finishStage
+                    ? (ar ? 'أكمل تفعيل حسابك' : 'Finish activating your account')
+                    : mode === 'activation' ? translateText("Activate your account") : translateText("Create new password")}
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {emailParam ? (
+                  {finishStage ? (
+                    ar ? 'أدخل كلمة المرور التي عيّنتها للتو من رسالة البريد الإلكتروني.' : 'Enter the password you just set from the email link.'
+                  ) : emailParam ? (
                     <span>
                       {translateText("Resetting password for ")}
                       <b className="font-semibold text-indigo-600 dark:text-indigo-400">{emailParam}</b>
@@ -162,6 +222,7 @@ export const ResetPasswordPage: React.FC = () => {
                 </label>
 
                 {/* Password Strength Indicator */}
+                {!finishStage && (<>
                 <div className="auth-strength-meter">
                   <div className="mb-1.5 flex items-center justify-between text-xs">
                     <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -243,6 +304,7 @@ export const ResetPasswordPage: React.FC = () => {
                     <span>{translateText("Passwords match")}</span>
                   </div>
                 </div>
+                </>)}
 
                 {/* Submit Button */}
                 <button
@@ -254,12 +316,12 @@ export const ResetPasswordPage: React.FC = () => {
                     busy ? (
                       <>
                         <LoaderCircle size={17} className="animate-spin" />
-                        {translateText("Updating password…")}
+                        {mode === 'activation' ? translateText("Activating account…") : translateText("Updating password…")}
                       </>
                     ) : (
                       <>
                         <KeyRound size={16} />
-                        {translateText("Update Password & Sign In")}
+                        {mode === 'activation' ? translateText("Activate Account & Enter Workspace") : translateText("Update Password & Sign In")}
                       </>
                     )
                   )}

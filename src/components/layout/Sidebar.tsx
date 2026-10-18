@@ -2,16 +2,16 @@ import { useUILanguage, localizeNode, translateText, uiDirection } from '../../i
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { 
-  ArrowRight, 
-  ChevronDown, 
-  ChevronLeft, 
-  ChevronRight, 
-  CircleHelp, 
-  Crown, 
-  LogOut, 
-  X, 
-  Rocket 
+import {
+  ArrowRight,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  Crown,
+  LogOut,
+  X,
+  Rocket
 } from 'lucide-react';
 import './sidebar-settings.css';
 import { settingsAliases } from '../../pages/settings/navigation';
@@ -20,6 +20,7 @@ import type { RootState } from '../../store';
 import { setSidebarOpen, toggleSidebarCollapse } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
+import { logoutFirebase } from '../../backend/session';
 
 export interface SidebarItem {
   name: string;
@@ -32,15 +33,15 @@ export interface SidebarItem {
   children?: SidebarItem[];
 }
 
-function SidebarEntry({ 
-  item, 
-  basePath, 
-  close, 
-  isCollapsed 
-}: { 
-  item: SidebarItem; 
-  basePath: string; 
-  close: () => void; 
+function SidebarEntry({
+  item,
+  basePath,
+  close,
+  isCollapsed
+}: {
+  item: SidebarItem;
+  basePath: string;
+  close: () => void;
   isCollapsed?: boolean;
 }) {
   useUILanguage();
@@ -50,24 +51,24 @@ function SidebarEntry({
   const inside = location.pathname.startsWith(basePath + item.href) || !!item.activePaths?.some(path => location.pathname === path);
   const [expanded, setExpanded] = useState(inside);
   const [lastPath, setLastPath] = useState(location.pathname);
-  if (lastPath !== location.pathname) { 
-    setLastPath(location.pathname); 
-    if (inside && item.children) setExpanded(true); 
+  if (lastPath !== location.pathname) {
+    setLastPath(location.pathname);
+    if (inside && item.children) setExpanded(true);
   }
   const segment = pathname.split('/').at(-1) ?? '';
-  const canonicalPath = pathname === '/dashboard/integrations' 
-    ? '/dashboard/settings/integrations' 
-    : settingsAliases[segment] 
-    ? pathname.slice(0, -segment.length) + settingsAliases[segment] 
+  const canonicalPath = pathname === '/dashboard/integrations'
+    ? '/dashboard/settings/integrations'
+    : settingsAliases[segment]
+    ? pathname.slice(0, -segment.length) + settingsAliases[segment]
     : pathname;
 
   return (
     <div className={`layout-nav-group${isCollapsed ? ' is-collapsed' : ''}`}>
       <div className="layout-nav-parent">
-        <NavLink 
-          to={`${basePath}${item.href}`} 
-          end={item.end ?? true} 
-          onClick={() => { if (item.children) setExpanded(true); else close(); }} 
+        <NavLink
+          to={`${basePath}${item.href}`}
+          end={item.end ?? true}
+          onClick={() => { if (item.children) setExpanded(true); else close(); }}
           className={({ isActive }) => `layout-nav-item${isActive || item.activePaths?.some(path => location.pathname === path || location.pathname.startsWith(path + '/')) ? ' is-active' : ''}`}
           title={isCollapsed ? translateText(item.name) : undefined}
         >
@@ -80,11 +81,11 @@ function SidebarEntry({
           ))}
         </NavLink>
         {localizeNode(!isCollapsed && item.children && (
-          <button 
-            className="layout-submenu-toggle" 
-            aria-label={translateText(`${expanded ? 'Collapse' : 'Expand'} ${item.name}`)} 
-            aria-expanded={expanded} 
-            aria-controls={menuId} 
+          <button
+            className="layout-submenu-toggle"
+            aria-label={translateText(`${expanded ? 'Collapse' : 'Expand'} ${item.name}`)}
+            aria-expanded={expanded}
+            aria-controls={menuId}
             onClick={() => setExpanded(value => !value)}
           >
             <ChevronDown size={15} style={{ transform: expanded ? 'rotate(180deg)' : undefined }}/>
@@ -94,11 +95,11 @@ function SidebarEntry({
       {localizeNode(!isCollapsed && item.children && expanded && (
         <nav id={menuId} className="layout-settings-submenu" aria-label={translateText("Settings navigation")}>
           {localizeNode(item.children.map(child => (
-            <Link 
-              key={child.href} 
-              to={basePath + child.href} 
-              onClick={close} 
-              aria-current={canonicalPath === basePath + child.href || (child.href.endsWith('/profile') && pathname === basePath + item.href) ? 'page' : undefined} 
+            <Link
+              key={child.href}
+              to={basePath + child.href}
+              onClick={close}
+              aria-current={canonicalPath === basePath + child.href || (child.href.endsWith('/profile') && pathname === basePath + item.href) ? 'page' : undefined}
               className={`layout-settings-link${canonicalPath === basePath + child.href || (child.href.endsWith('/profile') && pathname === basePath + item.href) ? ' is-active' : ''}`}
             >
               <child.icon size={14}/>
@@ -154,11 +155,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   }, [isOpen, dispatch]);
 
   const close = () => dispatch(setSidebarOpen(false));
-  const signOut = () => { 
-    showToast.success('You have been logged out successfully.'); 
-    dispatch(logout()); 
-    close(); 
-    navigate('/auth/login', { replace: true }); 
+  const signOut = () => {
+    showToast.success('You have been logged out successfully.');
+    void logoutFirebase().catch(error => showToast.error(error.message));
+    close();
+    navigate('/auth/login', { replace: true });
   };
 
   const splitIndex = items.findIndex(item => item.dividerBefore);
@@ -169,9 +170,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
     <div className={`layout-sidebar-content${collapsed ? ' is-collapsed' : ''}`}>
       {/* Top brand header with collapse toggle */}
       <div className="layout-brand-row">
-        <NavLink 
-          to={basePath} 
-          className="layout-brand" 
+        <NavLink
+          to={basePath}
+          className="layout-brand"
           onClick={close}
           title={collapsed ? translateText("Growth Operating System") : undefined}
         >
@@ -236,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
 
       {/* Bottom section */}
       <div className="layout-sidebar-bottom">
-        <button 
+        <button
           className="layout-profile"
           title={collapsed ? (currentUser?.name || translateText("Mohamed Joe")) : undefined}
         >
@@ -258,8 +259,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           <a href="#help">{translateText("View guides")}</a>
         </div>
 
-        <button 
-          className="layout-logout" 
+        <button
+          className="layout-logout"
           onClick={signOut}
           title={collapsed ? translateText("Log out") : undefined}
         >
@@ -272,8 +273,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
 
   return (
     <>
-      <aside 
-        className={`layout-sidebar shrink-0${isCollapsed ? ' is-collapsed' : ''}${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} 
+      <aside
+        className={`layout-sidebar shrink-0${isCollapsed ? ' is-collapsed' : ''}${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`}
         aria-label={translateText("Workspace sidebar")}
       >
         {localizeNode(renderContent(isCollapsed))}
@@ -282,23 +283,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
       <AnimatePresence>
         {localizeNode(isOpen && (
           <>
-            <motion.button 
-              aria-label={translateText("Close navigation")} 
-              className="layout-mobile-scrim" 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
+            <motion.button
+              aria-label={translateText("Close navigation")}
+              className="layout-mobile-scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={close}
             />
-            <motion.aside 
-              ref={drawerRef} 
-              role="dialog" 
-              aria-modal="true" 
-              aria-label={translateText("Workspace navigation")} 
-              className={`layout-mobile-sidebar shrink-0${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`} 
-              initial={{ x: isRtl ? 280 : -280 }} 
-              animate={{ x: 0 }} 
-              exit={{ x: isRtl ? 280 : -280 }} 
+            <motion.aside
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={translateText("Workspace navigation")}
+              className={`layout-mobile-sidebar shrink-0${basePath === '/dashboard' ? ' reference-user-sidebar' : ''}`}
+              initial={{ x: isRtl ? 280 : -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: isRtl ? 280 : -280 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
             >
               {localizeNode(renderContent(false))}

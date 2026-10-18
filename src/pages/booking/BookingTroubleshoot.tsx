@@ -1,3 +1,4 @@
+import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 
 import { useEffect, useId, useState } from 'react';
@@ -11,7 +12,7 @@ type SyncState = {syncStatus:'connecting'|'synced'|'error';lastSyncedTime:string
 export function readBookingSync():SyncState {
   try {
     for(const key of [KEYS.pages,KEYS.appointments]){
-      const raw=localStorage.getItem(key);
+      const raw=cloudStorage.getItem(key);
       if(raw!==null&&!Array.isArray(JSON.parse(raw)))throw new Error('Invalid booking storage');
     }
     return {syncStatus:'synced',lastSyncedTime:new Date().toLocaleTimeString()};

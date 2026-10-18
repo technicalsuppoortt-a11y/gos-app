@@ -1,11 +1,13 @@
 import { toast } from 'sonner';
 import type { ReactNode } from 'react';
 import { translateText, localizeNode } from '../i18n/display';
+import { hasPendingWrites } from '../backend/writeStatus';
 
 
 
 export const showToast = {
   success: (message: string, description?: ReactNode) => {
+    if (hasPendingWrites()) { toast.info(translateText('Saving changes…'), { description: translateText(message) }); return; }
     toast.success(translateText(message), {
       description: localizeNode(description),
       icon: '✓',

@@ -1,3 +1,7 @@
+import { useCloudState, useEntities } from '../backend/workspace';
+import { useBusinessMetrics } from '../backend/metrics';
+import { callBackend, backendError } from '../backend/firebase';
+import { cloudStorage } from '../backend/workspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
 import { createPortal } from "react-dom";
@@ -85,7 +89,7 @@ type Channel = {
   className: string;
   conversations: string;
 };
-type DemoConversation = {
+type FollowUpConversation = {
   leadId: string;
   displayName: string;
   channel: MessagingChannel | "website";
@@ -130,8 +134,8 @@ type FollowUpSettings = {
 };
 const readLocal = <T,>(key: string, fallback: T): T => {
   try {
-    if (typeof localStorage === 'undefined') return fallback;
-    const raw = localStorage.getItem(key);
+    if (typeof cloudStorage === 'undefined') return fallback;
+    const raw = cloudStorage.getItem(key);
     const value: unknown = raw ? JSON.parse(raw) : null;
     if (value === null || typeof value !== typeof fallback || (Array.isArray(fallback) !== Array.isArray(value))) return fallback;
     if (Array.isArray(value)) {
@@ -159,7 +163,7 @@ const readLocal = <T,>(key: string, fallback: T): T => {
 };
 const writeLocal = (key: string, value: unknown) => {
   try {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(value));
+    if (typeof cloudStorage !== 'undefined') cloudStorage.setItem(key, JSON.stringify(value));
   } catch {
     /* Keep the current session usable when storage is unavailable. */
   }
@@ -450,7 +454,7 @@ const tabIcons: Record<Tab, React.ElementType | null> = {
   Analytics: BarChart3,
   Settings: Settings,
 };
-const channels: Channel[] = [
+const channelDefinitions: Channel[] = [
   {
     id: "instagram",
     name: "Instagram",
@@ -487,191 +491,10 @@ const channels: Channel[] = [
     conversations: "318 conversations",
   },
 ];
-export const defaultWorkflows: Workflow[] = [
-  {
-    id: "new-lead",
-    name: "New Lead Follow-Up",
-    description: "Auto-reply and nurture new leads",
-    trigger: "12,430 triggered",
-    active: true,
-    from: "NEW",
-    to: "CONTACTED",
-    actionType: "Webhook",
-    sequenceSteps: [
-      { id: "new-lead-1", delay: "1", unit: "hour", action: "Email" },
-    ],
-  },
-  {
-    id: "appointment",
-    name: "Appointment Reminder",
-    description: "Send reminders before appointments",
-    trigger: "892 triggered",
-    active: true,
-    from: "BOOKED",
-    to: "PRE_MEETING_REMINDER",
-    actionType: "Calendar reminder",
-    sequenceSteps: [
-      { id: "appointment-1", delay: "24", unit: "hours", action: "WhatsApp" },
-    ],
-  },
-  {
-    id: "no-show",
-    name: "No-Show Follow-Up",
-    description: "Follow up if appointment is missed",
-    trigger: "214 triggered",
-    active: true,
-    from: "NO_SHOW",
-    to: "NURTURE_REACTIVATION",
-    actionType: "Wait",
-    sequenceSteps: [
-      { id: "no-show-1", delay: "1", unit: "hour", action: "Email" },
-    ],
-  },
-  {
-    id: "reactivation",
-    name: "Re-Engagement Campaign",
-    description: "Message inactive leads",
-    trigger: "1,032 triggered",
-    active: false,
-    from: "NURTURE_REACTIVATION",
-    to: "CONTACTED",
-    actionType: "Email",
-    sequenceSteps: [
-      { id: "reactivation-1", delay: "1", unit: "day", action: "Email" },
-    ],
-  },
-];
-const defaultTemplates: TemplateItem[] = [
-  {
-    id: "faq",
-    title: "Answer FAQ",
-    description: "Instant answers to common questions",
-    iconKey: "help",
-  },
-  {
-    id: "book",
-    title: "Book Appointment",
-    description: "Schedule calls or meetings",
-    iconKey: "calendar",
-  },
-  {
-    id: "product",
-    title: "Product Information",
-    description: "Explain your products & services",
-    iconKey: "package",
-  },
-  {
-    id: "objections",
-    title: "Handle Objections",
-    description: "Respond to common objections",
-    iconKey: "shield",
-  },
-  {
-    id: "follow-up",
-    title: "Follow Up Message",
-    description: "Nurture leads automatically",
-    iconKey: "mail",
-  },
-  {
-    id: "custom-template-action",
-    title: "Custom Template",
-    description: "Create your own template",
-    iconKey: "plus",
-  },
-];
-const defaultKnowledge: KnowledgeSource[] = [
-  {
-    id: "website",
-    name: "Website content",
-    type: "url",
-    detail: "Synced today · Ready for answers",
-  },
-  {
-    id: "products",
-    name: "Products & services",
-    type: "products",
-    detail: "Catalog · 18 entries",
-  },
-  { id: "faqs", name: "FAQs", type: "faq", detail: "Reviewed · 24 answers" },
-  {
-    id: "pdfs",
-    name: "PDF documents",
-    type: "file",
-    detail: "2 documents · Ready for answers",
-  },
-  {
-    id: "instructions",
-    name: "Custom instructions",
-    type: "instructions",
-    detail: "Assistant guidance · Active",
-  },
-];
-const demoConversations: DemoConversation[] = [
-  {
-    leadId: "ld-101",
-    displayName: "Sarah Ahmed",
-    channel: "instagram",
-    excerpt: "Hi! I'm interested in your personal...",
-    time: "2 min ago",
-    state: "NEW",
-  },
-  {
-    leadId: "ld-102",
-    displayName: "Omar Khaled",
-    channel: "whatsapp",
-    excerpt: "Do you have online coaching?",
-    time: "5 min ago",
-    state: "CONVERSING",
-  },
-  {
-    leadId: "ld-103",
-    displayName: "Lina Mansour",
-    channel: "messenger",
-    excerpt: "Can I book a free session?",
-    time: "12 min ago",
-    state: "BOOKING_OFFERED",
-  },
-  {
-    leadId: "ld-104",
-    displayName: "Ahmed Ali",
-    channel: "facebook",
-    excerpt: "What's the price for the program?",
-    time: "20 min ago",
-    state: "HUMAN_HANDOFF",
-  },
-  {
-    leadId: "ld-105",
-    displayName: "Nour Hassan",
-    channel: "instagram",
-    excerpt: "I want to join next month",
-    time: "35 min ago",
-    state: "CONVERSING",
-  },
-  {
-    leadId: "ld-106",
-    displayName: "Karim Mohamed",
-    channel: "whatsapp",
-    excerpt: "Is there a nutrition plan included?",
-    time: "1 hour ago",
-    state: "NEW",
-  },
-  {
-    leadId: "ld-107",
-    displayName: "Diana Samir",
-    channel: "website",
-    excerpt: "Great! I'll book now",
-    time: "2 hours ago",
-    state: "BOOKED",
-  },
-  {
-    leadId: "ld-108",
-    displayName: "Youssef Ibrahim",
-    channel: "messenger",
-    excerpt: "Do you have a gym in Dubai?",
-    time: "3 hours ago",
-    state: "HUMAN_HANDOFF",
-  },
-];
+export const defaultWorkflows: Workflow[] = [];
+const defaultTemplates: TemplateItem[] = [];
+const defaultKnowledge: KnowledgeSource[] = [];
+const conversationRecords: FollowUpConversation[] = [];
 const stateTone = (state: FollowUpLifecycleState) =>
   ({
     NEW: "blue",
@@ -820,7 +643,7 @@ const Modal = ({
       <div className="af-modal-head">
         <div>
           <h3>{localizeNode(title)}</h3>
-          <p>{translateText("Demo workspace · changes stay in local app state")}</p>
+          <p>{translateText("Workspace settings")}</p>
         </div>
         <button className="af-icon-button" onClick={close} aria-label={translateText("Close")}>
           <X size={18} />
@@ -835,29 +658,30 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   useUILanguage();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const metrics = useBusinessMetrics();
+  const channels = channelDefinitions.map(channel => ({ ...channel, conversations: metrics.conversations.filter(thread => thread.channel === channel.id || channel.id === 'website' && thread.channel === 'webchat').length + ' conversations' }));
+  const conversationRecords = useEntities<FollowUpConversation>('conversations');
   const leads = useSelector((state: RootState) => state.crm.leads);
   const [tab, setTab] = React.useState<Tab>("Overview");
   const [dateRange, setDateRange] = React.useState("Last 7 days");
   const [conversationChannel, setConversationChannel] = React.useState("All");
-  const [channelsOn, setChannelsOn] = React.useState<Record<string, boolean>>({
-    instagram: true,
-    facebook: true,
-    whatsapp: true,
-    messenger: true,
-    website: true,
+  const [channelsOn, setChannelsOn] = useCloudState<Record<string, boolean>>('gos.ai-followup.channels.v1', {
+    instagram: false,
+    facebook: false,
+    whatsapp: false,
+    messenger: false,
+    website: false,
   });
-  const [workflows, setWorkflows] = React.useState<Workflow[]>(() =>
-    readLocal(WORKFLOWS_KEY, defaultWorkflows),
-  );
+  const [workflows, setWorkflows] = useCloudState<Workflow[]>(WORKFLOWS_KEY, []);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [modal, setModal] = React.useState("");
 
-  const [assistantEnabled, setAssistantEnabled] = React.useState(true);
-  const [engineEnabled, setEngineEnabled] = React.useState(true);
+  const [assistantEnabled, setAssistantEnabled] = useCloudState('gos.ai-followup.assistant-enabled.v1', false);
+  const [engineEnabled, setEngineEnabled] = useCloudState('gos.ai-followup.engine-enabled.v1', false);
   const [assistantProfile, setAssistantProfile] = React.useState(() =>
     readLocal(ASSISTANT_KEY, {
       name: "GOS Assistant",
-      role: "Friendly fitness coach",
+      role: "Business assistant",
       language: "Auto-detect Arabic / English",
       goal: "Appointments",
     }),
@@ -894,14 +718,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const [knowledgeName, setKnowledgeName] = React.useState("");
   const [knowledgeValue, setKnowledgeValue] = React.useState("");
   const [knowledgeFileName, setKnowledgeFileName] = React.useState("");
-  const [knowledgeItems, setKnowledgeItems] = React.useState<KnowledgeSource[]>(
-    () => readLocal(KNOWLEDGE_KEY, defaultKnowledge),
-  );
-  const [templates, setTemplates] = React.useState<TemplateItem[]>(() => [
-    ...defaultTemplates.filter((item) => item.id !== "custom-template-action"),
-    ...readLocal<TemplateItem[]>(TEMPLATES_KEY, []),
-    ...defaultTemplates.filter((item) => item.id === "custom-template-action"),
-  ]);
+  const [knowledgeItems, setKnowledgeItems] = useCloudState<KnowledgeSource[]>(KNOWLEDGE_KEY, []);
+  const [templates, setTemplates] = useCloudState<TemplateItem[]>(TEMPLATES_KEY, []);
   const [templateTitle, setTemplateTitle] = React.useState("");
   const [templateCategory, setTemplateCategory] = React.useState("Follow-up");
   const [templatePrompt, setTemplatePrompt] = React.useState("");
@@ -938,9 +756,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     [],
   );
   const leadById = (id: string) => leads.find((lead) => lead.id === id);
-  const rows = demoConversations
+  const rows = conversationRecords
     .map((item) => ({ ...item, lead: leadById(item.leadId) }))
-    .filter((item): item is DemoConversation & { lead: CanonicalLead } =>
+    .filter((item): item is FollowUpConversation & { lead: CanonicalLead } =>
       Boolean(item.lead),
     );
   const visibleRows = rows.filter((item) => {
@@ -982,108 +800,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           : lead.hasMessagingConsent
             ? "instagram"
             : null;
-  const recordDemoMessage = (lead: CanonicalLead, requested: string) => {
-    if (messageText.trim().toUpperCase() === "STOP") {
-      dispatch(
-        setLeadConsent({
-          id: lead.id,
-          consent: {
-            hasWhatsAppConsent: false,
-            hasMessagingConsent: false,
-            hasEmailConsent: false,
-          },
-        }),
-      );
-      dispatch(
-        setLeadFollowUpState({
-          id: lead.id,
-          followUpState: "STOPPED_INELIGIBLE",
-          detail: "Lead sent STOP; all promotional follow-up is disabled.",
-        }),
-      );
-      tell(`Opt-out recorded for ${lead.name}. Follow-up is stopped.`);
-      return false;
-    }
-    const channel = choosePermittedChannel(lead, requested);
-    if (!channel) {
-      dispatch(
-        setLeadFollowUpState({
-          id: lead.id,
-          followUpState: "STOPPED_INELIGIBLE",
-          detail: `No explicit consent for ${requested}; no message was sent.`,
-        }),
-      );
-      tell(
-        `No message sent to ${lead.name}: explicit channel consent is missing.`,
-      );
-      return false;
-    }
-    dispatch(
-      setLeadFollowUpState({
-        id: lead.id,
-        followUpState: "CONTACTED",
-        detail: `Demo follow-up recorded via ${channel}; consent verified.`,
-      }),
-    );
-    dispatch(
-      addLeadActivity({
-        leadId: lead.id,
-        activity: {
-          type: "message",
-          title: "Demo follow-up recorded",
-          detail: `Consent verified for ${channel}. No external message was sent.`,
-        },
-      }),
-    );
-    tell(
-      channel === requested
-        ? `Consent verified. Demo follow-up recorded via ${channel}.`
-        : `Consent verified. Demo follow-up redirected to ${channel}.`,
-    );
-    return true;
+  const queueFollowUpMessage = async (lead: CanonicalLead, requested: string) => {
+    const thread = conversationRecords.find(item => item.leadId === lead.id && item.channel === requested);
+    if (!thread) { showToast.error('No conversation exists for this contact and channel.'); return false; }
+    try { await callBackend('queueMessage', { conversationId: (thread as FollowUpConversation & { id: string }).id, text: messageText, requestId: crypto.randomUUID() }); showToast.info('Message queued for delivery'); return true; }
+    catch (error) { showToast.error(backendError(error)); return false; }
   };
-  const runWorkflow = (flow: (typeof workflows)[number]) => {
-    if (!flow.active) {
-      tell("Activate this workflow before running its demo.");
-      return;
-    }
-    const lead = leads.find((item) => item.followUpState === flow.from);
-    if (!lead) {
-      tell(
-        `No canonical lead is currently in ${stateLabel(flow.from as FollowUpLifecycleState)}.`,
-      );
-      return;
-    }
-    if (flow.to === "CONTACTED") {
-      setSelectedId(lead.id);
-      setMessageText(
-        "Following up on your recent interest. Would you like help with next steps?",
-      );
-      tell(
-        `Review consent for ${lead.name} in the lead drawer before recording a demo send.`,
-      );
-      return;
-    }
-    dispatch(
-      setLeadFollowUpState({
-        id: lead.id,
-        followUpState: flow.to as FollowUpLifecycleState,
-        detail: `Demo workflow “${flow.name}” ran. No external message was sent.`,
-      }),
-    );
-    dispatch(
-      addLeadActivity({
-        leadId: lead.id,
-        activity: {
-          type: "system",
-          title: `Workflow executed: ${flow.name}`,
-          detail: `${stateLabel(flow.from as FollowUpLifecycleState)} → ${stateLabel(flow.to as FollowUpLifecycleState)} · demo only`,
-        },
-      }),
-    );
-    tell(
-      `${flow.name} updated ${lead.name}'s follow-up lifecycle in demo state.`,
-    );
+  const runWorkflow = async (flow: Workflow) => {
+    try { await callBackend('startWorkflow', { workflowId: flow.id, requestId: crypto.randomUUID() }); showToast.success('Workflow run scheduled'); }
+    catch (error) { showToast.error(backendError(error)); }
   };
   const addWorkflow = () => {
     if (!newWorkflowName.trim()) return;
@@ -1235,7 +960,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   };
   const saveSettings = () => {
     writeLocal(SETTINGS_KEY, followUpSettings);
-    tell("Follow-up settings saved on this device.");
+    tell("Follow-up settings saved to your workspace.");
   };
   const saveAssistant = () => {
     if (!newAssistantName.trim() || !assistantRole.trim()) {
@@ -1253,7 +978,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     setAssistantEnabled(true);
     setAssistantStep(1);
     setModal("");
-    tell(`${next.name} is active and saved on this device.`);
+    tell(`${next.name} is active and saved to your workspace.`);
   };
   const openTemplateEditor = (item?: TemplateItem) => {
     setEditingTemplateId(item?.custom ? item.id : null);
@@ -1332,7 +1057,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       [channel.id]: !s[channel.id],
                     }));
                     tell(
-                      `${channel.name} ${active ? "paused" : "connected"} in demo settings.`,
+                      `${channel.name} automation preference updated. Channel authorization is managed in Settings.`,
                     );
                   }}
                 >
@@ -1370,36 +1095,36 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       {localizeNode([
         {
           label: "Total Conversations",
-          value: "3,471",
-          delta: "+42%",
+          value: String(metrics.conversations.length),
+          delta: "—",
           icon: MessageSquare,
           tone: "violet",
         },
         {
           label: "New Leads",
-          value: "892",
-          delta: "+35%",
+          value: String(metrics.leads.length),
+          delta: "—",
           icon: Users,
           tone: "pink",
         },
         {
           label: "Appointments Booked",
-          value: "173",
-          delta: "+28%",
+          value: String(metrics.bookings.length),
+          delta: "—",
           icon: CalendarDays,
           tone: "mint",
         },
         {
           label: "Sales Generated",
-          value: "€12,430",
-          delta: "+52%",
+          value: metrics.money(metrics.revenue),
+          delta: "—",
           icon: CreditCard,
           tone: "purple",
         },
         {
           label: "Response Time",
-          value: "8s",
-          delta: "-60%",
+          value: "—",
+          delta: "—",
           icon: Zap,
           tone: "orange",
         },
@@ -1445,7 +1170,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         aria-label={translateText("Filter conversations by channel")}
       >
         {localizeNode([
-          { value: "All", label: "All (12)" },
+          { value: "All", label: `All (${rows.length})` },
           { value: "Instagram", label: "Instagram", channel: "instagram" },
           { value: "Facebook", label: "Facebook", channel: "facebook" },
           { value: "WhatsApp", label: "WhatsApp", channel: "whatsapp" },
@@ -1713,32 +1438,32 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         {localizeNode([
           {
             label: "Conversations Handled",
-            value: "3,471",
-            change: "42%",
+            value: String(metrics.conversations.length),
+            change: "—",
             icon: ScanText,
           },
           {
             label: "Leads Generated",
-            value: "892",
-            change: "35%",
+            value: String(metrics.leads.length),
+            change: "—",
             icon: HandCoins,
           },
           {
             label: "Appointments Booked",
-            value: "173",
-            change: "28%",
+            value: String(metrics.bookings.length),
+            change: "—",
             icon: Calendar,
           },
           {
             label: "Sales Generated",
-            value: "€12,430",
-            change: "52%",
+            value: metrics.money(metrics.revenue),
+            change: "—",
             icon: Calendar,
           },
           {
             label: "Customer Satisfaction",
-            value: "4.8/5",
-            change: "12%",
+            value: "—",
+            change: "—",
             icon: Star,
           },
         ].map((metric) => (
@@ -1755,97 +1480,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         )))}
       </div>
       <div className="af-perf-chart flex-1 min-h-0 w-full relative">
-        <div className="af-perf-chart-y">
-          {localizeNode(["600", "400", "200", "0"].map((label, index) => (
-            <span key={label} style={{ top: `${(index / 3) * 100}%` }}>
-              {localizeNode(label)}
-            </span>
-          )))}
-        </div>
-        <div className="af-perf-chart-plot">
-          <svg
-            viewBox="0 0 600 120"
-            preserveAspectRatio="none"
-            role="img"
-            aria-label={translateText("AI conversations handled over time")}
-          >
-            <defs>
-              <linearGradient id="af-fill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="#7c6cf0" stopOpacity=".22" />
-                <stop offset="1" stopColor="#7c6cf0" stopOpacity=".02" />
-              </linearGradient>
-            </defs>
-            {localizeNode([0, 40, 80, 120].map((y) => (
-              <line
-                key={`h${y}`}
-                x1="0"
-                x2="600"
-                y1={y}
-                y2={y}
-                stroke="#eef0f5"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
-            )))}
-            {localizeNode([0, 100, 200, 300, 400, 500, 600].map((x) => (
-              <line
-                key={`v${x}`}
-                x1={x}
-                x2={x}
-                y1="0"
-                y2="120"
-                stroke="#eef0f5"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
-            )))}
-            <path
-              d="M0 76 L100 64 L200 76 L300 52 L400 41 L500 62 L600 32 L600 120 L0 120Z"
-              fill="url(#af-fill)"
-            />
-            <path
-              d="M0 76 L100 64 L200 76 L300 52 L400 41 L500 62 L600 32"
-              fill="none"
-              stroke="#6d5ce8"
-              strokeWidth="2"
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
-          <span
-            className="af-perf-chart-dot"
-            style={{
-              left: `${(400 / 600) * 100}%`,
-              top: `${(41 / 120) * 100}%`,
-            }}
-          />
-          <div
-            className="af-perf-chart-tooltip"
-            style={{
-              left: `${(400 / 600) * 100}%`,
-              top: `${(41 / 120) * 100}%`,
-            }}
-          >
-            <b>{translateText("423 conversations")}</b>
-            <span>{translateText("Oct 24")}</span>
-          </div>
-        </div>
-        <div className="af-perf-chart-x">
-          {localizeNode([
-            "Oct 20",
-            "Oct 21",
-            "Oct 22",
-            "Oct 23",
-            "Oct 24",
-            "Oct 25",
-            "Oct 26",
-          ].map((label, index) => (
-            <span key={label} style={{ left: `${(index / 6) * 100}%` }}>
-              {localizeNode(label)}
-            </span>
-          )))}
-        </div>
-      </div>
+  <div className="af-perf-chart-plot"><svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="Recorded operational events over time"><polyline fill="none" stroke="#7c6cf0" strokeWidth="2" points={metrics.daily.map((day,index) => (index / Math.max(1,metrics.daily.length-1) * 600) + ',' + (118 - day.events / Math.max(1,...metrics.daily.map(item => item.events)) * 110)).join(' ')}/></svg></div>
+  <div className="af-perf-chart-x">{metrics.daily.filter((_,index) => index % 5 === 0).map((day,index) => <span key={day.date} style={{left: (index / 6 * 100) + '%'}}>{day.label}</span>)}</div>
+ </div>
     </section>
   );
   // @ts-ignore
@@ -1897,7 +1534,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       <div className="af-panel-heading">
         <div>
           <h2>{translateText("Conversations")}</h2>
-          <p>{translateText("Messages are shown from mock logs linked to canonical leads.")}</p>
+          <p>{translateText("Messages are shown from workspace conversations linked to CRM leads.")}</p>
         </div>
         <div className="af-inline-controls">
           <MenuSelect
@@ -2091,7 +1728,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 className="af-button-secondary"
                 onClick={() => runWorkflow(flow)}
               >
-                <Send size={13} />{translateText(" Run demo")}</button>
+                <Send size={13} />{translateText(" Run workflow")}</button>
               <button
                 className={`af-switch ${flow.active ? "on" : ""}`}
                 type="button" role="switch" aria-checked={flow.active}
@@ -2265,7 +1902,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         </article>
       </div>
       <div className="af-settings-save">
-        <span>{translateText("Changes apply to this browser's demo workspace.")}</span>
+        <span>{translateText("Changes are saved to this workspace.")}</span>
         <button className="af-button-primary" onClick={saveSettings}>
           <Save size={14} />{translateText(" Save Settings")}</button>
       </div>
@@ -2365,13 +2002,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   };
 
   return (
-    <main className="af-page flex h-[calc(100vh-4rem)] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+    <main className="af-page flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
       <div className="af-page-title">
         <div>
           <h1>
             <Sparkles size={21} />{translateText(" AI Follow-Up")}</h1>
           <p>{translateText("Conversations, follow up with leads and turn them into customers")}</p>
         </div>
+        <div className="module-header-actions"><a className="af-button-secondary" href="/dashboard/follow-up?tab=templates">{translateText("Automation templates")} <ArrowRight size={14}/></a>
         <button
           className="af-button-primary"
           onClick={() => {
@@ -2382,6 +2020,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           }}
         >
           <Plus size={15} />{translateText(" Create AI Assistant")}</button>
+        </div>
       </div>
       <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>
       <div className="af-tabs-row">
@@ -2529,7 +2168,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               </label>
             )))}
             <div className="af-message-demo">
-              <label>{translateText("Demo message")}</label>
+              <label>{translateText("Message")}</label>
               <textarea
                 value={messageText}
                 onChange={(event) => setMessageText(event.target.value)}
@@ -2574,13 +2213,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 className="af-button-primary"
                 onClick={() => {
                   if (messageText.trim()) {
-                    recordDemoMessage(selectedLead, selectedChannel);
-                    setMessageText("");
-                  } else tell("Write a message before recording a demo send.");
+                    void queueFollowUpMessage(selectedLead, selectedChannel).then(sent => { if (sent) setMessageText(''); });
+                  } else tell("Write a message before sending.");
                 }}
               >
-                <Send size={14} />{translateText(" Check consent & record demo")}</button>
-              <small>{translateText("Demo only: no message is delivered to an external channel.")}</small>
+                <Send size={14} />{translateText(" Check consent & queue")}</button>
+              <small>{translateText("Delivery requires a connected channel and verified consent.")}</small>
             </div>
             <div className="af-lead-activity">
               <h3>{translateText("Recent CRM activity")}</h3>
@@ -2726,19 +2364,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 </span>
                 <div>
                   <b>{localizeNode(assistantProfile.name)}{translateText(" is ready")}</b>
-                  <p>{translateText("Test a sample question against the configured demo knowledge base.")}</p>
+                  <p>{translateText("Test a question against approved workspace knowledge.")}</p>
                 </div>
               </div>
               <label>{translateText("Ask a test question")}<input placeholder={translateText("What services do you offer?")} />
               </label>
               <button
                 className="af-button-primary"
-                onClick={() => {
-                  setModal("");
-                  tell(
-                    `Demo response from ${assistantProfile.name}: I can help with the services listed in the connected knowledge base.`,
-                  );
-                }}
+                onClick={async event => { const question = event.currentTarget.parentElement?.querySelector('input')?.value || ''; if (!question.trim()) { showToast.error('Enter a question.'); return; } try { const answer = await callBackend<{ text: string }>('copilot', { text: question, conversationId: crypto.randomUUID() }); showToast.info(answer.text); } catch (error) { showToast.error(backendError(error)); } }}
               >{translateText("Run test")}</button>
             </div>
           ))}
@@ -2903,7 +2536,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                     />{localizeNode(" ")}{translateText("Activate immediately")}</label>
                   <div className="af-safety-note">
                     <ShieldCheck size={16} />
-                    <span>{translateText("Messaging actions check channel-specific consent before they run. No external sends occur in this local demo.")}</span>
+                    <span>{translateText("Messaging actions check channel consent and connection status before they run.")}</span>
                   </div>
                 </>
               ))}
@@ -3015,7 +2648,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               ))}
               <div className="af-safety-note">
                 <ShieldCheck size={16} />
-                <span>{translateText("Only verified business content should be added. This demo stores source details locally and does not upload files to a provider.")}</span>
+                <span>{translateText("Only verified business content should be added. Source details are saved to your workspace; file uploads to an AI provider are not enabled yet.")}</span>
               </div>
               <button
                 className="af-button-primary"
@@ -3067,7 +2700,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           ))}
           {localizeNode(modal === "channel" && (
             <div className="af-modal-form">
-              <p className="af-modal-copy">{translateText("Connection status is simulated locally for this demo. No external provider credentials are used.")}</p>
+              <p className="af-modal-copy">{translateText("These preferences control automation. Authorize your messaging accounts in Settings → Integrations.")}</p>
               <label>{translateText("Channel status")}<MenuSelect
                   value={channelsOn[selectedChannel] ? "Connected" : "Paused"}
                   onChange={(value) =>

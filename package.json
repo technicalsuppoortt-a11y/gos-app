@@ -9,7 +9,12 @@
     "lint": "oxlint",
     "i18n:catalog": "node scripts/build-display-catalog.mjs",
     "i18n:check": "node scripts/verify-localization.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:backend": "node --test functions/policy.test.js",
+    "test:firebase-ui": "node tests/firebase-dashboard-browser.test.mjs",
+    "test:firebase-rules": "node tests/firebase-rules-emulator.test.mjs",
+    "seed:firebase": "node functions/seed.mjs",
+    "firebase:catalog": "node scripts/export-template-catalog.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

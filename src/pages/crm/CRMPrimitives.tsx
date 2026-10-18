@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { BadgeCheck, Clock3, Flame, Globe, Mail, MessageCircle, MoreHorizontal, MoreVertical, Phone, Sparkles, ChevronDown, Check, Calendar } from 'lucide-react';
 import { InstagramLogo as Instagram, LinkedinLogo as Linkedin } from '@phosphor-icons/react';
 import type { CanonicalLead } from '../../store/slices/crmSlice';
-import type { LeadStage } from '../../data/mockData';
+import type { LeadStage } from '../../types/business';
 import { displayStage, euro, type Pipeline } from './model';
 import sarah from '../../assets/inbox/sarah.jpg';
 import marcus from '../../assets/inbox/omar.jpg';

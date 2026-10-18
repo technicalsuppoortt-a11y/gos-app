@@ -1,3 +1,4 @@
+import { cloudStorage } from '../../backend/workspace';
 import { useCallback, useEffect, useState } from 'react';
 import { locationFromLabel, sectionDefaults, weekdayMatches } from './booking-section-schema';
 import type { AfterBooking, SectionSettings } from './booking-section-schema';
@@ -32,7 +33,7 @@ export function blankPage(): BookingPage {
     ...sectionDefaults(), locations: [locationFromLabel('None', 'default-location')],
     id: uid(), name: '', slug: '', duration: 30, durationOptions: [30], location: 'None',
     locationOptions: ['None'], active: true, color: 'violet', note: '', description: "Let's discuss your goals and how we can work together.",
-    hostName: 'Mohamed Joe', hostTimezone: 'Africa/Cairo',
+    hostName: '', hostTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     availability: Array.from({ length: 7 }, (_, day) => ({ day, enabled: day > 0 && day < 6, start: '09:00', end: '17:00' })),
     minNotice: 30, maxAdvanceBooking: 60, bufferTime: 15, startIncrement: 'use-duration', groupCapacity: 1, dailyLimit: 12,
     fixedDateRange: { start: '', end: '' }, requireApproval: false,
@@ -44,23 +45,16 @@ export function blankPage(): BookingPage {
     afterBooking: { confirmationBody: 'Your booking is confirmed. We look forward to meeting you.', allowCancelReschedule: true, scheduleAnother: false, prefill: true, redirectEnabled: false, redirectUrl: '', webhookEnabled: false, webhookUrl: '' },
   };
 }
-const defaults: BookingPage[] = [
-  ['consult', 'Free Consultation', 30, 'Zoom', 'consultation', 'violet'],
-  ['strategy', 'Strategy Call', 45, 'Google Meet', 'strategy', 'mint'],
-  ['coaching', 'Coaching Session', 60, 'Zoom', 'coaching', 'purple'],
-  ['team', 'Team Meeting', 30, 'Google Meet', 'team', 'blue'],
-  ['demo', 'Product Demo', 45, 'Zoom', 'demo', 'rose'],
-].map(([id, name, duration, location, slug, color]) => ({ ...blankPage(), id: String(id), name: String(name), duration: Number(duration), durationOptions: [Number(duration)], location: String(location), locationOptions: [String(location)], locations: [locationFromLabel(String(location), 'default-location')], slug: String(slug), color: String(color) }));
+const defaults: BookingPage[] = [];
 export function load<T>(key: string, fallback: T): T {
-  try { const raw = localStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw) as T; } catch { return fallback; }
+  try { const raw = cloudStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw) as T; } catch { return fallback; }
 }
 export function write<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
-  window.dispatchEvent(new CustomEvent('gos-booking-change', { detail: key }));
+  return cloudStorage.setItem(key, JSON.stringify(value));
 }
 export function readPages(): BookingPage[] {
-  const items = load<Partial<BookingPage>[]>(KEYS.pages, defaults);
-  if (!Array.isArray(items)) return defaults;
+  const items = load<Partial<BookingPage>[]>(KEYS.pages, []);
+  if (!Array.isArray(items)) return [];
   return items.filter(p => p && typeof p.id === 'string' && typeof p.name === 'string').map(p => {
     const base = blankPage();
     return { ...base, ...p, hostName: typeof p.hostName === 'string' ? p.hostName : '', durationOptions: p.durationOptions || [p.duration || 30], locationOptions: p.locationOptions || [p.location || 'Zoom'], afterBooking: { ...base.afterBooking, ...p.afterBooking }, locations: p.locations?.length ? p.locations : (p.locationOptions || [p.location || 'None']).map((label, index) => locationFromLabel(label, 'location-' + index)), formSettings: { ...base.formSettings, ...p.formSettings }, notificationWorkflows: { ...base.notificationWorkflows, ...p.notificationWorkflows }, templateSettings: { ...base.templateSettings, ...p.templateSettings } };
@@ -93,7 +87,7 @@ export function useStored<T>(key: string, initial: () => T) {
     // The initializer reads this key; refresh only when the storage key changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  const save = useCallback((next: T) => { write(key, next); setValue(next); }, [key]);
+  const save = useCallback((next: T) => { const pending = write(key, next).then(() => { setValue(next); }); void pending.catch(() => {}); return pending; }, [key]);
   return [value, save] as const;
 }
 const dtfCache = new Map<string, Intl.DateTimeFormat>();
@@ -222,27 +216,12 @@ export function displayedSlots(page: BookingPage, date: string, duration: number
 }
 
 const seedDate = (offset: number) => { const d = new Date(); d.setDate(d.getDate() + offset); return dateKey(d); };
-export const defaultAppointments: Appointment[] = [
-  ['b1', 'Sarah Ahmed', 'sarah@northstar.co', 'consult', 2, '10:00', 'Confirmed'],
-  ['b2', 'Omar Khaled', 'omar@orbitlabs.io', 'strategy', 3, '14:00', 'Confirmed'],
-  ['b3', 'Lina Mansour', 'lina@brightpath.com', 'coaching', 4, '09:00', 'Pending'],
-  ['b4', 'Ahmed Ali', 'ahmed@studio.co', 'demo', -2, '11:00', 'Confirmed'],
-  ['b5', 'Nour Hassan', 'nour@formstudio.design', 'consult', -4, '13:00', 'Confirmed'],
-  ['b6', 'Karim Mohamed', 'karim@northpeak.co', 'strategy', 5, '15:00', 'Canceled'],
-].map(([id, name, email, calendarId, offset, time, status]) => {
-  const p = defaults.find(p => p.id === calendarId)!;
-  const date = seedDate(Number(offset));
-  return { id: String(id), name: String(name), email: String(email), calendarId: String(calendarId), serviceName: p.name, date, time: String(time), start: hostInstant(date, String(time), p.hostTimezone).toISOString(), duration: p.duration, timezone: p.hostTimezone, location: p.location, status: status as Appointment['status'], whatsapp: '', source: '', fromAd: null, customAnswers: {}, guests: [] };
-});
-export const defaultContacts: Contact[] = defaultAppointments.map(b => ({ id: b.id, name: b.name, email: b.email, phone: '', company: b.email.split('@')[1].split('.')[0] }));
-export const defaultMembers: Member[] = [
-  { id: 'owner', name: 'Mohamed Joe', email: 'mohamed@gos.team', role: 'Admin', status: 'Active' },
-  { id: 'jamie', name: 'Jamie Park', email: 'jamie@gos.team', role: 'Member', status: 'Active' },
-  { id: 'taylor', name: 'Taylor Reed', email: 'taylor@gos.team', role: 'Member', status: 'Active' },
-];
-export const readAppointments = () => load<Appointment[]>(KEYS.appointments, defaultAppointments);
-export const readContacts = () => load<Contact[]>(KEYS.contacts, defaultContacts);
-export const readMembers = () => load<Member[]>(KEYS.members, defaultMembers);
+export const defaultAppointments: Appointment[] = [];
+export const defaultContacts: Contact[] = [];
+export const defaultMembers: Member[] = [];
+export const readAppointments = () => load<Appointment[]>(KEYS.appointments, []);
+export const readContacts = () => load<Contact[]>(KEYS.contacts, []);
+export const readMembers = () => load<Member[]>(KEYS.members, []);
 export const publicUrl = (page: BookingPage) => new URL('/book/' + encodeURIComponent(page.slug), window.location.origin).href;
 
 // RFC 4180-style CSV, including quoted commas, escaped quotes and multiline cells.

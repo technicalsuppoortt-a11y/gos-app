@@ -1,15 +1,16 @@
+import { cloudStorage } from '../../backend/workspace';
 import { useSyncExternalStore, useCallback } from 'react';
 import type { Product } from './model';
 
 const PURCHASES_STORAGE_KEY = 'gos_purchased_product_ids';
 
-const seedPurchasedIds: string[] = ['ai-course', 'social-pack'];
+const seedPurchasedIds: string[] = [];
 
 const listeners = new Set<() => void>();
 
 function readPurchases(): string[] {
   try {
-    const raw = localStorage.getItem(PURCHASES_STORAGE_KEY);
+    const raw = cloudStorage.getItem(PURCHASES_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
@@ -46,20 +47,7 @@ export function getPurchasedProductIds(): string[] {
 }
 
 export function addPurchasedProduct(idOrIdentifier: string): void {
-  if (!idOrIdentifier) return;
-  const current = readPurchases();
-  if (current.includes(idOrIdentifier)) return;
-  const next = [idOrIdentifier, ...current];
-  try {
-    localStorage.setItem(PURCHASES_STORAGE_KEY, JSON.stringify(next));
-  } catch (err) {
-    console.error('Failed to save purchase to localStorage:', err);
-  }
-  purchasesCache = next;
-  notifyListeners();
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('gos-purchases-updated'));
-  }
+  throw new Error('Product access is granted only after backend payment verification.');
 }
 
 export function isProductPurchased(product: Product, purchasedIds: string[]): boolean {

@@ -1,0 +1,59 @@
+/* Action groups stay together in both reading directions. */
+.module-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.module-header-actions > :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.pp-page .pp-header-actions {
+  margin-inline-start: auto;
+  padding-block: 4px;
+}
+.pp-page .pp-header-actions .pp-create {
+  min-height: 37px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--pp-violet);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+.pp-page { height: 100%; max-height: 100%; min-height: 0; }
+.af-page .af-page-title { flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
+.af-page .af-page-title .module-header-actions { margin-inline-start: auto; }
+.bk-workspace .bk-bookings-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow-x: auto;
+  padding-block: 2px;
+}
+.bk-bookings-actions .bk-search { order: 0; flex: 1 1 280px; min-width: 140px; width: auto; }
+.bk-bookings-actions .bk-filter { order: 1; flex: 0 0 auto; }
+.bk-bookings-actions .bk-button { order: 2; flex: 0 0 auto; margin-inline-start: 0; white-space: nowrap; }
+.pf-initialization .pf-start-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pf-initialization .pf-ai-choice { border-color: var(--purple, #7660db); }
+.aw-ai-generator { max-height: calc(100dvh - 140px); overflow-y: auto; }
+@media (max-width: 600px) {
+  .pf-initialization .pf-start-options { grid-template-columns: 1fr; }
+}
+@media (max-width: 1023px) {
+  .is-dashboard-route .layout-workspace { height: 100dvh; min-height: 0 !important; overflow: hidden; }
+  .is-dashboard-route .layout-main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+  .is-dashboard-route .layout-route-content { min-height: 0; overflow-y: auto; }
+  .is-dashboard-route .gos-home-dashboard { flex: none; }
+}
+@media (max-height: 740px) {
+  [data-dashboard-section="metrics"] > article { min-height: 72px; padding-block: 10px; }
+}

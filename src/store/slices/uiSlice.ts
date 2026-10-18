@@ -13,7 +13,7 @@ interface UIState {
 
 const initialState: UIState = {
   theme: storageGet('theme') === 'dark' ? 'dark' : 'light',
-  language: storageGet('i18nextLng') === 'en' ? 'en' : 'ar',
+  language: storageGet('i18nextLng') === 'ar' ? 'ar' : 'en',
   sidebarOpen: false,
   sidebarCollapsed: storageGet('sidebar_collapsed') === 'true',
 };

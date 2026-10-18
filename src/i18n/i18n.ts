@@ -12,7 +12,7 @@ i18n
       en: { translation: en },
       ar: { translation: ar },
     },
-    lng: storageGet('i18nextLng') === 'en' ? 'en' : 'ar',
+    lng: storageGet('i18nextLng') === 'ar' ? 'ar' : 'en',
     fallbackLng: 'en',
     supportedLngs: ['en', 'ar'],
     interpolation: {
