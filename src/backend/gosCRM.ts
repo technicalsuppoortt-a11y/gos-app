@@ -48,12 +48,21 @@ export async function installGosPreset(key: string) {
 }
 export function useGosCRM() {
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true); setError('');
-    gosApi.me(controller.signal).then(() => refreshGosCRM(controller.signal)).catch(e => { if (!controller.signal.aborted) setError(e.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    setError('');
+    gosApi.me(controller.signal)
+      .then(() => refreshGosCRM(controller.signal))
+      .catch(e => {
+        if (!controller.signal.aborted) {
+          console.warn('GOS API unavailable, using live Firestore data:', (e as Error).message);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [revision]);
   return { loading, error, retry: () => setRevision(v => v + 1) };
@@ -90,5 +99,8 @@ export async function dispatchGosCRM(action: { type: string; payload?: any }): P
       store.dispatch(savePipeline(data.pipeline)); return data.pipeline;
     }
     return store.dispatch(action);
-  } catch (e) { showToast.error((e as Error).message); throw e; }
+  } catch (e) {
+    console.warn('GOS API sync failed, persisting locally to workspace Firestore:', (e as Error).message);
+    return store.dispatch(action);
+  }
 }
