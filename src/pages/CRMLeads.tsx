@@ -201,15 +201,15 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
       return (
         (!q ||
           [
-            lead.name,
-            lead.email,
+            lead.name || "",
+            lead.email || "",
             lead.phone ?? "",
-            lead.company,
+            lead.company || "",
             ...(lead.tags || []),
-          ].some((v) => v.toLowerCase().includes(q))) &&
+          ].some((v) => (v || "").toLowerCase().includes(q))) &&
         (filters.status === "archived" ? lead.archived : !lead.archived) &&
         (!filters.source || lead.source === filters.source) &&
-        (!filters.tag || lead.tags.includes(filters.tag)) &&
+        (!filters.tag || (lead.tags || []).includes(filters.tag)) &&
         (!filters.owner || lead.owner === filters.owner) &&
         (!filters.stage || displayStage(lead, pipeline) === filters.stage) &&
         (filters.status !== "followup" || Boolean(lead.nextFollowUp)) &&
@@ -219,10 +219,10 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     })
     .sort((a, b) =>
       sort === "name"
-        ? a.name.localeCompare(b.name)
+        ? (a.name || "").localeCompare(b.name || "")
         : sort === "value"
-          ? b.value - a.value
-          : activityTime(b.lastActivity) - activityTime(a.lastActivity),
+          ? (b.value || 0) - (a.value || 0)
+          : activityTime(b.lastActivity || "") - activityTime(a.lastActivity || ""),
     );
   const contactPages = Math.max(1, Math.ceil(visible.length / rowsPerPage));
   const currentContactPage = Math.min(contactPage, contactPages);

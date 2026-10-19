@@ -33,7 +33,35 @@ export function displayStage(lead: CanonicalLead, pipeline: Pipeline): LeadStage
 }
 export function makeLead(values: Partial<CanonicalLead> & { name: string; email: string }): CanonicalLead {
   const id = crypto.randomUUID();
-  return { id, company: '', source: 'Website', owner: owners[0], value: 0, stage: 'LEAD_CAPTURED', lifecycleStage: 'LEAD_CAPTURED', lastActivity: 'Just now', tags: [], avatar: values.name.split(/\s+/).slice(0, 2).map(s => s[0]).join('').toUpperCase(), color: 'lilac', interest: '', bookingStatus: 'Not Scheduled', qualificationStatus: 'Pending', followUpState: 'NEW', hasWhatsAppConsent: false, hasMessagingConsent: false, hasEmailConsent: false, notes: [], createdAt: new Date().toISOString(), activities: [{ id: crypto.randomUUID(), type: 'capture', title: 'Lead captured', detail: 'Added to CRM', at: new Date().toISOString() }], ...values };
+  const name = values.name || 'Unnamed contact';
+  const avatar = values.avatar || (name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase()) || 'L';
+  const base = {
+    id,
+    company: '',
+    source: 'Website',
+    owner: owners[0],
+    value: 0,
+    stage: 'LEAD_CAPTURED' as const,
+    lifecycleStage: 'LEAD_CAPTURED' as const,
+    lastActivity: 'Just now',
+    avatar,
+    color: 'lilac',
+    interest: '',
+    bookingStatus: 'Not Scheduled' as const,
+    qualificationStatus: 'Pending' as const,
+    followUpState: 'NEW' as const,
+    hasWhatsAppConsent: false,
+    hasMessagingConsent: false,
+    hasEmailConsent: false,
+    createdAt: new Date().toISOString(),
+  };
+  return {
+    ...base,
+    ...values,
+    tags: Array.isArray(values.tags) ? values.tags : [],
+    notes: Array.isArray(values.notes) ? values.notes : [],
+    activities: Array.isArray(values.activities) ? values.activities : [{ id: crypto.randomUUID(), type: 'capture', title: 'Lead captured', detail: 'Added to CRM', at: new Date().toISOString() }],
+  };
 }
 export function exportCSV(leads: CanonicalLead[]) {
   const fields = ['name', 'email', 'phone', 'company', 'source', 'owner', 'lifecycleStage', 'value', 'tags', 'createdAt'] as const;

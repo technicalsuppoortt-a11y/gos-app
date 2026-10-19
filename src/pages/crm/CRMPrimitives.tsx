@@ -25,21 +25,23 @@ export function CRMAvatar({ lead }: { lead: CanonicalLead }) {
   useUILanguage();
   const [failed, setFailed] = useState(false);
   const photo = lead.photoUrl || demoPhotos[lead.id];
+  const avatarText = lead.avatar || (lead.name ? lead.name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() : 'L');
   return photo && !failed
     ? <img className="crm-person-avatar crm-person-photo w-8 h-8 rounded-full" src={photo} alt={translateText("")} onError={() => setFailed(true)} />
-    : <span className={`crm-person-avatar crm-person-${lead.color}`}>{localizeNode(lead.avatar)}</span>;
+    : <span className={`crm-person-avatar crm-person-${lead.color || 'lilac'}`}>{localizeNode(avatarText)}</span>;
 }
 
-export function SourceBadge({ source }: { source: string }) {
+export function SourceBadge({ source }: { source?: string }) {
   useUILanguage();
-  const normalized = source.toLowerCase();
+  const safeSource = source || 'Website';
+  const normalized = safeSource.toLowerCase();
   const channel = normalized.includes('instagram') ? { tone: 'instagram', label: 'Instagram', icon: Instagram }
     : normalized.includes('whatsapp') ? { tone: 'whatsapp', label: 'WhatsApp', icon: MessageCircle }
     : normalized.includes('email') ? { tone: 'email', label: 'Email', icon: Mail }
     : normalized.includes('linkedin') ? { tone: 'linkedin', label: 'LinkedIn', icon: Linkedin }
     : normalized.includes('call') ? { tone: 'call', label: 'Call', icon: Phone }
     : normalized.includes('referral') ? { tone: 'referral', label: 'Referral', icon: BadgeCheck }
-    : { tone: 'website', label: /website|funnel|landing/i.test(source) ? 'Website' : source, icon: Globe };
+    : { tone: 'website', label: /website|funnel|landing/i.test(safeSource) ? 'Website' : safeSource, icon: Globe };
   return <span className={`crm-source crm-source-${channel.tone}`}><span className="crm-source-symbol"><channel.icon size={10} strokeWidth={2}/></span>{localizeNode(channel.label)}</span>;
 }
 
@@ -67,8 +69,9 @@ function followUp(lead: CanonicalLead): { label: string; tone: string } {
   return { label: 'Follow-up scheduled', tone: 'scheduled' };
 }
 
-function compactActivity(activity: string) {
-  return activity.replace(/(\d+)\s*min(?:ute)?s? ago/i, '$1m ago')
+function compactActivity(activity?: string) {
+  if (!activity) return 'Recently';
+  return String(activity).replace(/(\d+)\s*min(?:ute)?s? ago/i, '$1m ago')
     .replace(/(\d+)\s*hours? ago/i, '$1h ago')
     .replace(/(\d+)\s*days? ago/i, '$1d ago')
     .replace('Yesterday', '1d ago');
@@ -106,16 +109,16 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   }, [menuOpen]);
   return <article className={`crm-lead-card ${dragging ? 'crm-is-dragging' : ''}`} draggable={!menuOpen}
     onDragStart={e => { e.dataTransfer.setData('text/plain', lead.id); e.dataTransfer.effectAllowed = 'move'; onDragStart(lead.id); }} onDragEnd={onDragEnd}>
-    <Link className="crm-card-link" draggable={false} to={`${base}/opportunities/${encodeURIComponent(lead.id)}`} aria-label={translateText(`Open opportunity for ${lead.name}`)}/>
+    <Link className="crm-card-link" draggable={false} to={`${base}/opportunities/${encodeURIComponent(lead.id)}`} aria-label={translateText(`Open opportunity for ${lead.name || 'contact'}`)}/>
     <div className="crm-card-content">
-      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name)}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
-      <div className="crm-card-tags">{localizeNode(lead.tags.slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
-      <div className="crm-card-bottom"><strong>{localizeNode(euro(lead.value))}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
+      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name || 'Unnamed contact')}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
+      <div className="crm-card-tags">{localizeNode((lead.tags || []).slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
+      <div className="crm-card-bottom"><strong>{localizeNode(euro(lead.value || 0))}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
       <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{localizeNode(compactActivity(lead.lastActivity))}</small><span className={`crm-followup crm-followup-${status.tone}`} title={translateText(lead.nextFollowUp)}>{localizeNode(status.label)}</span></div>
     </div>
     <div className="crm-card-options" ref={menuRef}>
-      <button className="crm-card-menu-button" aria-label={translateText(`Options for ${lead.name}`)} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
-      {localizeNode(menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>{translateText("Open contact")}</Link><label>{translateText("Move to stage")}<CustomSelect aria-label={translateText(`Move ${lead.name} to stage`)} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: s.label }))} /></label></div>)}
+      <button className="crm-card-menu-button" aria-label={translateText(`Options for ${lead.name || 'contact'}`)} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
+      {localizeNode(menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>{translateText("Open contact")}</Link><label>{translateText("Move to stage")}<CustomSelect aria-label={translateText(`Move ${lead.name || 'contact'} to stage`)} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: s.label }))} /></label></div>)}
     </div>
   </article>;
 }

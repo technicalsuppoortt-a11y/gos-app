@@ -30,7 +30,24 @@ const crmSlice = createSlice({
   name: 'crm',
   initialState: { leads: [] as CanonicalLead[], pipelines: [mainPipeline] },
   reducers: {
-    hydrateCRM(state, action: PayloadAction<{ leads: CanonicalLead[]; pipelines: Pipeline[] }>) { state.leads = action.payload.leads; state.pipelines = action.payload.pipelines.length ? action.payload.pipelines : [mainPipeline]; },
+    hydrateCRM(state, action: PayloadAction<{ leads: CanonicalLead[]; pipelines: Pipeline[] }>) {
+      state.leads = (action.payload.leads || []).map(lead => ({
+        ...lead,
+        tags: Array.isArray(lead.tags) ? lead.tags : [],
+        activities: Array.isArray(lead.activities) ? lead.activities : [],
+        notes: Array.isArray(lead.notes) ? lead.notes : [],
+        value: typeof lead.value === 'number' ? lead.value : 0,
+        source: lead.source || 'Website',
+        company: lead.company || '',
+        color: lead.color || 'lilac',
+        avatar: lead.avatar || (lead.name ? lead.name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() : 'L'),
+        lastActivity: lead.lastActivity || 'Just now',
+        bookingStatus: lead.bookingStatus || 'Not Scheduled',
+        qualificationStatus: lead.qualificationStatus || 'Pending',
+        followUpState: lead.followUpState || 'NEW',
+      }));
+      state.pipelines = action.payload.pipelines.length ? action.payload.pipelines : [mainPipeline];
+    },
     savePipeline(state, action: PayloadAction<Pipeline>) {
       const index = state.pipelines.findIndex(p => p.id === action.payload.id);
       if (index < 0) state.pipelines.push(action.payload); else state.pipelines[index] = action.payload;
