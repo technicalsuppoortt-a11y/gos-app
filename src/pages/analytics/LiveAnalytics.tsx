@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BarChart3, CalendarDays, CircleDollarSign, Download, MessageSquare, Package, Users } from 'lucide-react';
-import { eventLabel, resourceLabel, useBusinessMetrics } from '../../backend/metrics';
+import { eventLabel, parseTimestampMs, resourceLabel, toIsoDateString, useBusinessMetrics } from '../../backend/metrics';
 import { Card, KpiRow, ChartFrame, type Kpi, smoothPath, toPoints, VH } from './kit';
 import { Select } from '../../components/ui/Select';
 import { showToast } from '../../utils/toast';
@@ -16,10 +16,10 @@ export function LiveAnalytics({ tab }: { tab: string }) {
   const events = data.events.filter(event => {
     const relevant = tab === 'Overview' || tab === 'Reports' || (tab === 'Sales' ? /payment|order|purchase/.test(event.type) : tab === 'Leads' ? /lead|crm/.test(event.type + event.resource) : tab === 'Conversations' ? /message|conversation/.test(event.type + event.resource) : tab === 'Bookings' ? /booking|calendar/.test(event.type + event.resource) : tab === 'Products' ? /product/.test(event.type + event.resource) : /page|visit|traffic/.test(event.type));
     return relevant && `${event.type} ${event.resource ?? ''}`.toLowerCase().includes(search.toLowerCase());
-  }).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }).sort((a, b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt));
   const exportEvents = () => {
     const cell = (value: unknown) => '"' + String(value ?? '').replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"';
-    const csv = [['Event', 'Resource', 'Timestamp'], ...events.map(event => [event.type, event.resource ?? event.resourceId, event.createdAt])].map(row => row.map(cell).join(',')).join('\r\n');
+    const csv = [['Event', 'Resource', 'Timestamp'], ...events.map(event => [event.type, event.resource ?? event.resourceId, toIsoDateString(event.createdAt)])].map(row => row.map(cell).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = `gos-${tab.toLowerCase()}-${new Date().toISOString().slice(0,10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
     showToast.success('Report exported');
@@ -42,7 +42,7 @@ export function LiveAnalytics({ tab }: { tab: string }) {
       </Card>
       <Card title={translateText('Activity Stream')} className="an-span2">
         <input className="mb-3 rounded-lg border bg-transparent px-3 py-2 text-sm" aria-label="Search events" placeholder={translateText('Search events')} value={search} onChange={event => setSearch(event.target.value)}/>
-        {events.length ? <div className="an-table-wrap"><table className="an-table"><thead><tr><th>{translateText('Event')}</th><th>{translateText('Resource')}</th><th>{translateText('Date')}</th></tr></thead><tbody>{events.map(event => <tr key={event.id}><td>{eventLabel(event.type)}</td><td>{resourceLabel(event.resource)}</td><td>{new Date(event.createdAt).toLocaleString()}</td></tr>)}</tbody></table></div> : <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-sm text-slate-500"><BarChart3 size={24}/><p>{translateText('No events recorded for this period.')}</p></div>}
+        {events.length ? <div className="an-table-wrap"><table className="an-table"><thead><tr><th>{translateText('Event')}</th><th>{translateText('Resource')}</th><th>{translateText('Date')}</th></tr></thead><tbody>{events.map(event => <tr key={event.id}><td>{eventLabel(event.type)}</td><td>{resourceLabel(event.resource)}</td><td>{new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString()}</td></tr>)}</tbody></table></div> : <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-sm text-slate-500"><BarChart3 size={24}/><p>{translateText('No events recorded for this period.')}</p></div>}
       </Card>
     </div>
   </div>;

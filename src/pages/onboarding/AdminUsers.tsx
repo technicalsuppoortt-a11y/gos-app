@@ -345,7 +345,16 @@ export function AdminUsers() {
 
   return (
     <section className="ob-admin" dir={dir}>
-      <div role="status">{loading ? 'Loading accounts…' : loadError}</div><div className="ob-page-head">
+      <div className="sr-only" role="status" aria-live="polite">{loading ? t('Loading accounts…', 'جارٍ تحميل الحسابات…') : loadError}</div>
+      {loadError && (
+        <div className="p-3 mb-4 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs flex items-center justify-between border border-red-200 dark:border-red-900/50">
+          <span>{loadError}</span>
+          <button type="button" onClick={() => window.location.reload()} className="underline font-medium hover:opacity-80">
+            {t('Retry', 'إعادة المحاولة')}
+          </button>
+        </div>
+      )}
+      <div className="ob-page-head">
         <div>
           <span className="ob-eyebrow">{t('WORKSPACE ADMINISTRATION', 'إدارة مساحة العمل')}</span>
           <h1>{t('Good teams start here.', 'الفرق الرائعة تبدأ هنا.')}</h1>

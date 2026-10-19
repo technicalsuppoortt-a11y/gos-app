@@ -6,13 +6,90 @@ import { callBackend } from '../../backend/firebase';
 import type { BookingPage } from './model';
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Globe2, Video } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarDays, CalendarX2, Check, ChevronLeft, ChevronRight, Clock3, Globe2, Lock, RefreshCw, Video } from 'lucide-react';
 import { Avatar, Empty } from './ui';
 import { InviteeFields } from './InviteeFields';
 import { safeHttpUrl } from './booking-section-schema';
 import { normalizeBookingPage, availableSlots, firstAvailableDate, parseDate, displayedSlots, troubleshootSlots, remainingSpots, bookingColor, load, dateKey, formatDay, formatTime, TIMEZONES, uid } from './model';
 import type { Appointment } from './model';
 import './booking-workspace.css';
+
+export function PublicBookingSkeleton() {
+  return (
+    <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#6150df'} as React.CSSProperties}>
+      <header className="bk-public-brand">
+        <CalendarDays size={21} className="bk-brand-pulse" />
+        <b>GOS</b>
+        <span>{translateText("Booking")}</span>
+        <div className="bk-loading-indicator" role="status" aria-live="polite">
+          <i aria-hidden="true" />
+          <span>{translateText("Loading booking availability…")}</span>
+        </div>
+      </header>
+      <div className="bk-public-scroll custom-scrollbar">
+        <div className="bk-public-shell bk-skeleton-shell">
+          <div className="bk-public-grid bk-skeleton-grid">
+            <aside className="bk-public-details bk-skeleton-details">
+              <div className="bk-skeleton bk-skeleton-avatar" />
+              <div className="bk-skeleton bk-skeleton-line" style={{ width: '42%' }} />
+              <div className="bk-skeleton bk-skeleton-title" />
+              <div className="bk-public-meta">
+                <div className="bk-skeleton bk-skeleton-pill" />
+                <div className="bk-skeleton bk-skeleton-pill" />
+              </div>
+              <div className="bk-skeleton bk-skeleton-line" style={{ width: '92%' }} />
+              <div className="bk-skeleton bk-skeleton-line" style={{ width: '82%' }} />
+              <div className="bk-skeleton bk-skeleton-line" style={{ width: '65%' }} />
+              <div className="bk-skeleton-field">
+                <div className="bk-skeleton bk-skeleton-label" />
+                <div className="bk-skeleton bk-skeleton-input" />
+              </div>
+              <div className="bk-skeleton-field">
+                <div className="bk-skeleton bk-skeleton-label" />
+                <div className="bk-skeleton bk-skeleton-input" />
+              </div>
+              <div className="bk-skeleton-field">
+                <div className="bk-skeleton bk-skeleton-label" style={{ width: '50%' }} />
+                <div className="bk-skeleton bk-skeleton-input" />
+              </div>
+            </aside>
+            <section className="bk-public-wizard bk-skeleton-wizard">
+              <div className="bk-wizard-steps">
+                <div className="bk-skeleton bk-skeleton-step" />
+                <div className="bk-skeleton bk-skeleton-step" />
+                <div className="bk-skeleton bk-skeleton-step" />
+              </div>
+              <div className="bk-skeleton bk-skeleton-title" style={{ width: '190px', margin: '14px 0 16px' }} />
+              <div className="bk-slot-layout">
+                <div className="bk-skeleton-calendar">
+                  <div className="bk-skeleton-month-bar">
+                    <div className="bk-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                    <div className="bk-skeleton" style={{ width: 140, height: 18 }} />
+                    <div className="bk-skeleton" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                  </div>
+                  <div className="bk-date-grid">
+                    {Array.from({ length: 7 }, (_, i) => (
+                      <div key={`head-${i}`} className="bk-skeleton" style={{ height: 14, margin: '2px 0' }} />
+                    ))}
+                    {Array.from({ length: 35 }, (_, i) => (
+                      <div key={`day-${i}`} className="bk-skeleton" style={{ height: 30, borderRadius: 8 }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="bk-slot-list">
+                  <div className="bk-skeleton" style={{ width: 110, height: 16, marginBottom: 8 }} />
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div key={`slot-${i}`} className="bk-skeleton" style={{ height: 36, borderRadius: 8, marginBottom: 8 }} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 export default function PublicBookingPage() {
   useUILanguage();
@@ -27,7 +104,90 @@ export default function PublicBookingPage() {
     callBackend<{page: BookingPage; bookings: Appointment[]}>('publicBooking', {slug, password, bookingId, token}).then(result => { if(active) { setData({ ...result, page: normalizeBookingPage(result.page) }); setError(''); } }).catch(e => { if(active) setError(e.message); });
     return () => { active = false; };
   }, [slug, retry]);
-  if (!data) return <main className="bk-public"><section className="bk-public-shell"><p role="status">{error || 'Loading booking availability…'}</p>{error && <form onSubmit={e => {e.preventDefault(); setError(''); setRetry(v => v+1);}}><label>Page password<input type="password" value={password} onChange={e => setPassword(e.target.value)}/></label><button className="bk-button primary">Try again</button></form>}</section></main>;
+
+  if (!data) {
+    if (!error) return <PublicBookingSkeleton />;
+
+    const isPasswordRequired = error.toLowerCase().includes('password') || error.includes('Enter the page password');
+    if (isPasswordRequired) {
+      return (
+        <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#6150df'} as React.CSSProperties}>
+          <header className="bk-public-brand">
+            <CalendarDays size={21} />
+            <b>GOS</b>
+            <span>{translateText("Booking")}</span>
+          </header>
+          <div className="bk-public-scroll custom-scrollbar">
+            <div className="bk-public-shell">
+              <div className="bk-state-card">
+                <div className="bk-state-orb">
+                  <Lock size={26} />
+                </div>
+                <h2>{translateText("Password Protected")}</h2>
+                <p>{translateText("This booking calendar requires a password to view available times and confirm an appointment.")}</p>
+                <form onSubmit={e => { e.preventDefault(); setError(''); setRetry(v => v + 1); }} className="bk-state-form">
+                  <label className="bk-state-input-wrap">
+                    <span className="sr-only">{translateText("Password")}</span>
+                    <input
+                      type="password"
+                      autoFocus
+                      required
+                      placeholder={translateText("Enter calendar password…")}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="bk-state-input"
+                    />
+                  </label>
+                  {error && error !== 'Enter the page password.' && (
+                    <p className="bk-error" role="alert">{error}</p>
+                  )}
+                  <button type="submit" className="bk-button primary bk-state-btn">
+                    {translateText("Unlock Calendar")}
+                    <ArrowRight size={15} />
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+      );
+    }
+
+    return (
+      <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#6150df'} as React.CSSProperties}>
+        <header className="bk-public-brand">
+          <CalendarDays size={21} />
+          <b>GOS</b>
+          <span>{translateText("Booking")}</span>
+        </header>
+        <div className="bk-public-scroll custom-scrollbar">
+          <div className="bk-public-shell">
+            <div className="bk-state-card">
+              <div className="bk-state-orb danger">
+                <CalendarX2 size={26} />
+              </div>
+              <h2>{translateText("Booking Page Unavailable")}</h2>
+              <p>
+                {error === 'Booking page not found.'
+                  ? translateText("We couldn’t find an active calendar matching ") + `"${slug}". ` + translateText("It may have been renamed, turned off, or removed.")
+                  : error}
+              </p>
+              <div className="bk-state-actions">
+                <button type="button" className="bk-button primary" onClick={() => { setError(''); setRetry(v => v + 1); }}>
+                  <RefreshCw size={14} />
+                  {translateText("Try again")}
+                </button>
+                <Link className="bk-button" to="/dashboard/booking">
+                  {translateText("Go to Booking Hub")}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return <PublicBookingFlow key={slug} initial={data} password={password}/>;
 }
 
@@ -72,7 +232,31 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
     setGuests([]); setSource(''); setFromAd(null); setInviteeLocation('');
     setAnswers(page?.afterBooking.prefill ? load<Record<string,string>>('gos.booking.prefill.' + page.id, {}) : {});
   };
-  if (!page) return <main className="bk-public"><div className="bk-public-shell"><Empty title={translateText("Booking page not found")} detail="Check the booking URL or ask the host for a new link."/></div></main>;
+  if (!page) return (
+    <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#6150df'} as React.CSSProperties}>
+      <header className="bk-public-brand">
+        <CalendarDays size={21}/>
+        <b>{translateText("GOS")}</b>
+        <span>{translateText("Booking")}</span>
+      </header>
+      <div className="bk-public-scroll custom-scrollbar">
+        <div className="bk-public-shell">
+          <div className="bk-state-card">
+            <div className="bk-state-orb danger">
+              <CalendarX2 size={26} />
+            </div>
+            <h2>{translateText("Booking page not found")}</h2>
+            <p>{translateText("Check the booking URL or ask the host for a new link.")}</p>
+            <div className="bk-state-actions">
+              <Link className="bk-button primary" to="/">
+                {translateText("Return home")}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
   const slots = date ? showTroubleshoot
     ? troubleshootSlots(page,date,duration,bookings,new Date(),rescheduleId,answers.email||'')
     : displayedSlots(page,date,duration,bookings,new Date(),rescheduleId).map(s=>({...s,spotsLeft:remainingSpots(page,s.start,duration,bookings,rescheduleId),detail:''}))

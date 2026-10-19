@@ -321,14 +321,22 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   return (
     <div className="flex flex-col overflow-hidden crm2-page crm-workspace crm-pipeline-workspace">
       {api.error && <p className="crm-error" role="alert">{api.error} <button onClick={api.retry}>Retry</button></p>}
-      {api.loading && <p role="status">Loading CRM…</p>}
+      {api.loading && <span className="sr-only" role="status" aria-live="polite">{translateText("Loading CRM…")}</span>}
       <header className="crm2-header">
         <div className="crm2-header-left">
           <span className="crm2-header-icon">
             <BarChart3 size={20} />
           </span>
           <div>
-            <h1 className="crm2-header-title">{translateText("CRM & Leads")}</h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="crm2-header-title">{translateText("CRM & Leads")}</h1>
+              {api.loading && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
+                  {translateText("Syncing…")}
+                </span>
+              )}
+            </div>
             <p className="crm2-header-sub">{translateText("Manage your leads, conversations and turn them into customers")}</p>
           </div>
         </div>

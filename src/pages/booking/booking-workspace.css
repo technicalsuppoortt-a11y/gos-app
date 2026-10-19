@@ -471,3 +471,249 @@ html:has(main.bk-public),body:has(main.bk-public){height:100%;overflow:hidden;ov
 
 .bk-preview-frame,.bk-public{--bk-indigo:var(--booking-color,#6150df)!important}
 .bk-preview-frame .bk-date-grid button,.bk-public .bk-date-grid button{border-color:color-mix(in srgb,var(--booking-color) 25%,var(--bk-line))}
+
+/* -------------------------------------------------------------------------- */
+/* Public Booking Premium Skeleton & State Cards                              */
+/* -------------------------------------------------------------------------- */
+
+@keyframes bk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.bk-skeleton {
+  background: linear-gradient(90deg, #f0f2f7 25%, #e3e6f0 37%, #f0f2f7 63%);
+  background-size: 400% 100%;
+  animation: bk-shimmer 1.8s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.dark .bk-skeleton {
+  background: linear-gradient(90deg, #1e2233 25%, #2a3148 37%, #1e2233 63%);
+  background-size: 400% 100%;
+}
+
+.bk-brand-pulse {
+  animation: bk-brand-pulse-anim 2.2s ease-in-out infinite;
+}
+
+@keyframes bk-brand-pulse-anim {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.75; }
+}
+
+.bk-loading-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+  margin-inline-end: 16px;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  background: #f4f3ff;
+  border: 1px solid #e0dcfe;
+  color: #6150df;
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: -0.1px;
+}
+
+.bk-loading-indicator i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6150df;
+  box-shadow: 0 0 10px rgba(97, 80, 223, 0.7);
+  animation: bk-dot-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes bk-dot-glow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.65); opacity: 0.35; }
+}
+
+.dark .bk-loading-indicator {
+  background: #252243;
+  border-color: #3b356c;
+  color: #a99cf8;
+}
+
+.dark .bk-loading-indicator i {
+  background: #a99cf8;
+  box-shadow: 0 0 10px rgba(169, 156, 248, 0.8);
+}
+
+.bk-skeleton-shell {
+  min-height: 520px;
+}
+
+.bk-skeleton-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bk-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.bk-skeleton-title {
+  height: 24px;
+  width: 78%;
+  border-radius: 8px;
+}
+
+.bk-skeleton-pill {
+  height: 22px;
+  width: 95px;
+  border-radius: 9999px;
+}
+
+.bk-skeleton-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.bk-skeleton-label {
+  height: 10px;
+  width: 35%;
+  border-radius: 4px;
+}
+
+.bk-skeleton-input {
+  height: 36px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.bk-skeleton-step {
+  height: 26px;
+  width: 110px;
+  border-radius: 9999px;
+}
+
+.bk-skeleton-month-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.bk-state-card {
+  max-width: 460px;
+  margin: 36px auto;
+  padding: 38px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: bk-fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bk-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bk-state-orb {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+  color: #6150df;
+  box-shadow: 0 10px 25px -5px rgba(97, 80, 223, 0.25);
+}
+
+.bk-state-orb.danger {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #ef4444;
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.22);
+}
+
+.dark .bk-state-orb {
+  background: linear-gradient(135deg, #2c2550, #222544);
+  color: #a494f8;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.dark .bk-state-orb.danger {
+  background: linear-gradient(135deg, #441f27, #36171d);
+  color: #f87171;
+}
+
+.bk-state-card h2 {
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--bk-text);
+  letter-spacing: -0.4px;
+}
+
+.bk-state-card p {
+  font-size: 13px;
+  color: var(--bk-muted);
+  line-height: 1.6;
+  max-width: 380px;
+  margin: 0 0 22px;
+}
+
+.bk-state-form {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bk-state-input-wrap {
+  display: block;
+  width: 100%;
+}
+
+.bk-state-input {
+  width: 100%;
+  min-height: 42px;
+  border: 1.5px solid var(--bk-line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  background: var(--bk-card);
+  color: var(--bk-text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.bk-state-input:focus {
+  border-color: #6150df;
+  box-shadow: 0 0 0 3px rgba(97, 80, 223, 0.15);
+}
+
+.bk-state-btn {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.bk-state-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+

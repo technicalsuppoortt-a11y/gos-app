@@ -12,7 +12,7 @@ export function rangeFor(days: number): FunnelRange {
 export const VIEW_EVENTS = ['page.viewed', 'funnel.viewed', 'asset.viewed'];
 export const LEAD_EVENTS = ['lead.captured', 'form.submitted'];
 export const BOOKING_EVENTS = ['booking.saved'];
-const inRange = (iso: string, range: FunnelRange) => { const day = (iso ?? '').slice(0, 10); return day >= range.start && day <= range.end; };
+const inRange = (iso: string, range: FunnelRange) => { const day = String(iso ?? '').slice(0, 10); return day >= range.start && day <= range.end; };
 export function assetEvents(asset: Asset, events: BusinessEvent[], range?: FunnelRange) {
  return events.filter(event => event.resourceId === asset.id && (!range || inRange(event.createdAt, range)));
 }
@@ -22,7 +22,7 @@ export function funnelSeries(asset: Asset, events: BusinessEvent[], range: Funne
  const scoped = assetEvents(asset, events, range);
  return Array.from({length:days},(_,index)=>{
   const date=new Date(start+index*86400000).toISOString().slice(0,10);
-  const daily=scoped.filter(event=>event.createdAt.slice(0,10)===date);
+  const daily=scoped.filter(event=>String(event.createdAt || '').slice(0,10)===date);
   return {date,views:daily.filter(event=>VIEW_EVENTS.includes(event.type)).length,conversions:daily.filter(event=>LEAD_EVENTS.includes(event.type)).length,bookings:daily.filter(event=>BOOKING_EVENTS.includes(event.type)).length};
  });
 }
@@ -39,7 +39,7 @@ export function funnelLeads(asset: Asset, leads: CanonicalLead[], events: Busine
  return leads.filter(lead => captures.has(lead.id) || (lead as CanonicalLead & { sourceAssetId?: string }).sourceAssetId === asset.id).map(lead => {
   const capture = captures.get(lead.id);
   const tag = lead.bookingStatus === 'Booked' ? 'Booked' : lead.qualificationStatus === 'Qualified' ? 'Qualified' : 'New lead';
-  return { id: lead.id, name: lead.name, email: lead.email, phone: lead.phone ?? '', step: capture?.step ?? fallbackStep, source: capture?.source ?? lead.source ?? 'Direct', date: (capture?.createdAt ?? lead.createdAt ?? lead.lastActivity ?? '').slice(0, 10), tag };
+  return { id: lead.id, name: lead.name, email: lead.email, phone: lead.phone ?? '', step: capture?.step ?? fallbackStep, source: capture?.source ?? lead.source ?? 'Direct', date: String(capture?.createdAt ?? lead.createdAt ?? lead.lastActivity ?? '').slice(0, 10), tag };
  });
 }
 export function downloadLeads(rows: FunnelLeadRow[],assetId:string) {

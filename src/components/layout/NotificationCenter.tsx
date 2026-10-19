@@ -1,5 +1,5 @@
 import { useCloudState, useEntities } from '../../backend/workspace';
-import { eventLabel, resourceLabel, type BusinessEvent } from '../../backend/metrics';
+import { eventLabel, parseTimestampMs, resourceLabel, toIsoDateString, type BusinessEvent } from '../../backend/metrics';
 import { useLocation } from 'react-router-dom';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -28,7 +28,7 @@ function NotificationCenterContent() {
   const isUserWorkspace = useLocation().pathname.startsWith('/dashboard');
   const events = useEntities<BusinessEvent>('events');
   const [readIds, setReadIds] = useCloudState<string[]>(key, []);
-  const notices: Notice[] = isUserWorkspace ? [...events].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0,100).map(event => ({ id:event.id, category: /booking/.test(event.type) ? 'Bookings' : /lead/.test(event.type) ? 'Leads' : 'System', en:eventLabel(event.type), ar:eventLabel(event.type), detail:resourceLabel(event.resource), detailAr:resourceLabel(event.resource), at:event.createdAt, read:readIds.includes(event.id) })) : legacyNotices;
+  const notices: Notice[] = isUserWorkspace ? [...events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt)).slice(0,100).map(event => ({ id:event.id, category: /booking/.test(event.type) ? 'Bookings' : /lead/.test(event.type) ? 'Leads' : 'System', en:eventLabel(event.type), ar:eventLabel(event.type), detail:resourceLabel(event.resource), detailAr:resourceLabel(event.resource), at:toIsoDateString(event.createdAt), read:readIds.includes(event.id) })) : legacyNotices;
   const [position, setPosition] = React.useState({ top: 65, left: 0, width: 400 });
   const trigger = React.useRef<HTMLButtonElement>(null), panel = React.useRef<HTMLElement>(null); const id = React.useId();
   React.useEffect(() => { if (isUserWorkspace) return; try { localStorage.setItem(key, JSON.stringify(notices)); } catch {} }, [key, legacyNotices, isUserWorkspace]);
@@ -46,7 +46,10 @@ function NotificationCenterContent() {
   }, [open]);
   const filtered = notices.filter(n => tab === 'All' || n.category === tab);
   const categoryName = (category: Category) => ({ All: t('All', 'الكل'), Leads: t('Leads', 'العملاء'), Bookings: t('Bookings', 'الحجوزات'), System: t('System', 'النظام') }[category]);
-  const timestamp = (date: string) => new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(date));
+  const timestamp = (date: string) => {
+    const ms = parseTimestampMs(date);
+    return new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(ms || Date.now()));
+  };
   return <><button ref={trigger} className="layout-notifications nc-trigger" aria-label={t('Notifications', 'الإشعارات')} aria-expanded={open} aria-controls={id} onClick={() => setOpen(o => !o)}><Bell size={18}/>{!!unread && <span className="nc-count">{unread}</span>}</button>
     {open && createPortal(<section ref={panel} id={id} className="nc-popover" role="dialog" aria-label={t('Notification center', 'مركز الإشعارات')} dir={ar ? 'rtl' : 'ltr'} style={position}>
       <div className="nc-heading"><div><h2>{t('Notifications', 'الإشعارات')}<span>{unread}</span></h2><p>{t('Your workspace, at a glance.', 'نظرة سريعة على مساحة عملك.')}</p></div><button aria-label={t('Close notifications', 'إغلاق الإشعارات')} onClick={() => { setOpen(false); trigger.current?.focus(); }}><X size={17}/></button></div>

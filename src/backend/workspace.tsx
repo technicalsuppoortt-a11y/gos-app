@@ -12,6 +12,31 @@ import { WorkspaceLoading } from '../components/common/WorkspaceLoading';
 
 const isAuthFailure = (error: unknown) => ['permission-denied', 'unauthenticated'].includes((error as { code?: string })?.code || '');
 
+function normalizeFirestoreData<T>(val: T): T {
+  if (val === null || val === undefined) return val;
+  if (typeof val === 'object') {
+    const raw = val as unknown as Record<string, unknown>;
+    if (typeof raw.toDate === 'function') {
+      return (raw.toDate as () => Date)().toISOString() as unknown as T;
+    }
+    if (typeof raw.toMillis === 'function') {
+      return new Date((raw.toMillis as () => number)()).toISOString() as unknown as T;
+    }
+    if (typeof raw.seconds === 'number' && typeof raw.nanoseconds === 'number') {
+      return new Date(raw.seconds * 1000 + Math.floor(raw.nanoseconds / 1000000)).toISOString() as unknown as T;
+    }
+    if (Array.isArray(val)) {
+      return val.map(item => normalizeFirestoreData(item)) as unknown as T;
+    }
+    const res: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(val)) {
+      res[k] = normalizeFirestoreData(v);
+    }
+    return res as T;
+  }
+  return val;
+}
+
 // Compatibility boundary for existing editors. No browser persistence or sample fallback.
 // All data is scoped by the authenticated tenant, and cleared on account/workspace changes.
 const cache = new Map<string, string>();
@@ -155,8 +180,8 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       unsubscribers = [...pending].map(resource => onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', store.getState().auth.user!.id)) : collection(db, 'tenants', scope, resource), snapshot => {
       if (resource === 'workspaceState') {
         for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
-        snapshot.forEach(item => { const data = item.data(); cache.set(data.key, JSON.stringify(data.value)); });
-      } else cache.set(`entity:${resource}`, JSON.stringify(snapshot.docs.map(item => ({ ...item.data(), id: item.id }))));
+        snapshot.forEach(item => { const data = normalizeFirestoreData(item.data()); cache.set(data.key, JSON.stringify(data.value)); });
+      } else cache.set(`entity:${resource}`, JSON.stringify(snapshot.docs.map(item => normalizeFirestoreData({ ...item.data(), id: item.id }))));
       if (resource === 'leads' || resource === 'pipelines') hydrate();
       pending.delete(resource);
       if (!pending.size && !failed) { loaded = true; setStatus({ scope, ready: true, error: '' }); }

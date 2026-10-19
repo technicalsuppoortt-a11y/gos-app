@@ -1,5 +1,6 @@
 import { cloudStorage } from '../../backend/workspace';
 import { useSyncExternalStore } from 'react';
+import { toIsoDateString } from '../../backend/metrics';
 
 export interface CommerceTransaction {
   id: string;
@@ -33,7 +34,7 @@ function normalize(row: StoredTransaction): CommerceTransaction {
   let amount: string;
   try { amount = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountValue); }
   catch { amount = `${amountValue.toFixed(2)} ${currency}`; }
-  return { id: row.id, date: (row.createdAt ?? row.date ?? '').slice(0, 10), productName: row.productName || '—', amount, amountValue, currency, status: normalizeStatus(row.status), customerName: row.customerName, customerEmail: row.customerEmail, method: row.method };
+  return { id: row.id, date: toIsoDateString(row.createdAt ?? row.date).slice(0, 10), productName: row.productName || '—', amount, amountValue, currency, status: normalizeStatus(row.status), customerName: row.customerName, customerEmail: row.customerEmail, method: row.method };
 }
 let raw: string | null = null;
 let transactionsCache: CommerceTransaction[] = EMPTY;
@@ -43,7 +44,7 @@ function readTransactions(): CommerceTransaction[] {
   raw = next;
   try {
     const parsed: unknown = JSON.parse(next ?? '[]');
-    transactionsCache = Array.isArray(parsed) ? parsed.filter(row => row && typeof row.id === 'string').map(normalize).sort((a, b) => b.date.localeCompare(a.date)) : EMPTY;
+    transactionsCache = Array.isArray(parsed) ? parsed.filter(row => row && typeof row.id === 'string').map(normalize).sort((a, b) => (b.date || '').localeCompare(a.date || '')) : EMPTY;
   } catch { transactionsCache = EMPTY; }
   return transactionsCache;
 }

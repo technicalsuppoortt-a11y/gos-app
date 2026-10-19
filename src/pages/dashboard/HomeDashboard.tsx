@@ -1,4 +1,4 @@
-import { eventLabel, resourceLabel, useBusinessMetrics } from '../../backend/metrics';
+import { eventLabel, parseTimestampMs, resourceLabel, useBusinessMetrics } from '../../backend/metrics';
 import { useEntities } from '../../backend/workspace';
 import type { Asset } from '../asset-model';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
@@ -1201,7 +1201,7 @@ function RevenueOverview() {
 
 function RecentActivity() {
   const m = useBusinessMetrics();
-  const ACTIVITY = [...m.events].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map(event => ({ text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(event.createdAt).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
+  const ACTIVITY = [...m.events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt)).map(event => ({ text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
   useUILanguage();
   const navigate = useNavigate();
   return (
