@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteField, onSnapshot, query, where } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, deleteUser, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
+import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { store, type RootState } from '../store';
 import { beginActivation, endActivation } from './session';
 import type { Role, Tenant } from '../types/auth';
@@ -10,6 +10,7 @@ import { auth, backendError, callBackend, db, sendOfficialPasswordResetEmail } f
 import { showToast } from '../utils/toast';
 
 const links = new Map<string, string>();
+const linkRequests = new Map<string, Promise<string>>();
 export function activationUrl(id: string) { return links.get(id) ?? ''; }
 
 export function generateActivationLink(id: string, email: string): string {
@@ -21,9 +22,13 @@ export async function getActivationLink(id: string): Promise<string> {
   const existing = links.get(id);
   if (existing) return existing;
 
-  const result = await callBackend<{ link: string }>('manageUser', { operation: 'activationLink', id });
-  links.set(id, result.link);
-  return result.link;
+  const pending = linkRequests.get(id);
+  if (pending) return pending;
+  const request = callBackend<{ link: string }>('manageUser', { operation: 'activationLink', id })
+    .then(result => { links.set(id, result.link); return result.link; })
+    .finally(() => { linkRequests.delete(id); });
+  linkRequests.set(id, request);
+  return request;
 }
 
 export interface ActivationResult {
@@ -87,49 +92,7 @@ export function isEmailExistsError(error: unknown): boolean {
   return code === 'auth/email-already-in-use' || message.includes('EMAIL_EXISTS');
 }
 
-type FoundInvite = { id: string; data: Record<string, any> };
-const isPermissionDenied = (error: unknown) => (error as { code?: string })?.code === 'permission-denied';
-
-/**
- * Finds the invitation for a user, in order:
- *  1. their own record (users/{uid});
- *  2. a Pending record with the same email (the invite ID in the link is not required);
- *  3. the invite ID from the link, as a last resort.
- * Throws LOOKUP_BLOCKED if nothing was found and Firestore rules denied a read.
- */
-async function findInvite(uid: string, inviteId: string, email: string): Promise<FoundInvite | null> {
-  let blocked = false;
-  try {
-    const own = await getDoc(doc(db, 'users', uid));
-    if (own.exists()) return { id: uid, data: own.data() };
-  } catch (error) { blocked ||= isPermissionDenied(error); }
-
-  try {
-    const pending = await getDocs(query(collection(db, 'users'), where('email', '==', email), where('status', '==', 'Pending')));
-    if (!pending.empty) return { id: pending.docs[0].id, data: pending.docs[0].data() };
-  } catch (error) { blocked ||= isPermissionDenied(error); }
-
-  if (inviteId && inviteId !== uid) {
-    try {
-      const invited = await getDoc(doc(db, 'users', inviteId));
-      if (invited.exists() && String(invited.data().email || '').toLowerCase() === email) return { id: inviteId, data: invited.data() };
-    } catch (error) { blocked ||= isPermissionDenied(error); }
-  }
-
-  if (blocked) throw new ActivationError('LOOKUP_BLOCKED');
-  return null;
-}
-
-/**
- * Activates an invited account (Pending -> Active).
- *
- * - `afterReset: true`: the password was just set through the official Firebase reset
- *   link, so signing in with it is valid.
- * - Otherwise a new Firebase Auth account is created. If the email already exists, we
- *   never guess the password: a password setup email is sent and EXISTING_ACCOUNT is thrown.
- *
- * The session itself is resolved by FirebaseSession once activation finishes.
- */
+/** Complete a server-provisioned invitation after a successful password sign-in. */
 export async function activateInvitedUser(params: {
   email: string;
   id?: string;
@@ -137,120 +100,41 @@ export async function activateInvitedUser(params: {
   afterReset?: boolean;
 }): Promise<ActivationResult> {
   const email = params.email.trim().toLowerCase();
-  const inviteId = params.id ? String(params.id).trim() : '';
   if (!email) throw new ActivationError('NO_INVITE');
-
   beginActivation();
-  // True when this attempt created the Auth account, so a failure can roll it back.
-  let createdAccount: User | null = null;
   try {
-    // 1. Firebase Auth identity
-    let authUser: User;
-    if (params.afterReset) {
-      try {
-        authUser = (await signInWithEmailAndPassword(auth, email, params.password)).user;
-      } catch {
-        throw new ActivationError('AUTH_FAILED');
-      }
-    } else if (auth.currentUser && auth.currentUser.email?.toLowerCase() === email) {
-      authUser = auth.currentUser;
-    } else {
-      try {
-        authUser = (await createUserWithEmailAndPassword(auth, email, params.password)).user;
-        createdAccount = authUser;
-      } catch (error) {
-        if (isEmailExistsError(error)) {
-          // Never guess the password of an existing account. Firebase's reset page sets it,
-          // and its Continue button brings the user back here to the finish step.
-          await sendOfficialPasswordResetEmail(email, `${generateActivationLink(inviteId, email)}&stage=finish`);
-          throw new ActivationError('EXISTING_ACCOUNT');
-        }
-        throw new ActivationError('AUTH_FAILED');
-      }
-    }
-
-    // 2. Invitation record
-    const invite = await findInvite(authUser.uid, inviteId, email);
-    if (!invite) throw new ActivationError('NO_INVITE');
-    if (invite.data.status === 'Deactivated') throw new ActivationError('DEACTIVATED');
-    const role = invite.data.role as Role;
-    const tenantId = invite.data.tenantId as string;
-    if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || !tenantId) throw new ActivationError('NO_INVITE');
-    const name = invite.data.name || email.split('@')[0];
-    const now = new Date().toISOString();
-
-    // 3. Pending -> Active
+    let user;
     try {
-      await setDoc(doc(db, 'users', authUser.uid), {
-        ...invite.data,
-        id: authUser.uid,
-        email,
-        name,
-        role,
-        tenantId,
-        status: 'Active',
-        activatedAt: now,
-        tempAuthKey: deleteField(),
-      }, { merge: true });
+      user = (await signInWithEmailAndPassword(auth, email, params.password)).user;
     } catch {
-      throw new ActivationError('WRITE_FAILED');
+      if (!params.afterReset) {
+        const sent = await sendOfficialPasswordResetEmail(email, generateActivationLink(params.id || '', email) + '&stage=finish');
+        if (sent) throw new ActivationError('EXISTING_ACCOUNT');
+      }
+      throw new ActivationError('AUTH_FAILED');
     }
-
-    if (invite.id !== authUser.uid) {
-      // Mark the provisional invitation as consumed so admins don't see a stale Pending row.
-      try {
-        await updateDoc(doc(db, 'users', invite.id), { status: 'Active', activatedAt: now, activatedUid: authUser.uid, tempAuthKey: deleteField() });
-      } catch { /* non-blocking */ }
-    }
-
-    try {
-      await setDoc(doc(db, 'tenants', tenantId, 'members', authUser.uid), {
-        id: authUser.uid,
-        name,
-        email,
-        active: true,
-        updatedAt: now,
-        // A member document under a new UID needs its role and permissions.
-        ...(invite.id !== authUser.uid ? { role: role === 'ADMIN' ? 'Admin' : 'Owner', permissions: ['*'] } : {}),
-      }, { merge: true });
-    } catch {
-      throw new ActivationError('WRITE_FAILED');
-    }
-
-    try {
-      const key = 'gos_local_mock_invites';
-      const current = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = current.map((u: any) =>
-        u.id === invite.id || u.id === authUser.uid || u.email?.toLowerCase() === email
-          ? { ...u, status: 'Active', id: authUser.uid }
-          : u
-      );
-      localStorage.setItem(key, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('gos:invites-updated'));
-    } catch { /* noop */ }
-
+    await callBackend('activateUser', {});
+    const profile = (await getDoc(doc(db, 'users', user.uid))).data();
+    if (!profile || profile.status !== 'Active') throw new ActivationError('WRITE_FAILED');
     return {
       success: true,
-      user: { id: authUser.uid, email, name, avatar: invite.data.avatar },
-      role,
-      tenant: { id: tenantId, name: invite.data.tenantName || 'Your workspace' },
-      token: await authUser.getIdToken(),
+      user: { id: user.uid, email, name: profile.name || email.split('@')[0], avatar: profile.avatar },
+      role: profile.role as Role,
+      tenant: { id: profile.tenantId, name: profile.tenantName || 'Your workspace' },
+      token: await user.getIdToken(true),
     };
   } catch (error) {
-    // Remove an account created by this failed attempt so retrying the same link works,
-    // and never leave a half-activated user signed in.
-    if (createdAccount) {
-      try { await deleteUser(createdAccount); } catch { /* noop */ }
-    }
     try { await signOut(auth); } catch { /* noop */ }
-    throw error instanceof ActivationError ? error : new ActivationError('AUTH_FAILED');
+    if (error instanceof ActivationError) throw error;
+    if ((error as { code?: string }).code === 'functions/permission-denied') throw new ActivationError('DEACTIVATED');
+    throw new ActivationError('WRITE_FAILED');
   } finally {
     await endActivation();
   }
 }
 
 export async function manageAccount(operation: string, data: Record<string, unknown>) {
-  const result = await callBackend<{ id?: string; link?: string; alreadyExists?: boolean }>('manageUser', { ...data, operation });
+  const result = await callBackend<{ id?: string; link?: string; alreadyExists?: boolean; status?: Invite['status']; tenantId?: string }>('manageUser', { ...data, operation });
   if (result.id && result.link) links.set(result.id, result.link);
   return result;
 }

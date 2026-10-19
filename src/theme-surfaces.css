@@ -25,6 +25,7 @@ html.dark :is(
   .fb-mini-calendar,
   .fb-mini-canvas,
   .fb-step-snapshot-frame,
+  .gos-activation-account,
   .ob-root,
   .ob-setup-main,
   .ob-activation-grid,
@@ -203,6 +204,7 @@ html.dark :is(
   .tool-purple,
   .tool-green,
   .tool-indigo,
+  .gos-activation-state-icon,
   .ob-avatar,
   .ob-track,
   .ob-progress-meter,
@@ -466,6 +468,8 @@ html.dark :is(
   .fn-device-ring small,
   .fn-leads>footer,
   .fn-integration-grid p,
+  .gos-activation-account>span,
+  .gos-activation-input>button,
   .ob-field>small,
   .ob-step-sidebar>p,
   .ob-sidebar-bottom svg,
@@ -603,6 +607,10 @@ html.dark :is(
   .fb-booking-secure,
   .fn-no-results,
   .fn-connection,
+  .gos-activation-help,
+  .gos-activation-signin,
+  .gos-activation-footer,
+  .gos-activation-caption,
   .ob-eyebrow,
   .ob-optional,
   .ob-demo-note,
@@ -698,6 +706,7 @@ html.dark :is(
   .fb-booking-time-title,
   .fn-date-range,
   .fn-focus-caption,
+  .gos-activation-loading,
   .ob-field,
   .ob-icon,
   .ob-back,
@@ -1943,6 +1952,7 @@ html.dark :is(
   .cw-empty-content,
   .crm-stage-add,
   .fb-block-search,
+  .gos-activation-input,
   .ob-search
 ):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
@@ -2426,6 +2436,7 @@ html.dark :is(
   .fb-mode-switch,
   .fb-background-thumb,
   .fb-step-thumb,
+  .gos-activation-error-box,
   .st-connection-account,
   .tl-library,
   .tl-safe,
@@ -5093,6 +5104,13 @@ html.dark :is(
   .fn-integrations>header p
 ):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-muted)
+}
+html.dark :is(
+  .gos-activation-heading>p,
+  .gos-activation-success>p,
+  .gos-activation-invalid>p
+):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text-secondary)
 }
 html.dark :is(
   .ob-top>a:last-child:not(.ob-brand)

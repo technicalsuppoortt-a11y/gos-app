@@ -32,6 +32,21 @@ Do not put API keys in Vite variables or commit secret values.
 
 Admin operations call `manageUser`; errors are surfaced rather than falling back to local invitations. The server creates Auth accounts, stamps role/tenant claims and returns official password-setup links.
 
+Invitations from `manageUser` and team provisioning initialize the profile and membership as `status: Pending`, with `member.active: false`. Password setup alone does not change this. After successful password sign-in, the login session handler or activation page calls the authenticated `activateUser` endpoint. The endpoint activates both documents in one transaction, retaining the existing role and permissions. It is idempotent and refuses deactivated accounts. Admin status controls cannot bypass Pending activation. The table and invitation dialog use the Firestore status, including live changes.
+
+`activateUser` is deployed alongside the original ten functions. Verify the lifecycle without loading the full Google Cloud SDK:
+
+```sh
+node scripts/smoke-onboarding.mjs /absolute/path/to/.config/configstore/firebase-tools.json
+node tests/onboarding-browser.test.mjs
+```
+
+The live test uses the Firebase CLI's cached OAuth session, creates disposable accounts and records, and deletes them after checking provisioning, password setup, failed login, successful activation, the admin Firestore query, repeat requests and deactivation. Existing production users are not modified by this test or rollout.
+
+The onboarding correction passed all 20 backend tests, the production TypeScript/build checks, and the disposable live lifecycle test. Password setup and failed login both retained Pending; successful password sign-in followed by `activateUser` activated the profile and membership together. The authenticated admin query returned the updated status, duplicate activation was safe, and a deactivated account could not reactivate. All test records and accounts were removed.
+
+The corrected frontend was published to Firebase Hosting. Live `/admin/users` and `/auth/login` serve the new bundle. The focused headless browser test also passed: the actual admin table reflected Pending, Active and Deactivated status snapshots, and manual activation of Pending invitations was disabled.
+
 `EmailActionPage` handles `mode=verifyEmail` with `applyActionCode`, independently of password reset. Existing reset and activation routes remain available.
 
 `/book/:slug` uses `publicBooking`, with no sign-in requirement. Availability contains anonymous busy intervals. Creation shares the same tenant schedule-lock document as authenticated `saveBookings`, preventing concurrent double booking. Changes require a private session-stored management token. Password-protected calendars are checked on the server. Booking success is shown only after the server confirms the write.

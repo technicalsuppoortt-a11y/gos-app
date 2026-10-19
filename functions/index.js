@@ -7,10 +7,13 @@ import { mayManageUser, maySend, validateBooking } from './policy.js';
 import { createHash } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
+import { completeUserActivation } from './onboarding.js';
+import { buildActivationLink } from './activation-links.js';
 
 // Allows deploying the remaining services while the owner provisions the AI secret.
 const openaiKey = process.env.DEPLOY_COPILOT === 'false' ? null : defineSecret('OPENAI_API_KEY');
 const openaiModel = defineString('OPENAI_MODEL', { default: 'gpt-4o' });
+const appOrigin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
 setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', maxInstances: 10 });
 
 initializeApp();
@@ -30,6 +33,7 @@ async function workspace(request, permission) {
 function audit(root, user, type, resourceId, extra = {}) {
   return root.collection('events').add({ type, resourceId, actorId: user.uid, createdAt: new Date().toISOString(), ...extra });
 }
+export const activateUser = onCall(request => completeUserActivation(request, { db, auth }));
 export const manageUser = onCall(async request => {
   const user = await actor(request);
   if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) throw new HttpsError('permission-denied', 'Administrator access is required.');
@@ -42,19 +46,19 @@ export const manageUser = onCall(async request => {
     try {
       await auth.setCustomUserClaims(account.uid, { role, tenantId });
       const batch = db.batch();
-      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, status: 'Active', created: new Date().toISOString(), mfa: false });
+      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, status: 'Pending', created: new Date().toISOString(), mfa: false });
       batch.create(db.doc(`tenants/${tenantId}`), { name: `${account.displayName}'s workspace`, ownerId: account.uid });
-      batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', active: true, permissions: ['*'] });
+      batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status: 'Pending', active: false, permissions: ['*'] });
       batch.create(db.collection('userManagementAudit').doc(), { actorId: user.uid, type: 'user.created', userId: account.uid, createdAt: FieldValue.serverTimestamp() });
       await batch.commit();
     } catch (error) { await auth.deleteUser(account.uid); throw error; }
-    const link = await auth.generatePasswordResetLink(account.email);
-    return { id: account.uid, link };
+    const link = buildActivationLink(await auth.generatePasswordResetLink(account.email), appOrigin.value());
+    return { id: account.uid, link, status: 'Pending', tenantId };
   }
   if (typeof id !== 'string' || id.includes('/')) throw new HttpsError('invalid-argument', 'Invalid account.');
   const ref = db.doc(`users/${id}`), target = (await ref.get()).data();
   if (!target || !mayManageUser(user, { ...target, id })) throw new HttpsError('permission-denied', 'You cannot modify this account.');
-  if (operation === 'activationLink') return { link: await auth.generatePasswordResetLink(target.email) };
+  if (operation === 'activationLink') return { link: buildActivationLink(await auth.generatePasswordResetLink(target.email), appOrigin.value()) };
   if (operation === 'role') {
     if (user.role !== 'SUPER_ADMIN' || !['USER', 'ADMIN'].includes(role)) throw new HttpsError('permission-denied', 'Only a super administrator can assign administrator roles.');
     const account = await auth.getUser(id);
@@ -63,12 +67,15 @@ export const manageUser = onCall(async request => {
     await auth.revokeRefreshTokens(id);
   } else if (operation === 'status') {
     const disabled = request.data.status === 'Deactivated';
+    if (!disabled && ['Pending', 'Invited'].includes(target.status)) throw new HttpsError('failed-precondition', 'This user must set their password and sign in to activate their invitation.');
+    const account = await auth.getUser(id);
+    const nextStatus = disabled ? 'Deactivated' : target.activatedAt || account.metadata.lastSignInTime ? 'Active' : 'Pending';
     // Deny access in Firestore before revoking Auth sessions.
     if (disabled) await ref.update({ status: 'Deactivated' });
     await auth.updateUser(id, { disabled });
     if (disabled) await auth.revokeRefreshTokens(id);
-    await ref.update({ status: disabled ? 'Deactivated' : 'Active' });
-    await db.doc(`tenants/${target.tenantId}/members/${id}`).update({ active: !disabled });
+    await ref.update({ status: nextStatus });
+    await db.doc(`tenants/${target.tenantId}/members/${id}`).update({ status: nextStatus, active: nextStatus === 'Active' });
   } else if (operation === 'delete') {
     await ref.update({ status: 'Deactivated' });
     await auth.deleteUser(id);
@@ -207,7 +214,7 @@ export const settingsService = onCall(async request => {
       account = await auth.createUser({ email: body.email, displayName: body.name }); id = account.uid;
       try {
         await auth.setCustomUserClaims(id, { role: 'USER', tenantId: user.tenantId });
-        await db.doc(`users/${id}`).create({ id, name: body.name, email: body.email, role: 'USER', tenantId: user.tenantId, status: body.active ? 'Active' : 'Deactivated', created: new Date().toISOString(), mfa: false });
+        await db.doc(`users/${id}`).create({ id, name: body.name, email: body.email, role: 'USER', tenantId: user.tenantId, status: 'Pending', created: new Date().toISOString(), mfa: false });
       } catch (error) { await auth.deleteUser(id); throw error; }
     } else {
       if (!id || id === user.uid || id.includes('/')) throw new HttpsError('permission-denied', 'You cannot change your own access.');
@@ -218,8 +225,14 @@ export const settingsService = onCall(async request => {
     if (method === 'DELETE') {
       await ref.delete(); await db.doc(`users/${id}`).update({ status: 'Deactivated' }); await auth.revokeRefreshTokens(id);
     } else {
-      await ref.set({ name: body.name, email: body.email, role: body.role, active: body.active === true, permissions: body.permissions });
-      await db.doc(`users/${id}`).update({ name: body.name, status: body.active ? 'Active' : 'Deactivated' });
+      const profile = (await db.doc(`users/${id}`).get()).data();
+      const account = await auth.getUser(id);
+      const completed = !['Pending', 'Invited'].includes(profile.status) && (profile.activatedAt || account.metadata.lastSignInTime);
+      const status = path === '/team' && method === 'POST' ? 'Pending' : !body.active ? 'Deactivated' : completed ? 'Active' : 'Pending';
+      const batch = db.batch();
+      batch.set(ref, { name: body.name, email: body.email, role: body.role, status, active: status === 'Active', permissions: body.permissions });
+      batch.update(db.doc(`users/${id}`), { name: body.name, status });
+      await batch.commit();
       if (!body.active) await auth.revokeRefreshTokens(id);
     }
     await root.collection('auditLogs').add({ actorId: user.uid, description: `Team member ${method === 'DELETE' ? 'removed' : 'saved'}: ${id}`, createdAt: new Date().toISOString() });

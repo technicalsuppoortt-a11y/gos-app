@@ -23,7 +23,7 @@ import {
 import type { RootState } from '../../store';
 import { Combobox } from '../../components/ui/Combobox';
 import type { Invite } from './onboarding-store';
-import { useAdminUsers, manageAccount, activationUrl, getActivationLink, generateActivationLink } from '../../backend/adminUsers';
+import { useAdminUsers, manageAccount, activationUrl, getActivationLink } from '../../backend/adminUsers';
 import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import './onboarding.css';
@@ -77,7 +77,7 @@ function UserActions({
 
   React.useEffect(() => {
     if (!open) return;
-    const frame = requestAnimationFrame(() => menu.current?.querySelector<HTMLElement>('button,a')?.focus());
+    const frame = requestAnimationFrame(() => menu.current?.querySelector<HTMLElement>('button:not([disabled]),a')?.focus());
     const outside = (e: PointerEvent) => {
       if (!menu.current?.contains(e.target as Node) && !anchor.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -111,6 +111,7 @@ function UserActions({
   };
 
   const isActive = invite.status === 'Active' || invite.status === 'Activated';
+  const isPending = invite.status === 'Pending' || invite.status === 'Invited';
 
   return (
     <>
@@ -137,7 +138,7 @@ function UserActions({
             onKeyDown={e => {
               if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                 e.preventDefault();
-                const items = Array.from(menu.current!.querySelectorAll<HTMLElement>('[role=menuitem]'));
+                const items = Array.from(menu.current!.querySelectorAll<HTMLElement>('[role=menuitem]:not([disabled])'));
                 const index = items.indexOf(document.activeElement as HTMLElement);
                 items[(index + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
               }
@@ -145,13 +146,14 @@ function UserActions({
           >
             <button
               role="menuitem"
+              disabled={isPending}
               onClick={() => {
                 onToggleStatus();
                 setOpen(false);
               }}
             >
               {isActive ? <UserX size={14} /> : <UserCheck size={14} />}
-              {isActive ? t('Deactivate account', 'تعطيل الحساب') : t('Activate account', 'تفعيل الحساب')}
+              {isPending ? t('Awaiting first sign-in', 'بانتظار تسجيل الدخول الأول') : isActive ? t('Deactivate account', 'تعطيل الحساب') : t('Activate account', 'تفعيل الحساب')}
             </button>
             <button
               role="menuitem"
@@ -163,16 +165,16 @@ function UserActions({
               <Copy size={14} />
               {t('Copy activation link', 'نسخ رابط التفعيل')}
             </button>
-            <a
+            <InvitationLink
               role="menuitem"
-              href={activationUrl(invite.id) || generateActivationLink(invite.id, invite.email)}
+              userId={invite.id}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
             >
               <ArrowUpRight size={14} />
               {t('Open activation', 'فتح صفحة التفعيل')}
-            </a>
+            </InvitationLink>
             <button
               role="menuitem"
               onClick={() => {
@@ -202,6 +204,16 @@ function UserActions({
   );
 }
 
+function InvitationLink({ userId, ...props }: React.ComponentProps<'a'> & { userId: string }) {
+  const [link, setLink] = React.useState(() => activationUrl(userId));
+  React.useEffect(() => {
+    let active = true;
+    getActivationLink(userId).then(value => { if (active) setLink(value); }).catch(error => { if (active) showToast.error(backendError(error)); });
+    return () => { active = false; };
+  }, [userId]);
+  return <a {...props} href={link || undefined} aria-disabled={!link} onClick={event => { if (!link) { event.preventDefault(); return; } props.onClick?.(event); }}/>;
+}
+
 export function AdminUsers() {
   const { invites, loading, error: loadError } = useAdminUsers();
   const [busy, setBusy] = React.useState(false);
@@ -211,6 +223,8 @@ export function AdminUsers() {
 
   const [open, setOpen] = React.useState(false);
   const [sent, setSent] = React.useState<Invite | null>(null);
+  const [setupLink, setSetupLink] = React.useState('');
+  const [copiedLink, setCopiedLink] = React.useState(false);
   const [deletingUser, setDeletingUser] = React.useState<Invite | null>(null);
 
   const [query, setQuery] = React.useState('');
@@ -235,9 +249,16 @@ export function AdminUsers() {
     else deleteDialog.current?.close();
   }, [deletingUser]);
 
-  const copy = async (id: string, email?: string) => {
+  React.useEffect(() => {
+    let active = true;
+    setSetupLink(sent ? activationUrl(sent.id) : '');
+    if (sent) getActivationLink(sent.id).then(link => { if (active) setSetupLink(link); }).catch(error => { if (active) showToast.error(backendError(error)); });
+    return () => { active = false; };
+  }, [sent?.id]);
+
+  const copy = async (id: string, _email?: string) => {
     try {
-      const link = (await getActivationLink(id)) || (email ? generateActivationLink(id, email) : '');
+      const link = await getActivationLink(id);
       if (link) {
         await navigator.clipboard.writeText(link);
         showToast.success(t('Activation link copied', 'تم نسخ رابط التفعيل'));
@@ -252,8 +273,11 @@ export function AdminUsers() {
   const getStatus = (invite: Invite) => {
     if (invite.status === 'Deactivated') return 'Deactivated';
     if (invite.status === 'Pending' || invite.status === 'Invited') return 'Pending';
-    return 'Active';
+    if (invite.status === 'Active' || invite.status === 'Activated') return 'Active';
+    return invite.status;
   };
+
+  const sentStatus = sent ? getStatus(invites.find(invite => invite.id === sent.id) || sent) : 'Pending';
 
   const statusName = (value: string) =>
     ({
@@ -588,65 +612,208 @@ export function AdminUsers() {
         </button>
         {sent ? (
           <div>
-            <span className="ob-orb success">
-              <Check />
-            </span>
-            <h2>{t('User Provisioned & Invitation Ready', 'تم إنشاء المستخدم والدعوة جاهزة')}</h2>
-            <p>
-              {t('A pending user profile has been created for', 'تم إنشاء ملف مستخدم معلق لـ')}{' '}
-              <strong dir="ltr">{sent.email}</strong>.
-            </p>
-            <div className="ob-callout" style={{ margin: '14px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="ob-badge amber" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
-                  {t('Status: Pending', 'الحالة: قيد الانتظار')}
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--ob-muted)' }}>
-                  {t('Registered in Firebase Auth & Firestore with status: "Pending"', 'تم التسجيل في Firebase Auth وقاعدة البيانات بحالة Pending')}
-                </span>
-              </div>
-              <div style={{ fontSize: '11px', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Check size={14} />
-                <span>{t('Official password setup email triggered via Firebase Auth', 'تم إرسال بريد إعداد كلمة المرور الرسمي من Firebase')}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+              <span className="ob-orb success" style={{ margin: 0, width: '42px', height: '42px', flexShrink: 0 }}>
+                <Check size={20} strokeWidth={2.5} />
+              </span>
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>
+                  {t('User Provisioned & Ready', 'تم إنشاء المستخدم بنجاح')}
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--ob-muted, #64748b)' }}>
+                  {t('The user profile is ready for activation and password setup.', 'ملف المستخدم جاهز للتفعيل وتعيين كلمة المرور.')}
+                </p>
               </div>
             </div>
-            <label className="ob-field">
-              {t('Direct Activation / Password Setup Link', 'رابط التفعيل وإعداد كلمة المرور المباشر')}
-              <input
-                dir="ltr"
-                readOnly
-                value={activationUrl(sent.id) || generateActivationLink(sent.id, sent.email)}
-                onFocus={e => e.target.select()}
-              />
-            </label>
-            <button className="ob-secondary ob-full" onClick={() => copy(sent.id, sent.email)}>
-              <Copy size={16} />
-              {t('Copy activation link', 'نسخ رابط التفعيل')}
-            </button>
-            <a
-              className="ob-primary ob-full"
-              href={activationUrl(sent.id) || generateActivationLink(sent.id, sent.email)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t('Preview user activation', 'معاينة تفعيل المستخدم')}
-              <ArrowUpRight size={16} />
-            </a>
-            <p className="ob-demo-note">
-              {t('When the user sets their password and logs in, their status automatically transitions from Pending to Active.', 'عندما يقوم المستخدم بإعداد كلمة المرور وتسجيل الدخول، ستتغير حالته تلقائياً من Pending إلى Active.')}
-            </p>
-            <button
-              type="button"
-              className="ob-secondary ob-full"
-              style={{ marginTop: '12px' }}
-              onClick={() => {
-                setOpen(false);
-                setSent(null);
-                setError('');
+
+            {/* User Profile & Status Pill Card */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                padding: '12px 14px',
+                background: 'var(--ob-soft, #f8fafc)',
+                border: '1px solid var(--ob-border, #e2e8f0)',
+                borderRadius: '12px',
+                margin: '18px 0 16px',
               }}
             >
-              {t('Done', 'تم')}
-            </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <span
+                  className="ob-avatar"
+                  style={{
+                    ...getAvatarStyle(sent.email),
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  {getInitials(sent.name || sent.email)}
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    dir="ltr"
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--ob-foreground, #0f172a)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {sent.email}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--ob-muted, #64748b)' }}>
+                    {sent.role === 'ADMIN' ? t('Platform Administrator', 'مسؤول المنصة') : t('Team Member', 'عضو الفريق')}
+                  </div>
+                </div>
+              </div>
+
+              <span
+                className="ob-badge"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '9999px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  background: sentStatus === 'Active' ? '#ecfdf5' : sentStatus === 'Pending' ? '#fef3c7' : '#fef2f2',
+                  color: sentStatus === 'Active' ? '#047857' : sentStatus === 'Pending' ? '#92400e' : '#b91c1c',
+                  borderColor: sentStatus === 'Active' ? '#a7f3d0' : sentStatus === 'Pending' ? '#fde68a' : '#fecaca',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sentStatus === 'Active' ? '#059669' : sentStatus === 'Pending' ? '#d97706' : '#dc2626' }} />
+                {t('Status:', 'الحالة:')} {statusName(sentStatus)}
+              </span>
+            </div>
+
+            {/* Direct Link Field with Embedded Copy Action */}
+            <div style={{ marginBottom: '16px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--ob-foreground, #334155)',
+                  marginBottom: '6px',
+                }}
+              >
+                {t('Direct Activation / Password Setup Link', 'رابط التفعيل وإعداد كلمة المرور المباشر')}
+              </label>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: 'var(--ob-card, #fff)',
+                  border: '1px solid var(--ob-border, #cbd5e1)',
+                  borderRadius: '10px',
+                  padding: '4px 4px 4px 12px',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                  gap: '8px',
+                }}
+              >
+                <input
+                  dir="ltr"
+                  readOnly
+                  value={setupLink}
+                  placeholder={t('Preparing secure activation link…', 'جارٍ إعداد رابط التفعيل الآمن…')}
+                  onFocus={e => e.target.select()}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    background: 'transparent',
+                    outline: 'none',
+                    fontSize: '12px',
+                    color: 'var(--ob-foreground, #334155)',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    minWidth: 0,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await copy(sent.id, sent.email);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2200);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '7px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: copiedLink ? '#059669' : '#4f46e5',
+                    background: copiedLink ? '#ecfdf5' : '#eef2ff',
+                    border: copiedLink ? '1px solid #a7f3d0' : '1px solid #e0e7ff',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
+                  }}
+                >
+                  {copiedLink ? <Check size={14} /> : <Copy size={14} />}
+                  <span>{copiedLink ? t('Copied!', 'تم النسخ!') : t('Copy', 'نسخ')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Actions Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '18px' }}>
+              <InvitationLink
+                className="ob-secondary"
+                userId={sent.id}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  margin: 0,
+                  height: '42px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                {t('Preview setup', 'معاينة التفعيل')}
+                <ArrowUpRight size={15} />
+              </InvitationLink>
+
+              <button
+                type="button"
+                className="ob-primary"
+                style={{
+                  margin: 0,
+                  height: '42px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+                onClick={() => {
+                  setOpen(false);
+                  setSent(null);
+                  setError('');
+                  setCopiedLink(false);
+                }}
+              >
+                {t('Done', 'تم')}
+              </button>
+            </div>
+
+            <p className="ob-demo-note" style={{ marginTop: '16px', fontSize: '11px', color: 'var(--ob-muted, #94a3b8)' }}>
+              {t('When the user sets their password and logs in, their status automatically transitions from Pending to Active.', 'عندما يقوم المستخدم بإعداد كلمة المرور وتسجيل الدخول، ستتغير حالته تلقائياً من Pending إلى Active.')}
+            </p>
           </div>
         ) : (
           <form
@@ -674,7 +841,7 @@ export function AdminUsers() {
               try {
                 const result = await manageAccount('create', { email, name: invite.name, role });
                 const createdId = result?.id || invite.id;
-                setSent({ ...invite, id: createdId });
+                setSent({ ...invite, id: createdId, status: result?.status || 'Pending', tenantId: result?.tenantId });
                 form.reset();
                 if (result?.alreadyExists) {
                   showToast.info(t('This email already has an account. It was set to Pending and a password reset email was sent — the user must finish activation from that email.', 'هذا البريد مسجل مسبقًا. تم تعيين حالته إلى قيد الانتظار وإرسال رسالة لإعادة تعيين كلمة المرور — يجب على المستخدم إكمال التفعيل من خلالها.'));

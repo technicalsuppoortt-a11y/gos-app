@@ -46,7 +46,7 @@
         ]
       },
       {
-        "source": "/{dashboard,admin,super-admin,auth,login,crm,funnels,websites,domains,book,product-preview}{,/**}",
+        "source": "/{dashboard,onboarding,admin,super-admin,auth,login,crm,funnels,websites,domains,book,product-preview}{,/**}",
         "headers": [
           {
             "key": "Cache-Control",

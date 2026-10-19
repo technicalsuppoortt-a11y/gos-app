@@ -11,6 +11,7 @@ import { EmailActionPage } from '../pages/auth/EmailActionPage';
 import PhoenixSignIn from '../pages/auth/PhoenixSignIn';
 import '../route-loading.css';
 const ActivationPage = lazy(() => import('../pages/auth/ActivationLinkPage').then(module => ({ default: module.ActivationPage })));
+const ActivateAccountPage = lazy(() => import('../pages/onboarding/ActivateAccountPage'));
 // OnboardingWizard is temporarily disabled.
 const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(module => ({ default: module.AdminUsers })));
 
@@ -55,6 +56,7 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 export const router = createBrowserRouter([
   { path: '/auth/phoenix', element: <PhoenixSignIn/> },
   { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
+  { path: '/onboarding/activate-account', element: <Suspended><ActivateAccountPage/></Suspended> },
   // Keep activation links usable while the onboarding cycle is disabled.
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute> },
@@ -74,11 +76,11 @@ export const router = createBrowserRouter([
   { path: '/auth/action', element: <EmailActionPage/> },
   { path: '/__/auth/action', element: <EmailActionPage/> },
   { path: '/auth/*', element: <DefaultRedirect/> },
-  ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
-  { path: '/crm', element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: crmChildren },
+  ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
+  { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren },
   {
     path: '/dashboard',
-    element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },

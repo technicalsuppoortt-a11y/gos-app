@@ -174,9 +174,9 @@ export const LoginPage: React.FC = () => {
       dispatch(loginSuccess(session));
       const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
       const canOpenRequestedPath = session.role === 'SUPER_ADMIN'
-        ? requestedPath?.startsWith('/super-admin') || requestedPath?.startsWith('/dashboard')
+        ? requestedPath?.startsWith('/super-admin')
         : session.role === 'ADMIN'
-          ? requestedPath?.startsWith('/admin') || requestedPath?.startsWith('/dashboard')
+          ? requestedPath?.startsWith('/admin')
           : requestedPath?.startsWith('/dashboard');
       navigate(canOpenRequestedPath ? requestedPath! : destination[session.role], { replace: true });
     })();

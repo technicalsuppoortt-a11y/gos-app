@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db, callBackend } from './firebase';
 import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
 import { WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
@@ -106,7 +106,11 @@ export async function endActivation() {
   if (auth.currentUser) await auth.currentUser.getIdToken(true);
 }
 
-async function resolveSession(user: User): Promise<StoredAuth> {
+async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
+  const tokenResult = await user.getIdTokenResult(forceRefreshToken);
+  const claimRole = (typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role : undefined) as Role | undefined;
+  const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
+
   let data = (await getDoc(doc(db, 'users', user.uid))).data();
 
   // Invited users may have been provisioned under a different document ID.
@@ -117,25 +121,37 @@ async function resolveSession(user: User): Promise<StoredAuth> {
     } catch { /* treated as missing below */ }
   }
 
-  if (!data) throw new SessionError('NO_PROFILE');
-  if (data.status === 'Deactivated') throw new SessionError('DEACTIVATED');
-  if (data.status !== 'Active') throw new SessionError('PENDING');
+  if (!data && !claimRole) throw new SessionError('NO_PROFILE');
+  if (data?.status === 'Deactivated') throw new SessionError('DEACTIVATED');
+  if (data && ['Pending', 'Invited'].includes(data.status)) {
+    await callBackend('activateUser', {});
+    data = (await getDoc(doc(db, 'users', user.uid))).data();
+  }
+  if (data && data.status !== 'Active') throw new SessionError('PENDING');
 
-  const role = data.role as Role;
-  if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || typeof data.tenantId !== 'string' || !data.tenantId) {
+  // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile.
+  const role: Role = (claimRole && ['USER', 'ADMIN', 'SUPER_ADMIN'].includes(claimRole))
+    ? claimRole
+    : (data?.role as Role);
+
+  const tenantId = (typeof claimTenantId === 'string' && claimTenantId)
+    ? claimTenantId
+    : (data?.tenantId as string);
+
+  if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || typeof tenantId !== 'string' || !tenantId) {
     throw new SessionError('NO_WORKSPACE');
   }
   return {
-    user: { id: user.uid, name: data.name || user.displayName || user.email || 'User', email: user.email!, avatar: data.avatar },
+    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email || 'User', email: user.email!, avatar: data?.avatar },
     role,
-    tenant: { id: data.tenantId, name: data.tenantName || 'Your workspace' },
-    token: await user.getIdToken(),
+    tenant: { id: tenantId, name: data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace') },
+    token: tokenResult.token,
   };
 }
 
 export async function login(email: string, password: string) {
   const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-  try { return await resolveSession(credential.user); }
+  try { return await resolveSession(credential.user, true); }
   catch (error) { await signOut(auth); throw error; }
 }
 export async function logoutFirebase() { await signOut(auth); store.dispatch(logout()); }

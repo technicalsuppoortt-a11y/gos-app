@@ -27,7 +27,10 @@ async function call(name, data, bearer) {
     method: 'POST', headers: { 'Content-Type': 'application/json', ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}) },
     body: JSON.stringify({ data }), signal: AbortSignal.timeout(90000),
   });
-  const body = await response.json();
+  const raw = await response.text();
+  let body;
+  try { body = JSON.parse(raw); }
+  catch { throw new Error(`${name} returned HTTP ${response.status} with a non-JSON response.`); }
   return { status: response.status, data: body.result, error: body.error };
 }
 try {
@@ -63,6 +66,35 @@ try {
   assert.equal(account.customClaims.tenantId, `workspace-${account.uid}`);
   assert.ok(new URL(invitation.data.link).searchParams.get('oobCode'));
   console.log('PASS manageUser creates real Auth account, role/tenant claims and password-setup action code; unauthenticated admin access denied');
+  const inviteRef = db.doc(`users/${account.uid}`), memberRef = db.doc(`tenants/workspace-${account.uid}/members/${account.uid}`);
+  assert.equal(invitation.data.status, 'Pending');
+  assert.equal((await inviteRef.get()).data().status, 'Pending');
+  assert.equal((await memberRef.get()).data().status, 'Pending');
+  assert.equal((await memberRef.get()).data().active, false);
+  const bypass = await call('manageUser', { operation: 'status', id: account.uid, status: 'Active' }, bearer);
+  assert.equal(bypass.status, 400, 'An admin cannot bypass the first-login requirement');
+  const inviteeApp = clientSdk('firebase/app').initializeApp({ apiKey: env.VITE_FIREBASE_API_KEY, projectId: 'gos-app-3c7fb', authDomain: env.VITE_FIREBASE_AUTH_DOMAIN }, `activation-${run}`);
+  try {
+    const clientAuth = clientSdk('firebase/auth'), inviteeAuth = clientAuth.getAuth(inviteeApp);
+    const chosenPassword = `Activation-${crypto.randomUUID()}!`;
+    await clientAuth.confirmPasswordReset(inviteeAuth, new URL(invitation.data.link).searchParams.get('oobCode'), chosenPassword);
+    assert.equal((await inviteRef.get()).data().status, 'Pending', 'Password setup alone must not activate the profile');
+    await assert.rejects(clientAuth.signInWithEmailAndPassword(inviteeAuth, account.email, 'incorrect-password'));
+    assert.equal((await inviteRef.get()).data().status, 'Pending', 'A failed login must leave the invitation pending');
+    const signedIn = await clientAuth.signInWithEmailAndPassword(inviteeAuth, account.email, chosenPassword);
+    const inviteeToken = await signedIn.user.getIdToken();
+    const results = await Promise.all([call('activateUser', { id: actor.uid, role: 'SUPER_ADMIN' }, inviteeToken), call('activateUser', {}, inviteeToken)]);
+    for (const result of results) assert.equal(result.status, 200, JSON.stringify(result.error));
+    const activated = (await inviteRef.get()).data(), member = (await memberRef.get()).data();
+    assert.equal(activated.status, 'Active'); assert.equal(member.status, 'Active'); assert.equal(member.active, true);
+    assert.equal(activated.activatedAt, member.activatedAt); assert.equal(activated.role, 'USER');
+    const deactivate = await call('manageUser', { operation: 'status', id: account.uid, status: 'Deactivated' }, bearer);
+    assert.equal(deactivate.status, 200);
+    const reactivation = await call('activateUser', {}, inviteeToken);
+    assert.equal(reactivation.status, 403, 'Activation must never restore a deactivated account');
+    console.log('PASS invite stays Pending through password setup and failed login; first password sign-in activates profile and membership together; retries are safe and deactivation is respected');
+  } finally { await clientSdk('firebase/app').deleteApp(inviteeApp); }
+  if (!process.argv.includes('--onboarding-only')) {
   const day = new Date(Date.now() + 3 * 86400000); day.setUTCHours(12, 0, 0, 0);
   const date = day.toISOString().slice(0, 10), slug = `blaze-smoke-${run}`;
   const page = { id: 'smoke', name: 'Temporary smoke calendar', slug, active: true, free: true, duration: 30, durationOptions: [30], hostTimezone: 'UTC', minNotice: 0, maxAdvanceBooking: 60, groupCapacity: 1, dailyLimit: 10, availability: Array.from({ length: 7 }, (_, day) => ({ day, enabled: true, start: '09:00', end: '17:00' })), questions: [], afterBooking: { allowCancelReschedule: true }, passwordProtect: false, password: 'must-not-leak' };
@@ -118,6 +150,7 @@ try {
   assert.equal((await pausedAction.get()).data()?.status, 'cancelled');
   assert.equal((await root.collection('leads').doc('smoke-lead').get()).data()?.followUpState, 'HUMAN_HANDOFF');
   console.log('PASS conversation takeover and lead-change Firestore triggers cancel pending follow-ups');
+  }
 } finally {
   for (const uid of created) {
     await db.recursiveDelete(db.doc(`tenants/workspace-${uid}`));
