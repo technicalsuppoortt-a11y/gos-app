@@ -25,7 +25,17 @@ export async function refreshGosCRM(signal?: AbortSignal) {
   const [leads, pipelines] = await Promise.all([gosApi.leads(undefined, signal), gosApi.pipelines(signal)]);
   if (signal?.aborted) return;
   if (!Array.isArray(leads.leads) || !Array.isArray(pipelines.pipelines)) throw new Error('The GOS API returned invalid CRM data.');
-  store.dispatch(hydrateCRM({ leads: leads.leads.map(normalizeLead), pipelines: pipelines.pipelines as Pipeline[] }));
+  // Merge, never replace: the store mirrors Firestore and its changes are persisted back
+  // (with deletes). Replacing would erase Firestore-only leads such as public bookings.
+  const current = store.getState().crm;
+  const apiLeads = leads.leads.map(normalizeLead);
+  const apiLeadIds = new Set(apiLeads.map(lead => lead.id));
+  const apiPipelines = pipelines.pipelines as Pipeline[];
+  const apiPipelineIds = new Set(apiPipelines.map(p => p.id));
+  store.dispatch(hydrateCRM({
+    leads: [...apiLeads, ...current.leads.filter(lead => !apiLeadIds.has(lead.id))],
+    pipelines: [...current.pipelines.filter(p => !apiPipelineIds.has(p.id)), ...apiPipelines],
+  }));
 }
 export async function exportGosCRM(leads: CanonicalLead[], pipelineId: string) {
   const pipelineLeads = store.getState().crm.leads.filter(lead => (lead.pipelineId || 'main') === pipelineId);

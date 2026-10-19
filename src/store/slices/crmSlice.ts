@@ -33,6 +33,8 @@ const crmSlice = createSlice({
     hydrateCRM(state, action: PayloadAction<{ leads: CanonicalLead[]; pipelines: Pipeline[] }>) {
       state.leads = (action.payload.leads || []).map(lead => ({
         ...lead,
+        lifecycleStage: lead.lifecycleStage || lead.stage || 'LEAD_CAPTURED',
+        stage: lead.stage || lead.lifecycleStage || 'LEAD_CAPTURED',
         tags: Array.isArray(lead.tags) ? lead.tags : [],
         activities: Array.isArray(lead.activities) ? lead.activities : [],
         notes: Array.isArray(lead.notes) ? lead.notes : [],

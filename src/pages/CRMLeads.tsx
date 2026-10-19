@@ -191,9 +191,12 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     if (id)
       navigate(`${base}/contacts/${encodeURIComponent(id)}`, { replace: true });
   }, [params, base, navigate]);
-  const pipelineLeads = leads.filter(
-    (l) => (l.pipelineId ?? "main") === pipeline.id,
-  );
+  const knownPipelineIds = new Set(pipelines.map((p) => p.id));
+  const pipelineLeads = leads.filter((l) => {
+    const id = l.pipelineId ?? "main";
+    // Leads without a valid pipeline (e.g. created by public bookings) belong to the first pipeline.
+    return knownPipelineIds.has(id) ? id === pipeline.id : pipeline.id === pipelines[0]?.id;
+  });
   const active = pipelineLeads.filter((l) => !l.archived);
   const visible = pipelineLeads
     .filter((lead) => {
