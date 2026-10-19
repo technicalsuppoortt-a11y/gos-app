@@ -14,6 +14,7 @@ import {
   Rocket
 } from 'lucide-react';
 import './sidebar-settings.css';
+import { usePhoenixBrand } from '../../backend/phoenixBrand';
 import { settingsAliases } from '../../pages/settings/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -122,6 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   const dispatch = useDispatch();
   const platformTenant = useSelector((state: RootState) => state.auth.tenant);
   const phoenixBrand = platformTenant?.id.startsWith('phoenix_') ? platformTenant : null;
+  const savedBrand = usePhoenixBrand();
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
@@ -178,13 +180,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           onClick={close}
           title={collapsed ? translateText("Growth Operating System") : undefined}
         >
-          <span className="layout-brand-icon">
+          {savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
             {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <Rocket size={20} strokeWidth={2.2} className="layout-brand-rocket" />}
-          </span>
-          <div className="layout-brand-copy">
+          </span>}
+          {!(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
             <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || translateText("GOS")}</b></span>
             <small>{translateText("Growth Operating System")}</small>
-          </div>
+          </div>}
         </NavLink>
 
         {!collapsed && (

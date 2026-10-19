@@ -28,3 +28,20 @@ export function collectAssetIds(value, ids = new Set()) {
   }
   return ids;
 }
+
+// A linked workspace can refresh its saved Phoenix screens without resetting
+// older, hidden screens. Keep their source revision for provenance.
+export function mergePublishedPages(previous, saved, revision, pageIds) {
+  if (!Array.isArray(pageIds) || !pageIds.length || new Set(pageIds).size !== pageIds.length ||
+      pageIds.some(id => !PAGE_IDS.includes(id)) || saved.length !== pageIds.length ||
+      pageIds.some(id => !saved.some(page => page.pageId === id && page.revision === revision && page.schemaVersion === 1 && page.parameters))) {
+    throw new Error('Your saved Phoenix configuration is incomplete. Retry after saving.');
+  }
+  return PAGE_IDS.map(id => {
+    const fresh = saved.find(page => page.pageId === id);
+    if (fresh) return fresh;
+    const old = previous.find(page => page?.pageId === id);
+    if (!old?.parameters || old.schemaVersion !== 1) throw new Error('Your published configuration is incomplete. Deploy again from Phoenix.');
+    return { ...old, inheritedFromRevision: old.inheritedFromRevision || old.revision, revision };
+  });
+}

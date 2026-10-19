@@ -2,7 +2,8 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
-import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds } from './bridge.js';
+import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds, mergePublishedPages } from './bridge.js';
+import phoenixConfig from './phoenix-public-config.json' with { type: 'json' };
 
 const gos = initializeApp({ serviceAccountId: 'gos-app-3c7fb@appspot.gserviceaccount.com' }, 'gos-phoenix-bridge');
 const phoenix = initializeApp({ projectId: 'phoenix-app-8bc7b' }, 'phoenix');
@@ -20,7 +21,19 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
   try {
     const { uid, email } = identity;
     if (!email) throw new Error('Your Phoenix account needs an email address.');
-    const action = req.body?.action === 'deploy' ? 'deploy' : 'open';
+    const action = ['deploy', 'login'].includes(req.body?.action) ? req.body.action : 'open';
+    if (action === 'login') {
+      // Verify the supplied password against the source account before syncing
+      // it. Never accept a caller-supplied email/UID as account ownership.
+      const password = req.body?.password;
+      if (typeof password !== 'string' || password.length < 6 || password.length > 4096) throw new Error('Invalid Phoenix credentials.');
+      const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${phoenixConfig.apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true }), signal: AbortSignal.timeout(25000),
+      });
+      const verifiedPassword = await response.json();
+      if (!response.ok || verifiedPassword.localId !== uid) throw new Error('Invalid Phoenix credentials.');
+    }
     const linkRef = db.doc(`phoenixAccounts/${uid}`);
     let link = (await linkRef.get()).data();
     const source = async (path, readTime) => {
@@ -31,14 +44,32 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       const document = await response.json();
       return { data: decodeFields(document.fields), updateTime: document.updateTime };
     };
-    if (action === 'deploy' || !link) {
+    const latest = link && action !== 'deploy' ? await source('brandEngine/draft').catch(() => null) : null;
+    if (action === 'deploy' || !link || latest && latest.data.revision !== link.revision) {
       // Use one server read time for all source documents, enforced by Phoenix owner rules.
-      const preparation = await source('brandEngine/phoenixPreparation');
-      const readTime = preparation.updateTime;
-      const [manifest, ...pageDocuments] = await Promise.all([
-        source('brandEngine/draft', readTime), ...PAGE_IDS.map(id => source(`pages/${id}`, readTime)),
-      ]);
-      const pages = pageDocuments.map(page => page.data);
+      let preparation, manifest, readTime, pages;
+      if (latest) {
+        const current = (await db.doc(`users/${link.gosUid}/brandEngine/current`).get()).data();
+        if (current?.sourceUid !== uid || current.tenantId !== link.tenantId || current.status !== 'prepared') throw new Error('Invalid published platform. Deploy again from Phoenix.');
+        manifest = latest;
+        readTime = latest.updateTime;
+        const ids = latest.data.pageIds || PAGE_IDS;
+        if (!Array.isArray(ids) || ids.some(id => !PAGE_IDS.includes(id)) || new Set(ids).size !== ids.length) throw new Error('Invalid saved page list.');
+        const [saved, previous] = await Promise.all([
+          Promise.all(ids.map(id => source(`pages/${id}`, readTime))),
+          Promise.all(PAGE_IDS.map(async id => (await db.doc(`users/${link.gosUid}/brandEngineSnapshots/${current.snapshotId}/pages/${id}`).get()).data())),
+        ]);
+        pages = mergePublishedPages(previous, saved.map(page => page.data), latest.data.revision, ids);
+        preparation = { data: { state: 'prepared', snapshotId: latest.data.revision } };
+      } else {
+        preparation = await source('brandEngine/phoenixPreparation');
+        readTime = preparation.updateTime;
+        const [savedManifest, ...pageDocuments] = await Promise.all([
+          source('brandEngine/draft', readTime), ...PAGE_IDS.map(id => source(`pages/${id}`, readTime)),
+        ]);
+        manifest = savedManifest;
+        pages = pageDocuments.map(page => page.data);
+      }
       validateLaunch(manifest.data, preparation.data, pages);
       if (req.body?.revision && req.body.revision !== manifest.data.revision) throw new Error('Your draft changed. Retry deployment.');
       const revision = manifest.data.revision;
@@ -86,7 +117,8 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       ];
       await Promise.all([Promise.all(writes), writer.close()]);
       const pointer = { schemaVersion: 1, status: 'prepared', sourceProject: 'phoenix-app-8bc7b', sourceUid: uid, snapshotId: revision, sourceRevision: revision, pageIds: PAGE_IDS, sourcePreparedAt: readTime, tenantId, updatedAt: FieldValue.serverTimestamp() };
-      const brand = { name: branding.brandName || branding.selectedBrandIdentity?.name || 'My platform', description: branding.brandDescription || discovery.businessDescription || '', business: discovery.business || '', theme: branding.brandTheme || null, logoAssetId: branding.choices?.uploadedLogo?.assetId || branding.logo?.assetId || null, language: vision.language === 'en' ? 'en' : 'ar', mode: vision.theme === 'light' ? 'light' : 'dark' };
+      const preferredLanguage = discovery.choices?.discoverDraft?.profile?.language;
+      const brand = { name: branding.brandName || branding.selectedBrandIdentity?.name || 'My platform', tagline: branding.tagline || '', description: branding.brandDescription || discovery.businessDescription || '', business: discovery.business || '', theme: branding.brandTheme || null, logoAssetId: branding.choices?.uploadedLogo?.assetId || branding.logo?.assetId || null, language: (preferredLanguage === 'both' ? discovery.choices.discoverDraft.profile.defaultLanguage : preferredLanguage || vision.language) === 'en' ? 'en' : 'ar', mode: vision.theme === 'light' ? 'light' : 'dark' };
       // Publish the pointer only after every page and asset has been confirmed saved.
       await db.runTransaction(async transaction => {
         const previous = (await transaction.get(linkRef)).data();
@@ -100,13 +132,27 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       });
       link = (await linkRef.get()).data();
     }
+    // Repair older bridge profiles too. Workspace APIs and session restoration
+    // require an active profile and owner membership, not just copied snapshots.
+    await db.runTransaction(async transaction => {
+      const profileRef = db.doc(`users/${link.gosUid}`);
+      const memberRef = db.doc(`tenants/${link.tenantId}/members/${link.gosUid}`);
+      const profile = (await transaction.get(profileRef)).data();
+      const member = (await transaction.get(memberRef)).data();
+      if (profile?.status === 'Deactivated' || member?.active === false) throw new Error('Your Gose account is disabled.');
+      if (profile?.tenantId && profile.tenantId !== link.tenantId) throw new Error('Account workspace conflict. Contact support.');
+      transaction.set(profileRef, { name: profile?.name || profile?.displayName || email.split('@')[0], status: 'Active', role: profile?.role || 'USER', tenantId: link.tenantId }, { merge: true });
+      if (!member) transaction.set(memberRef, { id: link.gosUid, email, name: profile?.displayName || '', active: true, role: 'owner', permissions: ['*'] });
+    });
     if (action === 'deploy') { res.json({ status: 'prepared', revision: link.revision }); return; }
     const account = await getAuth(gos).getUser(link.gosUid);
     if (account.disabled) throw new Error('Your Gose account is disabled.');
+    await getAuth(gos).setCustomUserClaims(link.gosUid, { ...account.customClaims, phoenixUid: uid, tenantId: link.tenantId });
+    if (action === 'login') await getAuth(gos).updateUser(link.gosUid, { password: req.body.password });
     const customToken = await getAuth(gos).createCustomToken(link.gosUid, { phoenixUid: identity.uid, tenantId: link.tenantId });
     res.json({ customToken });
   } catch (error) {
-    console.error('Phoenix bridge failed', error.code || error.name);
-    res.status(409).json({ error: error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
+    console.error('Phoenix bridge failed', { code: error.code || error.name, message: error.message });
+    res.status(409).json({ code: error.code || 'platform/preparation-failed', error: error.code === 'auth/insufficient-permission' ? 'تعذر إصدار توكن الدخول للمنصة بسبب صلاحيات خدمة GOS. تواصل مع الدعم.' : error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
   }
 });

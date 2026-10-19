@@ -3,6 +3,7 @@ import { firebaseSettingsRequest } from '../../backend/settings';
 import { store } from '../../store';
 import { demoIntegrationRequest, localDemoEnabled, readDemo } from '../../backend/localDemo';
 import portrait from '../../assets/inbox/mohamed.jpg';
+import { getPhoenixBrand } from '../../backend/phoenixBrand';
 
 export interface Profile {
   name: string; email: string; phone: string; language: string; timezone: string; dateFormat: string;
@@ -32,9 +33,10 @@ export function settingsKey() {
 }
 export function defaultSettings(): SettingsData {
   const { user, tenant } = store.getState().auth;
+  const phoenix = getPhoenixBrand();
   return {
     profile: { name: user?.name ?? '', email: user?.email ?? '', phone: '', language: 'English', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, dateFormat: 'DD / MM / YYYY', photo: user?.avatar ?? '', title: '', bio: '', emailNotifications: true, marketing: false },
-    business: { name: tenant?.name ?? '', type: '', email: user?.email ?? '', phone: '', address: '', description: '', color: '#7546f5', currency: 'USD', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, logo: '' },
+    business: { name: phoenix?.brand.name || tenant?.name || '', type: phoenix?.brand.business || '', email: user?.email ?? '', phone: '', address: '', description: phoenix?.brand.description || '', color: phoenix?.brand.theme?.light.primary || '#7546f5', currency: 'USD', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, logo: phoenix?.logo || '' },
     integrations: {}, balance: 0, transactions: [], recharge: { enabled: false, below: '', amount: '', method: '' }, defaultMethod: '', paymentMethods: [],
     plan: { name: 'No active plan', price: 0, active: false, renewal: '' }, usage: [], usagePeriod: '',
     payment: { currency: 'USD', payout: '', receiptEmail: user?.email ?? '', invoices: true },
