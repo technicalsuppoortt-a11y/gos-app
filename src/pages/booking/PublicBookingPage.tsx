@@ -2,28 +2,44 @@ import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { TroubleshootControls, TroubleshootTimeSlots } from './BookingTroubleshoot';
 import { BookingBrandingFooter } from './BookingBrandingFooter';
 import { BookingSelect } from './BookingSelect';
-import { useState } from 'react';
+import { callBackend } from '../../backend/firebase';
+import type { BookingPage } from './model';
+import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Globe2, Video } from 'lucide-react';
 import { Avatar, Empty } from './ui';
 import { InviteeFields } from './InviteeFields';
 import { safeHttpUrl } from './booking-section-schema';
-import { availableSlots, firstAvailableDate, parseDate, displayedSlots, troubleshootSlots, remainingSpots, bookingColor, load, dateKey, formatDay, formatTime, KEYS, readAppointments, readContacts, readPages, TIMEZONES, uid, useStored, write, persistAppointment } from './model';
+import { normalizeBookingPage, availableSlots, firstAvailableDate, parseDate, displayedSlots, troubleshootSlots, remainingSpots, bookingColor, load, dateKey, formatDay, formatTime, TIMEZONES, uid } from './model';
 import type { Appointment } from './model';
 import './booking-workspace.css';
 
 export default function PublicBookingPage() {
   useUILanguage();
   const { slug } = useParams();
-  return <PublicBookingFlow key={slug}/>;
+  const [data, setData] = useState<{page: BookingPage; bookings: Appointment[]}>();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  useEffect(() => { let active = true; setData(undefined);
+    const bookingId = new URLSearchParams(window.location.search).get('bookingId');
+    const token = bookingId ? sessionStorage.getItem('gos.booking.token.' + bookingId) : null;
+    callBackend<{page: BookingPage; bookings: Appointment[]}>('publicBooking', {slug, password, bookingId, token}).then(result => { if(active) { setData({ ...result, page: normalizeBookingPage(result.page) }); setError(''); } }).catch(e => { if(active) setError(e.message); });
+    return () => { active = false; };
+  }, [slug, retry]);
+  if (!data) return <main className="bk-public"><section className="bk-public-shell"><p role="status">{error || 'Loading booking availability…'}</p>{error && <form onSubmit={e => {e.preventDefault(); setError(''); setRetry(v => v+1);}}><label>Page password<input type="password" value={password} onChange={e => setPassword(e.target.value)}/></label><button className="bk-button primary">Try again</button></form>}</section></main>;
+  return <PublicBookingFlow key={slug} initial={data} password={password}/>;
 }
 
-function PublicBookingFlow() {
+function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage; bookings: Appointment[]}; password: string }) {
   useUILanguage();
   const { slug } = useParams();
   const [params, setParams] = useSearchParams();
-  const [pages] = useStored(KEYS.pages, readPages);
-  const [bookings] = useStored(KEYS.appointments, readAppointments);
+  const pages = [initial.page];
+  const [bookings, setBookings] = useState(initial.bookings);
+  const readPages = () => pages;
+  const readAppointments = () => bookings;
+  const managementToken = (id: string) => { const key = 'gos.booking.token.' + id; let token = sessionStorage.getItem(key); if (!token) { token = crypto.randomUUID(); sessionStorage.setItem(key, token); } return token; };
   const page = pages.find(p => p.slug === slug);
   const [date, setDate] = useState(() => page ? firstAvailableDate(page, bookings) : '');
   const [month, setMonth] = useState(() => {
@@ -45,11 +61,9 @@ function PublicBookingFlow() {
   const [rescheduleId, setRescheduleId] = useState<string>();
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [authorized, setAuthorized] = useState(false);
   const [showTroubleshoot, setShowTroubleshoot] = useState(false);
   const displayTimezone = page?.timezoneDisplay === 'locked' ? page.hostTimezone : timezone;
-  const success = bookings.find(b => b.id === params.get('bookingId') && b.calendarId === page?.id);
+  const success = bookings.find(b => b.id === params.get('bookingId') && b.calendarId === page?.id && !!b.email);
   const changeMonth = (by: number) => { setMonth(d => new Date(d.getFullYear(), d.getMonth() + by, 1)); setDate(''); setSlot(''); };
   const reset = () => {
     setStep('select-slot'); setSlot(''); setDate(''); setError(''); setRescheduleId(undefined);
@@ -59,7 +73,6 @@ function PublicBookingFlow() {
     setAnswers(page?.afterBooking.prefill ? load<Record<string,string>>('gos.booking.prefill.' + page.id, {}) : {});
   };
   if (!page) return <main className="bk-public"><div className="bk-public-shell"><Empty title={translateText("Booking page not found")} detail="Check the booking URL or ask the host for a new link."/></div></main>;
-  if (page.passwordProtect && !authorized) return <main className="bk-public"><div className="bk-public-scroll"><section className="bk-public-shell bk-password-gate"><h1>{translateText("Password-protected booking preview")}</h1><form className="bk-form" onSubmit={e => { e.preventDefault(); if (passwordInput === page.password) { setAuthorized(true); setError(''); } else setError('Incorrect password. Try again.'); }}><label>{translateText("Page password")}<input autoFocus type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)}/></label>{localizeNode(error && <p className="bk-error" role="alert">{localizeNode(error)}</p>)}<button className="bk-button primary">{translateText("Continue")}</button></form></section></div></main>;
   const slots = date ? showTroubleshoot
     ? troubleshootSlots(page,date,duration,bookings,new Date(),rescheduleId,answers.email||'')
     : displayedSlots(page,date,duration,bookings,new Date(),rescheduleId).map(s=>({...s,spotsLeft:remainingSpots(page,s.start,duration,bookings,rescheduleId),detail:''}))
@@ -70,7 +83,7 @@ function PublicBookingFlow() {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setSaving(true); setError('');
     try {
-      const confirm = () => {
+      const confirm = async () => {
         const currentPage = readPages().find(p => p.id === page.id);
         const current = readAppointments();
         const selected = currentPage && availableSlots(currentPage, date, duration, current, new Date(), rescheduleId, answers.email || '').find(s => s.start === slot);
@@ -88,12 +101,10 @@ function PublicBookingFlow() {
         };
 
         // The appointment is the authoritative record: publish it before optional auxiliary writes.
-        persistAppointment(booking);
+        const result = await callBackend<{booking: Appointment}>('publicBooking', {slug, password, operation: rescheduleId ? 'reschedule' : 'create', booking, token: managementToken(booking.id)});
+        setBookings(current => [...current.filter(b => b.id !== booking.id), result.booking]);
         setParams({ bookingId: booking.id }); setRescheduleId(undefined);
         try {
-          const contacts = readContacts();
-          const existing = contacts.find(c => booking.email ? c.email.toLowerCase() === booking.email : booking.whatsapp && c.phone === booking.whatsapp);
-          write(KEYS.contacts, existing ? contacts.map(c => c.id === existing.id ? { ...c, name: booking.name, phone: booking.whatsapp || c.phone } : c) : [...contacts, { id: uid(), name: booking.name, email: booking.email, phone: booking.whatsapp, company: '' }]);
           if (currentPage.afterBooking.prefill) localStorage.setItem('gos.booking.prefill.' + currentPage.id, JSON.stringify(answers));
         } catch {
           // Contact enrichment or prefill must not report failure after a booking was saved.
@@ -101,13 +112,14 @@ function PublicBookingFlow() {
         const redirect = currentPage.templateSettings.redirectUrl || currentPage.afterBooking.redirectUrl;
         if (currentPage.templateSettings.postBookingMode === 'custom_url' && safeHttpUrl(redirect)) window.location.assign(redirect);
       };
-      if (navigator.locks) await navigator.locks.request('gos-booking-appointments', confirm); else confirm();
+      if (navigator.locks) await navigator.locks.request('gos-booking-appointments', confirm); else await confirm();
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not save your booking. Please try again.'); }
     finally { setSaving(false); }
   };
-  const cancel = () => {
-    try { write(KEYS.appointments, readAppointments().map(b => b.id === success?.id ? { ...b, status: 'Canceled' as const } : b)); }
-    catch { setError('Could not cancel your appointment. Please try again.'); }
+  const cancel = async () => {
+    if (!success) return;
+    try { const result = await callBackend<{booking: Appointment}>('publicBooking', {slug, password, operation: 'cancel', booking: success, token: managementToken(success.id)}); setBookings(current => current.map(b => b.id === success.id ? result.booking : b)); }
+    catch(e) { setError(e instanceof Error ? e.message : 'Could not cancel your appointment.'); }
   };
   return <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language === 'ar' ? 'rtl' : 'ltr'}><header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("GOS")}</b><span>{translateText("Booking")}</span></header><div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
     {localizeNode(success ? <section className="bk-public-success"><span className={`bk-success-orb ${success.status === 'Canceled' ? 'canceled' : ''}`}><Check size={30}/></span><h1>{localizeNode(success.status === 'Canceled' ? 'Booking canceled' : success.payment?.status === 'Pending' ? 'Payment pending' : success.status === 'Pending' ? 'Booking request received' : 'You’re booked!')}</h1><p>{localizeNode(success.status === 'Canceled' ? 'This time has been released for other appointments.' : success.payment?.status === 'Pending' ? 'Your request is recorded. Contact the host to arrange payment.' : success.status === 'Pending' ? 'Your host will review your request before confirming.' : page.afterBooking.confirmationBody)}</p><div className="bk-success-summary"><Avatar name={success.name}/><div><b>{localizeNode(success.name)}</b><small>{success.email}</small></div></div><dl><div><dt>{translateText("Meeting")}</dt><dd>{localizeNode(success.serviceName)}</dd></div><div><dt>{translateText("Date & time")}</dt><dd>{localizeNode(new Date(success.start).toLocaleDateString('en-US', { timeZone: success.timezone, weekday: 'long', month: 'long', day: 'numeric' }))} · {localizeNode(formatTime(success.start, success.timezone))}</dd></div><div><dt>{translateText("Duration")}</dt><dd>{localizeNode(success.duration)}{translateText(" minutes")}</dd></div><div><dt>{translateText("Location")}</dt><dd>{localizeNode(success.location)}</dd></div><div><dt>{translateText("Timezone")}</dt><dd>{localizeNode(success.timezone)}</dd></div>{localizeNode(success.payment && <div><dt>{translateText("Payment")}</dt><dd>{localizeNode(success.payment.amount)} {localizeNode(success.payment.currency)}{translateText(" · Pending")}</dd></div>)}<div><dt>{translateText("Booking ID")}</dt><dd>{localizeNode(success.id)}</dd></div></dl>{localizeNode(error && <p className="bk-error" role="alert">{localizeNode(error)}</p>)}<div className="bk-public-success-actions">{page.afterBooking.allowCancelReschedule && success.status !== 'Canceled' && <><button className="bk-button" onClick={() => { setAnswers({ ...success.customAnswers, name: success.name, email: success.email, whatsapp: success.whatsapp }); setGuests(success.guests); setDuration(success.duration); setLocation(page.locationOptions.includes(success.location) ? success.location : page.locationOptions[0]); setRescheduleId(success.id); setParams({}); setSlot(''); setDate(''); setStep('select-slot'); }}>{translateText("Reschedule")}</button><button className="bk-button danger" onClick={cancel}>{translateText("Cancel appointment")}</button></>}<Link className="bk-button primary" to={"/book/" + encodeURIComponent(page.slug)} onClick={reset}>{translateText("Book another appointment")}</Link><Link className="bk-button" to="/dashboard/booking?tab=bookings">{translateText("Go to Dashboard")}</Link></div></section> : !page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/> : <div className="bk-public-grid"><aside className="bk-public-details"><TroubleshootControls page={page} bookings={bookings} checked={showTroubleshoot} change={setShowTroubleshoot}/>{localizeNode(page.image ? <div className="bk-public-media">{localizeNode(page.mediaType === 'video' ? <video src={page.image} controls playsInline style={{borderRadius:page.imageRound?'50%':12}}/> : <img src={page.image} alt={translateText(page.titleOverride || page.name)} style={{borderRadius:page.imageRound?'50%':12}}/>)}</div> : <Avatar name={page.hostName}/>)}<span className="bk-muted">{localizeNode(page.hostName)}</span><h1>{localizeNode(page.titleOverride || page.name)}</h1><div className="bk-public-meta"><span><Clock3 size={16}/>{localizeNode(duration)}{translateText(" minutes")}</span><span><Video size={16}/>{localizeNode(location)}</span></div><p>{localizeNode(page.description)}</p><label>{translateText("Meeting duration")}<BookingSelect value={duration} onChange={e => { setDuration(Number(e.target.value)); setSlot(''); }}>{localizeNode(page.durationOptions.map(n => <option key={n} value={n}>{localizeNode(n)}{translateText(" minutes")}</option>))}</BookingSelect></label><label>{translateText("Meeting location")}<BookingSelect value={location} onChange={e => setLocation(e.target.value)}>{localizeNode(page.locationOptions.map(l => <option key={l} value={l}>{localizeNode(l)}</option>))}</BookingSelect></label>{localizeNode(page.showTimezone && <label><span><Globe2 size={13}/>{translateText(" Your timezone")}</span><BookingSelect value={displayTimezone} disabled={page.timezoneDisplay === 'locked'} onChange={e => setTimezone(e.target.value)}>{localizeNode([...new Set([displayTimezone, ...TIMEZONES])].map(t => <option key={t} value={t}>{localizeNode(t)}</option>))}</BookingSelect></label>)}<div className="bk-tip">{translateText("Dates follow the host’s calendar in ")}{localizeNode(page.hostTimezone)}{translateText(". Times are shown in your chosen timezone.")}</div></aside>

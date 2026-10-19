@@ -10,6 +10,7 @@ import { CRMAvatar, SourceBadge } from '../CRMLeads';
 import { CustomSelect, CustomDatePicker } from './CRMPrimitives';
 import { displayStage, euro, owners } from './model';
 import { LiveConversations as DemoConversations, LiveAppointments as DemoAppointments, LiveOrders as DemoOrders } from './LiveRecordPanels';
+import { dispatchGosCRM, useGosCRM } from '../../backend/gosCRM';
 import { showToast } from '../../utils/toast';
 import '../crm-leads.css';
 import './crm-workspace.css';
@@ -42,11 +43,12 @@ const tileClass = 'crm-record-action w-16 h-16 flex flex-col items-center justif
 const tileLabel = 'text-[11px] font-medium leading-none text-slate-600';
 
 export function CRMRecord() {
+  useGosCRM();
   const metrics = useBusinessMetrics();
   const products = metrics.products.map(product => ({ id: product.id, name: product.name, type: product.type, price: product.config?.amount ?? 0, currency: product.config?.currency ?? 'USD' }));
   const bookings = metrics.bookings as (typeof metrics.bookings[number] & { leadId?: string; productId?: string })[];
   useUILanguage();
-  const { id } = useParams(); const location = useLocation(); const dispatch = useDispatch<AppDispatch>(); const [params, setParams] = useSearchParams();
+  const { id } = useParams(); const location = useLocation(); const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => dispatchGosCRM(action).catch(() => undefined); const [params, setParams] = useSearchParams();
   const { leads, pipelines } = useSelector((s: RootState) => s.crm); const lead = leads.find(l => l.id === id);
   const [note, setNote] = useState(''); const [tag, setTag] = useState(''); const [taskTitle, setTaskTitle] = useState(''); const [due, setDue] = useState('');
   const base = location.pathname.startsWith('/dashboard') ? '/dashboard/crm' : '/crm';
@@ -55,7 +57,7 @@ export function CRMRecord() {
   const pipeline = pipelines.find(p => p.id === (lead.pipelineId ?? 'main')) ?? pipelines[0];
   const stage = pipeline.stages.find(s => s.id === displayStage(lead, pipeline))!;
   const contactBookings = bookings.filter(b => b.leadId === lead.id);
-  function save(changes: Partial<CanonicalLead>) { dispatch(updateLead({ id: lead!.id, changes })); showToast.success('Contact updated.'); }
+  async function save(changes: Partial<CanonicalLead>) { if (await dispatch(updateLead({ id: lead!.id, changes }))) showToast.success('Contact updated.'); }
   function field(key: 'name' | 'email' | 'phone' | 'company' | 'interest', label: string, type = 'text') {
     return <label className="crm-field">{localizeNode(label)}<input key={`${lead!.id}-${key}-${lead![key]}`} aria-label={translateText(label)} type={type} defaultValue={lead![key] ?? ''} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} onBlur={e => { const value = e.currentTarget.value.trim(); if (value === (lead![key] ?? '')) return; if ((key === 'name' && !value) || (key === 'email' && (!e.currentTarget.checkValidity() || !value || leads.some(l => l.id !== lead!.id && l.email.toLowerCase() === value.toLowerCase())))) { showToast.error('Enter a valid, unique contact value.'); e.currentTarget.value = lead![key] ?? ''; return; } save({ [key]: value, ...(key === 'name' ? { avatar: value.split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase() } : {}) }); }}/></label>;
   }

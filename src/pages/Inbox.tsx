@@ -1,5 +1,7 @@
 import { useCloudState, useEntities } from '../backend/workspace';
-import { callBackend, backendError } from '../backend/firebase';
+import { backendError } from '../backend/firebase';
+import { gosApi } from '../backend/gosApi';
+import { useGosInbox } from '../backend/useGosInbox';
 import { localDemoEnabled, useDemoState } from '../backend/localDemo';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -358,8 +360,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const members = useEntities<{ id: string; name?: string; email?: string; active: boolean }>('members');
   const teamMembers = [currentUser, ...members.filter(member => member.id !== currentUser.id && member.active && member.name).map(member => ({ id: member.id, name: member.name!, initials: member.name!.slice(0,2), avatar: undefined }))];
   const liveTemplates = useEntities<{ title: string; prompt?: string; content?: string }>('templates').map(item => ({ title: item.title, body: item.prompt || item.content || '' }));
-  const initialConversations = useEntities<Conversation>('conversations');
-  const demoInbox = localDemoEnabled && initialConversations.length === 0;
+  const [apiSelectedId, setApiSelectedId] = useState('');
+  const explicitDemo = import.meta.env.VITE_LOCAL_DEMO === 'true';
+  const inboxApi = useGosInbox(!explicitDemo, apiSelectedId);
+  const initialConversations = inboxApi.conversations;
+  const demoInbox = explicitDemo;
   const samples = useMemo(() => demoConversations(currentUser.name || 'Alex Morgan'), [currentUser.name]);
   const [localConversations, setLocalConversations] = useDemoState<Conversation[]>('inbox', samples);
   const replyTemplates = demoInbox && !liveTemplates.length ? demoReplyTemplates : liveTemplates;
@@ -369,10 +374,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     source: crmLead.source, phone: crmLead.phone ?? '', email: crmLead.email, location: '', assignee: crmLead.owner,
     aiAutoReply: false, takenOver: true, followUp: Boolean(crmLead.nextFollowUp), followUpRules: [], starred: false, messages: [], activity: [],
   } : undefined;
-  const [liveConversations, setLiveConversations] = useCloudState<Conversation[]>('gos.inbox.conversations.v1', []);
-  const conversations = demoInbox ? localConversations : liveConversations;
-  const setConversations = demoInbox ? setLocalConversations : setLiveConversations;
+  const conversations = demoInbox ? localConversations : inboxApi.conversations;
+  const setConversations: typeof setLocalConversations = demoInbox ? setLocalConversations : () => { showToast.info('This inbox API supports viewing conversations and receiving customer messages. Staff edits require a connected delivery integration.'); };
   const [activeId, setActiveId] = useState(() => linkedConversation?.id ?? initialConversations[0]?.id ?? '');
+  useEffect(() => { setApiSelectedId(activeId); }, [activeId]);
   const [channelFilter, setChannelFilter] = useState<ChannelId | "all">(() => requestedChannel && crmLead ? linkedChannel : 'all');
   const [folder, setFolder] = useState<Folder>("all");
   const [search, setSearch] = useState("");
@@ -468,7 +473,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
 
   const selectConversation = (id: string) => {
     setActiveId(id);
-    setConversations((list) => list.map((c) => (c.id === id ? { ...c, unread: 0 } : c)));
+    if (demoInbox) setConversations((list) => list.map((c) => (c.id === id ? { ...c, unread: 0 } : c)));
     setDraft("");
     setMode("reply");
     setEditingLead(false);
@@ -572,15 +577,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (!canSend) return;
     const text = draft.trim();
     const requestId = crypto.randomUUID();
-    if (mode === 'reply' && !demoInbox) {
-      if (attachments.length || voiceDraft) { showToast.error('Media delivery requires a connected upload adapter.'); return; }
-      setSending(true);
-      try {
-        await callBackend('queueMessage', { conversationId: active.id, text, requestId });
-        showToast.info('Message queued for delivery');
-      } catch (error) { showToast.error(backendError(error)); return; }
-      finally { setSending(false); }
-    }
+    if (!demoInbox) { showToast.info('Staff replies and notes are not supported by the supplied inbox API.'); return; }
     const message: Message = {
       id: requestId,
       sender: mode === "note" ? "note" : "agent",
@@ -626,8 +623,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     }
     setAssistLoading(true);
     try {
-      const result = await callBackend<{ text: string }>('copilot', { text: 'Draft a response for this conversation using approved business facts. Do not send anything. Customer message: ' + ([...active.messages].reverse().find(message => message.sender === 'customer')?.text ?? ''), conversationId: 'inbox-assist-' + active.id });
-      setDraft(result.text); showToast.success('AI draft ready for review');
+      const result = await gosApi.ask([...active.messages].reverse().find(message => message.sender === 'customer')?.text || 'What services do you offer?');
+      setDraft(result.test.answer || 'A teammate will follow up.'); showToast.info('Draft outcome: ' + result.test.outcome); showToast.success('AI draft ready for review');
     } catch (error) { showToast.error(backendError(error)); } finally { setAssistLoading(false); }
   };
 
@@ -668,6 +665,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   /* ------------------------------------------------------------------ */
   return (
     <div className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
+      {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>Retry</button></div>}
+      {!demoInbox && inboxApi.loading && <div role="status" className="af-knowledge-loading" aria-label="Loading conversations"><i/><i/></div>}
+      {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>No conversations yet. Connected channels will appear here when customer messages arrive.</p>}
       {/* ============ Channel filter strip ============ */}
       <div className={`${CARD} flex h-[54px] shrink-0 items-center gap-3 px-2.5`}>
         <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label={translateText("Filter by channel")}>

@@ -4,6 +4,9 @@ import { callBackend, backendError } from '../backend/firebase';
 import { cloudStorage } from '../backend/workspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
+import { gosApi } from '../backend/gosApi';
+import { useGosAI } from '../backend/useGosAI';
+import { GosPlayground } from './GosPlayground';
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -103,9 +106,11 @@ type KnowledgeSource = {
   type: "url" | "file" | "text" | "products" | "faq" | "instructions";
   detail: string;
   content?: string;
+  status?: string;
 };
 type SequenceStep = { id: string; delay: string; unit: string; action: string };
 type Workflow = {
+  messageText?: string;
   id: string;
   name: string;
   description: string;
@@ -621,12 +626,16 @@ const StateBadge = ({ state }: { state: FollowUpLifecycleState }) => {
 };
 const Modal = ({
   title,
+  subtitle,
   children,
   close,
+  width,
 }: {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   close: () => void;
+  width?: string;
 }) => { useUILanguage(); return ((
   <div
     className="af-modal-backdrop"
@@ -636,6 +645,7 @@ const Modal = ({
   >
     <div
       className="af-modal"
+      style={width ? { width, maxWidth: '95vw' } : undefined}
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => e.stopPropagation()}
@@ -643,7 +653,7 @@ const Modal = ({
       <div className="af-modal-head">
         <div>
           <h3>{localizeNode(title)}</h3>
-          <p>{translateText("Workspace settings")}</p>
+          {subtitle && <p>{localizeNode(subtitle)}</p>}
         </div>
         <button className="af-icon-button" onClick={close} aria-label={translateText("Close")}>
           <X size={18} />
@@ -665,18 +675,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const [tab, setTab] = React.useState<Tab>("Overview");
   const [dateRange, setDateRange] = React.useState("Last 7 days");
   const [conversationChannel, setConversationChannel] = React.useState("All");
-  const [channelsOn, setChannelsOn] = useCloudState<Record<string, boolean>>('gos.ai-followup.channels.v1', {
-    instagram: false,
-    facebook: false,
-    whatsapp: false,
-    messenger: false,
-    website: false,
-  });
+  const api = useGosAI();
+  const channelsOn: Record<string, boolean> = { ...api.assistant.channels, website: api.assistant.channels.webchat };
+  const changeChannel = async (channel: string, enabled: boolean) => {
+    await api.updateAssistant({ channels: { ...api.assistant.channels, [channel === 'website' ? 'webchat' : channel]: enabled } });
+  };
   const [workflows, setWorkflows] = useCloudState<Workflow[]>(WORKFLOWS_KEY, []);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [modal, setModal] = React.useState("");
 
-  const [assistantEnabled, setAssistantEnabled] = useCloudState('gos.ai-followup.assistant-enabled.v1', false);
+  const assistantEnabled = api.assistant.live_enabled;
+  const setAssistantEnabled = (live_enabled: boolean) => api.updateAssistant({ live_enabled });
   const [engineEnabled, setEngineEnabled] = useCloudState('gos.ai-followup.engine-enabled.v1', false);
   const [assistantProfile, setAssistantProfile] = React.useState(() =>
     readLocal(ASSISTANT_KEY, {
@@ -706,6 +715,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const [workflowFrom, setWorkflowFrom] = React.useState("NEW");
   const [workflowTo, setWorkflowTo] = React.useState("CONTACTED");
   const [workflowAction, setWorkflowAction] = React.useState("Email");
+  const [workflowMessage, setWorkflowMessage] = React.useState('');
   const [workflowActive, setWorkflowActive] = React.useState(false);
   const [workflowWizardStep, setWorkflowWizardStep] = React.useState(1);
   const [sequenceSteps, setSequenceSteps] = React.useState<SequenceStep[]>([
@@ -713,12 +723,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     { id: "draft-2", delay: "1", unit: "day", action: "WhatsApp" },
   ]);
   const [knowledgeType, setKnowledgeType] = React.useState<
-    "url" | "file" | "text"
-  >("url");
+    "url" | "file" | "text" | "instructions"
+  >("text");
   const [knowledgeName, setKnowledgeName] = React.useState("");
   const [knowledgeValue, setKnowledgeValue] = React.useState("");
   const [knowledgeFileName, setKnowledgeFileName] = React.useState("");
-  const [knowledgeItems, setKnowledgeItems] = useCloudState<KnowledgeSource[]>(KNOWLEDGE_KEY, []);
+  const knowledgeItems: KnowledgeSource[] = api.sources.map(source => ({ ...source, detail: source.error || source.content?.slice(0, 90) || (source.chunk_count ? source.chunk_count + ' indexed chunks' : 'Knowledge source') }));
+  const [knowledgeFile, setKnowledgeFile] = React.useState<File | null>(null);
+  const [uploading, setUploading] = React.useState(false);
   const [templates, setTemplates] = useCloudState<TemplateItem[]>(TEMPLATES_KEY, []);
   const [templateTitle, setTemplateTitle] = React.useState("");
   const [templateCategory, setTemplateCategory] = React.useState("Follow-up");
@@ -812,6 +824,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   };
   const addWorkflow = () => {
     if (!newWorkflowName.trim()) return;
+    if (workflowActive && !workflowMessage.trim()) { showToast.error('Add the follow-up message before activating this workflow.'); return; }
     if (modal === "edit-workflow") {
       const next = workflows.map((item) =>
         item.id === editingWorkflowId
@@ -821,6 +834,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               from: workflowFrom,
               to: workflowTo,
               actionType: workflowAction,
+              messageText: workflowMessage.trim(),
               active: workflowActive,
               sequenceSteps,
             }
@@ -844,6 +858,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           ? `${sequenceSteps.length}-step follow-up sequence · ${sequenceSteps.map((step) => `${step.action} after ${step.delay} ${step.unit}`).join(" · ")}`
           : `${workflowAction} action · ${stateLabel(workflowFrom as FollowUpLifecycleState)} trigger`,
         trigger: "0 triggered",
+        messageText: workflowMessage.trim(),
         active: workflowActive,
         from: workflowFrom,
         to: workflowTo,
@@ -868,46 +883,23 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     setModal("");
     tell("Automation sequence created as a draft.");
   };
-  const saveKnowledgeSource = () => {
-    const label =
-      knowledgeName.trim() ||
-      (knowledgeType === "file"
-        ? knowledgeFileName
-        : knowledgeType === "url"
-          ? knowledgeValue.trim()
-          : "Text snippet");
-    if (
-      !label ||
-      (knowledgeType === "file" && !knowledgeFileName) ||
-      (knowledgeType !== "file" && !knowledgeValue.trim())
-    ) {
-      tell("Add a source name and source content before saving.");
-      return;
-    }
-    const detail =
-      knowledgeType === "url"
-        ? `URL · ${knowledgeValue.trim()}`
-        : knowledgeType === "file"
-          ? `Uploaded file · ${knowledgeFileName}`
-          : `Text snippet · ${knowledgeValue.trim().slice(0, 90)}${knowledgeValue.trim().length > 90 ? "…" : ""}`;
-    const next = [
-      ...knowledgeItems,
-      {
-        id: `source-${Date.now()}`,
-        name: label,
-        type: knowledgeType,
-        detail,
-        content:
-          knowledgeType === "file" ? knowledgeFileName : knowledgeValue.trim(),
-      } satisfies KnowledgeSource,
-    ];
-    setKnowledgeItems(next);
-    writeLocal(KNOWLEDGE_KEY, next);
-    setKnowledgeName("");
-    setKnowledgeValue("");
-    setKnowledgeFileName("");
-    setModal("");
-    tell(`${label} added to Knowledge Base.`);
+  const saveKnowledgeSource = async () => {
+    if (uploading) return;
+    const name = knowledgeName.trim() || knowledgeFile?.name || 'Text snippet';
+    if (knowledgeType === 'file' ? !knowledgeFile : !knowledgeValue.trim()) { showToast.error('Add source content before saving.'); return; }
+    if (knowledgeType === 'url') { showToast.error('Website indexing is not supported by this API. Paste the page content as text instead.'); return; }
+    if (knowledgeFile && knowledgeType === 'file' && !/\.(txt|md|csv|pdf)$/i.test(knowledgeFile.name)) { showToast.error('Choose a TXT, MD, CSV or PDF file.'); return; }
+    setUploading(true);
+    try {
+      let body: FormData | { name: string; type: string; content: string };
+      if (knowledgeType === 'file' && knowledgeFile) {
+        body = new FormData(); body.append('name', name); body.append('type', 'file'); body.append('file', knowledgeFile);
+      } else body = { name, type: knowledgeType, content: knowledgeValue.trim() };
+      const result = await gosApi.createSource(body);
+      showToast.success(name + ' · ' + result.source.status);
+      setKnowledgeName(''); setKnowledgeValue(''); setKnowledgeFileName(''); setKnowledgeFile(null); setModal(''); api.retry();
+    } catch (e) { showToast.error((e as Error).message); }
+    finally { setUploading(false); }
   };
   const saveTemplate = () => {
     if (!templateTitle.trim() || !templatePrompt.trim()) {
@@ -962,7 +954,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     writeLocal(SETTINGS_KEY, followUpSettings);
     tell("Follow-up settings saved to your workspace.");
   };
-  const saveAssistant = () => {
+  const saveAssistant = async () => {
     if (!newAssistantName.trim() || !assistantRole.trim()) {
       tell("Enter an assistant name and role to continue.");
       return;
@@ -973,9 +965,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       language: assistantLanguage,
       goal: assistantGoal,
     };
+    if (!await api.updateAssistant({ live_enabled: true })) return;
     setAssistantProfile(next);
     writeLocal(ASSISTANT_KEY, next);
-    setAssistantEnabled(true);
+
     setAssistantStep(1);
     setModal("");
     tell(`${next.name} is active and saved to your workspace.`);
@@ -1003,6 +996,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     setWorkflowTo(flow?.to ?? "CONTACTED");
     setWorkflowAction(flow?.actionType ?? "Email");
     setWorkflowActive(flow?.active ?? false);
+    setWorkflowMessage(flow?.messageText ?? '');
     setWorkflowWizardStep(1);
     setSequenceSteps(
       flow?.sequenceSteps?.length
@@ -1051,15 +1045,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   className={`af-switch ${active ? "on" : ""}`}
                   type="button" role="switch" aria-checked={active}
                   aria-label={translateText(`${active ? "Disconnect" : "Connect"} ${channel.name}`)}
-                  onClick={() => {
-                    setChannelsOn((s) => ({
-                      ...s,
-                      [channel.id]: !s[channel.id],
-                    }));
-                    tell(
-                      `${channel.name} automation preference updated. Channel authorization is managed in Settings.`,
-                    );
-                  }}
+                  disabled={api.loading || api.saving || Boolean(api.error)} onClick={() => void changeChannel(channel.id, !active)}
                 >
                   <i />
                 </button>
@@ -1248,17 +1234,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           </span>
           <button
             className={`af-switch ${assistantEnabled ? "on af-green-switch" : ""}`}
-            type="button" role="switch" aria-checked={assistantEnabled}
+            type="button" role="switch" aria-checked={assistantEnabled} disabled={api.loading || api.saving || Boolean(api.error)}
             aria-label={
               translateText(assistantEnabled
                 ? "Pause GOS Assistant"
                 : "Activate GOS Assistant")
             }
             onClick={() => {
-              setAssistantEnabled(!assistantEnabled);
-              tell(
-                `GOS Assistant ${assistantEnabled ? "paused" : "activated"}.`,
-              );
+              void setAssistantEnabled(!assistantEnabled);
             }}
           >
             <i />
@@ -1352,7 +1335,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   <span className="af-knowledge-check">
                     <SourceIcon size={10} strokeWidth={2.5} />
                   </span>
-                  <b>{localizeNode(item.name)}</b>
+                  <b>{localizeNode(item.name)}</b>{item.status && <small className={`af-source-status af-source-${item.status}`} role="status">{item.status}</small>}
                 </div>
               );
             }))}
@@ -1568,12 +1551,13 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             <span className="af-count-badge">
               {localizeNode(knowledgeItems.length)}{translateText(" sources")}</span>
           </h2>
-          <p>{translateText("Sources available to the assistant; add a URL, file, or text snippet.")}</p>
+          <p>{translateText("Sources available to the assistant; add a file, text snippet, or instructions.")}</p>
         </div>
         <button
           className="af-button-primary"
           onClick={() => {
-            setKnowledgeType("url");
+            setKnowledgeType("text");
+            setKnowledgeFile(null);
             setKnowledgeName("");
             setKnowledgeValue("");
             setKnowledgeFileName("");
@@ -1582,6 +1566,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         >
           <Plus size={14} />{translateText(" Add source")}</button>
       </div>
+      <button className="af-button-secondary" disabled={api.loading} onClick={api.retry}>Refresh sources</button>
+      {api.loading && <div className="af-knowledge-loading" role="status" aria-label="Loading knowledge sources"><i/><i/><i/></div>}
+      {!api.loading && !api.error && !knowledgeItems.length && <p className="af-safety-note">Add your first source to train the assistant.</p>}
       <div className="af-knowledge-grid">
         {localizeNode(knowledgeItems.map((item) => {
           const Icon = knowledgeIconFor(item.type);
@@ -1591,19 +1578,18 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 <Icon size={16} />
               </span>
               <span>
-                <b>{localizeNode(item.name)}</b>
+                <b>{localizeNode(item.name)}</b>{item.status && <small className={`af-source-status af-source-${item.status}`} role="status">{item.status}</small>}
                 <small>{localizeNode(item.detail)}</small>
               </span>
               <button
                 className="af-icon-button"
                 title={translateText("Remove source")}
-                onClick={() => {
-                  const next = knowledgeItems.filter(
-                    (source) => source.id !== item.id,
-                  );
-                  setKnowledgeItems(next);
-                  writeLocal(KNOWLEDGE_KEY, next);
-                  tell(`${item.name} removed from Knowledge Base.`);
+                disabled={api.loading || uploading}
+                onClick={async () => {
+                  setUploading(true);
+                  try { await gosApi.deleteSource(item.id); api.retry(); showToast.success(item.name + ' removed.'); }
+                  catch (e) { showToast.error((e as Error).message); }
+                  finally { setUploading(false); }
                 }}
               >
                 <Trash2 size={15} />
@@ -2003,6 +1989,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
 
   return (
     <main className="af-page flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+      {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>Retry</button></div>}
       <div className="af-page-title">
         <div>
           <h1>
@@ -2271,6 +2258,20 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                               ? `${channels.find((channel) => channel.id === selectedChannel)?.name ?? "Channel"} settings`
                               : "Assistant settings")
           }
+          subtitle={
+            modal === "test"
+              ? translateText("Test real-time grounded responses using your connected knowledge base.")
+              : modal === "knowledge-source"
+                ? translateText("Upload verified business documents or paste guidelines for your assistant.")
+                : modal === "create-assistant" || modal === "edit-assistant"
+                  ? translateText("Configure persona identity, operational rules, and conversion goals.")
+                  : modal === "new-sequence" || modal === "new-workflow" || modal === "edit-workflow"
+                    ? translateText("Automate lifecycle transitions and scheduled outreach.")
+                    : modal === "template"
+                      ? translateText("Build consistent, consent-checked messaging templates.")
+                      : translateText("Manage channel connections and messaging consent policies.")
+          }
+          width={modal === "test" ? "min(680px, 95vw)" : undefined}
           close={() => setModal("")}
         >
           {localizeNode((modal === "create-assistant" || modal === "edit-assistant") && (
@@ -2356,25 +2357,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               </div>
             </div>
           ))}
-          {localizeNode(modal === "test" && (
-            <div className="af-modal-form">
-              <div className="af-test-preview">
-                <span className="af-bot-avatar">
-                  <Bot size={23} />
-                </span>
-                <div>
-                  <b>{localizeNode(assistantProfile.name)}{translateText(" is ready")}</b>
-                  <p>{translateText("Test a question against approved workspace knowledge.")}</p>
-                </div>
-              </div>
-              <label>{translateText("Ask a test question")}<input placeholder={translateText("What services do you offer?")} />
-              </label>
-              <button
-                className="af-button-primary"
-                onClick={async event => { const question = event.currentTarget.parentElement?.querySelector('input')?.value || ''; if (!question.trim()) { showToast.error('Enter a question.'); return; } try { const answer = await callBackend<{ text: string }>('copilot', { text: question, conversationId: crypto.randomUUID() }); showToast.info(answer.text); } catch (error) { showToast.error(backendError(error)); } }}
-              >{translateText("Run test")}</button>
-            </div>
-          ))}
+          {modal === "test" && <GosPlayground />}
           {localizeNode((modal === "new-sequence" ||
             modal === "new-workflow" ||
             modal === "edit-workflow") && (
@@ -2436,6 +2419,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   />
                 </label>
               ))}
+              <label>{translateText("Follow-up message")}<textarea value={workflowMessage} onChange={event => setWorkflowMessage(event.target.value)} maxLength={20000} placeholder={translateText("Write the message this workflow should send")}/></label>
               {localizeNode(modal === "new-sequence" && (
                 <div className="af-sequence-builder">
                   <div className="af-sequence-title">
@@ -2577,16 +2561,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <label>{translateText("Source type")}<MenuSelect
                   value={knowledgeType}
                   onChange={(value) => {
-                    setKnowledgeType(value as "url" | "file" | "text");
+                    setKnowledgeType(value as "url" | "file" | "text" | "instructions");
+                    setKnowledgeFile(null);
                     setKnowledgeValue("");
                     setKnowledgeFileName("");
                   }}
                   options={[
                     {
-                      value: "url",
+                      value: "instructions",
                       label: (
                         <>
-                          <Link2 size={14} />{translateText(" Website URL")}</>
+                          <Link2 size={14} />{translateText(" Instructions")}</>
                       ),
                     },
                     {
@@ -2621,7 +2606,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   />
                 </label>
               ))}
-              {localizeNode(knowledgeType === "text" && (
+              {localizeNode((knowledgeType === "text" || knowledgeType === "instructions") && (
                 <label>{translateText("Text snippet")}<textarea
                     value={knowledgeValue}
                     onChange={(event) => setKnowledgeValue(event.target.value)}
@@ -2632,9 +2617,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               {localizeNode(knowledgeType === "file" && (
                 <label>{translateText("Choose document")}<input
                     type="file"
-                    accept=".pdf,.doc,.docx,.txt,.md"
+                    accept=".pdf,.txt,.md,.csv"
                     onChange={(event) => {
                       const file = event.target.files?.[0];
+                      setKnowledgeFile(file ?? null);
                       if (file) {
                         setKnowledgeFileName(
                           `${file.name} · ${Math.ceil(file.size / 1024)} KB`,
@@ -2648,13 +2634,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               ))}
               <div className="af-safety-note">
                 <ShieldCheck size={16} />
-                <span>{translateText("Only verified business content should be added. Source details are saved to your workspace; file uploads to an AI provider are not enabled yet.")}</span>
+                <span>{translateText("Only verified business content should be added. TXT, MD, CSV and PDF files are uploaded securely and indexed in the background.")}</span>
               </div>
               <button
                 className="af-button-primary"
+                disabled={uploading || api.loading || Boolean(api.error)}
                 onClick={saveKnowledgeSource}
               >
-                <Plus size={14} />{translateText(" Add to Knowledge Base")}</button>
+                <Plus size={14} />{uploading ? "Uploading…" : translateText(" Add to Knowledge Base")}</button>
             </div>
           ))}
           {localizeNode(modal === "template" && (
@@ -2703,12 +2690,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <p className="af-modal-copy">{translateText("These preferences control automation. Authorize your messaging accounts in Settings → Integrations.")}</p>
               <label>{translateText("Channel status")}<MenuSelect
                   value={channelsOn[selectedChannel] ? "Connected" : "Paused"}
-                  onChange={(value) =>
-                    setChannelsOn((state) => ({
-                      ...state,
-                      [selectedChannel]: value === "Connected",
-                    }))
-                  }
+                  onChange={(value) => void changeChannel(selectedChannel, value === "Connected")}
                   options={["Connected", "Paused"].map((item) => ({
                     value: item,
                     label: item,

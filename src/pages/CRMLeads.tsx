@@ -28,6 +28,9 @@ import {
   Users,
   Workflow,
 } from "lucide-react";
+import { gosApi } from '../backend/gosApi';
+import { dispatchGosCRM, refreshGosCRM, useGosCRM, exportGosCRM, installGosPreset } from '../backend/gosCRM';
+import { showToast } from '../utils/toast';
 import type { AppDispatch, RootState } from "../store";
 import {
   deleteLeads,
@@ -40,7 +43,6 @@ import {
   colors,
   displayStage,
   euro,
-  exportCSV,
   owners,
   templateStages,
   templates,
@@ -83,13 +85,15 @@ const tabs = [
 
 export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   useUILanguage();
-  const dispatch = useDispatch<AppDispatch>();
+  const api = useGosCRM();
+  const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => dispatchGosCRM(action).catch(() => undefined);
   const navigate = useNavigate();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
   const { leads, pipelines } = useSelector((s: RootState) => s.crm);
   const pipeline =
     pipelines.find((p) => p.id === params.get("pipeline")) ?? pipelines[0];
+  const exportCSV = (rows: typeof leads) => exportGosCRM(rows, pipeline.id);
   const tab =
     params.get("tab") ||
     (location.pathname.split("/").at(-1) === "crm"
@@ -246,30 +250,9 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     next.set("tab", t);
     setParams(next);
   };
-  const runBulk = () => {
-    for (const id of chosen) {
-      const lead = leads.find((l) => l.id === id)!;
-      if (bulkAction === "stage")
-        dispatch(
-          moveLead({
-            id,
-            stage: pipeline.stages.find((s) => s.id === bulkValue)!.id,
-          }),
-        );
-      else
-        dispatch(
-          updateLead({
-            id,
-            changes:
-              bulkAction === "tag"
-                ? { tags: [...new Set([...lead.tags, bulkValue.trim()])] }
-                : { owner: bulkValue },
-          }),
-        );
-    }
-    notify(`${chosen.length} contacts updated.`);
-    setSelected([]);
-    close();
+  const runBulk = async () => {
+    try { await gosApi.bulkLeads(chosen, bulkAction as 'tag' | 'owner' | 'stage', bulkValue.trim()); await refreshGosCRM(); notify(chosen.length + ' contacts updated.'); setSelected([]); close(); }
+    catch (e) { showToast.error((e as Error).message); }
   };
   const allTasks = active.flatMap((l) =>
     (l.tasks ?? []).map((t) => ({ ...t, lead: l })),
@@ -337,6 +320,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   );
   return (
     <div className="flex flex-col overflow-hidden crm2-page crm-workspace crm-pipeline-workspace">
+      {api.error && <p className="crm-error" role="alert">{api.error} <button onClick={api.retry}>Retry</button></p>}
+      {api.loading && <p role="status">Loading CRM…</p>}
       <header className="crm2-header">
         <div className="crm2-header-left">
           <span className="crm2-header-icon">
@@ -813,16 +798,18 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   </div>
                   <button
                     className="crm2-btn-primary"
-                    onClick={() => {
+                    onClick={async () => {
                       const id = crypto.randomUUID();
-                      dispatch(
+                      const presetIndex = templates.findIndex(item => item.name === template.name);
+                      const saved = presetIndex >= 0 ? await installGosPreset(['new-lead', 'service-business', 'consultation-booking', 'sales-high-ticket', 'follow-up'][presetIndex]) : await dispatch(
                         savePipeline({
                           id,
                           name: template.name,
                           stages: templateStages(template.stages),
                         }),
                       );
-                      navigate(base + "/pipeline?pipeline=" + id);
+                      if (!saved) return;
+                      navigate(base + "/pipeline?pipeline=" + saved.id);
                       notify(
                         template.name +
                           " installed. Add contacts or customize its stages.",
@@ -1215,8 +1202,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             <button className="crm2-btn-secondary" onClick={close}>{translateText("Cancel")}</button>
             <button
               className="crm-delete-button"
-              onClick={() => {
-                dispatch(deleteLeads(chosen));
+              onClick={async () => {
+                if (!await dispatch(deleteLeads(chosen))) return;
                 setSelected([]);
                 close();
                 notify("Contacts deleted.");

@@ -56,9 +56,13 @@ export function readPages(): BookingPage[] {
   const items = load<Partial<BookingPage>[]>(KEYS.pages, []);
   if (!Array.isArray(items)) return [];
   return items.filter(p => p && typeof p.id === 'string' && typeof p.name === 'string').map(p => {
+    return normalizeBookingPage(p);
+  });
+}
+
+export function normalizeBookingPage(p: Partial<BookingPage>): BookingPage {
     const base = blankPage();
     return { ...base, ...p, hostName: typeof p.hostName === 'string' ? p.hostName : '', durationOptions: p.durationOptions || [p.duration || 30], locationOptions: p.locationOptions || [p.location || 'Zoom'], afterBooking: { ...base.afterBooking, ...p.afterBooking }, locations: p.locations?.length ? p.locations : (p.locationOptions || [p.location || 'None']).map((label, index) => locationFromLabel(label, 'location-' + index)), formSettings: { ...base.formSettings, ...p.formSettings }, notificationWorkflows: { ...base.notificationWorkflows, ...p.notificationWorkflows }, templateSettings: { ...base.templateSettings, ...p.templateSettings } };
-  });
 }
 
 export function subscribeStored(key: string, refresh: () => void) {

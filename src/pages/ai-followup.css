@@ -1263,3 +1263,493 @@ html.dark .af-workflow-list::-webkit-scrollbar-thumb,
 .dark .af-workflow-list::-webkit-scrollbar-thumb {
   background-color: #334155 !important;
 }
+.af-knowledge-loading{display:grid;gap:12px;padding:16px}.af-knowledge-loading i{display:block;height:58px;border-radius:10px;background:linear-gradient(90deg,var(--line,#edecf3),var(--panel,#fff),var(--line,#edecf3));background-size:200% 100%;animation:af-source-loading 1.4s infinite}.af-source-status{display:inline-block!important;padding:4px 8px;border-radius:6px;background:var(--line,#edecf3);text-transform:capitalize}.af-source-ready{color:#258565;background:#e8f6f0}.af-source-failed{color:#b75872;background:#fff0f3}.af-source-queued,.af-source-processing{color:#7365ca;background:#f1efff}@keyframes af-source-loading{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.af-knowledge-loading i{animation:none}}
+
+/* ==================== AI Playground Modern UI/UX ==================== */
+.af-playground-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 10px;
+}
+
+.af-playground-context-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(99, 102, 241, 0.16);
+  font-size: 11px;
+}
+
+.af-context-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4f46e5;
+  font-weight: 650;
+}
+
+.af-context-meta {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.af-prompt-chips-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.af-prompt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.af-prompt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.af-prompt-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.af-playground-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.af-playground-composer:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+
+.af-composer-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.af-composer-textarea {
+  width: 100%;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  resize: none;
+  font-size: 13px !important;
+  line-height: 1.55;
+  color: #0f172a !important;
+  padding: 4px 28px 4px 0 !important;
+  min-height: 52px;
+}
+
+.af-composer-clear {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.af-composer-clear:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.af-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.af-composer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.af-composer-submit {
+  min-height: 34px !important;
+  padding: 7px 15px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+}
+
+.af-playground-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.af-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+  font-size: 12px;
+}
+
+.af-feed-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #6366f1;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.af-feed-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-inline-end: 4px;
+}
+
+.af-test-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  transition: border-color 0.15s;
+}
+
+.af-test-card:hover {
+  border-color: #cbd5e1;
+}
+
+.af-test-user-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.af-user-badge {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.af-test-query-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 650;
+  color: #0f172a;
+  line-height: 1.4;
+  padding-top: 3px;
+}
+
+.af-test-ai-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-inline-start: 4px;
+}
+
+.af-ai-badge {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+.af-test-answer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.af-test-answer-text {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.af-test-meta-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.af-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.af-outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: capitalize;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #d1fae5;
+}
+
+.af-outcome-badge.af-outcome-fallback,
+.af-outcome-badge.af-outcome-handoff {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.af-citation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.af-verdict-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.af-grade-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.af-grade-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.af-grade-btn.correct.active {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #34d399;
+  font-weight: 600;
+}
+
+.af-grade-btn.incorrect.active {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fda4af;
+  font-weight: 600;
+}
+
+.af-playground-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px 18px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #64748b;
+  gap: 7px;
+}
+
+.af-empty-bot-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #6366f1;
+  margin-bottom: 4px;
+}
+
+.af-playground-empty b {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.af-playground-empty p {
+  font-size: 11px;
+  max-width: 380px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Dark mode overrides for Playground */
+.dark .af-playground-context-banner,
+html.dark .af-playground-context-banner {
+  background: rgba(99, 102, 241, 0.15) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+.dark .af-context-badge,
+html.dark .af-context-badge {
+  color: #a5b4fc !important;
+}
+.dark .af-context-meta,
+html.dark .af-context-meta {
+  color: #94a3b8 !important;
+}
+.dark .af-prompt-chip,
+html.dark .af-prompt-chip {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+.dark .af-prompt-chip:hover,
+html.dark .af-prompt-chip:hover {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark .af-playground-composer,
+html.dark .af-playground-composer {
+  background: #111522 !important;
+  border-color: #252c3e !important;
+}
+.dark .af-composer-textarea,
+html.dark .af-composer-textarea {
+  color: #f8fafc !important;
+}
+.dark .af-composer-clear,
+html.dark .af-composer-clear {
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+}
+.dark .af-composer-actions,
+html.dark .af-composer-actions {
+  border-top-color: #1e293b !important;
+}
+.dark .af-test-card,
+html.dark .af-test-card {
+  background: #111522 !important;
+  border-color: #252c3e !important;
+}
+.dark .af-test-card:hover,
+html.dark .af-test-card:hover {
+  border-color: #334155 !important;
+}
+.dark .af-user-badge,
+html.dark .af-user-badge {
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+}
+.dark .af-test-query-text,
+html.dark .af-test-query-text {
+  color: #f8fafc !important;
+}
+.dark .af-test-answer-text,
+html.dark .af-test-answer-text {
+  background: #161b2a !important;
+  border-color: #252c3e !important;
+  color: #cbd5e1 !important;
+}
+.dark .af-citation-badge,
+html.dark .af-citation-badge {
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+}
+.dark .af-grade-btn,
+html.dark .af-grade-btn {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+.dark .af-grade-btn:hover,
+html.dark .af-grade-btn:hover {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark .af-playground-empty,
+html.dark .af-playground-empty {
+  background: #111522 !important;
+  border-color: #252c3e !important;
+}
+.dark .af-playground-empty b,
+html.dark .af-playground-empty b {
+  color: #f8fafc !important;
+}
+.dark .af-playground-empty p,
+html.dark .af-playground-empty p {
+  color: #94a3b8 !important;
+}
+.dark .af-empty-bot-icon,
+html.dark .af-empty-bot-icon {
+  background: rgba(99, 102, 241, 0.2) !important;
+}
+

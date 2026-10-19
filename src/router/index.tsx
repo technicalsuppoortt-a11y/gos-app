@@ -7,6 +7,7 @@ import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
+import { EmailActionPage } from '../pages/auth/EmailActionPage';
 import PhoenixSignIn from '../pages/auth/PhoenixSignIn';
 import '../route-loading.css';
 const ActivationPage = lazy(() => import('../pages/auth/ActivationLinkPage').then(module => ({ default: module.ActivationPage })));
@@ -15,7 +16,6 @@ const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(modu
 
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
-const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })));
 const LandingPage = lazy(() => import('../pages/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const UserLayout = lazy(() => import('../components/layout/UserLayout').then(module => ({ default: module.UserLayout })));
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
@@ -64,13 +64,15 @@ export const router = createBrowserRouter([
   { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
   { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace/> },
   // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
-  { path: '/', element: <Suspended><LandingPage/></Suspended> },
+  { path: '/', element: new URLSearchParams(window.location.search).has('oobCode') ? <EmailActionPage/> : <Suspended><LandingPage/></Suspended> },
   { path: '/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
   { path: '/auth/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
-  { path: '/reset-password', element: <Suspended><ResetPasswordPage/></Suspended> },
-  { path: '/auth/reset-password', element: <Suspended><ResetPasswordPage/></Suspended> },
+  { path: '/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
+  { path: '/auth/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
+  { path: '/auth/action', element: <EmailActionPage/> },
+  { path: '/__/auth/action', element: <EmailActionPage/> },
   { path: '/auth/*', element: <DefaultRedirect/> },
   ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
   { path: '/crm', element: <GuardedLayout roles={['USER', 'ADMIN', 'SUPER_ADMIN']}><UserLayout/></GuardedLayout>, children: crmChildren },

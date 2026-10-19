@@ -43,9 +43,11 @@ service cloud.firestore {
       function ownInvite() { return request.auth != null && request.auth.token.email != null && resource.data.email == request.auth.token.email; }
       allow get: if request.auth != null && (request.auth.uid == userId || ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER'));
       allow list: if ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER');
-      allow create, update: if request.auth != null && request.auth.uid == userId || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
-      allow update: if ownInvite() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'activatedAt', 'activatedUid', 'tempAuthKey']) && request.resource.data.status == 'Active';
-      allow delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      // Roles, tenant ownership and account lifecycle are controlled by manageUser.
+      allow create, delete: if false;
+      allow update: if request.auth != null && request.auth.uid == userId
+        && resource.data.status == 'Active'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'activatedAt', 'tempAuthKey']);
     }
     match /tenants/{tenantId} {
       allow read: if request.auth != null && request.auth.token.tenantId == tenantId
@@ -54,8 +56,9 @@ service cloud.firestore {
       allow create, update, delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
       match /members/{userId} {
         allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
-        allow create, update: if request.auth != null && request.auth.uid == userId || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
-        allow delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+        allow create, delete: if false;
+        allow update: if tenant(tenantId) && request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['id', 'name', 'email', 'updatedAt']);
       }
       match /workspaceState/{stateId} {
         allow read: if tenant(tenantId);

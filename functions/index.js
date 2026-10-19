@@ -6,9 +6,12 @@ import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { mayManageUser, maySend, validateBooking } from './policy.js';
 import { createHash } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
+import { setGlobalOptions } from 'firebase-functions/v2';
 
-const openaiKey = defineSecret('OPENAI_API_KEY');
-const openaiModel = defineString('OPENAI_MODEL', { default: '' });
+// Allows deploying the remaining services while the owner provisions the AI secret.
+const openaiKey = process.env.DEPLOY_COPILOT === 'false' ? null : defineSecret('OPENAI_API_KEY');
+const openaiModel = defineString('OPENAI_MODEL', { default: 'gpt-4o' });
+setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', maxInstances: 10 });
 
 initializeApp();
 const db = getFirestore(), auth = getAuth();
@@ -113,7 +116,7 @@ export const stopFollowUpOnLeadChange = onDocumentWritten('tenants/{tenantId}/le
   }
 });
 
-export const copilot = onCall({ secrets: [openaiKey], timeoutSeconds: 90 }, async request => {
+export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 90 }, async request => {
   const { user, root } = await workspace(request, 'copilot');
   const { text, conversationId } = request.data ?? {};
   if (typeof text !== 'string' || !text.trim() || text.length > 12000 || !/^[\w-]{1,150}$/.test(conversationId)) throw new HttpsError('invalid-argument', 'Enter a message.');
@@ -145,7 +148,7 @@ export const copilot = onCall({ secrets: [openaiKey], timeoutSeconds: 90 }, asyn
   await threadRef.set({ actorId: user.uid, title: history?.title ?? text.slice(0, 70), prompt: history?.prompt ?? text, category: 'Workspace', group: 'Today', time: new Date().toLocaleTimeString('en-GB', { timeZone: 'UTC' }), messages: savedMessages, updatedAt: now, draft: answer.draft ?? null });
   await audit(root, user, 'copilot.responded', conversationId);
   return answer;
-});
+}) : undefined;
 
 export const createCopilotDraft = onCall(async request => {
   const kind = request.data?.draft?.kind;
@@ -279,6 +282,8 @@ export const startWorkflow = onCall(async request => {
     if (existing.exists) return { id: requestId, status: existing.data().status };
     const workflow = (await tx.get(root.collection('workflows').doc(workflowId))).data();
     if (!workflow?.active) throw new HttpsError('failed-precondition', 'Activate this workflow before running it.');
+    if (!(workflow.sequenceSteps?.length) || workflow.sequenceSteps.length > 10 || workflow.sequenceSteps.some(step => !['email', 'whatsapp'].includes(String(step.action).toLowerCase()))) throw new HttpsError('failed-precondition', 'Choose up to 10 email or WhatsApp steps.');
+    if (typeof workflow.messageText !== 'string' || !workflow.messageText.trim()) throw new HttpsError('failed-precondition', 'Add a follow-up message before running this workflow.');
     const leads = await tx.get(root.collection('leads').where('followUpState', '==', workflow.from).limit(30));
     if (leads.empty) throw new HttpsError('failed-precondition', 'No contacts match the workflow starting state.');
     const channels = [...new Set((workflow.sequenceSteps ?? []).map(step => step.action.toLowerCase()))];
@@ -291,7 +296,7 @@ export const startWorkflow = onCall(async request => {
       (workflow.sequenceSteps ?? []).forEach((step, index) => {
         const multiplier = /^day/.test(step.unit) ? 86400000 : /^hour/.test(step.unit) ? 3600000 : 60000;
         delay += Math.max(1, Number(step.delay) || 1) * multiplier;
-        tx.create(root.collection('scheduledActions').doc(`${requestId}-${lead.id}-${index}`), { workflowId, runId: requestId, leadId: lead.id, channel: step.action.toLowerCase(), status: 'pending', dueAt: new Date(Date.now() + delay).toISOString(), createdAt: new Date().toISOString(), attempt: 0 });
+        tx.create(root.collection('scheduledActions').doc(`${requestId}-${lead.id}-${index}`), { workflowId, stepIndex: index, runId: requestId, leadId: lead.id, channel: step.action.toLowerCase(), status: 'pending', dueAt: new Date(Date.now() + delay).toISOString(), createdAt: new Date().toISOString(), attempt: 0 });
       });
     });
     return { id: requestId, status: 'pending' };
@@ -314,3 +319,5 @@ export const pauseFollowUpOnConversationChange = onDocumentWritten('tenants/{ten
 
 // Keep the Phoenix bridge alongside the workspace callable services.
 export { phoenixPlatform } from './phoenix.js';
+export { publicBooking } from './public-booking.js';
+export { processScheduledActions } from './workers.js';

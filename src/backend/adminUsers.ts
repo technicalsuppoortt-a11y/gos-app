@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, deleteField, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteField, onSnapshot, query, where } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, deleteUser, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { store, type RootState } from '../store';
 import { beginActivation, endActivation } from './session';
@@ -21,44 +21,9 @@ export async function getActivationLink(id: string): Promise<string> {
   const existing = links.get(id);
   if (existing) return existing;
 
-  const useFunctions = import.meta.env.VITE_USE_CLOUD_FUNCTIONS === 'true';
-  if (useFunctions) {
-    try {
-      const result = await callBackend<{ link: string }>('manageUser', { operation: 'activationLink', id });
-      if (result?.link) {
-        links.set(id, result.link);
-        return result.link;
-      }
-    } catch {
-      // Cloud Function not deployed, use local Firestore resolution
-    }
-  }
-
-  try {
-    const snap = await getDoc(doc(db, 'users', id));
-    if (snap.exists()) {
-      const data = snap.data();
-      const link = generateActivationLink(id, data?.email || '');
-      links.set(id, link);
-      return link;
-    }
-  } catch {
-    // Local fallback
-  }
-
-  try {
-    const local = JSON.parse(localStorage.getItem('gos_local_mock_invites') || '[]');
-    const found = local.find((u: any) => u.id === id);
-    if (found?.email) {
-      const link = generateActivationLink(id, found.email);
-      links.set(id, link);
-      return link;
-    }
-  } catch { /* noop */ }
-
-  const fallbackLink = generateActivationLink(id, '');
-  links.set(id, fallbackLink);
-  return fallbackLink;
+  const result = await callBackend<{ link: string }>('manageUser', { operation: 'activationLink', id });
+  links.set(id, result.link);
+  return result.link;
 }
 
 export interface ActivationResult {
@@ -284,188 +249,8 @@ export async function activateInvitedUser(params: {
   }
 }
 
-export async function executeClientFallback(operation: string, data: Record<string, unknown>): Promise<{ id?: string; link?: string; status?: string; role?: unknown; deleted?: boolean; emailSent?: boolean; alreadyExists?: boolean }> {
-  const id = String(data.id || ('usr_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16)));
-  const email = String(data.email || '').trim().toLowerCase();
-  const name = String(data.name || email.split('@')[0] || 'User');
-  const role = String(data.role || 'USER');
-  const status = String(data.status || 'Pending');
-  const tenantId = String(data.tenantId || `workspace-${id}`);
-
-  if (operation === 'create') {
-    // 1. No Firebase Auth account is created here. Creating one with a throwaway password
-    //    made every activation link fail with EMAIL_EXISTS, because the browser cannot set
-    //    the password of an account it cannot sign in to. The account is created on the
-    //    activation page with the password the user chooses.
-
-    // Check if user document already exists in Firestore by email
-    let existingDocId = '';
-    let existingUserDoc: any = null;
-    try {
-      const q = query(collection(db, 'users'), where('email', '==', email));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        existingDocId = snap.docs[0].id;
-        existingUserDoc = snap.docs[0].data();
-      }
-    } catch (e) {
-      console.warn('Existing Firestore user lookup notice:', e);
-    }
-
-    const alreadyExists = Boolean(existingUserDoc);
-    const finalId = existingDocId || id;
-    const finalTenantId = String(data.tenantId || existingUserDoc?.tenantId || `workspace-${finalId}`);
-    const link = generateActivationLink(finalId, email);
-    links.set(finalId, link);
-
-    const userRecord: Invite = {
-      id: finalId,
-      email,
-      name: name || existingUserDoc?.name || email.split('@')[0],
-      role: (role as Invite['role']) || existingUserDoc?.role || 'USER',
-      status: 'Pending',
-      tenantId: finalTenantId,
-      created: existingUserDoc?.created || new Date().toISOString(),
-      mfa: false,
-    };
-
-    // 2. Write the users record with status "Pending" (also resets an existing record to Pending).
-    //    A failure here is surfaced to the admin rather than reported as a successful invite.
-    await setDoc(doc(db, 'users', finalId), { ...userRecord, tempAuthKey: deleteField() }, { merge: true });
-
-    // 3. Tenant and member records (member stays inactive until activation)
-    {
-      try {
-        await setDoc(doc(db, 'tenants', finalTenantId), {
-          id: finalTenantId,
-          name: `${name}'s workspace`,
-          ownerId: finalId,
-          createdAt: new Date().toISOString(),
-        }, { merge: true });
-
-        await setDoc(doc(db, 'tenants', finalTenantId, 'members', finalId), {
-          name,
-          email,
-          role: role === 'ADMIN' ? 'Admin' : 'Owner',
-          active: false, // status is Pending
-          permissions: ['*'],
-          createdAt: new Date().toISOString(),
-        }, { merge: true });
-
-        // If the inviting administrator has a tenant, also associate member with admin's workspace
-        const adminTenantId = store.getState().auth.tenant?.id;
-        if (adminTenantId && adminTenantId !== finalTenantId) {
-          await setDoc(doc(db, 'tenants', adminTenantId, 'members', finalId), {
-            name,
-            email,
-            role: role === 'ADMIN' ? 'Admin' : 'Member',
-            active: false,
-            permissions: ['*'],
-            createdAt: new Date().toISOString(),
-          }, { merge: true });
-        }
-      } catch (subErr) {
-        console.warn('Firestore member subcollections write warning:', subErr);
-      }
-    }
-
-    // 4. A previously invited email may already have an Auth account with an unknown password.
-    //    The official reset email lets them set it, then "Continue" returns them to the finish step.
-    let emailSent = false;
-    if (alreadyExists) {
-      emailSent = await sendOfficialPasswordResetEmail(email, `${link}&stage=finish`);
-    }
-
-    // 5. Keep local fallback in sync
-    try {
-      const key = 'gos_local_mock_invites';
-      const current = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = current.filter((u: any) => u.id !== finalId && u.email !== email);
-      updated.unshift({ ...userRecord, emailSent });
-      localStorage.setItem(key, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('gos:invites-updated'));
-    } catch { /* noop */ }
-
-    return { link, emailSent, alreadyExists, ...userRecord };
-  }
-
-  if (operation === 'activationLink') {
-    const link = await getActivationLink(id);
-    return { link };
-  }
-
-  if (operation === 'status') {
-    const nextStatus = data.status === 'Deactivated' ? 'Deactivated' : 'Active';
-    try {
-      await updateDoc(doc(db, 'users', id), { status: nextStatus });
-      try {
-        const snap = await getDoc(doc(db, 'users', id));
-        const tId = snap.data()?.tenantId || `workspace-${id}`;
-        await updateDoc(doc(db, 'tenants', tId, 'members', id), { active: nextStatus === 'Active' });
-      } catch {}
-    } catch (err) {
-      console.warn('Firestore update status failed, syncing locally:', err);
-    }
-    try {
-      const key = 'gos_local_mock_invites';
-      const current = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = current.map((u: any) => (u.id === id ? { ...u, status: nextStatus } : u));
-      localStorage.setItem(key, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('gos:invites-updated'));
-    } catch {}
-    return { id, status: nextStatus };
-  }
-
-  if (operation === 'role') {
-    try {
-      await updateDoc(doc(db, 'users', id), { role: data.role });
-    } catch (err) {
-      console.warn('Firestore update role failed, syncing locally:', err);
-    }
-    try {
-      const key = 'gos_local_mock_invites';
-      const current = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = current.map((u: any) => (u.id === id ? { ...u, role: data.role } : u));
-      localStorage.setItem(key, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('gos:invites-updated'));
-    } catch {}
-    return { id, role: data.role };
-  }
-
-  if (operation === 'delete') {
-    try {
-      await deleteDoc(doc(db, 'users', id));
-    } catch (err) {
-      console.warn('Firestore delete failed, syncing locally:', err);
-    }
-    try {
-      const key = 'gos_local_mock_invites';
-      const current = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = current.filter((u: any) => u.id !== id);
-      localStorage.setItem(key, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('gos:invites-updated'));
-    } catch {}
-    return { id, deleted: true };
-  }
-
-  return { id };
-}
-
 export async function manageAccount(operation: string, data: Record<string, unknown>) {
-  // Cloud Function 'manageUser' is unavailable on current project.
-  // Execute client-side mock/fallback directly to prevent CORS preflight failures or internal errors.
-  const useFunctions = import.meta.env.VITE_USE_CLOUD_FUNCTIONS === 'true';
-  if (useFunctions) {
-    try {
-      const result = await callBackend<{ id?: string; link?: string; alreadyExists?: boolean }>('manageUser', { operation, ...data });
-      if (result?.id && result.link) links.set(result.id, result.link);
-      return result;
-    } catch (error) {
-      console.warn('Cloud Function unavailable, executing client fallback:', error);
-    }
-  }
-
-  const result = await executeClientFallback(operation, data);
+  const result = await callBackend<{ id?: string; link?: string; alreadyExists?: boolean }>('manageUser', { ...data, operation });
   if (result.id && result.link) links.set(result.id, result.link);
   return result;
 }
@@ -483,50 +268,18 @@ export function useAdminUsers() {
       snapshot => {
         // Provisional invitation docs consumed during activation are superseded by the UID-keyed record.
         const items = snapshot.docs.filter(item => !item.data().activatedUid).map(item => ({ ...item.data(), id: item.id }) as Invite);
-        items.forEach(u => {
-          if (!links.has(u.id)) {
-            links.set(u.id, generateActivationLink(u.id, u.email));
-          }
-        });
         setState({ invites: items, loading: false, error: '' });
       },
       error => {
-        console.warn('Firestore snapshot listener failed, using local mock invites:', error);
-        try {
-          const local = JSON.parse(localStorage.getItem('gos_local_mock_invites') || '[]');
-          local.forEach((u: Invite) => {
-            if (!links.has(u.id)) {
-              links.set(u.id, generateActivationLink(u.id, u.email));
-            }
-          });
-          setState({ invites: local, loading: false, error: '' });
-        } catch {
-          const message = backendError(error);
-          setState({ invites: [], loading: false, error: message });
-          showToast.error(message);
-        }
+        const message = backendError(error);
+        setState({ invites: [], loading: false, error: message });
+        showToast.error(message);
       }
     );
 
-    const handleLocalUpdate = () => {
-      try {
-        const local = JSON.parse(localStorage.getItem('gos_local_mock_invites') || '[]');
-        setState(prev => {
-          const existingMap = new Map(prev.invites.map(i => [i.id, i]));
-          local.forEach((u: Invite) => {
-            existingMap.set(u.id, { ...existingMap.get(u.id), ...u });
-            if (!links.has(u.id)) links.set(u.id, generateActivationLink(u.id, u.email));
-          });
-          return { ...prev, invites: Array.from(existingMap.values()) };
-        });
-      } catch {}
-    };
-
-    window.addEventListener('gos:invites-updated', handleLocalUpdate);
-
     return () => {
       unsubscribe();
-      window.removeEventListener('gos:invites-updated', handleLocalUpdate);
+
     };
   }, [role]);
 
