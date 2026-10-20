@@ -66,6 +66,7 @@ export const UserLayout: React.FC = () => {
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/(?:products|course)\/[^/]+(?:\/(?:edit|pricing|orders|students))?$/.test(location.pathname);
+  const isBuilder = /^\/(?:dashboard\/)?(funnels|websites)\/[^/]+\/edit(?:\/|$)/.test(location.pathname);
 
   useEffect(() => {
     document.documentElement.classList.add('layout-locked');
@@ -78,8 +79,8 @@ export const UserLayout: React.FC = () => {
 
   const isNativeTemplates = new URLSearchParams(location.search).get('tab') === 'templates';
   const isDashboard = location.pathname === '/dashboard';
-  const isFullPage = isInbox || isCRM || isBooking || isNativeTemplates;
-  return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route' : ''}`} dir={uiDirection()}>
+  const isFullPage = isInbox || isCRM || isBooking || isNativeTemplates || isBuilder;
+  return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route' : ''}${isBuilder ? ' is-builder-route' : ''}`} dir={uiDirection()}>
     <Sidebar items={visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace flex-1 flex flex-col min-w-0${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={translateText(isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
