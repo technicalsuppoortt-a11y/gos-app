@@ -76,7 +76,7 @@ const assetPersistence = createAssetPersistence({
         const value = { ...write.value };
         // Domain binding is owned by the Hosting callable. A draft save must
         // never overwrite a domain verified concurrently by another member.
-        if (write.resource === 'assets') delete value.domain;
+        if (write.resource === 'assets') { delete value.domain; delete value.publishedUrl; }
         batch.set(ref, encodeFirestoreValue(value), { mergeFields: Object.keys(value) });
       } else batch.delete(ref);
     }

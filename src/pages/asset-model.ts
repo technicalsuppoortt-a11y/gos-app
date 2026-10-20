@@ -7,6 +7,7 @@ export type Asset = {
     kind: BuilderMode;
     name: string;
     domain: string;
+    publishedUrl?: string;
     image: string;
     updated: string;
     archived?: boolean;

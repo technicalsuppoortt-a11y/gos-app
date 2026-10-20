@@ -36,6 +36,7 @@ test('publish uses the stored document, decodes columns and marks Published afte
   const result = await publishAssetRequest({ data: { assetId: 'asset' } }, h.deps);
   assert.equal(result.draftChanged, false);
   assert.equal(h.records.get('tenants/tenant-a/assets/asset').document.funnel.status, 'Published');
+  assert.equal(h.records.get('tenants/tenant-a/assets/asset').publishedUrl, result.url);
   assert.ok(h.calls[1][2]['/index.html'].includes('"children":[[{"id":"heading"'));
   assert.equal(h.records.get('tenants/tenant-a/hosting/asset').lease, null);
 });

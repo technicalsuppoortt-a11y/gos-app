@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { buildPublicationFiles, domainVerification, hostingSiteId, publicationResourcePaths } from './hosting-client.js';
+import { buildPublicationFiles, domainVerification, domainIssueGuidance, hostingSiteId, publicationResourcePaths } from './hosting-client.js';
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -58,6 +58,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
       if (state.data()?.lease !== lease) throw new HttpsError('aborted', 'The publishing operation changed. Refresh the asset.');
       const draftChanged = !latest.exists || digest(latest.data().document) !== digest(saved.document);
       tx.set(stateRef, { ...release, siteId, lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
+      if (latest.exists) tx.update(ref, { publishedUrl: release.url });
       // A newer edit remains a draft; it cannot be labelled as the deployed copy.
       if (!draftChanged) tx.update(ref, { 'document.funnel.status': 'Published', 'document.pages': saved.document.pages.map(page => ({ ...page, status: 'Published' })) });
       return { ...release, draftChanged };
@@ -132,7 +133,7 @@ export async function hostingDomainRequest(request, { workspace, db, hosting }) 
       if (state.data()?.lease === lease) tx.update(hostingRef, { lease: null });
     });
     if (error instanceof HttpsError) throw error;
-    throw new HttpsError('failed-precondition', error.message || 'Domain verification failed.');
+    throw new HttpsError('failed-precondition', /acme|http get|challenge|caa/i.test(error.message ?? '') ? domainIssueGuidance(error.message) : 'Unable to check this domain right now. Your DNS settings are retained. Try again shortly, or review Firebase Hosting permissions if this continues.');
   }
 }
 

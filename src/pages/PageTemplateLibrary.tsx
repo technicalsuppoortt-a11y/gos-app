@@ -1,15 +1,16 @@
+import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import {useState} from 'react';
-import {ArrowRight,Search} from 'lucide-react';
+import {ArrowRight,Search,LoaderCircle} from 'lucide-react';
 import {publishedPageTemplates} from './admin/template-library';
 import type {PageTemplate} from './page-templates';
 import './pagefly-editor.css';
 
-export function PageTemplateCards({templates=publishedPageTemplates(),install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void}) {
+export function PageTemplateCards({templates=publishedPageTemplates(),install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
   useUILanguage();
-  return <>{localizeNode(templates.map(template=><button className="pf-template-card" key={template.id} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}><div className="pf-template-preview" style={{backgroundImage:`linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.12)),url(${template.image})`}}><small>{localizeNode(template.mode==='funnel'?'Funnel · 3 steps':'Website · 1 page')}</small><strong>{localizeNode(template.title)}</strong><span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span></div><div className="pf-template-description"><b>{localizeNode(template.name)}</b><small>{localizeNode(template.industry)} · {localizeNode(template.goal)}</small><span>{translateText("Use Template ")}<ArrowRight size={12}/></span></div></button>))}</>;
+  return <>{localizeNode(templates.map(template=><AssetAsyncButton busyText="Creating..." className="pf-template-card" key={template.id} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>{busy => <><div className="pf-template-preview" style={{backgroundImage:`linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.12)),url(${template.image})`}}><small>{localizeNode(template.mode==='funnel'?'Funnel · 3 steps':'Website · 1 page')}</small><strong>{localizeNode(template.title)}</strong><span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span></div><div className="pf-template-description"><b>{localizeNode(template.name)}</b><small>{localizeNode(template.industry)} · {localizeNode(template.goal)}</small><span>{busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Creating...")}</> : <>{translateText("Use Template ")}<ArrowRight size={12}/></>}</span></div></>}</AssetAsyncButton>))}</>;
 }
-export function PageTemplateLibrary({install,initialCategory='All'}:{install:(template:PageTemplate)=>void;initialCategory?:'All'|'Funnels'|'Websites'}) {
+export function PageTemplateLibrary({install,initialCategory='All'}:{install:(template:PageTemplate)=>void | Promise<unknown>;initialCategory?:'All'|'Funnels'|'Websites'}) {
   useUILanguage();
   const [category,setCategory]=useState(initialCategory);
   const [industry,setIndustry]=useState('All industries'),[goal,setGoal]=useState('All goals'),[search,setSearch]=useState('');

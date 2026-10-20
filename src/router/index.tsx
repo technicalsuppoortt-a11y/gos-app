@@ -33,6 +33,7 @@ const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder'
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
+const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
 const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
   // Keep activation links usable while the onboarding cycle is disabled.
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute> },
+  { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
   { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },

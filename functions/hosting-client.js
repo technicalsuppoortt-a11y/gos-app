@@ -85,15 +85,27 @@ export function publicationResourcePaths(asset, manifest, template = '') {
   return [...files];
 }
 
+export function domainIssueGuidance(message) {
+  const text = String(message || '');
+  if (/acme|http get|challenge/i.test(text)) return 'SSL validation is waiting for your domain to reach Firebase Hosting. Apply the DNS changes below, remove only the conflicting A/AAAA records marked REMOVE, and disable any proxy or redirect blocking the challenge. Keep ownership TXT records in place. Firebase retries certificate validation automatically; propagation can take up to 24 hours.';
+  if (/caa/i.test(text)) return 'Certificate issuance is blocked by CAA records. Apply the CAA changes supplied by Firebase below to authorize its certificate authority.';
+  return 'DNS or SSL verification is pending. Apply the required DNS changes below and allow time for propagation. If this persists after 24 hours, review the domain in Firebase Hosting.';
+}
+
 export function domainVerification(domain) {
+  const updates = [domain.requiredDnsUpdates, domain.cert?.verification?.dns].filter(Boolean);
+  const records = updates.flatMap(update => [...(update.desired ?? []).flatMap(set => set.records ?? []), ...(update.discovered ?? []).flatMap(set => (set.records ?? []).filter(record => record.requiredAction === 'REMOVE'))]);
+  const dnsRecords = [...new Map(records.map(record => [JSON.stringify([record.domainName, record.type, record.rdata, record.requiredAction]), record])).values()];
+  const issues = [...(domain.issues ?? []), ...(domain.cert?.issues ?? []), ...(domain.cert?.verification?.http?.checkError ? [domain.cert.verification.http.checkError] : [])];
+
   const sslActive = ['CERT_ACTIVE', 'CERT_EXPIRING_SOON'].includes(domain.cert?.state);
   const connected = domain.hostState === 'HOST_ACTIVE' && domain.ownershipState === 'OWNERSHIP_ACTIVE' && sslActive && !domain.deleteTime;
   return {
     status: connected ? 'Connected' : domain.deleteTime ? 'Disconnected' : 'Pending',
     ssl: domain.deleteTime ? 'Inactive' : sslActive ? 'Active' : domain.cert?.state === 'CERT_EXPIRED' ? 'Inactive' : 'Not configured',
     hostState: domain.hostState ?? '', ownershipState: domain.ownershipState ?? '', certificateState: domain.cert?.state ?? '',
-    dnsRecords: (domain.requiredDnsUpdates?.desired ?? []).flatMap(set => set.records ?? []),
-    issues: (domain.issues ?? []).map(issue => String(issue.message ?? 'DNS verification pending')),
+    dnsRecords,
+    issues: [...new Set(issues.map(issue => domainIssueGuidance(issue.message)))],
     checkedAt: domain.requiredDnsUpdates?.checkTime ?? new Date().toISOString(),
   };
 }
@@ -144,7 +156,10 @@ export function createHostingClient({ token, projectId, fetcher = fetch }) {
       try { return await api(path); }
       catch (error) { if (error.status !== 404) throw error; }
       const operation = await api(`projects/${projectId}/sites/${siteId}/customDomains?customDomainId=${encodeURIComponent(name)}`, 'POST', {});
-      if (operation.error) throw new Error(operation.error.message || 'Domain provisioning failed.');
+      if (operation.error) {
+        try { return await api(path); } catch (error) { if (error.status !== 404) throw error; }
+        throw new Error(domainIssueGuidance(operation.error.message));
+      }
       if (operation.done && operation.response) return operation.response;
       try { return await api(path); }
       catch (error) { if (error.status !== 404) throw error; return { name: path, reconciling: true }; }

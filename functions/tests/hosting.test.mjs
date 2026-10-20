@@ -84,3 +84,29 @@ test('failed uploads never finalize or create a release', async () => {
   await assert.rejects(client.deploy('site', { '/index.html': 'hello' }), /uploaded/);
   assert.equal(calls.some(url => url.includes('/releases?') || url.includes('updateMask')), false);
 });
+
+
+test('ACME failures show actionable guidance, certificate DNS records and conflicting record removals', () => {
+  const add = { domainName: '_acme-challenge.example.com.', type: 'TXT', rdata: 'token', requiredAction: 'ADD' };
+  const remove = { domainName: 'example.com.', type: 'AAAA', rdata: '::1', requiredAction: 'REMOVE' };
+  const result = domainVerification({ hostState: 'HOST_ACTIVE', ownershipState: 'OWNERSHIP_ACTIVE', cert: {
+    state: 'CERT_VALIDATING', issues: [{ message: "One or more of Hosting's HTTP GET request for the ACME challenge failed: private provider details" }],
+    verification: { dns: { desired: [{ records: [add] }] } },
+  }, requiredDnsUpdates: { discovered: [{ records: [remove, { ...remove, requiredAction: 'NONE' }] }] } });
+  assert.equal(result.status, 'Pending');
+  assert.deepEqual(result.dnsRecords, [remove, add]);
+  assert.ok(result.issues[0].includes('remove only the conflicting A/AAAA'));
+  assert.ok(!result.issues[0].includes('private provider details'));
+});
+
+test('a failed creation operation retains a provisioned domain and its DNS instructions', async () => {
+  let reads = 0;
+  const client = createHostingClient({ projectId: 'demo', token: async () => 'token', fetcher: async (_, options) => {
+    if (options.method === 'POST') return Response.json({ done: true, error: { message: 'ACME challenge failed' } });
+    if (++reads === 1) return Response.json({ error: { message: 'Missing' } }, { status: 404 });
+    return Response.json({ cert: { state: 'CERT_VALIDATING' }, requiredDnsUpdates: { desired: [] } });
+  } });
+  const result = await client.connectDomain('site', 'example.com');
+  assert.equal(domainVerification(result).status, 'Pending');
+  assert.equal(reads, 2);
+});

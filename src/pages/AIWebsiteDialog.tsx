@@ -1,7 +1,7 @@
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, Sparkles, LoaderCircle } from 'lucide-react';
 import { Modal } from './settings/kit';
 import { AssetSelect } from './AssetControls';
 import { createPageAsset, pageTemplates } from './page-templates';
@@ -14,10 +14,15 @@ const palettes = [
   { name: 'Forest', colors: ['#15803d', '#4ade80', '#f0fdf4'] },
   { name: 'Rose', colors: ['#be185d', '#f472b6', '#fdf2f8'] },
 ];
-export function AIWebsiteDialog({ setWorkspace, close, go, kind = 'website', onCreate }: { setWorkspace?: Dispatch<SetStateAction<Workspace>>; close: () => void; go?: (path: string) => void; kind?: BuilderMode; onCreate?: (asset: Asset) => void }) {
+export function AIWebsiteDialog({ setWorkspace, close, go, kind = 'website', onCreate }: { setWorkspace?: Dispatch<SetStateAction<Workspace>>; close: () => void; go?: (path: string) => void; kind?: BuilderMode; onCreate?: (asset: Asset) => void | Promise<unknown> }) {
   useUILanguage();
   const [step, setStep] = useState(0), [name, setName] = useState(''), [niche, setNiche] = useState(''), [audience, setAudience] = useState(''), [goal, setGoal] = useState('Generate leads'), [palette, setPalette] = useState(palettes[0]), [error, setError] = useState('');
-  const create = () => {
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const create = async () => {
+    if (lock.current) return;
+    lock.current = true; setBusy(true);
+    try {
     const title = name.trim(), industry = niche.trim();
     if (!title || !industry || !audience.trim()) { setStep(0); setError('Enter your business name, business type and target audience.'); return; }
     const templateGoal = goal === 'Sell products' ? 'Sales' : goal === 'Book appointments' ? 'Bookings' : 'Lead generation';
@@ -41,9 +46,11 @@ export function AIWebsiteDialog({ setWorkspace, close, go, kind = 'website', onC
     if (hero) { hero.content.title = home.headline; hero.content.body = home.subheadline; hero.content.button = cta; }
     created.description = industry + ' · ' + audience.trim() + ' · ' + goal;
     created.settings.color = palette.colors[0];
-    if (onCreate) { onCreate(created); return; }
-    setWorkspace?.(current => ({ ...current, assets: [created, ...current.assets] }));
+    if (onCreate) { await onCreate(created); return; }
+    await setWorkspace?.(current => ({ ...current, assets: [created, ...current.assets] }));
     close(); go?.((kind === 'website' ? 'websites/' : 'funnels/') + created.id + '/edit/' + document.pages[0].id);
+    } catch { setError('Could not save your page. Please try again.'); }
+    finally { lock.current = false; setBusy(false); }
   };
   return <Modal title={translateText(kind === "website" ? "AI Website Generator" : "AI Funnel Generator")} close={close}><div className="aw-modal-body aw-ai-generator">
     <p className="aw-ai-notice">{translateText("Create a personalized starter from your business brief. Live AI generation is not connected.")}</p>
@@ -53,7 +60,7 @@ export function AIWebsiteDialog({ setWorkspace, close, go, kind = 'website', onC
       {localizeNode(step === 1 && <><h3>{translateText("Make it yours")}</h3><label>{translateText("Primary Goal")}<AssetSelect label="Primary Goal" value={goal} onChange={setGoal} options={['Generate leads', 'Sell products', 'Book appointments', 'Build brand awareness']}/></label><fieldset className="aw-ai-palettes"><legend>{translateText("Brand Color Palette")}</legend>{localizeNode(palettes.map(item => <button type="button" key={item.name} aria-pressed={palette.name === item.name} onClick={() => setPalette(item)}><span className="aw-ai-swatches">{localizeNode(item.colors.map(color => <i key={color} style={{ background: color }}/>))}</span><span>{localizeNode(item.name)}</span>{localizeNode(palette.name === item.name && <Check size={14}/>)}</button>))}</fieldset></>)}
       {localizeNode(step === 2 && <><h3>{translateText("Your brief")}</h3><dl className="aw-ai-review"><dt>{translateText("Business Name")}</dt><dd>{localizeNode(name.trim())}</dd><dt>{translateText("Business Type")}</dt><dd>{localizeNode(niche.trim())}</dd><dt>{translateText("Target Audience")}</dt><dd>{localizeNode(audience.trim())}</dd><dt>{translateText("Primary Goal")}</dt><dd>{localizeNode(goal)}</dd><dt>{translateText("Brand Color Palette")}</dt><dd>{localizeNode(palette.name)}<span className="aw-ai-swatches">{localizeNode(palette.colors.map(color => <i key={color} style={{ background: color }}/>))}</span></dd></dl><p>{translateText("Your editable layout will reflect your audience, conversion goal and brand colors. Review each page before publishing.")}</p></>)}
       {localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}
-      <footer><button type="button" className="aw-secondary" onClick={() => { setError(''); if (step) setStep(step - 1); else close(); }}>{localizeNode(step ? 'Back' : 'Cancel')}</button><button className="aw-primary">{localizeNode(step === 2 ? <>{translateText(kind === "website" ? "Create Website" : "Create Funnel")}<Sparkles size={15}/></> : <>{translateText("Continue ")}<ArrowRight size={15}/></>)}</button></footer>
+      <footer><button type="button" className="aw-secondary" onClick={() => { setError(''); if (step) setStep(step - 1); else close(); }}>{localizeNode(step ? 'Back' : 'Cancel')}</button><button className="aw-primary" disabled={busy} aria-busy={busy}>{localizeNode(busy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Creating...")}</> : step === 2 ? <>{translateText(kind === "website" ? "Create Website" : "Create Funnel")}<Sparkles size={15}/></> : <>{translateText("Continue ")}<ArrowRight size={15}/></>)}</button></footer>
     </form>
   </div></Modal>;
 }

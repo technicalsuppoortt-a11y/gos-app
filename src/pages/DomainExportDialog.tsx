@@ -1,3 +1,4 @@
+import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import { useState } from 'react';
 import { Braces, Check, Download, FileSpreadsheet, FileText } from 'lucide-react';
@@ -30,11 +31,11 @@ export function DomainExportDialog({ domains, selected, workspace, close }: { do
     }}><Icon size={23}/><b>{localizeNode(label)}</b><small>{localizeNode(hint)}</small>{localizeNode(format === value && <Check className="aw-export-check" size={13}/>)}</button>))}</div>
     <div className="aw-export-note"><b>{localizeNode(rows.length)} {localizeNode(rows.length === 1 ? 'domain' : 'domains')}{translateText(" ready to export")}</b><span>{translateText("Unavailable renewal dates remain empty in JSON and are labeled “Not available” in CSV and PDF.")}</span></div>
     {localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}
-    <footer><button className="aw-secondary" onClick={close}>{translateText("Cancel")}</button><button className="aw-primary" disabled={busy || !rows.length} onClick={async () => {
+    <footer><button className="aw-secondary" onClick={close}>{translateText("Cancel")}</button><AssetAsyncButton className="aw-primary" busyText="Preparing report..." disabled={!rows.length} onClick={async () => {
       setBusy(true); setError('');
       try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); downloadDomainReport(domainReportRows(rows, workspace), format); close(); }
       catch (error) { setError(error instanceof Error ? error.message : 'Could not export this report. Try again.'); }
       finally { setBusy(false); }
-    }}><Download size={14}/>{localizeNode(busy ? 'Preparing report…' : `Export ${format.toUpperCase()}`)}</button></footer>
+    }}><Download size={14}/>{localizeNode(busy ? 'Preparing report…' : `Export ${format.toUpperCase()}`)}</AssetAsyncButton></footer>
   </div></Modal>;
 }
