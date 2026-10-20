@@ -6,6 +6,9 @@ import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
 import { WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
 import type { StoredAuth, Role } from '../types/auth';
+import { clearPhoenixBrand, loadPhoenixBrand } from './phoenixBrand';
+import { setLanguage, toggleTheme } from '../store/slices/uiSlice';
+import { loginWithPhoenix } from './phoenixLogin';
 
 /* ------------------------------------------------------------------ */
 /* Strict session errors                                               */
@@ -106,7 +109,7 @@ export async function endActivation() {
   if (auth.currentUser) await auth.currentUser.getIdToken(true);
 }
 
-async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
+export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
   const tokenResult = await user.getIdTokenResult(forceRefreshToken);
   const claimRole = (typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role : undefined) as Role | undefined;
   const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
@@ -141,18 +144,36 @@ async function resolveSession(user: User, forceRefreshToken = false): Promise<St
   if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || typeof tenantId !== 'string' || !tenantId) {
     throw new SessionError('NO_WORKSPACE');
   }
+  const phoenix = data?.phoenixUid
+    ? await loadPhoenixBrand(user.uid, data.phoenixUid, tenantId, user.email || '') : null;
+  if (phoenix) {
+    store.dispatch(setLanguage(phoenix.brand.language));
+    if (store.getState().ui.theme !== phoenix.brand.mode) store.dispatch(toggleTheme());
+  } else clearPhoenixBrand();
   return {
     user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email || 'User', email: user.email!, avatar: data?.avatar },
     role,
-    tenant: { id: tenantId, name: data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace') },
+    tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
   };
 }
 
 export async function login(email: string, password: string) {
-  const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-  try { return await resolveSession(credential.user, true); }
-  catch (error) { await signOut(auth); throw error; }
+  beginActivation();
+  try {
+    let usedPhoenix = false;
+    let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(error => {
+      if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error.code)) throw error;
+      usedPhoenix = true;
+      return loginWithPhoenix(email, password);
+    });
+    const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
+    // Linked accounts refresh saved Phoenix changes even when their GOS
+    // password already works, so manual login matches Open Platform.
+    if (profile?.phoenixUid && !usedPhoenix) credential = await loginWithPhoenix(email, password);
+    return await resolveSession(credential.user, true);
+  } catch (error) { await signOut(auth); throw error; }
+  finally { await endActivation(); }
 }
 export async function logoutFirebase() { await signOut(auth); store.dispatch(logout()); }
 
@@ -166,7 +187,7 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
       profileUnsubscribe();
       profileUnsubscribe = () => {};
       // Firebase is the source of truth: no Firebase user means no app session.
-      if (!user) { store.dispatch(logout()); setReady(true); return; }
+      if (!user) { clearPhoenixBrand(); store.dispatch(logout()); setReady(true); return; }
       if (activationInProgress) { setReady(true); return; }
       try {
         const session = await resolveSession(user);

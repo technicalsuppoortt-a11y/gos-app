@@ -36,6 +36,7 @@ export const LoginPage: React.FC = () => {
 
   // Set English (EN) as default initial language if not explicitly chosen by user
   React.useEffect(() => {
+    if (auth.isAuthenticated) return;
     const userSelected = localStorage.getItem('user_selected_lang');
     if (!userSelected && (i18n.language !== 'en' || currentLang !== 'en')) {
       void i18n.changeLanguage('en');
@@ -44,7 +45,10 @@ export const LoginPage: React.FC = () => {
       document.documentElement.lang = 'en';
       if (document.body) document.body.dir = 'ltr';
     }
-  }, [currentLang, dispatch]);
+    // Pick the login screen's initial language once. Resolving a Phoenix
+    // session can publish its saved language before loginSuccess is dispatched.
+    // Watching currentLang here would overwrite that identity during sign-in.
+  }, [dispatch]);
 
   const displayError = React.useMemo(() => {
     if (!errorCode) return '';

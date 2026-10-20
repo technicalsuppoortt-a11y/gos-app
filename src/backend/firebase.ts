@@ -1,16 +1,18 @@
-import { deleteApp, getApp, getApps, initializeApp } from 'firebase/app';
+import { deleteApp, getApp, getApps, initializeApp, type FirebaseOptions } from 'firebase/app';
 import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import publicDefaults from './gos-public-config.json';
 
 const env = import.meta.env;
+const publicConfig: FirebaseOptions = publicDefaults;
 export const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? env.VITE_FIREBASE_MESSAGE_SENDER_ID,
-  appId: env.VITE_FIREBASE_APP_ID,
+  apiKey: env.VITE_FIREBASE_API_KEY || publicConfig.apiKey,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || publicConfig.authDomain,
+  projectId: env.VITE_FIREBASE_PROJECT_ID || publicConfig.projectId,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || publicConfig.storageBucket,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || env.VITE_FIREBASE_MESSAGE_SENDER_ID || publicConfig.messagingSenderId,
+  appId: env.VITE_FIREBASE_APP_ID || publicConfig.appId,
 };
 
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);

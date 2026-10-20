@@ -16,6 +16,7 @@ import {
 import "./home-dashboard.css";
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { usePhoenixBrand } from '../../backend/phoenixBrand';
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
@@ -753,6 +754,7 @@ function CreateNewMenu() {
 /* Sections                                                            */
 /* ------------------------------------------------------------------ */
 function HeroBanner() {
+  const phoenix = usePhoenixBrand();
   const m = useBusinessMetrics();
   const language = useUILanguage();
   const userName = useSelector((state: RootState) => state.auth.user?.name || 'Mohamed');
@@ -836,7 +838,7 @@ function HeroBanner() {
           {language.startsWith('ar') ? 'صباح الخير، ' : 'Good morning, '}{userName} <span aria-hidden="true">👋</span>
         </h1>
         <p className="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-          {translateText("Here’s what’s happening with your business today.")}
+          {phoenix?.brand.tagline || phoenix?.brand.description || translateText("Here’s what’s happening with your business today.")}
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2">
