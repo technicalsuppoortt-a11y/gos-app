@@ -1,7 +1,7 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { Link } from 'react-router-dom';
-import { useCallback, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Eye, FileText, Loader2, Plus, RefreshCw, Search, Sparkles, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertTriangle, BookOpen, CheckCircle2, Clock, Eye, FileText, Loader2, Plus, RefreshCw, Search, Sparkles, Trash2, X } from 'lucide-react';
 import { Badge, Card, Field, Modal, PanelHeading } from './kit';
 import { Select } from '../../components/ui/Select';
 import { gosApi, type GosSource } from '../../backend/gosApi';
@@ -11,16 +11,37 @@ import { showToast } from '../../utils/toast';
 export function KnowledgePanel() {
   useUILanguage();
   const api = useGosAI();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const isMac = typeof navigator !== 'undefined' && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [draft, setDraft] = useState<{ name: string; content: string } | null>(null);
   const [viewingSource, setViewingSource] = useState<GosSource | null>(null);
+  const [sourceToDelete, setSourceToDelete] = useState<GosSource | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const [modalError, setModalError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const closeDraft = useCallback(() => { setDraft(null); setModalError(''); }, []);
   const closeViewing = useCallback(() => setViewingSource(null), []);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        const target = e.target as HTMLElement | null;
+        const isEditing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        if (target !== searchInputRef.current && !isEditing) {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+          searchInputRef.current?.select();
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const filteredSources = api.sources.filter(source => {
     const matchesStatus = statusFilter === 'All' || source.status.toLowerCase() === statusFilter.toLowerCase();
@@ -58,15 +79,18 @@ export function KnowledgePanel() {
     }
   }
 
-  async function handleDeleteSource(source: GosSource) {
-    if (!window.confirm(translateText(`Delete ${source.name}?`))) return;
+  async function confirmDeleteSource(source: GosSource) {
     setDeletingId(source.id);
+    setDeleteError('');
     try {
       await gosApi.deleteSource(source.id);
       showToast.success(`${source.name} removed.`);
+      setSourceToDelete(null);
       api.retry();
     } catch (err) {
-      showToast.error((err as Error).message || 'Failed to delete knowledge source.');
+      const msg = (err as Error).message || 'Failed to delete knowledge source.';
+      setDeleteError(msg);
+      showToast.error(msg);
     } finally {
       setDeletingId(null);
     }
@@ -137,21 +161,52 @@ export function KnowledgePanel() {
         </div>
 
         <div className="st-knowledge-toolbar">
-          <label className="st-search">
-            <Search size={16} />
+          <label className="st-search" htmlFor="st-knowledge-search-input">
+            <Search size={16} className="st-search-icon" aria-hidden="true" />
             <input
+              id="st-knowledge-search-input"
+              ref={searchInputRef}
+              type="text"
               value={query}
               aria-label={translateText("Search knowledge")}
               placeholder={translateText("Search answers and documents…")}
               onChange={e => setQuery(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
             />
+            {query ? (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <span className="st-search-badge">
+                  {localizeNode(filteredSources.length)} {translateText(filteredSources.length === 1 ? "result" : "results")}
+                </span>
+                <button
+                  type="button"
+                  className="st-search-clear"
+                  onClick={e => {
+                    e.preventDefault();
+                    setQuery('');
+                    searchInputRef.current?.focus();
+                  }}
+                  aria-label={translateText("Clear search")}
+                  title={translateText("Clear search")}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <kbd className="st-search-kbd" title={translateText("Press ⌘K to search")}>
+                {isMac ? '⌘K' : 'Ctrl+K'}
+              </kbd>
+            )}
           </label>
-          <Select
-            label="Filter status"
-            value={statusFilter}
-            onChange={value => setStatusFilter(value)}
-            options={['All', 'Ready', 'Processing', 'Queued']}
-          />
+          <div className="st-knowledge-filter">
+            <Select
+              label="Filter status"
+              value={statusFilter}
+              onChange={value => setStatusFilter(value)}
+              options={['All', 'Ready', 'Processing', 'Queued']}
+            />
+          </div>
         </div>
 
         {localizeNode(api.error && (
@@ -222,8 +277,10 @@ export function KnowledgePanel() {
                           className="st-danger"
                           style={{ padding: '5px 8px', minHeight: 27 }}
                           aria-label={translateText(`Delete ${source.name}`)}
-                          disabled={deletingId === source.id}
-                          onClick={() => void handleDeleteSource(source)}
+                          onClick={() => {
+                            setDeleteError('');
+                            setSourceToDelete(source);
+                          }}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -244,7 +301,12 @@ export function KnowledgePanel() {
       </Card>
 
       {draft && (
-        <Modal title={translateText("Add knowledge")} close={closeDraft}>
+        <Modal
+          title={translateText("Add knowledge")}
+          close={closeDraft}
+          disableBackdropClose
+          disableEscapeClose
+        >
           <form onSubmit={handleCreateSource}>
             <Field label="Title">
               <input
@@ -279,6 +341,86 @@ export function KnowledgePanel() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {sourceToDelete && (
+        <Modal
+          title={translateText("Delete knowledge source")}
+          close={() => {
+            if (!deletingId) {
+              setSourceToDelete(null);
+              setDeleteError('');
+            }
+          }}
+        >
+          <div className="st-delete-confirm-content">
+            <div className="st-delete-confirm-header">
+              <div className="st-delete-confirm-icon">
+                <AlertTriangle size={22} />
+              </div>
+              <div className="st-delete-confirm-text">
+                <h3>{translateText("Delete this knowledge source?")}</h3>
+                <p>
+                  {translateText("Are you sure you want to delete")} <strong>{sourceToDelete.name}</strong>? {translateText("This will permanently remove this source and all its indexed chunks from your AI assistant. This action cannot be undone.")}
+                </p>
+              </div>
+            </div>
+
+            <div className="st-delete-confirm-details">
+              <div className="st-delete-confirm-row">
+                <span className="st-delete-confirm-label">{translateText("Source name")}</span>
+                <span className="st-delete-confirm-val">{sourceToDelete.name}</span>
+              </div>
+              <div className="st-delete-confirm-row">
+                <span className="st-delete-confirm-label">{translateText("Status")}</span>
+                <span className="st-delete-confirm-val">{renderStatusBadge(sourceToDelete.status)}</span>
+              </div>
+              {sourceToDelete.chunk_count !== undefined && (
+                <div className="st-delete-confirm-row">
+                  <span className="st-delete-confirm-label">{translateText("Indexed chunks")}</span>
+                  <span className="st-delete-confirm-val">{sourceToDelete.chunk_count} {translateText("chunks")}</span>
+                </div>
+              )}
+            </div>
+
+            {localizeNode(deleteError && (
+              <p className="st-error" role="alert">{localizeNode(deleteError)}</p>
+            ))}
+
+            <div className="st-modal-actions">
+              <button
+                type="button"
+                className="st-secondary"
+                disabled={Boolean(deletingId)}
+                onClick={() => {
+                  setSourceToDelete(null);
+                  setDeleteError('');
+                }}
+              >
+                {translateText("Cancel")}
+              </button>
+              <button
+                type="button"
+                className="st-danger"
+                disabled={Boolean(deletingId)}
+                onClick={() => void confirmDeleteSource(sourceToDelete)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                {deletingId ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    {translateText("Deleting…")}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={13} />
+                    {translateText("Delete source")}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
 

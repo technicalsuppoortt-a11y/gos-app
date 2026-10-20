@@ -75,3 +75,8 @@ test('supports CSV exports and cancellation', async () => {
   const api = createGosTransport('https://example.com', async () => 'token', async (_, { signal }) => { signal.throwIfAborted(); });
   await assert.rejects(api('/ai/sources', { signal: controller.signal }), { name: 'AbortError' });
 });
+
+test('API failures preserve status and machine-readable lead_not_found codes', async () => {
+  const api = createGosTransport('https://example.com', async () => 'token', async () => Response.json({ error: { code: 'lead_not_found', message: 'Lead not found' } }, { status: 404 }));
+  await assert.rejects(api('/crm/leads/booking-1'), error => error.status === 404 && error.code === 'lead_not_found' && error.message === 'Lead not found');
+});

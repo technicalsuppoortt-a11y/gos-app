@@ -1,4 +1,6 @@
-import { cloudStorage } from '../backend/workspace';
+import { browserStorage as cloudStorage } from '../utils/browserStorage';
+import { flushAssetWrites } from '../backend/workspace';
+import { backendError } from '../backend/firebase';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
@@ -153,13 +155,13 @@ export function createBuilderDocument(mode: BuilderMode, name: string, image: st
   return { pages, steps, funnel: { name, goal:'Lead generation', audience:'Your ideal customers', offer:'Strength coaching', pagesFlow:pages.map(page=>page.id), events:['Form Submit','Booking'], status:'Draft' } };
 }
 
-export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderDocument; selectedPageId?: string; domain?: string; initialColor?: string; onBack?: () => void; onStepChange?: (id:string)=>void; onDocumentChange?: (document: BuilderDocument) => void }> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, onStepChange, onDocumentChange }) => {
+export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderDocument; selectedPageId?: string; domain?: string; initialColor?: string; onBack?: () => void; onStepChange?: (id:string)=>void; onDocumentChange?: (document: BuilderDocument) => void | Promise<unknown>; onPublish?: () => Promise<{ url: string; draftChanged: boolean }> }> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, onStepChange, onDocumentChange, onPublish }) => {
   useUILanguage();
   const navigate = useNavigate();
   const [savedDemo] = useState(() => assetDocument ?? readLocalDraft());
   const initialAsset = useRef(assetDocument);
   const onChangeRef = useRef(onDocumentChange);
-  useEffect(()=>{onChangeRef.current=onDocumentChange;},[onDocumentChange]);
+  onChangeRef.current = onDocumentChange;
   const siteOrigin = domain ? `https://${domain}` : 'https://your-domain.com';
   const [pagesData, setPagesData] = useState<BuilderPage[]>(savedDemo?.pages?.length ? savedDemo.pages : initialPages);
   const [activePageId, setActivePageId] = useState(selectedPageId ?? 'home');
@@ -266,7 +268,12 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   };
   const updatePage = (patch: Partial<BuilderPage>) => updatePages(list => list.map(page => page.id === activePageId ? { ...page, ...patch, status:'Draft' } : page));
   const activateFunnelStep = (step: FunnelStep) => {
-    if(assetDocument && onStepChange && step.pageId!==selectedPageId){onStepChange(step.pageId);return;}
+    if(assetDocument && onStepChange && step.pageId!==selectedPageId){
+      // Flush the current editor snapshot before the keyed editor remounts.
+      const pending = onChangeRef.current?.({ appBlocks: enabledApps, pages: pagesData, funnel, steps: funnelSteps, theme: { color: themeColor, font: headingFont, corners: cornerStyle } });
+      void Promise.resolve(pending).then(() => onStepChange(step.pageId)).catch(() => {});
+      return;
+    }
     setActiveFunnelStepId(step.id);
     try { if(!assetDocument) cloudStorage.setItem('gos.active-funnel-step', step.id); } catch { /* The current editor session remains functional without storage. */ }
     if (!pagesData.some(page => page.id === step.pageId)) updatePages(list => [...list, createFunnelStepPage(step)]);
@@ -313,7 +320,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
   };
   useEffect(() => {
     try {
-      if(initialAsset.current) { onChangeRef.current?.({appBlocks:enabledApps,pages:pagesData, funnel, steps:funnelSteps, theme:{color:themeColor,font:headingFont,corners:cornerStyle}}); return; }
+      if(initialAsset.current) { const pending = onChangeRef.current?.({appBlocks:enabledApps,pages:pagesData, funnel, steps:funnelSteps, theme:{color:themeColor,font:headingFont,corners:cornerStyle}}); if (pending) void pending.catch(() => {}); return; }
       cloudStorage.setItem('gos.funnel-builder.demo', JSON.stringify({ pages: pagesData, funnel }));
       cloudStorage.setItem('gos.funnel-steps', JSON.stringify(funnelSteps));
     } catch { /* The editor remains usable when browser storage is unavailable. */ }
@@ -384,8 +391,26 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
     try { if(!assetDocument) cloudStorage.setItem('gos.funnel-builder.demo', JSON.stringify(snapshot)); } catch { /* The visible demo remains usable when storage is blocked. */ }
     return snapshot;
   };
-  const saveDraft = () => { const snapshot = persistLocal('Draft'); setFunnel(snapshot.funnel); setShowPublishMenu(false); notify(`Draft saved just now · ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`); };
-  const publish = () => { const snapshot = persistLocal('Published'); setFunnel(snapshot.funnel); setPagesData(pages=>pages.map(page=>({...page,status:'Published'}))); setShowPublishMenu(false); notify(`${snapshot.funnel.name} published in this workspace · live hosting is not connected`); };
+  const saveDraft = async () => {
+    const snapshot = persistLocal('Draft'); setFunnel(snapshot.funnel); setShowPublishMenu(false);
+    try {
+      if (assetDocument) { await onChangeRef.current?.({ appBlocks: enabledApps, ...snapshot, steps: funnelSteps, theme: { color: themeColor, font: headingFont, corners: cornerStyle } }); await flushAssetWrites(); }
+      notify(`Draft saved just now · ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+    } catch { /* The workspace store reports the real backend error and retains the draft. */ }
+  };
+  const publishing = useRef(false);
+  const publish = async () => {
+    if (publishing.current) return;
+    if (!onPublish) { showToast.info('Save this page to a workspace asset before publishing.'); return; }
+    publishing.current = true; setShowPublishMenu(false);
+    try {
+      await onChangeRef.current?.({ appBlocks: enabledApps, pages: pagesData, funnel, steps: funnelSteps, theme: { color: themeColor, font: headingFont, corners: cornerStyle } });
+      const result = await onPublish();
+      if (!result.draftChanged) { setFunnel(value => ({ ...value, status: 'Published' })); setPagesData(pages => pages.map(page => ({ ...page, status: 'Published' }))); }
+      notify(result.draftChanged ? `Published ${result.url}. Newer edits remain a draft.` : `Published ${result.url}`);
+    } catch (error) { showToast.error(backendError(error)); }
+    finally { publishing.current = false; }
+  };
   const updateSelectedSection = (patch: { content?: Record<string, string>; styles?: Partial<BuilderSection['styles']> }) => { if (!selectedBlock) return; updatePages(list=>list.map(page=>page.id===activePageId?{...page,status:'Draft',sections:changeSection(page.sections,selectedBlock.id,item=>[{...item,content:{...item.content,...patch.content},styles:{...item.styles,...patch.styles}}])}:page)); };
   const editElementContent=(id:string,key:string,value:string)=>updatePages(list=>list.map(page=>page.id===activePageId?{...page,status:'Draft',...(findSection(page.sections,id)?.type==='Hero'&&key==='title'?{headline:value}:findSection(page.sections,id)?.type==='Hero'&&key==='body'?{subheadline:value}:{}),sections:changeSection(page.sections,id,item=>{const count=columnCount({...item,content:{...item.content,[key]:value}});const children=item.children&&key==='columnLayout'?Array.from({length:count},(_,index)=>index===count-1?(item.children??[]).slice(index).flat():item.children?.[index]??[]):item.children;return [{...item,children,content:{...item.content,[key]:value}}];})}:page));
   const updateSelectedContent=(key:string,value:string)=>{if(selectedBlock)editElementContent(selectedBlock.id,key,value);};

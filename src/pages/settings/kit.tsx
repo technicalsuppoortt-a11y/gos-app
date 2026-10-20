@@ -13,7 +13,19 @@ export function Card({ title, description, action, children, className = '' }: {
   useUILanguage();
   return <section className={`st-card ${className}`}>{localizeNode(title && <div className="st-card-heading"><div><h3>{localizeNode(title)}</h3>{localizeNode(description && <p>{localizeNode(description)}</p>)}</div>{localizeNode(action)}</div>)}{localizeNode(children)}</section>;
 }
-export function Modal({ title, children, close }: { title: string; children: ReactNode; close: () => void }) {
+export function Modal({
+  title,
+  children,
+  close,
+  disableBackdropClose = false,
+  disableEscapeClose = false,
+}: {
+  title: string;
+  children: ReactNode;
+  close: () => void;
+  disableBackdropClose?: boolean;
+  disableEscapeClose?: boolean;
+}) {
   useUILanguage();
   const ref = useRef<HTMLDivElement>(null), titleId = useId();
   useEffect(() => {
@@ -22,7 +34,7 @@ export function Modal({ title, children, close }: { title: string; children: Rea
     focusable()[0]?.focus();
     const before = document.body.style.overflow; document.body.style.overflow = 'hidden';
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key === 'Escape' && !disableEscapeClose) close();
       if (e.key === 'Tab') {
         const items = focusable(), first = items[0], last = items.at(-1);
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
@@ -31,8 +43,25 @@ export function Modal({ title, children, close }: { title: string; children: Rea
     };
     document.addEventListener('keydown', key);
     return () => { document.body.style.overflow = before; document.removeEventListener('keydown', key); previous?.focus(); };
-  }, [close]);
-  return <div className="st-modal-scrim" onMouseDown={e => { if (e.target === e.currentTarget) close(); }}><div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className="st-modal"><div className="st-modal-heading"><h2 id={titleId}>{localizeNode(title)}</h2><button className="st-icon-button" aria-label={translateText("Close dialog")} onClick={close}><X size={18}/></button></div>{localizeNode(children)}</div></div>;
+  }, [close, disableEscapeClose]);
+  return (
+    <div
+      className="st-modal-scrim"
+      onMouseDown={e => {
+        if (!disableBackdropClose && e.target === e.currentTarget) close();
+      }}
+    >
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className="st-modal">
+        <div className="st-modal-heading">
+          <h2 id={titleId}>{localizeNode(title)}</h2>
+          <button className="st-icon-button" aria-label={translateText("Close dialog")} onClick={close}>
+            <X size={18}/>
+          </button>
+        </div>
+        {localizeNode(children)}
+      </div>
+    </div>
+  );
 }
 export function Field({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
   useUILanguage(); return <label className={`st-field ${className}`.trim()}><span>{localizeNode(label)}</span>{localizeNode(children)}</label>; }

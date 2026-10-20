@@ -9,6 +9,8 @@ import { hydrateCRM, type CanonicalLead } from '../store/slices/crmSlice';
 import type { Pipeline } from '../pages/crm/model';
 import { beginWrite } from './writeStatus';
 import { WorkspaceLoading } from '../components/common/WorkspaceLoading';
+import { encodeFirestoreValue, decodeFirestoreValue } from './firestoreCodec';
+import { createAssetPersistence } from './assetPersistence';
 
 const isAuthFailure = (error: unknown) => ['permission-denied', 'unauthenticated'].includes((error as { code?: string })?.code || '');
 
@@ -58,6 +60,26 @@ function notify(key: string | null = null) {
   window.dispatchEvent(new Event('gos-settings-changed'));
 }
 function subscribe(fn: () => void) { subscribers.add(fn); return () => { subscribers.delete(fn); }; }
+const assetPersistence = createAssetPersistence({
+  scope: () => loaded ? tenantId : '',
+  read: () => ({ assets: JSON.parse(cache.get('entity:assets') ?? '[]'), domains: JSON.parse(cache.get('entity:domains') ?? '[]') }),
+  publish: value => {
+    cache.set('entity:assets', JSON.stringify(value.assets));
+    cache.set('entity:domains', JSON.stringify(value.domains));
+    notify('gos.assets.workspace.v1');
+  },
+  commit: async (scope, writes) => {
+    const batch = writeBatch(db);
+    for (const write of writes) {
+      const ref = doc(db, 'tenants', scope, write.resource, write.id);
+      if (write.value) batch.set(ref, encodeFirestoreValue(write.value)); else batch.delete(ref);
+    }
+    const finish = beginWrite();
+    try { await batch.commit(); }
+    finally { finish(); }
+  },
+});
+export const flushAssetWrites = () => assetPersistence.flush();
 export const cloudStorage = {
   getItem(key: string): string | null {
     if (key === 'gos.assets.workspace.v1') return JSON.stringify({ assets: JSON.parse(cache.get('entity:assets') ?? '[]'), domains: JSON.parse(cache.get('entity:domains') ?? '[]') });
@@ -66,13 +88,7 @@ export const cloudStorage = {
   setItem(key: string, value: string): Promise<unknown> {
     if (!tenantId || !loaded) throw new Error('Your workspace is still loading. Please try again.');
     if (key === 'gos.assets.workspace.v1') {
-      const workspace = JSON.parse(value);
-      const tasks: Promise<unknown>[] = [];
-      for (const resource of ['assets', 'domains']) {
-        const next = JSON.stringify(workspace[resource] ?? []);
-        if (next !== cache.get(`entity:${resource}`)) tasks.push(cloudStorage.setItem(`entity:${resource}`, next));
-      }
-      return Promise.all(tasks);
+      return assetPersistence.save(JSON.parse(value));
     }
     const resource = entityFor(key);
     key = cacheKey(key);
@@ -102,9 +118,9 @@ export const cloudStorage = {
       const oldRows = JSON.parse(previous ?? '[]') as { id: string }[];
       const before = new Map(oldRows.map(item => [item.id, item]));
       const after = new Map(parsed.map(item => [item.id, item]));
-      for (const row of parsed) if (JSON.stringify(before.get(row.id)) !== JSON.stringify(row)) batch.set(doc(db, 'tenants', scope, resource, row.id), JSON.parse(JSON.stringify(row)));
+      for (const row of parsed) if (JSON.stringify(before.get(row.id)) !== JSON.stringify(row)) batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(JSON.parse(JSON.stringify(row))));
       for (const row of oldRows) if (!after.has(row.id)) batch.delete(doc(db, 'tenants', scope, resource, row.id));
-    } else batch.set(doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key)), { key, value: parsed, updatedAt: at, updatedBy: store.getState().auth.user!.id });
+    } else batch.set(doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key)), { key, value: encodeFirestoreValue(parsed), updatedAt: at, updatedBy: store.getState().auth.user!.id });
     const event = doc(collection(db, 'tenants', scope, 'events'));
     batch.set(event, { type: 'workspace.updated', resource: key, actorId: store.getState().auth.user!.id, createdAt: at });
     cache.set(key, value); notify();
@@ -146,6 +162,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState({ scope: '', ready: false, error: '' });
   const [retry, setRetry] = useState(0);
   useEffect(() => {
+    assetPersistence.reset();
     cache.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
     notify();
     if (!scope) return;
@@ -171,6 +188,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       if (signature === permissionSignature) return;
       permissionSignature = signature;
       unsubscribers.forEach(unsubscribe => unsubscribe());
+      assetPersistence.reset();
       cache.clear(); loaded = false; hydrate(); notify();
       if (!member?.active) { void forceSignOut(new SessionError('ACCESS_DENIED')); return; }
       const permissions = member.permissions as string[];
@@ -180,8 +198,8 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       unsubscribers = [...pending].map(resource => onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', store.getState().auth.user!.id)) : collection(db, 'tenants', scope, resource), snapshot => {
       if (resource === 'workspaceState') {
         for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
-        snapshot.forEach(item => { const data = normalizeFirestoreData(item.data()); cache.set(data.key, JSON.stringify(data.value)); });
-      } else cache.set(`entity:${resource}`, JSON.stringify(snapshot.docs.map(item => normalizeFirestoreData({ ...item.data(), id: item.id }))));
+        snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
+      } else if (!(assetPersistence.isProtected() && ['assets', 'domains'].includes(resource))) cache.set(`entity:${resource}`, JSON.stringify(snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })))));
       if (resource === 'leads' || resource === 'pipelines') hydrate();
       pending.delete(resource);
       if (!pending.size && !failed) { loaded = true; setStatus({ scope, ready: true, error: '' }); }
@@ -195,7 +213,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       if (isAuthFailure(error)) { void forceSignOut(error); return; }
       setStatus({ scope, ready: false, error: backendError(error) });
     });
-    return () => { unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); loaded = false; tenantId = ''; hydrate(); };
+    return () => { assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); loaded = false; tenantId = ''; hydrate(); };
   }, [scope, retry]);
   if (status.scope !== scope || !status.ready) {
     if (status.error && status.scope === scope) return <div className="grid h-full min-h-0 place-items-center p-6" role="alert"><div><p>{status.error}</p><button type="button" className="mt-3 rounded-lg border px-4 py-2" onClick={() => { setStatus({ scope, ready: false, error: '' }); setRetry(value => value + 1); }}>Try again</button></div></div>;

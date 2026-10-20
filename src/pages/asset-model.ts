@@ -28,6 +28,10 @@ export type Domain = {
     ssl: 'Active' | 'Not configured' | 'Inactive';
     default: boolean;
     renewalAt?: string | null;
+    siteId?: string;
+    dnsRecords?: { domainName: string; type: string; rdata: string; requiredAction?: string }[];
+    issues?: string[];
+    checkedAt?: string;
 };
 export type Workspace = {
     assets: Asset[];

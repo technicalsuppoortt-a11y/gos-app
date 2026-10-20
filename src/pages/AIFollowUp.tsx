@@ -6,6 +6,7 @@ import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
 import { gosApi } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
+import { useAgentConfiguration } from '../backend/useAgentConfiguration';
 import { GosPlayground } from './GosPlayground';
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -177,7 +178,6 @@ const WORKFLOWS_KEY = "gos.ai-followup.workflows.v1";
 const KNOWLEDGE_KEY = "gos.ai-followup.knowledge.v1";
 const TEMPLATES_KEY = "gos.ai-followup.templates.v1";
 const SETTINGS_KEY = "gos.ai-followup.settings.v1";
-const ASSISTANT_KEY = "gos.ai-followup.assistant.v1";
 type MenuOption = { value: string; label: React.ReactNode };
 const MenuSelect = ({
   value,
@@ -687,14 +687,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const assistantEnabled = api.assistant.live_enabled;
   const setAssistantEnabled = (live_enabled: boolean) => api.updateAssistant({ live_enabled });
   const [engineEnabled, setEngineEnabled] = useCloudState('gos.ai-followup.engine-enabled.v1', false);
-  const [assistantProfile, setAssistantProfile] = React.useState(() =>
-    readLocal(ASSISTANT_KEY, {
-      name: "GOS Assistant",
-      role: "Business assistant",
-      language: "Auto-detect Arabic / English",
-      goal: "Appointments",
-    }),
-  );
+  const agentConfig = useAgentConfiguration();
+  const assistantProfile = agentConfig.profile;
   const [newAssistantName, setNewAssistantName] = React.useState(
     assistantProfile.name,
   );
@@ -754,6 +748,31 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   );
   const [selectedChannel, setSelectedChannel] = React.useState("whatsapp");
   const [messageText, setMessageText] = React.useState("");
+  const [generating, setGenerating] = React.useState(false);
+  const generation = React.useRef(false);
+  const generationContext = React.useRef(0);
+  React.useEffect(() => {
+    generationContext.current++;
+    return () => { generationContext.current++; };
+  }, [selectedId, selectedChannel, modal]);
+  const generateDraft = async (target: 'lead' | 'workflow') => {
+    if (generation.current) return;
+    const leadId = target === 'lead' ? selectedId : undefined;
+    if (target === 'lead' && !leadId) return;
+    generation.current = true; setGenerating(true);
+    const context = generationContext.current;
+    try {
+      const result = await callBackend<{ text: string }>('generateFollowUp', {
+        ...(leadId ? { leadId } : {}),
+        channel: target === 'lead' ? selectedChannel : (modal === 'new-sequence' ? sequenceSteps[0]?.action : workflowAction)?.toLowerCase(),
+        instruction: target === 'lead' ? messageText : `Workflow: ${newWorkflowName}. From ${workflowFrom} to ${workflowTo}. ${workflowMessage}`,
+      });
+      if (context !== generationContext.current) return;
+      if (target === 'lead') setMessageText(result.text); else setWorkflowMessage(result.text);
+      showToast.success('AI draft generated. Review it before sending or activating.');
+    } catch (error) { showToast.error(backendError(error)); }
+    finally { generation.current = false; setGenerating(false); }
+  };
   const [leadFilter, setLeadFilter] = React.useState("All states");
   const timeoutRef = React.useRef<number | undefined>(undefined);
   const selectedLead = leads.find((lead) => lead.id === selectedId) ?? null;
@@ -965,9 +984,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       language: assistantLanguage,
       goal: assistantGoal,
     };
+    if (!await agentConfig.save(next)) return;
     if (!await api.updateAssistant({ live_enabled: true })) return;
-    setAssistantProfile(next);
-    writeLocal(ASSISTANT_KEY, next);
 
     setAssistantStep(1);
     setModal("");
@@ -1990,6 +2008,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   return (
     <main className="af-page flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
       {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>Retry</button></div>}
+      {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>Retry assistant settings</button></div>}
       <div className="af-page-title">
         <div>
           <h1>
@@ -2156,8 +2175,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             )))}
             <div className="af-message-demo">
               <label>{translateText("Message")}</label>
+              <button type="button" className="af-button-secondary" disabled={generating || agentConfig.loading || Boolean(agentConfig.error)} onClick={() => void generateDraft('lead')}><Sparkles size={14}/>{generating ? 'Generating…' : 'Generate AI draft'}</button>
               <textarea
                 value={messageText}
+                disabled={generating}
                 onChange={(event) => setMessageText(event.target.value)}
                 placeholder={translateText("Write a consent-checked follow-up...")}
               />
@@ -2346,8 +2367,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 ) : (
                   <button
                     className="af-button-primary"
-                    disabled={!newAssistantName.trim() || !assistantRole.trim()}
                     onClick={saveAssistant}
+                    disabled={!newAssistantName.trim() || !assistantRole.trim() || agentConfig.loading || agentConfig.saving || Boolean(agentConfig.error) || api.loading || api.saving || Boolean(api.error)}
                   >
                     {localizeNode(modal === "edit-assistant"
                       ? "Save changes"
@@ -2419,7 +2440,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   />
                 </label>
               ))}
-              <label>{translateText("Follow-up message")}<textarea value={workflowMessage} onChange={event => setWorkflowMessage(event.target.value)} maxLength={20000} placeholder={translateText("Write the message this workflow should send")}/></label>
+              <label>{translateText("Follow-up message")}<textarea value={workflowMessage} disabled={generating} onChange={event => setWorkflowMessage(event.target.value)} maxLength={20000} placeholder={translateText("Write the message this workflow should send")}/></label>
+              <button type="button" className="af-button-secondary" disabled={generating || agentConfig.loading || Boolean(agentConfig.error) || !['email', 'whatsapp'].includes((modal === 'new-sequence' ? sequenceSteps[0]?.action : workflowAction)?.toLowerCase())} onClick={() => void generateDraft('workflow')}><Sparkles size={14}/>{generating ? 'Generating…' : 'Generate AI draft'}</button>
               {localizeNode(modal === "new-sequence" && (
                 <div className="af-sequence-builder">
                   <div className="af-sequence-title">

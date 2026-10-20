@@ -5,6 +5,27 @@ import { hydrateCRM, addLead, updateLead, savePipeline, deleteLeads, type Canoni
 import type { Pipeline } from '../pages/crm/model';
 import { makeLead, exportCSV as exportLocalCSV } from '../pages/crm/model';
 import { showToast } from '../utils/toast';
+import { GosApiError } from './gosTransport';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { moveLead } from '../store/slices/crmSlice';
+
+const missingApiLead = (error: unknown) => error instanceof GosApiError &&
+  (error.code === 'lead_not_found' || error.status === 404 && /lead.*not.found|lead_not_found/i.test(error.message));
+
+async function moveWorkspaceLead(id: string, stage: string) {
+  const state = store.getState();
+  const scope = state.auth.tenant?.id;
+  if (!scope || !state.crm.leads.some(lead => lead.id === id)) throw new Error('This lead is no longer available in your workspace.');
+  // Await the canonical write before reporting success. Keep the booking ID and all
+  // consent/booking metadata; creating a new API ID would duplicate this contact.
+  const ref = doc(db, 'tenants', scope, 'leads', id);
+  if (!(await getDoc(ref)).exists()) throw new Error('This lead is no longer available in your workspace.');
+  await updateDoc(ref, { stage, lifecycleStage: stage, lastActivity: new Date().toISOString() });
+  if (store.getState().auth.tenant?.id !== scope) return;
+  store.dispatch(moveLead({ id, stage: stage as CanonicalLead['lifecycleStage'] }));
+  return store.getState().crm.leads.find(lead => lead.id === id);
+}
 
 export function normalizeLead(row: ApiRecord): CanonicalLead {
   const existing = store.getState().crm.leads.find(lead => lead.id === row.id);
@@ -77,7 +98,20 @@ export async function dispatchGosCRM(action: { type: string; payload?: any }): P
       const lead = normalizeLead(data.lead); store.dispatch(addLead(lead)); return lead;
     }
     if (action.type === 'crm/moveLead') {
-      const data = await gosApi.moveLead(p.id, p.stage) as { lead: ApiRecord };
+      try {
+        const existing = await gosApi.lead(p.id) as { lead?: ApiRecord | null };
+        if (!existing.lead) return await moveWorkspaceLead(p.id, p.stage);
+      } catch (error) {
+        if (!missingApiLead(error)) throw error;
+        return await moveWorkspaceLead(p.id, p.stage);
+      }
+      let data: { lead: ApiRecord };
+      try { data = await gosApi.moveLead(p.id, p.stage) as { lead: ApiRecord }; }
+      catch (error) {
+        // The record may have disappeared between the lookup and the stage write.
+        if (!missingApiLead(error)) throw error;
+        return await moveWorkspaceLead(p.id, p.stage);
+      }
       store.dispatch(updateLead({ id: p.id, changes: normalizeLead(data.lead) })); return data.lead;
     }
     if (action.type === 'crm/addLeadNote') {

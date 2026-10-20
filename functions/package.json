@@ -8,7 +8,7 @@
   },
   "scripts": {
     "seed": "node seed.mjs",
-    "test": "node --experimental-test-module-mocks --test policy.test.js tests/phoenix-bridge.test.mjs tests/delivery.test.mjs tests/onboarding.test.mjs tests/activation-links.test.mjs",
+    "test": "node --experimental-test-module-mocks --test policy.test.js tests/phoenix-bridge.test.mjs tests/delivery.test.mjs tests/onboarding.test.mjs tests/activation-links.test.mjs tests/ai-knowledge.test.mjs",
     "test:policy": "node --test policy.test.js",
     "test:phoenix": "node --experimental-test-module-mocks --test tests/phoenix-bridge.test.mjs"
   },

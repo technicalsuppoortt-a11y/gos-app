@@ -4,15 +4,30 @@ import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds } from './bridge.js';
 
-const gos = initializeApp({ serviceAccountId: 'gos-app-3c7fb@appspot.gserviceaccount.com' }, 'gos-phoenix-bridge');
-const phoenix = initializeApp({ projectId: 'phoenix-app-8bc7b' }, 'phoenix');
-const db = getFirestore(gos);
+let gos, phoenix, db;
+function getGosBridge() {
+  if (!gos) {
+    gos = initializeApp({ serviceAccountId: 'gos-app-3c7fb@appspot.gserviceaccount.com' }, 'gos-phoenix-bridge');
+    db = getFirestore(gos);
+  }
+  return { app: gos, db };
+}
+
+function getPhoenixBridge() {
+  if (!phoenix) {
+    phoenix = initializeApp({ projectId: 'phoenix-app-8bc7b' }, 'phoenix');
+  }
+  return phoenix;
+}
+
 const sourceBase = 'https://firestore.googleapis.com/v1/projects/phoenix-app-8bc7b/databases/(default)/documents';
 const allowedOrigins = ['https://phoenix-app-8bc7b.web.app', 'https://phoenix-app-8bc7b.firebaseapp.com', 'https://gos-app-3c7fb.web.app', 'https://gos-app-3c7fb.firebaseapp.com', 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'];
 
 export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', timeoutSeconds: 120, memory: '512MiB', maxInstances: 5, cors: allowedOrigins }, async (req, res) => {
   res.set('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST required.' }); return; }
+  const phoenix = getPhoenixBridge();
+  const { app: gos, db } = getGosBridge();
   let identity;
   const bearer = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
   try { identity = await getAuth(phoenix).verifyIdToken(bearer || ''); }

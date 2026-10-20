@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import { Globe } from 'lucide-react';
+import { storageSet } from '../../utils/browserStorage';
 
 export const LanguageSwitcher: React.FC<{ onLanguageChange?: (language: Language) => void }> = ({ onLanguageChange }) => {
   useUILanguage();
@@ -16,7 +17,7 @@ export const LanguageSwitcher: React.FC<{ onLanguageChange?: (language: Language
     void i18n.changeLanguage(newLang);
     dispatch(setLanguage(newLang));
     onLanguageChange?.(newLang);
-    try { localStorage.setItem('i18nextLng', newLang); } catch { /* Keep the selected language in Redux. */ }
+    storageSet('i18nextLng', newLang);
   };
 
   return (

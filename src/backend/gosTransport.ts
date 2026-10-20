@@ -1,5 +1,16 @@
 export type TokenProvider = (refresh?: boolean) => Promise<string>;
 
+export class GosApiError extends Error {
+  status: number;
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'GosApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export function createGosTransport(baseUrl: string, token: TokenProvider, fetcher: typeof fetch = fetch) {
   return async function request<T>(path: string, options: { method?: string; body?: unknown; signal?: AbortSignal; public?: boolean; csv?: boolean } = {}): Promise<T> {
     const controller = new AbortController();
@@ -27,7 +38,7 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
         if (!response.ok || payload?.success === false) {
           const errors = payload?.error?.details ?? payload?.errors;
           const detail = errors && typeof errors === 'object' ? Object.values(errors).flat().filter(v => typeof v === 'string').join(' ') : '';
-          throw new Error(detail || payload?.error?.message || payload?.message || `GOS API request failed (${response.status}).`);
+          throw new GosApiError(detail || payload?.error?.message || payload?.message || `GOS API request failed (${response.status}).`, response.status, payload?.error?.code ?? (typeof payload?.error === 'string' ? payload.error : payload?.code));
         }
         if (payload?.data === undefined) throw new Error('The GOS API returned an unexpected response.');
         return payload.data as T;

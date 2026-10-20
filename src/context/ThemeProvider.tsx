@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import i18n from '../i18n/i18n';
+import { storageSet } from '../utils/browserStorage';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    try { localStorage.setItem('theme', theme); } catch { /* Keep the selected theme in Redux. */ }
+    storageSet('theme', theme);
   }, [theme]);
 
   useEffect(() => {

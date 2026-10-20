@@ -92,3 +92,230 @@ html.dark .st-business .st-field input:focus,html.dark .st-business .st-field se
 .st-workspace .st-phone-field input{border:0;border-radius:0;background:transparent;box-shadow:none;outline:0}
 .dark .st-workspace .st-phone-field{border-color:#46445d;background:#1d2030}
 @media(prefers-reduced-motion:reduce){.st-workspace .st-phone-field{transition:none}}
+
+/* Knowledge Search Professional Enhancements */
+.st-knowledge-toolbar {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  width: 100%;
+}
+.st-knowledge-toolbar .st-search {
+  flex: 1 1 auto !important;
+  min-width: 200px;
+  width: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--st-border, #e2e8f0);
+  border-radius: 10px;
+  background: var(--st-surface, #ffffff);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s;
+  cursor: text;
+}
+.st-knowledge-toolbar .st-knowledge-filter {
+  width: 175px;
+  min-width: 155px;
+  flex: 0 0 175px;
+}
+@media(max-width: 760px) {
+  .st-knowledge-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .st-knowledge-toolbar .st-knowledge-filter {
+    width: 100%;
+    flex: none;
+  }
+}
+.st-knowledge-toolbar .st-search:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.04);
+}
+.st-knowledge-toolbar .st-search:focus-within {
+  border-color: #8b5cf6;
+  background: var(--st-surface, #ffffff);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+.st-knowledge-toolbar .st-search .st-search-icon {
+  flex-shrink: 0;
+  color: #8b5cf6;
+  opacity: 0.75;
+  transition: opacity 0.18s, transform 0.18s;
+}
+.st-knowledge-toolbar .st-search:focus-within .st-search-icon {
+  opacity: 1;
+  transform: scale(1.05);
+}
+.st-knowledge-toolbar .st-search input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  line-height: 20px;
+  color: var(--st-ink, #0f172a);
+  padding: 8px 0 !important;
+}
+.st-knowledge-toolbar .st-search input::placeholder {
+  color: var(--st-muted, #94a3b8);
+  font-size: 13px;
+}
+.st-search-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  white-space: nowrap;
+  user-select: none;
+}
+.dark .st-search-badge {
+  background: #2e264a;
+  color: #c4b5fd;
+  border-color: #4c3d78;
+}
+.st-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+.st-search-clear:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: scale(1.08);
+}
+.dark .st-search-clear {
+  background: #33364f;
+  color: #94a3b8;
+}
+.dark .st-search-clear:hover {
+  background: #444866;
+  color: #f1f5f9;
+}
+.st-search-kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #94a3b8;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 #cbd5e1;
+  user-select: none;
+  flex-shrink: 0;
+}
+.dark .st-knowledge-toolbar .st-search {
+  background: #1d2030;
+  border-color: #46445d;
+}
+.dark .st-knowledge-toolbar .st-search:hover {
+  border-color: #7c68a5;
+}
+.dark .st-knowledge-toolbar .st-search:focus-within {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+.dark .st-search-kbd {
+  background: #1e2030;
+  color: #64748b;
+  border-color: #3b3d52;
+  box-shadow: 0 1px 0 #2a2d42;
+}
+
+/* Professional Delete Confirmation Dialog */
+.st-delete-confirm-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.st-delete-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.st-delete-confirm-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #fee2e2;
+}
+.dark .st-delete-confirm-icon {
+  background: #3f1d24;
+  color: #f87171;
+  border-color: #5c242e;
+}
+.st-delete-confirm-text h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--st-ink, #0f172a);
+  margin: 0 0 6px;
+}
+.st-delete-confirm-text p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--st-muted, #64748b);
+  margin: 0;
+}
+.st-delete-confirm-text strong {
+  color: var(--st-ink, #0f172a);
+  font-weight: 600;
+}
+.st-delete-confirm-details {
+  border-radius: 9px;
+  background: var(--st-soft, #f8fafc);
+  border: 1px solid var(--st-border, #e2e8f0);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.dark .st-delete-confirm-details {
+  background: #1a1b29;
+  border-color: #38374d;
+}
+.st-delete-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.st-delete-confirm-label {
+  color: var(--st-muted, #64748b);
+}
+.st-delete-confirm-val {
+  font-weight: 500;
+  color: var(--st-ink, #0f172a);
+  text-align: end;
+}

@@ -11,6 +11,9 @@ import { AIWebsiteDialog } from './AIWebsiteDialog';
 import { images } from './asset-model';
 import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
 import { showToast } from '../utils/toast';
+import { connectWorkspaceDomain } from '../backend/hosting';
+import { backendError } from '../backend/firebase';
+import type { Domain } from './asset-model';
 type Props = {
     dialog: Dialog;
     kind: BuilderMode;
@@ -26,6 +29,27 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
   useUILanguage();
     const asset = workspace.assets.find(item => item.id === dialog.assetId), domain = workspace.domains.find(item => item.id === dialog.domainId);
     const [name, setName] = useState(dialog.type === 'rename' ? asset?.name ?? '' : domain?.name ?? ''), [path, setPath] = useState(''), [error, setError] = useState(''), [dnsStep, setDnsStep] = useState(1), [domainAsset, setDomainAsset] = useState(dialog.assetId ?? domain?.assetId ?? ''), [stepType, setStepType] = useState('Landing');
+    const [domainRecordId] = useState(() => dialog.domainId ?? crypto.randomUUID());
+    const [dnsDomain, setDnsDomain] = useState<Domain | undefined>(domain);
+    const [dnsBusy, setDnsBusy] = useState(false);
+    const prepareDomain = async (cleaned: string) => {
+      if (dnsBusy) return;
+      setDnsBusy(true);
+      try { const result = await connectWorkspaceDomain(domainRecordId, domainAsset, cleaned); setDnsDomain(result.domain); setDnsStep(2); }
+      catch (error) { setError(backendError(error)); }
+      finally { setDnsBusy(false); }
+    };
+    const verifyDomain = async () => {
+      if (dnsBusy) return;
+      setDnsBusy(true);
+      try {
+        const result = await connectWorkspaceDomain(domainRecordId, domainAsset, name.trim().toLowerCase(), 'check');
+        setDnsDomain(result.domain);
+        if (result.domain.status === 'Connected') { close(); showToast.success('Domain connected · SSL active'); }
+        else { setDnsStep(2); showToast.info(result.domain.issues?.join(' ') || 'DNS or SSL is still propagating. Check the required records and try again.'); }
+      } catch (error) { setError(backendError(error)); showToast.error(backendError(error)); }
+      finally { setDnsBusy(false); }
+    };
 
 
     const onSubmit = (event: React.FormEvent) => {
@@ -83,7 +107,7 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
         } if (!domainAsset) {
             setError('Choose a funnel or website to connect.');
             return;
-        } setName(cleaned); setError(''); setDnsStep(2); }}><label>{translateText("Domain name")}<input value={name} onChange={e => setName(e.target.value)} placeholder={translateText("example.com")} required/></label><label>{translateText("Connect to")}<AssetSelect value={domainAsset} required={true} onChange={e => setDomainAsset(e)} options={[{value:"",label:"Choose an asset"},...workspace.assets.filter(item => !item.archived).map(item => ({value:item.id,label:`${item.kind === 'funnel' ? 'Funnel' : 'Website'} · ${item.name}`}))]}/></label>{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<button className="aw-primary">{translateText("Continue ")}<ArrowRight size={14}/></button></form> : dnsStep === 2 ? <><p>{translateText("Add DNS records through your domain provider. Your hosting service must supply the actual values before you can connect.")}</p><div className="aw-dns-record"><b>{translateText("CNAME")}</b><span>{translateText("Host: www")}</span><code>Target: supplied by your hosting provider</code></div><div className="aw-dns-record"><b>{translateText("A record")}</b><span>{translateText("Host: @")}</span><code>Value: supplied by your hosting provider</code></div><p className="aw-info"><ShieldCheck size={16}/>{translateText("DNS and SSL verification require a connected hosting backend.")}</p><button className="aw-secondary" onClick={() => setDnsStep(1)}>{translateText("Back")}</button><button className="aw-primary" onClick={() => setDnsStep(3)}>{translateText("Continue to verification")}</button></> : <><div className="aw-verification"><ShieldCheck size={32}/><h3>{translateText("Waiting for DNS verification")}</h3><p>{translateText("Save this domain as pending. When hosting is connected, DNS records and SSL can be verified automatically.")}</p></div><button className="aw-primary" onClick={() => { setWorkspace(current => ({ ...current, domains: dialog.domainId ? current.domains.map(item => item.id === dialog.domainId ? { ...item, name, assetId: domainAsset, status: 'Pending', ssl: 'Not configured', default: false } : item) : [...current.domains, { id: crypto.randomUUID(), name, assetId: domainAsset, status: 'Pending', ssl: 'Not configured', default: false }] })); close(); showToast.success('Domain saved · verification pending'); }}>{translateText("Save pending domain")}</button></>)}
+        } setName(cleaned); setError(''); void prepareDomain(cleaned); }}><label>{translateText("Domain name")}<input value={name} onChange={e => setName(e.target.value)} placeholder={translateText("example.com")} required/></label><label>{translateText("Connect to")}<AssetSelect value={domainAsset} required={true} onChange={e => setDomainAsset(e)} options={[{value:"",label:"Choose an asset"},...workspace.assets.filter(item => !item.archived).map(item => ({value:item.id,label:`${item.kind === 'funnel' ? 'Funnel' : 'Website'} · ${item.name}`}))]}/></label>{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<button className="aw-primary" disabled={dnsBusy}>{translateText("Continue ")}<ArrowRight size={14}/></button></form> : dnsStep === 2 ? <><p>{translateText("Add the following Firebase Hosting records through your DNS provider. Verification may take time to propagate.")}</p>{dnsDomain?.dnsRecords?.map((record,index)=><div className="aw-dns-record" key={index}><b>{record.type}</b><span>{record.domainName}</span><code>{record.requiredAction ? record.requiredAction + ": " : ""}{record.rdata}</code></div>)}<p className="aw-info"><ShieldCheck size={16}/>{translateText("Firebase Hosting verifies domain ownership, DNS routing and SSL before marking this domain connected.")}</p><button className="aw-secondary" onClick={() => setDnsStep(1)}>{translateText("Back")}</button><button className="aw-primary" onClick={() => setDnsStep(3)}>{translateText("Continue to verification")}</button></> : <><div className="aw-verification"><ShieldCheck size={32}/><h3>{translateText("Waiting for DNS verification")}</h3><p>{translateText("Check Firebase Hosting for DNS propagation and SSL certificate readiness. The domain remains pending until both are verified.")}</p></div><button className="aw-primary" disabled={dnsBusy} onClick={() => void verifyDomain()}>{translateText("Check DNS & SSL")}</button></>)}
  </> : <form onSubmit={onSubmit}><p>{localizeNode(dialog.type === 'add' ? 'Add a page to your customer experience.' : '')}</p><label>{localizeNode('Name')}<input autoFocus value={name} onChange={e => setName(e.target.value)} required maxLength={100} placeholder={translateText(dialog.type === 'add' ? 'About us' : kind === 'funnel' ? 'My new funnel' : 'My new website')}/></label>{localizeNode(dialog.type === 'add' && <><label>{translateText("URL path")}<input value={path} onChange={e => setPath(e.target.value)} placeholder={translateText("/about")}/></label>{localizeNode(kind === 'funnel' && <label>{translateText("Step type")}<AssetSelect value={stepType} onChange={e => setStepType(e)} options={[...['Landing', 'Form', 'Thank You', 'Booking', 'Confirmation'].map(type => ({value:type,label:type}))]}/></label>)}</>)}{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<footer><button type="button" className="aw-secondary" onClick={close}>{translateText("Cancel")}</button><button className="aw-primary">{localizeNode(dialog.type === 'rename' ? 'Save name' : dialog.type === 'add' ? 'Add ' + (kind === 'funnel' ? 'Step' : 'Page') : 'Create ' + (kind === 'funnel' ? 'Funnel' : 'Website'))}</button></footer></form>)}
  </div></Modal>;
 }

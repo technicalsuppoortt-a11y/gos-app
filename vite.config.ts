@@ -24,6 +24,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      input: { dashboard: 'index.html', published: 'published.html' },
       output: {
         manualChunks(id) {
           if (id.includes('pagefly/templates/')) {
