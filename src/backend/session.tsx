@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
 import { onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { auth, db, callBackend } from './firebase';

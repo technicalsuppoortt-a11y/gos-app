@@ -8,6 +8,9 @@ import { SectionPreview } from './pages/BuilderWorkspace';
 import { columnCount, columnGrid, deviceElement, elementHidden, elementStyle } from './pages/element-properties';
 import type { BuilderSection } from './pages/BuilderWorkspace';
 import type { Asset } from './pages/asset-model';
+import { OrderedElementParts } from './pages/element-reordering';
+import { EditableElementPart } from './pages/EditableElementPart';
+import { findSection } from './pages/funnel-tree';
 import './i18n/i18n';
 import './index.css';
 import './pages/asset-workspace.css';
@@ -37,13 +40,13 @@ function PublishedPage({ asset, pageId }: { asset: Asset; pageId: string }) {
   const render = (items: BuilderSection[]): React.ReactNode => items.map(source => {
     const item = deviceElement(source, device);
     const style: CSSProperties = { backgroundColor: item.styles.backgroundColor, padding: `${item.styles.padding}px 22px`, textAlign: item.styles.textAlign.toLowerCase() as CSSProperties['textAlign'], ...elementStyle(item, device), display: elementHidden(item, device) ? 'none' : undefined };
-    return <section key={item.id} id={item.content.trackingId || item.id} className={`fb-canvas-section ${item.type === 'Hero' ? 'fb-hero-section' : ''}`} style={style}>
+    return <section key={item.id} id={item.content.trackingId || item.id} data-section-id={item.id} className={`fb-canvas-section ${item.type === 'Hero' ? 'fb-hero-section' : ''} ${item.content.htmlClass || ''}`} style={style}>
       {['Columns', 'Section'].includes(item.type) ? <div className="fn-column-layout" style={{ display: 'grid', gridTemplateColumns: columnGrid(item), gap: `${item.content.gap || 16}px` }}>{Array.from({ length: columnCount(item) }, (_, col) => <div className="fn-column" key={col}>{render(item.children?.[col] ?? [])}</div>)}</div>
-        : item.type === 'Hero' ? <><img className="fb-hero-image" src={item.content.src || page.featuredImage || asset.image} alt={item.content.alt || ''}/><span className="fb-hero-overlay"/><div className="fb-hero-copy"><h1>{item.content.title}</h1><p>{item.content.body}</p>{item.content.button && <button className="fb-site-primary" onClick={() => action(item)}>{item.content.button}</button>}</div></>
+        : item.type === 'Hero' ? <><EditableElementPart device={device} item={item} part="src" tag="img" className="fb-hero-image" src={item.content.src || page.featuredImage || asset.image} alt={item.content.alt || ''}/><span className="fb-hero-overlay"/><OrderedElementParts item={item}><div className="fb-hero-copy"><EditableElementPart device={device} item={item} part="title" tag="h1">{item.content.title}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{item.content.body}</EditableElementPart>{item.content.button && <EditableElementPart device={device} item={item} part="button" tag="button" className="fb-site-primary" onClick={() => action(findSection([item], item.id + '::button') ?? item)}>{item.content.button}</EditableElementPart>}</div></OrderedElementParts></>
           : <SectionPreview item={item} device={device} onAction={action} onImagePick={() => {}} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
     </section>;
   });
-  return <main className="fb-site-frame" style={{ width: '100%', maxWidth: 'none', height: 'auto', overflow: 'visible', backgroundColor: page.backgroundColor || '#fff', '--fb-accent': asset.settings.color, '--fb-heading-font': asset.document.theme?.font || 'Manrope' } as CSSProperties}>
+  return <main className={`fb-site-frame ${device}`} onSubmitCapture={event => { event.preventDefault(); event.stopPropagation(); showToast.info('Connect this form to a submission endpoint before collecting responses.'); }} style={{ width: '100%', maxWidth: 'none', height: 'auto', overflow: 'visible', backgroundColor: page.backgroundColor || '#fff', '--fb-accent': asset.settings.color, '--fb-heading-font': asset.document.theme?.font || 'Manrope' } as CSSProperties}>
     {page.showHeader && <nav className="fb-site-nav"><b>{asset.name}</b><div>{asset.settings.navigation.split(',').map((label, index) => { const target = asset.document.pages.find(p => p.name.toLowerCase() === label.trim().toLowerCase()); return <button key={index} onClick={() => target && navigate(target.id)}>{label.trim()}</button>; })}</div></nav>}
     {!(page.hideOnMobile && device === 'mobile') && render(page.sections)}
     {page.showFooter && <footer className="fb-site-footer">{asset.name}</footer>}

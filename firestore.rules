@@ -66,6 +66,19 @@ service cloud.firestore {
         allow create, update: if (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
         allow delete: if permit(tenantId, 'settings');
       }
+      match /domains/{domainId} {
+        // Provider verification and domain assignments are server-owned.
+        allow update: if permit(tenantId, 'funnels')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['default'])
+          && request.resource.data.default is bool
+          && (!request.resource.data.default || resource.data.status == 'Connected' && resource.data.ssl == 'Active');
+      }
+      match /assets/{assetId} {
+        allow create: if permit(tenantId, 'funnels') && request.resource.data.get('domain', '') == '';
+        allow update: if permit(tenantId, 'funnels')
+          && request.resource.data.get('domain', '') == resource.data.get('domain', '');
+        // Deletion also removes the live Hosting site through the callable.
+      }
       match /{collectionName}/{id} {
         allow read: if tenant(tenantId) && canRead(tenantId, collectionName) && (collectionName != 'copilotConversations' || resource.data.actorId == request.auth.uid) && collectionName in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'copilotConversations', 'userTemplates', 'files'];
         allow create, update, delete: if (
@@ -76,7 +89,6 @@ service cloud.firestore {
           collectionName in ['workflows', 'templates'] && permit(tenantId, 'follow-up') ||
           collectionName == 'knowledge' && permit(tenantId, 'settings') ||
           collectionName == 'discounts' && permit(tenantId, 'products') ||
-          collectionName in ['assets', 'domains'] && permit(tenantId, 'funnels') ||
            collectionName == 'userTemplates' && permit(tenantId, 'home')
           || collectionName == 'files' && permit(tenantId, 'products')
         );

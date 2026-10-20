@@ -23,6 +23,7 @@ export default defineConfig({
     ],
   },
   build: {
+    manifest: 'hosting-manifest.json',
     rollupOptions: {
       input: { dashboard: 'index.html', published: 'published.html' },
       output: {

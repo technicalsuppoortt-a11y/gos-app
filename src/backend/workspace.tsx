@@ -72,7 +72,13 @@ const assetPersistence = createAssetPersistence({
     const batch = writeBatch(db);
     for (const write of writes) {
       const ref = doc(db, 'tenants', scope, write.resource, write.id);
-      if (write.value) batch.set(ref, encodeFirestoreValue(write.value)); else batch.delete(ref);
+      if (write.value) {
+        const value = { ...write.value };
+        // Domain binding is owned by the Hosting callable. A draft save must
+        // never overwrite a domain verified concurrently by another member.
+        if (write.resource === 'assets') delete value.domain;
+        batch.set(ref, encodeFirestoreValue(value), { mergeFields: Object.keys(value) });
+      } else batch.delete(ref);
     }
     const finish = beginWrite();
     try { await batch.commit(); }
@@ -199,7 +205,12 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       if (resource === 'workspaceState') {
         for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
         snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
-      } else if (!(assetPersistence.isProtected() && ['assets', 'domains'].includes(resource))) cache.set(`entity:${resource}`, JSON.stringify(snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })))));
+      } else {
+        let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
+        if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
+        if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
+        cache.set(`entity:${resource}`, JSON.stringify(rows));
+      }
       if (resource === 'leads' || resource === 'pipelines') hydrate();
       pending.delete(resource);
       if (!pending.size && !failed) { loaded = true; setStatus({ scope, ready: true, error: '' }); }

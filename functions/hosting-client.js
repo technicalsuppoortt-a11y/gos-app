@@ -6,7 +6,7 @@ export function normalizePagePath(path) {
   if (typeof path !== 'string' || !/^\/(?:[a-z0-9_-]+\/?)*$/i.test(path)) throw new Error('Every page needs a valid URL path beginning with /.');
   return path.replace(/\/+$/, '') || '/';
 }
-export function buildPublicationFiles(asset, template, appOrigin) {
+export function buildPublicationFiles(asset, template, appOrigin, localResources = false) {
   if (!template.includes('id="gos-publication-data"') || !template.includes('type="module"')) throw new Error('Deploy the published-page frontend entry before publishing assets.');
   const origin = new URL(appOrigin).origin;
   if (!origin.startsWith('https://')) throw new Error('Configure a secure application origin.');
@@ -16,7 +16,7 @@ export function buildPublicationFiles(asset, template, appOrigin) {
   function resolveMedia(value, key = '') {
     if (Array.isArray(value)) return value.map(item => resolveMedia(item));
     if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([field, item]) => [field, resolveMedia(item, field)]));
-    if (typeof value === 'string' && /^(src|image|featuredImage|avatar|logo|videoUrl)$/.test(key) && value.startsWith('/') && !value.startsWith('//')) return origin + value;
+    if (typeof value === 'string' && /^(src|image|featuredImage|avatar|logo|videoUrl)$/.test(key) && value.startsWith('/') && !value.startsWith('//')) return localResources ? value : origin + value;
     if (typeof value === 'string' && ['images', 'testimonials', 'items'].includes(key)) {
       try { return JSON.stringify(resolveMedia(JSON.parse(value))); } catch { /* Plain text remains plain text. */ }
     }
@@ -28,10 +28,13 @@ export function buildPublicationFiles(asset, template, appOrigin) {
     const path = normalizePagePath(page.path);
     if (paths.has(path) || ids.has(page.id)) throw new Error('Pages must have unique IDs and URL paths.');
     paths.add(path); ids.add(page.id);
-    const data = JSON.stringify({ asset: publicAsset, pageId: page.id }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    // Other pages need only routing metadata in this file; their content is
+    // embedded in their own immutable HTML. Avoid duplicating large trees.
+    const pageAsset = { ...publicAsset, document: { ...publicAsset.document, pages: publicAsset.document.pages.map(item => item.id === page.id ? item : { id: item.id, name: item.name, path: item.path }) } };
+    const data = JSON.stringify({ asset: pageAsset, pageId: page.id }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const html = template.replace(/<script id="gos-publication-data" type="application\/json">[\s\S]*?<\/script>/, () => `<script id="gos-publication-data" type="application/json">${data}</script>`)
-      .replace('<head>', `<head><base href="${origin}/">`)
-      .replace(/\b(src|href)="\/assets\//g, `$1="${origin}/assets/`)
+      .replace('<head>', localResources ? '<head>' : `<head><base href="${origin}/">`)
+      .replace(/\b(src|href)="\/assets\//g, localResources ? '$1="/assets/' : `$1="${origin}/assets/`)
       .replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHTML(page.seoTitle || page.name || asset.name)}</title>`)
       .replace('</head>', `<meta name="description" content="${escapeHTML(page.seoDescription || '')}">${page.noIndex ? '<meta name="robots" content="noindex">' : ''}</head>`);
     files[path === '/' ? '/index.html' : `${path}/index.html`] = html;
@@ -46,12 +49,48 @@ export function buildPublicationFiles(asset, template, appOrigin) {
 }
 const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+export function publicationResourcePaths(asset, manifest, template = '') {
+  const files = new Set(), visited = new Set();
+  function add(path) {
+    const normalized = path.startsWith('/') ? path : '/' + path;
+    if (!/^\/[a-z0-9_./-]+$/i.test(normalized) || normalized.includes('..') || normalized.startsWith('//') || /\.html?$/i.test(normalized)) throw new Error('The publication contains an invalid resource path.');
+    files.add(normalized);
+  }
+  function visit(key) {
+    if (visited.has(key)) return;
+    visited.add(key);
+    const entry = manifest[key];
+    if (!entry?.file) throw new Error('The published runtime is missing from the Hosting manifest. Rebuild and deploy the dashboard.');
+    add(entry.file);
+    for (const path of [...(entry.css ?? []), ...(entry.assets ?? [])]) add(path);
+    for (const key of [...(entry.imports ?? []), ...(entry.dynamicImports ?? [])]) visit(key);
+  }
+  visit('published.html');
+  for (const match of template.matchAll(/\b(?:src|href)="(\/assets\/[^"?#]+)"/g)) {
+    if (!files.has(match[1])) throw new Error('The dashboard deployment changed during publication. Try publishing again.');
+  }
+  function media(value, key = '') {
+    if (Array.isArray(value)) value.forEach(item => media(item));
+    else if (value && typeof value === 'object') Object.entries(value).forEach(([field, item]) => media(item, field));
+    else if (typeof value === 'string') {
+      if (/^(src|image|featuredImage|avatar|logo|videoUrl)$/.test(key) && value.startsWith('/') && !value.startsWith('//')) add(value);
+      else if (['images', 'testimonials', 'items'].includes(key)) {
+        let parsed; try { parsed = JSON.parse(value); } catch { return; }
+        media(parsed);
+      }
+    }
+  }
+  media({ image: asset.image, document: asset.document });
+  if (files.size > 400) throw new Error('This publication has too many runtime resources.');
+  return [...files];
+}
+
 export function domainVerification(domain) {
   const sslActive = ['CERT_ACTIVE', 'CERT_EXPIRING_SOON'].includes(domain.cert?.state);
   const connected = domain.hostState === 'HOST_ACTIVE' && domain.ownershipState === 'OWNERSHIP_ACTIVE' && sslActive && !domain.deleteTime;
   return {
     status: connected ? 'Connected' : domain.deleteTime ? 'Disconnected' : 'Pending',
-    ssl: sslActive ? 'Active' : domain.cert?.state === 'CERT_EXPIRED' ? 'Inactive' : 'Not configured',
+    ssl: domain.deleteTime ? 'Inactive' : sslActive ? 'Active' : domain.cert?.state === 'CERT_EXPIRED' ? 'Inactive' : 'Not configured',
     hostState: domain.hostState ?? '', ownershipState: domain.ownershipState ?? '', certificateState: domain.cert?.state ?? '',
     dnsRecords: (domain.requiredDnsUpdates?.desired ?? []).flatMap(set => set.records ?? []),
     issues: (domain.issues ?? []).map(issue => String(issue.message ?? 'DNS verification pending')),
@@ -97,6 +136,7 @@ export function createHostingClient({ token, projectId, fetcher = fetch }) {
       }
       await api(`${version.name}?updateMask=status`, 'PATCH', { status: 'FINALIZED' });
       const release = await api(`sites/${siteId}/releases?versionName=${encodeURIComponent(version.name)}`, 'POST', {});
+      if (typeof release.name !== 'string') throw new Error('Firebase Hosting did not confirm the release.');
       return { version: version.name, release: release.name, url: `https://${siteId}.web.app` };
     },
     async connectDomain(siteId, name) {

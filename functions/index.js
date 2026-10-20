@@ -11,7 +11,7 @@ import { completeUserActivation } from './onboarding.js';
 import { buildActivationLink } from './activation-links.js';
 import { queryIndexedKnowledge, readAgent, validateAgent } from './ai-knowledge.js';
 import { createHostingClient } from './hosting-client.js';
-import { publishAssetRequest, hostingDomainRequest } from './hosting-service.js';
+import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
 
 // Allows deploying the remaining services while the owner provisions the AI secret.
 const openaiKey = process.env.DEPLOY_COPILOT === 'false' ? null : defineSecret('OPENAI_API_KEY');
@@ -43,6 +43,7 @@ function hostingClient() {
 }
 export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value() }));
 export const hostingDomain = onCall({ timeoutSeconds: 180 }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));
+export const deleteWorkspaceAsset = onCall({ timeoutSeconds: 180 }, request => deleteAssetRequest(request, { workspace, db, hosting: hostingClient() }));
 export const activateUser = onCall(request => completeUserActivation(request, { db, auth }));
 export const manageUser = onCall(async request => {
   const user = await actor(request);

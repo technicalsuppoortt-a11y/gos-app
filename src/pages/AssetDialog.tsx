@@ -11,7 +11,7 @@ import { AIWebsiteDialog } from './AIWebsiteDialog';
 import { images } from './asset-model';
 import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
 import { showToast } from '../utils/toast';
-import { connectWorkspaceDomain } from '../backend/hosting';
+import { connectWorkspaceDomain, deleteWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
 import type { Domain } from './asset-model';
 type Props = {
@@ -35,7 +35,18 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
     const prepareDomain = async (cleaned: string) => {
       if (dnsBusy) return;
       setDnsBusy(true);
-      try { const result = await connectWorkspaceDomain(domainRecordId, domainAsset, cleaned); setDnsDomain(result.domain); setDnsStep(2); }
+      try {
+        const result = await connectWorkspaceDomain(domainRecordId, domainAsset, cleaned);
+        setDnsDomain(result.domain);
+        setWorkspace(current => {
+          const exists = current.domains.some(d => d.id === result.domain.id);
+          return {
+            ...current,
+            domains: exists ? current.domains.map(d => d.id === result.domain.id ? result.domain : d) : [...current.domains, result.domain],
+          };
+        });
+        setDnsStep(2);
+      }
       catch (error) { setError(backendError(error)); }
       finally { setDnsBusy(false); }
     };
@@ -45,6 +56,17 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
       try {
         const result = await connectWorkspaceDomain(domainRecordId, domainAsset, name.trim().toLowerCase(), 'check');
         setDnsDomain(result.domain);
+        setWorkspace(current => {
+          const exists = current.domains.some(d => d.id === result.domain.id);
+          const updatedDomains = exists ? current.domains.map(d => d.id === result.domain.id ? result.domain : d) : [...current.domains, result.domain];
+          return {
+            ...current,
+            domains: updatedDomains,
+            assets: result.domain.status === 'Connected'
+              ? current.assets.map(a => a.id === domainAsset ? { ...a, domain: result.domain.name } : (a.domain === result.domain.name ? { ...a, domain: '' } : a))
+              : current.assets,
+          };
+        });
         if (result.domain.status === 'Connected') { close(); showToast.success('Domain connected · SSL active'); }
         else { setDnsStep(2); showToast.info(result.domain.issues?.join(' ') || 'DNS or SSL is still propagating. Check the required records and try again.'); }
       } catch (error) { setError(backendError(error)); showToast.error(backendError(error)); }
@@ -94,8 +116,8 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
             updateAsset(asset.id, item => ({ ...item, document: { ...item.document, pages: item.document.pages.filter(page => page.id !== dialog.pageId), steps: item.document.steps.filter(step => step.pageId !== dialog.pageId), funnel: { ...item.document.funnel, pagesFlow: item.document.pages.filter(page => page.id !== dialog.pageId).map(page => page.id), status: 'Draft' } } }));
         }
         else {
-            setWorkspace(current => ({ ...current, assets: current.assets.filter(item => item.id !== dialog.assetId), domains: current.domains.map(domain => domain.assetId === dialog.assetId ? { ...domain, assetId: '', status: 'Disconnected', ssl: 'Inactive', default: false } : domain) }));
-            go(section);
+            void deleteWorkspaceAsset(dialog.assetId!).then(() => { close(); go(section); }).catch(error => showToast.error(backendError(error)));
+            return;
         } close(); }}>{translateText("Delete permanently")}</button>)}</> : dialog.type === 'domain' ? <>
  <div className="aw-dns-steps">{localizeNode(['Domain', 'DNS records', 'Verification'].map((label, i) => <span key={label} className={dnsStep === i + 1 ? 'active' : ''}>{localizeNode(i + 1)}. {localizeNode(label)}</span>))}</div>
  {localizeNode(dnsStep === 1 ? <form onSubmit={e => { e.preventDefault(); const cleaned = name.trim().toLowerCase(); if (!/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(cleaned)) {

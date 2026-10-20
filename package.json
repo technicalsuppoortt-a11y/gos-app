@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "test:gos-api": "node --test tests/gos-api.test.mjs tests/crm-booking-stage.test.mjs",
+    "test:storage": "node --test tests/storage-resilience.test.mjs",
+    "test:builder-storage": "node tests/builder-storage-browser.test.mjs",
+    "test:published-hosting": "node tests/published-hosting-browser.test.mjs",
     "smoke:gos-api": "node scripts/smoke-gos-api.mjs",
     "dev": "node scripts/build-phoenix-brand.mjs && vite",
     "build": "node scripts/build-theme-surfaces.mjs && node scripts/build-phoenix-brand.mjs && tsc -b && node --max-old-space-size=4096 node_modules/vite/bin/vite.js build",

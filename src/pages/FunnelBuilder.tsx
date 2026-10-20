@@ -11,6 +11,7 @@ import { OptionsMenu } from './crm/CRMPrimitives';
 import { showToast } from '../utils/toast';
 import { publishWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
+import { duplicateBuilderPage } from './builder-integrity';
 import { useAssetWorkspace } from './asset-store';
 import type { Asset, BuilderMode, Dialog } from './asset-model';
 import { AssetHub, AssetOverview, DomainsView, Empty } from './AssetViews';
@@ -50,7 +51,7 @@ export function FunnelBuilder() {
     };
     const assetActions = (item: Asset) => [{ label: 'Rename', onSelect: () => open({ type: 'rename', assetId: item.id }) }, { label: 'Duplicate', onSelect: () => { const copy = structuredClone(item); copy.id = crypto.randomUUID(); copy.name += ' (Copy)'; copy.document.funnel.name = copy.name; copy.document.funnel.status = 'Draft'; copy.domain = ''; copy.sampleData=false; copy.updated = new Date().toISOString(); setWorkspace(current => ({ ...current, assets: [copy, ...current.assets] })); showToast.success('Asset duplicated'); } }, { label: item.archived ? 'Restore' : 'Archive', onSelect: () => updateAsset(item.id, value => ({ ...value, archived: !value.archived })) }, { label: 'Delete', onSelect: () => open({ type: 'delete', assetId: item.id }) }];
     const pageActions = (page: BuilderPage) => [{ label: kind === 'funnel' ? 'Edit Step' : 'Edit Page', onSelect: () => editPage(page) }, { label: 'Duplicate', onSelect: () => { if (!asset)
-                return; updateAsset(asset.id, item => { const copy = structuredClone(page); copy.id = crypto.randomUUID(); copy.name += ' (Copy)'; copy.path += '-copy'; return { ...item, document: { ...item.document, pages: [...item.document.pages, copy], steps: kind === 'funnel' ? [...item.document.steps, { id: copy.id, label: copy.name, pageId: copy.id, type: 'Landing' }] : [], funnel: { ...item.document.funnel, status: 'Draft' } } }; }); } }, { label: 'Delete', onSelect: () => open({ type: 'delete', assetId: asset?.id, pageId: page.id }) }];
+                return; updateAsset(asset.id, item => { const copy = duplicateBuilderPage(page, item.document.pages); const sourceStep = item.document.steps.find(step => step.pageId === page.id); return { ...item, document: { ...item.document, pages: [...item.document.pages, copy], steps: kind === 'funnel' ? [...item.document.steps, { id: copy.id, label: copy.name, pageId: copy.id, type: sourceStep?.type ?? 'Landing' }] : [], funnel: { ...item.document.funnel, pagesFlow: [...item.document.funnel.pagesFlow, copy.id], status: 'Draft' } } }; }); } }, { label: 'Delete', onSelect: () => open({ type: 'delete', assetId: asset?.id, pageId: page.id }) }];
     const movePage = (from: string, target: string) => { if (!asset || from === target)
         return; updateAsset(asset.id, item => { const pages = [...item.document.pages], source = pages.findIndex(page => page.id === from), dest = pages.findIndex(page => page.id === target); if (source < 0 || dest < 0)
         return item; pages.splice(dest, 0, pages.splice(source, 1)[0]); return { ...item, document: { ...item.document, pages, steps: pages.map(page => item.document.steps.find(step => step.pageId === page.id)).filter((step): step is NonNullable<typeof step> => Boolean(step)), funnel: { ...item.document.funnel, pagesFlow: pages.map(page => page.id), status: 'Draft' } } }; }); };

@@ -9,9 +9,14 @@ export function createResilientStorage(resolve: () => Storage | undefined): Stor
     if (!cleared) {
       try {
         const storage = native();
-        if (storage) for (let i = 0; i < storage.length; i++) {
-          const key = storage.key(i);
-          if (key !== null && !(pending.has(key) && !memory.has(key))) values.add(key);
+        if (storage) {
+          const current = new Set<string>();
+          for (let i = 0; i < storage.length; i++) {
+            const key = storage.key(i);
+            if (key !== null && !(pending.has(key) && !memory.has(key))) current.add(key);
+          }
+          for (const key of pending) if (memory.has(key)) current.add(key);
+          return [...current];
         }
       } catch { /* The mirror is sufficient for this session. */ }
     }
