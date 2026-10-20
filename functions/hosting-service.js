@@ -1,4 +1,5 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { captureForms } from './lead-capture.js';
+import { createHash, randomUUID, randomBytes } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { buildPublicationFiles, domainVerification, domainIssueGuidance, hostingSiteId, publicationResourcePaths } from './hosting-client.js';
 
@@ -16,7 +17,7 @@ function decode(value) {
   return value;
 }
 
-export async function publishAssetRequest(request, { workspace, db, hosting, appOrigin, fetcher = fetch }) {
+export async function publishAssetRequest(request, { workspace, db, hosting, appOrigin, projectId = 'gos-app-3c7fb', fetcher = fetch }) {
   const { user, root } = await workspace(request, 'funnels');
   const { assetId } = request.data ?? {};
   if (!validId(assetId)) throw new HttpsError('invalid-argument', 'Choose an existing asset.');
@@ -34,7 +35,9 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
     const response = await fetcher(`${new URL(appOrigin).origin}/published.html`, { signal: AbortSignal.timeout(30000) });
     if (!response.ok) throw new Error('Deploy the published-page frontend entry before publishing assets.');
     const template = await response.text();
-    const files = buildPublicationFiles(asset, template, appOrigin, true);
+    const captureToken = randomBytes(32).toString('base64url');
+    const capture = { tenantId: root.id, captureToken, endpoint: `https://us-central1-${projectId}.cloudfunctions.net/captureAssetLead` };
+    const files = buildPublicationFiles(asset, template, appOrigin, true, capture);
     const manifestResponse = await fetcher(`${new URL(appOrigin).origin}/hosting-manifest.json`, { signal: AbortSignal.timeout(30000) });
     if (!manifestResponse.ok) throw new Error('Deploy the Hosting runtime manifest before publishing assets.');
     const resources = publicationResourcePaths(asset, await manifestResponse.json(), template);
@@ -57,7 +60,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
       const [latest, state] = await Promise.all([tx.get(ref), tx.get(stateRef)]);
       if (state.data()?.lease !== lease) throw new HttpsError('aborted', 'The publishing operation changed. Refresh the asset.');
       const draftChanged = !latest.exists || digest(latest.data().document) !== digest(saved.document);
-      tx.set(stateRef, { ...release, siteId, lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
+      tx.set(stateRef, { ...release, siteId, captureTokenHash: createHash('sha256').update(captureToken).digest('hex'), captureForms: captureForms(asset.document), lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
       if (latest.exists) tx.update(ref, { publishedUrl: release.url });
       // A newer edit remains a draft; it cannot be labelled as the deployed copy.
       if (!draftChanged) tx.update(ref, { 'document.funnel.status': 'Published', 'document.pages': saved.document.pages.map(page => ({ ...page, status: 'Published' })) });

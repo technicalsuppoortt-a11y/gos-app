@@ -8,10 +8,12 @@ const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const styles = { backgroundColor: '#fff', padding: '24', textAlign: 'Left', typography: 'Brand heading', customCss: '', visibility: 'Visible', animation: 'None' };
 const asset = { id: 'asset', kind: 'funnel', name: 'Published fixture', image: '/pagefly/coach-portrait.png', settings: { color: '#6544e8', navigation: 'Home, Thanks' }, document: { theme: { font: 'Manrope' }, funnel: { pagesFlow: ['home', 'thanks'], status: 'Published' }, steps: [{ id: 'landing', pageId: 'home' }, { id: 'thanks', pageId: 'thanks' }], pages: [
-  { id: 'home', name: 'Home', path: '/start', showHeader: false, showFooter: false, sections: [{ id: 'hero', type: 'Hero', content: { title: 'Published saved heading', body: 'Stored workspace content', src: '/pagefly/coach-portrait.png', button: 'Continue', destinationType: 'Next Step', destination: 'thanks' }, styles }] },
+  { id: 'home', name: 'Home', path: '/start', showHeader: true, showFooter: false, sections: [{ id: 'hero', type: 'Hero', content: { title: 'Published saved heading', body: 'Stored workspace content', src: '/pagefly/coach-portrait.png', button: 'Continue', destinationType: 'Next Step', destination: 'thanks' }, styles }] },
   { id: 'thanks', name: 'Thanks', path: '/thank-you', showHeader: false, showFooter: false, sections: [{ id: 'heading', type: 'Heading', content: { title: 'Thank you from the published page', headingTag: 'H1' }, styles }] },
 ] } };
-const files = buildPublicationFiles(asset, await readFile('dist/published.html', 'utf8'), 'https://dashboard.test', true);
+asset.document.pages[0].sections.push({ id: 'contact', type: 'Form', content: { title: 'Public contact form', fields: JSON.stringify(['Name', 'Email', 'Message']), button: 'Send public inquiry', successMessage: 'Public inquiry saved' }, styles });
+const capture = { tenantId: 'tenant-fixture', captureToken: 'a'.repeat(43), endpoint: 'https://us-central1-gos-app-3c7fb.cloudfunctions.net/captureAssetLead' };
+const files = buildPublicationFiles(asset, await readFile('dist/published.html', 'utf8'), 'https://dashboard.test', true, capture);
 const resources = publicationResourcePaths(asset, JSON.parse(await readFile('dist/hosting-manifest.json', 'utf8')));
 for (const path of resources) files[path] = await readFile('dist' + path);
 const browser = await chromium.launch({ executablePath: process.env.FUNNEL_BROWSER_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
@@ -19,8 +21,15 @@ try {
   const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
   const errors = [];
   const dashboardRequests = [];
+  let submission;
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(() => { for (const key of ['localStorage', 'sessionStorage']) Object.defineProperty(window, key, { get() { throw new DOMException('Blocked', 'SecurityError'); } }); });
+  await page.route(capture.endpoint, async route => {
+    const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Allow-Methods': 'POST,OPTIONS' };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    submission = route.request().postDataJSON().data;
+    await route.fulfill({ headers, contentType: 'application/json', body: JSON.stringify({ result: { accepted: true, leadId: 'public-lead' } }) });
+  });
   await page.route('https://dashboard.test/**', async route => {
     dashboardRequests.push(route.request().url());
     await route.abort();
@@ -37,7 +46,17 @@ try {
     assert.equal(response.status(), 200);
     await page.getByRole('heading', { name: 'Published saved heading' }).waitFor();
     assert.equal(await page.locator('.fb-editor-header').count(), 0);
+    assert.equal(await page.locator('.fb-live-page-nav').evaluate(node => getComputedStyle(node).display), 'flex');
+    assert.ok(await page.locator('.fb-live-page-nav').evaluate(node => node.getBoundingClientRect().height >= 50));
   }
+  await page.locator('#contact input[name="name"]').fill('Published visitor');
+  await page.locator('#contact input[name="email"]').fill('visitor@example.com');
+  await page.locator('#contact textarea[name="message"]').fill('Published inquiry');
+  await page.getByRole('button', { name: 'Send public inquiry', exact: true }).click();
+  await page.getByText('Public inquiry saved', { exact: true }).waitFor();
+  assert.equal(submission.tenantId, capture.tenantId); assert.equal(submission.captureToken, capture.captureToken);
+  assert.equal(submission.name, 'Published visitor'); assert.equal(submission.message, 'Published inquiry');
+  assert.equal(submission.preview, undefined);
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.waitForURL('https://site.test/thank-you');
   await page.getByRole('heading', { name: 'Thank you from the published page' }).waitFor();

@@ -1,0 +1,9 @@
+/* Scope viewport overrides to the visitor renderer, including simulated widths. */
+.fb-site-frame[data-public-asset] .fb-live-wordmark{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fb-site-frame[data-public-asset].desktop .fb-live-mobile-nav-toggle{display:none}
+.fb-site-frame[data-public-asset]:is(.tablet,.mobile) .fb-live-desktop-nav{display:none}
+.fb-site-frame[data-public-asset]:is(.tablet,.mobile) .fb-live-wordmark{flex:1;text-align:start}
+.fb-site-frame[data-public-asset]:is(.tablet,.mobile) .fb-live-mobile-nav-toggle{display:grid}
+.fb-site-frame[data-public-asset].mobile .fb-live-page-nav{height:50px;gap:8px;padding:0 10px}
+.fb-site-frame[data-public-asset].mobile .fb-live-wordmark{font-size:14px}
+.fb-site-frame[data-public-asset] button[aria-busy=true]{cursor:wait;opacity:.65}

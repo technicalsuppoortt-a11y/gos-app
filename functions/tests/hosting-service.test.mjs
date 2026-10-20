@@ -90,3 +90,18 @@ test('deletion removes the dedicated live site before removing the workspace ass
   assert.equal(h.calls[0][0], 'deleteSite'); assert.equal(h.records.has('tenants/tenant-a/assets/asset'), false);
   assert.equal(h.records.get('tenants/tenant-a/domains/domain').status, 'Disconnected');
 });
+
+
+test('publication embeds a capture capability while keeping its verifier and allowed forms on the server', async () => {
+  const row = asset(); row.document.pages[0].sections.push({ id: 'form', type: 'Form', content: { fields: '["Name","Email"]' } });
+  const h = fixture({ 'tenants/tenant-a/assets/asset': row });
+  await publishAssetRequest({ data: { assetId: 'asset' } }, h.deps);
+  const html = h.calls.find(call => call[0] === 'deploy')[2]['/index.html'];
+  const match = html.match(/<script id="gos-publication-data" type="application\/json">([\s\S]*?)<\/script>/);
+  const data = JSON.parse(match[1]);
+  assert.equal(data.capture.tenantId, 'tenant-a'); assert.equal(data.capture.captureToken.length, 43);
+  const state = h.records.get('tenants/tenant-a/hosting/asset');
+  assert.equal(state.captureTokenHash, createHash('sha256').update(data.capture.captureToken).digest('hex'));
+  assert.deepEqual(state.captureForms, [{ pageId: 'home', formId: 'form', step: 'Home' }]);
+  assert.ok(!html.includes('captureTokenHash'));
+});

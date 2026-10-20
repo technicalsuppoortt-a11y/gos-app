@@ -7,4 +7,4 @@ import './index.css';
 import './pages/asset-workspace.css';
 
 const data = JSON.parse(document.getElementById('gos-publication-data')?.textContent || '{}');
-createRoot(document.getElementById('root')!).render(<Provider store={store}>{data.asset ? <PublishedPage asset={data.asset} pageId={data.pageId}/> : <p>This page has not been published.</p>}</Provider>);
+createRoot(document.getElementById('root')!).render(<Provider store={store}>{data.asset ? <PublishedPage asset={data.asset} pageId={data.pageId} capture={data.capture}/> : <p>This page has not been published.</p>}</Provider>);

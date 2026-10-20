@@ -1,3 +1,4 @@
+import { captureAssetLeadRequest } from './lead-capture.js';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
@@ -41,7 +42,8 @@ function audit(root, user, type, resourceId, extra = {}) {
 function hostingClient() {
   return createHostingClient({ projectId: hostingProject.value(), token: async () => (await applicationDefault().getAccessToken()).access_token });
 }
-export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value() }));
+export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value(), projectId: hostingProject.value() }));
+export const captureAssetLead = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => captureAssetLeadRequest(request, { workspace, db }));
 export const hostingDomain = onCall({ timeoutSeconds: 180 }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));
 export const deleteWorkspaceAsset = onCall({ timeoutSeconds: 180 }, request => deleteAssetRequest(request, { workspace, db, hosting: hostingClient() }));
 export const activateUser = onCall(request => completeUserActivation(request, { db, auth }));

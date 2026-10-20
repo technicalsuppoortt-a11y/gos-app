@@ -6,7 +6,7 @@ export function normalizePagePath(path) {
   if (typeof path !== 'string' || !/^\/(?:[a-z0-9_-]+\/?)*$/i.test(path)) throw new Error('Every page needs a valid URL path beginning with /.');
   return path.replace(/\/+$/, '') || '/';
 }
-export function buildPublicationFiles(asset, template, appOrigin, localResources = false) {
+export function buildPublicationFiles(asset, template, appOrigin, localResources = false, capture) {
   if (!template.includes('id="gos-publication-data"') || !template.includes('type="module"')) throw new Error('Deploy the published-page frontend entry before publishing assets.');
   const origin = new URL(appOrigin).origin;
   if (!origin.startsWith('https://')) throw new Error('Configure a secure application origin.');
@@ -31,7 +31,7 @@ export function buildPublicationFiles(asset, template, appOrigin, localResources
     // Other pages need only routing metadata in this file; their content is
     // embedded in their own immutable HTML. Avoid duplicating large trees.
     const pageAsset = { ...publicAsset, document: { ...publicAsset.document, pages: publicAsset.document.pages.map(item => item.id === page.id ? item : { id: item.id, name: item.name, path: item.path }) } };
-    const data = JSON.stringify({ asset: pageAsset, pageId: page.id }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    const data = JSON.stringify({ asset: pageAsset, pageId: page.id, ...(capture ? { capture } : {}) }).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const html = template.replace(/<script id="gos-publication-data" type="application\/json">[\s\S]*?<\/script>/, () => `<script id="gos-publication-data" type="application/json">${data}</script>`)
       .replace('<head>', localResources ? '<head>' : `<head><base href="${origin}/">`)
       .replace(/\b(src|href)="\/assets\//g, localResources ? '$1="/assets/' : `$1="${origin}/assets/`)
