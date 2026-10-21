@@ -1,3 +1,7 @@
+import { selectUnifiedCRMLeads } from '../store/crmSelectors';
+import { CRMActionBoundary } from './crm/CRMActions';
+import { useCRMActions } from './crm/useCRMActions';
+import { APIQADialog } from './crm/APIQADialog';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useEffect, useRef, useState } from "react";
 import {
@@ -6,7 +10,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   Activity,
   ArrowDownUp,
@@ -28,10 +32,8 @@ import {
   Users,
   Workflow,
 } from "lucide-react";
-import { gosApi } from '../backend/gosApi';
-import { dispatchGosCRM, refreshGosCRM, useGosCRM, exportGosCRM, installGosPreset } from '../backend/gosCRM';
-import { showToast } from '../utils/toast';
-import type { AppDispatch, RootState } from "../store";
+import { dispatchGosCRM, bulkGosCRM, useGosCRM, exportGosCRM, installGosPreset } from '../backend/gosCRM';
+import type { RootState } from "../store";
 import {
   deleteLeads,
   moveLead,
@@ -86,14 +88,17 @@ const tabs = [
 export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   useUILanguage();
   const api = useGosCRM();
-  const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => dispatchGosCRM(action).catch(() => undefined);
+  const actions = useCRMActions();
+  const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => actions.run(() => dispatchGosCRM(action));
   const navigate = useNavigate();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const { leads, pipelines } = useSelector((s: RootState) => s.crm);
+  const { pipelines: storedPipelines } = useSelector((s: RootState) => s.crm);
+  const leads = useSelector(selectUnifiedCRMLeads);
+  const pipelines = storedPipelines.filter(p => !p.archived);
   const pipeline =
     pipelines.find((p) => p.id === params.get("pipeline")) ?? pipelines[0];
-  const exportCSV = (rows: typeof leads) => exportGosCRM(rows, pipeline.id);
+  const exportCSV = (rows: typeof leads) => actions.run(() => exportGosCRM(rows, pipeline.id));
   const tab =
     params.get("tab") ||
     (location.pathname.split("/").at(-1) === "crm"
@@ -109,7 +114,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   useEffect(() => {
     if (!filtersOpen) return;
     const outside = (event: PointerEvent) => {
-      if (!filterRef.current?.contains(event.target as Node))
+      if (!(event.target instanceof Element && event.target.closest('.crm-select-content')) && !filterRef.current?.contains(event.target as Node))
         setFiltersOpen(false);
     };
     const escape = (event: KeyboardEvent) => {
@@ -137,7 +142,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   const [dragged, setDragged] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [dialog, setDialog] = useState<
-    "add" | "settings" | "import" | "bulk" | "delete" | "template" | null
+    "add" | "settings" | "import" | "bulk" | "delete" | "template" | "qa" | null
   >(null);
   const [addStage, setAddStage] = useState(pipeline.stages[0].id);
   const [selected, setSelected] = useState<string[]>([]);
@@ -215,7 +220,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
         (!filters.tag || (lead.tags || []).includes(filters.tag)) &&
         (!filters.owner || lead.owner === filters.owner) &&
         (!filters.stage || displayStage(lead, pipeline) === filters.stage) &&
-        (filters.status !== "followup" || Boolean(lead.nextFollowUp)) &&
+        (filters.status !== "followup" || Boolean(lead.nextFollowUp || lead.nextFollowUpAt)) &&
         (filters.status !== "qualified" ||
           lead.qualificationStatus === "Qualified")
       );
@@ -233,9 +238,9 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   const pageContacts = visible.slice(contactStart, contactStart + rowsPerPage);
   const filterCount = Object.values(filters).filter(Boolean).length;
   const chosen = selected.filter((id) => visible.some((l) => l.id === id));
-  const close = () => setDialog(null);
+  const close = () => { if (!actions.busy) setDialog(null); };
   const openLead = (id: string) =>
-    navigate(`${base}/contacts/${encodeURIComponent(id)}`);
+    navigate(`${base}/opportunities/${encodeURIComponent(id)}`);
   const newLead = (stage = pipeline.stages[0].id) => {
     setAddStage(stage);
     setDialog("add");
@@ -254,8 +259,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     setParams(next);
   };
   const runBulk = async () => {
-    try { await gosApi.bulkLeads(chosen, bulkAction as 'tag' | 'owner' | 'stage', bulkValue.trim()); await refreshGosCRM(); notify(chosen.length + ' contacts updated.'); setSelected([]); close(); }
-    catch (e) { showToast.error((e as Error).message); }
+    await actions.run(async () => { await bulkGosCRM(chosen, bulkAction as 'tag' | 'owner' | 'stage', bulkValue.trim()); notify(chosen.length + ' contacts updated.'); setSelected([]); close(); });
   };
   const allTasks = active.flatMap((l) =>
     (l.tasks ?? []).map((t) => ({ ...t, lead: l })),
@@ -305,10 +309,11 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                   : [
                       ...new Set(
                         pipelineLeads.flatMap((l) =>
-                          field === "tag" ? l.tags : [l[field]],
+                          field === "tag" ? l.tags || [] : [l[field]],
                         ),
                       ),
                     ]
+                      .filter(Boolean)
                       .sort()
                       .map((val) => ({
                         value: val as string,
@@ -322,7 +327,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     </div>
   );
   return (
-    <div className="flex flex-col overflow-hidden crm2-page crm-workspace crm-pipeline-workspace">
+    <CRMActionBoundary busy={actions.busy || api.loading}><div className="flex flex-col overflow-hidden crm2-page crm-workspace crm-pipeline-workspace">
       {api.error && <p className="crm-error" role="alert">{api.error} <button onClick={api.retry}>Retry</button></p>}
       {api.loading && <span className="sr-only" role="status" aria-live="polite">{translateText("Loading CRM…")}</span>}
       <header className="crm2-header">
@@ -349,7 +354,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             aria-label={translateText("Pipeline selector")}
             value={pipeline.id}
             onChange={(val) => {
-              setParams({ pipeline: val });
+              setParams(previous => { const next = new URLSearchParams(previous); next.set("pipeline", val); return next; });
               resetFilters();
               setSelected([]);
             }}
@@ -668,7 +673,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                         </td>
                         <td className="text-start">
                           <Link
-                            to={`${base}/contacts/${lead.id}`}
+                            to={`${base}/opportunities/${encodeURIComponent(lead.id)}`}
                             className="crm-table-person"
                           >
                             <CRMAvatar lead={lead} />
@@ -812,7 +817,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     onClick={async () => {
                       const id = crypto.randomUUID();
                       const presetIndex = templates.findIndex(item => item.name === template.name);
-                      const saved = presetIndex >= 0 ? await installGosPreset(['new-lead', 'service-business', 'consultation-booking', 'sales-high-ticket', 'follow-up'][presetIndex]) : await dispatch(
+                      const saved = presetIndex >= 0 ? await actions.run(() => installGosPreset(['new-lead', 'service-business', 'consultation-booking', 'sales-high-ticket', 'follow-up'][presetIndex])) : await dispatch(
                         savePipeline({
                           id,
                           name: template.name,
@@ -898,41 +903,27 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
           </div>
           <form
             className="crm-task-form crm-task-quick-add"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              const lead = active.find((l) => l.id === taskLead)!;
-              dispatch(
-                updateLead({
-                  id: lead.id,
-                  changes: {
-                    tasks: [
-                      ...(lead.tasks ?? []),
-                      {
-                        id: crypto.randomUUID(),
-                        title: taskTitle.trim(),
-                        due: taskDue,
-                        done: false,
-                      },
-                    ],
-                  },
-                }),
-              );
-              setTaskTitle("");
-              notify("Task created.");
+              const lead = active.find((l) => l.id === taskLead);
+              if (!lead || !taskTitle.trim() || !taskDue || actions.busy) return;
+              const saved = await dispatch(updateLead({ id: lead.id, changes: { tasks: [...(lead.tasks ?? []), { id: crypto.randomUUID(), title: taskTitle.trim(), due: taskDue, done: false }] } }));
+              if (saved) { setTaskTitle(""); notify("Task created."); }
             }}
           >
+            <input type="text" aria-label={translateText("Task title")} className="crm-task-title" placeholder={translateText("Task content / title")} value={taskTitle} onChange={e => setTaskTitle(e.target.value)} required/>
             <CustomSelect
-              className="w-[180px]"
+              className="crm-task-contact"
               aria-label={translateText("Task contact")}
               value={taskLead}
               onChange={(val) => setTaskLead(val)}
               options={[
-                { value: "", label: "Choose contact" },
+                { value: "", label: "Select contact" },
                 ...active.map((l) => ({ value: l.id, label: l.name })),
               ]}
             />
             <CustomDatePicker
-              className="w-[130px]"
+              className="crm-task-date"
               aria-label={translateText("Task due date")}
               value={taskDue}
               onChange={(val) => setTaskDue(val)}
@@ -1148,8 +1139,9 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
         />
       ))}
       {localizeNode(dialog === "settings" && (
-        <SettingsDialog pipeline={pipeline} close={close} notify={notify} />
+        <SettingsDialog pipeline={pipeline} close={close} notify={notify} onQA={() => setDialog("qa")} />
       ))}
+      {dialog === "qa" && <APIQADialog pipelineId={pipeline.id} leadId={chosen[0] || visible[0]?.id} close={close}/>}
       {localizeNode(dialog === "import" && (
         <ImportDialog pipeline={pipeline} close={close} notify={notify} />
       ))}
@@ -1223,6 +1215,6 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
           </div>
         </Dialog>
       ))}
-    </div>
+    </div></CRMActionBoundary>
   );
 }

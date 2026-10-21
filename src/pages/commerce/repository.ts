@@ -2,7 +2,7 @@ import { cloudStorage } from '../../backend/workspace';
 
 import { useSyncExternalStore } from 'react';
 
-import { defaultConfig, formatPrice, hydrateProduct, validateProduct } from './model';
+import { defaultConfig, formatPrice, hydrateProduct, mergeProductChanges, validateProduct } from './model';
 import type { Product } from './model';
 import { store } from '../../store';
 
@@ -27,7 +27,21 @@ if (typeof window !== 'undefined') window.addEventListener('storage', event => {
 export function useProducts() {
   return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, () => products, () => products);
 }
-export function saveProduct(product: Product): Product {
+let pendingWrite: Promise<unknown> = Promise.resolve();
+function commit<T>(change: (current: Product[]) => { next: Product[]; result: T }): Promise<T> {
+  const scope = key;
+  const operation = pendingWrite.catch(() => {}).then(async () => {
+    if (storageKey() !== scope) throw new Error('Your workspace changed. Open the product again before saving.');
+    const { next, result } = change(read(scope));
+    await cloudStorage.setItem(scope, JSON.stringify(next));
+    if (storageKey() !== scope) throw new Error('Your workspace changed while saving.');
+    if (storageKey() === scope) { products = next; listeners.forEach(fn => fn()); }
+    return result;
+  });
+  pendingWrite = operation;
+  return operation;
+}
+export async function saveProduct(product: Product, baseline?: Product): Promise<Product> {
   const errors = validateProduct(product);
   if (errors.length) throw new Error(errors.join(' '));
   const normalized = hydrateProduct(product);
@@ -36,25 +50,27 @@ export function saveProduct(product: Product): Product {
   if (config.experience) config.experience = { ...config.experience, updatedAt: new Date().toISOString() };
   const saved = { ...normalized, id: product.id || `product-${crypto.randomUUID()}`, name: product.name.trim(), tag: normalized.type,
     createdAt: product.createdAt ?? new Date().toISOString(), config, price: formatPrice(config) };
-  const next = products.some(p => p.id === saved.id) ? products.map(p => p.id === saved.id ? saved : p) : [saved, ...products];
-  try { cloudStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be saved. Browser storage is unavailable or full.'); }
-  products = next;
-  listeners.forEach(fn => fn());
-  return saved;
+  try { return await commit(current => {
+    const latest = current.find(row => row.id === saved.id);
+    if (baseline?.id && !latest) throw new Error('This product no longer exists. Reopen the catalog before saving.');
+    const merged: Product = latest && baseline ? mergeProductChanges(baseline, saved, latest) : saved;
+    const errors = validateProduct(merged, merged.status === 'Active');
+    if (errors.length) throw new Error(errors.join(' '));
+    return { next: latest ? current.map(p => p.id === saved.id ? merged : p) : [merged, ...current], result: merged };
+  }); }
+  catch (cause) { throw new Error(`Product could not be saved. ${cause instanceof Error ? cause.message : 'Please try again.'}`); }
 }
-export function duplicateProduct(product: Product, version = false): Product {
+export async function duplicateProduct(product: Product, version = false): Promise<Product> {
   const clone = hydrateProduct(structuredClone(product));
   const experience = clone.config!.experience!;
   experience.parentId = version ? product.id : '';
   experience.version = version ? experience.version + 1 : 1;
   clone.id = ''; clone.createdAt = undefined; clone.status = 'Draft'; clone.sales = '0'; clone.revenue = '€0'; clone.stats = [['sales', '0 sales']];
   clone.name = version ? `${product.name} · v${experience.version}` : `${product.name} (Copy)`;
-  clone.config!.salesUrl = ''; clone.config!.students = []; clone.config!.orders = []; clone.config!.activities = [];
+  clone.config!.salesUrl = ''; clone.config!.students = []; clone.config!.orders = []; clone.config!.activities = []; clone.config!.lessonViews = {};
   return saveProduct(clone);
 }
-export function deleteProduct(id: string) {
-  const next = products.filter(product => product.id !== id);
-  try { cloudStorage.setItem(key, JSON.stringify(next)); } catch { throw new Error('Product could not be deleted. Browser storage is unavailable.'); }
-  products = next;
-  listeners.forEach(fn => fn());
+export async function deleteProduct(id: string) {
+  try { await commit(current => ({ next: current.filter(product => product.id !== id), result: undefined })); }
+  catch (cause) { throw new Error(`Product could not be deleted. ${cause instanceof Error ? cause.message : 'Please try again.'}`); }
 }

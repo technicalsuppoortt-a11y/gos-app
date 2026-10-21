@@ -12,7 +12,7 @@ export class GosApiError extends Error {
 }
 
 export function createGosTransport(baseUrl: string, token: TokenProvider, fetcher: typeof fetch = fetch) {
-  return async function request<T>(path: string, options: { method?: string; body?: unknown; signal?: AbortSignal; public?: boolean; csv?: boolean } = {}): Promise<T> {
+  return async function request<T>(path: string, options: { method?: string; body?: unknown; signal?: AbortSignal; public?: boolean; csv?: boolean; onResponse?: (status: number) => void } = {}): Promise<T> {
     const controller = new AbortController();
     const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
     const timeout = setTimeout(() => controller.abort(), 45000);
@@ -33,6 +33,8 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
           throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the GOS API. Check your connection and try again.');
         }
         if (response.status === 401 && !options.public && attempt === 0) continue;
+        options.onResponse?.(response.status);
+        if (response.status === 204 && response.ok) return undefined as T;
         if (options.csv && response.ok) return await response.text() as T;
         const payload = await response.json().catch(() => null);
         if (!response.ok || payload?.success === false) {

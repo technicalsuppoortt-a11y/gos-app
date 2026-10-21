@@ -1,5 +1,6 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useState } from 'react';
+import { useProducts } from './repository';
 import { useNavigate } from 'react-router-dom';
 import { Check, CreditCard, LockKeyhole, ShieldCheck, Loader2 } from 'lucide-react';
 import type { Billing, Product } from './model';
@@ -14,7 +15,11 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
   const c = product.config!;
   const e = c.experience ?? defaultExperience();
   const kind = productKind(product.type);
-  const totals = checkoutTotals(product, billing);
+  const products = useProducts();
+  const [acceptedTerms, setAcceptedTerms] = useState(false), [bumpSelected, setBumpSelected] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const bump = e.checkout.bumpEnabled && products.find(item => item.id === e.checkout.bumpProductId && item.status === 'Active' && item.config?.currency === c.currency);
+  const totals = checkoutTotals(product, billing, bumpSelected && bump ? bump.config?.amount : 0, couponCode);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethod, setMethod] = useState(e.paymentMethods[0] ?? '');
@@ -156,13 +161,16 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
                 </button>
               </div>
             ))}
-            <small>{translateText("Interactive payment simulation. Charges will be recorded into your dashboard transactions.")}</small>
+            <small>{translateText("Checkout preview. Payments require a connected payment provider.")}</small>
           </fieldset>
+          {bump && <label><input type="checkbox" checked={bumpSelected} onChange={event => setBumpSelected(event.target.checked)}/>{bump.name} · {money(bump.config!.amount)}</label>}
+          {e.coupon.enabled && <label>{translateText('Discount code')}<input value={couponCode} onChange={event => setCouponCode(event.target.value)}/></label>}
+          {e.checkout.requireTerms && <label><input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)}/>{translateText('I agree to the terms and privacy policy')}{e.checkout.termsUrl && <a href={e.checkout.termsUrl} target="_blank" rel="noreferrer">{translateText('Terms')}</a>}{e.checkout.privacyUrl && <a href={e.checkout.privacyUrl} target="_blank" rel="noreferrer">{translateText('Privacy policy')}</a>}</label>}
 
           <button
             className="cp-primary"
             type="submit"
-            disabled={!e.paymentMethods.length || isSubmitting}
+            disabled={!e.paymentMethods.length || isSubmitting || !!e.checkout.requireTerms && !acceptedTerms}
             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             {isSubmitting ? (
@@ -210,7 +218,7 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
             <b>{localizeNode(money(totals.dueToday))}</b>
           </div>
           {localizeNode(totals.selected === 'Payment plan' && (
-            <p>{localizeNode(c.installments)}{translateText(" payments of ")}{localizeNode(money(totals.total))} · {localizeNode(e.paymentInterval.toLowerCase())}{translateText(" · Total including tax ")}{localizeNode(money(totals.total * c.installments))}</p>
+            <p>{localizeNode(c.installments)}{translateText(" payments of ")}{localizeNode(money(totals.total))} · {localizeNode(e.paymentInterval.toLowerCase())}{translateText(" · Total including tax ")}{localizeNode(money(totals.total * c.installments + totals.bumpTotal))}</p>
           ))}
           {localizeNode(totals.selected === 'Subscription' && (
             <p>{translateText("Renews ")}{localizeNode(c.frequency.toLowerCase())}{translateText(" at ")}{localizeNode(money(totals.total))}{localizeNode(c.trialDays ? ` · ${c.trialDays}-day trial configured` : '')}</p>

@@ -53,7 +53,7 @@ export function CourseCurriculum(props: FormProps) {
   const [uploading, setUploading] = useState(false), [lessonError, setLessonError] = useState('');
   const dragged = useRef<{ module: number; lesson?: number } | null>(null);
   function toggle(title: string) { setExpanded(current => { const next = new Set(current); if (next.has(title)) next.delete(title); else next.add(title); return next; }); }
-  function addModule() { const title = `Module ${c.modules.length + 1}: Untitled`; configure({ modules: [...c.modules, { title, lessons: [] }] }); setExpanded(current => new Set([...current, title])); }
+  function addModule() { const title = `Module ${c.modules.length + 1}: Untitled`; configure({ modules: [...c.modules, { id: crypto.randomUUID(), title, lessons: [] }] }); setExpanded(current => new Set([...current, title])); }
   function openLesson(module: number, index: number) { setMenu(null); setLessonError(''); setLessonEditor({ module, index, lesson: index < c.modules[module].lessons.length ? { ...lessonData(c.modules[module].lessons[index], index) } : { id: crypto.randomUUID(), title: '', kind: 'Video', duration: '', url: '' } }); }
   function saveLesson() {
     if (!lessonEditor || uploading) return;
@@ -85,7 +85,7 @@ export function CourseCurriculum(props: FormProps) {
   return <Card title={translateText("Course Content")} subtitle="Organize your course into modules and lessons. Drag and drop to reorder." className="course-builder-card" action={editing && <div className="course-builder-actions"><button className="cw-button small" onClick={addModule}><Plus size={12}/>{translateText("Add Module")}</button><button className="cw-button small" disabled={!c.modules.length} onClick={() => openLesson(currentModule, c.modules[currentModule].lessons.length)}><Plus size={12}/>{translateText("Add Lesson")}</button></div>}>
     <div className="ce-learning-progress"><div><b>{translateText("Lesson preview progress")}</b><span>{localizeNode(completeCount)}/{localizeNode(lessonIds.length)}{translateText(" lessons · ")}{localizeNode(progress)}%</span></div><progress aria-label={translateText("Lesson preview completion")} max={100} value={progress}/><small>{translateText("Preview completion is remembered for this browser session.")}</small></div>
     {localizeNode(!c.modules.length && <button className="cw-button" onClick={addModule}><Plus size={13}/>{translateText("Add your first module")}</button>)}
-    <div className="course-module-list">{localizeNode(c.modules.map((module, i) => <section className="course-module" key={`${i}-${module.title}`}>
+    <div className="course-module-list">{localizeNode(c.modules.map((module, i) => <section className="course-module" key={module.id || i}>
       <div className="course-module-row" onDragOver={event => { if (editing) event.preventDefault(); }} onDrop={event => { event.preventDefault(); reorder(i); }}>
         <span className="course-drag" draggable={editing} title={translateText("Drag to reorder module")} onDragStart={event => { dragged.current = { module: i }; event.dataTransfer.effectAllowed = 'move'; }} onDragEnd={() => { dragged.current = null; }}><GripVertical size={13}/></span>
         <button className="course-module-toggle" aria-expanded={expanded.has(module.title)} aria-controls={`course-module-${i}`} onClick={() => toggle(module.title)}><Folder size={18}/><b>{localizeNode(module.title)}</b><small>{localizeNode(module.lessons.length)}{translateText(" lessons")}</small><ChevronDown size={12} className={expanded.has(module.title) ? 'expanded' : ''}/></button>

@@ -6,6 +6,7 @@ import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, Cr
 import type { FormProps } from './TypeForms';
 import type { WorkspaceTab } from './views';
 import { Card, Description, Dialog, Field, RichDescription, Select, Status, Toggle } from './primitives';
+import { readMembers } from '../booking/model';
 
 export function ServiceInformation({ product: p, experience: e, editing, update, customize }: FormProps) {
   useUILanguage();
@@ -20,7 +21,7 @@ export function ServiceDescription({ product, editing, update }: Pick<FormProps,
 export function ProviderSelect({ experience: e, editing, customize }: Pick<FormProps, 'experience' | 'editing' | 'customize'>) {
   useUILanguage();
   const [manual, setManual] = React.useState(false);
-  const providers = Array.from(new Set(['Dr. Ahmed Nasser', 'Mohamed Joe', ...(e.provider ? [e.provider] : [])]));
+  const providers = Array.from(new Set([...readMembers().filter(m => m.status === 'Active').map(m => m.name), ...(e.provider ? [e.provider] : [])]));
   const avatar = (name: string) => <span className="sw-provider-avatar" aria-hidden="true">{localizeNode(e.instructor.name === name && e.instructor.image ? <img src={e.instructor.image} alt={translateText("")}/> : name.replace(/^Dr\.\s*/, '').split(' ').map(word => word[0]).slice(0, 2).join('') || <UserRound size={12}/>)}</span>;
   return <><Field label="Team Member / Provider"><RadixSelect.Root dir={uiDirection()} disabled={!editing} value={manual ? '__custom' : e.provider || '__unassigned'} onValueChange={value => { setManual(value === '__custom'); if (value !== '__custom') customize({ provider: value === '__unassigned' ? '' : value }); }}><RadixSelect.Trigger className="commerce-select-trigger sw-provider-trigger" aria-label={translateText("Team Member / Provider")}>{localizeNode(avatar(e.provider))}<RadixSelect.Value><span className="sw-provider-copy"><b>{localizeNode(manual ? 'Custom provider…' : e.provider || 'Assign a provider')}</b>{localizeNode(e.provider && <small>{localizeNode(e.provider.startsWith('Dr.') ? 'Service specialist' : 'Team member')}</small>)}</span></RadixSelect.Value><RadixSelect.Icon><ChevronDown size={12}/></RadixSelect.Icon></RadixSelect.Trigger><RadixSelect.Portal><RadixSelect.Content className="commerce-select-content" position="popper" sideOffset={4}><RadixSelect.Viewport>{localizeNode([{ value: '__unassigned', name: 'Assign a provider' }, ...providers.map(name => ({ value: name, name })), { value: '__custom', name: 'Custom provider…' }].map(({ value, name }) => <RadixSelect.Item className="commerce-select-item sw-provider-option" key={value} value={value} textValue={translateText(name)}>{localizeNode(avatar(name))}<RadixSelect.ItemText>{localizeNode(name)}</RadixSelect.ItemText><RadixSelect.ItemIndicator><Check size={12}/></RadixSelect.ItemIndicator></RadixSelect.Item>))}</RadixSelect.Viewport></RadixSelect.Content></RadixSelect.Portal></RadixSelect.Root></Field>{localizeNode(manual && <Field label="Provider name"><input value={e.provider} placeholder={translateText("Enter provider name")} onChange={event => customize({ provider: event.target.value })}/></Field>)}</>;
 }

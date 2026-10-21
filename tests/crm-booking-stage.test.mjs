@@ -13,6 +13,7 @@ function loadTS(path, mocks = {}) {
   }, console, AbortController, setTimeout, clearTimeout, Headers, FormData, fetch, AbortSignal });
   return exports;
 }
+const crmModel = loadTS('../src/pages/crm/model.ts');
 const { GosApiError } = loadTS('../src/backend/gosTransport.ts');
 const action = type => Object.assign(payload => ({ type, payload }), { type });
 
@@ -24,7 +25,7 @@ function harness({ lookup = { lead: { id: 'booking-1' } }, stageError, writeErro
   const { dispatchGosCRM } = loadTS('../src/backend/gosCRM.ts', {
     react: {}, './gosTransport': { GosApiError }, './firebase': { db: {} },
     '../utils/toast': { showToast: { error: message => toasts.push(message) } },
-    '../pages/crm/model': { makeLead: row => row }, '../store/slices/crmSlice': actions,
+    '../pages/crm/model': crmModel, '../store/slices/crmSlice': actions,
     '../store': { store: { getState: () => state, dispatch: a => { dispatched.push(a); return a; } } },
     'firebase/firestore': {
       doc: (_, ...parts) => parts.join('/'), getDoc: async ref => { calls.push(['getDoc', ref]); return { exists: () => exists }; },
@@ -50,7 +51,7 @@ for (const lookup of [new GosApiError('Lead not found', 404, 'lead_not_found'), 
     assert.equal(h.calls[2][1], 'tenants/tenant-a/leads/booking-1');
     assert.equal(h.calls[2][2].lifecycleStage, 'QUALIFIED');
     assert.equal(h.calls[2][2].stage, 'QUALIFIED');
-    assert.equal(h.dispatched[0].type, 'crm/moveLead');
+    assert.ok(h.dispatched.some(action => action.type === 'crm/moveLead'));
     assert.equal(h.toasts.length, 0);
   });
 }

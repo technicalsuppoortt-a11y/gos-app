@@ -1,5 +1,5 @@
 import { auth } from './firebase';
-import { createGosTransport } from './gosTransport';
+import { createGosTransport, GosApiError } from './gosTransport';
 
 export const gosRequest = createGosTransport(import.meta.env.VITE_GOS_API_BASE_URL || 'https://gos-api.vercel.app', async refresh => {
   await auth.authStateReady();
@@ -36,7 +36,18 @@ export const gosApi = {
   createPipeline: (body: ApiRecord) => gosRequest('/crm/pipelines', { method: 'POST', body }),
   updatePipeline: (pipelineId: string, body: ApiRecord) => gosRequest(`/crm/pipelines/${id(pipelineId)}`, { method: 'PUT', body }),
   leads: (pipelineId?: string, signal?: AbortSignal) => gosRequest<{ leads: ApiRecord[] }>(`/crm/leads${pipelineId ? `?pipeline_id=${id(pipelineId)}` : ''}`, { signal }),
-  lead: (leadId: string) => gosRequest(`/crm/leads/${id(leadId)}`),
+  lead: async (leadId: string, signal?: AbortSignal): Promise<{ lead: ApiRecord | null; leads?: ApiRecord[] }> => {
+    try {
+      const result = await gosRequest<{ lead: ApiRecord }>('/crm/leads/' + id(leadId), { signal });
+      if (!result.lead || result.lead.id !== leadId) throw new Error('The GOS API returned a mismatched contact ID.');
+      return result;
+    }
+    catch (error) {
+      if (!(error instanceof GosApiError) || error.status !== 404 || error.code !== 'lead_not_found') throw error;
+      // The CRM data layer resolves this ID from its tenant-scoped Firestore document.
+      return { lead: null };
+    }
+  },
   createLead: (body: ApiRecord) => gosRequest('/crm/leads', { method: 'POST', body }),
   updateLead: (leadId: string, body: ApiRecord) => gosRequest(`/crm/leads/${id(leadId)}`, { method: 'PATCH', body }),
   moveLead: (leadId: string, lifecycle_stage: string) => gosRequest(`/crm/leads/${id(leadId)}/stage`, { method: 'POST', body: { lifecycle_stage } }),

@@ -48,7 +48,7 @@ let loaded = false;
 const revisions = new Map<string, number>();
 const entityCollections = ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'assets', 'domains', 'copilotConversations', 'members', 'userTemplates'] as const;
 function entityFor(key: string): string | undefined {
-  if (key.startsWith('gos-commerce-products-v1:') && !key.includes(':preview:')) return 'products';
+  if (key.startsWith('gos-commerce-products-v1:') && !key.includes(':preview:') && !key.endsWith(':settings') && !key.endsWith(':order-drafts')) return 'products';
   return ({ 'gos.booking-links.v1': 'calendars', 'gos.booking.appointments.v2': 'bookings', 'gos.booking.contacts.v2': 'contacts', 'gos-crm-leads-v1': 'leads', 'gos-crm-pipelines-v1': 'pipelines', 'gos.inbox.conversations.v1': 'conversations', 'gos.ai-followup.workflows.v1': 'workflows', 'gos.ai-followup.knowledge.v1': 'knowledge', 'gos.ai-followup.templates.v1': 'templates', 'gos-discounts-v1': 'discounts', 'gos-commerce-transactions': 'transactions' } as Record<string, string>)[key] ?? (key.startsWith('entity:') ? key.slice(7) : undefined);
 }
 const cacheKey = (key: string) => entityFor(key) ? `entity:${entityFor(key)}` : key;
@@ -183,7 +183,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     });
     const hydrate = () => {
       hydrating = true;
-      store.dispatch(hydrateCRM({ leads: readCloud<CanonicalLead[]>('gos-crm-leads-v1', []), pipelines: readCloud<Pipeline[]>('gos-crm-pipelines-v1', []) }));
+      store.dispatch(hydrateCRM({ leads: readCloud<CanonicalLead[]>('gos-crm-leads-v1', []), pipelines: readCloud<Pipeline[]>('gos-crm-pipelines-v1', []), workspaceScope: scope }));
       crmState = store.getState().crm; hydrating = false;
     };
     let unsubscribers: (() => void)[] = [];

@@ -1,4 +1,7 @@
 import { captureAssetLeadRequest } from './lead-capture.js';
+import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
+import { fulfillCommerceOrder } from './commerce-orders.js';
+import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
@@ -24,6 +27,10 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 
 initializeApp();
 const db = getFirestore(), auth = getAuth();
+export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
+export const productAccess = onCall(request => productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] }));
+export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
+export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/transactions/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
 async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
@@ -405,3 +412,4 @@ export const pauseFollowUpOnConversationChange = onDocumentWritten('tenants/{ten
 export { phoenixPlatform } from './phoenix.js';
 export { publicBooking } from './public-booking.js';
 export { processScheduledActions } from './workers.js';
+export { processCommerceDeliveries } from './commerce-delivery.js';

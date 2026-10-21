@@ -161,3 +161,57 @@ Send prompt in one box in en
 1. جرب البحث باسم عميل أو التصفية بمصدر `Booking`.
 2. اضغط على `Pipeline Settings` وأضف مرحلة جديدة باسم `Negotiation`.
 3. **النتيجة المتوقعة:** ظهور العمود الجديد في الـ Kanban وإضافته لكروت النظرة العامة (Overview).
+
+===========================
+
+############ Products and Payment ###############
+- main overview
+    - Products
+    - Transactions
+    - Orders
+    - Customers
+    - Payments
+    - Discounts
+    - Settings
+- Templates
+- Course Product
+    - View
+        - View page
+        - Check out page
+    - Create / Edit
+        - Overview
+        - Content
+        - Pricing & Offers
+        - Checkout
+        - Funnel & Pages
+        - Automation
+        - Students
+        - Orders
+        - Analytics
+        - Settings
+
+- Service Product
+    - View
+        - View page
+        - Check out page
+    - Create/Edit
+        - Content
+        - Booking
+        - Pricing
+        - Checkout
+        - Funnel & Pages
+        - Automation
+        - Setting
+
+- Digital product 
+  - View
+    - View page
+    - Check out page
+  - Create/Edit
+    - Product Information
+    - Pricing & Payment
+    - Checkout
+    - Funnel & Pages
+    - Customer Access
+    - Automation
+

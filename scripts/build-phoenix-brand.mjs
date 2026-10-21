@@ -50,5 +50,45 @@ for (const file of files.sort()) {
   prune(root);
   output.push(root.toString());
 }
-await fs.writeFile('src/context/phoenix-brand-generated.css', `/* Generated from GOS styles with Phoenix color roles. */\n${output.join('\n')}`);
+const targetFile = path.join('src', 'context', 'phoenix-brand-generated.css');
+const newContent = `/* Generated from GOS styles with Phoenix color roles. */\n${output.join('\n')}`;
+
+async function writeSafely(target, data, maxRetries = 5) {
+  try {
+    const existing = await fs.readFile(target, 'utf8');
+    if (existing === data) return;
+  } catch {
+    // target does not exist yet
+  }
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await fs.writeFile(target, data);
+      return;
+    } catch (err) {
+      if (attempt === maxRetries) {
+        const tmpFile = `${target}.${Date.now()}.tmp`;
+        try {
+          await fs.writeFile(tmpFile, data);
+          try { await fs.unlink(target); } catch {}
+          await fs.rename(tmpFile, target);
+          return;
+        } catch {
+          try { await fs.unlink(tmpFile); } catch {}
+          try {
+            await fs.access(target);
+            console.warn(`[build-phoenix-brand] Warning: ${target} is locked by another process. Using existing generated styles.`);
+            return;
+          } catch {
+            throw err;
+          }
+        }
+      }
+      await new Promise(r => setTimeout(r, 100 * attempt));
+    }
+  }
+}
+
+await writeSafely(targetFile, newContent);
 console.log(`Generated Phoenix brand colors for ${files.length} stylesheets.`);
+

@@ -69,7 +69,7 @@ test('validation, malformed responses and network errors become usable errors', 
   await assert.rejects(offline('/ai/sources'), /Cannot reach the GOS API/);
 });
 test('supports CSV exports and cancellation', async () => {
-  const csv = createGosTransport('https://example.com', async () => 'token', async () => new Response('name,email\nSarah,sarah@example.com'));
+  const csv = createGosTransport('https://example.com', async () => 'token', async (_, options) => { assert.equal(options.headers.get('Accept'), 'text/csv'); return new Response('name,email\nSarah,sarah@example.com'); });
   assert.match(await csv('/crm/leads/export', { csv: true }), /^name,email/);
   const controller = new AbortController(); controller.abort();
   const api = createGosTransport('https://example.com', async () => 'token', async (_, { signal }) => { signal.throwIfAborted(); });
@@ -79,4 +79,11 @@ test('supports CSV exports and cancellation', async () => {
 test('API failures preserve status and machine-readable lead_not_found codes', async () => {
   const api = createGosTransport('https://example.com', async () => 'token', async () => Response.json({ error: { code: 'lead_not_found', message: 'Lead not found' } }, { status: 404 }));
   await assert.rejects(api('/crm/leads/booking-1'), error => error.status === 404 && error.code === 'lead_not_found' && error.message === 'Lead not found');
+});
+
+test('empty deletion responses and QA HTTP status reporting are supported', async () => {
+  const statuses = [];
+  const api = createGosTransport('https://example.com', async () => 'token', async () => new Response(null, { status: 204 }));
+  assert.equal(await api('/crm/pipelines/test', { method: 'DELETE', onResponse: status => statuses.push(status) }), undefined);
+  assert.deepEqual(statuses, [204]);
 });

@@ -1,8 +1,13 @@
+import { ProductAdvancedAction } from './ProductAdvancedAction';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useEntities } from '../../backend/workspace';
+import { configureProduct, customizeProduct, withLiveProductData } from './workspaceLogic';
 import { readWorkspacePreferences } from './workspacePreferences';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 import { Link, useBeforeUnload, useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, CheckCircle2, ChevronDown, Copy, CreditCard, ExternalLink, Eye, FileText, GitBranch, GraduationCap, Layers3, Link2, LockKeyhole, Package, Save, Send, Settings2, ShieldCheck, ShoppingCart, Sparkles, Tag, Users, Video, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, Copy, CreditCard, ExternalLink, Eye, FileText, GitBranch, Layers3, Link2, LockKeyhole, Package, Save, Send, Settings2, ShoppingCart, Sparkles, Tag, Users } from 'lucide-react';
 import { defaultConfig, defaultExperience, formatPrice, hydrateProduct, kindLabels, newProduct, productKind, validateProduct } from './model';
 import type { Billing, CommerceConfig, Product, ProductExperience, ProductKind } from './model';
 import { deleteProduct, duplicateProduct, saveProduct, storageKey, useProducts } from './repository';
@@ -23,7 +28,8 @@ import './service-workspace.css';
 import { ServiceSidebar } from './ServiceWorkspace';
 import { DigitalWorkspace } from './DigitalWorkspace';
 import './digital-workspace.css';
-import { sampleCourseModules } from './course-curriculum-data';
+import { applyProductPreset, type ProductPreset } from './productPresets';
+import { ProductPresetPicker } from './ProductPresetPicker';
 import { CourseMetrics, CourseOverview, CourseViewHeader } from './CourseWorkspace';
 
 import { useProductPreview } from './previewSnapshot';
@@ -46,7 +52,6 @@ function createDraft(kind?: ProductKind) {
   const p = newProduct();
   if (kind) { p.type = kindLabels[kind]; p.config = defaultConfig(p.type); }
   if (kind === 'service') p.config!.duration = 30;
-  if (kind === 'course') p.config!.modules = sampleCourseModules();
   const defaults = readWorkspacePreferences(storageKey());
   const config = p.config!;
   config.currency = defaults.currency as CommerceConfig['currency']; config.taxRate = defaults.taxRate;
@@ -56,57 +61,6 @@ function createDraft(kind?: ProductKind) {
     checkout: { ...config.experience!.checkout, guest: defaults.guestCheckout, collectInfo: defaults.collectName, requirePhone: defaults.requirePhone } };
   return hydrateProduct(p);
 }
-
-const PRESET_TEMPLATES = [
-  {
-    id: 'ebook',
-    name: 'The Modern Creator Playbook (eBook)',
-    kind: 'digital' as const,
-    label: 'Digital eBook',
-    badge: 'Quick Launch',
-    amount: 29,
-    period: '',
-    icon: BookOpen,
-    description: 'Instant PDF download with chapter action blueprints, license key, and automated delivery.',
-    features: ['Instant PDF delivery', 'Automated receipt', 'Download tracking']
-  },
-  {
-    id: 'coaching',
-    name: '1-on-1 Strategy & Coaching Session',
-    kind: 'service' as const,
-    label: '1-on-1 Coaching Session',
-    badge: 'High Touch',
-    amount: 150,
-    period: '',
-    icon: Video,
-    description: '60-minute private strategy consultation with integrated calendar booking and intake review.',
-    features: ['Calendar scheduling', 'Client intake form', 'Automated reminders']
-  },
-  {
-    id: 'subscription',
-    name: 'Growth Suite Pro Membership',
-    kind: 'digital' as const,
-    label: 'SaaS Subscription',
-    badge: 'Recurring MRR',
-    amount: 49,
-    period: '/mo',
-    icon: Zap,
-    description: 'Monthly recurring software or community subscription with automated Stripe recurring billing.',
-    features: ['Monthly recurring billing', 'Self-service cancel', 'Member portal']
-  },
-  {
-    id: 'masterclass',
-    name: 'Full-Stack Creator Video Masterclass',
-    kind: 'course' as const,
-    label: 'Video Masterclass',
-    badge: 'Comprehensive',
-    amount: 199,
-    period: '',
-    icon: GraduationCap,
-    description: 'Structured multi-module video course with student portal, downloadable assets, and certificates.',
-    features: ['6 HD video modules', 'Resource downloads', 'Student progress tracking']
-  }
-];
 
 const PIPELINE_STEPS = [
   {
@@ -172,6 +126,11 @@ const PIPELINE_STEPS = [
 ];
 
 export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit' | 'detail'; defaultTab?: WorkspaceTab }) {
+  const { id } = useParams();
+  const scope = useSelector((state: RootState) => state.auth.tenant?.id || state.auth.user?.id || 'demo');
+  return <ProductWorkspaceView key={`${scope}:${mode}:${id || 'new'}`} mode={mode} defaultTab={defaultTab}/>;
+}
+function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 'detail'; defaultTab?: WorkspaceTab }) {
   useUILanguage();
   const products = useProducts(), { id } = useParams(), navigate = useNavigate();
   const [activePipelineStep, setActivePipelineStep] = React.useState(0);
@@ -179,12 +138,10 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
   const existing = products.find(product => product.id === id), editing = true;
   const requestedType = types.find(type => type.kind === params.get('type'))?.kind;
   const [chosen, setChosen] = React.useState(mode !== 'create' || !!requestedType);
+  const [templateOpen, setTemplateOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<Product>(() => {
     if (!existing) return createDraft(requestedType);
     const initial = hydrateProduct(existing);
-    const modules = initial.config!.modules;
-    const legacyDemo = initial.id === 'ai-course' && modules.length === 1 && modules[0].title === 'Module 1: Introduction' && modules[0].lessons.length === 3 && modules[0].lessons.every((lesson, i) => typeof lesson !== 'string' && lesson.id === ['welcome', 'outcomes', 'tools'][i]);
-    if (mode === 'edit' && productKind(initial.type) === 'course' && (!modules.length || legacyDemo)) initial.config!.modules = sampleCourseModules();
     return initial;
   });
   const [baseline, setBaseline] = React.useState(() => JSON.stringify(draft));
@@ -193,22 +150,34 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
   const [pendingUploads, setPendingUploads] = React.useState(0), [pendingNavigation, setPendingNavigation] = React.useState('');
   const [courseMenu, setCourseMenu] = React.useState(false);
   const [saving, setSaving] = React.useState(false), [deleting, setDeleting] = React.useState(false);
+  const mutation = React.useRef(false);
+  const orderRows = useEntities<Record<string, any>>('orders'), transactionRows = useEntities<Record<string, any>>('transactions'), eventRows = useEntities<Record<string, any>>('events'), calendarRows = useEntities<Record<string, any>>('calendars');
+  React.useEffect(() => {
+    if (mode === 'create' || !existing) return;
+    setDraft(current => {
+      if (JSON.stringify(current) !== baseline) return current;
+      const next = hydrateProduct(existing), serialized = JSON.stringify(next);
+      if (serialized === baseline) return current;
+      setBaseline(serialized); return next;
+    });
+  }, [existing, mode, baseline]);
   const p = editing ? draft : existing ? hydrateProduct(existing) : draft;
   const c = p.config ?? defaultConfig(p.type, p.price), e = c.experience ?? defaultExperience();
   const kind = productKind(p.type), view = workspaceViews[kind];
+  const viewConfig = withLiveProductData(p, orderRows, transactionRows, eventRows, calendarRows);
   const dirty = editing && (JSON.stringify(draft) !== baseline || pendingUploads > 0);
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && currentLocation.pathname !== nextLocation.pathname);
   useBeforeUnload(React.useCallback(event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } }, [dirty]));
   React.useEffect(() => { if (pendingNavigation && !dirty) navigate(pendingNavigation); }, [pendingNavigation, dirty, navigate]);
-  const active = resolveTab(kind, defaultTab ?? params.get('tab') ?? params.get('section'));
+  const active = resolveTab(kind, params.get('tab') ?? defaultTab ?? params.get('section'));
   function update(patch: Partial<Product>) { setDraft(current => ({ ...current, ...patch })); }
-  function configure(patch: Partial<CommerceConfig> | ((config: CommerceConfig) => Partial<CommerceConfig>)) { setDraft(current => ({ ...current, config: { ...current.config!, ...(typeof patch === 'function' ? patch(current.config!) : patch) } })); }
-  function customize(patch: Partial<ProductExperience>) { setDraft(current => ({ ...current, config: { ...current.config!, experience: { ...current.config!.experience!, ...patch } } })); }
+  function configure(patch: Partial<CommerceConfig> | ((config: CommerceConfig) => Partial<CommerceConfig>)) { setDraft(current => configureProduct(current, typeof patch === 'function' ? patch(current.config!) : patch)); }
+  function customize(patch: Partial<ProductExperience>) { setDraft(current => customizeProduct(current, patch)); }
   function error(message: string) { setErrors([message]); showToast.error(message); }
   function selectType(nextKind: ProductKind, submit: boolean = true) {
     if (!types.some(type => type.kind === nextKind)) return;
     const type = kindLabels[nextKind];
-    setDraft(current => ({ ...current, type, tag: type, config: { ...current.config!, modules: nextKind === 'course' && !current.config!.modules.length ? sampleCourseModules() : current.config!.modules, billing: nextKind === 'subscription' ? 'Subscription' : 'One-time', access: nextKind === 'subscription' ? 'While subscribed' : 'Lifetime access', experience: { ...current.config!.experience!, planEnabled: false, recurringEnabled: nextKind === 'subscription', recurringAmount: nextKind === 'subscription' ? current.config!.amount : current.config!.experience!.recurringAmount } } }));
+    setDraft(current => ({ ...current, type, tag: type, config: { ...current.config!, billing: nextKind === 'subscription' ? 'Subscription' : 'One-time', access: nextKind === 'subscription' ? 'While subscribed' : 'Lifetime access', experience: { ...current.config!.experience!, planEnabled: false, recurringEnabled: nextKind === 'subscription', recurringAmount: nextKind === 'subscription' ? current.config!.amount : current.config!.experience!.recurringAmount } } }));
     if (submit) {
       setChosen(true); setErrors([]);
       setParams({ type: nextKind, tab: 'information' });
@@ -216,88 +185,68 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
       setParams({ type: nextKind });
     }
   }
-  function applyPresetTemplate(template: typeof PRESET_TEMPLATES[number]) {
-    const effectiveKind = (template.id === 'subscription' ? 'digital' : template.kind) as ProductKind;
-    const type = kindLabels[effectiveKind];
-    const isSub = template.id === 'subscription';
-
-    setDraft(current => ({
-      ...current,
-      name: template.name,
-      type,
-      tag: type,
-      description: template.description,
-      price: `$${template.amount}${template.period || ''}`,
-      config: {
-        ...current.config!,
-        amount: template.amount,
-        billing: isSub ? 'Subscription' : 'One-time',
-        access: isSub ? 'While subscribed' : 'Lifetime access',
-        modules: effectiveKind === 'course' ? sampleCourseModules() : current.config!.modules,
-        experience: {
-          ...current.config!.experience!,
-          shortDescription: template.description,
-          recurringEnabled: isSub,
-          recurringAmount: isSub ? template.amount : 0,
-        }
-      }
-    }));
-
-    setChosen(true);
-    setErrors([]);
-    setParams({ type: effectiveKind, tab: 'information' });
-    showToast.success(translateText(`Loaded ${template.label} template`));
+  function applyPresetTemplate(template: ProductPreset) {
+    setDraft(current => applyProductPreset(current, template));
+    setChosen(true); setErrors([]); setTemplateOpen(false);
+    setParams({ type: template.kind, tab: 'information' });
+    showToast.success(translateText('Template loaded. Save Changes to keep your edits.'));
   }
   function tab(next: WorkspaceTab) { setParams(current => { const nextParams = new URLSearchParams(current); nextParams.delete('section'); nextParams.set('tab', next); return nextParams; }); }
   function editTab(next: WorkspaceTab) {
     if (editing) tab(next);
     else navigate(`${base}/products/${p.id}/${next === 'pricing' ? 'pricing' : `edit?tab=${next}`}`);
   }
-  function save(publish: boolean) {
+  async function save(publish: boolean) {
+    if (mutation.current) return;
     const candidate = { ...draft, status: publish ? 'Active' as const : mode === 'create' ? 'Draft' as const : draft.status };
     const validation = validateProduct(candidate, publish);
     if (validation.length) { setErrors(validation); return; }
     if (pendingUploads > 0) { error('Please wait for your uploads to finish.'); return; }
-    setSaving(true);
+    mutation.current = true; setSaving(true);
     try {
-      const saved = saveProduct(candidate);
+      const saved = await saveProduct(candidate, JSON.parse(baseline) as Product);
       setBaseline(JSON.stringify(saved)); setDraft(saved); setErrors([]);
       setPendingNavigation(`${base}/products/${saved.id}/edit?tab=${active}`);
       showToast.success(publish ? `${view.title} published.` : 'Product saved.');
     } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not save product.'); }
-    finally { setSaving(false); }
+    finally { mutation.current = false; setSaving(false); }
   }
   async function copyLink() {
     try { await navigator.clipboard.writeText(c.salesUrl || `${window.location.origin}${base}/products/${p.id || `new?type=${kind}`}`); showToast.success('Product link copied.'); }
     catch { error('Could not copy the link. Please copy it from the address bar.'); }
   }
-  function duplicate(version: boolean) {
+  async function duplicate(version: boolean) {
+    if (mutation.current) return;
     if (pendingUploads) { error('Please wait for your uploads to finish.'); return; }
-    try { const saved = duplicateProduct(p, version); showToast.success(version ? 'New version created as a draft.' : 'Product duplicated as a draft.'); navigate(`${base}/products/${saved.id}/edit`); }
+    mutation.current = true; setSaving(true);
+    try { const saved = await duplicateProduct(p, version); showToast.success(version ? 'New version created as a draft.' : 'Product duplicated as a draft.'); navigate(`${base}/products/${saved.id}/edit`); }
     catch (cause) { error(cause instanceof Error ? cause.message : 'Could not duplicate product.'); }
+    finally { mutation.current = false; setSaving(false); }
   }
   function salesPage() { if (/^https?:\/\//i.test(c.salesUrl)) window.open(c.salesUrl, '_blank', 'noopener,noreferrer'); else if (productPreview.prepare()) window.open(productPreview.href, '_blank', 'noopener,noreferrer'); }
   function book() { if (/^https?:\/\//i.test(c.bookingUrl)) window.open(c.bookingUrl, '_blank', 'noopener,noreferrer'); else { tab('booking'); if (!editing) showToast.error('A booking calendar has not been connected yet.'); } }
-  const props: FormProps = { product: { ...p, price: editing ? formatPrice(c) : p.price }, products, config: c, experience: e, editing, update, configure, customize, error, busy: value => setPendingUploads(count => Math.max(0, count + (value ? 1 : -1))) };
+  const props: FormProps = { product: { ...p, price: editing ? formatPrice(c) : p.price, config: viewConfig, sales: String(viewConfig.orders?.filter(order => order.status === 'Paid').length || 0), revenue: new Intl.NumberFormat(undefined, { style: 'currency', currency: c.currency }).format(viewConfig.orders?.filter(order => order.status === 'Paid' && order.currency === c.currency).reduce((sum, order) => sum + order.amount, 0) || 0) }, products, config: viewConfig, experience: { ...e, activeStudents: viewConfig.students?.filter(student => student.status === 'Active').length || 0 }, editing, update, configure, customize, error, busy: value => setPendingUploads(count => Math.max(0, count + (value ? 1 : -1))) };
   const productPreview = useProductPreview(p, error);
   if (mode !== 'create' && !existing) return <div className="cw-page cw-not-found"><Package size={40}/><h1>{translateText("Product not found")}</h1><p>{translateText("This product is unavailable in your catalog.")}</p><Link className="cw-button primary" to={base}><ArrowLeft size={16}/>{translateText(" Back to Products")}</Link></div>;
   const disabled = saving || pendingUploads > 0;
   // Legacy Course / Membership catalog entries are courses; standalone memberships keep their existing workspace.
   const courseLayout = chosen && kind === 'course' && existing?.type.toLowerCase() !== 'membership';
-  const courseActions = { disabled, onEdit: editTab, onTab: tab, onPreview: () => { if (productPreview.prepare()) window.open(productPreview.href, '_blank', 'noopener,noreferrer'); }, onSalesPage: salesPage, onDuplicate: duplicate, onDelete: () => setDeleting(true), onBooking: () => navigate('/dashboard/booking'), onStatus: (enabled: boolean) => {
+  const courseActions = { disabled, onEdit: editTab, onTab: tab, onPreview: () => { if (productPreview.prepare()) window.open(productPreview.href, '_blank', 'noopener,noreferrer'); }, onSalesPage: salesPage, onDuplicate: duplicate, onDelete: () => setDeleting(true), onBooking: () => navigate('/dashboard/booking'), onStatus: async (enabled: boolean) => {
     const candidate = { ...p, status: enabled ? 'Active' as const : 'Draft' as const };
     const validation = validateProduct(candidate, enabled);
     if (validation.length) { setErrors(validation); return; }
     if (editing) update({ status: candidate.status });
-    else { try { const saved = saveProduct(candidate); setDraft(saved); setBaseline(JSON.stringify(saved)); setErrors([]); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not update course status.'); } }
+    else { try { const saved = await saveProduct(candidate, JSON.parse(baseline) as Product); setDraft(saved); setBaseline(JSON.stringify(saved)); setErrors([]); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not update course status.'); } }
   } };
   const navigationTabs: ReadonlyArray<readonly [WorkspaceTab, string, React.ElementType]> = view.tabs;
   const digitalOverview = chosen && kind === 'digital' && active === 'information';
   const editAction = (target: WorkspaceTab) => !editing && <button className="cw-text-link" onClick={() => editTab(target)}>{translateText("Edit ")}<ArrowRight size={12}/></button>;
   const accessSummary = <Card title={translateText("Access & Delivery")} action={editAction('access')}><div className="tw-sidebar-summary"><div><LockKeyhole size={14}/><span>{translateText("Access Type")}</span><b>{localizeNode(c.access)}</b></div><div><GlobeIcon/><span>{translateText("Delivery Method")}</span><b>{localizeNode(e.accessRule)}</b></div>{localizeNode(kind === 'course' && <div><Users size={14}/><span>{translateText("Student Limit")}</span><b>{localizeNode(e.studentLimit || 'Unlimited')}</b></div>)}{localizeNode(kind === 'digital' && <div><FileText size={14}/><span>{translateText("Downloads")}</span><b>{localizeNode(c.downloadLimit)}{translateText(" per customer")}</b></div>)}</div></Card>;
 
-  return <div className={`cw-page tw-page tw-${kind}${courseLayout ? ' course-page' : ''}${courseLayout && ['orders', 'access'].includes(active) ? ' course-records-page' : ''}${kind === 'service' && active === 'information' ? ' sw-content-page' : ''}${active === 'pricing' ? ' pricing-page' : ''}`}>
-    {localizeNode(courseLayout && !editing && active === 'information' ? <CourseViewHeader {...props} {...courseActions}/> : <header className="cw-action-bar tw-action-bar"><div className="tw-product-heading"><Link className="cw-back" to={base}><ArrowLeft size={14}/> {localizeNode(kind === 'service' || kind === 'digital' ? 'Back' : 'Back to Products')}</Link>{localizeNode(p.image ? <img className="tw-heading-image" src={p.image} alt={translateText(p.name || view.title)}/> : <div className="tw-heading-image tw-heading-placeholder"><Package size={24}/></div>)}<div className="cw-heading"><div><h1>{localizeNode(mode === 'create' ? `Create ${chosen ? view.title : 'Product'}` : courseLayout && editing ? `Edit ${p.name}` : p.name)}</h1>{localizeNode(courseLayout && !editing && <span className="course-type-badge">{translateText("Online Course")}</span>)}{localizeNode(!digitalOverview && <Status status={p.status}/>)}</div><p>{localizeNode(!chosen ? 'Choose a product type to start your tailored commerce workflow.' : kind === 'course' ? !editing ? e.shortDescription || p.description : 'Build and sell your online course with lessons, resources and student access.' : kind === 'digital' ? 'Upload your digital files, set pricing and start selling.' : kind === 'service' ? 'Offer your services, connect booking and start getting clients.' : kind === 'subscription' ? 'Build recurring value for your members and subscribers.' : 'Bring your products together in one offer.')}</p></div></div><div className="cw-header-actions"><>{localizeNode(editing && chosen && <button disabled={disabled} className="cw-button" onClick={() => save(false)}><Save size={14}/>{localizeNode(mode === 'create' ? 'Save as Draft' : 'Save Changes')}</button>)}<a className="cw-button primary" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a>{localizeNode(!editing && <button className="cw-button" onClick={salesPage}><ExternalLink size={14}/>{translateText(" View Sales Page")}</button>)}{localizeNode(editing && chosen ? <button disabled={disabled} className="cw-button primary" onClick={() => save(true)}>{translateText("Publish ")}{localizeNode(kind === 'course' ? 'Course' : kind === 'service' ? 'Service' : 'Product')}<ArrowRight size={14}/></button> : !editing && <div className="tw-edit-menu"><button className="cw-button primary" aria-expanded={menu} onClick={() => setMenu(!menu)}>{translateText("Edit Product ")}<ChevronDown size={14}/></button>{localizeNode(menu && <><button className="tw-menu-scrim" aria-label={translateText("Close edit menu")} onClick={() => setMenu(false)}/><div className="tw-edit-options">{localizeNode(view.tabs.map(([target, label]) => <button key={target} onClick={() => editTab(target)}>{localizeNode(label === 'Overview' ? 'Product Information' : label)}</button>))}</div></>)}</div>)}{localizeNode(courseLayout && !editing && <div className="tw-edit-menu"><button className="cw-icon-button" aria-label={translateText("More course actions")} aria-expanded={courseMenu} onClick={() => setCourseMenu(!courseMenu)}>⋯</button>{localizeNode(courseMenu && <><button className="tw-menu-scrim" aria-label={translateText("Close course actions")} onClick={() => setCourseMenu(false)}/><div className="tw-edit-options"><button onClick={() => { setCourseMenu(false); duplicate(false); }}>{translateText("Duplicate Product")}</button><button onClick={() => { setCourseMenu(false); duplicate(true); }}>{translateText("Create New Version")}</button><button onClick={() => { setCourseMenu(false); setDeleting(true); }}>{translateText("Delete Product")}</button></div></>)}</div>)}</></div></header>)}
+  return <div inert={saving} aria-busy={saving} className={`cw-page tw-page tw-${kind}${courseLayout ? ' course-page' : ''}${courseLayout && ['orders', 'access'].includes(active) ? ' course-records-page' : ''}${kind === 'service' && active === 'information' ? ' sw-content-page' : ''}${active === 'pricing' ? ' pricing-page' : ''}`}>
+    {mode === 'create' && templateOpen && <Dialog title="Choose a Product Template" wide onClose={() => setTemplateOpen(false)}><p>{translateText('Choose a starting point for this draft. Add your own files and booking links, then use Save Changes to persist it.')}</p><ProductPresetPicker kind={kind} currency={c.currency} onSelect={applyPresetTemplate}/></Dialog>}
+    {localizeNode(courseLayout && !editing && active === 'information' ? <CourseViewHeader {...props} {...courseActions}/> : <header className="cw-action-bar tw-action-bar"><div className="tw-product-heading"><Link className="cw-back" to={base}><ArrowLeft size={14}/> {localizeNode(kind === 'service' || kind === 'digital' ? 'Back' : 'Back to Products')}</Link>{localizeNode(p.image ? <img className="tw-heading-image" src={p.image} alt={translateText(p.name || view.title)}/> : <div className="tw-heading-image tw-heading-placeholder"><Package size={24}/></div>)}<div className="cw-heading"><div><h1>{localizeNode(mode === 'create' ? `Create ${chosen ? view.title : 'Product'}` : courseLayout && editing ? `Edit ${p.name}` : p.name)}</h1>{localizeNode(courseLayout && !editing && <span className="course-type-badge">{translateText("Online Course")}</span>)}{localizeNode(!digitalOverview && <Status status={p.status}/>)}</div><p>{localizeNode(!chosen ? 'Choose a product type to start your tailored commerce workflow.' : kind === 'course' ? !editing ? e.shortDescription || p.description : 'Build and sell your online course with lessons, resources and student access.' : kind === 'digital' ? 'Upload your digital files, set pricing and start selling.' : kind === 'service' ? 'Offer your services, connect booking and start getting clients.' : kind === 'subscription' ? 'Build recurring value for your members and subscribers.' : 'Bring your products together in one offer.')}</p></div></div><div className="cw-header-actions"><>{mode === 'create' && chosen && <button type="button" className="cw-button" disabled={disabled} onClick={() => setTemplateOpen(true)}><Sparkles size={14}/>{translateText("Use Template")}</button>}{localizeNode(editing && chosen && <button disabled={disabled} className="cw-button" onClick={() => save(false)}><Save size={14}/>{localizeNode(mode === 'create' ? 'Save as Draft' : 'Save Changes')}</button>)}<a className="cw-button primary" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a>{localizeNode(!editing && <button className="cw-button" onClick={salesPage}><ExternalLink size={14}/>{translateText(" View Sales Page")}</button>)}{localizeNode(editing && chosen ? <button disabled={disabled} className="cw-button primary" onClick={() => save(true)}>{translateText("Publish ")}{localizeNode(kind === 'course' ? 'Course' : kind === 'service' ? 'Service' : 'Product')}<ArrowRight size={14}/></button> : !editing && <div className="tw-edit-menu"><button className="cw-button primary" aria-expanded={menu} onClick={() => setMenu(!menu)}>{translateText("Edit Product ")}<ChevronDown size={14}/></button>{localizeNode(menu && <><button className="tw-menu-scrim" aria-label={translateText("Close edit menu")} onClick={() => setMenu(false)}/><div className="tw-edit-options">{localizeNode(view.tabs.map(([target, label]) => <button key={target} onClick={() => editTab(target)}>{localizeNode(label === 'Overview' ? 'Product Information' : label)}</button>))}</div></>)}</div>)}{localizeNode(courseLayout && !editing && <div className="tw-edit-menu"><button className="cw-icon-button" aria-label={translateText("More course actions")} aria-expanded={courseMenu} onClick={() => setCourseMenu(!courseMenu)}>⋯</button>{localizeNode(courseMenu && <><button className="tw-menu-scrim" aria-label={translateText("Close course actions")} onClick={() => setCourseMenu(false)}/><div className="tw-edit-options"><button onClick={() => { setCourseMenu(false); duplicate(false); }}>{translateText("Duplicate Product")}</button><button onClick={() => { setCourseMenu(false); duplicate(true); }}>{translateText("Create New Version")}</button><button onClick={() => { setCourseMenu(false); setDeleting(true); }}>{translateText("Delete Product")}</button></div></>)}</div>)}</></div></header>)}
+    {(c.assets.some(asset => asset.storageId?.startsWith('local-')) || c.modules.some(module => module.lessons.some(lesson => typeof lesson !== 'string' && lesson.storageId?.startsWith('local-')))) && <p className="cw-notice" role="status">{translateText('Local attachments are available only in this browser session. Upload them to cloud storage or add delivery URLs before publishing.')}</p>}
     {localizeNode(!chosen ? <div className="cw-wizard-layout">
       <main className="cw-wizard-main">
         <div className="tw-section-heading cw-wizard-header">
@@ -324,7 +273,7 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
           <Card title={translateText("Basic Information")}>
             <div className="cw-form-grid">
               <Field label="Product Title"><input autoFocus value={p.name} onChange={e => update({ name: e.target.value })} placeholder={translateText("e.g., AI Marketing Toolkit")}/></Field>
-              <Field label="Base Price"><input type="number" min="0" value={c.amount} onChange={e => configure({ amount: parseFloat(e.target.value) || 0 })}/></Field>
+              <Field label="Base Price"><input type="number" min="0" value={!p.id && c.amount === 0 ? '' : c.amount} onChange={e => configure({ amount: parseFloat(e.target.value) || 0 })}/></Field>
               <div style={{ gridColumn: '1 / -1' }}>
                 <Field label="Short Description"><textarea value={e.shortDescription || p.description} onChange={ev => customize({ shortDescription: ev.target.value })} placeholder={translateText("Briefly describe what customers will get...")}/></Field>
               </div>
@@ -340,32 +289,7 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
             <h3>{translateText("Quick-Start Preset Templates")}</h3>
             <p>{translateText("Pick a ready-made template to pre-configure pricing, delivery structure, and sales settings instantly.")}</p>
           </div>
-          <div className="cw-preset-grid">
-            {localizeNode(PRESET_TEMPLATES.map(tpl => {
-              const Icon = tpl.icon;
-              return (
-                <div key={tpl.id} className="cw-preset-card" onClick={() => applyPresetTemplate(tpl)}>
-                  <div>
-                    <div className="cw-preset-card-top">
-                      <span className="cw-preset-icon"><Icon size={18} /></span>
-                      <span className="cw-preset-price">${tpl.amount}{tpl.period || ''}</span>
-                    </div>
-                    <span className="cw-preset-badge">{translateText(tpl.badge)}</span>
-                    <h4 className="cw-preset-title">{localizeNode(tpl.label)}</h4>
-                    <p className="cw-preset-desc">{localizeNode(tpl.description)}</p>
-                    <ul className="cw-preset-features">
-                      {tpl.features.map(f => (
-                        <li key={f}><CheckCircle2 size={13} /> <span>{translateText(f)}</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                  <button type="button" className="cw-preset-cta">
-                    <span>{translateText("Use Template")}</span> <ArrowRight size={12} />
-                  </button>
-                </div>
-              );
-            }))}
-          </div>
+          <ProductPresetPicker currency={c.currency} onSelect={applyPresetTemplate}/>
         </div>
 
         <div className="cw-pipeline-section">
@@ -445,9 +369,9 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
       {localizeNode(mode === 'create' && kind !== 'service' && !digitalOverview && <div className="tw-create-type"><span>{translateText("Creating a ")}{localizeNode(view.title)}</span><CommerceSelect label="Change product type" value={kind} onChange={value => selectType(value as ProductKind)} options={types.map(type => ({ value: type.kind, label: type.label }))}/></div>)}
       {localizeNode(!editing && kind !== 'service' && !digitalOverview && !courseLayout && active === 'information' && <div className="tw-top-metrics">{localizeNode([[Tag, p.price, 'Price'], [ShoppingCart, p.sales, 'Total Sales'], [CreditCard, p.revenue, 'Total Revenue'], [Users, kind === 'course' ? e.studentLimit ? String(e.studentLimit) : 'Unlimited' : kind === 'digital' ? String(c.assets.length) : String(c.components.length), kind === 'course' ? 'Student Capacity' : kind === 'digital' ? 'Digital Files' : 'Component Items']].map(([Icon, value, label], index) => { const MetricIcon = Icon as React.ElementType; return <div key={String(label)} className={`metric-${index}`}><span><MetricIcon size={19}/></span><div><b>{localizeNode(String(value))}</b><small>{localizeNode(String(label))}</small></div></div>; }))}</div>)}
       {localizeNode(courseLayout && !editing && active !== 'information' && <CourseMetrics {...props}/>)}
-      <nav className="cw-tabs tw-tabs" aria-label={translateText(`${view.title} navigation`)}>{localizeNode(navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => { if (defaultTab) navigate(`${base}/products/${p.id}/edit?tab=${target}`); else tab(target); }}><Icon size={14}/>{localizeNode(label)}</button>))}</nav>
+      <nav className="cw-tabs tw-tabs" aria-label={translateText(`${view.title} navigation`)}>{localizeNode(navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => tab(target)}><Icon size={14}/>{localizeNode(label)}</button>))}</nav>
       {localizeNode(errors.length > 0 && <div className="cw-errors" role="alert"><b>{translateText("Please review these fields")}</b><ul>{localizeNode(errors.map(message => <li key={message}>{localizeNode(message)}</li>))}</ul></div>)}
-      {localizeNode(courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={c} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={c}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
+      {localizeNode(courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={viewConfig} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={viewConfig}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { setErrors(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
         {localizeNode(active === 'information' && <>
           {localizeNode(kind === 'service' ? <><div className="tw-service-layout"><div className="tw-stack"><InformationForm {...props}/><MediaCard {...props}/><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div><DescriptionCard {...props}/></> : <>
             <div className="tw-information-layout"><div className="tw-stack"><InformationForm {...props}/>{localizeNode(!editing && <DescriptionCard {...props}/>)}</div><div className="tw-stack"><MediaCard {...props}/>{localizeNode(kind === 'course' ? <InstructorCard {...props}/> : <ProductTags {...props}/>)}<IncludedItems {...props}/></div></div>
@@ -475,10 +399,10 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
           {localizeNode(kind === 'service' ? <IncludedItems {...props}/> : accessSummary)}
         </>)}
       </aside></div>)}
-      {localizeNode(active === 'information' && <div className="ce-insights-grid ce-overview-insights"><ProductRecentActivity config={c}/><ProductOrders config={c} limit={5} course={kind === 'course'}/></div>)}
+      {localizeNode(active === 'information' && <div className="ce-insights-grid ce-overview-insights"><ProductRecentActivity config={viewConfig}/><ProductOrders config={viewConfig} limit={5} course={kind === 'course'}/></div>)}
       {localizeNode(editing && !digitalOverview && kind !== 'service' && active !== 'pricing' && <footer className="cw-editor-footer"><span><i className={dirty ? 'dirty' : ''}/>{localizeNode(pendingUploads ? 'Uploading…' : dirty ? 'Unsaved changes' : 'All changes saved')}</span><div><a className="cw-button" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a><button disabled={disabled} className="cw-button primary" onClick={() => save(false)}><Save size={14}/>{translateText(" Save Changes")}</button></div></footer>)}
     </>)}
-    {deleting && <Dialog title={translateText("Delete product?")} onClose={() => setDeleting(false)}><p>{translateText("Delete ")}{localizeNode(p.name)}{translateText(" from your catalog? This action cannot be undone.")}</p><div className="cw-header-actions"><button className="cw-button" onClick={() => setDeleting(false)}>{translateText("Cancel")}</button><button className="cw-button primary" disabled={disabled} onClick={() => { try { deleteProduct(p.id); setBaseline(JSON.stringify(draft)); setDeleting(false); setPendingNavigation(base); showToast.success('Product deleted.'); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not delete product.'); } }}>{translateText("Delete Product")}</button></div></Dialog>}
+    {deleting && <Dialog title={translateText("Delete product?")} onClose={() => setDeleting(false)}><p>{translateText("Delete ")}{localizeNode(p.name)}{translateText(" from your catalog? This action cannot be undone.")}</p><div className="cw-header-actions"><button className="cw-button" onClick={() => setDeleting(false)}>{translateText("Cancel")}</button><button className="cw-button primary" disabled={disabled} onClick={async () => { if (mutation.current) return; mutation.current = true; setSaving(true); try { await deleteProduct(p.id); setBaseline(JSON.stringify(draft)); setDeleting(false); setPendingNavigation(base); showToast.success('Product deleted.'); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not delete product.'); } finally { mutation.current = false; setSaving(false); } }}>{translateText("Delete Product")}</button></div></Dialog>}
     {localizeNode(checkoutPreview && <Dialog title={translateText("Checkout Preview")} onClose={() => setCheckoutPreview(null)} wide><CheckoutScreen product={p} billing={checkoutPreview}/></Dialog>)}
     {localizeNode(blocker.state === 'blocked' && <Dialog title={translateText("Leave without saving?")} onClose={() => blocker.reset()}><p>{translateText("Your latest product changes have not been saved.")}</p><div className="cw-header-actions"><button className="cw-button" onClick={() => blocker.reset()}>{translateText("Keep editing")}</button><button className="cw-button primary" disabled={pendingUploads > 0} onClick={() => blocker.proceed()}>{translateText("Discard changes")}</button></div></Dialog>)}
   </div>;
@@ -493,9 +417,9 @@ function ProductTags({ experience: e, customize, editing }: FormProps) {
 }
 function ProductDetails({ experience: e, customize, editing, product }: FormProps) {
   useUILanguage(); return <Card title={translateText(productKind(product.type) === 'course' ? 'Course Details' : 'Product Details')}><div className="cw-form-grid"><Field label="Category"><input disabled={!editing} value={e.category} placeholder={translateText("e.g. Marketing")} onChange={event => customize({ category: event.target.value })}/></Field><Field label="Language"><Select disabled={!editing} value={e.language} options={['English', 'Arabic', 'French', 'German', 'Spanish']} onChange={language => customize({ language })}/></Field></div><Field label="Tags"><input value={e.tags.join(', ')} disabled={!editing} onChange={event => customize({ tags: event.target.value.split(',').map(tag => tag.trim()) })} placeholder={translateText("Separate tags with commas")}/></Field><Field label="Version"><input value={e.version} readOnly/></Field></Card>; }
-function AutomationForm({ config: c, configure, editing }: FormProps) {
-  useUILanguage(); return <Card title={translateText("Post-purchase Automations")} subtitle="Configure what happens after a successful purchase.">{localizeNode(([['grantAccess', 'Grant product access'], ['confirmation', 'Send purchase confirmation'], ['followUp', 'Start customer follow-up']] as const).map(([key, label]) => <Toggle key={key} label={label} checked={c.automations[key]} disabled={!editing} onChange={value => configure({ automations: { ...c.automations, [key]: value } })}/>))}<Field label="CRM tag after purchase"><input disabled={!editing} value={c.automations.crmTag} onChange={event => configure({ automations: { ...c.automations, crmTag: event.target.value } })} placeholder={translateText("e.g. course-student")}/></Field><div className="cw-notice"><Sparkles size={17}/>{translateText(" Triggers run after a confirmed payment and follow your configured access rules.")}</div></Card>; }
-function ProductSettings({ config: c, configure, experience: e, customize, editing, product: p }: FormProps) {
-  useUILanguage(); return <Card title={translateText("Product Settings")} subtitle="Save Changes applies these settings to the product."><Field label="Sales Page URL"><input type="url" disabled={!editing} value={c.salesUrl} onChange={event => configure({ salesUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Thank-you redirect URL"><input type="url" disabled={!editing} value={c.thankYouUrl} onChange={event => configure({ thankYouUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Custom domain" hint="Domain assignment is saved locally. Connect DNS and hosting in Domains."><input disabled={!editing} value={c.customDomain || ''} onChange={event => configure({ customDomain: event.target.value.trim() })} placeholder={translateText("shop.example.com")}/></Field><Field label="Webhook endpoint" hint="Saved configuration; delivery requires a connected payment backend."><input type="url" disabled={!editing} value={c.webhookUrl || ''} onChange={event => configure({ webhookUrl: event.target.value })} placeholder={translateText("https://api.example.com/webhook")}/></Field><div className="ce-webhooks">{localizeNode(['order.paid', 'order.refunded', 'enrollment.created', 'subscription.renewed'].map(event => <label key={event}><input type="checkbox" disabled={!editing} checked={(c.webhookEvents || []).includes(event)} onChange={ev => configure({ webhookEvents: ev.target.checked ? [...(c.webhookEvents || []), event] : (c.webhookEvents || []).filter(value => value !== event) })}/>{localizeNode(event)}</label>))}</div><Field label="Visibility"><Select disabled={!editing} value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field><div className="cw-review"><div><span>{translateText("Product ID")}</span><b>{localizeNode(p.id || 'Assigned when saved')}</b></div><div><span>{translateText("Publishing status")}</span><Status status={p.status}/></div></div></Card>; }
+function AutomationForm(props: FormProps) { const { config: c, configure, editing } = props;
+  useUILanguage(); return <Card title={translateText("Post-purchase Automations")} action={<ProductAdvancedAction {...props} section="automation"/>} subtitle="Configure what happens after a successful purchase.">{localizeNode(([['grantAccess', 'Grant product access'], ['confirmation', 'Send purchase confirmation'], ['followUp', 'Start customer follow-up']] as const).map(([key, label]) => <Toggle key={key} label={label} checked={c.automations[key]} disabled={!editing} onChange={value => configure({ automations: { ...c.automations, [key]: value } })}/>))}<Field label="CRM tag after purchase"><input disabled={!editing} value={c.automations.crmTag} onChange={event => configure({ automations: { ...c.automations, crmTag: event.target.value } })} placeholder={translateText("e.g. course-student")}/></Field><div className="cw-notice"><Sparkles size={17}/>{translateText(" Triggers run after a confirmed payment and follow your configured access rules.")}</div></Card>; }
+function ProductSettings(props: FormProps) { const { config: c, configure, experience: e, customize, editing, product: p } = props;
+  useUILanguage(); return <Card title={translateText("Product Settings")} action={<ProductAdvancedAction {...props} section="settings"/>} subtitle="Save Changes applies these settings to the product."><Field label="Sales Page URL"><input type="url" disabled={!editing} value={c.salesUrl} onChange={event => configure({ salesUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Thank-you redirect URL"><input type="url" disabled={!editing} value={c.thankYouUrl} onChange={event => configure({ thankYouUrl: event.target.value })} placeholder={translateText("https://")}/></Field><Field label="Custom domain" hint="Domain assignment is saved locally. Connect DNS and hosting in Domains."><input disabled={!editing} value={c.customDomain || ''} onChange={event => configure({ customDomain: event.target.value.trim() })} placeholder={translateText("shop.example.com")}/></Field><Field label="Webhook endpoint" hint="Saved configuration; delivery requires a connected payment backend."><input type="url" disabled={!editing} value={c.webhookUrl || ''} onChange={event => configure({ webhookUrl: event.target.value })} placeholder={translateText("https://api.example.com/webhook")}/></Field><div className="ce-webhooks">{localizeNode(['order.paid', 'order.refunded', 'enrollment.created', 'subscription.renewed'].map(event => <label key={event}><input type="checkbox" disabled={!editing} checked={(c.webhookEvents || []).includes(event)} onChange={ev => configure({ webhookEvents: ev.target.checked ? [...(c.webhookEvents || []), event] : (c.webhookEvents || []).filter(value => value !== event) })}/>{localizeNode(event)}</label>))}</div><Field label="Visibility"><Select disabled={!editing} value={e.visibility} options={['Published', 'Private', 'Unlisted']} onChange={visibility => customize({ visibility: visibility as ProductExperience['visibility'] })}/></Field><div className="cw-review"><div><span>{translateText("Product ID")}</span><b>{localizeNode(p.id || 'Assigned when saved')}</b></div><div><span>{translateText("Publishing status")}</span><Status status={p.status}/></div></div></Card>; }
 function SubscriberFulfillment({ config: c, configure, editing }: FormProps) {
   useUILanguage(); return <Card title={translateText("Member Benefits & Fulfillment")}><Field label="Subscriber delivery instructions"><textarea disabled={!editing} value={c.fulfillment} onChange={event => configure({ fulfillment: event.target.value })} placeholder={translateText("Describe the resources, services and benefits delivered each billing period.")}/></Field><Field label="Member community URL"><input type="url" disabled={!editing} value={c.communityUrl} placeholder={translateText("https://")} onChange={event => configure({ communityUrl: event.target.value })}/></Field></Card>; }

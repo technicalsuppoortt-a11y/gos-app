@@ -78,7 +78,7 @@ test('physical product model preserves inventory and shipping for future expansi
   assert.equal(config.shippingRequired, true);
 });
 
-test('repository persists type-specific fields, isolates tenants and handles failed saves atomically', () => {
+test('repository persists type-specific fields, isolates tenants and handles failed saves atomically', async () => {
   const storage = new Map();
   const subscriptions = [];
   let auth = { tenant: { id: 'tenant-a' }, user: { id: 'user-a' } };
@@ -93,6 +93,7 @@ test('repository persists type-specific fields, isolates tenants and handles fai
       if (name === './demoData') return demoContext.exports;
       if (name === './seeds') return { seedProducts: [] };
       if (name === '../../store') return { store: { getState: () => ({ auth }), subscribe: fn => subscriptions.push(fn) } };
+      if (name === '../../backend/workspace') return { cloudStorage: repoContext.localStorage };
       throw new Error(`Unexpected import: ${name}`);
     },
   };
@@ -102,26 +103,26 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   product.config.bookingUrl = 'https://example.com/calendar';
   product.config.duration = 90;
   product.config.automations.crmTag = 'coaching-customer';
-  const saved = repository.saveProduct(product);
+  const saved = await repository.saveProduct(product);
   assert.equal(repository.useProducts()[0].config.duration, 90);
   assert.equal(JSON.parse(storage.get('gos-commerce-products-v1:tenant-a'))[0].config.automations.crmTag, 'coaching-customer');
   failStorage = true;
-  assert.throws(() => repository.saveProduct({ ...saved, name: 'Failed change' }), /could not be saved/);
+  await assert.rejects(repository.saveProduct({ ...saved, name: 'Failed change' }), /could not be saved/);
   assert.equal(repository.useProducts()[0].name, 'Test offer');
   failStorage = false;
-  const copy = repository.duplicateProduct(saved);
+  const copy = await repository.duplicateProduct(saved);
   assert.notEqual(copy.id, saved.id);
   assert.equal(copy.status, 'Draft');
   assert.equal(copy.sales, '0');
   assert.equal(copy.config.experience.version, 1);
-  const version = repository.duplicateProduct(saved, true);
+  const version = await repository.duplicateProduct(saved, true);
   assert.equal(version.config.experience.parentId, saved.id);
   assert.equal(version.config.experience.version, 2);
   assert.equal(saved.config.experience.version, 1);
   auth = { tenant: { id: 'tenant-b' }, user: { id: 'user-b' } };
   subscriptions.forEach(fn => fn());
   assert.equal(repository.useProducts().length, 0);
-  repository.saveProduct({ ...product, name: 'Tenant B offer' });
+  await repository.saveProduct({ ...product, name: 'Tenant B offer' });
   auth = { tenant: { id: 'tenant-a' }, user: { id: 'user-a' } };
   subscriptions.forEach(fn => fn());
   assert.equal(repository.useProducts().find(p => p.id === saved.id).name, 'Test offer');
@@ -129,20 +130,20 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   digital.id = '';
   digital.config.experience.fileType = 'Canva Template';
   digital.config.experience.downloadLimitEnabled = false;
-  const savedDigital = repository.saveProduct(digital);
+  const savedDigital = await repository.saveProduct(digital);
   assert.equal(repository.useProducts().find(p => p.id === savedDigital.id).config.experience.fileType, 'Canva Template');
   assert.equal(repository.useProducts().find(p => p.id === savedDigital.id).config.experience.downloadLimitEnabled, false);
   failStorage = true;
-  assert.throws(() => repository.deleteProduct(savedDigital.id), /could not be deleted/);
+  await assert.rejects(repository.deleteProduct(savedDigital.id), /could not be deleted/);
   assert.ok(repository.useProducts().some(p => p.id === savedDigital.id));
   failStorage = false;
   const bundle = offer('Bundle');
   bundle.id = '';
   bundle.config.components = [savedDigital.id, saved.id];
-  const savedBundle = repository.saveProduct(bundle);
-  assert.doesNotThrow(() => repository.deleteProduct(savedDigital.id), 'Retired bundle metadata must not block product deletion');
-  repository.deleteProduct(savedBundle.id);
-  repository.deleteProduct(savedDigital.id);
+  const savedBundle = await repository.saveProduct(bundle);
+  await assert.doesNotReject(repository.deleteProduct(savedDigital.id), 'Retired bundle metadata must not block product deletion');
+  await repository.deleteProduct(savedBundle.id);
+  await repository.deleteProduct(savedDigital.id);
   assert.ok(!repository.useProducts().some(p => p.id === savedDigital.id));
   assert.ok(!JSON.parse(storage.get('gos-commerce-products-v1:tenant-a')).some(p => p.id === savedDigital.id));
   assert.ok(JSON.parse(storage.get('gos-commerce-products-v1:tenant-b')).some(p => p.name === 'Tenant B offer'));

@@ -1,3 +1,4 @@
+import { useCRMBusy } from './useCRMActions';
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import { useEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
@@ -101,7 +102,7 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   const status = followUp(lead);
   useEffect(() => {
     if (!menuOpen) return;
-    const dismiss = (e: PointerEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false); };
+    const dismiss = (e: PointerEvent) => { if (!(e.target instanceof Element && e.target.closest('.crm-select-content')) && !menuRef.current?.contains(e.target as Node)) setMenuOpen(false); };
     const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') { setMenuOpen(false); menuRef.current?.querySelector('button')?.focus(); } };
     document.addEventListener('pointerdown', dismiss);
     document.addEventListener('keydown', escape);
@@ -123,7 +124,7 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   </article>;
 }
 
-export function CustomSelect({ value: propValue, onChange: propOnChange, defaultValue, options, placeholder, className = "", 'aria-label': ariaLabel, icon: Icon, name }: {
+export function CustomSelect({ value: propValue, onChange: propOnChange, defaultValue, options, placeholder, className = "", 'aria-label': ariaLabel, icon: Icon, name, disabled }: {
   value?: string;
   onChange?: (val: string) => void;
   defaultValue?: string;
@@ -133,8 +134,10 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   'aria-label'?: string;
   icon?: React.ElementType;
   name?: string;
+  disabled?: boolean;
 }) {
   useUILanguage();
+  const busy = useCRMBusy();
   const [internalValue, setInternalValue] = useState(defaultValue ?? options[0]?.value ?? "");
   const value = propValue !== undefined ? propValue : internalValue;
   const onChange = propOnChange || setInternalValue;
@@ -143,8 +146,8 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   const encode = (v: string) => 'crm:' + v;
   return <div className={`crm-custom-select ${className}`}>
     {localizeNode(name && <input type="hidden" name={name} value={value}/>)}
-    <Select.Root dir={uiDirection()} value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
-      <Select.Trigger className="crm-custom-select-trigger" aria-label={translateText(ariaLabel)}>
+    <Select.Root disabled={busy || disabled} dir={uiDirection()} value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
+      <Select.Trigger className="crm-custom-select-trigger" aria-label={translateText(ariaLabel)} disabled={busy || disabled}>
         {localizeNode(Icon && <Icon size={14} className="crm-custom-select-icon"/>)}
         <Select.Value placeholder={translateText(placeholder || 'Select…')}/><Select.Icon asChild><ChevronDown size={14} className="crm-custom-select-chevron"/></Select.Icon>
       </Select.Trigger>
@@ -159,10 +162,11 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
 
 export function CustomDatePicker({ value, onChange, placeholder = "Select date...", className = "", name, type = "date", 'aria-label': ariaLabel }: { 'aria-label'?: string, value: string, onChange: (v: string) => void, placeholder?: string, className?: string, name?: string, type?: "date" | "datetime-local" }) {
   useUILanguage();
+  const busy = useCRMBusy();
   const ref = useRef<HTMLInputElement>(null);
   return (
-    <div className={`crm-custom-select crm-custom-date ${className}`} onClick={() => { try { ref.current?.showPicker?.() } catch { /* Native picker may be unavailable in this browser. */ } }}>
-      <button type="button" className="crm-custom-select-trigger" aria-label={translateText(ariaLabel || placeholder)} onClick={e => e.preventDefault()}>
+    <div className={`crm-custom-select crm-custom-date ${className}`} onClick={() => { try { if (!busy) ref.current?.showPicker?.() } catch { /* Native picker may be unavailable in this browser. */ } }}>
+      <button disabled={busy} type="button" className="crm-custom-select-trigger" aria-label={translateText(ariaLabel || placeholder)} onClick={e => e.preventDefault()}>
         <Calendar size={14} className="crm-custom-select-icon"/>
         <span>{localizeNode(value || placeholder)}</span>
       </button>

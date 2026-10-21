@@ -18,10 +18,10 @@ export interface CourseActions {
 export function CourseMetrics({ product: p, experience: e }: FormProps) {
   useUILanguage();
   return <div className="course-metrics">{localizeNode([
-    { icon: Tag, value: p.price || '€297', label: 'Price' }, { icon: ShoppingCart, value: p.sales || '124', label: 'Total Sales' },
-    { icon: CreditCard, value: p.revenue || '€36,828', label: 'Total Revenue' },
-    { icon: Users, value: String(e.activeStudents ?? 892), label: 'Active Students' },
-    { icon: Star, value: String(e.rating ?? 4.8), label: `Rating (${e.reviewCount ?? 86} reviews)` },
+    { icon: Tag, value: p.price || '—', label: 'Price' }, { icon: ShoppingCart, value: p.sales || '0', label: 'Total Sales' },
+    { icon: CreditCard, value: p.revenue || '0', label: 'Total Revenue' },
+    { icon: Users, value: String(e.activeStudents ?? 0), label: 'Active Students' },
+    { icon: Star, value: String(e.rating ?? '—'), label: `Rating (${e.reviewCount ?? 0} reviews)` },
   ].map(({ icon: Icon, value, label }) => <div key={label}><span><Icon size={19}/></span><div><b>{localizeNode(value)}</b><small>{localizeNode(label)}</small></div></div>))}</div>;
 }
 

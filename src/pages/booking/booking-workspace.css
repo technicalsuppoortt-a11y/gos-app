@@ -126,6 +126,8 @@
 .bk-form{display:flex;flex-direction:column;gap:15px}.bk-form h3{margin:0;font-size:14px;font-weight:650}.bk-form>p{margin:0;color:var(--bk-muted);font-size:11px}
 .bk-form label,.bk-public-details label{display:block;color:#64718a;font-size:11px;font-weight:550}
 .bk-form input:not([type=checkbox]):not([type=radio]),.bk-form select,.bk-form textarea,.bk-public-details select,.bk-guest input{display:block;width:100%;min-height:38px;margin-top:6px;border:1px solid var(--bk-line);border-radius:12px;background:var(--bk-card);padding:8px 11px;color:var(--bk-text);font:inherit;font-size:12px;outline:none}
+.bk-form input::placeholder,.bk-form textarea::placeholder{color:#9aa5b8;font-size:12px;opacity:1}
+.dark .bk-form input::placeholder,.dark .bk-form textarea::placeholder{color:#6b7280}
 .bk-form textarea{resize:vertical;min-height:80px}.bk-form input:focus,.bk-form textarea:focus,.bk-form select:focus{border-color:#a69beb;box-shadow:0 0 0 3px #6150df0d}.bk-form input:disabled{background:#f5f6f9;color:#9099aa}
 .bk-form label small{display:block;color:var(--bk-muted);font-size:10px;font-weight:400;margin-top:5px}
 .bk-form .bk-checkbox{display:flex;align-items:center;gap:8px}.bk-form input[type=checkbox],.bk-form input[type=radio]{accent-color:#4f46e5;height:15px;width:15px;flex:none;margin:0}

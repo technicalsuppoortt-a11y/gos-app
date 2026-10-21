@@ -15,6 +15,7 @@ export function courseAnalytics(c: CommerceConfig, cutoff = 0, now = Date.now())
   });
   const last = timeline.at(-1)!, previous = timeline.at(-2)!;
   return { orders, paid, students, completed, timeline,
+    lessonViews: Object.values(c.lessonViews ?? {}).reduce((sum, views) => sum + views, 0),
     revenue: currencyOrders.reduce((sum, o) => sum + o.amount, 0),
     progress: students.length ? Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length) : 0,
     completionRate: students.length ? Math.round(completed / students.length * 100) : 0,

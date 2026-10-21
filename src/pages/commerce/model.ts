@@ -17,7 +17,7 @@ export interface ProductExperience {
   instructorSocials?: Record<string, string>; directCheckoutUrl?: string;
   oneTimeAmount: number; comparePrice: number; showComparePrice: boolean; planEnabled: boolean; recurringEnabled: boolean;
   recurringAmount: number; installmentAmount: number; paymentInterval: 'Monthly' | 'Quarterly' | 'Yearly';
-  checkout: { secure: boolean; collectInfo: boolean; requirePhone: boolean; guest: boolean; testimonials: boolean };
+  checkout: { secure: boolean; collectInfo: boolean; requirePhone: boolean; guest: boolean; testimonials: boolean; requireTerms?: boolean; termsUrl?: string; privacyUrl?: string; bumpEnabled?: boolean; bumpProductId?: string };
   upsellId: string; downsellId: string; offersEnabled: boolean; funnelUrl: string;
   version: number; parentId: string; updatedAt: string;
   taxHandling: 'Include tax in price' | 'Calculate at checkout';
@@ -38,9 +38,12 @@ export interface CommerceConfig {
   access: 'Lifetime access' | '12 months' | 'While subscribed'; delivery: 'Instant' | 'After approval';
   bookingUrl: string; duration: number; fulfillment: string; bookingSlots?: string[];
   assets: Array<{ name: string; url: string; storageId?: string; size?: number; mime?: string }>; downloadLimit: number;
-  modules: Array<{ title: string; lessons: Array<string | Lesson> }>; communityUrl: string; enrollment: 'Automatic' | 'After approval';
+  modules: Array<{ id?: string; title: string; lessons: Array<string | Lesson> }>; communityUrl: string; enrollment: 'Automatic' | 'After approval';
+  certificateEnabled?: boolean; certificateIssuer?: string; downloadExpiryHours?: number;
+  calendarId?: string; bufferBefore?: number; bufferAfter?: number; cancellationHours?: number; cancellationPolicy?: string;
+  lessonViews?: Record<string, number>;
   components: string[]; sku: string; inventory: number; shippingRequired: boolean;
-  automations: { grantAccess: boolean; confirmation: boolean; crmTag: string; followUp: boolean };
+  automations: { grantAccess: boolean; confirmation: boolean; crmTag: string; followUp: boolean; fileDelivery?: boolean; calendarInvite?: boolean };
   checkoutFields: string; thankYouUrl: string; salesUrl: string;
   experience?: ProductExperience;
 }
@@ -81,17 +84,34 @@ export const kindLabels: Record<ProductKind, ProductType> = { course: 'Course', 
 export function lessonData(lesson: string | Lesson, index = 0): Lesson {
   return typeof lesson === 'string' ? { id: `legacy-${index}`, title: lesson, kind: 'Video', duration: '', url: '' } : lesson;
 }
+// Keep independent live updates (for example learner progress) when an editor saves other fields.
+export function mergeProductChanges(base: any, draft: any, latest: any): any {
+  if (JSON.stringify(base) === JSON.stringify(draft)) return latest === undefined ? draft : latest;
+  if (Array.isArray(base) && Array.isArray(draft) && Array.isArray(latest) && [...base, ...draft, ...latest].every(row => row && typeof row.id === 'string')) {
+    const before = new Map(base.map(row => [row.id, row])), edited = new Map(draft.map(row => [row.id, row])), remote = new Map(latest.map(row => [row.id, row]));
+    const result = draft.map(row => mergeProductChanges(before.get(row.id), row, remote.get(row.id)));
+    for (const row of latest) if (!before.has(row.id) && !edited.has(row.id)) result.push(row);
+    return result;
+  }
+  if (base && draft && latest && typeof draft === 'object' && !Array.isArray(draft)) {
+    const result = { ...latest };
+    for (const key of new Set([...Object.keys(base), ...Object.keys(draft)])) result[key] = mergeProductChanges(base[key], draft[key], latest[key]);
+    return result;
+  }
+  return draft;
+}
 export function hydrateProduct(product: Product): Product {
   const type = kindLabels[productKind(product.type)];
   const defaults = defaultConfig(product.type, product.price);
   const config = { ...defaults, ...product.config, automations: { ...defaults.automations, ...product.config?.automations } };
+  config.modules = config.modules.map((module, index) => ({ ...module, id: module.id || `legacy-module-${index}`, lessons: module.lessons.map((lesson, lessonIndex) => lessonData(lesson, index * 1000 + lessonIndex)) }));
   const experience = { ...defaultExperience(), oneTimeAmount: config.billing === 'Payment plan' ? config.amount * config.installments : config.amount, installmentAmount: config.billing === 'Payment plan' ? config.amount : Math.round(config.amount / config.installments * 100) / 100, recurringAmount: config.billing === 'Subscription' ? config.amount : 29, planEnabled: config.billing === 'Payment plan', recurringEnabled: config.billing === 'Subscription', ...product.config?.experience, instructor: { ...defaultExperience().instructor, ...config.experience?.instructor }, checkout: { ...defaultExperience().checkout, ...config.experience?.checkout } };
   experience.coupon = { ...defaultExperience().coupon, ...product.config?.experience?.coupon };
   if (!product.config?.experience?.accessRule) experience.accessRule = config.delivery === 'After approval' ? 'After manual approval' : 'Immediately after payment';
   return { ...product, type, tag: type, config: { ...config, experience } };
 }
 export function newProduct(): Product {
-  return { id: '', name: '', type: 'Digital Product', price: '€0', stats: [['sales', '0 sales']], status: 'Draft', sales: '0', revenue: '€0', art: 'templates', tag: 'Digital Product', description: '', config: defaultConfig('Digital Product') };
+  return { id: '', name: '', type: 'Digital Product', price: '', stats: [['sales', '0 sales']], status: 'Draft', sales: '0', revenue: '€0', art: 'templates', tag: 'Digital Product', description: '', config: defaultConfig('Digital Product') };
 }
 export function formatPrice(config: CommerceConfig) {
   const amount = new Intl.NumberFormat('en-IE', { style: 'currency', currency: config.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(config.amount);
@@ -106,11 +126,15 @@ export function validateProduct(product: Product, publish = false): string[] {
   if (c.billing === 'Payment plan' && (!Number.isInteger(c.installments) || c.installments < 2)) errors.push('Payment plans need at least two installments.');
   if (!Number.isInteger(c.trialDays) || c.trialDays < 0) errors.push('Trial days must be a whole number of zero or greater.');
   if (!Number.isFinite(c.taxRate) || c.taxRate < 0 || c.taxRate > 100) errors.push('Tax rate must be between 0 and 100.');
+  for (const [label, value] of [['Download expiration', c.downloadExpiryHours], ['Buffer before', c.bufferBefore], ['Buffer after', c.bufferAfter], ['Cancellation notice', c.cancellationHours]] as const) if (value !== undefined && (!Number.isFinite(value) || value < 0)) errors.push(`${label} must be zero or greater.`);
+  if (c.downloadExpiryHours !== undefined && (c.downloadExpiryHours < 1 || c.downloadExpiryHours > 720)) errors.push('Download expiration must be between 1 and 720 hours.');
   const kind = productKind(product.type);
   if (kind === 'subscription' && c.billing !== 'Subscription') errors.push('Subscription products require recurring billing.');
   if (kind === 'digital' && (!Number.isInteger(c.downloadLimit) || c.downloadLimit < 1)) errors.push('Download limit must be a positive whole number.');
   const experience = c.experience;
   if (experience) {
+    for (const [label, value] of [['Terms URL', experience.checkout.termsUrl], ['Privacy policy URL', experience.checkout.privacyUrl]]) if (value) { try { if (!['http:', 'https:'].includes(new URL(value).protocol)) throw new Error(); } catch { errors.push(`${label} must be a valid HTTP or HTTPS URL.`); } }
+    if (experience.checkout.bumpEnabled && (!experience.checkout.bumpProductId || experience.checkout.bumpProductId === product.id)) errors.push('Choose another product for the order bump.');
     if (!Number.isFinite(experience.oneTimeAmount) || experience.oneTimeAmount < 0) errors.push('One-time price must be zero or greater.');
     if (!Number.isInteger(experience.studentLimit) || experience.studentLimit < 0) errors.push('Student limit must be a whole number of zero or greater.');
     if (experience.planEnabled && (!Number.isFinite(experience.installmentAmount) || experience.installmentAmount <= 0 || !Number.isInteger(c.installments) || c.installments < 2)) errors.push('Enabled payment plans require a positive amount and at least two installments.');
@@ -134,6 +158,7 @@ export function validateProduct(product: Product, publish = false): string[] {
   if (c.customDomain && !/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(c.customDomain)) errors.push('Enter a domain name without a protocol or path.');
   for (const student of c.students ?? []) { if (!student.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email) || !Number.isFinite(student.progress) || student.progress < 0 || student.progress > 100) errors.push('Students need a name, valid email and progress between 0 and 100.'); }
   if (publish) {
+    if (c.assets.some(asset => asset.storageId?.startsWith('local-')) || c.modules.some(module => module.lessons.some(lesson => lessonData(lesson).storageId?.startsWith('local-')))) errors.push('Upload local attachments to cloud storage or replace them with delivery URLs before publishing.');
     if (!product.description.trim()) errors.push('Add a description before publishing.');
     if (kind === 'service' && !c.bookingUrl.trim() && !c.fulfillment.trim()) errors.push('Add a booking link or service fulfillment instructions.');
     if (kind === 'service' && (!Number.isFinite(c.duration) || c.duration <= 0)) errors.push('Service duration must be greater than zero.');

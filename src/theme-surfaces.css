@@ -1499,6 +1499,8 @@ html.dark :is(
   .crm-record-summary>b,
   .crm-message time,
   .crm-appointment p,
+  .crm-loading-center strong,
+  .crm-loading-center span,
   .discounts-page-heading p,
   .dc-editor-heading p,
   .discount-header-breadcrumb button,
@@ -1670,6 +1672,7 @@ html.dark :is(
   .crm-contacts-table,
   .crm-record-panel,
   .crm-thread,
+  .crm-loading-center,
   .dc-table-card,
   .dc-action-menu,
   .dc-performance,
@@ -2017,6 +2020,7 @@ html.dark :is(
   .crm-search:hover,
   .crm-task-card:hover,
   .crm-checkmark:after,
+  .crm-task-quick-add .crm-custom-select-trigger,
   .fn-domain-picker>.aw-search,
   .pf-live-tabs [role=tabpanel],
   .st-privacy-toc-chip:hover,
@@ -3749,6 +3753,7 @@ html.dark :is(
   .crm-overview-grid a,
   .crm-record-breadcrumb b,
   .crm-thread header,
+  .crm-loading-center svg,
   .masterclass-progress>b,
   .aw-ai-features svg
 ):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -4403,7 +4408,8 @@ html.dark :is(
     color: var(--ui-text-secondary)
 }
 html.dark :is(
-  .dw-page .tw-included-list input[type=checkbox]
+  .dw-page .tw-included-list input[type=checkbox],
+  .crm-task-quick-add input[type="text"].crm-task-title
 ):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: var(--ui-surface)

@@ -4,7 +4,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { BookingSelect } from './BookingSelect';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Video, X } from 'lucide-react';
-import { bookingColor, availableSlots, dateKey, formatTime, hostInstant, parseDate, uid } from './model';
+import { bookingColor, availableSlots, dateKey, formatTime, hostInstant, parseDate, readContacts, uid } from './model';
 import type { Appointment, BookingPage } from './model';
 import { Empty } from './ui';
 
@@ -71,6 +71,12 @@ export function AppointmentEditor({ pages, bookings, value, save, close }: { pag
   }}>
     <div className="bk-appointment-fields bk-form custom-scrollbar">{localizeNode(!pages.length?<Empty title={translateText("Create a booking page first")} detail="Appointments need a page with availability rules."/>:<>
       <label>{translateText("Booking page")}<BookingSelect value={pageId} onChange={e=>changePage(e.target.value)}>{localizeNode(pages.map(p=><option key={p.id} value={p.id}>{localizeNode(p.name)}{localizeNode(p.active?'':' (turned off)')}</option>))}</BookingSelect></label>
+      {localizeNode(readContacts().length > 0 && <label>{translateText("Select existing contact (optional)")}<BookingSelect value="" onChange={e => {
+        const c = readContacts().find(item => item.id === e.target.value);
+        if (c) {
+          setAnswers(a => ({ ...a, name: c.name, email: c.email, whatsapp: c.phone || a.whatsapp || '' }));
+        }
+      }}><option value="">{translateText("Choose from saved contacts...")}</option>{localizeNode(readContacts().map(c => <option key={c.id} value={c.id}>{localizeNode(c.name)}{localizeNode(c.email ? ' (' + c.email + ')' : c.phone ? ' (' + c.phone + ')' : '')}</option>))}</BookingSelect></label>)}
       {localizeNode(page&&<section className="bk-appointment-questions bk-form" key={page.id}><div className="bk-appointment-form-heading"><b>{translateText("Client details & booking questions")}</b><small>{localizeNode(page.name)}</small></div><div className="bk-appointment-question-grid"><InviteeFields page={page} answers={answers} setAnswers={setAnswers} guests={guests} setGuests={setGuests}/></div></section>)}
       <div className="bk-form-grid"><label>{translateText("Date")}<input type="date" required value={date} onChange={e=>{setDate(e.target.value);setTime('');setError('')}}/></label><label>{translateText("Time (")}{localizeNode(page?.hostTimezone)})<BookingSelect required value={time} onChange={e=>setTime(e.target.value)}><option value="">{translateText("Select a time")}</option>{localizeNode(existing&&existing.calendarId===pageId&&existing.date===date&&existing.duration===duration&&!slots.some(s=>s.time===existing.time)&&<option value={existing.time}>{localizeNode(existing.time)}{translateText(" (existing)")}</option>)}{localizeNode(slots.map(s=><option key={s.time} value={s.time}>{localizeNode(formatTime(s.start,page!.hostTimezone))}</option>))}</BookingSelect></label></div>
       <div className="bk-form-grid"><label>{translateText("Duration")}<BookingSelect value={duration} onChange={e=>{setDuration(Number(e.target.value));setTime('')}}>{localizeNode([...new Set([duration,...(page?.durationOptions||[30])])].map(n=><option key={n} value={n}>{localizeNode(n)}{translateText(" min")}</option>))}</BookingSelect></label><label>{translateText("Status")}<BookingSelect value={status} onChange={e=>setStatus(e.target.value as Appointment['status'])}>{localizeNode(['Confirmed','Pending','Canceled'].map(s=><option key={s} value={s}>{localizeNode(s)}</option>))}</BookingSelect></label></div>

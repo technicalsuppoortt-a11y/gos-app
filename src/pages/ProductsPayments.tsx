@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CommerceSelect } from '../components/ui/CommerceSelect';
 import { WorkspaceSettings } from './commerce/WorkspaceSettings';
+import { CommerceRecords } from './commerce/CommerceRecords';
 import { DiscountsWorkspace } from './DiscountsWorkspace';
 
 import { useTransactions } from './commerce/transactions';
@@ -443,7 +444,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
         ) : selectedTab === 'Settings' ? (
           <WorkspaceSettings notify={notify} />
         ) : (
-          <SecondaryModule tab={selectedTab} notify={notify} />
+          <CommerceRecords tab={selectedTab} notify={notify} />
         )
       )}
     </main>
@@ -859,92 +860,6 @@ function ProfessionalSelect({
       onChange={onChange}
       icon={Icon}
     />
-  );
-}
-
-function SecondaryModule({ tab, notify }: { tab: string; notify: (s: string) => void }) {
-  useUILanguage();
-  const rows =
-    tab === 'Orders'
-      ? [
-          ['#ORD-1048', 'Sarah Ahmed', 'Complete AI Marketing Course', '€297', 'Paid'],
-          ['#ORD-1047', 'Omar Khaled', 'Social Media Templates Pack', '€47', 'Paid'],
-          ['#ORD-1046', 'Lina Mansour', 'GOS Pro Membership', '€29', 'Pending'],
-        ]
-      : tab === 'Customers'
-      ? [
-          ['Sarah Ahmed', 'sarah@northstar.co', '3 orders', '€594', 'Active'],
-          ['Omar Khaled', 'omar@orbitlabs.io', '2 orders', '€344', 'Active'],
-          ['Lina Mansour', 'lina@brightpath.com', '1 order', '€97', 'Active'],
-        ]
-      : tab === 'Payments'
-      ? [
-          ['PAY-4401', 'Sarah Ahmed', 'Stripe', '€297', 'Succeeded'],
-          ['PAY-4400', 'Omar Khaled', 'Stripe', '€47', 'Succeeded'],
-          ['PAY-4399', 'Lina Mansour', 'PayPal', '€97', 'Refunded'],
-        ]
-      : tab === 'Discounts'
-      ? [
-          ['WELCOME10', '10% off', 'All products', '84 uses', 'Active'],
-          ['GROWTH25', '€25 off', 'Business Growth Bundle', '16 uses', 'Active'],
-        ]
-      : [];
-
-  return (
-    <section className="pp-secondary-view">
-      <div className="pp-secondary-heading">
-        <div>
-          <h2>{localizeNode(tab)}</h2>
-          <p>
-            {translateText('Manage your ')}
-            {localizeNode(tab.toLowerCase())}
-            {translateText(' across products and payments.')}
-          </p>
-        </div>
-        <button onClick={() => notify(`Create ${tab.slice(0, -1).toLowerCase()} form opened.`)}>
-          <Plus size={14} />
-          {translateText(' Create ')}
-          {localizeNode(tab.slice(0, -1))}
-        </button>
-      </div>
-      {localizeNode(
-        <div className="pp-secondary-table">
-          <div>
-            {localizeNode(
-              (tab === 'Orders'
-                ? ['Order', 'Customer', 'Product', 'Total', 'Status']
-                : tab === 'Customers'
-                ? ['Customer', 'Email', 'Orders', 'Lifetime value', 'Status']
-                : tab === 'Payments'
-                ? ['Payment', 'Customer', 'Provider', 'Amount', 'Status']
-                : ['Code', 'Offer', 'Applies to', 'Uses', 'Status']
-              ).map(h => <b key={h}>{localizeNode(h)}</b>)
-            )}
-          </div>
-          {localizeNode(
-            rows.map(row => (
-              <div key={row[0]}>
-                {localizeNode(
-                  row.map((cell, i) => (
-                    <span key={i}>
-                      {localizeNode(
-                        i === row.length - 1 ? (
-                          <em className={`pp-secondary-status ${cell.toLowerCase()}`}>
-                            {localizeNode(cell)}
-                          </em>
-                        ) : (
-                          cell
-                        )
-                      )}
-                    </span>
-                  ))
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </section>
   );
 }
 

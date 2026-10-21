@@ -10,7 +10,7 @@ const events = {
   removeEventListener(type, callback) { listeners.get(type)?.delete(callback); },
 };
 globalThis.localStorage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
-globalThis.window = { ...events, location: { origin: 'http://localhost' } };
+globalThis.window = { ...events, localStorage: globalThis.localStorage, location: { origin: 'http://localhost' } };
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
 try {
   const model = await server.ssrLoadModule('/src/pages/commerce/model.ts');
@@ -68,6 +68,6 @@ try {
   assert.ok(bookingHTML.includes('Preview scheduling slots') && bookingHTML.includes('Consultant biography'));
   const router = createMemoryRouter([{ path: '/dashboard/products-payments', element: createElement(ProductsPayments, { notify() {} }) }], { initialEntries: ['/dashboard/products-payments'] });
   const catalogHTML = renderToString(createElement(RouterProvider, { router })); router.dispose();
-  assert.equal((catalogHTML.match(/aria-haspopup="menu"/g) ?? []).length, 10);
+  assert.equal((catalogHTML.match(/aria-haspopup="menu"/g) ?? []).length, 0, 'An empty workspace must not generate sample catalog products');
   console.log('PASS preview field binding, distinct layouts, configurable service scheduling, storage-event syncing, expired snapshots and card action triggers');
 } finally { await server.close(); }

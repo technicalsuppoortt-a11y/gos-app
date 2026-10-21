@@ -40,6 +40,7 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     const old = (await tx.get(ref)).data();
     if (old && old.managementTokenHash !== digest || !old && operation !== 'create') throw new HttpsError('permission-denied', 'Open the original booking confirmation to manage it.');
     if (old && operation !== 'create' && !calendar.afterBooking?.allowCancelReschedule) throw new HttpsError('failed-precondition', 'Contact the host to change this booking.');
+    if (old && operation !== 'create' && calendar.cancellationHours > 0 && Date.parse(old.start) - Date.now() < calendar.cancellationHours * 3600000) throw new HttpsError('failed-precondition', 'The cancellation or rescheduling notice period has passed. Contact the host.');
     if (old && operation === 'create') return { booking: Object.fromEntries(Object.entries(old).filter(([key]) => key !== 'managementTokenHash')) };
     const busy = (await tx.get(root.collection('bookings'))).docs.map(row => ({ ...row.data(), id: row.id }));
     let saved;

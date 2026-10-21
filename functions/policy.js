@@ -31,8 +31,8 @@ export function validateBooking(page, booking, existing, now = Date.now()) {
   if (!intervals.some(row => minute >= time(row.start) && minute + duration <= time(row.end))) return 'This time is outside the configured availability.';
   if ((page.breaks ?? []).some(row => (!row.date || row.date === date) && minute < time(row.end) && minute + duration > time(row.start))) return 'This time overlaps a calendar break.';
   const records = existing.filter(row => row.id !== booking.id && row.status !== 'Canceled');
-  const buffer = (page.bufferTime ?? 0) * 60000;
-  const overlaps = records.filter(row => start < Date.parse(row.start) + row.duration * 60000 + buffer && start + duration * 60000 + buffer > Date.parse(row.start));
+  const before = (page.bufferBefore ?? page.bufferTime ?? 0) * 60000, after = (page.bufferAfter ?? page.bufferTime ?? 0) * 60000;
+  const overlaps = records.filter(row => start < Date.parse(row.start) + row.duration * 60000 + after && start + duration * 60000 + before > Date.parse(row.start));
   if (overlaps.some(row => row.calendarId !== booking.calendarId) || overlaps.length >= (page.groupCapacity ?? 1)) return 'This time is already booked. Choose another slot.';
   if (records.filter(row => row.calendarId === booking.calendarId && row.date === date).length >= (page.dailyLimit ?? 100)) return 'The daily booking limit has been reached.';
   if (booking.date !== date) return 'The booking date does not match the calendar timezone.';

@@ -225,7 +225,11 @@ export const defaultContacts: Contact[] = [];
 export const defaultMembers: Member[] = [];
 export const readAppointments = () => load<Appointment[]>(KEYS.appointments, []);
 export const readContacts = () => load<Contact[]>(KEYS.contacts, []);
-export const readMembers = () => load<Member[]>(KEYS.members, []);
+export const readMembers = () => {
+  const legacy = load<Member[]>(KEYS.members, []);
+  const live = load<(Member & { active?: boolean })[]>('entity:members', []).map(member => ({ ...member, status: member.active === false ? 'Invited' as const : member.status || 'Active' as const }));
+  return [...new Map([...legacy, ...live].map(member => [member.id, member])).values()];
+};
 export const publicUrl = (page: BookingPage) => new URL('/book/' + encodeURIComponent(page.slug), window.location.origin).href;
 
 // RFC 4180-style CSV, including quoted commas, escaped quotes and multiline cells.

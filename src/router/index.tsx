@@ -40,6 +40,7 @@ const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 
 const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
+const ProductAccess = lazy(() => import('../pages/commerce/ProductAccess').then(module => ({ default: module.ProductAccess })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
 const crmChildren = [
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
   // Keep activation links usable while the onboarding cycle is disabled.
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
   { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute> },
+  { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
