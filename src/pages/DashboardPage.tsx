@@ -14,6 +14,7 @@ import { CRMLeads } from './CRMLeads';
 import { AIFollowUp, defaultWorkflows } from './AIFollowUp';
 import { BookingCalendar } from './BookingCalendar';
 import { ProductsPayments } from './ProductsPayments';
+import { ProductTemplateLibrary } from './commerce/ProductTemplateLibrary';
 import { BookingTemplates } from './booking/BookingTemplates';
 import { TemplatesWorkspace, type TemplateScope } from './TemplatesWorkspace';
 import { Select } from '../components/ui/Select';
@@ -43,6 +44,7 @@ export const DashboardPage:React.FC<{page:PageKey}>=({page})=>{
  const selected=canonicalLeads.find(l=>l.id===activeConversation)??canonicalLeads[0];
  const templateScope = ['booking', 'follow-up', 'products', 'copilot', 'knowledge'].includes(page) ? page as TemplateScope : null;
  if (page === 'booking' && new URLSearchParams(location.search).get('tab') === 'templates') return <BookingTemplates/>;
+ if (page === 'products' && new URLSearchParams(location.search).get('tab') === 'templates') return <ProductTemplateLibrary/>;
  if (templateScope && new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page}>{translateText("Back to ")}{localizeNode(page)}</Link></div><TemplatesWorkspace key={templateScope} scope={templateScope} onInstall={templateScope === 'follow-up' ? template => { const key = template.category === 'Automations' ? 'gos.ai-followup.workflows.v1' : 'gos.ai-followup.templates.v1'; const saved = JSON.parse(cloudStorage.getItem(key) ?? 'null'); const items = Array.isArray(saved) ? saved : []; const item = template.category === 'Automations' ? { id: template.id, name: template.name, description: template.description, trigger: '0 triggered', active: false, from: 'NEW', to: 'CONTACTED', actionType: 'Email', sequenceSteps: template.content.steps.map((step, index) => ({ id: template.id + '-' + index, delay: String(index + 1), unit: 'hours', action: step.toLowerCase().includes('message') ? 'WhatsApp' : 'Email' })) } : { id: template.id, title: template.name, description: template.description, iconKey: 'message', custom: true, category: template.category, prompt: template.content.headline, variables: '{{first_name}}' }; cloudStorage.setItem(key, JSON.stringify([...items, item])); } : undefined}/></>;
  const content=(()=>{switch(page){
  case 'home':return <HomeDashboard/>;

@@ -702,4 +702,535 @@
   border-color: rgba(16, 185, 129, 0.3);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ── Products & Payments Settings Modal Popup Professional Inputs & Controls ──
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Modal Backdrop & Container */
+.pp-page .cw-dialog-backdrop {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  animation: pp-settings-backdrop-fade 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 1200 !important;
+}
+
+.pp-page .cw-dialog {
+  width: min(510px, calc(100vw - 32px)) !important;
+  padding: 24px 26px !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.25), 0 4px 16px -2px rgba(15, 23, 42, 0.06) !important;
+  animation: pp-settings-dialog-zoom 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+}
+
+.pp-page .cw-dialog > header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 15px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.pp-page .cw-dialog > header h2 {
+  font-size: 17px !important;
+  font-weight: 750 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 !important;
+}
+
+.pp-page .cw-dialog > header .cw-icon-button {
+  display: grid !important;
+  place-items: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.pp-page .cw-dialog > header .cw-icon-button:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  transform: scale(1.04) !important;
+}
+
+/* Settings Form & Fieldset Grid */
+.pp-page .ce-settings-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+.pp-page .pp-settings-fields {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+/* Professional Form Fields & Labels */
+.pp-page .ce-settings-form .cw-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6.5px !important;
+  margin-bottom: 0 !important;
+  min-width: 0 !important;
+}
+
+.pp-page .ce-settings-form .cw-field > span {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  color: #1e293b !important;
+  letter-spacing: -0.01em !important;
+}
+
+.pp-page .ce-settings-form .cw-field > span svg {
+  color: #6366f1 !important;
+  flex-shrink: 0 !important;
+}
+
+.pp-page .ce-settings-form .cw-field > small {
+  font-size: 11px !important;
+  color: #64748b !important;
+  line-height: 1.45 !important;
+  font-weight: 400 !important;
+  margin-top: 1px !important;
+}
+
+/* Polished Text, Email, Number, URL Inputs */
+.pp-page .ce-settings-form .cw-field input:not([type=checkbox]):not([type=file]) {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  padding: 0 14px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.pp-page .ce-settings-form .cw-field input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+.pp-page .ce-settings-form .cw-field input:hover:not(:disabled) {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.pp-page .ce-settings-form .cw-field input:focus {
+  border-color: #7c5cfc !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3.5px rgba(124, 92, 252, 0.15), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Professional Select Trigger Dropdowns */
+.pp-page .ce-settings-form .cw-select {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.pp-page .ce-settings-form .commerce-select-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 14px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.pp-page .ce-settings-form .commerce-select-trigger:hover:not(:disabled) {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.pp-page .ce-settings-form .commerce-select-trigger:focus-visible,
+.pp-page .ce-settings-form .commerce-select-trigger[data-state=open] {
+  border-color: #7c5cfc !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3.5px rgba(124, 92, 252, 0.15) !important;
+  outline: none !important;
+}
+
+/* Premium Interactive Toggle Row Cards */
+.pp-page .ce-settings-form .tw-toggle-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid #eef2f6 !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  min-height: 48px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row:hover {
+  border-color: #c4b5fd !important;
+  background: #faf9ff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(124, 92, 252, 0.06) !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row:has(input:checked) {
+  border-color: #a78bfa !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f6f3ff 100%) !important;
+  box-shadow: 0 2px 8px rgba(124, 92, 252, 0.08) !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row > span {
+  display: flex !important;
+  flex: 1 !important;
+  flex-direction: column !important;
+  gap: 2.5px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  line-height: 1.35 !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row > span small {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: #64748b !important;
+  line-height: 1.4 !important;
+}
+
+/* Toggle Switch Control */
+.pp-page .ce-settings-form .tw-toggle-row input[role=switch] {
+  width: 40px !important;
+  height: 23px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  border-radius: 999px !important;
+  background: #cbd5e1 !important;
+  border: 1.5px solid transparent !important;
+  position: relative !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  outline: none !important;
+  margin: 0 !important;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row input[role=switch]:before {
+  content: '' !important;
+  position: absolute !important;
+  top: 2px !important;
+  left: 2px !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row input[role=switch]:checked {
+  background: #7c5cfc !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row input[role=switch]:checked:before {
+  transform: translateX(17px) !important;
+}
+
+.pp-page .ce-settings-form .tw-toggle-row input[role=switch]:focus-visible {
+  box-shadow: 0 0 0 3.5px rgba(124, 92, 252, 0.22) !important;
+}
+
+/* Informative Help Callout Banner */
+.pp-page .ce-settings-form .cw-help {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 12px 15px !important;
+  border-radius: 11px !important;
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1e40af !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+  margin: 0 0 4px !important;
+  font-weight: 450 !important;
+}
+
+/* Modal Actions Footer & Buttons */
+.pp-page .ce-settings-form .course-modal-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+  padding-top: 18px !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+.pp-page .ce-settings-form .course-modal-actions .cw-button {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 9px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(:disabled) {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.pp-page .ce-settings-form .course-modal-actions .cw-button.primary {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 9px !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #7c5cfc 0%, #6d28d9 100%) !important;
+  border: 1.5px solid #6d28d9 !important;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.28), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.pp-page .ce-settings-form .course-modal-actions .cw-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.38) !important;
+  transform: translateY(-1px) !important;
+}
+
+.pp-page .ce-settings-form .course-modal-actions .cw-button.primary:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+/* Error Notice in Popup */
+.pp-page .ce-settings-form .cw-errors {
+  padding: 10px 14px !important;
+  border-radius: 9px !important;
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin: 4px 0 0 !important;
+}
+
+/* Animations */
+@keyframes pp-settings-backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pp-settings-dialog-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Dark Mode Parity ── */
+.dark .pp-page .cw-dialog,
+[data-theme='dark'] .pp-page .cw-dialog,
+html.dark .pp-page .cw-dialog {
+  background: #14132b !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .pp-page .cw-dialog > header,
+[data-theme='dark'] .pp-page .cw-dialog > header,
+html.dark .pp-page .cw-dialog > header {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.dark .pp-page .cw-dialog > header h2,
+[data-theme='dark'] .pp-page .cw-dialog > header h2,
+html.dark .pp-page .cw-dialog > header h2 {
+  color: #f8fafc !important;
+}
+
+.dark .pp-page .cw-dialog > header .cw-icon-button,
+[data-theme='dark'] .pp-page .cw-dialog > header .cw-icon-button,
+html.dark .pp-page .cw-dialog > header .cw-icon-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+}
+
+.dark .pp-page .cw-dialog > header .cw-icon-button:hover,
+[data-theme='dark'] .pp-page .cw-dialog > header .cw-icon-button:hover,
+html.dark .pp-page .cw-dialog > header .cw-icon-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-field > span,
+[data-theme='dark'] .pp-page .ce-settings-form .cw-field > span,
+html.dark .pp-page .ce-settings-form .cw-field > span {
+  color: #e2e8f0 !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-field > small,
+[data-theme='dark'] .pp-page .ce-settings-form .cw-field > small,
+html.dark .pp-page .ce-settings-form .cw-field > small {
+  color: #94a3b8 !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-field input:not([type=checkbox]):not([type=file]),
+[data-theme='dark'] .pp-page .ce-settings-form .cw-field input:not([type=checkbox]):not([type=file]),
+html.dark .pp-page .ce-settings-form .cw-field input:not([type=checkbox]):not([type=file]) {
+  background: #0f0e21 !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  color: #f8fafc !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-field input:hover:not(:disabled),
+[data-theme='dark'] .pp-page .ce-settings-form .cw-field input:hover:not(:disabled),
+html.dark .pp-page .ce-settings-form .cw-field input:hover:not(:disabled) {
+  border-color: rgba(124, 92, 252, 0.45) !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-field input:focus,
+[data-theme='dark'] .pp-page .ce-settings-form .cw-field input:focus,
+html.dark .pp-page .ce-settings-form .cw-field input:focus {
+  background: #14132b !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3.5px rgba(139, 92, 246, 0.25) !important;
+}
+
+.dark .pp-page .ce-settings-form .commerce-select-trigger,
+[data-theme='dark'] .pp-page .ce-settings-form .commerce-select-trigger,
+html.dark .pp-page .ce-settings-form .commerce-select-trigger {
+  background: #0f0e21 !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  color: #f8fafc !important;
+}
+
+.dark .pp-page .ce-settings-form .commerce-select-trigger:focus-visible,
+.dark .pp-page .ce-settings-form .commerce-select-trigger[data-state=open],
+[data-theme='dark'] .pp-page .ce-settings-form .commerce-select-trigger:focus-visible,
+[data-theme='dark'] .pp-page .ce-settings-form .commerce-select-trigger[data-state=open],
+html.dark .pp-page .ce-settings-form .commerce-select-trigger:focus-visible,
+html.dark .pp-page .ce-settings-form .commerce-select-trigger[data-state=open] {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3.5px rgba(139, 92, 246, 0.25) !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row,
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row,
+html.dark .pp-page .ce-settings-form .tw-toggle-row {
+  background: #0f0e21 !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row:hover,
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row:hover,
+html.dark .pp-page .ce-settings-form .tw-toggle-row:hover {
+  background: #181636 !important;
+  border-color: rgba(124, 92, 252, 0.4) !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row:has(input:checked),
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row:has(input:checked),
+html.dark .pp-page .ce-settings-form .tw-toggle-row:has(input:checked) {
+  background: linear-gradient(135deg, #181636 0%, #201948 100%) !important;
+  border-color: rgba(124, 92, 252, 0.5) !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row > span,
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row > span,
+html.dark .pp-page .ce-settings-form .tw-toggle-row > span {
+  color: #f1f5f9 !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row input[role=switch],
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row input[role=switch],
+html.dark .pp-page .ce-settings-form .tw-toggle-row input[role=switch] {
+  background: #334155 !important;
+}
+
+.dark .pp-page .ce-settings-form .tw-toggle-row input[role=switch]:checked,
+[data-theme='dark'] .pp-page .ce-settings-form .tw-toggle-row input[role=switch]:checked,
+html.dark .pp-page .ce-settings-form .tw-toggle-row input[role=switch]:checked {
+  background: #8b5cf6 !important;
+}
+
+.dark .pp-page .ce-settings-form .cw-help,
+[data-theme='dark'] .pp-page .ce-settings-form .cw-help,
+html.dark .pp-page .ce-settings-form .cw-help {
+  background: rgba(30, 58, 138, 0.25) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  color: #93c5fd !important;
+}
+
+.dark .pp-page .ce-settings-form .course-modal-actions,
+[data-theme='dark'] .pp-page .ce-settings-form .course-modal-actions,
+html.dark .pp-page .ce-settings-form .course-modal-actions {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.dark .pp-page .ce-settings-form .course-modal-actions .cw-button,
+[data-theme='dark'] .pp-page .ce-settings-form .course-modal-actions .cw-button,
+html.dark .pp-page .ce-settings-form .course-modal-actions .cw-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(:disabled),
+[data-theme='dark'] .pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(:disabled),
+html.dark .pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+
 

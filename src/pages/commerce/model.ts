@@ -48,6 +48,7 @@ export interface CommerceConfig {
   experience?: ProductExperience;
 }
 export interface Product {
+  slug?: string;
   id: string; name: string; type: ProductType; price: string; stats: Array<[StatKind, string]>;
   status: 'Active' | 'Draft'; sales: string; revenue: string; art: string; image?: string;
   tag: string; description: string; config?: CommerceConfig; createdAt?: string;

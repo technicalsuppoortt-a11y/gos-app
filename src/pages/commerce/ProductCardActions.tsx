@@ -1,13 +1,15 @@
+import { ProductDeleteDialog } from './ProductDeleteDialog';
 import { useUILanguage, translateText } from '../../i18n/display';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { ExternalLink, MoreHorizontal, Pencil } from 'lucide-react';
+import { ExternalLink, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import type { Product } from './model';
 import { productPreviewToken, writePreview } from './previewSnapshot';
 
 export function ProductCardActions({ product, onEdit, notify }: { product: Product; onEdit: () => void; notify: (message: string) => void }) {
   useUILanguage();
+  const [deleting, setDeleting] = useState(false);
   const [open, setOpen] = useState(false), [position, setPosition] = useState({ top: 0, left: 0 });
   const trigger = useRef<HTMLButtonElement>(null), menu = useRef<HTMLDivElement>(null), menuId = useId();
   const token = productPreviewToken(product);
@@ -21,7 +23,7 @@ export function ProductCardActions({ product, onEdit, notify }: { product: Produ
   }, [open]);
   return <MotionConfig reducedMotion="user"><button ref={trigger} className="pp-card-more" title={translateText("Product actions")} aria-label={translateText(`Actions for ${product.name}`)} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={event => {
     event.stopPropagation(); const bounds = event.currentTarget.getBoundingClientRect();
-    setPosition({ left: Math.max(8, Math.min(bounds.right - 210, window.innerWidth - 218)), top: Math.max(8, Math.min(bounds.bottom + 6, window.innerHeight - 112)) }); setOpen(value => !value);
+    setPosition({ left: Math.max(8, Math.min(bounds.right - 210, window.innerWidth - 218)), top: Math.max(8, Math.min(bounds.bottom + 6, window.innerHeight - 158)) }); setOpen(value => !value);
   }}><MoreHorizontal size={17}/></button>{typeof document !== 'undefined' && createPortal(<AnimatePresence>{open && <motion.div ref={menu} id={menuId} className="pp-card-actions" role="menu" aria-label={translateText(`${product.name} actions`)} style={position} initial={{ opacity: 0, y: -5, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -3 }} transition={{ duration: .15 }} onClick={event => event.stopPropagation()} onKeyDown={event => {
     if (event.key === 'Escape') { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
     else if (event.key === 'Tab') { setOpen(false); trigger.current?.focus(); }
@@ -33,5 +35,5 @@ export function ProductCardActions({ product, onEdit, notify }: { product: Produ
   }}><button role="menuitem" onClick={() => { setOpen(false); onEdit(); }}><Pencil size={15}/>{translateText("Edit Product")}</button><a role="menuitem" href={`/product-preview/${encodeURIComponent(token)}`} target="_blank" rel="noopener noreferrer" onClick={event => {
     try { writePreview(token, product); setOpen(false); }
     catch { event.preventDefault(); notify('Preview could not be opened. Browser storage is unavailable or full.'); }
-  }}><ExternalLink size={15}/>{translateText("View Live Preview")}</a></motion.div>}</AnimatePresence>, document.body)}</MotionConfig>;
+  }}><ExternalLink size={15}/>{translateText("View Live Preview")}</a><button role="menuitem" className="pp-delete-action" onClick={() => { setOpen(false); setDeleting(true); }}><Trash2 size={15}/>{translateText("Delete Product")}</button></motion.div>}</AnimatePresence>, document.body)}{deleting && <ProductDeleteDialog product={product} onClose={() => { setDeleting(false); trigger.current?.focus(); }}/>}</MotionConfig>;
 }
