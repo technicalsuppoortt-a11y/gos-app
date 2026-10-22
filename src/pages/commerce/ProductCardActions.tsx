@@ -32,7 +32,7 @@ export function ProductCardActions({ product, onEdit, notify }: { product: Produ
       const index = items.indexOf(document.activeElement as HTMLElement);
       items[event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
     }
-  }}><button role="menuitem" onClick={() => { setOpen(false); onEdit(); }}><Pencil size={15}/>{translateText("Edit Product")}</button><a role="menuitem" href={`/product-preview/${encodeURIComponent(token)}`} target="_blank" rel="noopener noreferrer" onClick={event => {
+  }}><button role="menuitem" onClick={() => { setOpen(false); onEdit(); }}><Pencil size={15}/>{translateText("Edit Product")}</button><a role="menuitem" href={`/product-preview/${encodeURIComponent(token)}`} target="_blank" rel="noopener noreferrer" onPointerDown={() => { try { writePreview(token, product); } catch {} }} onClick={event => {
     try { writePreview(token, product); setOpen(false); }
     catch { event.preventDefault(); notify('Preview could not be opened. Browser storage is unavailable or full.'); }
   }}><ExternalLink size={15}/>{translateText("View Live Preview")}</a><button role="menuitem" className="pp-delete-action" onClick={() => { setOpen(false); setDeleting(true); }}><Trash2 size={15}/>{translateText("Delete Product")}</button></motion.div>}</AnimatePresence>, document.body)}{deleting && <ProductDeleteDialog product={product} onClose={() => { setDeleting(false); trigger.current?.focus(); }}/>}</MotionConfig>;

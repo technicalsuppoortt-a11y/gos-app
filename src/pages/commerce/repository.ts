@@ -17,7 +17,7 @@ const listeners = new Set<() => void>();
 function read(key: string): Product[] {
   try {
     const saved: unknown = JSON.parse(cloudStorage.getItem(key) ?? 'null');
-    if (Array.isArray(saved) && saved.every(p => p && typeof p.id === 'string' && typeof p.name === 'string' && Array.isArray(p.stats) && typeof p.price === 'string')) return saved.map(product => hydrateProduct(product));
+    if (Array.isArray(saved)) return saved.filter((p): p is Product => Boolean(p && typeof p.id === 'string' && typeof p.name === 'string')).map(product => hydrateProduct(product));
   } catch { /* Use the catalog defaults when storage is unavailable or corrupt. */ }
   return [];
 }

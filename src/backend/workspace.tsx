@@ -14,7 +14,7 @@ import { createAssetPersistence } from './assetPersistence';
 
 const isAuthFailure = (error: unknown) => ['permission-denied', 'unauthenticated'].includes((error as { code?: string })?.code || '');
 
-function normalizeFirestoreData<T>(val: T): T {
+export function normalizeFirestoreData<T>(val: T): T {
   if (val === null || val === undefined) return val;
   if (typeof val === 'object') {
     const raw = val as unknown as Record<string, unknown>;
