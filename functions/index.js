@@ -1,4 +1,5 @@
 import { captureAssetLeadRequest } from './lead-capture.js';
+import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
 import { getStorage } from 'firebase-admin/storage';
@@ -27,6 +28,7 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 
 initializeApp();
 const db = getFirestore(), auth = getAuth();
+export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
 export const productAccess = onCall(request => productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] }));
 export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));

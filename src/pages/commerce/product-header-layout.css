@@ -1,0 +1,10 @@
+/* Title width is flexible; action controls wrap together when room is limited. */
+.tw-page .product-title-bar{display:flex;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;min-width:0;max-width:100%;overflow:hidden}
+.product-title-bar>.tw-product-heading{flex:1 1 240px;min-width:0;max-width:100%;overflow:hidden}
+.product-title-bar .tw-heading-image,.product-title-bar .cw-back{flex-shrink:0}
+.product-title-bar .cw-heading{flex:1;min-width:0;max-width:100%}
+.product-title-bar .cw-heading>div{min-width:0;flex-wrap:nowrap}
+.product-title-bar .cw-heading h1{flex:1;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;overflow-wrap:normal}
+.product-title-bar .cw-heading .cw-status,.product-title-bar .course-type-badge{flex-shrink:0}
+.tw-page .product-title-bar>.cw-header-actions{flex:0 0 auto;min-width:0;max-width:100%;flex-wrap:wrap}
+.product-title-bar>.cw-header-actions>.cw-button{flex-shrink:0;white-space:nowrap}

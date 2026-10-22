@@ -110,11 +110,18 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   await assert.rejects(repository.saveProduct({ ...saved, name: 'Failed change' }), /could not be saved/);
   assert.equal(repository.useProducts()[0].name, 'Test offer');
   failStorage = false;
-  const copy = await repository.duplicateProduct(saved);
+  const remoteReview = { id: 'customer-review', rating: 5, author: 'Alex', comment: 'Great service', createdAt: new Date().toISOString() };
+  storage.set('gos-commerce-products-v1:tenant-a', JSON.stringify([{ ...saved, reviews: [remoteReview], ratingTotal: 5, ratingAverage: 5, reviewsCount: 1 }]));
+  const afterReview = await repository.saveProduct({ ...saved, description: 'Edited while a customer reviewed.' }, saved);
+  assert.equal(afterReview.reviewsCount, 1);
+  assert.equal(afterReview.ratingAverage, 5);
+  assert.equal(afterReview.reviews[0].id, remoteReview.id);
+  const copy = await repository.duplicateProduct(afterReview);
   assert.notEqual(copy.id, saved.id);
   assert.equal(copy.status, 'Draft');
   assert.equal(copy.sales, '0');
   assert.equal(copy.config.experience.version, 1);
+  assert.equal(copy.reviewsCount, 0);
   const version = await repository.duplicateProduct(saved, true);
   assert.equal(version.config.experience.parentId, saved.id);
   assert.equal(version.config.experience.version, 2);
@@ -147,6 +154,14 @@ test('repository persists type-specific fields, isolates tenants and handles fai
   assert.ok(!repository.useProducts().some(p => p.id === savedDigital.id));
   assert.ok(!JSON.parse(storage.get('gos-commerce-products-v1:tenant-a')).some(p => p.id === savedDigital.id));
   assert.ok(JSON.parse(storage.get('gos-commerce-products-v1:tenant-b')).some(p => p.name === 'Tenant B offer'));
+});
+test('rating metrics normalize empty/legacy data and retain lifetime totals for a bounded preview list', () => {
+  assert.equal(model.hydrateProduct(offer('Service')).reviewsCount, 0);
+  const reviews = [5, 4, 5, 3].map((rating, index) => ({ id: String(index), rating, author: 'Alex', comment: 'Useful', createdAt: '2026-10-22' }));
+  const product = model.hydrateProduct({ ...offer('Course'), reviews });
+  assert.equal(product.reviewsCount, 4); assert.equal(product.ratingAverage, 4.25);
+  const lifetime = model.withReviews(product, { reviews, reviewsCount: 60, ratingTotal: 270 });
+  assert.equal(lifetime.reviewsCount, 60); assert.equal(lifetime.ratingAverage.toFixed(1), '4.5');
 });
 
 

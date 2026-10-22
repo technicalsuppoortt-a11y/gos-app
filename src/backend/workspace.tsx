@@ -124,7 +124,15 @@ export const cloudStorage = {
       const oldRows = JSON.parse(previous ?? '[]') as { id: string }[];
       const before = new Map(oldRows.map(item => [item.id, item]));
       const after = new Map(parsed.map(item => [item.id, item]));
-      for (const row of parsed) if (JSON.stringify(before.get(row.id)) !== JSON.stringify(row)) batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(JSON.parse(JSON.stringify(row))));
+      for (const row of parsed) if (JSON.stringify(before.get(row.id)) !== JSON.stringify(row)) {
+        const value = JSON.parse(JSON.stringify(row));
+        // Reviews are updated transactionally by productReviews. Editor saves must
+        // preserve submissions arriving after this tab's last product snapshot.
+        if (resource === 'products') {
+          delete value.reviews; delete value.ratingAverage; delete value.reviewsCount; delete value.ratingTotal;
+          batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value), { mergeFields: Object.keys(value) });
+        } else batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value));
+      }
       for (const row of oldRows) if (!after.has(row.id)) batch.delete(doc(db, 'tenants', scope, resource, row.id));
     } else batch.set(doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key)), { key, value: encodeFirestoreValue(parsed), updatedAt: at, updatedBy: store.getState().auth.user!.id });
     const event = doc(collection(db, 'tenants', scope, 'events'));

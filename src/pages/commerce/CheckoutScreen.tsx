@@ -1,25 +1,34 @@
+import { PolicyPreviewLink } from './PolicyPreview';
+import { useCloudState } from '../../backend/workspace';
+import type { Discount } from '../discounts-data';
+import { checkoutFieldList } from './model';
+import './dynamic-checkout.css';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { useProducts } from './repository';
 import { useNavigate } from 'react-router-dom';
 import { Check, CreditCard, LockKeyhole, ShieldCheck, Loader2 } from 'lucide-react';
 import type { Billing, Product } from './model';
 import { defaultExperience, productKind } from './model';
-import { checkoutTotals } from './checkout-model';
+import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
 import { showToast } from '../../utils/toast';
 import { addPurchasedProduct } from './purchases';
 
 export function CheckoutScreen({ product, billing }: { product: Product; billing?: Billing }) {
   useUILanguage();
   const navigate = useNavigate();
+  const promoId = useId(), promoErrorId = useId();
   const c = product.config!;
   const e = c.experience ?? defaultExperience();
   const kind = productKind(product.type);
   const products = useProducts();
   const [acceptedTerms, setAcceptedTerms] = useState(false), [bumpSelected, setBumpSelected] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
-  const bump = e.checkout.bumpEnabled && products.find(item => item.id === e.checkout.bumpProductId && item.status === 'Active' && item.config?.currency === c.currency);
-  const totals = checkoutTotals(product, billing, bumpSelected && bump ? bump.config?.amount : 0, couponCode);
+  const [couponCode, setCouponCode] = useState(''), [appliedCode, setAppliedCode] = useState(''), [couponError, setCouponError] = useState('');
+  const [globalDiscounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
+  const validApplied = appliedCode && resolvePromoDiscount(product, appliedCode, globalDiscounts, billing) ? appliedCode : '';
+  const applyCoupon = () => { if (resolvePromoDiscount(product, couponCode, globalDiscounts, billing)) { setAppliedCode(couponCode.trim()); setCouponError(''); } else { setAppliedCode(''); setCouponError('Invalid discount code'); } };
+  const bump = e.checkout.bumpEnabled && products.find(item => item.id === e.checkout.bumpProductId && item.status === 'Active' && item.config?.currency === c.currency && item.config?.billing === 'One-time');
+  const totals = checkoutTotals(product, billing, bumpSelected && bump ? bump.config?.amount : 0, validApplied, globalDiscounts);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethod, setMethod] = useState(e.paymentMethods[0] ?? '');
@@ -77,10 +86,10 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
                 <input type="tel" placeholder={translateText("+1 555 012 3456")} required/>
               </label>
             ))}
-            {localizeNode(c.checkoutFields.split(',').map(value => value.trim()).filter(Boolean).map((field, i) => (
-              <label key={i}>
-                {localizeNode(field)}
-                <input placeholder={translateText(field)}/>
+            {localizeNode(checkoutFieldList(c).map(field => (
+              <label key={field.id}>
+                {localizeNode(field.label)}{field.required && " *"}
+                <input name={field.id} required={field.required} placeholder={translateText(field.label)}/>
               </label>
             )))}
           </fieldset>
@@ -163,9 +172,9 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
             ))}
             <small>{translateText("Checkout preview. Payments require a connected payment provider.")}</small>
           </fieldset>
-          {bump && <label><input type="checkbox" checked={bumpSelected} onChange={event => setBumpSelected(event.target.checked)}/>{bump.name} · {money(bump.config!.amount)}</label>}
-          {e.coupon.enabled && <label>{translateText('Discount code')}<input value={couponCode} onChange={event => setCouponCode(event.target.value)}/></label>}
-          {e.checkout.requireTerms && <label><input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)}/>{translateText('I agree to the terms and privacy policy')}{e.checkout.termsUrl && <a href={e.checkout.termsUrl} target="_blank" rel="noreferrer">{translateText('Terms')}</a>}{e.checkout.privacyUrl && <a href={e.checkout.privacyUrl} target="_blank" rel="noreferrer">{translateText('Privacy policy')}</a>}</label>}
+          {bump && <label className="cx-bump"><input type="checkbox" checked={bumpSelected} onChange={event => setBumpSelected(event.target.checked)}/><span><b>{bump.name}</b><small>{translateText("Optional add-on")} · {money(bump.config!.amount)}</small></span></label>}
+          <div className="cx-promo"><label htmlFor={promoId}>{translateText('Discount code')}</label><div className="cx-add-row"><input id={promoId} value={couponCode} aria-invalid={!!couponError} aria-describedby={couponError ? promoErrorId : undefined} onChange={event => { setCouponCode(event.target.value); setAppliedCode(''); setCouponError(''); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); applyCoupon(); } }}/><button type="button" className="cw-button" disabled={!couponCode.trim()} onClick={applyCoupon}>{translateText('Apply')}</button></div>{couponError && <p id={promoErrorId} className="cx-inline-error" role="alert">{translateText(couponError)}</p>}{validApplied && <p className="cx-promo-success" role="status">{translateText('Discount applied')} · {validApplied}</p>}</div>
+          {e.checkout.requireTerms && <label className="cx-terms"><input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)}/>{translateText('I agree to the terms and privacy policy')}<PolicyPreviewLink kind="terms" custom={e.checkout.termsMode === 'custom' || !e.checkout.termsMode && !!e.checkout.termsUrl} url={e.checkout.termsUrl} checkout/><PolicyPreviewLink kind="privacy" custom={e.checkout.privacyMode === 'custom' || !e.checkout.privacyMode && !!e.checkout.privacyUrl} url={e.checkout.privacyUrl} checkout/></label>}
 
           <button
             className="cp-primary"
@@ -207,8 +216,11 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
           <p>{localizeNode(e.shortDescription || product.description.slice(0, 160))}</p>
           <div>
             <span>{localizeNode(totals.selected === 'One-time' ? 'Product price' : 'First payment')}</span>
-            <b>{localizeNode(money(totals.subtotal))}</b>
+            <b>{localizeNode(money(totals.price))}</b>
           </div>
+          {bumpSelected && bump && <div><span>{bump.name}</span><b>{money(bump.config!.amount)}</b></div>}
+          {totals.discount > 0 && <div><span>{translateText('Discount')}</span><b>−{money(totals.discount)}</b></div>}
+          <div><span>{translateText('Subtotal')}</span><b>{money(totals.subtotal)}</b></div>
           <div>
             <span>{translateText("Tax (")}{localizeNode(c.taxRate)}%{localizeNode(totals.included ? ', included' : '')})</span>
             <b>{localizeNode(money(totals.tax))}</b>

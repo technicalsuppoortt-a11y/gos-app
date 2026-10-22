@@ -418,9 +418,11 @@ html.dark :is(
   .ce-donut small,
   .dw-pricing-options small,
   .dw-tools small,
+  .cx-slots small,
   .pt-tags span,
   .pt-curriculum small,
   .pt-pricing legend,
+  .pt-search button,
   .cw-bundle-options small,
   .sw-provider-copy small,
   .sw-rating span,
@@ -596,6 +598,7 @@ html.dark :is(
   .tw-type-arrow,
   .ce-empty,
   .dw-billing-icon,
+  .cx-copy-button,
   .pt-search,
   .pt-empty,
   .cw-support-note,
@@ -808,6 +811,7 @@ html.dark :is(
   .course-page .course-danger,
   .dw-page .tw-media-cover,
   .dw-page .tw-upload-link,
+  .pd-content .pd-error,
   .pt-badge.digital-product,
   .cw-button:hover,
   .cw-metrics .blue,
@@ -1328,6 +1332,7 @@ html.dark :is(
   .course-module,
   .dw-editor,
   .dw-radio,
+  .cx-thankyou,
   .pricing-offer-row,
   .tw-course-module,
   .crm2-pipeline-selector,
@@ -1889,6 +1894,8 @@ html.dark :is(
   .bc-form-row>label,
   .pp-card-actions button,
   .pp-card-actions a,
+  .cx-chips button,
+  .cx-field-row>button,
   .fb-tabs button,
   .fb-inspector-tabs button,
   .fb-global-panel>label,
@@ -2046,6 +2053,8 @@ html.dark :is(
   .pricing-page .cw-card,
   .pricing-page .tw-checkout-option,
   .pricing-page .pricing-offer-row,
+  .cw-button.product-delete-trigger,
+  .pt-search:hover,
   .tw-service .cw-button,
   .tw-service .cw-card,
   .tw-service .commerce-select-trigger,
@@ -2092,6 +2101,7 @@ html.dark :is(
   .bc-automation-row,
   .bc-policy-toggle,
   .course-lesson-row,
+  .cx-upsell,
   .cw-mini-preview,
   .cw-preview-bottom,
   .sw-payments,
@@ -2228,6 +2238,8 @@ html.dark :is(
   .bk-booking-card.off,
   .bk-pill.green,
   .dw-page .tw-add-media,
+  .cx-copy-button:hover,
+  .pt-preview-button:hover,
   .cw-pipeline-step-btn:hover,
   .crm-pipeline-workspace .crm-kanban-column,
   .ob-badge.green,
@@ -2410,6 +2422,7 @@ html.dark :is(
   .bc-slot.available:hover,
   .pricing-icon-button:hover:enabled,
   .pricing-page .tw-checkout-option.selected,
+  .pp-card-actions .pp-delete-action:hover,
   .crm-pipeline-workspace .crm-kanban-column.crm-drop-active,
   .crm-pipeline-workspace .crm-card-tags .crm-tag-purple,
   .layout-main:has(.pp-discounts-page),
@@ -2465,6 +2478,7 @@ html.dark :is(
   .bc-event-block,
   .bc-heading-icon,
   .cp-wallet-preview,
+  .pd-warning,
   .cw-preset-cta,
   .cw-pipeline-step-btn,
   .crm-kanban-column,
@@ -4128,6 +4142,7 @@ html.dark :is(
 }
 html.dark :is(
   .bc-slot>span,
+  .cx-chips>span,
   .dc-advanced button,
   .fb-mini-feature-row i,
   .fb-mini-slot-list i
@@ -4402,6 +4417,7 @@ html.dark :is(
 html.dark :is(
   .dw-page .sw-topbar .layout-search,
   .dw-page .dw-included-card>.cw-button,
+  .pt-filter-control .commerce-select-trigger:hover,
   .tw-service .sw-topbar .layout-search,
   .tw-service .sw-description .tw-rich-editor,
   .st-workspace .st-search:hover
@@ -4509,6 +4525,12 @@ html.dark :is(
 ):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface);
     color: var(--ui-text)
+}
+html.dark :is(
+  .pt-categories button:hover:not([aria-pressed=true])
+):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface-raised);
+    border-color: var(--ui-border)
 }
 html.dark :is(
   .cw-metrics .purple,

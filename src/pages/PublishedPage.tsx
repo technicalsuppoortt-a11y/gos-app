@@ -14,7 +14,7 @@ import type { Asset } from './asset-model';
 import { OrderedElementParts } from './element-reordering';
 import { EditableElementPart } from './EditableElementPart';
 import { findSection } from './funnel-tree';
-export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice }: { asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
+export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection }: { productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => { const resize = () => setWidth(window.innerWidth); window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize); }, []);
   const visibleWidth = viewportWidth ?? width;
@@ -52,6 +52,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
   return <BuilderFormCaptureContext.Provider value={submission => sendBuilderLead(asset.id, pageId, device, submission, capture)}><main className={`fb-site-frame ${device}`} data-public-asset="true" style={{ width: '100%', maxWidth: 'none', height: 'auto', overflow: 'visible', backgroundColor: page.backgroundColor || '#fff', '--fb-accent': asset.settings.color, '--fb-heading-font': asset.document.theme?.font || 'Manrope' } as CSSProperties}>
     {page.showHeader && <header className="fb-live-page-nav"><button className="fb-live-wordmark" onClick={() => navigate(asset.document.pages[0].id)}>{asset.name}</button><nav className="fb-live-desktop-nav" aria-label="Site navigation">{asset.settings.navigation.split(',').map((label, index) => { const target = asset.document.pages.find(p => p.name.toLowerCase() === label.trim().toLowerCase()); return target ? <button key={index} className={target.id === pageId ? 'active' : ''} onClick={() => navigate(target.id)}>{label.trim()}</button> : null; })}</nav><button className="fb-live-mobile-nav-toggle" aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(value => !value)}>{mobileNavOpen ? <X size={16}/> : <Menu size={16}/>}</button>{mobileNavOpen && <nav className="fb-preview-mobile-menu">{asset.settings.navigation.split(',').map((label, index) => { const target = asset.document.pages.find(p => p.name.toLowerCase() === label.trim().toLowerCase()); return target ? <button key={index} onClick={() => { setMobileNavOpen(false); navigate(target.id); }}>{label.trim()}<ArrowRight size={13}/></button> : null; })}</nav>}</header>}
     {!(page.hideOnMobile && device === 'mobile') && render(page.sections)}
+    {productSection}
     {page.showFooter && <footer className="fb-site-footer">{asset.name}</footer>}
     <Toaster/>
   </main></BuilderFormCaptureContext.Provider>;

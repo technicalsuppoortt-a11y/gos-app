@@ -1,3 +1,4 @@
+import { useProducts } from './commerce/repository';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useId } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -20,6 +21,7 @@ export function DiscountEditorPage() {
 function DiscountEditor({ id }: { id?: string }) {
   useUILanguage();
   const navigate = useNavigate();
+  const products = useProducts();
   const location = useLocation();
   const existing = id ? readDiscounts().find(d => d.id === id) : undefined;
   const [form, setForm] = React.useState<Discount>(() => existing ? { ...existing } : { ...initialForm, code: '', expiry: '', description: '', ...(location.state?.duplicate as Partial<Discount> | undefined), id: '', uses: 0 });
@@ -40,6 +42,7 @@ function DiscountEditor({ id }: { id?: string }) {
     if (!Number.isFinite(form.minimum) || form.minimum < 0 || !Number.isInteger(form.limit) || form.limit < 0) { invalid('Minimum purchase must be positive or zero. Usage limit must be a whole number or zero for unlimited.'); return; }
     if (id && !discounts.some(discount => discount.id === id)) { notify('This discount was deleted. Return to Discounts to continue.'); return; }
 
+    if (form.applies === 'Specific Products' && !form.productIds?.length) { invalid('Select at least one product.'); return; }
     const saved = { ...form, code, id: form.id || crypto.randomUUID(), uses: form.id ? form.uses : 0 };
     try { writeDiscounts(form.id ? discounts.map(discount => discount.id === form.id ? saved : discount) : [saved, ...discounts]); }
     catch { notify('Unable to save the discount. Please allow browser storage and try again.'); return; }
@@ -188,7 +191,7 @@ function DiscountEditor({ id }: { id?: string }) {
                     buttonClassName="!px-3.5 !py-2.5 !h-auto text-slate-900 text-sm font-medium border border-slate-300 bg-white rounded-lg shadow-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 hover:bg-slate-50 transition-colors w-full flex items-center"
                   />
                   {localizeNode(form.applies === 'Specific Products' && (
-                    <p className="mt-2 text-xs text-purple-600 bg-purple-50 py-1 px-2 rounded font-medium border border-purple-100">{translateText("Applies to AI Marketing Course, Social Media Templates...")}</p>
+                    <div className="cx-discount-products">{products.filter(product => product.status === "Active").map(product => <label key={product.id}><input type="checkbox" checked={(form.productIds ?? []).includes(product.id)} onChange={event => update("productIds", event.target.checked ? [...(form.productIds ?? []), product.id] : (form.productIds ?? []).filter(id => id !== product.id))}/>{product.name}</label>)}</div>
                   ))}
                 </div>
 

@@ -2,6 +2,9 @@ export const productTypes = ['Service', 'Digital Product', 'Course'] as const;
 export type ProductType = typeof productTypes[number] | 'Course / Membership' | 'Subscription' | 'Bundle' | 'Physical Product' | ProductKind;
 export type StatKind = 'sales' | 'revenue' | 'bookings' | 'members';
 export type Billing = 'One-time' | 'Payment plan' | 'Subscription';
+export interface CheckoutField { id: string; label: string; required: boolean }
+export type ThankYouTemplate = 'confirmation' | 'onboarding' | 'community' | 'external';
+export type SalesTemplate = 'hero' | 'vsl' | 'minimal' | 'external';
 export type ProductKind = 'course' | 'digital' | 'service' | 'subscription' | 'bundle' | 'physical';
 export interface Lesson { id: string; title: string; kind: 'Video' | 'PDF' | 'Text'; duration: string; url: string; storageId?: string; fileName?: string }
 export interface PricingDiscount { id: string; enabled: boolean; type: 'Percentage' | 'Fixed Amount'; value: number; appliesTo: 'All pricing options' | 'One-time payment' | 'Payment plan' | 'Subscription' }
@@ -17,8 +20,9 @@ export interface ProductExperience {
   instructorSocials?: Record<string, string>; directCheckoutUrl?: string;
   oneTimeAmount: number; comparePrice: number; showComparePrice: boolean; planEnabled: boolean; recurringEnabled: boolean;
   recurringAmount: number; installmentAmount: number; paymentInterval: 'Monthly' | 'Quarterly' | 'Yearly';
-  checkout: { secure: boolean; collectInfo: boolean; requirePhone: boolean; guest: boolean; testimonials: boolean; requireTerms?: boolean; termsUrl?: string; privacyUrl?: string; bumpEnabled?: boolean; bumpProductId?: string };
-  upsellId: string; downsellId: string; offersEnabled: boolean; funnelUrl: string;
+  checkout: { secure: boolean; collectInfo: boolean; requirePhone: boolean; guest: boolean; testimonials: boolean; requireTerms?: boolean; termsUrl?: string; privacyUrl?: string; termsMode?: 'default' | 'custom'; privacyMode?: 'default' | 'custom'; bumpEnabled?: boolean; bumpProductId?: string };
+  upsellId: string; offersEnabled: boolean; funnelUrl: string;
+  upsellDiscountEnabled?: boolean; upsellAmount?: number; upsellOneClick?: boolean;
   version: number; parentId: string; updatedAt: string;
   taxHandling: 'Include tax in price' | 'Calculate at checkout';
   paymentMethods: Array<'Visa' | 'Mastercard' | 'PayPal' | 'Apple Pay' | 'Google Pay'>;
@@ -30,6 +34,7 @@ export interface Student { id: string; name: string; email: string; status: 'Act
 export interface CommerceOrder { id: string; customer: string; email: string; at: string; amount: number; currency: CommerceConfig['currency']; status: 'Paid' | 'Pending' | 'Refunded'; productName?: string; sample?: boolean }
 export interface CommerceActivity { id: string; title: string; at: string }
 export interface CommerceConfig {
+  salesVideoUrl?: string; thankYouVideoUrl?: string; customCheckoutFields?: CheckoutField[]; thankYouTemplate?: ThankYouTemplate; salesTemplate?: SalesTemplate;
   students?: Student[]; orders?: CommerceOrder[]; activities?: CommerceActivity[];
   funnelId?: string; funnelPageId?: string; customDomain?: string; webhookUrl?: string; webhookEvents?: string[];
   amount: number; currency: string; billing: Billing;
@@ -47,7 +52,23 @@ export interface CommerceConfig {
   checkoutFields: string; thankYouUrl: string; salesUrl: string;
   experience?: ProductExperience;
 }
+export interface ProductReview { id: string; rating: number; comment: string; author: string; createdAt: string }
+export type ReviewSummary = { reviews: ProductReview[]; ratingAverage: number; reviewsCount: number; ratingTotal: number };
+export function summarizeReviews(reviews: ProductReview[] = []) {
+  const valid = (Array.isArray(reviews) ? reviews : []).filter(review => review && Number.isInteger(review.rating) && review.rating >= 1 && review.rating <= 5);
+  const ratingTotal = valid.reduce((sum, review) => sum + review.rating, 0);
+  return { reviews: valid, reviewsCount: valid.length, ratingTotal, ratingAverage: valid.length ? ratingTotal / valid.length : 0 };
+}
+export function reviewMetrics(source: Pick<Product, 'reviews' | 'ratingTotal' | 'reviewsCount'>): ReviewSummary {
+  const summary = summarizeReviews(source.reviews), { reviewsCount, ratingTotal } = source;
+  if (Number.isInteger(reviewsCount) && reviewsCount! >= summary.reviewsCount && Number.isInteger(ratingTotal) && ratingTotal! >= reviewsCount! && ratingTotal! <= reviewsCount! * 5) return { ...summary, reviewsCount: reviewsCount!, ratingTotal: ratingTotal!, ratingAverage: reviewsCount ? ratingTotal! / reviewsCount : 0 };
+  return summary;
+}
+export function withReviews(product: Product, source: Pick<Product, 'reviews' | 'ratingTotal' | 'reviewsCount'>): Product {
+  return { ...product, ...reviewMetrics(source) };
+}
 export interface Product {
+  reviews?: ProductReview[]; ratingAverage?: number; reviewsCount?: number; ratingTotal?: number;
   slug?: string;
   id: string; name: string; type: ProductType; price: string; stats: Array<[StatKind, string]>;
   status: 'Active' | 'Draft'; sales: string; revenue: string; art: string; image?: string;
@@ -67,7 +88,7 @@ export function defaultExperience(): ProductExperience {
   return { shortDescription: '', gallery: [], tags: [], category: '', language: 'English', visibility: 'Published', instructor: { name: '', bio: '', image: '' },
     studentLimit: 0, requireLogin: true, directDownload: true, watermark: false, included: [], serviceMode: 'Online', provider: '', location: '',
     oneTimeAmount: 0, comparePrice: 0, showComparePrice: false, planEnabled: false, recurringEnabled: false, recurringAmount: 29, installmentAmount: 99, paymentInterval: 'Monthly',
-    checkout: { secure: true, collectInfo: true, requirePhone: false, guest: true, testimonials: false }, upsellId: '', downsellId: '', offersEnabled: false, funnelUrl: '',
+    checkout: { secure: true, collectInfo: true, requirePhone: false, guest: true, testimonials: false }, upsellId: '', offersEnabled: false, funnelUrl: '',
     version: 1, parentId: '', updatedAt: '', taxHandling: 'Calculate at checkout', paymentMethods: ['Visa', 'Mastercard', 'PayPal', 'Apple Pay', 'Google Pay'],
     coupon: { enabled: false, code: '', type: 'Percentage', value: 20, limitUsage: false, usageLimit: 100, oncePerCustomer: true, geofenceOffer: false },
     discounts: [{ id: 'automatic-default', enabled: false, type: 'Fixed Amount', value: 10, appliesTo: 'All pricing options' }],
@@ -101,15 +122,22 @@ export function mergeProductChanges(base: any, draft: any, latest: any): any {
   }
   return draft;
 }
+export function checkoutFieldList(config: CommerceConfig): CheckoutField[] {
+  return config.customCheckoutFields ?? (config.checkoutFields || '').split(',').map(label => label.trim()).filter(Boolean).map((label, index) => ({ id: 'legacy-field-' + index, label, required: false }));
+}
 export function hydrateProduct(product: Product): Product {
   const type = kindLabels[productKind(product.type)];
   const defaults = defaultConfig(product.type, product.price);
   const config = { ...defaults, ...product.config, automations: { ...defaults.automations, ...product.config?.automations } };
+  config.customCheckoutFields = checkoutFieldList(config);
+  config.thankYouTemplate ??= config.thankYouUrl ? 'external' : 'confirmation';
+  config.salesTemplate ??= config.salesUrl ? 'external' : 'hero';
   config.modules = config.modules.map((module, index) => ({ ...module, id: module.id || `legacy-module-${index}`, lessons: module.lessons.map((lesson, lessonIndex) => lessonData(lesson, index * 1000 + lessonIndex)) }));
   const experience = { ...defaultExperience(), oneTimeAmount: config.billing === 'Payment plan' ? config.amount * config.installments : config.amount, installmentAmount: config.billing === 'Payment plan' ? config.amount : Math.round(config.amount / config.installments * 100) / 100, recurringAmount: config.billing === 'Subscription' ? config.amount : 29, planEnabled: config.billing === 'Payment plan', recurringEnabled: config.billing === 'Subscription', ...product.config?.experience, instructor: { ...defaultExperience().instructor, ...config.experience?.instructor }, checkout: { ...defaultExperience().checkout, ...config.experience?.checkout } };
+  delete (experience as ProductExperience & { downsellId?: string }).downsellId;
   experience.coupon = { ...defaultExperience().coupon, ...product.config?.experience?.coupon };
   if (!product.config?.experience?.accessRule) experience.accessRule = config.delivery === 'After approval' ? 'After manual approval' : 'Immediately after payment';
-  return { ...product, type, tag: type, config: { ...config, experience } };
+  return { ...product, ...reviewMetrics(product), type, tag: type, config: { ...config, experience } };
 }
 export function newProduct(): Product {
   return { id: '', name: '', type: 'Digital Product', price: '', stats: [['sales', '0 sales']], status: 'Draft', sales: '0', revenue: '€0', art: 'templates', tag: 'Digital Product', description: '', config: defaultConfig('Digital Product') };
@@ -132,8 +160,16 @@ export function validateProduct(product: Product, publish = false): string[] {
   const kind = productKind(product.type);
   if (kind === 'subscription' && c.billing !== 'Subscription') errors.push('Subscription products require recurring billing.');
   if (kind === 'digital' && (!Number.isInteger(c.downloadLimit) || c.downloadLimit < 1)) errors.push('Download limit must be a positive whole number.');
+  const fields = checkoutFieldList(c);
+  if (fields.some(field => !field.id || !field.label.trim()) || new Set(fields.map(field => field.id)).size !== fields.length) errors.push('Custom checkout fields need unique IDs and non-empty labels.');
+  if (c.thankYouTemplate === 'external' && !c.thankYouUrl.trim()) errors.push('Enter a custom thank-you URL.');
+  if (c.salesTemplate === 'external' && !c.salesUrl.trim()) errors.push('Enter a custom sales page URL.');
   const experience = c.experience;
   if (experience) {
+    if (experience.upsellId === product.id && product.id) errors.push('Choose another product for the upsell.');
+    if (experience.upsellDiscountEnabled && (!Number.isFinite(experience.upsellAmount) || experience.upsellAmount! < 0)) errors.push('Enter a valid upsell price.');
+    if (experience.checkout.termsMode === 'custom' && !experience.checkout.termsUrl) errors.push('Enter a custom terms URL.');
+    if (experience.checkout.privacyMode === 'custom' && !experience.checkout.privacyUrl) errors.push('Enter a custom privacy URL.');
     for (const [label, value] of [['Terms URL', experience.checkout.termsUrl], ['Privacy policy URL', experience.checkout.privacyUrl]]) if (value) { try { if (!['http:', 'https:'].includes(new URL(value).protocol)) throw new Error(); } catch { errors.push(`${label} must be a valid HTTP or HTTPS URL.`); } }
     if (experience.checkout.bumpEnabled && (!experience.checkout.bumpProductId || experience.checkout.bumpProductId === product.id)) errors.push('Choose another product for the order bump.');
     if (!Number.isFinite(experience.oneTimeAmount) || experience.oneTimeAmount < 0) errors.push('One-time price must be zero or greater.');
@@ -150,7 +186,7 @@ export function validateProduct(product: Product, publish = false): string[] {
     if (experience.accessRule === 'After specific date' && (!experience.accessDate || !Number.isFinite(Date.parse(experience.accessDate)))) errors.push('Choose a valid product access date.');
     if (experience.accessRule === 'Drip content (scheduled release)' && (!Number.isInteger(experience.dripDays) || experience.dripDays < 1)) errors.push('Drip release interval must be a positive whole number of days.');
   }
-  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Webhook URL', c.webhookUrl], ['Custom domain', c.customDomain ? `https://${c.customDomain}` : ''], ['Funnel URL', experience?.funnelUrl], ['Direct checkout URL', experience?.directCheckoutUrl], ...Object.entries(experience?.instructorSocials ?? {}).map(([network, url]) => [`${network} URL`, url]), ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
+  for (const [label, url] of [['Booking link', c.bookingUrl], ['Community URL', c.communityUrl], ['Thank-you URL', c.thankYouUrl], ['Sales page URL', c.salesUrl], ['Sales video URL', c.salesVideoUrl], ['Welcome video URL', c.thankYouVideoUrl], ['Webhook URL', c.webhookUrl], ['Custom domain', c.customDomain ? `https://${c.customDomain}` : ''], ['Funnel URL', experience?.funnelUrl], ['Direct checkout URL', experience?.directCheckoutUrl], ...Object.entries(experience?.instructorSocials ?? {}).map(([network, url]) => [`${network} URL`, url]), ...c.assets.map(asset => ['Asset URL', asset.url]), ...c.modules.flatMap(module => module.lessons.map(lesson => ['Lesson resource URL', lessonData(lesson).url]))]) {
     if (url) {
       try { const parsed = new URL(url); if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(); }
       catch { errors.push(`${label} must be a valid https:// or http:// URL.`); }

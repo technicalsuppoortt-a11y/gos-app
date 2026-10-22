@@ -34,7 +34,7 @@ for (const product of seedProducts) {
     experience.planEnabled = true; experience.installmentAmount = 99;
     config.trialDays = 7; experience.taxHandling = 'Include tax in price';
     experience.checkout.requirePhone = true; experience.checkout.testimonials = true;
-    experience.offersEnabled = true; experience.upsellId = 'advanced-ai-templates'; experience.downsellId = 'starter-kit';
+    experience.offersEnabled = true; experience.upsellId = 'advanced-ai-templates';
     experience.coupon = { ...experience.coupon, enabled: true, code: 'LAUNCH20', limitUsage: true };
     experience.category = 'Marketing'; experience.tags = ['AI', 'Marketing', 'Digital Products', 'Online Business'];
     experience.instructor = { name: 'Mohamed Joe', bio: 'Digital entrepreneur, AI expert and online business creator.', image: strategyCallImg };

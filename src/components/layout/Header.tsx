@@ -13,6 +13,7 @@ import { ThemeToggle } from '../ui/ThemeToggle';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useProducts } from '../../pages/commerce/repository';
 import { NotificationCenter } from './NotificationCenter';
+import './product-header.css';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
@@ -73,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  return <header className={`layout-header${isDiscountEditor ? ' discount-flow-header' : ''}`}>
+  return <header className={`layout-header${isDiscountEditor ? ' discount-flow-header' : ''}${isProductWorkspace ? ' product-workspace-header' : ''}`}>
     <div className="layout-header-title">
       <button 
         className="layout-menu-button" 
@@ -95,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}>
           <span>{translateText("Workspace")}</span><i aria-hidden="true">/</i>
           <button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button>
-          <i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(productName)}</h1>
+          <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" title={translateText(productName)} aria-current="page">{localizeNode(productName)}</h1>
         </nav>
       ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb"><span>{translateText("Workspace")}</span><i>/</i><h1>{localizeNode(pageTitle)}</h1></div>)}
     </div>
@@ -104,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <button 
         type="button" 
         onClick={() => navigate('/')} 
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+        className="layout-landing-link hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
         aria-label={translateText("View Landing Page")}
       >
         <Globe size={15} />

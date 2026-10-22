@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 import { defaultConfig, formatPrice, hydrateProduct, mergeProductChanges, validateProduct } from './model';
 import type { Product } from './model';
 import { store } from '../../store';
+import { withReviews } from './model';
 
 // Replace this adapter with the authenticated commerce API when it is available.
 // All pages share the same serialized product contract; checkout execution belongs to the backend.
@@ -53,7 +54,7 @@ export async function saveProduct(product: Product, baseline?: Product): Promise
   try { return await commit(current => {
     const latest = current.find(row => row.id === saved.id);
     if (baseline?.id && !latest) throw new Error('This product no longer exists. Reopen the catalog before saving.');
-    const merged: Product = latest && baseline ? mergeProductChanges(baseline, saved, latest) : saved;
+    const merged: Product = withReviews(latest && baseline ? mergeProductChanges(baseline, saved, latest) : saved, latest ?? { reviews: [] });
     const errors = validateProduct(merged, merged.status === 'Active');
     if (errors.length) throw new Error(errors.join(' '));
     return { next: latest ? current.map(p => p.id === saved.id ? merged : p) : [merged, ...current], result: merged };
@@ -66,6 +67,7 @@ export async function duplicateProduct(product: Product, version = false): Promi
   experience.parentId = version ? product.id : '';
   experience.version = version ? experience.version + 1 : 1;
   clone.id = ''; clone.createdAt = undefined; clone.status = 'Draft'; clone.sales = '0'; clone.revenue = '€0'; clone.stats = [['sales', '0 sales']];
+  clone.reviews = []; clone.ratingAverage = 0; clone.reviewsCount = 0; clone.ratingTotal = 0;
   clone.name = version ? `${product.name} · v${experience.version}` : `${product.name} (Copy)`;
   clone.config!.salesUrl = ''; clone.config!.students = []; clone.config!.orders = []; clone.config!.activities = []; clone.config!.lessonViews = {};
   return saveProduct(clone);

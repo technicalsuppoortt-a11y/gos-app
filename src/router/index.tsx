@@ -1,7 +1,8 @@
+import { CommercePolicyPage } from '../pages/commerce/CommercePolicyPage';
 import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
 import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
@@ -40,6 +41,11 @@ const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 
 const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
+const ProductPublicPreview = lazy(() => import('../pages/commerce/ProductPublicPreview').then(module => ({ default: module.ProductPublicPreview })));
+function ProductPreviewRoute() {
+  const [params] = useSearchParams();
+  return params.has('workspace') ? <Suspended><ProductPublicPreview/></Suspended> : <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute>;
+}
 const ProductAccess = lazy(() => import('../pages/commerce/ProductAccess').then(module => ({ default: module.ProductAccess })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
@@ -61,10 +67,11 @@ export const router = createBrowserRouter([
   { path: '/onboarding/activate-account', element: <Suspended><ActivateAccountPage/></Suspended> },
   // Keep activation links usable while the onboarding cycle is disabled.
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
-  { path: '/product-preview/:token', element: <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute> },
+  { path: '/product-preview/:token', element: <ProductPreviewRoute/> },
   { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
+  { path: '/commerce/policies/:kind', element: <CommercePolicyPage/> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
   { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
   { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },

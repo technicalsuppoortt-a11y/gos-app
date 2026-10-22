@@ -1,89 +1,53 @@
+import { useAssetWorkspace } from '../asset-store';
+import { ProductSalesPage } from './ProductSalesPage';
+import { ExternalPagePreview } from './PagePreviewFrame';
+import { ProductFunnelLayout, ThankYouPage } from './ProductPageLayouts';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, ChevronDown, Clock3, Download, FileText, Layers3, MapPin, PlayCircle, Sparkles, UserRound } from 'lucide-react';
-import { lessonData, productKind, formatPrice } from './model';
-import type { CommerceConfig, Lesson, Product } from './model';
+import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { productKind } from './model';
+import type { Product } from './model';
 import { readPreview, subscribePreview } from './previewSnapshot';
-import { useLessonProgress } from './useLessonProgress';
 import { CheckoutScreen } from './CheckoutScreen';
-import { LessonViewer } from './LessonViewer';
-import { Description } from './primitives';
+import { useProducts, storageKey } from './repository';
+import { ProductReviews } from './ProductReviews';
+import { useLiveReviews } from './reviewRepository';
+import { withReviews } from './model';
 import './product-workspace.css';
 import './product-preview.css';
 import './commerce-enhancements.css';
 import './live-preview-design.css';
 
-const rise = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: .45 } } };
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: .07 } } };
-type PreviewProps = { product: Product; buy: () => void };
 
 export function ProductLivePreview() {
   useUILanguage();
+  const [workspace] = useAssetWorkspace();
   const { token = '' } = useParams(); const [params, setParams] = useSearchParams();
-  const [product, setProduct] = useState(() => readPreview(token));
-  const [currentLesson, setCurrentLesson] = useState(''), [lessonOpen, setLessonOpen] = useState(false);
-  const [completed, setCompleted] = useLessonProgress('live-' + token);
+  const [snapshot, setProduct] = useState(() => readPreview(token));
+  const products = useProducts(), tenantId = storageKey().replace('gos-commerce-products-v1:', '');
+  const saved = products.find(row => row.id === snapshot?.id || row.id === token);
+  const liveReviews = useLiveReviews(tenantId, snapshot?.id || saved?.id || '');
+  const source = snapshot || saved;
+  const product = source ? withReviews(source, liveReviews || saved || source) : null;
   useEffect(() => {
     const refresh = () => setProduct(readPreview(token));
     refresh(); return subscribePreview(token, refresh);
   }, [token]);
   if (!product?.config) return <div className="cp-preview cp-preview-empty"><h1>{translateText("Preview unavailable")}</h1><p>{translateText("Open Preview Product from the editor to create a fresh preview.")}</p></div>;
   const c = product.config, kind = productKind(product.type), checkout = params.get('view') === 'checkout';
-  const lessons = c.modules.flatMap((module, i) => module.lessons.map((value, j) => lessonData(value, i * 1000 + j)));
-  const lesson = lessonOpen ? lessons.find(item => item.id === currentLesson) : undefined;
-  const buy = () => { setLessonOpen(false); setParams({ view: 'checkout' }); window.scrollTo?.({ top: 0, behavior: 'auto' }); };
+  const inFunnel = params.get('view') !== 'thank-you' && workspace.assets.some(asset => asset.id === c.funnelId && !asset.archived);
+  const buy = () => { setParams({ view: 'checkout' }); window.scrollTo?.({ top: 0, behavior: 'auto' }); };
   const back = () => { setParams({}); window.scrollTo?.({ top: 0, behavior: 'auto' }); };
-  return <MotionConfig reducedMotion="user"><div className={`cp-preview cp-${kind} lp-page`}>
+  return <MotionConfig reducedMotion="user"><div className={`cp-preview cp-${kind} lp-page cx-sales-${c.salesTemplate || 'hero'}`}>
     <div className="cp-preview-banner"><Sparkles size={13}/><span>{translateText("Live preview · Synced with your editor · No payments collected")}</span></div>
-    <motion.nav className="lp-nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><button onClick={back} className="lp-wordmark" aria-label={translateText("Back to product")}><span>{product.name.slice(0, 1)}</span>{product.name}</button><motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: .98 }} className="lp-nav-action" onClick={buy}>{localizeNode(kind === 'course' ? 'Enroll now' : kind === 'service' ? 'Book a session' : 'Get access')}<ArrowRight size={14}/></motion.button></motion.nav>
-    <AnimatePresence mode="wait" initial={false}><motion.div key={checkout ? 'checkout' : kind} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .22 }}>
-      {localizeNode(checkout ? <><button className="cp-back" onClick={back}><ArrowLeft size={14}/>{translateText(" Back to product")}</button><CheckoutScreen product={product}/></> : kind === 'course' ? <CoursePreview product={product} buy={buy} completed={completed} currentLesson={currentLesson} onLesson={item => { setCurrentLesson(item.id); setLessonOpen(true); }}/> : kind === 'service' ? <ServicePreview product={product} buy={buy}/> : <DigitalPreview product={product} buy={buy}/>)}
+    {!inFunnel && <motion.nav className="lp-nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><button onClick={back} className="lp-wordmark" aria-label={translateText("Back to product")}><span>{product.name.slice(0, 1)}</span>{product.name}</button><motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: .98 }} className="lp-nav-action" onClick={buy}>{localizeNode(kind === 'course' ? 'Enroll now' : kind === 'service' ? 'Book a session' : 'Get access')}<ArrowRight size={14}/></motion.button></motion.nav>}
+    <AnimatePresence mode="wait" initial={false}><motion.div key={params.get('view') || kind} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .22 }}>
+      {params.get('view') === 'thank-you' ? <ThankYouPage product={product}/> : <ProductFunnelLayout product={product}>{checkout ? <><button className="cp-back" onClick={back}><ArrowLeft size={14}/>{translateText(" Back to product")}</button><CheckoutScreen product={product}/><button className="cw-button cx-thankyou-trigger" onClick={() => setParams({view:'thank-you'})}>{translateText('Preview thank-you page')}</button></> : c.salesTemplate === 'external' ? <ExternalPagePreview url={c.salesUrl} title={translateText('Custom sales page')}/> : <ProductSalesPage product={product} buy={buy} progressScope={'live-' + token}/>}</ProductFunnelLayout>}
     </motion.div></AnimatePresence>
-    {localizeNode(lesson && <LessonViewer key={lesson.id + lesson.url + (lesson.storageId ?? '')} lesson={lesson} completed={completed.includes(lesson.id)} onClose={() => setLessonOpen(false)} onComplete={() => setCompleted(current => current.includes(lesson.id) ? current.filter(id => id !== lesson.id) : [...current, lesson.id])}/>)}
-    <footer className="lp-footer"><span>{product.name}</span><span>{localizeNode(product.type)}{translateText(" · Customer experience preview")}</span></footer>
+    {!checkout && <ProductReviews key={product.id} product={product} tenantId={tenantId} onSubmitted={summary => setProduct(current => current ? { ...current, ...summary } : current)}/>}
+    {saved?.status === 'Active' && saved.config?.experience?.visibility !== 'Private' && <div className="lp-container" style={{ paddingBlock: 16 }}><a className="cw-button" href={`/product-preview/${encodeURIComponent(saved.id)}?workspace=${encodeURIComponent(tenantId)}`} target="_blank" rel="noopener noreferrer">{translateText('Open public page')}</a></div>}
+    {!inFunnel && <footer className="lp-footer"><span>{product.name}</span><span>{localizeNode(product.type)}{translateText(" · Customer experience preview")}</span></footer>}
   </div></MotionConfig>;
-}
-function PurchaseButton({ buy, children }: { buy: () => void; children: ReactNode }) {
-  useUILanguage();
-  return <motion.button className="lp-purchase" whileHover={{ scale: 1.02 }} whileTap={{ scale: .98 }} onClick={buy}>{localizeNode(children)}<ArrowRight size={16}/></motion.button>;
-}
-function Features({ product }: { product: Product }) {
-  useUILanguage();
-  const features = product.config!.experience!.included.filter(item => item.enabled && item.title.trim());
-  return features.length ? <motion.div className="lp-feature-grid" variants={stagger} initial="hidden" animate="visible">{localizeNode(features.map(item => <motion.div key={item.id} variants={rise} whileHover={{ y: -3, scale: 1.02 }} className="lp-feature"><Check size={16}/><span>{localizeNode(item.title)}</span></motion.div>))}</motion.div> : null;
-}
-function Gallery({ product }: { product: Product }) {
-  useUILanguage();
-  const images = product.config!.experience!.gallery.filter(Boolean);
-  return images.length ? <motion.div className="lp-gallery" variants={stagger} initial="hidden" animate="visible">{images.map((src, i) => <motion.img variants={rise} key={i} src={src} alt={translateText(`${product.name} · image ${i + 2}`)} whileHover={{ scale: 1.02 }}/>)}</motion.div> : null;
-}
-function CoursePreview({ product, buy, completed, currentLesson, onLesson }: PreviewProps & { completed: string[]; currentLesson: string; onLesson: (lesson: Lesson) => void }) {
-  useUILanguage();
-  const c = product.config!, e = c.experience!, lessons = c.modules.flatMap((m, i) => m.lessons.map((l, j) => lessonData(l, i * 1000 + j)));
-  const count = lessons.filter(item => completed.includes(item.id)).length;
-  return <><motion.section className="lp-course-hero" variants={stagger} initial="hidden" animate="visible"><div className="lp-container"><motion.div variants={rise} className="lp-kicker"><BookOpen size={15}/>{localizeNode(e.category || product.type)}{localizeNode(e.courseLevel && <span>{localizeNode(e.courseLevel)}</span>)}</motion.div><motion.h1 variants={rise}>{product.name}</motion.h1>{localizeNode(e.shortDescription && <motion.p variants={rise}>{localizeNode(e.shortDescription)}</motion.p>)}<motion.div variants={rise} className="lp-facts"><span><Layers3 size={15}/>{localizeNode(c.modules.length)}{translateText(" modules")}</span><span><PlayCircle size={15}/>{localizeNode(lessons.length)}{translateText(" lessons")}</span>{localizeNode(e.estimatedDuration && <span><Clock3 size={15}/>{localizeNode(e.estimatedDuration)}</span>)}{localizeNode(e.language && <span>{localizeNode(e.language)}</span>)}</motion.div></div></motion.section>
-    <div className="lp-container lp-course-workspace"><motion.main variants={stagger} initial="hidden" animate="visible"><motion.section variants={rise} className="lp-section"><span className="lp-section-label">{translateText("THE LEARNING EXPERIENCE")}</span><h2>{translateText("What you’ll learn")}</h2>{localizeNode(product.description && <Description text={product.description}/>)}<Features product={product}/><Gallery product={product}/></motion.section><motion.section variants={rise} className="lp-roadmap"><div className="lp-section-heading"><div><span className="lp-section-label">{translateText("CURRICULUM")}</span><h2>{translateText("Your learning roadmap")}</h2></div><span>{localizeNode(count)}/{localizeNode(lessons.length)}{translateText(" complete in preview")}</span></div><progress className="ce-preview-progress" aria-label={translateText("Course preview completion")} max={Math.max(1, lessons.length)} value={count}/>{localizeNode(c.modules.map((module, index) => <CourseModule key={index} module={module} index={index} completed={completed} currentLesson={currentLesson} onLesson={onLesson}/>))}</motion.section></motion.main>
-      <aside className="lp-enrollment-column"><motion.div className="lp-enrollment-card" variants={rise} initial="hidden" animate="visible">{product.image && <img className="lp-course-cover" src={product.image} alt={translateText(product.name)}/>}<div className="lp-enrollment-content"><span className="lp-section-label">{translateText("ENROLLMENT")}</span><div className="lp-price">{localizeNode(formatPrice(c))}{localizeNode(e.showComparePrice && e.comparePrice > c.amount && <del>{localizeNode(new Intl.NumberFormat('en-US', { style: 'currency', currency: c.currency }).format(e.comparePrice))}</del>)}</div><PurchaseButton buy={buy}>{translateText("Enroll in this course")}</PurchaseButton><ul className="lp-enrollment-facts"><li><Check size={14}/>{localizeNode(c.access)}</li><li><BookOpen size={14}/>{localizeNode(c.enrollment)}{translateText(" enrollment")}</li>{localizeNode(e.accessRule && <li><Clock3 size={14}/>{localizeNode(e.accessRule)}</li>)}{localizeNode(e.studentLimit > 0 && <li><UserRound size={14}/>{localizeNode(e.studentLimit)}{translateText(" student capacity")}</li>)}</ul></div></motion.div>{localizeNode((e.instructor.name || e.instructor.bio || e.instructor.image) && <motion.section className="lp-instructor" variants={rise} initial="hidden" animate="visible">{localizeNode(e.instructor.image && <img src={e.instructor.image} alt={translateText(e.instructor.name)}/>)}<span className="lp-section-label">{translateText("MEET YOUR INSTRUCTOR")}</span>{localizeNode(e.instructor.name && <h3>{localizeNode(e.instructor.name)}</h3>)}{localizeNode(e.instructor.bio && <Description text={e.instructor.bio}/>)}</motion.section>)}</aside>
-    </div></>;
-}
-function CourseModule({ module, index, completed, currentLesson, onLesson }: { module: CommerceConfig['modules'][number]; index: number; completed: string[]; currentLesson: string; onLesson: (lesson: Lesson) => void }) {
-  useUILanguage();
-  const [open, setOpen] = useState(index === 0);
-  return <section className="lp-module"><button className="lp-module-toggle" aria-expanded={open} aria-controls={`preview-module-${index}`} onClick={() => setOpen(value => !value)}><span>{localizeNode(String(index + 1).padStart(2, '0'))}</span><b>{localizeNode(module.title)}</b><small>{localizeNode(module.lessons.length)}{translateText(" lessons")}</small><motion.span className="lp-chevron" animate={{ rotate: open ? 180 : 0 }}><ChevronDown size={16}/></motion.span></button><AnimatePresence initial={false}>{localizeNode(open && <motion.div id={`preview-module-${index}`} className="lp-module-content" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: .24 }}>{localizeNode(module.lessons.map((value, j) => { const lesson = lessonData(value, index * 1000 + j), done = completed.includes(lesson.id); return <motion.button key={lesson.id} className={`lp-lesson ${done ? 'is-complete' : ''} ${currentLesson === lesson.id ? 'is-current' : ''}`} onClick={() => onLesson(lesson)} whileHover={{ x: 3 }}><span className="lp-lesson-icon">{localizeNode(done ? <Check size={15}/> : <PlayCircle size={15}/>)}</span><span>{localizeNode(lesson.title)}</span><small>{localizeNode(lesson.kind)}{localizeNode(lesson.duration && ` · ${lesson.duration}`)}</small><motion.em className="lp-lesson-badge" whileHover={{ scale: 1.06 }}>{localizeNode(done ? 'Completed' : 'Preview')}</motion.em></motion.button>; }))}</motion.div>)}</AnimatePresence></section>;
-}
-function ServicePreview({ product, buy }: PreviewProps) {
-  useUILanguage();
-  const c = product.config!, e = c.experience!; const [selectedSlot, setSelectedSlot] = useState('');
-  const slots = Array.from(new Set((c.bookingSlots ?? []).map(value => value.trim()).filter(Boolean)));
-  const selected = slots.includes(selectedSlot) ? selectedSlot : '';
-  return <motion.div variants={stagger} initial="hidden" animate="visible" className="lp-service-content"><section className="lp-container lp-service-hero"><motion.div variants={rise}><span className="lp-kicker"><CalendarDays size={15}/>{localizeNode(e.category || product.type)}</span><h1>{product.name}</h1>{localizeNode(e.shortDescription && <p className="lp-service-intro">{localizeNode(e.shortDescription)}</p>)}<div className="lp-facts"><span><Clock3 size={15}/>{localizeNode(c.duration)}{translateText(" min")}</span><span>{localizeNode(e.serviceMode)}</span>{localizeNode(e.location && <span><MapPin size={15}/>{localizeNode(e.location)}</span>)}</div><div className="lp-service-price"><span className="lp-section-label">{translateText("YOUR SESSION")}</span><b>{localizeNode(formatPrice(c))}</b></div><PurchaseButton buy={buy}>{translateText("Book your session")}</PurchaseButton><Features product={product}/>{localizeNode(e.provider && <div className="lp-consultant-signature"><UserRound size={18}/><span>{localizeNode(e.provider)}</span></div>)}</motion.div><motion.aside variants={rise} className="lp-scheduling-card" whileHover={{ y: -3 }}>{product.image && <img src={product.image} alt={translateText(product.name)} className="lp-service-cover"/>}<div><span className="lp-section-label">{translateText("SCHEDULING")}</span><h2>{localizeNode(c.duration)}{translateText(" minute session")}</h2><p>{localizeNode(e.serviceMode)}{localizeNode(e.location && ` · ${e.location}`)}</p>{localizeNode(slots.length > 0 && <><div className="lp-slots" role="group" aria-label={translateText("Preview scheduling slots")}>{localizeNode(slots.map(slot => <motion.button key={slot} whileHover={{ scale: 1.02 }} aria-pressed={selected === slot} className={selected === slot ? 'selected' : ''} onClick={() => setSelectedSlot(slot)}>{localizeNode(slot)}{localizeNode(selected === slot && <Check size={12}/>)}</motion.button>))}</div><AnimatePresence mode="wait"><motion.small key={selected} initial={{ opacity: 0 }} animate={{ opacity: 1 }} role="status">{localizeNode(selected ? `Selected: ${selected} · Preview only` : 'Select a slot to preview the booking experience.')}</motion.small></AnimatePresence></>)}{localizeNode(/^https?:\/\//i.test(c.bookingUrl) && <motion.a whileHover={{ scale: 1.02 }} className="lp-calendar-link" href={c.bookingUrl} target="_blank" rel="noopener noreferrer">{translateText("View booking availability")}<ArrowRight size={14}/></motion.a>)}<small className="lp-scheduling-note">{translateText("Preview selections do not reserve appointments.")}</small></div></motion.aside></section><section className="lp-container lp-service-details"><motion.article variants={rise}><span className="lp-section-label">{translateText("SERVICE DETAILS")}</span>{localizeNode(product.description && <Description text={product.description}/>)}<Gallery product={product}/></motion.article><motion.article variants={rise} className="lp-consultant-bio"><span className="lp-section-label">{translateText("CONSULTANT EXPERTISE")}</span>{localizeNode(e.provider && <h2>{localizeNode(e.provider)}</h2>)}{localizeNode(e.instructor.bio && <Description text={e.instructor.bio}/>)}<h3>{translateText("Your next steps")}</h3>{localizeNode(c.fulfillment && <Description text={c.fulfillment}/>)}</motion.article></section></motion.div>;
-}
-function DigitalPreview({ product, buy }: PreviewProps) {
-  useUILanguage();
-  const c = product.config!, e = c.experience!;
-  const types = Array.from(new Set(c.assets.map(asset => asset.mime || asset.name.split('.').slice(1).at(-1)?.toUpperCase()).filter(Boolean)));
-  return <motion.div variants={stagger} initial="hidden" animate="visible" className="lp-digital-content"><section className="lp-container lp-digital-showcase"><motion.div variants={rise} className="lp-asset-cover" whileHover={{ scale: 1.02 }}>{product.image ? <img src={product.image} alt={translateText(product.name)}/> : <FileText size={72}/>}<motion.span key={c.assets.length} initial={{ scale: .9 }} animate={{ scale: 1 }} className="lp-file-counter"><Layers3 size={15}/>{localizeNode(c.assets.length)}{translateText(" files")}</motion.span></motion.div><motion.div variants={rise} className="lp-asset-offer"><span className="lp-kicker"><Download size={15}/>{localizeNode(e.category || product.type)}</span><h1>{product.name}</h1>{localizeNode(e.shortDescription && <p>{localizeNode(e.shortDescription)}</p>)}<div className="lp-price">{localizeNode(formatPrice(c))}</div><PurchaseButton buy={buy}>{localizeNode(c.delivery === 'Instant' ? 'Get instant access' : 'Get access')}</PurchaseButton><div className="lp-asset-specs"><span><Download size={15}/>{localizeNode(c.delivery === 'Instant' ? 'Instant delivery' : 'Delivery after approval')}</span><span><Check size={15}/>{localizeNode(c.access)}</span>{localizeNode(e.fileType && <span><FileText size={15}/>{localizeNode(e.fileType)}</span>)}{localizeNode(c.downloadLimit > 0 && e.downloadLimitEnabled && <span>{localizeNode(c.downloadLimit)}{translateText(" downloads")}</span>)}</div><div className="lp-file-types">{localizeNode(types.map(type => <span key={type}>{localizeNode(type)}</span>))}</div></motion.div></section><section className="lp-container lp-asset-workspace"><motion.main variants={rise}><div className="lp-section-heading"><div><span className="lp-section-label">{translateText("ASSET SHOWCASE")}</span><h2>{translateText("Inside your download")}</h2></div><motion.span className="lp-count-pill" key={c.assets.length} initial={{ opacity: .4 }} animate={{ opacity: 1 }}>{localizeNode(c.assets.length)}{translateText(" resources")}</motion.span></div>{localizeNode(product.description && <Description text={product.description}/>)}<Features product={product}/><Gallery product={product}/></motion.main><motion.aside variants={rise} className="lp-file-library"><header><FileText size={17}/><h3>{translateText("File library")}</h3><b>{localizeNode(c.assets.length)}</b></header>{localizeNode(c.assets.map((asset, i) => <motion.div variants={rise} whileHover={{ x: 3 }} className="lp-file-row" key={asset.storageId || i}><span><FileText size={17}/></span><div><b>{localizeNode(asset.name)}</b>{localizeNode((asset.mime || asset.size) && <small>{localizeNode(asset.mime)}{localizeNode(asset.size ? ` · ${(asset.size / 1024 / 1024).toFixed(1)} MB` : '')}</small>)}</div><Download size={14}/></motion.div>))}</motion.aside></section></motion.div>;
 }

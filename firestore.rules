@@ -66,6 +66,18 @@ service cloud.firestore {
         allow create, update: if (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
         allow delete: if permit(tenantId, 'settings');
       }
+      match /products/{productId}/publicReviews/current {
+        // Public review projection contains no customer emails or order data.
+        allow read: if permit(tenantId, 'products') ||
+          get(/databases/$(database)/documents/tenants/$(tenantId)/products/$(productId)).data.status == 'Active' &&
+          get(/databases/$(database)/documents/tenants/$(tenantId)/products/$(productId)).data.config.experience.get('visibility', 'Published') in ['Published', 'Unlisted'];
+        allow write: if false;
+      }
+      match /products/{productId} {
+        allow create: if permit(tenantId, 'products') && !request.resource.data.keys().hasAny(['reviews', 'ratingAverage', 'reviewsCount', 'ratingTotal']);
+        allow update: if permit(tenantId, 'products') && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['reviews', 'ratingAverage', 'reviewsCount', 'ratingTotal']);
+        allow delete: if permit(tenantId, 'products');
+      }
       match /domains/{domainId} {
         // Provider verification and domain assignments are server-owned.
         allow update: if permit(tenantId, 'funnels')
@@ -82,7 +94,6 @@ service cloud.firestore {
       match /{collectionName}/{id} {
         allow read: if tenant(tenantId) && canRead(tenantId, collectionName) && (collectionName != 'copilotConversations' || resource.data.actorId == request.auth.uid) && collectionName in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'copilotConversations', 'userTemplates', 'files'];
         allow create, update, delete: if (
-          collectionName == 'products' && permit(tenantId, 'products') ||
           collectionName == 'calendars' && permit(tenantId, 'booking') ||
           collectionName in ['leads', 'contacts', 'pipelines'] && permit(tenantId, 'crm') ||
           collectionName == 'conversations' && permit(tenantId, 'inbox') ||
