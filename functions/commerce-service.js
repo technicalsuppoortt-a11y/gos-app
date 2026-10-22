@@ -71,6 +71,8 @@ export async function productAccessRequest(request, { db, signFile, identityEmai
     const grant = (await tx.get(grantRef)).data();
     if (!grant || grant.status !== 'Active' || grant.tokenHash !== tokenHash || Date.parse(grant.expiresAt) <= now()) throw new HttpsError('permission-denied', 'This access link has expired or was revoked.');
     const productRef = root.collection('products').doc(grant.productId), product = (await tx.get(productRef)).data(); checkProduct(product);
+    const accessDays = !/digital/i.test(product.type) ? 0 : product.config.access === '30 days' ? 30 : product.config.access === '12 months' ? 365 : product.config.access === 'Custom' ? product.config.accessDays : 0;
+    if (accessDays && now() >= Date.parse(grant.createdAt) + accessDays * 86400000) throw new HttpsError('permission-denied', 'Your access to this product has expired.');
     if (product.config.experience?.requireLogin && identity?.toLowerCase() !== grant.email) throw new HttpsError('unauthenticated', 'Sign in with the customer email to use this access link.');
     const student = checkStudent(product, grant.email), experience = product.config.experience || {};
     if (experience.accessRule === 'After specific date' && now() < Date.parse(experience.accessDate)) throw new HttpsError('failed-precondition', 'This product is not available yet.');

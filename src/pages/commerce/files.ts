@@ -1,1 +1,1 @@
-export { storeFile, downloadFile, readStoredFile } from '../../backend/files';
+export { storeFile, downloadFile, readStoredFile, uploadDigitalFile, MAX_DIGITAL_FILE_SIZE } from '../../backend/files';

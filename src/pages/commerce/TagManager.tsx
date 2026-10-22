@@ -1,0 +1,17 @@
+import { useId, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { translateText, useUILanguage } from '../../i18n/display';
+import './authoring-controls.css';
+const defaults = ['Business', 'Design', 'Marketing', 'Technology', 'Productivity', 'Templates', 'Beginner', 'Advanced', 'Development'];
+export function TagManager({ tags, onChange, disabled = false, suggestions = defaults }: { tags: string[]; onChange: (tags: string[]) => void; disabled?: boolean; suggestions?: string[] }) {
+  useUILanguage();
+  const [input, setInput] = useState(''), [focused, setFocused] = useState(false), listId = useId();
+  const [active, setActive] = useState(-1), root = useRef<HTMLDivElement>(null), inputRef = useRef<HTMLInputElement>(null);
+  function add(value = input) {
+    const next = [...tags], known = new Set(tags.map(tag => tag.toLocaleLowerCase()));
+    for (const part of value.split(',')) { const tag = part.trim().slice(0, 60); if (tag && !known.has(tag.toLocaleLowerCase())) { next.push(tag); known.add(tag.toLocaleLowerCase()); } }
+    onChange(next); setInput(''); setActive(-1);
+  }
+  const options = suggestions.filter(tag => !tags.some(value => value.toLocaleLowerCase() === tag.toLocaleLowerCase()) && tag.toLocaleLowerCase().includes(input.trim().toLocaleLowerCase())).slice(0, 5);
+  return <div ref={root} className="authoring-tags" onBlur={event => { if (!root.current?.contains(event.relatedTarget as Node)) { setFocused(false); if (input.trim()) add(); } }}><div className={`authoring-tag-input${disabled ? ' disabled' : ''}`}>{tags.filter(Boolean).map((tag, index) => <span key={`${tag}-${index}`}>{tag}{!disabled && <button type="button" aria-label={translateText(`Remove tag ${tag}`)} onClick={() => onChange(tags.filter((_, i) => i !== index))}><X size={11}/></button>}</span>)}<input ref={inputRef} role="combobox" aria-autocomplete="list" aria-expanded={focused && options.length > 0} aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined} disabled={disabled} aria-label={translateText('Tags / Keywords')} aria-controls={focused && options.length ? listId : undefined} value={input} placeholder={translateText('Type a tag and press Enter')} onFocus={() => setFocused(true)} onChange={event => { setActive(-1); if (event.target.value.includes(',')) add(event.target.value); else setInput(event.target.value); }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ',') { event.preventDefault(); add(active >= 0 && options[active] ? options[active] : input); } else if (event.key === 'ArrowDown' && options.length) { event.preventDefault(); setActive(index => (index + 1) % options.length); } else if (event.key === 'ArrowUp' && options.length) { event.preventDefault(); setActive(index => (index - 1 + options.length) % options.length); } else if (event.key === 'Escape') setFocused(false); else if (event.key === 'Backspace' && !input && tags.length) onChange(tags.slice(0, -1)); }}/></div>{focused && options.length > 0 && !disabled && <div id={listId} role="listbox" className="authoring-tag-suggestions" aria-label={translateText('Suggested tags')}>{options.map((tag, index) => <button role="option" aria-selected={index === active} id={`${listId}-${index}`} key={tag} type="button" onMouseDown={event => event.preventDefault()} onClick={() => { add(tag); inputRef.current?.focus(); }}>{tag}</button>)}</div>}<small>{translateText('Press Enter or comma to add a tag.')}</small></div>;
+}

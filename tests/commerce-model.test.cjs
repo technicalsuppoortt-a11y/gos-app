@@ -29,11 +29,12 @@ test('publishing checks delivery requirements for the three supported types', ()
   assert.equal(model.validateProduct(digital, true).length, 0);
   const course = offer('Course / Membership');
   assert.match(model.validateProduct(course, true).join(' '), /modules/);
-  course.config.modules = [{ title: 'Introduction', lessons: ['Welcome'] }];
+  course.config.modules = [{ title: 'Introduction', lessons: [{ id: 'welcome', title: 'Welcome', kind: 'Video', duration: '', url: 'https://example.com/welcome.mp4' }] }];
   assert.equal(model.validateProduct(course, true).length, 0);
   course.config.modules[0].lessons = [''];
   assert.match(model.validateProduct(course, true).join(' '), /named lessons/);
   course.config.communityUrl = 'https://example.com/community';
+  course.config.modules = [];
   assert.equal(model.validateProduct(course, true).length, 0);
   for (const type of ['Subscription', 'Bundle', 'Physical Product']) {
     const unsupported = { ...offer('Digital Product'), type };
@@ -49,6 +50,7 @@ test('drafts allow unfinished delivery, but reject invalid billing and unsafe UR
   product.config.taxRate = 101;
   product.config.trialDays = -1;
   product.config.downloadLimit = 0;
+  product.config.experience.downloadLimitEnabled = true;
   product.config.salesUrl = 'javascript:alert(1)';
   const errors = model.validateProduct(product).join(' ');
   for (const expected of [/Price/, /Tax rate/, /Trial days/, /Download limit/, /valid https/]) assert.match(errors, expected);
@@ -162,6 +164,39 @@ test('rating metrics normalize empty/legacy data and retain lifetime totals for 
   assert.equal(product.reviewsCount, 4); assert.equal(product.ratingAverage, 4.25);
   const lifetime = model.withReviews(product, { reviews, reviewsCount: 60, ratingTotal: 270 });
   assert.equal(lifetime.reviewsCount, 60); assert.equal(lifetime.ratingAverage.toFixed(1), '4.5');
+});
+test('course publishing identifies the exact incomplete lesson and refuses browser-only content', () => {
+  const p = offer('Course');
+  p.config.modules = [{ title: 'Start', lessons: [{ id: 'lesson', title: 'Introduction', kind: 'Video', duration: '', url: '' }] }];
+  assert.ok(model.validateProduct(p, true).includes('Lesson 1.1: Add a resource URL or upload a file.'));
+  p.config.modules[0].lessons[0].storageId = 'local-browser';
+  assert.ok(model.validateProduct(p, true).some(message => message.startsWith('Lesson 1.1: Replace')));
+  p.config.modules[0].lessons[0] = { id: 'lesson', title: 'Introduction', kind: 'Video', duration: '01:39', url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE', videoSource: 'YouTube', durationSeconds: 98.5 };
+  assert.deepEqual(Array.from(model.validateProduct(p, true)), []);
+});
+test('digital publishing requires deliverable assets, rejects failed/browser uploads, and honors optional download limits', () => {
+  const p = offer('Digital Product');
+  p.config.assets = [{ name: 'Toolkit', url: 'https://example.com/toolkit.pdf', resourceType: 'External Site' }];
+  assert.deepEqual(Array.from(model.validateProduct(p, true)), []);
+  p.config.assets[0].storageId = 'local-session';
+  assert.match(model.validateProduct(p, true).join(' '), /Upload local attachments/);
+  delete p.config.assets[0].storageId;
+  p.config.assets[0].uploadError = 'Cloud storage denied';
+  assert.match(model.validateProduct(p, true).join(' '), /Resolve failed digital file uploads/);
+  delete p.config.assets[0].uploadError;
+  p.config.assets[0].url = 'blob:temporary-file';
+  assert.match(model.validateProduct(p, true).join(' '), /temporary asset links/);
+  p.config.assets[0].url = 'https://example.com/toolkit.pdf';
+  p.config.downloadLimit = 0; p.config.experience.downloadLimitEnabled = false;
+  assert.deepEqual(Array.from(model.validateProduct(p, true)), []);
+  p.config.experience.downloadLimitEnabled = true;
+  assert.match(model.validateProduct(p, true).join(' '), /Download limit/);
+  p.config.downloadLimit = 3; p.config.access = 'Custom'; p.config.accessDays = 0;
+  assert.match(model.validateProduct(p, true).join(' '), /Custom access duration/);
+  p.config.accessDays = 30;
+  assert.deepEqual(Array.from(model.validateProduct(p, true)), []);
+  const hydrated = model.hydrateProduct(p);
+  assert.equal(hydrated.config.assets[0].id, model.hydrateProduct(hydrated).config.assets[0].id);
 });
 
 

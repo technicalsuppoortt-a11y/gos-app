@@ -6,7 +6,7 @@ export interface CheckoutField { id: string; label: string; required: boolean }
 export type ThankYouTemplate = 'confirmation' | 'onboarding' | 'community' | 'external';
 export type SalesTemplate = 'hero' | 'vsl' | 'minimal' | 'external';
 export type ProductKind = 'course' | 'digital' | 'service' | 'subscription' | 'bundle' | 'physical';
-export interface Lesson { id: string; title: string; kind: 'Video' | 'PDF' | 'Text'; duration: string; url: string; storageId?: string; fileName?: string }
+export interface Lesson { id: string; title: string; kind: 'Video' | 'PDF' | 'Text' | 'File'; duration: string; url: string; storageId?: string; fileName?: string; size?: number; mime?: string; durationSeconds?: number; videoSource?: 'YouTube' | 'Google Drive' | 'Local Upload' | 'External URL' }
 export interface PricingDiscount { id: string; enabled: boolean; type: 'Percentage' | 'Fixed Amount'; value: number; appliesTo: 'All pricing options' | 'One-time payment' | 'Payment plan' | 'Subscription' }
 export const accessRules = ['Immediately after payment', 'After manual approval', 'After specific date', 'Drip content (scheduled release)'] as const;
 export interface ProductExperience {
@@ -40,9 +40,9 @@ export interface CommerceConfig {
   amount: number; currency: string; billing: Billing;
   installments: number; frequency: 'Monthly' | 'Quarterly' | 'Yearly'; trialDays: number;
   cancellation: 'End of billing period' | 'Immediately'; taxRate: number;
-  access: 'Lifetime access' | '12 months' | 'While subscribed'; delivery: 'Instant' | 'After approval';
+  access: 'Lifetime access' | '30 days' | '12 months' | 'Custom' | 'While subscribed'; accessDays?: number; delivery: 'Instant' | 'After approval';
   bookingUrl: string; duration: number; fulfillment: string; bookingSlots?: string[];
-  assets: Array<{ name: string; url: string; storageId?: string; size?: number; mime?: string }>; downloadLimit: number;
+  assets: Array<{ id?: string; name: string; url: string; uploadError?: string; resourceType?: 'Drive' | 'YouTube' | 'Notion' | 'Dropbox' | 'External Site'; storageId?: string; size?: number; mime?: string }>; downloadLimit: number;
   modules: Array<{ id?: string; title: string; lessons: Array<string | Lesson> }>; communityUrl: string; enrollment: 'Automatic' | 'After approval';
   certificateEnabled?: boolean; certificateIssuer?: string; downloadExpiryHours?: number;
   calendarId?: string; bufferBefore?: number; bufferAfter?: number; cancellationHours?: number; cancellationPolicy?: string;
@@ -129,6 +129,7 @@ export function hydrateProduct(product: Product): Product {
   const type = kindLabels[productKind(product.type)];
   const defaults = defaultConfig(product.type, product.price);
   const config = { ...defaults, ...product.config, automations: { ...defaults.automations, ...product.config?.automations } };
+  config.assets = config.assets.map((asset, index) => ({ ...asset, id: asset.id || asset.storageId || `legacy-asset-${index}` }));
   config.customCheckoutFields = checkoutFieldList(config);
   config.thankYouTemplate ??= config.thankYouUrl ? 'external' : 'confirmation';
   config.salesTemplate ??= config.salesUrl ? 'external' : 'hero';
@@ -159,7 +160,8 @@ export function validateProduct(product: Product, publish = false): string[] {
   if (c.downloadExpiryHours !== undefined && (c.downloadExpiryHours < 1 || c.downloadExpiryHours > 720)) errors.push('Download expiration must be between 1 and 720 hours.');
   const kind = productKind(product.type);
   if (kind === 'subscription' && c.billing !== 'Subscription') errors.push('Subscription products require recurring billing.');
-  if (kind === 'digital' && (!Number.isInteger(c.downloadLimit) || c.downloadLimit < 1)) errors.push('Download limit must be a positive whole number.');
+  if (kind === 'digital' && c.experience?.downloadLimitEnabled !== false && (!Number.isInteger(c.downloadLimit) || c.downloadLimit < 1)) errors.push('Download limit must be a positive whole number.');
+  if (kind === 'digital' && c.access === 'Custom' && (!Number.isInteger(c.accessDays) || c.accessDays! < 1)) errors.push('Custom access duration must be a positive whole number of days.');
   const fields = checkoutFieldList(c);
   if (fields.some(field => !field.id || !field.label.trim()) || new Set(fields.map(field => field.id)).size !== fields.length) errors.push('Custom checkout fields need unique IDs and non-empty labels.');
   if (c.thankYouTemplate === 'external' && !c.thankYouUrl.trim()) errors.push('Enter a custom thank-you URL.');
@@ -195,12 +197,20 @@ export function validateProduct(product: Product, publish = false): string[] {
   if (c.customDomain && !/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(c.customDomain)) errors.push('Enter a domain name without a protocol or path.');
   for (const student of c.students ?? []) { if (!student.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email) || !Number.isFinite(student.progress) || student.progress < 0 || student.progress > 100) errors.push('Students need a name, valid email and progress between 0 and 100.'); }
   if (publish) {
+    if (kind === 'digital' && c.assets.some(asset => asset.uploadError)) errors.push('Resolve failed digital file uploads before publishing.');
     if (c.assets.some(asset => asset.storageId?.startsWith('local-')) || c.modules.some(module => module.lessons.some(lesson => lessonData(lesson).storageId?.startsWith('local-')))) errors.push('Upload local attachments to cloud storage or replace them with delivery URLs before publishing.');
     if (!product.description.trim()) errors.push('Add a description before publishing.');
     if (kind === 'service' && !c.bookingUrl.trim() && !c.fulfillment.trim()) errors.push('Add a booking link or service fulfillment instructions.');
     if (kind === 'service' && (!Number.isFinite(c.duration) || c.duration <= 0)) errors.push('Service duration must be greater than zero.');
     if (kind === 'digital' && (!c.assets.length || c.assets.some(a => !a.name.trim() || (!a.url.trim() && !a.storageId)))) errors.push('Add at least one named digital asset with a delivery URL or uploaded file.');
+    if (kind === 'digital' && c.assets.some(a => /^(blob:|data:)/i.test(a.url))) errors.push('Replace temporary asset links with a cloud upload or secure delivery URL.');
     if (kind === 'course' && !c.communityUrl && (!c.modules.length || c.modules.some(m => !m.title.trim() || !m.lessons.length || m.lessons.some(l => !lessonData(l).title.trim())))) errors.push('Add a community URL or modules with named lessons.');
+    if (kind === 'course') c.modules.forEach((module, i) => module.lessons.forEach((value, j) => {
+      const lesson = lessonData(value, i * 1000 + j), prefix = `Lesson ${i + 1}.${j + 1}: `;
+      if (!lesson.title.trim()) errors.push(prefix + 'Enter a lesson title.');
+      if (lesson.storageId?.startsWith('local-')) errors.push(prefix + 'Replace the browser attachment with a cloud upload or resource URL.');
+      else if (!lesson.url.trim() && !lesson.storageId) errors.push(prefix + 'Add a resource URL or upload a file.');
+    }));
     if (kind === 'bundle' && c.components.length < 2) errors.push('Choose at least two products for your bundle.');
   }
   return errors;

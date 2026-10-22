@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { createServer } from 'vite';
+import react from '@vitejs/plugin-react';
+const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
+const fixture = name => new URL(`./fixtures/${name}`, import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+const server = await createServer({ configFile: false, cacheDir: 'node_modules/.vite-digital-editor', optimizeDeps: { entries: ['tests/fixtures/commerce-save.html'] }, plugins: [react(), {
+  name: 'digital-test-transports', enforce: 'pre',
+  resolveId(source) {
+    if (/backend\/workspace$/.test(source)) return fixture('commerce-save-workspace.ts');
+    if (source === './reviewRepository') return fixture('commerce-review-transport.ts');
+    if (source === '@phosphor-icons/react') return '\0digital-icons';
+  },
+  load(id) { if (id === '\0digital-icons') return 'export const AppleLogo=()=>null, InstagramLogo=()=>null, LinkedinLogo=()=>null, YoutubeLogo=()=>null, TiktokLogo=()=>null;'; },
+  transform(source, id) { if (id.replaceAll('\\', '/').endsWith('/src/backend/files.ts')) return source.replace("from './firebase'", "from '/tests/fixtures/commerce-upload-transport.ts'").replace("from 'firebase/storage'", "from '/tests/fixtures/commerce-upload-transport.ts'").replace("from 'firebase/firestore'", "from '/tests/fixtures/commerce-upload-transport.ts'"); },
+}], server: { host: '127.0.0.1', port: 0 } });
+await server.listen(); let browser;
+try {
+  browser = await chromium.launch({ executablePath: process.env.FUNNEL_BROWSER_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); page.setDefaultTimeout(20000);
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.route('https://fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/fixtures/commerce-save.html`);
+  await page.waitForFunction(() => !!window.__router);
+  await page.evaluate(() => window.__router.navigate('/dashboard/products-payments/products/new?type=digital'));
+  const publish = page.getByRole('button', { name: 'Publish Product', exact: true });
+  await publish.click();
+  await page.locator('.cw-errors').getByRole('button', { name: 'Enter a product name.', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Product Name *', { exact: true }).getAttribute('aria-invalid'), 'true');
+  await page.locator('.cw-errors').getByRole('button', { name: /named digital asset/ }).click();
+  await page.getByLabel('Product Name *', { exact: true }).fill('Cloud delivery toolkit');
+  await page.getByRole('textbox', { name: 'Full description', exact: true }).fill('A professional toolkit with cloud delivery.');
+  const infoPrice = page.locator('.dw-pricing .dw-money input').first(); await infoPrice.fill('29');
+  await page.getByRole('button', { name: 'Add link', exact: true }).click();
+  let dialog = page.getByRole('dialog', { name: 'Add External Asset / Delivery Link', exact: true });
+  await dialog.getByLabel('Link Title', { exact: true }).fill('Master folder');
+  await dialog.getByLabel('Delivery URL', { exact: true }).fill('javascript:alert(1)');
+  await dialog.getByRole('button', { name: 'Save link', exact: true }).click();
+  await dialog.getByRole('alert').waitFor();
+  assert.equal(await page.locator('.tw-file-item').count(), 0);
+  await dialog.getByLabel('Delivery URL', { exact: true }).fill('https://drive.google.com/drive/folders/demo');
+  await dialog.getByRole('combobox').click(); await page.getByRole('option', { name: 'Drive', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Save link', exact: true }).click(); await dialog.waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: 'File actions for Master folder', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Edit link', exact: true }).click();
+  assert.equal(await page.getByRole('menu').count(), 0);
+  dialog = page.getByRole('dialog'); await dialog.getByLabel('Link Title', { exact: true }).fill('Updated folder');
+  await dialog.getByRole('button', { name: 'Save link', exact: true }).click();
+  await page.getByRole('button', { name: 'File actions for Updated folder', exact: true }).click();
+  await page.getByRole('heading', { name: 'Product Information', exact: true }).click();
+  assert.equal(await page.getByRole('menu').count(), 0);
+  await page.getByRole('button', { name: 'File actions for Updated folder', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Remove file', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click(); assert.equal(await page.locator('.tw-file-item').count(), 1);
+  await page.getByRole('button', { name: 'File actions for Updated folder', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Remove file', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Remove asset', exact: true }).click();
+  assert.equal(await page.locator('.tw-file-item').count(), 0);
+  await page.evaluate(() => { window.__cloudUploadReject = true; });
+  await page.getByLabel('Upload digital files', { exact: true }).setInputFiles({ name: 'toolkit.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-demo') });
+  await page.locator('.dv-upload-progress').waitFor(); assert.equal(await publish.isDisabled(), true);
+  await page.locator('.tw-file-item').getByRole('alert').waitFor(); assert.equal(await publish.isEnabled(), true);
+  await publish.click(); await page.locator('.cw-errors').getByText('Resolve failed digital file uploads before publishing.', { exact: true }).waitFor();
+  await page.evaluate(() => { window.__cloudUploadReject = false; });
+  await page.getByRole('button', { name: 'Retry cloud upload for toolkit.pdf', exact: true }).click();
+  await page.locator('.tw-file-item .dv-error').waitFor({ state: 'hidden' });
+  await page.locator('.dv-upload-progress').waitFor({ state: 'hidden' });
+  assert.equal(await page.getByText(/Local attachments are available only/).count(), 0);
+  await page.getByRole('button', { name: 'Add Item', exact: true }).click();
+  await page.getByLabel('Included item title', { exact: true }).fill('Editable worksheets');
+  await page.getByRole('checkbox', { name: 'Include Editable worksheets', exact: true }).uncheck();
+  await page.getByRole('checkbox', { name: 'Include Editable worksheets', exact: true }).check();
+  const access = page.locator('.dw-access');
+  await access.getByRole('switch', { name: 'Allow direct download after purchase', exact: true }).uncheck();
+  await access.getByRole('switch', { name: 'Download limit', exact: true }).check();
+  await access.getByLabel('Download limit per customer', { exact: true }).fill('3');
+  await access.getByLabel('Access duration', { exact: true }).click(); await page.getByRole('option', { name: 'Custom', exact: true }).click();
+  await access.getByLabel('Custom access duration (days) *', { exact: true }).fill('7');
+  await access.getByRole('switch', { name: 'Watermark files', exact: true }).check();
+  await publish.click();
+  await page.waitForFunction(() => window.__writes.some(write => JSON.parse(write.value)?.some?.(p => p.name === 'Cloud delivery toolkit' && p.status === 'Active')));
+  const saved = await page.evaluate(() => window.__writes.map(write => JSON.parse(write.value)).flat().findLast(p => p.name === 'Cloud delivery toolkit'));
+  assert.match(saved.config.assets[0].url, /^https:\/\/storage.example.test\//); assert.ok(!saved.config.assets[0].storageId.startsWith('local-'));
+  assert.equal(saved.config.delivery, 'After approval'); assert.equal(saved.config.experience.directDownload, false); assert.equal(saved.config.accessDays, 7); assert.equal(saved.config.downloadLimit, 3); assert.equal(saved.config.experience.watermark, true); assert.equal(saved.config.experience.included[0].enabled, true);
+  await page.getByRole('button', { name: 'Save Changes', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Product Name *', { exact: true }).inputValue(), 'Cloud delivery toolkit');
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.locator('.dw-page').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true);
+  if (process.env.DIGITAL_SCREENSHOT) await page.screenshot({ path: process.env.DIGITAL_SCREENSHOT, fullPage: true });
+  assert.deepEqual(errors, []);
+  console.log('Digital editor passed: validation anchors, external links, menus/removal, cloud upload failure/retry/progress, access controls, benefits, publishing and responsive layout.');
+} finally { await browser?.close(); await server.close(); }

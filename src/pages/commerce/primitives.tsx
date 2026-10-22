@@ -3,17 +3,26 @@ import React from 'react';
 import { Bold, ImagePlus, Italic, Link2, List, ListOrdered, Underline, X } from 'lucide-react';
 import { CommerceSelect } from '../../components/ui/CommerceSelect';
 import type { Product } from './model';
-export function Field({ label, children, hint, icon: Icon }: { label: string; children: React.ReactNode; hint?: string; icon?: React.ElementType }) {
+import { digitalLabelField, useDigitalFieldError } from './DigitalValidation';
+export function Field({ label, children, hint, icon: Icon, error: suppliedError, validationField }: { label: string; children: React.ReactNode; hint?: string; icon?: React.ElementType; error?: string; validationField?: string }) {
   useUILanguage();
-  return <label className="cw-field"><span>{localizeNode(Icon && <Icon size={12} aria-hidden="true"/>)}{localizeNode(label)}</span>{localizeNode(children)}{localizeNode(hint && <small>{localizeNode(hint)}</small>)}</label>;
+  const field = validationField || digitalLabelField(label), contextError = useDigitalFieldError(field), error = suppliedError || contextError, helpId = React.useId();
+  const required = /\*\s*$/.test(label);
+  function mark(node: React.ReactNode): React.ReactNode {
+    return React.Children.map(node, child => {
+      if (!React.isValidElement<Record<string, any>>(child) || typeof child.type !== 'string') return child;
+      return React.cloneElement(child, ['input', 'textarea'].includes(child.type) ? { 'aria-label': child.props['aria-label'] || translateText(label), 'aria-invalid': error ? true : undefined, 'aria-describedby': error ? helpId : undefined, 'aria-required': required || undefined } : {}, child.props.children ? mark(child.props.children) : undefined);
+    });
+  }
+  return <label className={`cw-field${error ? ' dv-invalid' : ''}`} data-validation-field={field || undefined}><span>{localizeNode(Icon && <Icon size={12} aria-hidden="true"/>)}{localizeNode(required ? label.replace(/\s*\*\s*$/, '') : label)}{required && <> <span className="dv-required text-red-500">*</span></>}</span>{localizeNode(error || required ? mark(children) : children)}{localizeNode(hint && <small>{localizeNode(hint)}</small>)}{error && <small id={helpId} className="dv-error">{localizeNode(error)}</small>}</label>;
 }
-export function Select({ value, options, onChange, disabled = false }: { value: string; options: readonly string[]; onChange: (value: string) => void; disabled?: boolean }) {
+export function Select({ value, options, onChange, disabled = false, label }: { value: string; options: readonly string[]; onChange: (value: string) => void; disabled?: boolean; label?: string }) {
   useUILanguage();
-  return <span className="cw-select"><CommerceSelect value={value} options={options} onChange={onChange} disabled={disabled}/></span>;
+  return <span className="cw-select"><CommerceSelect label={label} value={value} options={options} onChange={onChange} disabled={disabled}/></span>;
 }
-export function Card({ title, subtitle, children, action, className = '' }: { title: string; subtitle?: string; children: React.ReactNode; action?: React.ReactNode; className?: string }) {
+export function Card({ title, subtitle, children, action, className = '', validationField }: { title: string; subtitle?: string; children: React.ReactNode; action?: React.ReactNode; className?: string; validationField?: string }) {
   useUILanguage();
-  return <section className={`cw-card ${className}`}><header><div><h2>{localizeNode(title)}</h2>{localizeNode(subtitle && <p>{localizeNode(subtitle)}</p>)}</div>{localizeNode(action)}</header>{localizeNode(children)}</section>;
+  return <section data-validation-field={validationField} className={`cw-card ${className}`}><header><div><h2>{localizeNode(title.replace(/\s*\*\s*$/, ''))}{/\*\s*$/.test(title) && <> <span className="dv-required text-red-500">*</span></>}</h2>{localizeNode(subtitle && <p>{localizeNode(subtitle)}</p>)}</div>{localizeNode(action)}</header>{localizeNode(children)}</section>;
 }
 export function Status({ status }: { status: Product['status'] }) {
   useUILanguage(); return <span className={`cw-status ${status.toLowerCase()}`}><i/>{localizeNode(status)}</span>; }

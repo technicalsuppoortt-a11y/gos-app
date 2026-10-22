@@ -5,14 +5,15 @@ import react from '@vitejs/plugin-react';
 import { verifyWorkspaceTabs } from './commerce-tabs-checks.mjs';
 const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const fixture = new URL('./fixtures/commerce-save-workspace.ts', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
-const server = await createServer({ configFile: false, cacheDir: 'node_modules/.vite-commerce-save', optimizeDeps: { entries: ['tests/fixtures/commerce-save.html'] }, plugins: [react(), { name: 'commerce-test-workspace', enforce: 'pre', resolveId(source) { if (/backend\/workspace$/.test(source)) return fixture; }, transform(source, id) { if (id.replaceAll('\\', '/').endsWith('/src/backend/files.ts')) return source.replace("from './firebase'", "from '/tests/fixtures/commerce-upload-transport.ts'").replace("from 'firebase/storage'", "from '/tests/fixtures/commerce-upload-transport.ts'"); } }], server: { host: '127.0.0.1', port: 0 } });
+const server = await createServer({ configFile: false, cacheDir: 'node_modules/.vite-commerce-save', optimizeDeps: { entries: ['tests/fixtures/commerce-save.html'] }, plugins: [react(), { name: 'commerce-test-workspace', enforce: 'pre', resolveId(source) { if (/backend\/workspace$/.test(source)) return fixture; }, transform(source, id) { if (id.replaceAll('\\', '/').endsWith('/src/backend/files.ts')) return source.replace("from './firebase'", "from '/tests/fixtures/commerce-upload-transport.ts'").replace("from 'firebase/storage'", "from '/tests/fixtures/commerce-upload-transport.ts'").replace("from 'firebase/firestore'", "from '/tests/fixtures/commerce-upload-transport.ts'"); } }], server: { host: '127.0.0.1', port: 0 } });
 await server.listen(); let browser;
 try {
   browser = await chromium.launch({ executablePath: process.env.FUNNEL_BROWSER_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); page.setDefaultTimeout(15000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.route('https://fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
-  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/fixtures/commerce-save.html`);
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/fixtures/commerce-save.html`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForFunction(() => !!window.__router);
   const navigate = url => page.evaluate(url => window.__router.navigate(url), url);
   if (!process.argv.includes('--tabs-only')) {
   await page.getByRole('button', { name: /Payment providers/ }).click();
@@ -70,11 +71,11 @@ try {
       await navigate('/dashboard/products-payments/products/new?type=course&tab=content');
       assert.equal(await page.locator('.course-module').count(), 3);
       await page.getByRole('button', { name: 'Add Lesson', exact: true }).first().click();
-      await page.getByLabel('Lesson title', { exact: true }).fill('Uploaded lesson');
-      await page.getByLabel('Attach PDF / Video', { exact: true }).setInputFiles({ name: 'qa-video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('QA video') });
+      await page.getByLabel('Lesson Title *', { exact: true }).fill('Uploaded lesson');
+      await page.getByLabel('Attach PDF / Video / ZIP', { exact: true }).setInputFiles({ name: 'qa-video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('QA video') });
       await page.getByText('qa-video.mp4', { exact: true }).waitFor().catch(async error => { console.log('Lesson upload dialog:', await page.getByRole('dialog').innerText()); throw error; });
       await page.getByRole('button', { name: 'Save Lesson', exact: true }).click();
-      await page.getByText('Local attachments are available only in this browser session.', { exact: false }).waitFor();
+      assert.equal(await page.getByText(/Local attachments are available only/).count(), 0);
     } else if (type === 'digital') {
       await page.locator('input[type="file"][accept*=".zip"]').setInputFiles({ name: 'qa-guide.pdf', mimeType: 'application/pdf', buffer: Buffer.from('QA PDF') });
       await page.locator('input[value="qa-guide.pdf"]').waitFor();
@@ -86,5 +87,5 @@ try {
   }
   }
   await verifyWorkspaceTabs(page);
-  assert.deepEqual(errors, []); console.log('Commerce browser checks passed: all product types, cross-tab draft preservation, explicit/failed saves, real order joins, enrollment analytics, advanced settings, presets and upload fallback.');
+  assert.deepEqual(errors, []); console.log('Commerce browser checks passed: all product types, cross-tab draft preservation, explicit/failed saves, real order joins, enrollment analytics, advanced settings, presets and cloud uploads.');
 } finally { await browser?.close(); await server.close(); }

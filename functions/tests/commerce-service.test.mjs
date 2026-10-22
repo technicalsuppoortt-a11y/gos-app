@@ -34,6 +34,14 @@ test('expiration, customer login, release date and suspended enrollment are enfo
   p.config.students[0].status = 'Suspended'; await assert.rejects(h.access(token, {}, { uid: 'learner' }), /active access/);
   p.config.students[0].status = 'Active'; h.advance(3600001); await assert.rejects(h.access(token, {}, { uid: 'learner' }), /expired/);
 });
+test('custom digital access duration expires independently from the secure download link', async () => {
+  const h = harness(), p = h.records.get('tenants/a/products/product');
+  p.config.access = 'Custom'; p.config.accessDays = 1; p.config.downloadExpiryHours = 72;
+  const { token } = await h.service({ action: 'grant' });
+  assert.ok((await h.access(token)).files.length);
+  h.advance(86400001);
+  await assert.rejects(h.access(token), /access to this product has expired/);
+});
 test('completion updates the actual enrollment and gates certificate issuance', async () => {
   const h = harness('Course'); h.records.get('tenants/a/products/product').config.certificateEnabled = true;
   await assert.rejects(h.service({ action: 'certificate' }), /complete/);

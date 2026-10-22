@@ -8,6 +8,7 @@ import type { WorkspaceTab } from './views';
 import { Card, Description, Dialog, Field, RichDescription, Select, Status, Toggle } from './primitives';
 import { readMembers } from '../booking/model';
 import { RatingBadge } from './ProductReviews';
+import { useDigitalFieldError } from './DigitalValidation';
 
 export function ServiceInformation({ product: p, experience: e, editing, update, customize }: FormProps) {
   useUILanguage();
@@ -16,7 +17,8 @@ export function ServiceInformation({ product: p, experience: e, editing, update,
 
 export function ServiceDescription({ product, editing, update }: Pick<FormProps, 'product' | 'editing' | 'update'>) {
   useUILanguage();
-  return <Card title={translateText("Description")} className="sw-description">{localizeNode(editing ? <RichDescription value={product.description} maxLength={2000} onChange={description => update({ description: description.slice(0, 2000) })}/> : <Description text={product.description || 'No description added yet.'}/>)}</Card>;
+  const error = useDigitalFieldError('description');
+  return <Card title={translateText("Description *")} className={`sw-description${error ? ' dv-invalid' : ''}`} validationField="description">{localizeNode(editing ? <RichDescription value={product.description} maxLength={2000} onChange={description => update({ description: description.slice(0, 2000) })}/> : <Description text={product.description || 'No description added yet.'}/>)}{error && <small className="dv-error">{error}</small>}</Card>;
 }
 
 export function ProviderSelect({ experience: e, editing, customize }: Pick<FormProps, 'experience' | 'editing' | 'customize'>) {
