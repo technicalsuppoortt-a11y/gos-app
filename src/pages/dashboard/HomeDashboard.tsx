@@ -1,4 +1,5 @@
 import { eventLabel, parseTimestampMs, resourceLabel, useBusinessMetrics } from '../../backend/metrics';
+import { withUniqueListIds } from '../../utils/listKeys';
 import { useEntities } from '../../backend/workspace';
 import type { Asset } from '../asset-model';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
@@ -1203,7 +1204,7 @@ function RevenueOverview() {
 
 function RecentActivity() {
   const m = useBusinessMetrics();
-  const ACTIVITY = [...m.events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt)).map(event => ({ text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
+  const ACTIVITY = withUniqueListIds([...m.events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt))).map(event => ({ id: event.id, text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
   useUILanguage();
   const navigate = useNavigate();
   return (
@@ -1215,7 +1216,7 @@ function RecentActivity() {
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0">
         {!ACTIVITY.length && <li className="py-4 text-xs text-slate-500">No activity yet. Your recent changes will appear here.</li>}{ACTIVITY.slice(0, 4).map((a) => (
-          <li key={a.text} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
+          <li key={a.id} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
             <IconTile icon={a.icon} tone={a.tone} size="xs" />
             <span className={`min-w-0 flex-1 truncate text-[11.5px] font-medium leading-tight ${H} text-start`}>
               {localizeNode(a.text)}

@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store';
 import './notification-center.css';
+import { withUniqueListIds } from '../../utils/listKeys';
 
 type Category = 'All' | 'Leads' | 'Bookings' | 'System';
 type Notice = { id: string; category: Exclude<Category, 'All'>; en: string; ar: string; detail: string; detailAr: string; at: string; read: boolean };
@@ -28,7 +29,7 @@ function NotificationCenterContent() {
   const isUserWorkspace = useLocation().pathname.startsWith('/dashboard');
   const events = useEntities<BusinessEvent>('events');
   const [readIds, setReadIds] = useCloudState<string[]>(key, []);
-  const notices: Notice[] = isUserWorkspace ? [...events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt)).slice(0,100).map(event => ({ id:event.id, category: /booking/.test(event.type) ? 'Bookings' : /lead/.test(event.type) ? 'Leads' : 'System', en:eventLabel(event.type), ar:eventLabel(event.type), detail:resourceLabel(event.resource), detailAr:resourceLabel(event.resource), at:toIsoDateString(event.createdAt), read:readIds.includes(event.id) })) : legacyNotices;
+  const notices: Notice[] = isUserWorkspace ? withUniqueListIds([...events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt)).slice(0,100)).map(event => ({ id:event.id, category: /booking/.test(event.type) ? 'Bookings' : /lead/.test(event.type) ? 'Leads' : 'System', en:eventLabel(event.type), ar:eventLabel(event.type), detail:resourceLabel(event.resource), detailAr:resourceLabel(event.resource), at:toIsoDateString(event.createdAt), read:readIds.includes(event.id) })) : withUniqueListIds(legacyNotices);
   const [position, setPosition] = React.useState({ top: 65, left: 0, width: 400 });
   const trigger = React.useRef<HTMLButtonElement>(null), panel = React.useRef<HTMLElement>(null); const id = React.useId();
   React.useEffect(() => { if (isUserWorkspace) return; try { localStorage.setItem(key, JSON.stringify(notices)); } catch {} }, [key, legacyNotices, isUserWorkspace]);

@@ -14,6 +14,15 @@ function load(path, requireModule = require, globals = {}) {
   return exports;
 }
 const { safeDate } = load('../src/utils/safeDate.ts');
+const { withUniqueListIds } = load('../src/utils/listKeys.ts');
+test('repeated activity messages and duplicate legacy IDs retain distinct, deterministic identities', () => {
+  const records = [{ id: 'event-a', message: 'Changes saved · Workspace' }, { id: 'event-b', message: 'Changes saved · Workspace' }, { id: 'event-a', message: 'Changes saved · CRM & leads' }, { message: 'Changes saved · CRM & leads' }, { id: 'event-a:occurrence:2', message: 'Reserved suffix' }];
+  const result = withUniqueListIds(records);
+  assert.equal(new Set(result.map(item => item.id)).size, records.length);
+  assert.equal(result[0].id, 'event-a'); assert.equal(result[1].id, 'event-b');
+  assert.equal(result[4].id, 'event-a:occurrence:2');
+  assert.deepEqual(result, withUniqueListIds(records));
+});
 const { default: reducer, loginSuccess, logout, startImpersonation, stopImpersonation } = load('../src/store/slices/authSlice.ts');
 const admin = { user: { id: 'admin', name: 'Admin', email: 'admin@test.com' }, role: 'ADMIN', tenant: { id: 'admin-tenant' }, token: 'admin-token' };
 const user = { user: { id: 'user', name: 'User', email: 'user@test.com' }, role: 'USER', tenant: { id: 'user-tenant' }, token: 'user-token' };
@@ -53,7 +62,7 @@ function switchHarness({ rejected = false, status = 'Active' } = {}) {
     'firebase/app': { initializeApp: () => ({ name: 'target', auth: targetAuth }), deleteApp: async () => { events.push('deleted'); } },
     'firebase/auth': { getAuth: app => app.auth, inMemoryPersistence: 'memory', setPersistence: async (_auth, value) => { events.push(value); }, signInWithCustomToken: async (_auth, token) => { assert.equal(token, 'custom'); return { user: { getIdToken: async () => 'target-token' } }; }, signOut: async auth => { assert.equal(auth, targetAuth); events.push('signedOut'); } },
     'firebase/firestore': { doc: () => ({}), getDoc: async () => ({ data: () => ({ status, role: 'ADMIN' }) }) },
-    './firebase': { primaryAuth, primaryDb: {}, firebaseConfig: {}, callBackend: async (name, data) => { assert.equal(name, 'manageUser'); assert.equal(data.operation, 'impersonate'); if (rejected) throw Error('denied'); return { customToken: 'custom', user: user.user, tenant: user.tenant }; }, setBackendContext: app => events.push(app ? 'target-context' : 'admin-context') },
+    './firebase': { primaryAuth, primaryDb: {}, firebaseConfig: {}, callBackend: async (name, data) => { assert.equal(name, 'manageUser'); assert.equal(data.operation, 'impersonate'); assert.equal(data.id, 'user'); if (data.tenantId) assert.equal(data.tenantId, 'user-tenant'); if (rejected) throw Error('denied'); return { customToken: 'custom', user: user.user, tenant: user.tenant }; }, setBackendContext: app => events.push(app ? 'target-context' : 'admin-context') },
     '../store': { store: { getState: () => ({ auth: state }), dispatch: action => { state = reducer(state, action); } } },
     '../store/slices/authSlice': { loginSuccess, startImpersonation, stopImpersonation },
     './phoenixBrand': { clearPhoenixBrand: () => {} },
@@ -63,7 +72,7 @@ function switchHarness({ rejected = false, status = 'Active' } = {}) {
 }
 test('switch transport uses memory-only secondary identity and return signs out only that identity', async () => {
   const harness = switchHarness();
-  await harness.api.switchToUser('user');
+  await harness.api.switchToUser('user', 'user-tenant');
   assert.equal(harness.primaryAuth.currentUser.uid, 'admin');
   assert.equal(harness.state().user.id, 'user');
   assert.ok(harness.events.includes('memory'));

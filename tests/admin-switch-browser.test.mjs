@@ -8,6 +8,9 @@ const server = await createServer({ configFile: false, cacheDir: 'node_modules/.
   name: 'admin-switch-fixtures', enforce: 'pre',
   load(id) {
     const path = id.replaceAll('\\', '/');
+    if (path.endsWith('/src/backend/workspace.tsx')) return `import {useState} from 'react';
+      const events=Array.from({length:4},(_,index)=>({id:index<2?'duplicate':'event-'+index,type:'workspace.updated',resource:index<2?'workspace':'leads',createdAt:new Date().toISOString()}));
+      export const useEntities=resource=>resource==='events'?events:[];export const useCloudState=(_,fallback)=>useState(fallback);export const readCloud=(_,fallback)=>fallback;export const cloudStorage={getItem:()=>null,setItem:async()=>{},removeItem:async()=>{}};export const WorkspaceData=({children})=>children;`;
     if (path.endsWith('/src/backend/adminUsers.ts')) return `
       export const useAdminUsers=()=>({loading:false,error:'',invites:[null,'broken','2026-10-24T10:00:00Z',{seconds:1792836000,nanoseconds:0},undefined].map((created,index)=>({id:'user'+index,name:'User '+index,email:'user'+index+'@test.com',role:'USER',status:index===4?'Pending':'Active',created}))});
       export const manageAccount=async()=>({}); export const activationUrl=()=>''; export const getActivationLink=async()=>'';`;
@@ -26,10 +29,11 @@ const server = await createServer({ configFile: false, cacheDir: 'node_modules/.
       import {store} from '/src/store/index.ts';import {loginSuccess} from '/src/store/slices/authSlice.ts';import {setLanguage,setSidebarOpen,toggleSidebarCollapse} from '/src/store/slices/uiSlice.ts';
       import i18n from '/src/i18n/i18n.ts';
       import {AdminUsers} from '/src/pages/onboarding/AdminUsers.tsx';import {Sidebar} from '/src/components/layout/Sidebar.tsx';import {Toaster} from 'sonner';
+      import {HomeDashboard} from '/src/pages/dashboard/HomeDashboard.tsx';import {NotificationCenter} from '/src/components/layout/NotificationCenter.tsx';
       import '/src/index.css';import '/src/layout-shell.css';
       store.dispatch(loginSuccess({user:{id:'admin',name:'Admin',email:'admin@test.com'},role:'ADMIN',tenant:{id:'admin-workspace'},token:'admin-token'}));
       store.dispatch(setLanguage('en'));await i18n.changeLanguage('en');window.store=store;window.ar=async()=>{store.dispatch(setLanguage('ar'));await i18n.changeLanguage('ar');};window.collapse=()=>store.dispatch(toggleSidebarCollapse());window.openSidebar=()=>store.dispatch(setSidebarOpen(true));
-      window.router=createMemoryRouter([{path:'/admin/users',element:React.createElement(AdminUsers)},{path:'/dashboard',element:React.createElement(Sidebar,{items:[],basePath:'/dashboard'})},{path:'/admin/dashboard',element:React.createElement('h1',null,'Admin Dashboard')}],{initialEntries:['/admin/users']});
+      window.router=createMemoryRouter([{path:'/admin/users',element:React.createElement(AdminUsers)},{path:'/dashboard/activity-fixture',element:React.createElement(React.Fragment,null,React.createElement(NotificationCenter),React.createElement(HomeDashboard))},{path:'/dashboard',element:React.createElement(Sidebar,{items:[],basePath:'/dashboard'})},{path:'/admin/dashboard',element:React.createElement('h1',null,'Admin Dashboard')}],{initialEntries:['/admin/users']});
       createRoot(document.getElementById('root')).render(React.createElement(Provider,{store},React.createElement(RouterProvider,{router:window.router}),React.createElement(Toaster)));
     </script></body></html>`));
   }); },
@@ -39,6 +43,7 @@ try {
   browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = []; page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error' && /same key|unique.*key/i.test(message.text())) errors.push(message.text()); });
   await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/__admin-switch`);
   await page.getByRole('heading', { name: 'Good teams start here.' }).waitFor();
   assert.equal(await page.locator('tbody tr').count(), 5);
@@ -58,6 +63,13 @@ try {
   await page.getByRole('heading', { name: 'Admin Dashboard', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => window.store.getState().auth.user.id), 'admin');
   assert.equal(await page.evaluate(() => window.store.getState().auth.impersonation), null);
+  await page.evaluate(() => window.router.navigate('/dashboard/activity-fixture'));
+  await page.getByText('Recent Activity', { exact: true }).waitFor();
+  assert.equal(await page.locator('[data-dashboard-section="activity"] li').count(), 4);
+  await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Notification center' }).waitFor();
+  assert.equal(await page.locator('.nc-item').count(), 4);
+  await page.getByRole('button', { name: 'Close notifications' }).click();
   await page.evaluate(() => window.router.navigate('/admin/users'));
   await page.getByRole('button', { name: 'Switch to User 1', exact: true }).click();
   await page.evaluate(() => window.ar());
@@ -66,5 +78,5 @@ try {
   await page.getByRole('dialog').getByRole('button', { name: 'العودة إلى لوحة المسؤول', exact: true }).click();
   await page.getByRole('heading', { name: 'Admin Dashboard', exact: true }).waitFor();
   assert.deepEqual(errors, []);
-  console.log('PASS malformed dates, failed switch, selected workspace, collapsed return, Arabic mobile return; no browser exceptions.');
+  console.log('PASS repeated activity labels, duplicate notification IDs, malformed dates, failed switch, selected workspace, collapsed return, Arabic mobile return; no browser exceptions or duplicate key warnings.');
 } finally { await browser?.close(); await server.close(); }

@@ -14,6 +14,7 @@ import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { completeUserActivation } from './onboarding.js';
 import { createImpersonationSession } from './impersonation.js';
+import { userManagementRequest } from './user-management-request.js';
 import { buildActivationLink } from './activation-links.js';
 import { queryIndexedKnowledge, readAgent, validateAgent } from './ai-knowledge.js';
 import { createHostingClient } from './hosting-client.js';
@@ -125,7 +126,7 @@ export const activateUser = onCall(request => completeUserActivation(request, { 
 export const manageUser = onCall(async request => {
   const user = await actor(request);
   if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) throw new HttpsError('permission-denied', 'Administrator access is required.');
-  const { operation, id, email, name, role = 'USER' } = request.data ?? {};
+  const { operation, id, email, name, role = 'USER', tenantId: requestedTenantId } = userManagementRequest(request.data);
   if (operation === 'create') {
     if (role !== 'USER' && !(user.role === 'SUPER_ADMIN' && role === 'ADMIN')) throw new HttpsError('permission-denied', 'You cannot assign this role.');
     if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpsError('invalid-argument', 'Enter a valid email.');
@@ -143,10 +144,13 @@ export const manageUser = onCall(async request => {
     const link = buildActivationLink(await auth.generatePasswordResetLink(account.email), appOrigin.value());
     return { id: account.uid, link, status: 'Pending', tenantId };
   }
-  if (typeof id !== 'string' || id.includes('/')) throw new HttpsError('invalid-argument', 'Invalid account.');
+  if (typeof id !== 'string' || !id.trim() || id !== id.trim() || id.includes('/')) throw new HttpsError('invalid-argument', 'Invalid account.');
   const ref = db.doc(`users/${id}`), target = (await ref.get()).data();
   if (!target || !mayManageUser(user, { ...target, id })) throw new HttpsError('permission-denied', 'You cannot modify this account.');
-  if (operation === 'impersonate') return createImpersonationSession(user, target, id, { db, auth });
+  if (operation === 'impersonate') {
+    if (requestedTenantId !== undefined && requestedTenantId !== target.tenantId) throw new HttpsError('failed-precondition', 'The user workspace changed. Refresh the users list and try again.');
+    return createImpersonationSession(user, target, id, { db, auth });
+  }
   if (operation === 'activationLink') return { link: buildActivationLink(await auth.generatePasswordResetLink(target.email), appOrigin.value()) };
   if (operation === 'role') {
     if (user.role !== 'SUPER_ADMIN' || !['USER', 'ADMIN'].includes(role)) throw new HttpsError('permission-denied', 'Only a super administrator can assign administrator roles.');

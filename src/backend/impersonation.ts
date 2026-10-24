@@ -11,13 +11,15 @@ let secondaryApp: FirebaseApp | null = null;
 let switching = false;
 
 /** The administrator's Firebase login is never replaced or persisted as a target login. */
-export async function switchToUser(id: string) {
+export async function switchToUser(id: string, tenantId?: string) {
+  if (typeof id !== 'string' || !id.trim() || id !== id.trim() || id.includes('/')) throw new Error('Choose a valid user account.');
+  if (tenantId !== undefined && (typeof tenantId !== 'string' || !tenantId.trim() || tenantId !== tenantId.trim() || tenantId.includes('/'))) throw new Error('Choose a valid user workspace.');
   const state = store.getState().auth;
   if (switching || secondaryApp || state.impersonation || !['ADMIN', 'SUPER_ADMIN'].includes(state.role ?? '')) throw new Error('Administrator access is required.');
   switching = true;
   let app: FirebaseApp | null = null;
   try {
-    const result = await callBackend<{ customToken: string; user: User; tenant: Tenant }>('manageUser', { operation: 'impersonate', id });
+    const result = await callBackend<{ customToken: string; user: User; tenant: Tenant }>('manageUser', { operation: 'impersonate', id, ...(tenantId ? { tenantId } : {}) });
     app = initializeApp(firebaseConfig, `impersonation-${crypto.randomUUID()}`);
     const targetAuth = getAuth(app);
     await setPersistence(targetAuth, inMemoryPersistence);

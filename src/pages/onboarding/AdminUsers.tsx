@@ -498,7 +498,7 @@ export function AdminUsers() {
                         disabled={!!switchingUser || currentStatus !== 'Active' || i.role !== 'USER'}
                         onClick={async () => {
                           setSwitchingUser(i.id);
-                          try { await switchToUser(i.id); navigate('/dashboard', { replace: true }); }
+                          try { await switchToUser(i.id, i.tenantId); navigate('/dashboard', { replace: true }); }
                           catch (error) { showToast.error(backendError(error)); }
                           finally { setSwitchingUser(null); }
                         }}

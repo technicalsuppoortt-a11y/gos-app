@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createImpersonationSession } from './impersonation.js';
+import { userManagementRequest } from './user-management-request.js';
+
+test('canonical switch parameters and action/targetUid/workspaceId aliases normalize consistently', () => {
+  for (const payload of [{ operation: 'impersonate', id: 'user', tenantId: 'workspace-user' }, { action: 'switch', targetUid: 'user', workspaceId: 'workspace-user' }, { operation: 'switch', targetUid: 'user', tenantId: 'workspace-user' }]) {
+    const parsed = userManagementRequest(payload);
+    assert.equal(parsed.operation, 'impersonate'); assert.equal(parsed.id, 'user'); assert.equal(parsed.tenantId, 'workspace-user');
+  }
+  assert.equal(userManagementRequest({ operation: 'impersonate', id: 'legacy-user' }).tenantId, undefined);
+  assert.equal(userManagementRequest({ operation: 'create', email: 'invite@example.com' }).operation, 'create');
+});
+test('missing, malformed and conflicting switch identifiers fail before accessing a profile', () => {
+  for (const payload of [null, [], { action: 'switch' }, { action: 'switch', targetUid: ' ' }, { action: 'switch', targetUid: 'users/other' }, { operation: 'impersonate', id: 'user', targetUid: 'other' }, { action: 'switch', targetUid: 'user', workspaceId: '' }, { action: 'switch', targetUid: 'user', workspaceId: 'a', tenantId: 'b' }]) assert.throws(() => userManagementRequest(payload), error => error.code === 'invalid-argument');
+});
 
 const actor = { uid: 'admin', role: 'ADMIN' };
 const target = { role: 'USER', status: 'Active', tenantId: 'workspace-user', name: 'User', email: 'user@test.com' };
