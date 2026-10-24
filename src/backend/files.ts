@@ -1,9 +1,8 @@
-import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, firebaseApp, db, backendError } from './firebase';
+import { auth, storage, db, backendError } from './firebase';
 import { store } from '../store';
 import { showToast } from '../utils/toast';
-const storage = getStorage(firebaseApp);
 const localFiles = new Map<string, Blob>();
 export const MAX_DIGITAL_FILE_SIZE = 100 * 1024 * 1024;
 export async function uploadDigitalFile(file: File, onProgress: (percent: number) => void = () => {}) {

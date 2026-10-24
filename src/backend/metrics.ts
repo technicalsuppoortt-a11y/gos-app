@@ -1,4 +1,5 @@
 import { useEntities } from './workspace';
+import { safeDate } from '../utils/safeDate';
 import type { CanonicalLead } from '../store/slices/crmSlice';
 import type { Appointment, BookingPage } from '../pages/booking/model';
 import type { Product } from '../pages/commerce/model';
@@ -8,19 +9,7 @@ export type VerifiedTransaction = { id: string; status: string; amount: number |
 export const eventLabel = (type: string) => ({ 'workspace.updated': 'Changes saved', 'booking.saved': 'Booking saved', 'booking.cancelled': 'Booking cancelled', 'copilot.responded': 'Assistant response received', 'copilot.draft_created': 'Assistant draft created', 'settings.updated': 'Settings updated' }[type] ?? type.replaceAll('.', ' ').replaceAll('_', ' '));
 export function resourceLabel(key = '') { return /product|commerce/.test(key) ? 'Products & payments' : /booking|calendar/.test(key) ? 'Booking & calendar' : /followup|workflow/.test(key) ? 'AI Follow-Up' : /inbox|conversation/.test(key) ? 'Inbox' : /crm|lead/.test(key) ? 'CRM & leads' : /asset|domain/.test(key) ? 'Funnels & websites' : /settings/.test(key) ? 'Settings' : 'Workspace'; }
 export function parseTimestampMs(val: unknown): number {
-  if (!val) return 0;
-  if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
-  if (typeof (val as { toMillis?: () => number }).toMillis === 'function') return (val as { toMillis: () => number }).toMillis();
-  if (typeof (val as { toDate?: () => Date }).toDate === 'function') return (val as { toDate: () => Date }).toDate().getTime();
-  if (typeof (val as { seconds?: number }).seconds === 'number') {
-    const nanos = typeof (val as { nanoseconds?: number }).nanoseconds === 'number' ? (val as { nanoseconds: number }).nanoseconds : 0;
-    return (val as { seconds: number }).seconds * 1000 + Math.floor(nanos / 1000000);
-  }
-  if (typeof val === 'string') {
-    const parsed = Date.parse(val);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  return 0;
+  return safeDate(val)?.getTime() ?? 0;
 }
 
 export function toIsoDateString(val: unknown): string {

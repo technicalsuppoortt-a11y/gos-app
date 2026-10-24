@@ -33,17 +33,13 @@ export async function connectWorkspaceDomain(domainId: string, assetId: string, 
   const queued = pendingDomains(scope).find(item => item.id === domainId);
 
   // Sync to site_domains collection with required schema
-  try {
-    if (cleanName && operation === 'connect') {
-      await connectSiteDomain({
-        funnelId: assetId,
-        ownerUid: userId,
-        host: cleanName,
-        tenantId: scope
-      });
-    }
-  } catch (err: any) {
-    console.warn('[connectWorkspaceDomain] site_domains sync warning:', err.message);
+  if (cleanName && operation === 'connect') {
+    await connectSiteDomain({
+      funnelId: assetId,
+      ownerUid: userId,
+      host: cleanName,
+      tenantId: scope
+    });
   }
 
   // Trigger automated DNS verification & SSL provisioning

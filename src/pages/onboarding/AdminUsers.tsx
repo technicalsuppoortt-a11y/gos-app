@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   AlertTriangle,
@@ -18,6 +18,7 @@ import {
   UserCheck,
   UserX,
   Users,
+  ArrowRightLeft,
   X,
 } from 'lucide-react';
 import type { RootState } from '../../store';
@@ -26,6 +27,8 @@ import type { Invite } from './onboarding-store';
 import { useAdminUsers, manageAccount, activationUrl, getActivationLink } from '../../backend/adminUsers';
 import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
+import { safeDate } from '../../utils/safeDate';
+import { switchToUser } from '../../backend/impersonation';
 import './onboarding.css';
 
 const AVATAR_GRADIENTS = [
@@ -215,6 +218,8 @@ function InvitationLink({ userId, ...props }: React.ComponentProps<'a'> & { user
 }
 
 export function AdminUsers() {
+  const navigate = useNavigate();
+  const [switchingUser, setSwitchingUser] = React.useState<string | null>(null);
   const { invites, loading, error: loadError } = useAdminUsers();
   const [busy, setBusy] = React.useState(false);
   const ar = useSelector((s: RootState) => s.ui.language === 'ar');
@@ -434,6 +439,7 @@ export function AdminUsers() {
             <tbody>
               {pagedUsers.map(i => {
                 const currentStatus = getStatus(i);
+                const created = safeDate(i.created);
                 return (
                   <tr key={i.id}>
                     <td>
@@ -474,16 +480,29 @@ export function AdminUsers() {
                       </span>
                     </td>
                     <td>
-                      <time dateTime={i.created}>
-                        {new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', {
+                      <time dateTime={created?.toISOString()}>
+                        {created ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', {
                           timeZone: 'Africa/Cairo',
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
-                        }).format(new Date(i.created))}
+                        }).format(created) : t('N/A', 'غير متاح')}
                       </time>
                     </td>
                     <td className="ob-actions-column">
+                      <button
+                        type="button"
+                        className="ob-icon"
+                        title={t('Switch to user dashboard', 'التبديل إلى لوحة المستخدم')}
+                        aria-label={`${t('Switch to', 'التبديل إلى')} ${i.name || i.email}`}
+                        disabled={!!switchingUser || currentStatus !== 'Active' || i.role !== 'USER'}
+                        onClick={async () => {
+                          setSwitchingUser(i.id);
+                          try { await switchToUser(i.id); navigate('/dashboard', { replace: true }); }
+                          catch (error) { showToast.error(backendError(error)); }
+                          finally { setSwitchingUser(null); }
+                        }}
+                      ><ArrowRightLeft size={18} /></button>
                       <UserActions
                         ar={ar}
                         invite={i}

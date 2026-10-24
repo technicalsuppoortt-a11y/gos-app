@@ -6,7 +6,7 @@ export function workspaceWrites(previous: AssetWorkspace, next: AssetWorkspace, 
   const writes: AssetWrite[] = [];
   for (const resource of ['assets', 'domains'] as const) {
     const rows = next[resource];
-    if (!Array.isArray(rows) || rows.some(row => !row || typeof row.id !== 'string' || !/^[\w-]{1,150}$/.test(row.id)) || new Set(rows.map(row => row.id)).size !== rows.length) throw new Error('Each workspace record must have a unique valid ID.');
+    if (!Array.isArray(rows) || rows.some(row => !row || typeof row.id !== 'string' || !row.id.trim() || row.id.includes('..') || row.id.includes('/') || !/^[\w.-]{1,150}$/.test(row.id)) || new Set(rows.map(row => row.id)).size !== rows.length) throw new Error('Each workspace record must have a unique valid ID.');
     const before = new Map(previous[resource].map(row => [row.id, row]));
     const dirty = new Set(retry.filter(write => write.resource === resource).map(write => write.id));
     // Include earlier unconfirmed writes so a newer draft repairs a failed save.
@@ -53,7 +53,7 @@ export function createAssetPersistence(deps: {
     },
     save(next: AssetWorkspace): Promise<unknown> {
       const scope = deps.scope();
-      if (!scope) throw new Error('Your workspace is still loading. Please try again.');
+      if (!scope) return Promise.resolve();
       const previous = deps.read();
       const writes = workspaceWrites(previous, next, [...dirty.values()]);
       if (!writes.length) return queue;

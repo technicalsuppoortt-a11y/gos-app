@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test:admin": "node --test tests/admin-safety.test.mjs functions/impersonation.test.js",
+    "test:admin:browser": "node tests/admin-switch-browser.test.mjs",
     "test:gos-api": "node --test tests/gos-api.test.mjs tests/crm-booking-stage.test.mjs",
     "test:storage": "node --test tests/storage-resilience.test.mjs",
     "test:builder-storage": "node tests/builder-storage-browser.test.mjs",

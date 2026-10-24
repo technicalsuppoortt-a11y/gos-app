@@ -1,4 +1,5 @@
 export const firebaseApp = {}, db = {};
+export const storage = {};
 export const auth = { authStateReady: async () => {}, currentUser: { uid: 'qa', getIdToken: async () => 'qa-token' } };
 export const backendError = (error: Error) => error.message;
 export const getStorage = () => ({});

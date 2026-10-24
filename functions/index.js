@@ -13,11 +13,12 @@ import { createHash } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { completeUserActivation } from './onboarding.js';
+import { createImpersonationSession } from './impersonation.js';
 import { buildActivationLink } from './activation-links.js';
 import { queryIndexedKnowledge, readAgent, validateAgent } from './ai-knowledge.js';
 import { createHostingClient } from './hosting-client.js';
 import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
-import { verifyAndProvisionDomain, disconnectSiteDomain, verifyDomainDns, normalizeHost } from './domain-verification.js';
+import { verifyAndProvisionDomain, disconnectSiteDomain, deleteSiteDomain, verifyDomainDns, normalizeHost } from './domain-verification.js';
 import { handleDomainProxy } from './domain-proxy.js';
 
 // Allows deploying the remaining services while the owner provisions the AI secret.
@@ -55,14 +56,24 @@ function hostingClient() {
 }
 export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value(), projectId: hostingProject.value() }));
 export const captureAssetLead = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => captureAssetLeadRequest(request, { workspace, db }));
-export const hostingDomain = onCall({ timeoutSeconds: 180 }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));
+// Public transport lets OPTIONS reach CORS. onCall extracts Bearer tokens and
+// uses Admin verifyIdToken; workspace() enforces the user's account/permissions.
+export const hostingDomain = onCall({ timeoutSeconds: 180, cors: true, invoker: 'public' }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));
 export const deleteWorkspaceAsset = onCall({ timeoutSeconds: 180 }, request => deleteAssetRequest(request, { workspace, db, hosting: hostingClient() }));
-export const verifyDomain = onCall({ timeoutSeconds: 60, cors: true }, async request => {
-  const { host, funnelId, ownerUid, tenantId } = request.data ?? {};
+export const verifyDomain = onCall({ timeoutSeconds: 60, cors: true, invoker: 'public' }, async request => {
+  const { user, root } = await workspace(request, 'funnels');
+  const { host, funnelId = '', tenantId, disconnect = false, delete: shouldDelete = false } = request.data ?? {};
   if (!host || typeof host !== 'string') throw new HttpsError('invalid-argument', 'Enter a valid domain name.');
+  if (tenantId && tenantId !== root.id) throw new HttpsError('permission-denied', 'This domain belongs to another workspace.');
+  if (funnelId) {
+    if (typeof funnelId !== 'string' || !/^[\w-]{1,150}$/.test(funnelId)) throw new HttpsError('invalid-argument', 'Choose a valid asset.');
+    if (!(await root.collection('assets').doc(funnelId).get()).exists) throw new HttpsError('not-found', 'The selected asset is unavailable.');
+  }
   try {
-    const callerUid = request.auth?.uid || ownerUid || '';
-    return await verifyAndProvisionDomain(host, { db, ownerUid: callerUid, funnelId, tenantId });
+    const scope = { db, ownerUid: user.uid, funnelId, tenantId: root.id };
+    if (shouldDelete) return await deleteSiteDomain(host, scope);
+    if (disconnect) return await disconnectSiteDomain(host, scope);
+    return await verifyAndProvisionDomain(host, scope);
   } catch (error) {
     if (error instanceof HttpsError) throw error;
     throw new HttpsError('internal', error.message || 'Could not verify domain.');
@@ -81,7 +92,10 @@ export const apiVerifyDomain = onRequest({ cors: true, timeoutSeconds: 60 }, asy
 
     if (req.method === 'DELETE') {
       if (!host) return res.status(400).json({ error: 'Missing host' });
-      const result = await disconnectSiteDomain(host, { db, funnelId: body.funnelId, tenantId: body.tenantId });
+      const shouldDelete = req.query.action === 'delete' || body.delete === true;
+      const result = shouldDelete
+        ? await deleteSiteDomain(host, { db, funnelId: body.funnelId, tenantId: body.tenantId })
+        : await disconnectSiteDomain(host, { db, funnelId: body.funnelId, tenantId: body.tenantId });
       return res.status(200).json(result);
     }
 
@@ -132,6 +146,7 @@ export const manageUser = onCall(async request => {
   if (typeof id !== 'string' || id.includes('/')) throw new HttpsError('invalid-argument', 'Invalid account.');
   const ref = db.doc(`users/${id}`), target = (await ref.get()).data();
   if (!target || !mayManageUser(user, { ...target, id })) throw new HttpsError('permission-denied', 'You cannot modify this account.');
+  if (operation === 'impersonate') return createImpersonationSession(user, target, id, { db, auth });
   if (operation === 'activationLink') return { link: buildActivationLink(await auth.generatePasswordResetLink(target.email), appOrigin.value()) };
   if (operation === 'role') {
     if (user.role !== 'SUPER_ADMIN' || !['USER', 'ADMIN'].includes(role)) throw new HttpsError('permission-denied', 'Only a super administrator can assign administrator roles.');

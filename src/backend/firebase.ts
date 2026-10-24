@@ -2,6 +2,7 @@ import { deleteApp, getApp, getApps, initializeApp, type FirebaseOptions } from 
 import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 import publicDefaults from './gos-public-config.json';
 
 const env = import.meta.env;
@@ -16,9 +17,18 @@ export const firebaseConfig = {
 };
 
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
-export const functions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+export const primaryAuth = getAuth(firebaseApp);
+export const primaryDb = getFirestore(firebaseApp);
+export let auth = primaryAuth;
+export let db = primaryDb;
+export let storage = getStorage(firebaseApp);
+export let functions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+export function setBackendContext(app = firebaseApp) {
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+  functions = getFunctions(app, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+}
 
 /**
  * Client-side user creation without logging out the active admin.

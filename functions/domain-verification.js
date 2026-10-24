@@ -385,3 +385,46 @@ export async function disconnectSiteDomain(host, { db, funnelId = '', tenantId =
 
   return { ok: true, host: clean, vercel, firebaseAuth };
 }
+
+export async function deleteSiteDomain(host, { db, funnelId = '', tenantId = '' }) {
+  const clean = normalizeHost(host);
+  if (!clean) return { ok: false, error: 'Missing host' };
+
+  const vercel = await removeDomainFromVercel(clean);
+  const firebaseAuth = await removeDomainFromFirebaseAuth(clean);
+
+  // Delete site_domains doc
+  try {
+    await db.collection('site_domains').doc(clean).delete();
+  } catch {}
+
+  const alternate = clean.startsWith('www.')
+    ? clean.replace(/^www\./, '')
+    : (clean.split('.').length === 2 ? `www.${clean}` : '');
+  if (alternate) {
+    try {
+      await db.collection('site_domains').doc(alternate).delete();
+    } catch {}
+  }
+
+  if (funnelId) {
+    try {
+      await db.collection('published_sites').doc(funnelId).set({
+        domain: '',
+        domainStatus: '',
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {}
+  }
+
+  if (tenantId) {
+    try {
+      const tenantDomainQuery = await db.collection('tenants').doc(tenantId).collection('domains').where('name', '==', clean).get();
+      for (const doc of tenantDomainQuery.docs) {
+        await doc.ref.delete();
+      }
+    } catch {}
+  }
+
+  return { ok: true, deleted: true, host: clean, vercel, firebaseAuth };
+}

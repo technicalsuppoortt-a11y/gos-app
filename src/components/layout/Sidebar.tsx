@@ -22,6 +22,7 @@ import { setSidebarOpen, toggleSidebarCollapse } from '../../store/slices/uiSlic
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
 import { logoutFirebase } from '../../backend/session';
+import { returnToAdmin } from '../../backend/impersonation';
 
 export interface SidebarItem {
   name: string;
@@ -128,6 +129,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const impersonation = useSelector((state: RootState) => state.auth.impersonation);
+  const [returning, setReturning] = useState(false);
   const isRtl = uiDirection() === 'rtl';
   const drawerRef = useRef<HTMLElement>(null);
 
@@ -219,6 +222,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
       {/* Internally scrollable navigation tabs container */}
       <div className="layout-nav-scroll-area">
         <nav className="layout-nav" aria-label={translateText("Main navigation")}>
+          {impersonation && <button
+            type="button"
+            className="layout-nav-item is-active"
+            title={isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}
+            aria-label={isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}
+            disabled={returning}
+            onClick={async () => {
+              setReturning(true);
+              try { const path = await returnToAdmin(); close(); navigate(path, { replace: true }); }
+              catch (error) { showToast.error(error instanceof Error ? error.message : 'Could not return to admin.'); }
+              finally { setReturning(false); }
+            }}
+          ><ArrowRight size={17} strokeWidth={1.8} className="layout-nav-icon flex-none" /><span className="layout-nav-text">{isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}</span></button>}
           {localizeNode(topItems.map(item => (
             <React.Fragment key={item.name}>
               {localizeNode(item.dividerBefore && <div className="layout-nav-divider"/>)}

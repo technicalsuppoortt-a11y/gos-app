@@ -10,14 +10,15 @@ import { FunnelAnalytics, FunnelIntegrations, FunnelLeads, FunnelPerformance } f
 import { rangeFor } from './funnel-data';
 import { DomainExportDialog } from './DomainExportDialog';
 import { AssetSelect, AssetSearch, FilterChips } from './AssetControls';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db } from '../backend/firebase';
-import { SITE_DOMAINS, mapFirestoreDomainToModel, normalizeHost } from '../backend/siteDomains';
+import { db, backendError } from '../backend/firebase';
+import { SITE_DOMAINS, mapFirestoreDomainToModel, normalizeHost, updateSiteDomain, deleteSiteDomain, toggleSiteDomainStatus } from '../backend/siteDomains';
+import { Modal } from './settings/kit';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { ArrowLeft, ArrowRight, BarChart3, CalendarDays, Check, ChevronDown, Download, ExternalLink, Eye, FileText, Filter, Globe, GripVertical, LayoutGrid, Layers, Link2, List, LockKeyhole, Monitor, Pencil, Plus, Settings, ShieldCheck, Smartphone, Sparkles, Tablet, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart3, CalendarDays, Check, ChevronDown, Download, ExternalLink, Eye, FileText, Filter, Globe, GripVertical, LayoutGrid, Layers, Link2, List, LoaderCircle, LockKeyhole, Monitor, Pencil, Plus, Settings, ShieldCheck, Smartphone, Sparkles, Tablet, Trash2 } from 'lucide-react';
 import { AssetOptionsMenu as OptionsMenu } from './AssetOptionsMenu';
 import { showToast } from '../utils/toast';
 import { SectionPreview } from './BuilderWorkspace';
@@ -89,58 +90,221 @@ export function DomainsView({ workspace, setWorkspace, query, setQuery, status, 
 }) {
   useUILanguage();
     const [connection, setConnection] = useState('All Connections'), [selected, setSelected] = useState<string[]>([]), [exportOpen,setExportOpen]=useState(false);
+    const [liveDomains, setLiveDomains] = useState<Domain[]>([]);
+
+    const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
+    const [editTargetAssetId, setEditTargetAssetId] = useState<string>('');
+    const [editStatus, setEditStatus] = useState<string>('Connected');
+    const [editDefault, setEditDefault] = useState<boolean>(false);
+    const [editSaving, setEditSaving] = useState(false);
+    const [editError, setEditError] = useState('');
+
+    const [deletingDomain, setDeletingDomain] = useState<Domain | null>(null);
+    const [deleteSaving, setDeleteSaving] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+
+    const [togglingId, setTogglingId] = useState<string>('');
 
     useEffect(() => {
       const unsub = onSnapshot(collection(db, SITE_DOMAINS), snapshot => {
-        const liveDomains: Domain[] = [];
+        const live: Domain[] = [];
         snapshot.forEach(docSnap => {
-          liveDomains.push(mapFirestoreDomainToModel(docSnap.id, docSnap.data()));
+          live.push(mapFirestoreDomainToModel(docSnap.id, docSnap.data()));
         });
-        if (liveDomains.length > 0) {
-          setWorkspace(current => {
-            const map = new Map<string, Domain>();
-            current.domains.forEach(d => map.set(normalizeHost(d.name), d));
-            liveDomains.forEach(ld => {
-              const clean = normalizeHost(ld.name);
-              const existing = map.get(clean);
-              map.set(clean, {
-                ...existing,
-                ...ld,
-                id: existing?.id || ld.id,
-                assetId: ld.assetId || existing?.assetId || '',
-                default: existing?.default ?? ld.default
-              });
-            });
-            return { ...current, domains: Array.from(map.values()) };
-          });
-        }
+        setLiveDomains(live);
       }, err => {
         console.warn('[DomainsView] site_domains sync note:', err);
       });
       return () => unsub();
-    }, [setWorkspace]);
+    }, []);
+
+    const allDomains = useMemo(() => {
+      const map = new Map<string, Domain>();
+      (workspace?.domains || []).forEach(d => {
+        if (d && d.name) map.set(normalizeHost(d.name), d);
+      });
+      liveDomains.forEach(ld => {
+        const clean = normalizeHost(ld.name);
+        const existing = map.get(clean);
+        map.set(clean, {
+          ...existing,
+          ...ld,
+          id: existing?.id || ld.id,
+          assetId: ld.assetId || existing?.assetId || '',
+          default: existing?.default ?? ld.default
+        });
+      });
+      return Array.from(map.values());
+    }, [workspace?.domains, liveDomains]);
 
     const handleSetDefault = async (domainId: string, domainName: string) => {
-      setWorkspace(current => ({
-        ...current,
-        domains: current.domains.map(item => ({ ...item, default: item.id === domainId }))
-      }));
+      if (workspace && Array.isArray(workspace.domains)) {
+        setWorkspace(current => ({
+          ...current,
+          domains: current.domains.map(item => ({ ...item, default: item.id === domainId }))
+        }));
+      }
       try {
         await setDoc(doc(db, SITE_DOMAINS, normalizeHost(domainName)), { default: true }, { merge: true });
-      } catch {}
+        showToast.success(`Set ${domainName} as default domain.`);
+      } catch (err) {
+        showToast.error(backendError(err));
+      }
     };
 
-    const domains = workspace.domains.filter(item => item.name.toLowerCase().includes(query.toLowerCase()) && (status === 'All Status' || item.status === status) && (connection === 'All Connections' || workspace.assets.find(asset => asset.id === item.assetId)?.kind === connection));
+    const handleToggleStatus = async (domain: Domain) => {
+      if (togglingId) return;
+      setTogglingId(domain.id);
+      try {
+        const nextStatus = await toggleSiteDomainStatus(domain.name, domain.status, domain.assetId);
+        setWorkspace(current => ({
+          ...current,
+          domains: (current.domains || []).map(d =>
+            d.id === domain.id || normalizeHost(d.name) === normalizeHost(domain.name)
+              ? { ...d, status: nextStatus, ssl: nextStatus === 'Connected' ? 'Active' : 'Inactive' }
+              : d
+          )
+        }));
+        setLiveDomains(current =>
+          current.map(d =>
+            d.id === domain.id || normalizeHost(d.name) === normalizeHost(domain.name)
+              ? { ...d, status: nextStatus, ssl: nextStatus === 'Connected' ? 'Active' : 'Inactive' }
+              : d
+          )
+        );
+        showToast.success(nextStatus === 'Connected' ? `Domain ${domain.name} activated successfully.` : `Domain ${domain.name} deactivated.`);
+      } catch (err) {
+        showToast.error(backendError(err));
+      } finally {
+        setTogglingId('');
+      }
+    };
+
+    const openEditModal = (domain: Domain) => {
+      setEditingDomain(domain);
+      setEditTargetAssetId(domain.assetId || '');
+      setEditStatus(domain.status === 'Connected' ? 'Connected' : 'Disconnected');
+      setEditDefault(Boolean(domain.default));
+      setEditError('');
+    };
+
+    const handleSaveEdit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!editingDomain || editSaving) return;
+      setEditSaving(true);
+      setEditError('');
+      try {
+        const prevAssetId = editingDomain.assetId;
+        const newStatus = editStatus as 'Connected' | 'Pending' | 'Disconnected';
+        await updateSiteDomain(
+          editingDomain.name,
+          {
+            funnelId: editTargetAssetId,
+            status: newStatus,
+            default: editDefault,
+          },
+          prevAssetId
+        );
+
+        setWorkspace(current => ({
+          ...current,
+          domains: (current.domains || []).map(d => {
+            const isTarget = d.id === editingDomain.id || normalizeHost(d.name) === normalizeHost(editingDomain.name);
+            if (isTarget) {
+              return {
+                ...d,
+                assetId: editTargetAssetId,
+                status: newStatus,
+                ssl: newStatus === 'Connected' ? 'Active' : 'Inactive',
+                default: editDefault ? true : (d.default && !editDefault ? false : d.default)
+              };
+            }
+            return editDefault ? { ...d, default: false } : d;
+          }),
+          assets: (current.assets || []).map(asset => {
+            if (prevAssetId && asset.id === prevAssetId && editTargetAssetId !== prevAssetId) {
+              return { ...asset, domain: '' };
+            }
+            if (editTargetAssetId && asset.id === editTargetAssetId) {
+              return { ...asset, domain: editingDomain.name };
+            }
+            return asset;
+          })
+        }));
+
+        setLiveDomains(current =>
+          current.map(d => {
+            const isTarget = d.id === editingDomain.id || normalizeHost(d.name) === normalizeHost(editingDomain.name);
+            if (isTarget) {
+              return {
+                ...d,
+                assetId: editTargetAssetId,
+                status: newStatus,
+                ssl: newStatus === 'Connected' ? 'Active' : 'Inactive',
+                default: editDefault ? true : (d.default && !editDefault ? false : d.default)
+              };
+            }
+            return editDefault ? { ...d, default: false } : d;
+          })
+        );
+
+        showToast.success(`Domain ${editingDomain.name} updated successfully.`);
+        setEditingDomain(null);
+      } catch (err) {
+        setEditError(backendError(err));
+        showToast.error(backendError(err));
+      } finally {
+        setEditSaving(false);
+      }
+    };
+
+    const handleConfirmDelete = async () => {
+      if (!deletingDomain || deleteSaving) return;
+      setDeleteSaving(true);
+      setDeleteError('');
+      try {
+        await deleteSiteDomain(deletingDomain.name, {
+          funnelId: deletingDomain.assetId
+        });
+
+        setWorkspace(current => ({
+          ...current,
+          domains: (current.domains || []).filter(d => d.id !== deletingDomain.id && normalizeHost(d.name) !== normalizeHost(deletingDomain.name)),
+          assets: (current.assets || []).map(asset => {
+            if (deletingDomain.assetId && asset.id === deletingDomain.assetId) {
+              return { ...asset, domain: '' };
+            }
+            return asset;
+          })
+        }));
+
+        setLiveDomains(current =>
+          current.filter(d => d.id !== deletingDomain.id && normalizeHost(d.name) !== normalizeHost(deletingDomain.name))
+        );
+
+        setSelected(current => current.filter(id => id !== deletingDomain.id));
+
+        showToast.success(`Domain ${deletingDomain.name} deleted successfully.`);
+        setDeletingDomain(null);
+      } catch (err) {
+        setDeleteError(backendError(err));
+        showToast.error(backendError(err));
+      } finally {
+        setDeleteSaving(false);
+      }
+    };
+
+    const domains = allDomains.filter(item => item.name.toLowerCase().includes(query.toLowerCase()) && (status === 'All Status' || item.status === status) && (connection === 'All Connections' || (workspace?.assets || []).find(asset => asset.id === item.assetId)?.kind === connection));
     const filters = [
       ...(query ? [{label:`Search: ${query}`,remove:()=>setQuery('')}] : []),
       ...(status !== 'All Status' ? [{label:status,remove:()=>setStatus('All Status')}] : []),
       ...(connection !== 'All Connections' ? [{label:connection==='funnel'?'Funnels':'Websites',remove:()=>setConnection('All Connections')}] : []),
     ];
     return <section className="aw-domains-view" aria-label={translateText("Domains management")}><div className="aw-heading"><span className="aw-heading-icon"><Globe size={26}/></span><div><h1>{translateText("Domains")}</h1><p>{translateText("Connect and manage your domains for funnels and websites.")}</p></div><button className="aw-primary" onClick={() => open({ type: 'domain' })}><Plus size={16}/>{translateText("Connect Domain")}</button></div>
-    <div className="aw-metrics domains">{localizeNode([{ label: 'Total Domains', value: workspace.domains.length, Icon: Link2 }, { label: 'Connected', value: workspace.domains.filter(item => item.status === 'Connected').length, Icon: Globe }, { label: 'SSL Active', value: workspace.domains.filter(item => item.ssl === 'Active').length, Icon: ShieldCheck }].map(({ label, value, Icon }) => <article key={label}><span><Icon size={24}/></span><div><p>{localizeNode(label)}</p><strong>{localizeNode(value)}</strong><small>{localizeNode(label === 'SSL Active' ? 'Encrypted connections' : 'In your workspace')}</small></div></article>))}</div>
+    <div className="aw-metrics domains">{localizeNode([{ label: 'Total Domains', value: allDomains.length, Icon: Link2 }, { label: 'Connected', value: allDomains.filter(item => item.status === 'Connected').length, Icon: Globe }, { label: 'SSL Active', value: allDomains.filter(item => item.ssl === 'Active').length, Icon: ShieldCheck }].map(({ label, value, Icon }) => <article key={label}><span><Icon size={24}/></span><div><p>{localizeNode(label)}</p><strong>{localizeNode(value)}</strong><small>{localizeNode(label === 'SSL Active' ? 'Encrypted connections' : 'In your workspace')}</small></div></article>))}</div>
   <section className="aw-panel"><div className="aw-controls"><AssetSearch value={query} onChange={setQuery} placeholder={translateText("Search domains...")} shortcut/><AssetSelect value={status} onChange={e => setStatus(e)} label={"Domain status"} options={[...['All Status', 'Connected', 'Pending', 'Disconnected'].map(item => ({value:item,label:item}))]}/><AssetSelect value={connection} onChange={e => setConnection(e)} label={"Connection type"} options={[{value:"All Connections",label:"All Connections"},{value:"funnel",label:"Funnels"},{value:"website",label:"Websites"}]}/><button className="aw-secondary aw-export-button" disabled={!domains.length} onClick={()=>setExportOpen(true)}><Download size={14}/>{translateText("Export")}</button>{localizeNode(selected.length > 0 && <span className="aw-muted">{localizeNode(selected.length)}{translateText(" selected")}</span>)}</div>
   <FilterChips filters={filters} clear={()=>{setQuery('');setStatus('All Status');setConnection('All Connections');}} />
-  <div className="aw-table-wrap"><table><thead><tr><th className="text-center" style={{ width: 44 }}><input aria-label={translateText("Select all domains")} type="checkbox" checked={domains.length > 0 && domains.every(item => selected.includes(item.id))} onChange={e => setSelected(e.target.checked ? domains.map(item => item.id) : [])}/></th><th className="text-start">{translateText("Domain")}</th><th className="text-center">{translateText("Status")}</th><th className="text-start">{translateText("Connected To")}</th><th className="text-center">{translateText("SSL")}</th><th className="text-center">{translateText("Default")}</th><th className="text-center" style={{ width: 120 }}>{translateText("Actions")}</th></tr></thead><tbody>{localizeNode(domains.map(domain => { const linked = workspace.assets.find(item => item.id === domain.assetId); return <tr key={domain.id}><td className="text-center"><input type="checkbox" aria-label={translateText(`Select ${domain.name}`)} checked={selected.includes(domain.id)} onChange={e => setSelected(current => e.target.checked ? [...current, domain.id] : current.filter(id => id !== domain.id))}/></td><td className="text-start"><a href={`https://${domain.name}`} target="_blank" rel="noreferrer">{localizeNode(domain.name)}<ExternalLink size={12}/></a></td><td className="text-center"><Status value={domain.status}/></td><td className="text-start">{localizeNode(linked ? <button className="aw-linked-asset" onClick={() => go(`${linked.kind === 'funnel' ? 'funnels' : 'websites'}/${linked.id}`)}>{localizeNode(linked.kind === 'funnel' ? <Filter size={17}/> : <LayoutGrid size={17}/>)}<span><b>{localizeNode(linked.name)}</b><small>{localizeNode(linked.document.pages.length)} {localizeNode(linked.kind === 'funnel' ? 'Steps' : 'Pages')}</small></span></button> : <span className="aw-muted">—<small>{translateText("Not connected yet")}</small></span>)}</td><td className="text-center"><span className="aw-ssl inline-flex items-center justify-center"><LockKeyhole size={12}/><Status value={domain.ssl}/></span></td><td className="text-center"><AssetAsyncButton busyText="Saving..." role="switch" aria-label={translateText(`Set ${domain.name} as default`)} aria-checked={domain.default} disabled={domain.status !== 'Connected'} className={`aw-default mx-auto ${domain.default ? 'active' : ''}`} onClick={() => handleSetDefault(domain.id, domain.name)}><span />{localizeNode(domain.default ? 'Default' : 'Set as default')}</AssetAsyncButton></td><td className="text-center"><button className={`mx-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${domain.status === 'Connected' ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : domain.status === 'Pending' ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'}`} onClick={() => open({ type: 'domain', domainId: domain.id })}><Settings size={13}/>{localizeNode(domain.status === 'Connected' ? 'Manage' : domain.status === 'Pending' ? 'Configure' : 'Connect')}</button></td></tr>; }))}</tbody></table></div>{localizeNode(!domains.length && <Empty title={translateText("No domains found")} description="Connect a domain or adjust your search filters."/>)}<div className="aw-domain-cta"><span><Plus size={25}/></span><div><h3>{translateText("Connect a new domain")}</h3><p>{translateText("Use your own domain and connect it to your funnel or website.")}</p></div><button className="aw-secondary" onClick={() => open({ type: 'domain' })}><Plus size={15}/>{translateText("Connect Domain")}</button></div></section>{localizeNode(exportOpen&&<DomainExportDialog domains={domains} selected={selected} workspace={workspace} close={()=>setExportOpen(false)}/>)}</section>;
+  <div className="aw-table-wrap"><table><thead><tr><th className="text-center" style={{ width: 44 }}><input aria-label={translateText("Select all domains")} type="checkbox" checked={domains.length > 0 && domains.every(item => selected.includes(item.id))} onChange={e => setSelected(e.target.checked ? domains.map(item => item.id) : [])}/></th><th className="text-start">{translateText("Domain")}</th><th className="text-center">{translateText("Status")}</th><th className="text-start">{translateText("Connected To")}</th><th className="text-center">{translateText("SSL")}</th><th className="text-center">{translateText("Default")}</th><th className="text-center" style={{ width: 140 }}>{translateText("Actions")}</th></tr></thead><tbody>{localizeNode(domains.map(domain => { const linked = workspace.assets.find(item => item.id === domain.assetId); return <tr key={domain.id}><td className="text-center"><input type="checkbox" aria-label={translateText(`Select ${domain.name}`)} checked={selected.includes(domain.id)} onChange={e => setSelected(current => e.target.checked ? [...current, domain.id] : current.filter(id => id !== domain.id))}/></td><td className="text-start"><a href={`https://${domain.name}`} target="_blank" rel="noreferrer">{localizeNode(domain.name)}<ExternalLink size={12}/></a></td><td className="text-center"><button type="button" onClick={() => handleToggleStatus(domain)} disabled={togglingId === domain.id} title={domain.status === 'Connected' ? translateText("Click to deactivate domain") : translateText("Click to activate domain")} aria-label={translateText(`Toggle status for ${domain.name}`)} className="inline-flex items-center justify-center cursor-pointer transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed group focus:outline-none">{togglingId === domain.id ? <span className="aw-badge gray inline-flex items-center gap-1.5 py-0.5 px-2"><LoaderCircle size={12} className="animate-spin" /><span className="text-xs">{translateText("Updating...")}</span></span> : <Status value={domain.status} />}</button></td><td className="text-start">{localizeNode(linked ? <button className="aw-linked-asset" onClick={() => go(`${linked.kind === 'funnel' ? 'funnels' : 'websites'}/${linked.id}`)}>{localizeNode(linked.kind === 'funnel' ? <Filter size={17}/> : <LayoutGrid size={17}/>)}<span><b>{localizeNode(linked.name)}</b><small>{localizeNode(linked.document.pages.length)} {localizeNode(linked.kind === 'funnel' ? 'Steps' : 'Pages')}</small></span></button> : <span className="aw-muted">—<small>{translateText("Not connected yet")}</small></span>)}</td><td className="text-center"><span className="aw-ssl inline-flex items-center justify-center"><LockKeyhole size={12}/><Status value={domain.ssl}/></span></td><td className="text-center"><AssetAsyncButton busyText="Saving..." role="switch" aria-label={translateText(`Set ${domain.name} as default`)} aria-checked={domain.default} disabled={domain.status !== 'Connected'} className={`aw-default mx-auto ${domain.default ? 'active' : ''}`} onClick={() => handleSetDefault(domain.id, domain.name)}><span />{localizeNode(domain.default ? 'Default' : 'Set as default')}</AssetAsyncButton></td><td className="text-center"><div className="flex items-center justify-center gap-1"><button type="button" className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${domain.status === 'Connected' ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : domain.status === 'Pending' ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'}`} onClick={() => open({ type: 'domain', domainId: domain.id })} title={translateText(domain.status === 'Connected' ? 'Manage DNS' : domain.status === 'Pending' ? 'Configure DNS' : 'Connect DNS')}><Settings size={13}/>{localizeNode(domain.status === 'Connected' ? 'Manage' : domain.status === 'Pending' ? 'Configure' : 'Connect')}</button><button type="button" className="p-1.5 text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors" title={translateText("Edit domain details")} aria-label={translateText(`Edit ${domain.name}`)} onClick={() => openEditModal(domain)}><Pencil size={14}/></button><button type="button" className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title={translateText("Delete domain")} aria-label={translateText(`Delete ${domain.name}`)} onClick={() => { setDeletingDomain(domain); setDeleteError(''); }}><Trash2 size={14}/></button></div></td></tr>; }))}</tbody></table></div>{localizeNode(!domains.length && <Empty title={translateText("No domains found")} description="Connect a domain or adjust your search filters."/>)}<div className="aw-domain-cta"><span><Plus size={25}/></span><div><h3>{translateText("Connect a new domain")}</h3><p>{translateText("Use your own domain and connect it to your funnel or website.")}</p></div><button className="aw-secondary" onClick={() => open({ type: 'domain' })}><Plus size={15}/>{translateText("Connect Domain")}</button></div></section>{localizeNode(exportOpen&&<DomainExportDialog domains={domains} selected={selected} workspace={workspace} close={()=>setExportOpen(false)}/>)}{localizeNode(editingDomain && <Modal title={translateText(`Edit Domain — ${editingDomain.name}`)} close={() => !editSaving && setEditingDomain(null)}><form className="aw-modal-body" onSubmit={handleSaveEdit}><p>{translateText("Update connected funnel or website target, active routing status, and default domain settings.")}</p><label>{translateText("Domain host")}<input type="text" value={editingDomain.name} disabled readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed"/></label><label>{translateText("Connected to")}<AssetSelect value={editTargetAssetId} onChange={setEditTargetAssetId} label="Connected target asset" options={[{ value: '', label: translateText('None (Unconnected / Standalone)') }, ...workspace.assets.filter(item => !item.archived).map(item => ({ value: item.id, label: `${item.kind === 'funnel' ? 'Funnel' : 'Website'} · ${item.name}` }))]}/></label><label>{translateText("Routing Status")}<AssetSelect value={editStatus} onChange={setEditStatus} label="Domain status" options={[{ value: 'Connected', label: translateText('Connected (Active & Routing Traffic)') }, { value: 'Disconnected', label: translateText('Disconnected (Paused / Inactive)') }]} /></label><div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, marginBottom: 8 }}><input id="edit-domain-default-cb" type="checkbox" checked={editDefault} onChange={e => setEditDefault(e.target.checked)} style={{ width: 16, height: 16, cursor: 'pointer' }} /><label htmlFor="edit-domain-default-cb" style={{ margin: 0, fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>{translateText("Set as primary default workspace domain")}</label></div>{localizeNode(editError && <p className="aw-error" role="alert">{localizeNode(editError)}</p>)}<footer><button type="button" className="aw-secondary" disabled={editSaving} onClick={() => setEditingDomain(null)}>{translateText("Cancel")}</button><button type="submit" className="aw-primary" disabled={editSaving} aria-busy={editSaving}>{editSaving ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Saving...")}</> : translateText("Save Changes")}</button></footer></form></Modal>)}{localizeNode(deletingDomain && <Modal title={translateText("Delete Domain")} close={() => !deleteSaving && setDeletingDomain(null)}><div className="aw-modal-body"><p>{translateText("Are you sure you want to delete ")}<strong>{localizeNode(deletingDomain.name)}</strong>?</p><p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>{translateText("This will permanently remove the domain configuration from your workspace, disconnect any connected funnel or website, and revoke Vercel / SSL routing records. This action cannot be undone.")}</p>{localizeNode(deleteError && <p className="aw-error" role="alert">{localizeNode(deleteError)}</p>)}<footer><button type="button" className="aw-secondary" disabled={deleteSaving} onClick={() => setDeletingDomain(null)}>{translateText("Cancel")}</button><button type="button" className="aw-danger" disabled={deleteSaving} aria-busy={deleteSaving} onClick={handleConfirmDelete}>{deleteSaving ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Deleting...")}</> : <><Trash2 size={14}/>{translateText("Delete Domain")}</>}</button></footer></div></Modal>)}</section>;
 }
 type OverviewProps = {
     asset: Asset;

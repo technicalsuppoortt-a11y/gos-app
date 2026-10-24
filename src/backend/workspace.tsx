@@ -11,6 +11,7 @@ import { beginWrite } from './writeStatus';
 import { WorkspaceLoading } from '../components/common/WorkspaceLoading';
 import { encodeFirestoreValue, decodeFirestoreValue } from './firestoreCodec';
 import { createAssetPersistence } from './assetPersistence';
+import { safeDate } from '../utils/safeDate';
 
 const isAuthFailure = (error: unknown) => ['permission-denied', 'unauthenticated'].includes((error as { code?: string })?.code || '');
 
@@ -18,14 +19,8 @@ export function normalizeFirestoreData<T>(val: T): T {
   if (val === null || val === undefined) return val;
   if (typeof val === 'object') {
     const raw = val as unknown as Record<string, unknown>;
-    if (typeof raw.toDate === 'function') {
-      return (raw.toDate as () => Date)().toISOString() as unknown as T;
-    }
-    if (typeof raw.toMillis === 'function') {
-      return new Date((raw.toMillis as () => number)()).toISOString() as unknown as T;
-    }
-    if (typeof raw.seconds === 'number' && typeof raw.nanoseconds === 'number') {
-      return new Date(raw.seconds * 1000 + Math.floor(raw.nanoseconds / 1000000)).toISOString() as unknown as T;
+    if (val instanceof Date || typeof raw.toDate === 'function' || typeof raw.toMillis === 'function' || typeof raw.seconds === 'number') {
+      return (safeDate(val)?.toISOString() ?? null) as unknown as T;
     }
     if (Array.isArray(val)) {
       return val.map(item => normalizeFirestoreData(item)) as unknown as T;
@@ -92,7 +87,10 @@ export const cloudStorage = {
     return cache.get(cacheKey(key)) ?? null;
   },
   setItem(key: string, value: string): Promise<unknown> {
-    if (!tenantId || !loaded) throw new Error('Your workspace is still loading. Please try again.');
+    if (!tenantId || !loaded) {
+      if (key === 'gos.assets.workspace.v1') return Promise.resolve();
+      throw new Error('Your workspace is still loading. Please try again.');
+    }
     if (key === 'gos.assets.workspace.v1') {
       return assetPersistence.save(JSON.parse(value));
     }

@@ -77,7 +77,11 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
         setDnsDomain(result.domain);
         setDnsStep(2);
       }
-      catch (error) { setError(backendError(error)); }
+      catch (error) {
+        const errText = backendError(error);
+        setError(errText);
+        showToast.error(errText);
+      }
       finally { dnsLock.current = false; setDnsBusy(false); }
     };
     const verifyDomain = async (background = false) => {
@@ -98,8 +102,14 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
           setTimeout(() => close(), 1200);
         } else if (!background) {
           setDnsStep(3);
+          const errText = diagResult.error || 'DNS records not verified yet. Propagation may take up to 24 hours.';
+          showToast.error(errText);
         }
-      } catch (error) { setError(backendError(error)); }
+      } catch (error) {
+        const errText = backendError(error);
+        setError(errText);
+        showToast.error(errText);
+      }
       finally { dnsLock.current = false; setDnsBusy(false); }
     };
 
@@ -144,20 +154,34 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
         await setWorkspace(current => ({ ...current, assets: [created, ...current.assets] }));
         close();
         go(`${section}/${id}`);
-        } catch (error) { setError(backendError(error)); }
+        } catch (error) {
+          const errText = backendError(error);
+          setError(errText);
+          showToast.error(errText);
+        }
         finally { saveLock.current = false; setSaving(false); }
     };
     if (dialog.type === 'create') return <PageInitializationDialog kind={kind} close={close} create={async created=>{await setWorkspace(current=>({...current,assets:[created,...current.assets]}));close();go((created.kind==='website'?'websites':'funnels')+'/'+created.id+'/edit/'+created.document.pages[0].id);}}/>;
     if (dialog.type === 'preview' && asset) return <AssetPreviewDialog asset={asset} pageId={dialog.pageId} close={close}/>;
     if (dialog.type === 'ai') return <AIWebsiteDialog kind={kind} setWorkspace={setWorkspace} close={close} go={go}/>;
     return <Modal title={translateText(dialog.type === 'domain' ? 'Connect a domain' : dialog.type === 'delete' ? 'Delete ' + (dialog.pageId ? (kind === 'funnel' ? 'step' : 'page') : 'asset') : dialog.type === 'preview' ? `${asset?.name} · Preview` : dialog.type === 'add' ? `Add ${kind === 'funnel' ? 'step' : 'page'}` : dialog.type === 'rename' ? 'Rename asset' : `Create ${kind}`)} close={close}><div className={'aw-modal-body '+(dialog.type==='preview'&&kind==='funnel'?'aw-funnel-preview':'')}>
- {localizeNode(dialog.type === 'delete' ? <><p>{localizeNode(dialog.pageId ? 'This page and its content' : 'This asset and all its pages')}{translateText(" will be removed from this workspace. This cannot be undone.")}</p>{localizeNode(asset?.document.pages.length === 1 && dialog.pageId ? <p className="aw-error">{translateText("Keep at least one page. Delete the entire asset if you no longer need it.")}</p> : <AssetAsyncButton className="aw-danger" busyText="Deleting..." onClick={async () => { if (dialog.pageId && asset) {
-            await updateAsset(asset.id, item => ({ ...item, document: { ...item.document, pages: item.document.pages.filter(page => page.id !== dialog.pageId), steps: item.document.steps.filter(step => step.pageId !== dialog.pageId), funnel: { ...item.document.funnel, pagesFlow: item.document.pages.filter(page => page.id !== dialog.pageId).map(page => page.id), status: 'Draft' } } }));
-        }
-        else {
-            await deleteWorkspaceAsset(dialog.assetId!); close(); go(section);
-            return;
-        } close(); }}>{translateText("Delete permanently")}</AssetAsyncButton>)}</> : dialog.type === 'domain' ? <>
+ {localizeNode(dialog.type === 'delete' ? <><p>{localizeNode(dialog.pageId ? 'This page and its content' : 'This asset and all its pages')}{translateText(" will be removed from this workspace. This cannot be undone.")}</p>{localizeNode(asset?.document.pages.length === 1 && dialog.pageId ? <p className="aw-error">{translateText("Keep at least one page. Delete the entire asset if you no longer need it.")}</p> : <AssetAsyncButton className="aw-danger" busyText="Deleting..." onClick={async () => {
+   try {
+     if (dialog.pageId && asset) {
+       await updateAsset(asset.id, item => ({ ...item, document: { ...item.document, pages: item.document.pages.filter(page => page.id !== dialog.pageId), steps: item.document.steps.filter(step => step.pageId !== dialog.pageId), funnel: { ...item.document.funnel, pagesFlow: item.document.pages.filter(page => page.id !== dialog.pageId).map(page => page.id), status: 'Draft' } } }));
+       showToast.success('Page deleted successfully');
+     } else {
+       await deleteWorkspaceAsset(dialog.assetId!);
+       showToast.success('Asset deleted successfully');
+       close();
+       go(section);
+       return;
+     }
+     close();
+   } catch (error) {
+     showToast.error(backendError(error));
+   }
+ }}>{translateText("Delete permanently")}</AssetAsyncButton>)}</> : dialog.type === 'domain' ? <>
  {error && dnsStep > 1 && <p className="aw-error" role="alert">{error}</p>}{dnsStep > 1 && dnsDomain?.status === 'Pending' && <div role="status">{dnsBusy && <span><LoaderCircle size={14} className="animate-spin"/>{translateText("Verifying...")}</span>}<p>{translateText("DNS and SSL are pending. Status refreshes automatically while this window is open. Propagation may take up to 24 hours.")}</p>{dnsDomain.issues?.map((issue, index) => <p key={index}>{issue}</p>)}</div>}<div className="aw-dns-steps">{localizeNode(['Domain', 'DNS records', 'Verification'].map((label, i) => <span key={label} className={dnsStep === i + 1 ? 'active' : ''}>{localizeNode(i + 1)}. {localizeNode(label)}</span>))}</div>
  {localizeNode(dnsStep === 1 ? <form onSubmit={e => { e.preventDefault(); const cleaned = name.trim().toLowerCase(); if (!/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(cleaned)) {
             setError('Enter a valid domain such as example.com, without https:// or a path.');

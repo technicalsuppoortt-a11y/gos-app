@@ -2,7 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
 import { onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
-import { auth, db, callBackend } from './firebase';
+import { primaryAuth as auth, primaryDb as db, callBackend } from './firebase';
+import { clearImpersonationContext, returnToAdmin } from './impersonation';
 import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
 import { WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
@@ -89,6 +90,10 @@ function toSessionCode(error: unknown): SessionErrorCode {
  * localized notice for the login page. ProtectedRoute then redirects to /auth/login.
  */
 export async function forceSignOut(reason: unknown) {
+  if (store.getState().auth.impersonation) {
+    try { await returnToAdmin(); return; } catch { /* invalid original session: sign out below */ }
+  }
+  clearImpersonationContext();
   const code = toSessionCode(reason);
   try { sessionStorage.setItem(NOTICE_KEY, code); } catch { /* noop */ }
   try { await signOut(auth); } catch { /* noop */ }
@@ -145,12 +150,13 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || typeof tenantId !== 'string' || !tenantId) {
     throw new SessionError('NO_WORKSPACE');
   }
-  const phoenix = data?.phoenixUid
+  const impersonating = !!store.getState().auth.impersonation;
+  const phoenix = !impersonating && data?.phoenixUid
     ? await loadPhoenixBrand(user.uid, data.phoenixUid, tenantId, user.email || '') : null;
   if (phoenix) {
     store.dispatch(setLanguage(phoenix.brand.language));
     if (store.getState().ui.theme !== phoenix.brand.mode) store.dispatch(toggleTheme());
-  } else clearPhoenixBrand();
+  } else if (!impersonating) clearPhoenixBrand();
   return {
     user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email || 'User', email: user.email!, avatar: data?.avatar },
     role,
@@ -176,7 +182,7 @@ export async function login(email: string, password: string) {
   } catch (error) { await signOut(auth); throw error; }
   finally { await endActivation(); }
 }
-export async function logoutFirebase() { await signOut(auth); store.dispatch(logout()); }
+export async function logoutFirebase() { clearImpersonationContext(); await signOut(auth); store.dispatch(logout()); }
 
 export function FirebaseSession({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -188,11 +194,13 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
       profileUnsubscribe();
       profileUnsubscribe = () => {};
       // Firebase is the source of truth: no Firebase user means no app session.
-      if (!user) { clearPhoenixBrand(); store.dispatch(logout()); setReady(true); return; }
+      if (!user) { clearImpersonationContext(); clearPhoenixBrand(); store.dispatch(logout()); setReady(true); return; }
       if (activationInProgress) { setReady(true); return; }
       try {
         const session = await resolveSession(user);
         if (current !== generation) return;
+        const original = store.getState().auth.impersonation;
+        if (original && (session.user.id !== original.user.id || !['ADMIN', 'SUPER_ADMIN'].includes(session.role))) clearImpersonationContext();
         store.dispatch(loginSuccess(session));
         profileUnsubscribe = onSnapshot(doc(db, 'users', user.uid), async snapshot => {
           if (activationInProgress) return;
@@ -200,12 +208,17 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
           if (!snapshot.exists()) { await forceSignOut(new SessionError('NO_PROFILE')); return; }
           if (value?.status === 'Deactivated') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
           if (value?.status !== 'Active') { await forceSignOut(new SessionError('PENDING')); return; }
-          const state = store.getState().auth;
+          const active = store.getState().auth;
+          const state = active.impersonation ?? active;
           if (value.role !== state.role || value.tenantId !== state.tenant?.id || value.name !== state.user?.name) {
             try {
               await user.getIdToken(true);
               const next = await resolveSession(user);
-              if (current === generation) store.dispatch(loginSuccess(next));
+              if (current === generation) {
+                const original = store.getState().auth.impersonation;
+                if (original && (next.user.id !== original.user.id || !['ADMIN', 'SUPER_ADMIN'].includes(next.role))) clearImpersonationContext();
+                store.dispatch(loginSuccess(next));
+              }
             } catch (error) { await forceSignOut(error); }
           }
         }, error => { void forceSignOut(error); });

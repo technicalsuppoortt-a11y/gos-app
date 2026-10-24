@@ -15,6 +15,7 @@ export interface Tenant {
 }
 
 export interface AuthState {
+  impersonation: StoredAuth | null;
   isAuthenticated: boolean;
   user: User | null;
   role: Role | null;

@@ -243,6 +243,140 @@ export async function disconnectSiteDomain(
   }
 }
 
+export async function updateSiteDomain(
+  host: string,
+  updates: { funnelId?: string; default?: boolean; status?: 'Connected' | 'Pending' | 'Disconnected' },
+  prevFunnelId?: string
+): Promise<void> {
+  const clean = normalizeHost(host);
+  if (!clean) return;
+  const now = new Date().toISOString();
+
+  const payload: Record<string, any> = { updatedAt: now };
+  if (updates.funnelId !== undefined) payload.funnelId = updates.funnelId;
+  if (updates.default !== undefined) payload.default = updates.default;
+  if (updates.status !== undefined) {
+    payload.status = updates.status.toLowerCase();
+    payload.ssl = updates.status === 'Connected' ? 'Active' : (updates.status === 'Disconnected' ? 'Inactive' : 'Not configured');
+  }
+
+  await setDoc(doc(db, SITE_DOMAINS, clean), payload, { merge: true });
+
+  const alternate = clean.startsWith('www.')
+    ? clean.replace(/^www\./, '')
+    : (clean.split('.').length === 2 ? `www.${clean}` : '');
+  if (alternate) {
+    try {
+      await setDoc(doc(db, SITE_DOMAINS, alternate), payload, { merge: true });
+    } catch {}
+  }
+
+  if (prevFunnelId && updates.funnelId !== undefined && prevFunnelId !== updates.funnelId) {
+    try {
+      await setDoc(doc(db, PUBLISHED_SITES, prevFunnelId), {
+        domain: '',
+        domainStatus: '',
+        updatedAt: now
+      }, { merge: true });
+    } catch {}
+  }
+  if (updates.funnelId) {
+    try {
+      await setDoc(doc(db, PUBLISHED_SITES, updates.funnelId), {
+        domain: clean,
+        domainStatus: (updates.status || 'connected').toLowerCase(),
+        updatedAt: now
+      }, { merge: true });
+    } catch {}
+  }
+}
+
+export async function deleteSiteDomain(
+  host: string,
+  extra: { funnelId?: string; tenantId?: string } = {}
+): Promise<void> {
+  const clean = normalizeHost(host);
+  if (!clean) return;
+
+  try {
+    await callBackend('verifyDomain', { host: clean, delete: true, ...extra });
+  } catch {
+    try {
+      await fetch('/api/sites/verify-domain?action=delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host: clean, delete: true, ...extra })
+      });
+    } catch {}
+  }
+
+  await deleteDoc(doc(db, SITE_DOMAINS, clean));
+
+  const alternate = clean.startsWith('www.')
+    ? clean.replace(/^www\./, '')
+    : (clean.split('.').length === 2 ? `www.${clean}` : '');
+  if (alternate) {
+    try {
+      await deleteDoc(doc(db, SITE_DOMAINS, alternate));
+    } catch {}
+  }
+
+  if (extra.funnelId) {
+    try {
+      await setDoc(doc(db, PUBLISHED_SITES, extra.funnelId), {
+        domain: '',
+        domainStatus: '',
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {}
+  }
+}
+
+export async function toggleSiteDomainStatus(
+  host: string,
+  currentStatus: string,
+  funnelId?: string
+): Promise<'Connected' | 'Disconnected'> {
+  const clean = normalizeHost(host);
+  if (!clean) return 'Disconnected';
+
+  const isCurrentlyActive = currentStatus === 'Connected';
+  const newStatus: 'Connected' | 'Disconnected' = isCurrentlyActive ? 'Disconnected' : 'Connected';
+  const firestoreStatus = isCurrentlyActive ? 'disconnected' : 'connected';
+  const sslStatus = isCurrentlyActive ? 'Inactive' : 'Active';
+  const now = new Date().toISOString();
+
+  await setDoc(doc(db, SITE_DOMAINS, clean), {
+    status: firestoreStatus,
+    ssl: sslStatus,
+    updatedAt: now
+  }, { merge: true });
+
+  const alternate = clean.startsWith('www.')
+    ? clean.replace(/^www\./, '')
+    : (clean.split('.').length === 2 ? `www.${clean}` : '');
+  if (alternate) {
+    try {
+      await setDoc(doc(db, SITE_DOMAINS, alternate), {
+        status: firestoreStatus,
+        ssl: sslStatus,
+        updatedAt: now
+      }, { merge: true });
+    } catch {}
+  }
+
+  if (funnelId) {
+    try {
+      await setDoc(doc(db, PUBLISHED_SITES, funnelId), {
+        domainStatus: firestoreStatus,
+        updatedAt: now
+      }, { merge: true });
+    } catch {}
+  }
+
+  return newStatus;
+}
+
 export async function syncAssetToPublishedSites(asset: Asset, ownerUid = ''): Promise<void> {
   if (!asset?.id) return;
   const steps = (asset.document?.pages || []).map((page, idx) => ({
@@ -280,9 +414,10 @@ export function mapFirestoreDomainToModel(id: string, data: any): Domain {
     sslStr === 'active' || status === 'Connected' ? 'Active' :
     status === 'Disconnected' ? 'Inactive' : 'Not configured';
 
+  const cleanId = String(id || data.host || data.name || '').trim();
   return {
-    id: id || data.host || crypto.randomUUID(),
-    name: data.host || data.name || id,
+    id: cleanId || crypto.randomUUID(),
+    name: data.host || data.name || id || 'domain',
     assetId: data.funnelId || data.assetId || '',
     status,
     ssl,
