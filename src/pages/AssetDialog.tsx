@@ -4,7 +4,7 @@ import { PageInitializationDialog } from './PageInitializationDialog';
 import { AssetSelect } from './AssetControls';
 import { useEffect, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { ArrowRight, ShieldCheck, LoaderCircle } from 'lucide-react';
+import { ArrowRight, ShieldCheck, LoaderCircle, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Modal } from './settings/kit';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { AssetPreviewDialog } from './AssetPreviewDialog';
@@ -14,6 +14,7 @@ import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
 import { showToast } from '../utils/toast';
 import { connectWorkspaceDomain, deleteWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
+import { getCnameTarget, getApexIpTarget, isApexDomain, verifySiteDomain, type DnsVerificationResult } from '../backend/siteDomains';
 import type { Domain } from './asset-model';
 type Props = {
     dialog: Dialog;
@@ -33,6 +34,27 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
     const [domainRecordId] = useState(() => dialog.domainId ?? crypto.randomUUID());
     const [dnsDomain, setDnsDomain] = useState<Domain | undefined>(domain);
     const [dnsBusy, setDnsBusy] = useState(false);
+    const [activeDnsTab, setActiveDnsTab] = useState<'cname' | 'a_record'>('cname');
+    const [copiedKey, setCopiedKey] = useState<string>('');
+    const [dnsResult, setDnsResult] = useState<DnsVerificationResult | null>(null);
+
+    const cnameTarget = getCnameTarget();
+    const apexIpTarget = getApexIpTarget();
+    const cleanHost = name.trim().toLowerCase();
+    const hostParts = cleanHost.split('.');
+    const subdomainPrefix = hostParts.length > 2 ? hostParts[0] : (hostParts.length === 2 ? '@' : 'www');
+
+    const copyText = async (key: string, value: string) => {
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopiedKey(key);
+        setTimeout(() => setCopiedKey(''), 2000);
+        showToast.success('Copied to clipboard');
+      } catch {
+        window.prompt('Copy', value);
+      }
+    };
+
     const dnsLock = useRef(false);
     const verifyRef = useRef<(background?: boolean) => Promise<void>>(async () => {});
     useEffect(() => {
@@ -62,10 +84,21 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
       if (dnsLock.current) return;
       dnsLock.current = true; setDnsBusy(true); setError('');
       try {
-        const result = await connectWorkspaceDomain(domainRecordId, domainAsset, name.trim().toLowerCase(), 'check');
+        const cleanedHost = name.trim().toLowerCase();
+        const diagResult = await verifySiteDomain(cleanedHost, {
+          funnelId: domainAsset,
+          tenantId: workspace.assets.find(a => a.id === domainAsset)?.id
+        });
+        setDnsResult(diagResult);
+
+        const result = await connectWorkspaceDomain(domainRecordId, domainAsset, cleanedHost, 'check');
         setDnsDomain(result.domain);
-        if (result.domain.status === 'Connected') { close(); showToast.success('Domain connected · SSL active'); }
-        else if (!background) setDnsStep(2);
+        if (diagResult.matched || result.domain.status === 'Connected') {
+          showToast.success('Domain connected · SSL active');
+          setTimeout(() => close(), 1200);
+        } else if (!background) {
+          setDnsStep(3);
+        }
       } catch (error) { setError(backendError(error)); }
       finally { dnsLock.current = false; setDnsBusy(false); }
     };
@@ -135,7 +168,7 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
         } if (!domainAsset) {
             setError('Choose a funnel or website to connect.');
             return;
-        } setName(cleaned); setError(''); void prepareDomain(cleaned); }}><label>{translateText("Domain name")}<input disabled={dnsBusy} value={name} onChange={e => setName(e.target.value)} placeholder={translateText("example.com")} required/></label><label>{translateText("Connect to")}<AssetSelect disabled={dnsBusy} value={domainAsset} required={true} onChange={e => setDomainAsset(e)} options={[{value:"",label:"Choose an asset"},...workspace.assets.filter(item => !item.archived).map(item => ({value:item.id,label:`${item.kind === 'funnel' ? 'Funnel' : 'Website'} · ${item.name}`}))]}/></label>{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<button className="aw-primary" disabled={dnsBusy} aria-busy={dnsBusy}>{dnsBusy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Connecting...")}</> : <>{translateText("Continue ")}<ArrowRight size={14}/></>}</button></form> : dnsStep === 2 ? <><p>{translateText("Add the following Firebase Hosting records through your DNS provider. Verification may take time to propagate.")}</p>{dnsDomain?.dnsRecords?.map((record,index)=><div className="aw-dns-record" key={index}><b>{record.type}</b><span>{record.domainName}</span><code>{record.requiredAction ? record.requiredAction + ": " : ""}{record.rdata}</code></div>)}<p className="aw-info"><ShieldCheck size={16}/>{translateText("Firebase Hosting verifies domain ownership, DNS routing and SSL before marking this domain connected.")}</p><button className="aw-secondary" onClick={() => setDnsStep(1)}>{translateText("Back")}</button><button className="aw-primary" onClick={() => setDnsStep(3)}>{translateText("Continue to verification")}</button></> : <><div className="aw-verification"><ShieldCheck size={32}/><h3>{translateText("Waiting for DNS verification")}</h3><p>{translateText("Check Firebase Hosting for DNS propagation and SSL certificate readiness. The domain remains pending until both are verified.")}</p></div><button className="aw-primary" disabled={dnsBusy} aria-busy={dnsBusy} onClick={() => void verifyDomain()}>{dnsBusy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Verifying...")}</> : translateText("Check DNS & SSL")}</button></>)}
+        } setName(cleaned); setError(''); void prepareDomain(cleaned); }}><label>{translateText("Domain name")}<input disabled={dnsBusy} value={name} onChange={e => setName(e.target.value)} placeholder={translateText("example.com")} required/></label><label>{translateText("Connect to")}<AssetSelect disabled={dnsBusy} value={domainAsset} required={true} onChange={e => setDomainAsset(e)} options={[{value:"",label:"Choose an asset"},...workspace.assets.filter(item => !item.archived).map(item => ({value:item.id,label:`${item.kind === 'funnel' ? 'Funnel' : 'Website'} · ${item.name}`}))]}/></label>{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<button className="aw-primary" disabled={dnsBusy} aria-busy={dnsBusy}>{dnsBusy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Connecting...")}</> : <>{translateText("Continue ")}<ArrowRight size={14}/></>}</button></form> : dnsStep === 2 ? <><p>{translateText("Add the following DNS records through your domain registrar. Use CNAME for subdomains or A record for apex domains.")}</p><div style={{ display: 'flex', gap: 6, marginBottom: 12 }}><button type="button" className={`aw-secondary ${activeDnsTab === 'cname' ? 'active' : ''}`} style={{ padding: '6px 12px', fontSize: 12, fontWeight: 700, borderColor: activeDnsTab === 'cname' ? '#6366f1' : undefined }} onClick={() => setActiveDnsTab('cname')}>CNAME (Subdomain / www)</button><button type="button" className={`aw-secondary ${activeDnsTab === 'a_record' ? 'active' : ''}`} style={{ padding: '6px 12px', fontSize: 12, fontWeight: 700, borderColor: activeDnsTab === 'a_record' ? '#6366f1' : undefined }} onClick={() => setActiveDnsTab('a_record')}>A Record (Apex / @)</button></div>{activeDnsTab === 'cname' ? (<div className="aw-dns-record" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}><div><b>CNAME</b><span>{subdomainPrefix === '@' ? 'www' : subdomainPrefix}</span><code>{cnameTarget}</code></div><button type="button" className="aw-secondary" style={{ padding: '6px 10px', height: 32 }} onClick={() => copyText('cname', cnameTarget)} title="Copy target">{copiedKey === 'cname' ? <CheckCircle2 size={14} style={{ color: '#16a34a' }} /> : <Copy size={14} />}</button></div>) : (<div className="aw-dns-record" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}><div><b>A</b><span>@</span><code>{apexIpTarget}</code></div><button type="button" className="aw-secondary" style={{ padding: '6px 10px', height: 32 }} onClick={() => copyText('a_record', apexIpTarget)} title="Copy IP">{copiedKey === 'a_record' ? <CheckCircle2 size={14} style={{ color: '#16a34a' }} /> : <Copy size={14} />}</button></div>)}<p className="aw-info"><ShieldCheck size={16}/>{translateText("Automatic SSL certificate provisioning and Firebase Auth whitelisting are triggered once DNS records are verified.")}</p><div style={{ display: 'flex', gap: 8, marginTop: 14 }}><button className="aw-secondary" onClick={() => setDnsStep(1)}>{translateText("Back")}</button><button className="aw-primary" onClick={() => { setDnsStep(3); void verifyDomain(); }}>{translateText("Continue to verification")}</button></div></> : <><div className="aw-verification"><ShieldCheck size={32}/><h3>{translateText("Waiting for DNS verification")}</h3><p>{translateText("Verifying DNS records and SSL provisioning for ")}<b>{name}</b>.{translateText(" Propagation can take from a few minutes up to 24 hours.")}</p>{dnsResult && (<div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: dnsResult.matched ? 'rgba(22, 163, 74, 0.08)' : 'rgba(245, 158, 11, 0.08)', border: `1px solid ${dnsResult.matched ? 'rgba(22, 163, 74, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`, fontSize: 12.5, textAlign: 'start' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: dnsResult.matched ? '#16a34a' : '#d97706', marginBottom: 4 }}>{dnsResult.matched ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}<span>{dnsResult.matched ? `DNS Verified (${dnsResult.matchedType?.toUpperCase()} record matched)! SSL Active` : 'DNS records not verified yet'}</span></div>{dnsResult.cnames?.length ? <div><b>CNAMEs detected:</b> {dnsResult.cnames.join(', ')}</div> : null}{dnsResult.aRecords?.length ? <div><b>A Records (IPs) detected:</b> {dnsResult.aRecords.join(', ')}</div> : null}{!dnsResult.cnames?.length && !dnsResult.aRecords?.length && (<div style={{ color: '#94a3b8' }}>No DNS records detected for this host yet. Please verify your DNS registrar configuration.</div>)}</div>)}</div><div style={{ display: 'flex', gap: 8, marginTop: 14 }}><button className="aw-secondary" onClick={() => setDnsStep(2)}>{translateText("Back to DNS records")}</button><button className="aw-primary" disabled={dnsBusy} aria-busy={dnsBusy} onClick={() => void verifyDomain()}>{dnsBusy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Verifying...")}</> : translateText("Check DNS & SSL")}</button></div></>)}
  </> : <form onSubmit={onSubmit}><p>{localizeNode(dialog.type === 'add' ? 'Add a page to your customer experience.' : '')}</p><label>{localizeNode('Name')}<input autoFocus value={name} onChange={e => setName(e.target.value)} required maxLength={100} placeholder={translateText(dialog.type === 'add' ? 'About us' : kind === 'funnel' ? 'My new funnel' : 'My new website')}/></label>{localizeNode(dialog.type === 'add' && <><label>{translateText("URL path")}<input value={path} onChange={e => setPath(e.target.value)} placeholder={translateText("/about")}/></label>{localizeNode(kind === 'funnel' && <label>{translateText("Step type")}<AssetSelect value={stepType} onChange={e => setStepType(e)} options={[...['Landing', 'Form', 'Thank You', 'Booking', 'Confirmation'].map(type => ({value:type,label:type}))]}/></label>)}</>)}{localizeNode(error && <p className="aw-error" role="alert">{localizeNode(error)}</p>)}<footer><button type="button" className="aw-secondary" onClick={close}>{translateText("Cancel")}</button><button className="aw-primary" disabled={saving} aria-busy={saving}>{saving ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Saving...")}</> : localizeNode(dialog.type === 'rename' ? 'Save name' : dialog.type === 'add' ? 'Add ' + (kind === 'funnel' ? 'Step' : 'Page') : 'Create ' + (kind === 'funnel' ? 'Funnel' : 'Website'))}</button></footer></form>)}
  </div></Modal>;
 }

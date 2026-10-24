@@ -6,7 +6,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { mayManageUser, maySend, validateBooking } from './policy.js';
 import { createHash } from 'node:crypto';
@@ -17,6 +17,8 @@ import { buildActivationLink } from './activation-links.js';
 import { queryIndexedKnowledge, readAgent, validateAgent } from './ai-knowledge.js';
 import { createHostingClient } from './hosting-client.js';
 import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
+import { verifyAndProvisionDomain, disconnectSiteDomain, verifyDomainDns, normalizeHost } from './domain-verification.js';
+import { handleDomainProxy } from './domain-proxy.js';
 
 // Allows deploying the remaining services while the owner provisions the AI secret.
 const openaiKey = process.env.DEPLOY_COPILOT === 'false' ? null : defineSecret('OPENAI_API_KEY');
@@ -55,6 +57,56 @@ export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, re
 export const captureAssetLead = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => captureAssetLeadRequest(request, { workspace, db }));
 export const hostingDomain = onCall({ timeoutSeconds: 180 }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));
 export const deleteWorkspaceAsset = onCall({ timeoutSeconds: 180 }, request => deleteAssetRequest(request, { workspace, db, hosting: hostingClient() }));
+export const verifyDomain = onCall({ timeoutSeconds: 60, cors: true }, async request => {
+  const { host, funnelId, ownerUid, tenantId } = request.data ?? {};
+  if (!host || typeof host !== 'string') throw new HttpsError('invalid-argument', 'Enter a valid domain name.');
+  try {
+    const callerUid = request.auth?.uid || ownerUid || '';
+    return await verifyAndProvisionDomain(host, { db, ownerUid: callerUid, funnelId, tenantId });
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message || 'Could not verify domain.');
+  }
+});
+
+export const apiVerifyDomain = onRequest({ cors: true, timeoutSeconds: 60 }, async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const host = normalizeHost(body.host || req.query.host);
+
+    if (req.method === 'DELETE') {
+      if (!host) return res.status(400).json({ error: 'Missing host' });
+      const result = await disconnectSiteDomain(host, { db, funnelId: body.funnelId, tenantId: body.tenantId });
+      return res.status(200).json(result);
+    }
+
+    if (req.method === 'POST' || req.method === 'GET') {
+      if (!host || !host.includes('.')) {
+        return res.status(400).json({ error: 'Enter a valid domain like www.yourbrand.com or yourbrand.com' });
+      }
+      const result = await verifyAndProvisionDomain(host, {
+        db,
+        ownerUid: body.ownerUid || '',
+        funnelId: body.funnelId || '',
+        tenantId: body.tenantId || ''
+      });
+      return res.status(200).json(result);
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Could not verify domain' });
+  }
+});
+
+export const siteProxy = onRequest({ timeoutSeconds: 60 }, (req, res) => {
+  return handleDomainProxy(req, res, { db, appOrigin: appOrigin.value() });
+});
 export const activateUser = onCall(request => completeUserActivation(request, { db, auth }));
 export const manageUser = onCall(async request => {
   const user = await actor(request);

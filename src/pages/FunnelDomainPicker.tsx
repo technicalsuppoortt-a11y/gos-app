@@ -11,7 +11,7 @@ import { AssetSearch } from './AssetControls';
 import { Modal } from './settings/kit';
 import type { Asset, Workspace } from './asset-model';
 
-export function FunnelDomainPicker({asset,workspace,close,add}:{asset:Asset;workspace:Workspace;setWorkspace:Dispatch<SetStateAction<Workspace>>;close:()=>void;add:()=>void}) {
+export function FunnelDomainPicker({asset,workspace,setWorkspace,close,add}:{asset:Asset;workspace:Workspace;setWorkspace:Dispatch<SetStateAction<Workspace>>;close:()=>void;add:()=>void}) {
   useUILanguage();
  const navigate = useNavigate();
  const [search,setSearch]=useState(''),[chosen,setChosen]=useState(workspace.domains.find(domain=>domain.name===asset.domain)?.id??'');
@@ -20,6 +20,10 @@ export function FunnelDomainPicker({asset,workspace,close,add}:{asset:Asset;work
     if (!domain) return;
     await connectWorkspaceDomain(domain.id, asset.id, domain.name)
       .then(result => {
+        setWorkspace(current => ({
+          ...current,
+          assets: current.assets.map(item => item.id === asset.id ? { ...item, domain: domain.name } : (item.domain === domain.name ? { ...item, domain: '' } : item))
+        }));
         close();
         showToast.info(result.domain.status === 'Connected' ? 'Domain connected' : 'Domain reassigned. Open domain configuration to verify DNS and SSL.');
       })

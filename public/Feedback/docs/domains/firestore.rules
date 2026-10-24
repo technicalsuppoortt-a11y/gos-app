@@ -1,0 +1,218 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // Helper function to check if the requesting user is an admin or super_admin
+    function isAdmin() {
+      return request.auth != null && 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'));
+    }
+
+    // Helper function to check if the requesting user is a super_admin
+    function isSuperAdmin() {
+      return request.auth != null && 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Allow authenticated users to read profiles
+      allow read: if request.auth != null;
+      
+      // Allow users to create their own document, their team members, or admins to create any user document
+      allow create: if request.auth != null && 
+        (request.auth.uid == userId || 
+         ('adminId' in request.resource.data && request.resource.data.adminId == request.auth.uid) || 
+         isAdmin());
+      
+      // Allow updates by the user themselves, by their admin, or by platform admins
+      allow update: if request.auth != null && 
+        (isAdmin() || 
+         ('adminId' in resource.data && resource.data.adminId == request.auth.uid) ||
+         (request.auth.uid == userId && 
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'adminId']))));
+          
+      // Allow deletion by their admin or platform admins/super_admins
+      allow delete: if request.auth != null && 
+        (isAdmin() || ('adminId' in resource.data && resource.data.adminId == request.auth.uid));
+    }
+
+    // Published funnel websites (public live pages + custom domains)
+    match /published_sites/{funnelId} {
+      allow read: if true;
+      allow create, update: if request.auth != null &&
+        (request.resource.data.ownerUid == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownerUid == request.resource.data.ownerUid));
+      allow delete: if request.auth != null &&
+        (resource.data.ownerUid == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownerUid == resource.data.ownerUid));
+    }
+
+    match /store_orders/{orderId} {
+      allow read: if request.auth != null &&
+        (resource.data.ownerUid == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownerUid == resource.data.ownerUid) ||
+         isAdmin());
+      allow create, update, delete: if false;
+    }
+
+    match /site_domains/{host} {
+      allow read: if true;
+      allow create, update: if request.auth != null &&
+        (request.resource.data.ownerUid == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownerUid == request.resource.data.ownerUid));
+      allow delete: if request.auth != null &&
+        (resource.data.ownerUid == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownerUid == resource.data.ownerUid));
+    }
+
+    // Bio Links Collection (CV profiles)
+    match /bio_links/{username} {
+      allow read: if true; // Publicly readable
+      
+      allow create: if request.auth != null && 
+        request.resource.data.ownerUid == request.auth.uid;
+        
+      allow update: if request.auth != null && 
+        (resource.data.ownerUid == request.auth.uid || !('ownerUid' in resource.data)) && 
+        request.resource.data.ownerUid == request.auth.uid;
+        
+      allow delete: if request.auth != null && 
+        (resource.data.ownerUid == request.auth.uid || !('ownerUid' in resource.data));
+    }
+
+    // Tenants Collection (branding details)
+    match /tenants/{tenantId} {
+      allow read: if true; // Publicly readable for domain-based branding loading
+      allow write: if request.auth != null && isAdmin();
+    }
+
+    // Payments Collection (subscription receipts)
+    match /payments/{paymentId} {
+      allow create: if request.auth != null; // Authenticated users can upload receipts
+      allow read, write: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Sales Collection (earnings history log)
+    match /sales/{saleId} {
+      allow read, write: if isAdmin();
+    }
+
+    // AI Logs Collection
+    match /ai_logs/{logId} {
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // Projects Collection
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Static Data Collection (library books, etc.)
+    match /static_data/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // Telegram Webhook Collections
+    match /telegram_webhook_logs/{logId} {
+      allow read, write: if true;
+    }
+    match /telegram_contacts/{contactId} {
+      allow read, write: if true;
+    }
+    match /telegram_chats/{chatId} {
+      allow read, write: if true;
+    }
+    match /telegram_chats/{chatId}/messages/{msgId} {
+      allow read, write: if true;
+    }
+
+    // Outreach campaigns (admin-only; send pipeline uses Admin SDK)
+    match /campaigns/{campaignId} {
+      allow read, write: if isAdmin();
+      match /recipients/{userId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // Support Tickets Collection
+    match /support_tickets/{ticketId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Domain reseller (writes go through Admin SDK / API)
+    match /domain_pricing/{ext} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /domain_settings/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /domain_contacts/{userId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+    match /domains/{domainId} {
+      allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+    match /domain_orders/{orderId} {
+      allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow create, update, delete: if false;
+    }
+    match /domain_registrar_logs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Community Spaces, Posts, Challenges, Events, Library Collections
+    match /community_spaces/{spaceId} {
+      allow read, write: if request.auth != null;
+    }
+    match /community_posts/{postId} {
+      allow read, write: if request.auth != null;
+    }
+    match /community_challenges/{challengeId} {
+      allow read, write: if request.auth != null;
+    }
+    match /community_events/{eventId} {
+      allow read, write: if request.auth != null;
+    }
+    match /community_library/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Memberships, Courses & Coach Portal Collections
+    match /coach_portals/{portalId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /portal_students/{studentId} {
+      allow read, write: if true;
+    }
+
+    match /portal_communities/{communityId} {
+      allow read, write: if true;
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

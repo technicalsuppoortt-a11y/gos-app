@@ -1,4 +1,5 @@
 import { FirebaseSession } from './backend/session';
+import { CustomDomainInterceptor } from './components/common/CustomDomainInterceptor';
 import { useUILanguage } from './i18n/display';
 import { RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -13,7 +14,9 @@ function App() {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <FirebaseSession><RouterProvider router={router} /></FirebaseSession>
+        <CustomDomainInterceptor>
+          <FirebaseSession><RouterProvider router={router} /></FirebaseSession>
+        </CustomDomainInterceptor>
         <Toaster 
           position={language === 'ar' ? 'bottom-left' : 'bottom-right'}
           dir={language === 'ar' ? 'rtl' : 'ltr'}

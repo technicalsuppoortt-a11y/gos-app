@@ -64,6 +64,31 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
       if (latest.exists) tx.update(ref, { publishedUrl: release.url });
       // A newer edit remains a draft; it cannot be labelled as the deployed copy.
       if (!draftChanged) tx.update(ref, { 'document.funnel.status': 'Published', 'document.pages': saved.document.pages.map(page => ({ ...page, status: 'Published' })) });
+
+      // Synchronize with public published_sites collection for custom domain resolution
+      const publishedSiteRef = db.collection('published_sites').doc(assetId);
+      tx.set(publishedSiteRef, {
+        ownerUid: user?.uid || '',
+        tenantId: root.id,
+        kind: asset.kind || 'funnel',
+        funnelId: assetId,
+        name: asset.name || '',
+        domain: asset.domain || '',
+        domainStatus: asset.domain ? 'connected' : '',
+        defaultStepIdx: 0,
+        steps: (asset.document?.pages || []).map((page, idx) => ({
+          id: page.id,
+          name: page.name || 'Page',
+          path: page.path || (idx === 0 ? '/' : `/page-${idx + 1}`),
+          published: true,
+          publishedAt: new Date().toISOString(),
+          publishedCanvas: page.sections || [],
+          publishedPage: page
+        })),
+        settings: asset.settings || {},
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
       return { ...release, draftChanged };
     });
   } catch (error) {
@@ -123,6 +148,16 @@ export async function hostingDomainRequest(request, { workspace, db, hosting }) 
       tx.set(claimRef, { tenantId: root.id, assetId: targetAsset, siteId, domainId, lease: null });
       tx.set(hostingRef, { lease: null }, { merge: true });
       tx.set(domainRef, domain, { merge: true });
+      tx.set(db.collection('site_domains').doc(domainName), {
+        host: domainName,
+        funnelId: targetAsset,
+        ownerUid: root.id,
+        tenantId: root.id,
+        status: verification.status === 'Connected' ? 'connected' : 'pending',
+        ssl: verification.ssl === 'Active' ? 'Active' : 'Not configured',
+        checkedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
       for (const asset of assets.docs) {
         if (asset.id === targetAsset && verification.status === 'Connected') tx.update(asset.ref, { domain: domainName });
         else if (asset.data().domain === domainName) tx.update(asset.ref, { domain: '' });
@@ -157,7 +192,11 @@ export async function deleteAssetRequest(request, { workspace, db, hosting }) {
       const domains = await tx.get(root.collection('domains').where('assetId', '==', assetId));
       const claims = await Promise.all(domains.docs.map(domain => tx.get(db.collection('hostingDomainClaims').doc(digest(domain.data().name)))));
       tx.delete(assetRef); tx.delete(stateRef);
-      for (const domain of domains.docs) tx.update(domain.ref, { assetId: '', status: 'Disconnected', ssl: 'Inactive', default: false });
+      tx.delete(db.collection('published_sites').doc(assetId));
+      for (const domain of domains.docs) {
+        tx.update(domain.ref, { assetId: '', status: 'Disconnected', ssl: 'Inactive', default: false });
+        tx.set(db.collection('site_domains').doc(domain.data().name), { status: 'disconnected', updatedAt: new Date().toISOString() }, { merge: true });
+      }
       for (const claim of claims) if (claim.exists && claim.data().tenantId === root.id) tx.delete(claim.ref);
     });
     return { deleted: true };

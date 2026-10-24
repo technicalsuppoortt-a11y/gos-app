@@ -10,8 +10,11 @@ import { FunnelAnalytics, FunnelIntegrations, FunnelLeads, FunnelPerformance } f
 import { rangeFor } from './funnel-data';
 import { DomainExportDialog } from './DomainExportDialog';
 import { AssetSelect, AssetSearch, FilterChips } from './AssetControls';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
+import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../backend/firebase';
+import { SITE_DOMAINS, mapFirestoreDomainToModel, normalizeHost } from '../backend/siteDomains';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { ArrowLeft, ArrowRight, BarChart3, CalendarDays, Check, ChevronDown, Download, ExternalLink, Eye, FileText, Filter, Globe, GripVertical, LayoutGrid, Layers, Link2, List, LockKeyhole, Monitor, Pencil, Plus, Settings, ShieldCheck, Smartphone, Sparkles, Tablet, Trash2 } from 'lucide-react';
@@ -19,7 +22,7 @@ import { AssetOptionsMenu as OptionsMenu } from './AssetOptionsMenu';
 import { showToast } from '../utils/toast';
 import { SectionPreview } from './BuilderWorkspace';
 import type { BuilderPage } from './BuilderWorkspace';
-import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
+import type { Asset, BuilderMode, Dialog, Domain, Workspace } from './asset-model';
 type Actions = {
     label: string;
     onSelect: () => void;
@@ -86,6 +89,47 @@ export function DomainsView({ workspace, setWorkspace, query, setQuery, status, 
 }) {
   useUILanguage();
     const [connection, setConnection] = useState('All Connections'), [selected, setSelected] = useState<string[]>([]), [exportOpen,setExportOpen]=useState(false);
+
+    useEffect(() => {
+      const unsub = onSnapshot(collection(db, SITE_DOMAINS), snapshot => {
+        const liveDomains: Domain[] = [];
+        snapshot.forEach(docSnap => {
+          liveDomains.push(mapFirestoreDomainToModel(docSnap.id, docSnap.data()));
+        });
+        if (liveDomains.length > 0) {
+          setWorkspace(current => {
+            const map = new Map<string, Domain>();
+            current.domains.forEach(d => map.set(normalizeHost(d.name), d));
+            liveDomains.forEach(ld => {
+              const clean = normalizeHost(ld.name);
+              const existing = map.get(clean);
+              map.set(clean, {
+                ...existing,
+                ...ld,
+                id: existing?.id || ld.id,
+                assetId: ld.assetId || existing?.assetId || '',
+                default: existing?.default ?? ld.default
+              });
+            });
+            return { ...current, domains: Array.from(map.values()) };
+          });
+        }
+      }, err => {
+        console.warn('[DomainsView] site_domains sync note:', err);
+      });
+      return () => unsub();
+    }, [setWorkspace]);
+
+    const handleSetDefault = async (domainId: string, domainName: string) => {
+      setWorkspace(current => ({
+        ...current,
+        domains: current.domains.map(item => ({ ...item, default: item.id === domainId }))
+      }));
+      try {
+        await setDoc(doc(db, SITE_DOMAINS, normalizeHost(domainName)), { default: true }, { merge: true });
+      } catch {}
+    };
+
     const domains = workspace.domains.filter(item => item.name.toLowerCase().includes(query.toLowerCase()) && (status === 'All Status' || item.status === status) && (connection === 'All Connections' || workspace.assets.find(asset => asset.id === item.assetId)?.kind === connection));
     const filters = [
       ...(query ? [{label:`Search: ${query}`,remove:()=>setQuery('')}] : []),
@@ -96,7 +140,7 @@ export function DomainsView({ workspace, setWorkspace, query, setQuery, status, 
     <div className="aw-metrics domains">{localizeNode([{ label: 'Total Domains', value: workspace.domains.length, Icon: Link2 }, { label: 'Connected', value: workspace.domains.filter(item => item.status === 'Connected').length, Icon: Globe }, { label: 'SSL Active', value: workspace.domains.filter(item => item.ssl === 'Active').length, Icon: ShieldCheck }].map(({ label, value, Icon }) => <article key={label}><span><Icon size={24}/></span><div><p>{localizeNode(label)}</p><strong>{localizeNode(value)}</strong><small>{localizeNode(label === 'SSL Active' ? 'Encrypted connections' : 'In your workspace')}</small></div></article>))}</div>
   <section className="aw-panel"><div className="aw-controls"><AssetSearch value={query} onChange={setQuery} placeholder={translateText("Search domains...")} shortcut/><AssetSelect value={status} onChange={e => setStatus(e)} label={"Domain status"} options={[...['All Status', 'Connected', 'Pending', 'Disconnected'].map(item => ({value:item,label:item}))]}/><AssetSelect value={connection} onChange={e => setConnection(e)} label={"Connection type"} options={[{value:"All Connections",label:"All Connections"},{value:"funnel",label:"Funnels"},{value:"website",label:"Websites"}]}/><button className="aw-secondary aw-export-button" disabled={!domains.length} onClick={()=>setExportOpen(true)}><Download size={14}/>{translateText("Export")}</button>{localizeNode(selected.length > 0 && <span className="aw-muted">{localizeNode(selected.length)}{translateText(" selected")}</span>)}</div>
   <FilterChips filters={filters} clear={()=>{setQuery('');setStatus('All Status');setConnection('All Connections');}} />
-  <div className="aw-table-wrap"><table><thead><tr><th className="text-center" style={{ width: 44 }}><input aria-label={translateText("Select all domains")} type="checkbox" checked={domains.length > 0 && domains.every(item => selected.includes(item.id))} onChange={e => setSelected(e.target.checked ? domains.map(item => item.id) : [])}/></th><th className="text-start">{translateText("Domain")}</th><th className="text-center">{translateText("Status")}</th><th className="text-start">{translateText("Connected To")}</th><th className="text-center">{translateText("SSL")}</th><th className="text-center">{translateText("Default")}</th><th className="text-center" style={{ width: 120 }}>{translateText("Actions")}</th></tr></thead><tbody>{localizeNode(domains.map(domain => { const linked = workspace.assets.find(item => item.id === domain.assetId); return <tr key={domain.id}><td className="text-center"><input type="checkbox" aria-label={translateText(`Select ${domain.name}`)} checked={selected.includes(domain.id)} onChange={e => setSelected(current => e.target.checked ? [...current, domain.id] : current.filter(id => id !== domain.id))}/></td><td className="text-start"><a href={`https://${domain.name}`} target="_blank" rel="noreferrer">{localizeNode(domain.name)}<ExternalLink size={12}/></a></td><td className="text-center"><Status value={domain.status}/></td><td className="text-start">{localizeNode(linked ? <button className="aw-linked-asset" onClick={() => go(`${linked.kind === 'funnel' ? 'funnels' : 'websites'}/${linked.id}`)}>{localizeNode(linked.kind === 'funnel' ? <Filter size={17}/> : <LayoutGrid size={17}/>)}<span><b>{localizeNode(linked.name)}</b><small>{localizeNode(linked.document.pages.length)} {localizeNode(linked.kind === 'funnel' ? 'Steps' : 'Pages')}</small></span></button> : <span className="aw-muted">—<small>{translateText("Not connected yet")}</small></span>)}</td><td className="text-center"><span className="aw-ssl inline-flex items-center justify-center"><LockKeyhole size={12}/><Status value={domain.ssl}/></span></td><td className="text-center"><AssetAsyncButton busyText="Saving..." role="switch" aria-label={translateText(`Set ${domain.name} as default`)} aria-checked={domain.default} disabled={domain.status !== 'Connected'} className={`aw-default mx-auto ${domain.default ? 'active' : ''}`} onClick={() => setWorkspace(current => ({ ...current, domains: current.domains.map(item => ({ ...item, default: item.id === domain.id })) }))}><span />{localizeNode(domain.default ? 'Default' : 'Set as default')}</AssetAsyncButton></td><td className="text-center"><button className={`mx-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${domain.status === 'Connected' ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : domain.status === 'Pending' ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'}`} onClick={() => open({ type: 'domain', domainId: domain.id })}><Settings size={13}/>{localizeNode(domain.status === 'Connected' ? 'Manage' : domain.status === 'Pending' ? 'Configure' : 'Connect')}</button></td></tr>; }))}</tbody></table></div>{localizeNode(!domains.length && <Empty title={translateText("No domains found")} description="Connect a domain or adjust your search filters."/>)}<div className="aw-domain-cta"><span><Plus size={25}/></span><div><h3>{translateText("Connect a new domain")}</h3><p>{translateText("Use your own domain and connect it to your funnel or website.")}</p></div><button className="aw-secondary" onClick={() => open({ type: 'domain' })}><Plus size={15}/>{translateText("Connect Domain")}</button></div></section>{localizeNode(exportOpen&&<DomainExportDialog domains={domains} selected={selected} workspace={workspace} close={()=>setExportOpen(false)}/>)}</section>;
+  <div className="aw-table-wrap"><table><thead><tr><th className="text-center" style={{ width: 44 }}><input aria-label={translateText("Select all domains")} type="checkbox" checked={domains.length > 0 && domains.every(item => selected.includes(item.id))} onChange={e => setSelected(e.target.checked ? domains.map(item => item.id) : [])}/></th><th className="text-start">{translateText("Domain")}</th><th className="text-center">{translateText("Status")}</th><th className="text-start">{translateText("Connected To")}</th><th className="text-center">{translateText("SSL")}</th><th className="text-center">{translateText("Default")}</th><th className="text-center" style={{ width: 120 }}>{translateText("Actions")}</th></tr></thead><tbody>{localizeNode(domains.map(domain => { const linked = workspace.assets.find(item => item.id === domain.assetId); return <tr key={domain.id}><td className="text-center"><input type="checkbox" aria-label={translateText(`Select ${domain.name}`)} checked={selected.includes(domain.id)} onChange={e => setSelected(current => e.target.checked ? [...current, domain.id] : current.filter(id => id !== domain.id))}/></td><td className="text-start"><a href={`https://${domain.name}`} target="_blank" rel="noreferrer">{localizeNode(domain.name)}<ExternalLink size={12}/></a></td><td className="text-center"><Status value={domain.status}/></td><td className="text-start">{localizeNode(linked ? <button className="aw-linked-asset" onClick={() => go(`${linked.kind === 'funnel' ? 'funnels' : 'websites'}/${linked.id}`)}>{localizeNode(linked.kind === 'funnel' ? <Filter size={17}/> : <LayoutGrid size={17}/>)}<span><b>{localizeNode(linked.name)}</b><small>{localizeNode(linked.document.pages.length)} {localizeNode(linked.kind === 'funnel' ? 'Steps' : 'Pages')}</small></span></button> : <span className="aw-muted">—<small>{translateText("Not connected yet")}</small></span>)}</td><td className="text-center"><span className="aw-ssl inline-flex items-center justify-center"><LockKeyhole size={12}/><Status value={domain.ssl}/></span></td><td className="text-center"><AssetAsyncButton busyText="Saving..." role="switch" aria-label={translateText(`Set ${domain.name} as default`)} aria-checked={domain.default} disabled={domain.status !== 'Connected'} className={`aw-default mx-auto ${domain.default ? 'active' : ''}`} onClick={() => handleSetDefault(domain.id, domain.name)}><span />{localizeNode(domain.default ? 'Default' : 'Set as default')}</AssetAsyncButton></td><td className="text-center"><button className={`mx-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${domain.status === 'Connected' ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50' : domain.status === 'Pending' ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm'}`} onClick={() => open({ type: 'domain', domainId: domain.id })}><Settings size={13}/>{localizeNode(domain.status === 'Connected' ? 'Manage' : domain.status === 'Pending' ? 'Configure' : 'Connect')}</button></td></tr>; }))}</tbody></table></div>{localizeNode(!domains.length && <Empty title={translateText("No domains found")} description="Connect a domain or adjust your search filters."/>)}<div className="aw-domain-cta"><span><Plus size={25}/></span><div><h3>{translateText("Connect a new domain")}</h3><p>{translateText("Use your own domain and connect it to your funnel or website.")}</p></div><button className="aw-secondary" onClick={() => open({ type: 'domain' })}><Plus size={15}/>{translateText("Connect Domain")}</button></div></section>{localizeNode(exportOpen&&<DomainExportDialog domains={domains} selected={selected} workspace={workspace} close={()=>setExportOpen(false)}/>)}</section>;
 }
 type OverviewProps = {
     asset: Asset;
