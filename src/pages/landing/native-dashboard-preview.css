@@ -1,0 +1,4 @@
+.lp-native-preview { position: relative; width: 100%; height: 346px; overflow: hidden; background: var(--lp-bg, #f8f9fc); isolation: isolate; }
+.lp-native-preview iframe { position: absolute; top: 0; left: 0; display: block; max-width: none; border: 0; transform-origin: top left; pointer-events: none; }
+.lp-native-demo-label { position: absolute; z-index: 2; inset-block-start: 3px; inset-inline-end: 6px; padding: 2px 5px; border: 1px solid var(--lp-border); border-radius: 4px; background: var(--lp-surface, #fff); color: var(--lp-muted); font-size: 6px; line-height: 1.2; }
+.lp-native-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--lp-muted); font-size: 10px; }

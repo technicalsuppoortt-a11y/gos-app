@@ -14,8 +14,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useProducts } from '../../pages/commerce/repository';
 import { NotificationCenter } from './NotificationCenter';
 import './product-header.css';
+import { GetAppButton } from './GetAppButton';
+import { CreditBadge } from './CreditBadge';
+import { DemoAccountControl } from './DemoAccountControl';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
+  '/dashboard/marketing-tracking': { title: 'Marketing Tracking', description: 'Pixels, events and conversion insights.' },
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
   '/admin/users': { title: 'Users Management', description: 'Invite and manage your workspace users.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
@@ -111,7 +115,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         <Globe size={15} />
         <span>{translateText("View Landing Page")}</span>
       </button>
+      <GetAppButton/>
       <div className="layout-preference-controls"><LanguageSwitcher/><ThemeToggle/></div>
+      <DemoAccountControl/><CreditBadge/>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>

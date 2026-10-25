@@ -23,6 +23,29 @@ service cloud.firestore {
         collectionName in ['events', 'userTemplates'] && permit(tenantId, 'home') ||
         collectionName == 'files' && permit(tenantId, 'products');
     }
+    match /settings/paymentMethods { allow read: if true; allow write: if false; }
+    // Credential values are accessible only through authenticated, admin-only callables.
+    match /paymentGatewayConfigurations/{provider} { allow read, write: if false; }
+    match /settings/marketingTracking {
+      allow read: if true;
+      allow write: if signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN'] && validTracking();
+    }
+    function featureAdmin() { return signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN']; }
+    function trackingWorkspaceMember(tenantId) {
+      return signedIn() && (profile().get('tenantId', '') == tenantId || request.auth.token.get('tenantId', '') == tenantId) && member(tenantId).active == true;
+    }
+    function trackingWorkspaceManager(tenantId) {
+      return featureAdmin() || trackingWorkspaceMember(tenantId) && (member(tenantId).get('role', '') == 'Owner' || member(tenantId).get('permissions', []).hasAny(['*', 'settings']) || get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid);
+    }
+    function validTracking() {
+      let c = request.resource.data;
+      return c.keys().hasOnly(['schemaVersion', 'metaId', 'googleId', 'enabled', 'customEvents', 'advancedMode', 'webhookUrl', 'updatedAt', 'updatedBy'])
+        && c.get('schemaVersion', 1) == 1 && c.get('updatedBy', request.auth.uid) == request.auth.uid
+        && c.metaId is string && (c.metaId == '' || c.metaId.matches('[0-9]{10,16}'))
+        && c.googleId is string && (c.googleId == '' || c.googleId.matches('G-[A-Z0-9]{4,20}'))
+        && c.enabled is bool && c.advancedMode is bool && c.customEvents is list && c.customEvents.size() <= 50
+        && c.webhookUrl is string && c.webhookUrl.size() <= 1000 && (c.webhookUrl == '' || c.webhookUrl.matches('https://.*'));
+    }
     match /templateCatalog/{templateId} { allow read: if signedIn(); allow write: if false; }
 
     // Published funnel websites (public live pages + custom domains)
@@ -38,6 +61,10 @@ service cloud.firestore {
       allow delete: if request.auth != null;
     }
     match /users/{userId} {
+      match /preferences/marketingTracking {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow write: if signedIn() && request.auth.uid == userId && validTracking();
+      }
       // Phoenix snapshots are server-owned; only the linked user may read them.
       match /brandEngine/current {
         allow read: if platformOwner(userId);
@@ -63,6 +90,11 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'activatedAt', 'tempAuthKey']);
     }
     match /tenants/{tenantId} {
+      match /preferences/marketingTracking {
+        allow read: if featureAdmin() || trackingWorkspaceMember(tenantId);
+        allow create, update: if trackingWorkspaceManager(tenantId) && validTracking();
+        allow delete: if trackingWorkspaceManager(tenantId);
+      }
       allow read: if request.auth != null && request.auth.token.tenantId == tenantId
         && platformOwner(resource.data.ownerUid);
       allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');

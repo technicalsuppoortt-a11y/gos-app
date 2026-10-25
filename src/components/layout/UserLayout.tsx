@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare } from 'lucide-react';
+import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, Radio } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
@@ -21,6 +21,7 @@ const userItems: SidebarItem[] = [
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Marketing Tracking', href: '/marketing-tracking', icon: Radio },
   { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'], children: settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon })) },
 ];
 
@@ -60,7 +61,7 @@ export const UserLayout: React.FC = () => {
   const canAccess = useModuleAccess();
   const module = moduleForPath(location.pathname);
   const permitted = ['settings', 'integrations'].includes(module) || canAccess(module);
-  const visibleItems = userItems.filter(item => item.href === '/settings' || canAccess(moduleForPath('/dashboard' + item.href)));
+  const visibleItems = userItems.filter(item => item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';

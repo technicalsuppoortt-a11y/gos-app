@@ -8,6 +8,8 @@ import { ThemeProvider } from './context/ThemeProvider';
 import { router } from './router';
 import { Toaster } from 'sonner';
 import './i18n/i18n';
+import { TrackingRuntime, setTrackingRouteSubscription } from './backend/marketingTracking';
+setTrackingRouteSubscription(fn => router.subscribe(fn));
 
 function App() {
   const language = useUILanguage();
@@ -15,7 +17,7 @@ function App() {
     <Provider store={store}>
       <ThemeProvider>
         <CustomDomainInterceptor>
-          <FirebaseSession><RouterProvider router={router} /></FirebaseSession>
+          <FirebaseSession><TrackingRuntime/><RouterProvider router={router} /></FirebaseSession>
         </CustomDomainInterceptor>
         <Toaster 
           position={language === 'ar' ? 'bottom-left' : 'bottom-right'}

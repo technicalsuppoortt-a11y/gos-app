@@ -1,0 +1,10 @@
+/* Only the standalone iframe imports this envelope. All screen styles below it
+   are the normal application styles, at their native desktop dimensions. */
+html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+.lp-demo-root { position: absolute; top: 0; left: 0; width: 1200px; height: 100%; pointer-events: none; }
+.lp-demo-root .layout-sidebar, .lp-demo-root .layout-header, .lp-demo-root .layout-footer { display: none !important; }
+.lp-demo-root .layout-main:has(.gos-home-dashboard) { height: 100vh; max-height: 100vh; }
+.lp-demo-root * { scrollbar-width: none; }
+.lp-demo-root *::-webkit-scrollbar { display: none; }
+.lp-demo-root .workspace-content-enter { animation: none; }
+@media (prefers-reduced-motion: reduce) { .lp-demo-root *, .lp-demo-root *::before, .lp-demo-root *::after { animation: none !important; transition: none !important; } }

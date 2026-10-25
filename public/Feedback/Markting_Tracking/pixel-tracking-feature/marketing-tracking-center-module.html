@@ -1,0 +1,791 @@
+<!--
+=====================================================================
+MARKETING & TRACKING CENTER — EMBEDDABLE MODULE
+=====================================================================
+طريقة الدمج في أي داشبورد أدمن عندك (3 خطوات):
+
+1) انسخ كل الملف ده وحطه كـ partial/section جوه صفحة "Marketing" في الأدمن بتاعك
+   (Blade / EJS / React dangerouslySetInnerHTML / iframe — أي حاجة).
+
+2) الموديول بيشتغل جوه أي حاوية عندها id="mtc-root". لو مفيش حاوية بالاسم ده،
+   بيعمل واحدة تلقائيًا جوه body. مفيش أي conflict مع CSS بتاع الأدمن لأن
+   كل الأنماط معمولة scoped جوه ".mtc-scope" وكل متغيرات الألوان معرّفة
+   محليًا جوه نفس الكلاس مش على :root.
+
+3) لتشغيله برمجيًا من جافاسكربت الأدمن نفسه:
+     MarketingTrackingCenter.mount('#your-container-id');
+
+الموديول بيحفظ حالته في localStorage تحت مفتاح 'mtc_state' — لو عندك أكتر
+من عميل/تينانت في نفس الأدمن، غيّر المفتاح ده لكل تينانت (شرح تحت في نهاية
+الملف تحت "متعدد العملاء / Multi-Tenant").
+
+كل التكامل الحقيقي مع Meta/Google (OAuth الفعلي) محتاج Backend — الجزء ده
+موضّح بالتفصيل جوه تبويب "إعدادات متقدمة" داخل الموديول نفسه.
+=====================================================================
+-->
+<div id="mtc-root"></div>
+
+<style>
+/* ============================================================
+   SCOPED STYLES — كل حاجة هنا محبوسة جوه .mtc-scope عشان متتصدمش
+   مع أي CSS تاني في داشبورد الأدمن (لا Bootstrap ولا Tailwind reset)
+============================================================ */
+.mtc-scope{
+  --mtc-bg-0:#0d0a14; --mtc-bg-1:#150f22; --mtc-panel-solid:#1a1329;
+  --mtc-border:#33254f; --mtc-border-soft:#2a1e42;
+  --mtc-violet:#7c3aed; --mtc-violet-soft:#a78bfa;
+  --mtc-grad: linear-gradient(135deg,#7c3aed 0%,#8a1f4b 100%);
+  --mtc-green:#22c55e; --mtc-yellow:#eab308; --mtc-red:#ef4444;
+  --mtc-text-0:#f4f1fb; --mtc-text-1:#c9c1e0; --mtc-text-2:#8d81ab;
+  --mtc-mono:'JetBrains Mono','Consolas',monospace;
+
+  all:initial;
+  * { box-sizing:border-box; }
+  display:block;
+  font-family:'Tahoma','Segoe UI',system-ui,sans-serif;
+  direction:rtl;
+  color:var(--mtc-text-0);
+  background:
+    radial-gradient(circle at 15% 0%, #3a1a5c33 0%, transparent 45%),
+    radial-gradient(circle at 85% 10%, #6b103f33 0%, transparent 45%),
+    var(--mtc-bg-0);
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--mtc-border-soft);
+  isolation:isolate;
+}
+.mtc-scope *{box-sizing:border-box;}
+.mtc-scope ::-webkit-scrollbar{width:8px;height:8px;}
+.mtc-scope ::-webkit-scrollbar-thumb{background:var(--mtc-border);border-radius:8px;}
+
+/* ---- top tab strip (بديل السايدبار — يشتغل كقسم جوه صفحة موجودة) ---- */
+.mtc-header{
+  padding:18px 22px 0;background:#100b1c99;border-bottom:1px solid var(--mtc-border-soft);
+}
+.mtc-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mtc-title-wrap{display:flex;align-items:center;gap:10px;}
+.mtc-brand-icon{
+  width:34px;height:34px;border-radius:10px;background:var(--mtc-grad);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  box-shadow:0 4px 16px #7c3aed4d;
+}
+.mtc-title-wrap b{font-size:15px;}
+.mtc-title-wrap span{font-size:11.5px;color:var(--mtc-text-2);display:block;}
+.mtc-top-actions{display:flex;gap:10px;align-items:center;}
+.mtc-mode-toggle{
+  display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mtc-text-2);
+  background:var(--mtc-panel-solid);border:1px solid var(--mtc-border);
+  padding:6px 12px;border-radius:999px;cursor:pointer;user-select:none;
+}
+.mtc-switch{width:32px;height:17px;background:#332750;border-radius:20px;position:relative;transition:.2s;}
+.mtc-switch::after{content:'';position:absolute;top:2px;right:2px;width:13px;height:13px;background:#8d81ab;border-radius:50%;transition:.2s;}
+.mtc-switch.on{background:var(--mtc-grad);}
+.mtc-switch.on::after{right:17px;background:#fff;}
+.mtc-btn{border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:9px;transition:.15s;}
+.mtc-btn-primary{background:var(--mtc-grad);color:#fff;}
+.mtc-btn-primary:hover{filter:brightness(1.1);}
+.mtc-btn-ghost{background:var(--mtc-panel-solid);border:1px solid var(--mtc-border);color:var(--mtc-text-1);}
+.mtc-btn-ghost:hover{border-color:var(--mtc-violet-soft);color:#fff;}
+
+.mtc-tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:0;}
+.mtc-tab{
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+  padding:10px 14px;font-size:12.5px;color:var(--mtc-text-2);cursor:pointer;
+  border-bottom:2px solid transparent;transition:.15s;
+}
+.mtc-tab:hover{color:var(--mtc-text-0);}
+.mtc-tab.active{color:#fff;border-bottom-color:var(--mtc-violet);}
+.mtc-tab .mtc-badge{
+  font-size:9.5px;background:var(--mtc-red);color:#fff;padding:1px 6px;border-radius:20px;
+}
+
+.mtc-body{padding:22px;max-height:78vh;overflow-y:auto;}
+.mtc-view{display:none;animation:mtc-fade .2s ease;}
+.mtc-view.active{display:block;}
+@keyframes mtc-fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.mtc-grid{display:grid;gap:14px;}
+.mtc-g4{grid-template-columns:repeat(4,1fr);}
+.mtc-g3{grid-template-columns:repeat(3,1fr);}
+.mtc-g2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:900px){.mtc-g4{grid-template-columns:repeat(2,1fr);}.mtc-g3{grid-template-columns:repeat(2,1fr);}.mtc-g2{grid-template-columns:1fr;}}
+
+.mtc-card{
+  background:linear-gradient(180deg,#1d1530b8,#170f26b8);
+  border:1px solid var(--mtc-border-soft);border-radius:14px;padding:16px;position:relative;overflow:hidden;
+}
+.mtc-card-label{font-size:11.5px;color:var(--mtc-text-2);display:flex;justify-content:space-between;align-items:center;}
+.mtc-card-value{font-size:24px;font-weight:800;margin-top:6px;}
+.mtc-card-delta{font-size:11px;margin-top:4px;color:var(--mtc-green);}
+.mtc-card-delta.down{color:var(--mtc-red);}
+.mtc-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:0;margin-left:6px;}
+.mtc-dot-green{background:var(--mtc-green);box-shadow:0 0 8px #22c55e88;}
+.mtc-dot-red{background:var(--mtc-red);box-shadow:0 0 8px #ef444488;}
+.mtc-dot-yellow{background:var(--mtc-yellow);box-shadow:0 0 8px #eab30888;}
+
+.mtc-sec-title{font-size:14.5px;margin:22px 0 12px;display:flex;align-items:center;gap:8px;}
+.mtc-sec-desc{font-size:12px;color:var(--mtc-text-2);margin:-6px 0 14px;}
+
+.mtc-table{width:100%;border-collapse:collapse;font-size:12px;}
+.mtc-table th{text-align:right;color:var(--mtc-text-2);font-weight:600;font-size:10.5px;padding:9px 10px;border-bottom:1px solid var(--mtc-border-soft);text-transform:uppercase;}
+.mtc-table td{padding:9px 10px;border-bottom:1px solid #ffffff08;color:var(--mtc-text-1);}
+.mtc-table tr:hover td{background:#ffffff05;}
+.mtc-pill{padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:600;display:inline-block;}
+.mtc-pill-green{background:#22c55e22;color:#4ade80;border:1px solid #22c55e44;}
+.mtc-pill-red{background:#ef444422;color:#f87171;border:1px solid #ef444444;}
+.mtc-pill-violet{background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed44;}
+
+.mtc-integ-card{background:linear-gradient(180deg,#1d1530,#170f26);border:1px solid var(--mtc-border-soft);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;}
+.mtc-integ-head{display:flex;align-items:center;gap:12px;}
+.mtc-integ-logo{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0;}
+.mtc-logo-meta{background:linear-gradient(135deg,#0866FF,#5C41FF);}
+.mtc-logo-google{background:linear-gradient(135deg,#EA4335,#4285F4,#34A853,#FBBC05);}
+.mtc-logo-tiktok{background:#000;border:1px solid #333;}
+.mtc-logo-linkedin{background:#0A66C2;}
+.mtc-integ-name{font-size:14px;font-weight:700;}
+.mtc-integ-desc{font-size:11.5px;color:var(--mtc-text-2);margin-top:2px;}
+.mtc-integ-meta-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--mtc-text-2);border-top:1px solid var(--mtc-border-soft);padding-top:10px;}
+.mtc-connected-box{background:#22c55e12;border:1px solid #22c55e33;border-radius:12px;padding:11px 13px;font-size:11.5px;display:flex;flex-direction:column;gap:5px;}
+.mtc-connected-row{display:flex;justify-content:space-between;color:var(--mtc-text-1);}
+.mtc-connected-row b{color:#fff;font-weight:600;}
+
+.mtc-overlay{position:fixed;inset:0;background:#050308cc;backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:99999;}
+.mtc-overlay.active{display:flex;}
+.mtc-modal{width:460px;max-width:92vw;background:linear-gradient(180deg,#1e1533,#150f22);border:1px solid var(--mtc-border-soft);border-radius:18px;padding:26px;box-shadow:0 30px 80px #00000088;font-family:inherit;direction:rtl;color:var(--mtc-text-0);}
+.mtc-modal-head{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+.mtc-modal-title{font-size:15px;font-weight:700;}
+.mtc-steps-row{display:flex;gap:6px;margin:16px 0 20px;}
+.mtc-step-dot{flex:1;height:4px;border-radius:4px;background:#332750;transition:.2s;}
+.mtc-step-dot.done{background:var(--mtc-grad);}
+.mtc-wizard-body{min-height:180px;}
+.mtc-option-list{display:flex;flex-direction:column;gap:8px;max-height:210px;overflow-y:auto;}
+.mtc-option-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border:1px solid var(--mtc-border);border-radius:11px;cursor:pointer;transition:.15s;font-size:12.5px;}
+.mtc-option-item:hover{border-color:var(--mtc-violet-soft);background:#7c3aed10;}
+.mtc-spinner{width:32px;height:32px;border:3px solid #33275077;border-top-color:var(--mtc-violet);border-radius:50%;animation:mtc-spin .8s linear infinite;margin:24px auto;}
+@keyframes mtc-spin{to{transform:rotate(360deg);}}
+.mtc-center-text{text-align:center;color:var(--mtc-text-2);font-size:12px;}
+.mtc-success-tick{width:58px;height:58px;border-radius:50%;background:#22c55e22;border:2px solid #22c55e;display:flex;align-items:center;justify-content:center;font-size:26px;margin:12px auto;color:#4ade80;}
+.mtc-close{cursor:pointer;color:var(--mtc-text-2);font-size:18px;line-height:1;margin-right:auto;}
+
+.mtc-event-chip{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--mtc-border-soft);border-radius:11px;font-size:11.5px;background:#170f2699;}
+.mtc-tag{font-size:9.5px;padding:2px 7px;border-radius:6px;background:#ffffff0d;color:var(--mtc-text-2);}
+
+.mtc-realtime-search{width:100%;background:#100b1a;border:1px solid var(--mtc-border);border-radius:9px;color:#fff;padding:8px 11px;font-size:12px;font-family:inherit;}
+
+.mtc-funnel-step{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+.mtc-funnel-bar-wrap{flex:1;background:#170f26;border-radius:8px;overflow:hidden;height:30px;border:1px solid var(--mtc-border-soft);}
+.mtc-funnel-bar{height:100%;background:var(--mtc-grad);display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;transition:width .6s ease;}
+.mtc-funnel-drop{font-size:10.5px;color:var(--mtc-red);width:56px;text-align:left;}
+.mtc-funnel-label{width:135px;font-size:12px;color:var(--mtc-text-1);flex-shrink:0;}
+
+.mtc-health-item{display:flex;align-items:center;justify-content:space-between;padding:11px 4px;border-bottom:1px solid #ffffff08;font-size:12.5px;}
+.mtc-health-item .mtc-left{display:flex;align-items:center;gap:9px;}
+
+.mtc-console{background:#0a0712;border:1px solid var(--mtc-border-soft);border-radius:12px;padding:14px;font-family:var(--mtc-mono);font-size:11px;height:340px;overflow-y:auto;line-height:1.7;direction:ltr;text-align:left;}
+.mtc-log-line{white-space:pre-wrap;word-break:break-all;}
+.mtc-log-time{color:#5c4f80;}
+.mtc-log-get{color:#4ade80;}
+.mtc-log-post{color:#60a5fa;}
+.mtc-log-err{color:#f87171;}
+
+.mtc-test-btn{display:flex;flex-direction:column;gap:7px;align-items:flex-start;padding:15px;border:1px solid var(--mtc-border-soft);border-radius:13px;cursor:pointer;background:#170f2699;transition:.15s;}
+.mtc-test-btn:hover{border-color:var(--mtc-violet-soft);transform:translateY(-2px);}
+.mtc-test-btn b{font-size:12.5px;}
+.mtc-test-btn span{font-size:10.5px;color:var(--mtc-text-2);}
+.mtc-test-result{font-size:10.5px;margin-top:3px;padding:3px 7px;border-radius:6px;display:inline-block;}
+
+.mtc-settings-row{display:flex;justify-content:space-between;align-items:center;padding:13px 4px;border-bottom:1px solid #ffffff08;}
+.mtc-settings-row .mtc-t{font-size:12.5px;}
+.mtc-settings-row .mtc-d{font-size:11px;color:var(--mtc-text-2);margin-top:2px;}
+.mtc-field{width:100%;background:#100b1a;border:1px solid var(--mtc-border);border-radius:9px;color:#fff;padding:8px 11px;font-size:11.5px;font-family:var(--mtc-mono);margin-top:6px;}
+.mtc-locked-banner{display:flex;gap:9px;align-items:center;background:#eab30814;border:1px solid #eab30840;border-radius:11px;padding:11px 15px;font-size:12px;color:#facc15;margin-bottom:14px;}
+.mtc-ai-rec{display:flex;gap:11px;padding:13px;border:1px solid var(--mtc-border-soft);border-radius:11px;background:#170f2699;margin-bottom:9px;align-items:flex-start;}
+.mtc-ai-rec b{font-size:12.5px;display:block;margin-bottom:3px;}
+.mtc-ai-rec span{font-size:11px;color:var(--mtc-text-2);}
+.mtc-ai-fix-btn{margin-right:auto;flex-shrink:0;}
+.mtc-note{background:#7c3aed14;border:1px solid #7c3aed3a;border-radius:11px;padding:11px 15px;font-size:11.5px;color:var(--mtc-text-1);margin-bottom:16px;line-height:1.8;}
+</style>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ==========================================================
+     TEMPLATE — الموديول كله جوه IIFE عشان محدش يتصادم مع window
+     الأدمن بتاعك. مفيش أي global غير MarketingTrackingCenter.
+  ========================================================== */
+  const TEMPLATE = `
+  <div class="mtc-scope">
+    <div class="mtc-header">
+      <div class="mtc-header-top">
+        <div class="mtc-title-wrap">
+          <div class="mtc-brand-icon">🛰️</div>
+          <div><b>Marketing & Tracking Center</b><span>قسم داخل داشبورد الأدمن — قابل لإعادة الاستخدام</span></div>
+        </div>
+        <div class="mtc-top-actions">
+          <div class="mtc-mode-toggle" data-mtc-adv-toggle>
+            <span>وضع المطوّر</span><div class="mtc-switch" data-mtc-adv-switch></div>
+          </div>
+          <button class="mtc-btn mtc-btn-ghost" data-mtc-refresh>تحديث</button>
+        </div>
+      </div>
+      <div class="mtc-tabs">
+        <div class="mtc-tab active" data-mtc-tab="overview">📊 نظرة عامة</div>
+        <div class="mtc-tab" data-mtc-tab="integrations">🔌 ربط الحسابات <span class="mtc-badge" data-mtc-badge-integ>1</span></div>
+        <div class="mtc-tab" data-mtc-tab="events">🎯 أحداث التتبّع</div>
+        <div class="mtc-tab" data-mtc-tab="library">📚 مكتبة الأحداث</div>
+        <div class="mtc-tab" data-mtc-tab="realtime">⚡ لحظي</div>
+        <div class="mtc-tab" data-mtc-tab="funnels">🪜 الأقماع</div>
+        <div class="mtc-tab" data-mtc-tab="analytics">📈 التحليلات</div>
+        <div class="mtc-tab" data-mtc-tab="health">🩺 الصحة</div>
+        <div class="mtc-tab" data-mtc-tab="debug">🧩 Debug</div>
+        <div class="mtc-tab" data-mtc-tab="test">🧪 الاختبار</div>
+        <div class="mtc-tab" data-mtc-tab="automation">🤖 الأتمتة</div>
+        <div class="mtc-tab" data-mtc-tab="advanced">⚙️ متقدم</div>
+      </div>
+    </div>
+
+    <div class="mtc-body">
+
+      <!-- OVERVIEW -->
+      <div class="mtc-view active" data-mtc-view="overview">
+        <div class="mtc-note">💡 موديول واجهة قابل للتوصيل بأي Backend. اتصال Meta/Google الحقيقي عبر OAuth محتاج سيرفر يحفظ الـ Client Secrets — التفاصيل جوه "إعدادات متقدمة".</div>
+        <div class="mtc-grid mtc-g4">
+          <div class="mtc-card">
+            <div class="mtc-card-label">Marketing Readiness</div>
+            <div class="mtc-card-value" data-mtc-readiness>0%</div>
+            <div class="mtc-card-delta" data-mtc-readiness-hint>0 من 16 عنصر</div>
+          </div>
+          <div class="mtc-card"><div class="mtc-card-label">Meta Status <span class="mtc-dot mtc-dot-red" data-mtc-dot-meta></span></div><div class="mtc-card-value" style="font-size:16px;" data-mtc-meta-status>غير متصل</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Google Status <span class="mtc-dot mtc-dot-red" data-mtc-dot-google></span></div><div class="mtc-card-value" style="font-size:16px;" data-mtc-google-status>غير متصل</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Today's Events</div><div class="mtc-card-value" data-mtc-events-today>0</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Active Pixel</div><div class="mtc-card-value" style="font-size:14px;" data-mtc-pixel>—</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">GA4</div><div class="mtc-card-value" style="font-size:14px;" data-mtc-ga4>—</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">SSL</div><div class="mtc-card-value" style="font-size:14px;color:#4ade80;">فعّال ✓</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Realtime Visitors</div><div class="mtc-card-value" data-mtc-visitors>0</div></div>
+        </div>
+        <h3 class="mtc-sec-title">🏆 أفضل الأحداث اليوم</h3>
+        <div class="mtc-grid mtc-g2">
+          <div class="mtc-card"><table class="mtc-table" data-mtc-top-events><thead><tr><th>الحدث</th><th>العدد</th><th>تحويل</th></tr></thead><tbody></tbody></table></div>
+          <div class="mtc-card"><div class="mtc-card-label" style="margin-bottom:8px;">آخر الأخطاء</div><div style="font-size:11.5px;color:var(--mtc-text-2);">لا توجد أخطاء — كل الأنظمة مستقرة ✓</div></div>
+        </div>
+      </div>
+
+      <!-- INTEGRATIONS -->
+      <div class="mtc-view" data-mtc-view="integrations">
+        <p class="mtc-sec-desc">اربط حساباتك بدون نسخ Pixel ID أو Token — بالضبط زي Shopify.</p>
+        <div class="mtc-grid mtc-g2">
+          <div class="mtc-integ-card">
+            <div class="mtc-integ-head"><div class="mtc-integ-logo mtc-logo-meta">f</div><div><div class="mtc-integ-name">Meta</div><div class="mtc-integ-desc">Pixel + Conversions API تلقائيًا</div></div></div>
+            <div data-mtc-meta-connected style="display:none;"><div class="mtc-connected-box">
+              <div class="mtc-connected-row"><span>Business Manager</span><b data-mtc-meta-bm>—</b></div>
+              <div class="mtc-connected-row"><span>Page</span><b data-mtc-meta-page>—</b></div>
+              <div class="mtc-connected-row"><span>Pixel ID</span><b data-mtc-meta-pixel-id style="filter:blur(4px);">—</b></div>
+              <div class="mtc-connected-row"><span>Conversion API</span><b style="color:#4ade80;">نشط ✓</b></div>
+            </div></div>
+            <div data-mtc-meta-empty class="mtc-integ-desc">لسه ملقتش حساب Meta متصل.</div>
+            <div class="mtc-integ-meta-row"><span data-mtc-meta-sync>—</span><button class="mtc-btn mtc-btn-primary" data-mtc-open-wizard="meta">ربط Meta</button></div>
+          </div>
+          <div class="mtc-integ-card">
+            <div class="mtc-integ-head"><div class="mtc-integ-logo mtc-logo-google">G</div><div><div class="mtc-integ-name">Google</div><div class="mtc-integ-desc">GA4 + GTM + Search Console تلقائيًا</div></div></div>
+            <div data-mtc-google-connected style="display:none;"><div class="mtc-connected-box">
+              <div class="mtc-connected-row"><span>GA4 Property</span><b data-mtc-google-property>—</b></div>
+              <div class="mtc-connected-row"><span>Tag Manager</span><b style="color:#4ade80;">متصل ✓</b></div>
+              <div class="mtc-connected-row"><span>Search Console</span><b style="color:#4ade80;">متصل ✓</b></div>
+            </div></div>
+            <div data-mtc-google-empty class="mtc-integ-desc">لسه ملقتش حساب Google متصل.</div>
+            <div class="mtc-integ-meta-row"><span data-mtc-google-sync>—</span><button class="mtc-btn mtc-btn-primary" data-mtc-open-wizard="google">ربط Google</button></div>
+          </div>
+          <div class="mtc-integ-card" style="opacity:.6;"><div class="mtc-integ-head"><div class="mtc-integ-logo mtc-logo-tiktok">🎵</div><div><div class="mtc-integ-name">TikTok Ads</div><div class="mtc-integ-desc">قريبًا — نفس بنية الموديول</div></div></div><div class="mtc-integ-meta-row"><span>Provider جديد بدون تعديل الكود</span><button class="mtc-btn mtc-btn-ghost" disabled>قريبًا</button></div></div>
+          <div class="mtc-integ-card" style="opacity:.6;"><div class="mtc-integ-head"><div class="mtc-integ-logo mtc-logo-linkedin">in</div><div><div class="mtc-integ-name">LinkedIn Ads</div><div class="mtc-integ-desc">قريبًا — نفس بنية الموديول</div></div></div><div class="mtc-integ-meta-row"><span>Microsoft, Pinterest, X, Reddit كمان</span><button class="mtc-btn mtc-btn-ghost" disabled>قريبًا</button></div></div>
+        </div>
+      </div>
+
+      <!-- EVENTS SDK -->
+      <div class="mtc-view" data-mtc-view="events">
+        <p class="mtc-sec-desc">كل الأحداث بتتبعت من خلال Tracking SDK الداخلي.</p>
+        <div class="mtc-card" style="margin-bottom:16px;">
+          <div class="mtc-card-label" style="margin-bottom:8px;">Tracking SDK</div>
+          <div class="mtc-console" style="height:auto;">
+<span class="mtc-log-line"><span class="mtc-log-get">Tracking.page()</span> → Page View تلقائي عند كل route</span>
+<span class="mtc-log-line"><span class="mtc-log-get">Tracking.identify(user)</span></span>
+<span class="mtc-log-line"><span class="mtc-log-post">Tracking.track("purchase")</span></span>
+<span class="mtc-log-line"><span class="mtc-log-post">Tracking.purchase({value, currency})</span></span>
+<span class="mtc-log-line"><span class="mtc-log-post">Tracking.lead({source})</span></span>
+<span class="mtc-log-line"><span class="mtc-log-post">Tracking.bookMeeting({calendarId})</span></span>
+<span class="mtc-log-line"><span class="mtc-log-post">Tracking.custom("event_name", payload)</span></span>
+          </div>
+        </div>
+        <h3 class="mtc-sec-title">🗺️ Event Mapping</h3>
+        <div class="mtc-grid mtc-g2" data-mtc-mapping-grid></div>
+      </div>
+
+      <!-- LIBRARY -->
+      <div class="mtc-view" data-mtc-view="library">
+        <div style="display:flex;gap:9px;margin-bottom:14px;">
+          <input class="mtc-realtime-search" placeholder="🔍 دوّر على حدث..." data-mtc-lib-search>
+          <button class="mtc-btn mtc-btn-primary" data-mtc-add-event style="white-space:nowrap;">+ حدث مخصص</button>
+        </div>
+        <div class="mtc-grid mtc-g3" data-mtc-library-grid></div>
+      </div>
+
+      <!-- REALTIME -->
+      <div class="mtc-view" data-mtc-view="realtime">
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;">
+          <input class="mtc-realtime-search" style="max-width:220px;" placeholder="🔍 فلترة..." data-mtc-rt-search>
+          <button class="mtc-btn mtc-btn-ghost" data-mtc-export-csv>تصدير CSV</button>
+        </div>
+        <div class="mtc-card"><table class="mtc-table"><thead><tr><th>الوقت</th><th>المستخدم</th><th>الحدث</th><th>المنصة</th><th>الدولة</th><th>UTM</th><th>الحالة</th></tr></thead><tbody data-mtc-rt-table></tbody></table></div>
+      </div>
+
+      <!-- FUNNELS -->
+      <div class="mtc-view" data-mtc-view="funnels">
+        <p class="mtc-sec-desc">القمع بيتبني تلقائيًا من الأحداث المتتبّعة.</p>
+        <div class="mtc-card" data-mtc-funnel-card></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="mtc-view" data-mtc-view="analytics">
+        <div class="mtc-grid mtc-g2">
+          <div class="mtc-card"><div class="mtc-card-label" style="margin-bottom:12px;">مصادر الزيارات</div><div data-mtc-traffic-chart></div></div>
+          <div class="mtc-card"><div class="mtc-card-label" style="margin-bottom:12px;">توزيع الأجهزة</div><div data-mtc-device-chart></div></div>
+        </div>
+        <div class="mtc-grid mtc-g4" style="margin-top:14px;">
+          <div class="mtc-card"><div class="mtc-card-label">Conversion Rate</div><div class="mtc-card-value">3.4%</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Avg Session</div><div class="mtc-card-value">4:12</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Returning</div><div class="mtc-card-value">28%</div></div>
+          <div class="mtc-card"><div class="mtc-card-label">Bounce</div><div class="mtc-card-value">41%</div></div>
+        </div>
+      </div>
+
+      <!-- HEALTH -->
+      <div class="mtc-view" data-mtc-view="health">
+        <p class="mtc-sec-desc">فحص تلقائي لكل نقاط التتبّع.</p>
+        <div class="mtc-card" data-mtc-health-list></div>
+      </div>
+
+      <!-- DEBUG -->
+      <div class="mtc-view" data-mtc-view="debug">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+          <p class="mtc-sec-desc" style="margin:0;">وضع المطوّر — Requests/Responses لحظيًا.</p>
+          <button class="mtc-btn mtc-btn-ghost" data-mtc-clear-debug>مسح</button>
+        </div>
+        <div class="mtc-console" data-mtc-debug-console></div>
+      </div>
+
+      <!-- TEST CENTER -->
+      <div class="mtc-view" data-mtc-view="test">
+        <p class="mtc-sec-desc">ابعت حدث تجريبي وتأكد إنه وصل.</p>
+        <div class="mtc-grid mtc-g3" data-mtc-test-grid></div>
+      </div>
+
+      <!-- AUTOMATION -->
+      <div class="mtc-view" data-mtc-view="automation">
+        <p class="mtc-sec-desc">توصيات تلقائية بناءً على تحليل بيانات التتبّع.</p>
+        <div data-mtc-ai-recs></div>
+      </div>
+
+      <!-- ADVANCED -->
+      <div class="mtc-view" data-mtc-view="advanced">
+        <div class="mtc-locked-banner" data-mtc-adv-locked>🔒 وضع المطوّر متوقف — فعّله من الأعلى.</div>
+        <div class="mtc-card" style="margin-bottom:14px;">
+          <div class="mtc-card-label" style="margin-bottom:8px;">إعداد يدوي</div>
+          <label style="font-size:11px;color:var(--mtc-text-2);">Meta Pixel ID</label>
+          <input class="mtc-field" placeholder="1029384756102938" disabled data-mtc-manual-pixel>
+          <label style="font-size:11px;color:var(--mtc-text-2);margin-top:10px;display:block;">GA4 Measurement ID</label>
+          <input class="mtc-field" placeholder="G-XXXXXXXXXX" disabled data-mtc-manual-ga4>
+          <label style="font-size:11px;color:var(--mtc-text-2);margin-top:10px;display:block;">Webhook URL</label>
+          <input class="mtc-field" placeholder="https://yourdomain.com/api/webhook" disabled>
+        </div>
+        <div class="mtc-note">🏗️ <b>لتوصيل Backend حقيقي:</b> سيرفر يعمل OAuth redirect → استقبال code → تبديله بتوكن عبر Graph API/Google OAuth2 (الـ Client Secret يفضل في السيرفر) → تخزين مشفّر → endpoint داخلي يجيب Business Managers/Pixels/Properties. باقي الموديول هيشتغل بدون تعديل.</div>
+      </div>
+
+    </div>
+
+    <div class="mtc-overlay" data-mtc-overlay>
+      <div class="mtc-modal">
+        <div class="mtc-modal-head">
+          <div class="mtc-integ-logo" data-mtc-wizard-logo style="width:36px;height:36px;font-size:15px;"></div>
+          <div class="mtc-modal-title" data-mtc-wizard-title>ربط الحساب</div>
+          <span class="mtc-close" data-mtc-close-wizard>✕</span>
+        </div>
+        <div class="mtc-steps-row" data-mtc-steps-row></div>
+        <div class="mtc-wizard-body" data-mtc-wizard-body></div>
+      </div>
+    </div>
+  </div>
+  `;
+
+  /* ==========================================================
+     MOUNT FUNCTION — ده اللي بيستدعيه داشبورد الأدمن
+  ========================================================== */
+  function mount(selectorOrEl, opts){
+    opts = opts || {};
+    let root = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
+    if(!root){ root = document.createElement('div'); document.body.appendChild(root); }
+    root.innerHTML = TEMPLATE;
+
+    // ---- namespaced state (multi-tenant support via opts.storageKey) ----
+    const STORAGE_KEY = opts.storageKey || 'mtc_state';
+    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
+      meta:{connected:false,business:null,page:null,pixel:null},
+      google:{connected:false,property:null},
+      advancedMode:false, customEvents:[]
+    };
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    const q  = (sel)=>root.querySelector(sel);
+    const qa = (sel)=>root.querySelectorAll(sel);
+
+    /* ---- tabs ---- */
+    qa('[data-mtc-tab]').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        qa('[data-mtc-tab]').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        const v = tab.getAttribute('data-mtc-tab');
+        qa('[data-mtc-view]').forEach(el=>el.classList.remove('active'));
+        q('[data-mtc-view="'+v+'"]').classList.add('active');
+      });
+    });
+
+    /* ---- advanced mode ---- */
+    q('[data-mtc-adv-toggle]').addEventListener('click', ()=>{
+      state.advancedMode = !state.advancedMode; save(); applyAdvancedMode();
+    });
+    function applyAdvancedMode(){
+      q('[data-mtc-adv-switch]').classList.toggle('on', state.advancedMode);
+      q('[data-mtc-adv-locked]').style.display = state.advancedMode ? 'none' : 'flex';
+      qa('[data-mtc-manual-pixel],[data-mtc-manual-ga4]').forEach(el=>el.disabled = !state.advancedMode);
+      if(state.advancedMode){
+        q('[data-mtc-manual-pixel]').value = state.meta.pixel ? state.meta.pixel.id : '';
+        q('[data-mtc-manual-ga4]').value = state.google.property ? state.google.property.measurementId : '';
+      }
+    }
+
+    q('[data-mtc-refresh]').addEventListener('click', ()=>renderRealtime(true));
+
+    /* ---- wizard ---- */
+    const metaBusinesses = ['UpKlick Business Manager','Mohamed Joe Coaching BM','Personal Brand OS Ads'];
+    const metaPages = ['UpKlick | Official Page','Mohamed Joe','Personal Brand OS'];
+    const metaPixels = [{id:'812934710239481',name:'UpKlick Main Pixel'},{id:'129384710293841',name:'Coaching Funnel Pixel'}];
+    const googleAccounts = ['Mohamed Joe — Google Account'];
+    const googleProperties = [
+      {name:'UpKlick — Web', measurementId:'G-K3P9XQ21LM'},
+      {name:'Personal Brand OS', measurementId:'G-7HN4Z8YB03'},
+      {name:'CoachOS Landing', measurementId:'G-4RT1WP66QD'}
+    ];
+    let wiz = {provider:null, step:0, picks:{}};
+
+    qa('[data-mtc-open-wizard]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const provider = btn.getAttribute('data-mtc-open-wizard');
+        wiz = {provider, step:0, picks:{}};
+        q('[data-mtc-overlay]').classList.add('active');
+        const logo = q('[data-mtc-wizard-logo]');
+        logo.className = 'mtc-integ-logo ' + (provider==='meta' ? 'mtc-logo-meta' : 'mtc-logo-google');
+        logo.textContent = provider==='meta' ? 'f' : 'G';
+        q('[data-mtc-wizard-title]').textContent = provider==='meta' ? 'ربط Meta' : 'ربط Google';
+        renderWizardStep();
+      });
+    });
+    q('[data-mtc-close-wizard]').addEventListener('click', ()=>q('[data-mtc-overlay]').classList.remove('active'));
+
+    function renderSteps(total, current){
+      const row = q('[data-mtc-steps-row]'); row.innerHTML='';
+      for(let i=0;i<total;i++){
+        const d = document.createElement('div');
+        d.className = 'mtc-step-dot' + (i<=current ? ' done' : '');
+        row.appendChild(d);
+      }
+    }
+
+    function renderWizardStep(){
+      const body = q('[data-mtc-wizard-body]');
+      if(wiz.provider === 'meta'){
+        renderSteps(4, wiz.step);
+        if(wiz.step===0){
+          body.innerHTML = `<div class="mtc-spinner"></div><div class="mtc-center-text">جاري تسجيل الدخول وطلب الأذونات من Meta...</div>`;
+          setTimeout(()=>{ wiz.step=1; renderWizardStep(); }, 1000);
+        } else if(wiz.step===1){
+          body.innerHTML = `<div style="font-size:12.5px;margin-bottom:9px;">اختَر Business Manager</div><div class="mtc-option-list">${metaBusinesses.map(b=>`<div class="mtc-option-item" data-pick-business="${b}"><span>🏢 ${b}</span><span>›</span></div>`).join('')}</div>`;
+          qa('[data-pick-business]').forEach(el=>el.addEventListener('click',()=>{wiz.picks.business=el.getAttribute('data-pick-business'); wiz.step=2; renderWizardStep();}));
+        } else if(wiz.step===2){
+          body.innerHTML = `<div style="font-size:12.5px;margin-bottom:9px;">اختَر الصفحة</div><div class="mtc-option-list">${metaPages.map(p=>`<div class="mtc-option-item" data-pick-page="${p}"><span>📄 ${p}</span><span>›</span></div>`).join('')}</div>`;
+          qa('[data-pick-page]').forEach(el=>el.addEventListener('click',()=>{wiz.picks.page=el.getAttribute('data-pick-page'); wiz.step=3; renderWizardStep();}));
+        } else if(wiz.step===3){
+          body.innerHTML = `<div style="font-size:12.5px;margin-bottom:9px;">اختَر البيكسل</div><div class="mtc-option-list">${metaPixels.map((p,i)=>`<div class="mtc-option-item" data-pick-pixel="${i}"><span>🎯 ${p.name}</span><span>›</span></div>`).join('')}</div>`;
+          qa('[data-pick-pixel]').forEach(el=>el.addEventListener('click',()=>{
+            const pixel = metaPixels[+el.getAttribute('data-pick-pixel')];
+            body.innerHTML = `<div class="mtc-spinner"></div><div class="mtc-center-text">جاري الحفظ والتحقق...</div>`;
+            setTimeout(()=>{
+              state.meta = {connected:true, business:wiz.picks.business, page:wiz.picks.page, pixel};
+              save();
+              body.innerHTML = `<div class="mtc-success-tick">✓</div><div class="mtc-center-text" style="color:#fff;font-size:13.5px;font-weight:700;">تم ربط Meta بنجاح!</div><div class="mtc-center-text">Pixel "${pixel.name}" جاهز</div><div style="text-align:center;margin-top:16px;"><button class="mtc-btn mtc-btn-primary" data-close-ok>تمام</button></div>`;
+              pushDebug('POST','/graph/v19/pixel/connect','200 OK');
+              q('[data-close-ok]').addEventListener('click', ()=>{ q('[data-mtc-overlay]').classList.remove('active'); refreshAll(); });
+            }, 1100);
+          }));
+        }
+      } else {
+        renderSteps(3, wiz.step);
+        if(wiz.step===0){
+          body.innerHTML = `<div class="mtc-spinner"></div><div class="mtc-center-text">جاري تسجيل الدخول بحساب Google...</div>`;
+          setTimeout(()=>{ wiz.step=1; renderWizardStep(); }, 1000);
+        } else if(wiz.step===1){
+          body.innerHTML = `<div style="font-size:12.5px;margin-bottom:9px;">اختَر الحساب</div><div class="mtc-option-list">${googleAccounts.map(a=>`<div class="mtc-option-item" data-pick-acc="${a}"><span>👤 ${a}</span><span>›</span></div>`).join('')}</div>`;
+          qa('[data-pick-acc]').forEach(el=>el.addEventListener('click',()=>{wiz.step=2; renderWizardStep();}));
+        } else if(wiz.step===2){
+          body.innerHTML = `<div style="font-size:12.5px;margin-bottom:9px;">اختَر GA4 Property</div><div class="mtc-option-list">${googleProperties.map((p,i)=>`<div class="mtc-option-item" data-pick-prop="${i}"><span>📈 ${p.name}</span><span>›</span></div>`).join('')}</div>`;
+          qa('[data-pick-prop]').forEach(el=>el.addEventListener('click',()=>{
+            const prop = googleProperties[+el.getAttribute('data-pick-prop')];
+            body.innerHTML = `<div class="mtc-spinner"></div><div class="mtc-center-text">جاري ربط GA4 وGTM...</div>`;
+            setTimeout(()=>{
+              state.google = {connected:true, property:prop};
+              save();
+              body.innerHTML = `<div class="mtc-success-tick">✓</div><div class="mtc-center-text" style="color:#fff;font-size:13.5px;font-weight:700;">تم ربط Google بنجاح!</div><div class="mtc-center-text">Property "${prop.name}" جاهز</div><div style="text-align:center;margin-top:16px;"><button class="mtc-btn mtc-btn-primary" data-close-ok>تمام</button></div>`;
+              pushDebug('POST','/analytics/v1/property/connect','200 OK');
+              q('[data-close-ok]').addEventListener('click', ()=>{ q('[data-mtc-overlay]').classList.remove('active'); refreshAll(); });
+            }, 1100);
+          }));
+        }
+      }
+    }
+
+    /* ---- overview / integrations render ---- */
+    function refreshAll(){
+      const metaC = state.meta.connected, googleC = state.google.connected;
+      q('[data-mtc-dot-meta]').className = 'mtc-dot ' + (metaC?'mtc-dot-green':'mtc-dot-red');
+      q('[data-mtc-dot-google]').className = 'mtc-dot ' + (googleC?'mtc-dot-green':'mtc-dot-red');
+      q('[data-mtc-meta-status]').textContent = metaC ? 'متصل' : 'غير متصل';
+      q('[data-mtc-google-status]').textContent = googleC ? 'متصل' : 'غير متصل';
+      q('[data-mtc-pixel]').textContent = metaC ? state.meta.pixel.name : '—';
+      q('[data-mtc-ga4]').textContent = googleC ? 'نشط ✓' : '—';
+
+      q('[data-mtc-meta-connected]').style.display = metaC ? 'block':'none';
+      q('[data-mtc-meta-empty]').style.display = metaC ? 'none':'block';
+      q('[data-mtc-open-wizard="meta"]').textContent = metaC ? 'إعادة المزامنة' : 'ربط Meta';
+      q('[data-mtc-google-connected]').style.display = googleC ? 'block':'none';
+      q('[data-mtc-google-empty]').style.display = googleC ? 'none':'block';
+      q('[data-mtc-open-wizard="google"]').textContent = googleC ? 'إعادة المزامنة' : 'ربط Google';
+      if(metaC){
+        q('[data-mtc-meta-bm]').textContent = state.meta.business;
+        q('[data-mtc-meta-page]').textContent = state.meta.page;
+        q('[data-mtc-meta-pixel-id]').textContent = state.meta.pixel.id;
+        q('[data-mtc-meta-sync]').textContent = 'آخر مزامنة: الآن';
+      }
+      if(googleC){
+        q('[data-mtc-google-property]').textContent = state.google.property.name + ' (' + state.google.property.measurementId + ')';
+        q('[data-mtc-google-sync]').textContent = 'آخر مزامنة: الآن';
+      }
+
+      let checklist = [metaC,googleC,metaC,googleC,googleC,metaC,true,true,false,metaC||googleC,metaC||googleC,metaC||googleC,metaC||googleC,metaC||googleC,false,true];
+      let done = checklist.filter(Boolean).length;
+      let pct = Math.round(done/checklist.length*100);
+      q('[data-mtc-readiness]').textContent = pct+'%';
+      q('[data-mtc-readiness-hint]').textContent = done+' من '+checklist.length+' عنصر';
+
+      const badge = q('[data-mtc-badge-integ]');
+      const missing = (metaC?0:1)+(googleC?0:1);
+      badge.style.display = missing===0 ? 'none':'inline-block';
+      badge.textContent = missing;
+
+      renderHealth(); renderFunnel(); renderAI(); renderMapping();
+    }
+
+    /* ---- top events ---- */
+    const eventNames = ['Page View','Lead','Purchase','Add To Cart','Complete Registration','Book Meeting','Generate AI','Login'];
+    function renderTopEvents(){
+      const tbody = q('[data-mtc-top-events] tbody'); tbody.innerHTML='';
+      eventNames.slice(0,5).forEach(name=>{
+        const count = Math.floor(Math.random()*900)+40;
+        const rate = (Math.random()*6+1).toFixed(1);
+        tbody.innerHTML += `<tr><td>${name}</td><td>${count}</td><td>${rate}%</td></tr>`;
+      });
+      q('[data-mtc-events-today]').textContent = (Math.floor(Math.random()*4000)+800).toLocaleString();
+      q('[data-mtc-visitors]').textContent = Math.floor(Math.random()*140)+5;
+    }
+
+    /* ---- mapping ---- */
+    const mappings = [
+      {std:'Purchase', targets:['Meta: Purchase','GA4: purchase','DB: purchase']},
+      {std:'Lead', targets:['Meta: Lead','GA4: generate_lead']},
+      {std:'Complete Registration', targets:['Meta: CompleteRegistration','GA4: sign_up']},
+      {std:'Book Meeting', targets:['Meta: Schedule','GA4: book_meeting']},
+      {std:'Add To Cart', targets:['Meta: AddToCart','GA4: add_to_cart']},
+      {std:'Initiate Checkout', targets:['Meta: InitiateCheckout','GA4: begin_checkout']},
+    ];
+    function renderMapping(){
+      q('[data-mtc-mapping-grid]').innerHTML = mappings.map(m=>`
+        <div class="mtc-card"><div class="mtc-card-label">حدث موحّد</div><div style="font-weight:700;font-size:13px;margin:5px 0 9px;">${m.std}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">${m.targets.map(t=>`<span class="mtc-tag">${t}</span>`).join('')}</div></div>`).join('');
+    }
+
+    /* ---- library ---- */
+    const libraryEvents = ['Page View','View Content','Lead','Contact','Purchase','Add To Cart','Initiate Checkout','Book Meeting','Complete Registration','Login','Logout','Generate AI','Upload File','Download File','Export PDF','Invite Member','Upgrade Plan','Cancel Subscription','Payment Success','Payment Failed','Project Created','Project Deleted','Subscription Started','Subscription Renewed','Subscription Cancelled'];
+    function renderLibrary(){
+      const all = [...libraryEvents, ...state.customEvents];
+      q('[data-mtc-library-grid]').innerHTML = all.map(e=>`<div class="mtc-event-chip"><span>🎯 ${e}</span><span class="mtc-pill mtc-pill-violet">Standard</span></div>`).join('');
+    }
+    q('[data-mtc-lib-search]').addEventListener('input', (e)=>{
+      const val = e.target.value.trim().toLowerCase();
+      qa('[data-mtc-library-grid] .mtc-event-chip').forEach(el=>{ el.style.display = el.textContent.toLowerCase().includes(val)?'flex':'none'; });
+    });
+    q('[data-mtc-add-event]').addEventListener('click', ()=>{
+      const name = prompt('اسم الحدث المخصص (بالإنجليزي):');
+      if(!name) return;
+      state.customEvents.push(name); save(); renderLibrary();
+    });
+
+    /* ---- realtime ---- */
+    const countries = ['🇪🇬 مصر','🇸🇦 السعودية','🇦🇪 الإمارات','🇳🇱 هولندا','🇰🇼 الكويت','🇯🇴 الأردن','🇲🇦 المغرب'];
+    const platforms = ['Meta','GA4','Server DB'];
+    const campaigns = ['ramadan_launch','ai_creators_q3','coach_upsell','retargeting_ar','brand_os_beta','—'];
+    let rtData = [];
+    function genRt(){
+      return {time:new Date().toLocaleTimeString('ar-EG',{hour12:false}), user:'user_'+Math.floor(Math.random()*9000+1000),
+        event:eventNames[Math.floor(Math.random()*eventNames.length)], platform:platforms[Math.floor(Math.random()*platforms.length)],
+        country:countries[Math.floor(Math.random()*countries.length)], utm:campaigns[Math.floor(Math.random()*campaigns.length)],
+        status: Math.random()>0.08 ? 'success':'failed'};
+    }
+    function renderRealtime(reset){
+      if(reset) rtData = [];
+      for(let i=0;i<3;i++) rtData.unshift(genRt());
+      rtData = rtData.slice(0,80);
+      const term = (q('[data-mtc-rt-search]').value||'').toLowerCase();
+      const filtered = rtData.filter(r=> !term || r.event.toLowerCase().includes(term) || r.country.toLowerCase().includes(term));
+      q('[data-mtc-rt-table]').innerHTML = filtered.slice(0,40).map(r=>`
+        <tr><td style="font-family:var(--mtc-mono);font-size:10.5px;">${r.time}</td><td>${r.user}</td><td>${r.event}</td>
+        <td><span class="mtc-pill mtc-pill-violet">${r.platform}</span></td><td>${r.country}</td><td>${r.utm}</td>
+        <td>${r.status==='success' ? '<span class="mtc-pill mtc-pill-green">نجح</span>' : '<span class="mtc-pill mtc-pill-red">فشل</span>'}</td></tr>`).join('');
+      renderTopEvents();
+    }
+    q('[data-mtc-rt-search]').addEventListener('input', ()=>renderRealtime(false));
+    q('[data-mtc-export-csv]').addEventListener('click', ()=>{
+      const rows = [['Time','User','Event','Platform','Country','UTM','Status'], ...rtData.map(r=>[r.time,r.user,r.event,r.platform,r.country,r.utm,r.status])];
+      const csv = rows.map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='realtime-events.csv'; a.click();
+    });
+
+    /* ---- funnel ---- */
+    function renderFunnel(){
+      const steps = [{label:'Landing Page',val:100},{label:'Signup',val:62},{label:'Dashboard',val:54},{label:'AI Usage',val:41},{label:'Purchase',val:19},{label:'Subscription',val:15},{label:'Upsell',val:6}];
+      q('[data-mtc-funnel-card]').innerHTML = steps.map((s,i)=>{
+        const drop = i===0 ? '' : `-${(steps[i-1].val - s.val)}%`;
+        return `<div class="mtc-funnel-step"><div class="mtc-funnel-label">${s.label}</div><div class="mtc-funnel-bar-wrap"><div class="mtc-funnel-bar" style="width:${s.val}%">${s.val}%</div></div><div class="mtc-funnel-drop">${drop}</div></div>`;
+      }).join('');
+    }
+
+    /* ---- analytics ---- */
+    function bar(container, data, color){
+      container.innerHTML = data.map(d=>`<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--mtc-text-1);margin-bottom:4px;"><span>${d.label}</span><span>${d.value}%</span></div><div style="height:7px;background:#170f26;border-radius:6px;overflow:hidden;"><div style="height:100%;width:${d.value}%;background:${color};"></div></div></div>`).join('');
+    }
+    function renderAnalytics(){
+      bar(q('[data-mtc-traffic-chart]'), [{label:'Meta Ads',value:38},{label:'Google Ads',value:26},{label:'Organic',value:20},{label:'Direct',value:11},{label:'Referral',value:5}], 'var(--mtc-grad)');
+      bar(q('[data-mtc-device-chart]'), [{label:'Mobile',value:64},{label:'Desktop',value:31},{label:'Tablet',value:5}], 'linear-gradient(90deg,#8a1f4b,#c2477c)');
+    }
+
+    /* ---- health ---- */
+    function renderHealth(){
+      const metaC = state.meta.connected, googleC = state.google.connected;
+      const items = [['Meta Connected',metaC],['Pixel Installed',metaC],['Pixel Receiving Events',metaC],['Conversion API',metaC],
+        ['GA4 Connected',googleC],['GA4 Receiving Events',googleC],['Google Tag Manager',googleC],['Search Console',googleC],
+        ['SSL / HTTPS',true],['Domain Verification',false],['Webhook Status',metaC||googleC],['OAuth Token Valid',metaC||googleC]];
+      q('[data-mtc-health-list]').innerHTML = items.map(([label,ok])=>`
+        <div class="mtc-health-item"><div class="mtc-left"><span class="mtc-dot ${ok?'mtc-dot-green':'mtc-dot-red'}"></span>${label}</div>
+        <span class="mtc-pill ${ok?'mtc-pill-green':'mtc-pill-red'}">${ok?'سليم':'يحتاج انتباه'}</span></div>`).join('');
+    }
+
+    /* ---- debug console ---- */
+    function pushDebug(method, path, result){
+      const el = q('[data-mtc-debug-console]');
+      const cls = method==='GET' ? 'mtc-log-get' : (result.indexOf('200')>-1 ? 'mtc-log-post' : 'mtc-log-err');
+      const time = new Date().toLocaleTimeString('en-GB',{hour12:false});
+      const line = document.createElement('div');
+      line.className='mtc-log-line';
+      line.innerHTML = `<span class="mtc-log-time">[${time}]</span> <span class="${cls}">${method}</span> ${path} → ${result}`;
+      el.prepend(line);
+    }
+    q('[data-mtc-clear-debug]').addEventListener('click', ()=>{ q('[data-mtc-debug-console]').innerHTML=''; });
+    setInterval(()=>{
+      const samples = [['GET','/health/meta/pixel','200 OK — 14ms'],['POST','/tracking/event','200 OK — queued'],
+        ['GET','/analytics/ga4/status','200 OK'],['POST','/tracking/purchase','200 OK — forwarded'],['GET','/oauth/refresh','200 OK — refreshed']];
+      pushDebug(...samples[Math.floor(Math.random()*samples.length)]);
+    }, 4500);
+
+    /* ---- test center ---- */
+    const testEvents = [{name:'Page View',ic:'📄'},{name:'Lead',ic:'🧲'},{name:'Purchase',ic:'💳'},{name:'Signup',ic:'✍️'},{name:'Login',ic:'🔑'},{name:'Book Meeting',ic:'📅'}];
+    function renderTestGrid(){
+      q('[data-mtc-test-grid]').innerHTML = testEvents.map((t,i)=>`
+        <div class="mtc-test-btn" data-run-test="${i}"><span style="font-size:18px;">${t.ic}</span><b>Test ${t.name}</b>
+        <span>يتحقق عبر Meta/GA4/Database</span><div data-test-result="${i}"></div></div>`).join('');
+      qa('[data-run-test]').forEach(el=>el.addEventListener('click', ()=>runTest(+el.getAttribute('data-run-test'))));
+    }
+    function runTest(i){
+      const box = q('[data-test-result="'+i+'"]');
+      box.innerHTML = `<span class="mtc-test-result" style="background:#eab30822;color:#facc15;">جاري الإرسال...</span>`;
+      const slug = testEvents[i].name.toLowerCase().replace(' ','_');
+      pushDebug('POST','/test/'+slug,'sending...');
+      setTimeout(()=>{
+        const ok = Math.random()>0.1;
+        box.innerHTML = ok ? `<span class="mtc-test-result" style="background:#22c55e22;color:#4ade80;">✓ وصل بنجاح</span>` : `<span class="mtc-test-result" style="background:#ef444422;color:#f87171;">✗ فشل</span>`;
+        pushDebug('POST','/test/'+slug, ok?'200 OK':'500 ERROR — retry queued');
+      }, 900);
+    }
+
+    /* ---- AI recommendations ---- */
+    function renderAI(){
+      const recs = [];
+      if(!state.meta.connected) recs.push(['⚠️','Meta مش متصل','حملاتك الإعلانية هتفقد بيانات التحويل. اربط Meta الآن.']);
+      if(!state.google.connected) recs.push(['⚠️','Google مش متصل','GA4 مهم لتحليل سلوك الزوّار. اربطه دلوقتي.']);
+      if(state.meta.connected) recs.push(['🎯','Lead Event ناقص','ضيف Tracking.lead() في صفحة النموذج.']);
+      recs.push(['🍪','Cookie Banner مش موجود','Consent Mode مش هيشتغل صح من غيره.']);
+      recs.push(['📉','صفحة الحجز من غير تتبّع','ضيف Tracking.bookMeeting() على زرار الحجز.']);
+      q('[data-mtc-ai-recs]').innerHTML = recs.map(([ic,title,desc])=>`
+        <div class="mtc-ai-rec"><span style="font-size:16px;">${ic}</span><div><b>${title}</b><span>${desc}</span></div>
+        <button class="mtc-btn mtc-btn-ghost mtc-ai-fix-btn">إصلاح تلقائي</button></div>`).join('');
+    }
+
+    /* ---- init ---- */
+    applyAdvancedMode();
+    refreshAll();
+    renderLibrary();
+    renderAnalytics();
+    renderTestGrid();
+    renderRealtime(true);
+    const rtTimer = setInterval(()=>renderRealtime(false), 2500);
+
+    return {
+      destroy(){ clearInterval(rtTimer); root.innerHTML=''; },
+      getState(){ return JSON.parse(JSON.stringify(state)); }
+    };
+  }
+
+  window.MarketingTrackingCenter = { mount };
+
+  // Auto-mount if the default container already exists on the page
+  document.addEventListener('DOMContentLoaded', function(){
+    const el = document.getElementById('mtc-root');
+    if(el) mount(el);
+  });
+  if(document.readyState !== 'loading'){
+    const el = document.getElementById('mtc-root');
+    if(el) mount(el);
+  }
+})();
+</script>
+
+<!--
+=====================================================================
+متعدد العملاء / Multi-Tenant
+=====================================================================
+لو الأدمن بتاعك بيدير أكتر من مشروع/عميل (زي UpKlick وMohamed Joe)،
+شغّل الموديول مرة لكل مشروع بمفتاح تخزين مختلف:
+
+  MarketingTrackingCenter.mount('#upklick-marketing-section', { storageKey: 'mtc_state_upklick' });
+  MarketingTrackingCenter.mount('#coachos-marketing-section', { storageKey: 'mtc_state_mohamedjoe' });
+
+كل نسخة هتاخد بياناتها الخاصة (Meta/Google connections منفصلة) بدون ما
+تتصادم مع بعضها، وتقدر تستدعيها من أي route/tab جوه الأدمن.
+=====================================================================
+-->

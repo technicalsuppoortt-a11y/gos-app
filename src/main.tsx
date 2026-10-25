@@ -1,19 +1,11 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 import { installChunkRecovery } from './router/chunkRecovery';
-import App from './App.tsx';
-import './index.css';
-import './layout-shell.css';
-import './global-controls.css';
-import './i18n/rtl.css';
-import './theme-surfaces.css';
-import './theme-controls.css';
-import './module-updates.css';
+import { isDemoSessionActive } from './demo/mode';
 
 installChunkRecovery();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// Demo Account runs inside this same SPA and router. Choose the module graph
+// before importing the app: the demo graph swaps every backend transport for
+// local adapters, so live Firebase/session modules never load in demo mode and
+// the demo can never touch a real session.
+if (isDemoSessionActive()) void import('./demo/bootstrap');
+else void import('./liveApp');

@@ -33,6 +33,8 @@ const PublicBookingPage = lazy(() => import('../pages/booking/PublicBookingPage'
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
+const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(module => ({ default: module.MarketingTracking })));
+const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
@@ -119,6 +121,7 @@ export const router = createBrowserRouter([
       { path: 'products-payments/discounts/new', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage/></Suspended> },
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
+      { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
       { path: 'content', element: <Suspended><PagePlaceholder title={translateText("Content Generator")}/></Suspended> },
       { path: 'academy', element: <Suspended><PagePlaceholder title={translateText("GOS Academy")}/></Suspended> },
@@ -134,6 +137,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" replace/> },
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
+      { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
       ...['dashboard','conversations','onboarding','plans','payments-gateways','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
@@ -152,7 +156,8 @@ export const router = createBrowserRouter([
       { path: 'users', element: <Suspended><PagePlaceholder title={translateText("Team Management")}/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin" replace/> },
       { path: 'integrations', element: <Suspended><PagePlaceholder title={translateText("Platform Integrations")}/></Suspended> },
-      { path: 'payments', element: <Suspended><PagePlaceholder title={translateText("Payments")}/></Suspended> },
+      { path: 'payments', element: <Suspended><PaymentMethodsPanel/></Suspended> },
+      { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'logs', element: <Suspended><PagePlaceholder title={translateText("Logs & Monitoring")}/></Suspended> },
     ],
   },

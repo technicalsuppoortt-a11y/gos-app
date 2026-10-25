@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>GOS dashboard demo preview</title>
+<script>
+  // An iframe has its own Window. Its demo must never read or write the host's
+  // browser preferences, credentials, or cached workspace data.
+  function memoryStorage() {
+    const values = new Map();
+    return { get length() { return values.size; }, key: i => Array.from(values.keys())[i] || null,
+      getItem: k => values.get(k) || null, setItem: (k,v) => values.set(k,String(v)), removeItem: k => values.delete(k), clear: () => values.clear() };
+  }
+  Object.defineProperty(window, 'localStorage', { value: memoryStorage() });
+  Object.defineProperty(window, 'sessionStorage', { value: memoryStorage() });
+</script>
+</head><body><div id="root"></div><script type="module" src="/src/pages/landing/preview/entry.tsx?landing-demo"></script></body></html>

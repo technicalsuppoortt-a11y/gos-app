@@ -1,9 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { landingPreviewPlugin } from './scripts/landing-preview-plugin.ts'
+import { demoAccountPlugin } from './scripts/demo-account-plugin.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [demoAccountPlugin(), landingPreviewPlugin(), react()],
   optimizeDeps: {
     include: [
       '@radix-ui/react-select',
@@ -25,12 +27,12 @@ export default defineConfig({
   build: {
     manifest: 'hosting-manifest.json',
     rollupOptions: {
-      input: { dashboard: 'index.html', published: 'published.html' },
+      input: { dashboard: 'index.html', published: 'published.html', landingPreview: 'landing-preview.html' },
       output: {
         manualChunks(id) {
           if (id.includes('pagefly/templates/')) {
-            const name = id.split('/').pop()?.replace('.ts', '');
-            return 'template-' + name;
+            const name = id.split('?')[0].split('/').pop()?.replace('.ts', '');
+            return 'template-' + name + (id.endsWith('?landing-demo') ? '-landing-demo' : id.endsWith('?account-demo') ? '-account-demo' : '');
           }
         }
       }

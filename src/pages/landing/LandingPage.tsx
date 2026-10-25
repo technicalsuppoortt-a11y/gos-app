@@ -6,45 +6,20 @@ import {
   CreditCard, Globe, GraduationCap, House, Inbox, Layers, LayoutGrid, Lightbulb, ListChecks, Menu, MessageCircle,
   MessageCircleOff, MessagesSquare, Pause, Play, Presentation, Quote, RotateCcw, Search, Settings,
   ShoppingCart, Shuffle, SlidersHorizontal, Sparkles, Star, Stethoscope, Store, Tag, Timer, TrendingUp, TriangleAlert,
-  UserPlus, Users, Workflow, X, Zap, Bot, Send, ShieldCheck, MessageSquare, UserRound,
+  UserPlus, Users, Workflow, X, Zap, Bot, Send, ShieldCheck, MessageSquare, UserRound, Filter, Radio, Bell, Download,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { RootState } from '../../store';
-import type { LeadActivity } from '../../store/slices/crmSlice';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
-import { type LandingCopy, type PreviewView } from './landing-content';
+import { type LandingCopy } from './landing-content';
 import { cmsEvent, readCMS, type LandingCMS } from './cms';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
+import { NativeDashboardPreview } from './NativeDashboardPreview';
 
 
 const businessIcons: LucideIcon[] = [Presentation, BriefcaseBusiness, Building2, ShoppingCart, Store, Stethoscope, GraduationCap, House];
-const mockNavIcons: LucideIcon[] = [Sparkles, MessagesSquare, Inbox, Users, CalendarDays, CreditCard, BarChart3, Settings];
-/* Hero preview tabs mirror the User Dashboard modules but switch views in place — they never route away. */
-const FOLLOW_UP_TAB = 1;
-const tabStatIcons: LucideIcon[][] = [
-  [Zap, MessagesSquare, Lightbulb],
-  [Users, Send, MessagesSquare],
-  [Inbox, Send, Timer],
-  [Users, BriefcaseBusiness, Check],
-  [CalendarCheck, CalendarDays, TrendingUp],
-  [Tag, ShoppingCart, BadgeDollarSign],
-  [TrendingUp, Users, CalendarCheck],
-  [Users, Layers, Workflow],
-];
-const activityTones = ['violet', 'blue', 'green', 'amber'] as const;
-type ActivityTone = typeof activityTones[number];
-type ActivityKind = LeadActivity['type'];
-const activityMeta: Record<ActivityKind, { Icon: LucideIcon; tone: ActivityTone; weight: number }> = {
-  payment: { Icon: BadgeDollarSign, tone: 'amber', weight: 7 },
-  booking: { Icon: CalendarCheck, tone: 'green', weight: 6 },
-  message: { Icon: Send, tone: 'blue', weight: 5 },
-  stage: { Icon: TrendingUp, tone: 'violet', weight: 4 },
-  capture: { Icon: UserPlus, tone: 'violet', weight: 3 },
-  note: { Icon: ListChecks, tone: 'blue', weight: 2 },
-  system: { Icon: Workflow, tone: 'blue', weight: 1 },
-};
 const painIcons: LucideIcon[] = [Timer, MessageCircleOff, Tag, Shuffle, Layers];
 const engineStepIcons: LucideIcon[] = [Search, MessageSquare, UserRound, CalendarDays, Users];
 const stageIcons: LucideIcon[] = [UserPlus, ListChecks, Lightbulb, CalendarCheck];
@@ -101,24 +76,6 @@ function WhatsAppGlyph() {
       <path fill="#fff" d="M17.3 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1l-.9 1.1c-.2.2-.3.2-.6.1a7.6 7.6 0 0 1-3.8-3.3c-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5l-.9-2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.3 3.3 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.2 13.2 0 0 0 5.1 4.5c1.9.8 2.6.9 3.6.7a3 3 0 0 0 2-1.4 2.4 2.4 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.4Z" />
     </svg>
   );
-}
-
-function useCountUp(target: number, run: boolean, duration = 1200) {
-  const [value, setValue] = useState(0);
-  const reduced = prefersReducedMotion();
-  useEffect(() => {
-    if (!run || reduced) return;
-    let frame = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - start) / duration);
-      setValue(Math.round(target * (1 - Math.pow(1 - progress, 3))));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, run, duration, reduced]);
-  return reduced ? target : value;
 }
 
 function useInView<T extends Element>(threshold = 0.35) {
@@ -189,136 +146,29 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
 
 /* ---------- Hero ---------- */
 
-function StatTile({ value, label, suffix, Icon, run, index }: { value: number; label: string; suffix?: string; Icon: LucideIcon; run: boolean; index: number }) {
-  const current = useCountUp(value, run, 1100 + index * 200);
-  return (
-    <div className={`lp-mock-stat tone-${index}`}>
-      <span className="lp-mock-stat__icon"><Icon size={13} strokeWidth={2.3} /></span>
-      <b>{current.toLocaleString()}{suffix && <span className="lp-mock-stat__suffix">{suffix}</span>}</b>
-      <small>{label}</small>
-    </div>
-  );
-}
-
-/* Relative-time helpers: CRM activity timestamps are stored as human strings ("4 min ago", "Yesterday"). */
-const minutesAgo = (value?: string) => {
-  const text = (value ?? '').trim().toLowerCase();
-  if (!text) return Number.POSITIVE_INFINITY;
-  if (text === 'just now' || text === 'now') return 0;
-  if (text.startsWith('yesterday')) return 1440;
-  const match = text.match(/(\d+)\s*(m|mins?|minutes?|h|hrs?|hours?|d|days?|w|wks?|weeks?)\b/);
-  if (!match) return Number.POSITIVE_INFINITY;
-  const amount = Number(match[1]);
-  const unit = match[2];
-  if (unit.startsWith('m')) return amount;
-  if (unit.startsWith('h')) return amount * 60;
-  if (unit.startsWith('d')) return amount * 1440;
-  return amount * 10080;
-};
-
-const formatAgo = (minutes: number, raw: string, t: LandingCopy['mock']['time']) => {
-  if (!Number.isFinite(minutes)) return raw;
-  if (minutes < 1) return t.now;
-  if (minutes < 60) return t.min.replace('{n}', String(minutes));
-  if (minutes < 1440) return t.hour.replace('{n}', String(Math.round(minutes / 60)));
-  if (minutes < 2880) return t.yesterday;
-  return t.day.replace('{n}', String(Math.round(minutes / 1440)));
-};
-
-type PreviewRow = { key: string; text: string; time: string; tag: string; Icon: LucideIcon; tone: ActivityTone };
-type PreviewData = { live: boolean; title: string; subtitle: string; stats: PreviewView['stats']; rows: PreviewRow[] };
-
-/** Maps a static demo view from the copy file into renderable preview data. */
-const viewToPreview = (view: PreviewView): PreviewData => ({
-  live: false,
-  title: view.title,
-  subtitle: view.subtitle,
-  stats: view.stats,
-  rows: view.activity.map((row, index) => {
-    const meta = activityMeta[row.kind] ?? activityMeta.system;
-    return { key: `${view.title}-${index}`, text: row.text, time: row.time, tag: row.tag, Icon: meta.Icon, tone: meta.tone };
-  }),
-});
-
-/** Live AI Follow-Up view built from the real dashboard store; `null` for guests (demo view is used instead). */
-function useLiveFollowUp(copy: LandingCopy): PreviewData | null {
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const userName = useSelector((state: RootState) => state.auth.user?.name);
-  const tenantName = useSelector((state: RootState) => state.auth.tenant?.name);
-  const leads = useSelector((state: RootState) => state.crm.leads);
-
-  return useMemo(() => {
-    const m = copy.mock;
-    if (!isAuthenticated) return null;
-
-    const visible = leads.filter(lead => !lead.archived);
-    const activeLeads = visible.filter(lead => lead.stage !== 'CLOSED_LOST' && lead.stage !== 'CLOSED').length;
-    const followUpsSent = visible.reduce((sum, lead) => sum + (lead.activities ?? []).filter(activity => activity.type === 'message' || (activity.type === 'system' && /follow-?up/i.test(activity.title))).length, 0);
-    const conversations = visible.filter(lead => (lead.activities ?? []).some(activity => activity.type === 'message') || !['NEW', 'STOPPED_INELIGIBLE'].includes(lead.followUpState)).length;
-    const weight = (type: ActivityKind) => (activityMeta[type] ?? activityMeta.system).weight;
-
-    // One row per lead: its most recent event (ties broken by business significance), newest leads first.
-    const rows = visible
-      .flatMap(lead => {
-        const activities = lead.activities ?? [];
-        if (!activities.length) return [];
-        let best = activities[0];
-        let bestMinutes = minutesAgo(best.at);
-        activities.forEach(activity => {
-          const minutes = minutesAgo(activity.at);
-          if (minutes < bestMinutes || (minutes === bestMinutes && weight(activity.type) > weight(best.type))) { best = activity; bestMinutes = minutes; }
-        });
-        return [{ lead, activity: best, minutes: bestMinutes }];
-      })
-      .sort((a, b) => (a.minutes === b.minutes ? 0 : a.minutes < b.minutes ? -1 : 1))
-      .slice(0, 4)
-      .map(({ lead, activity, minutes }) => {
-        const meta = activityMeta[activity.type] ?? activityMeta.system;
-        const template = m.events[activity.type] ?? m.events.system;
-        return { key: `${lead.id}-${activity.id}`, text: template.replace('{name}', lead.name), time: formatAgo(minutes, activity.at, m.time), tag: m.tags[activity.type] ?? m.tags.system, Icon: meta.Icon, tone: meta.tone };
-      });
-
-    const owner = tenantName ?? userName;
-    return {
-      live: true,
-      title: m.title,
-      subtitle: owner ? `${m.liveLabel} · ${owner}` : m.liveLabel,
-      stats: [
-        { value: activeLeads, label: m.stats[0].label },
-        { value: followUpsSent, label: m.stats[1].label },
-        { value: conversations, label: m.stats[2].label },
-      ],
-      rows,
-    };
-  }, [copy, isAuthenticated, leads, tenantName, userName]);
-}
-
 function HeroMock({ copy }: { copy: LandingCopy }) {
-  const [ref, inView] = useInView<HTMLDivElement>(0.2);
+  const [ref] = useInView<HTMLDivElement>(0.2);
   // Local, self-contained tab state: switching tabs swaps the inner view, never the route.
-  const [activeTab, setActiveTab] = useState(FOLLOW_UP_TAB);
-  const [pulseRow, setPulseRow] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const liveFollowUp = useLiveFollowUp(copy);
-  const tabCount = copy.mock.nav.length;
-
-  const preview = useMemo<PreviewData>(() => {
-    if (activeTab === FOLLOW_UP_TAB && liveFollowUp) return liveFollowUp;
-    return viewToPreview(copy.mock.views[activeTab] ?? copy.mock.views[FOLLOW_UP_TAB]);
-  }, [activeTab, copy, liveFollowUp]);
-  const rowCount = preview.rows.length;
-  const statIcons = tabStatIcons[activeTab] ?? tabStatIcons[FOLLOW_UP_TAB];
-
-  useEffect(() => {
-    if (prefersReducedMotion() || rowCount < 2) return;
-    const timer = window.setInterval(() => setPulseRow(row => (row + 1) % rowCount), 2200);
-    return () => window.clearInterval(timer);
-  }, [rowCount, activeTab]);
-
+  const ar = /[\u0600-\u06ff]/.test(copy.mock.title);
+  const navItems = [
+    { label: ar ? 'لوحة التحكم' : 'Dashboard', Icon: MessageSquare },
+    { label: copy.mock.nav[0], Icon: Sparkles },
+    { label: ar ? 'المواقع والأقماع' : 'Funnel & Website', Icon: Filter },
+    { label: copy.mock.nav[2], Icon: Inbox },
+    { label: copy.mock.nav[3], Icon: Users },
+    { label: copy.mock.nav[1], Icon: Send },
+    { label: copy.mock.nav[4], Icon: CalendarDays },
+    { label: copy.mock.nav[5], Icon: CreditCard },
+    { label: copy.mock.nav[6], Icon: BarChart3 },
+    { label: ar ? 'تتبع التسويق' : 'Marketing Tracking', Icon: Radio },
+    { label: copy.mock.nav[7], Icon: Settings },
+  ];
+  const tabCount = navItems.length;
   const selectTab = (index: number, focus = false) => {
     const next = (index + tabCount) % tabCount;
     setActiveTab(next);
-    setPulseRow(0);
     if (focus) tabRefs.current[next]?.focus();
   };
 
@@ -335,12 +185,11 @@ function HeroMock({ copy }: { copy: LandingCopy }) {
       <span className="lp-float-icon lp-float-icon--b" aria-hidden="true"><CalendarCheck size={16} /></span>
       <span className="lp-float-icon lp-float-icon--c" aria-hidden="true"><Zap size={15} /></span>
 
-      <div className="lp-mock" role="group" aria-label={copy.mock.title} data-live={preview.live ? 'true' : 'false'}>
+      <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
         <aside className="lp-mock__side">
-          <div className="lp-mock__logo">GOS</div>
+          <div className="lp-mock__logo">GOS<span>WORKSPACE</span></div>
           <ul role="tablist" aria-orientation="vertical" aria-label="GOS">
-            {copy.mock.nav.map((item, index) => {
-              const Icon = mockNavIcons[index];
+            {navItems.map(({ label: item, Icon }, index) => {
               const selected = activeTab === index;
               return (
                 <li key={item} role="presentation">
@@ -365,41 +214,8 @@ function HeroMock({ copy }: { copy: LandingCopy }) {
           </ul>
         </aside>
         <div className="lp-mock__main" id="lp-mock-panel" role="tabpanel" aria-labelledby={`lp-mock-tab-${activeTab}`}>
-          {/* Keyed by tab so the view re-animates and the metrics count up again on every switch. */}
-          <div className="lp-mock__view" key={activeTab}>
-            <div className="lp-mock__head">
-              <div>
-                <b>{preview.title}</b>
-                <small>{preview.subtitle}</small>
-              </div>
-              <span className="lp-mock__live"><i />{copy.mock.live}</span>
-            </div>
-            <div className="lp-mock__stats">
-              {preview.stats.map((stat, index) => (
-                <StatTile key={stat.label} value={stat.value} label={stat.label} suffix={stat.suffix} Icon={statIcons[index] ?? Sparkles} run={inView} index={index} />
-              ))}
-            </div>
-            <div className="lp-mock__activity">
-              <div className="lp-mock__activity-head">
-                <b>{copy.mock.activityTitle}</b>
-                <span>{copy.mock.viewAll}</span>
-              </div>
-              <ul aria-live="polite">
-                {rowCount === 0 && <li className="lp-mock__empty">{copy.mock.empty}</li>}
-                {preview.rows.map((row, index) => {
-                  const Icon = row.Icon;
-                  return (
-                    <li key={row.key} className={pulseRow === index ? 'is-pulse' : ''}>
-                      <span className={`lp-mock__row-icon tone-${row.tone}`}><Icon size={11} strokeWidth={2.4} /></span>
-                      <span className="lp-mock__row-text">{row.text}</span>
-                      <time>{row.time}</time>
-                      <em className={`lp-tag tone-${row.tone}`}>{row.tag}</em>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
+          <div className="lp-replica-topbar"><span><Menu size={10}/> {ar ? 'مساحة العمل' : 'Workspace'} <i>/</i> <b>{navItems[activeTab].label}</b></span><span><Download size={10}/><Bell size={10}/><em>MJ</em></span></div>
+          <NativeDashboardPreview tab={activeTab} ar={ar} title={navItems[activeTab].label}/>
         </div>
       </div>
 

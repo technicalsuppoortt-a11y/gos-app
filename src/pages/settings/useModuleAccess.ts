@@ -21,5 +21,5 @@ export function useModuleAccess() {
 }
 export function moduleForPath(path: string) {
  const section = path.replace(/^\/dashboard\/?/, '').replace(/^\//, '').split('/')[0];
- return section === 'knowledge' ? 'copilot' : section === 'websites' || section === 'domains' ? 'funnels' : section === 'products-payments' ? 'products' : section === '' ? 'home' : section;
+ return section === 'marketing-tracking' ? 'settings' : section === 'knowledge' ? 'copilot' : section === 'websites' || section === 'domains' ? 'funnels' : section === 'products-payments' ? 'products' : section === '' ? 'home' : section;
 }

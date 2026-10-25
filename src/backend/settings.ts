@@ -25,9 +25,10 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     if (!profile?.tenantId || profile.status !== 'Active') throw new Error('Your workspace access could not be verified. Sign in again.');
     const scope = profile.tenantId as string;
     const member = (await getDoc(doc(db, 'tenants', scope, 'members', user.uid))).data();
-    if (!member?.active || !Array.isArray(member.permissions) || !member.permissions.some((permission: string) => permission === '*' || permission === 'settings')) {
-      throw new Error('You do not have permission for this action.');
-    }
+    if (!member?.active) throw new Error('Your workspace membership is not active.');
+    const settingsPermission = member.role === 'Owner' || Array.isArray(member.permissions) && member.permissions.some((permission: string) => permission === '*' || permission === 'settings');
+    const workspaceOwner = settingsPermission || (await getDoc(doc(db, 'tenants', scope))).data()?.ownerUid === user.uid;
+    if (!workspaceOwner) throw new Error('You do not have permission for this action.');
     // Preserve compatibility with settings already saved by the former callable.
     const key = `gos-settings-v1:${scope}:${user.uid}`;
     const ref = doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key));

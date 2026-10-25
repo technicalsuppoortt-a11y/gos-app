@@ -11,6 +11,7 @@ import { toggleTheme, setLanguage, type Language } from '../../store/slices/uiSl
 import type { RootState } from '../../store';
 import { showToast } from '../../utils/toast';
 import i18n from '../../i18n/i18n';
+import { startDemoSession } from '../../demo/mode';
 import './login-page.css';
 
 
@@ -284,6 +285,10 @@ export const LoginPage: React.FC = () => {
             {localizeNode(busy ? <><LoaderCircle size={17} className="animate-spin"/>{translateText(" Signing you in…")}</> : <>{translateText("Sign in to your workspace ")}<ArrowRight size={16}/></>)}
           </button>
         </form>
+
+        <button type="button" disabled={busy} onClick={() => startDemoSession('/dashboard')} className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/50 px-4 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:opacity-80 dark:border-indigo-400/25 dark:bg-indigo-400/10 dark:text-indigo-300 dark:hover:bg-indigo-400/15">
+          <ArrowRight size={16}/>{translateText('Try Demo Account')}
+        </button>
 
         <div className="login-trust mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-slate-300">
           <BadgeCheck size={15} className="text-emerald-500 dark:text-emerald-400"/>

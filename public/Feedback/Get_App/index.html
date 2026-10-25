@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joe-Partner — Partner Portal</title>
+  <meta name="description" content="Joe-Partner: the premium partner portal for referrals, analytics and payouts." />
+  <meta name="author" content="Mohamed Joe" />
+  <meta property="og:title" content="Joe-Partner — Partner Portal" />
+  <meta property="og:description"
+    content="Sign in to your Joe-Partner dashboard to manage referrals, revenue and analytics." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@Lovable" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    // Capture the PWA install prompt event as early as possible
+    window.deferredPWAInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPWAInstallPrompt = e;
+      // Dispatch a custom event in case components are already mounted
+      window.dispatchEvent(new CustomEvent('pwa-prompt-ready', { detail: e }));
+    });
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((error) => {
+          console.error('ServiceWorker registration failed: ', error);
+        });
+      });
+    }
+  </script>
+</body>
+
+</html>

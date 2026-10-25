@@ -29,6 +29,7 @@ function SettingsWorkspaceView() {
   useUILanguage();
   const location = useLocation();
   const [data, setData] = useState<SettingsData>(readSettings), [loading, setLoading] = useState(settingsApiEnabled), [error, setError] = useState('');
+  const paymentMethodsTab = new URLSearchParams(location.search).get('tab') === 'payment-methods';
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
   const refresh = useCallback(async () => {
@@ -52,7 +53,7 @@ function SettingsWorkspaceView() {
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
         {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
-          {localizeNode(active.slug === 'billing' && <><BillingPanel data={data} refresh={refresh} saveLocal={save}/><PaymentsPanel data={data} save={save}/></>)}
+          {localizeNode(active.slug === 'billing' && <><BillingPanel data={data} refresh={refresh} saveLocal={save}/>{!paymentMethodsTab && <PaymentsPanel data={data} save={save}/>}</>)}
           {localizeNode(active.slug === 'integrations' && <IntegrationsPanel data={data} refresh={refresh}/>)}
           {localizeNode(active.slug === 'business' && <BusinessPanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'team' && <TeamPanel/>)}

@@ -1,4 +1,6 @@
 import { captureAssetLeadRequest } from './lead-capture.js';
+import { configurePaymentMethodsRequest } from './payment-methods.js';
+import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
@@ -32,6 +34,8 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 
 initializeApp();
 const db = getFirestore(), auth = getAuth();
+export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
+export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
 export const productAccess = onCall(request => productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] }));

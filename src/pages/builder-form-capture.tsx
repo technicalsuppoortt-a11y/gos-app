@@ -2,6 +2,7 @@ import { createContext, useContext, useRef, useState, type FormEvent } from 'rea
 import type { BuilderSection } from './BuilderWorkspace';
 import { callBackend, backendError } from '../backend/firebase';
 import { showToast } from '../utils/toast';
+import { Tracking } from '../backend/marketingTracking';
 
 export type PublicCaptureConfig = { tenantId: string; captureToken: string; endpoint: string };
 type Submission = { formId: string; requestId: string; name: string; email: string; phone: string; message: string };
@@ -16,6 +17,7 @@ export async function sendBuilderLead(assetId: string, pageId: string, device: s
     const response = await fetch(endpoint.href, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: { ...data, tenantId: capture.tenantId, captureToken: capture.captureToken } }), signal: AbortSignal.timeout(30000) });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.error || result.result?.accepted !== true) throw new Error(result.error?.message || 'Could not send this form. Your details are still here; please try again.');
+    Tracking.lead({ assetId, pageId, source: 'published_form' });
     return result.result;
   } catch (error) {
     if (error instanceof TypeError || (error instanceof DOMException && ['TimeoutError', 'AbortError'].includes(error.name))) throw new Error('Could not reach the form service. Your details are still here; please try again.');

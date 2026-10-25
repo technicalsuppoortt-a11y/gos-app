@@ -10,8 +10,12 @@ import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import './super-admin.css';
+import { GetAppButton } from './GetAppButton';
+import { CreditBadge } from './CreditBadge';
+import { Radio } from 'lucide-react';
 
 const navigation = [
+  { label: 'Marketing Tracking', to: '/super-admin/marketing-tracking', icon: Radio },
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
   { label: 'All Clients', to: '/super-admin/clients', icon: Users },
   { label: 'All Softwares', to: '/super-admin/subscriptions', icon: AppWindow },
@@ -65,7 +69,7 @@ export const SuperAdminLayout: React.FC = () => {
       <button className="sa-logout" onClick={signOut}><LogOut size={15}/>{translateText("Log out")}</button>
     </aside>
     <main className="sa-main">
-      <header className="sa-topbar"><button className="sa-menu-button" aria-label={translateText("Open navigation")} aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19}/></button><span className="sa-breadcrumb">{translateText("Platform ")}<i>/</i>{translateText(" Super Admin")}</span><label className="sa-search"><Search size={14}/><input placeholder={translateText("Search...")} aria-label={translateText("Search platform")}/><kbd>{translateText("⌘ K")}</kbd></label><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><button className="sa-notifications" aria-label={translateText("Notifications")}><Bell size={17}/><i/></button><button className="sa-account"><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button></header>
+      <header className="sa-topbar"><button className="sa-menu-button" aria-label={translateText("Open navigation")} aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19}/></button><span className="sa-breadcrumb">{translateText("Platform ")}<i>/</i>{translateText(" Super Admin")}</span><label className="sa-search"><Search size={14}/><input placeholder={translateText("Search...")} aria-label={translateText("Search platform")}/><kbd>{translateText("⌘ K")}</kbd></label><GetAppButton/><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><CreditBadge/><button className="sa-notifications" aria-label={translateText("Notifications")}><Bell size={17}/><i/></button><button className="sa-account"><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button></header>
       <div className="sa-content"><Outlet/></div>
     </main>
   </div>;

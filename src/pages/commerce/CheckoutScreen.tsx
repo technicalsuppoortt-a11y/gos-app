@@ -13,6 +13,8 @@ import { defaultExperience, productKind } from './model';
 import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
 import { showToast } from '../../utils/toast';
 import { addPurchasedProduct } from './purchases';
+import { checkoutMethods, usePaymentMethods } from '../../backend/paymentMethods';
+import { track } from '../../backend/marketingTracking';
 
 export function CheckoutScreen({ product, billing }: { product: Product; billing?: Billing }) {
   useUILanguage();
@@ -20,6 +22,8 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
   const promoId = useId(), promoErrorId = useId();
   const c = product.config!;
   const e = c.experience ?? defaultExperience();
+  const payments = usePaymentMethods();
+  const availableMethods = checkoutMethods(payments.methods, e.paymentMethods);
   const kind = productKind(product.type);
   const products = useProducts();
   const [acceptedTerms, setAcceptedTerms] = useState(false), [bumpSelected, setBumpSelected] = useState(false);
@@ -31,8 +35,9 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
   const totals = checkoutTotals(product, billing, bumpSelected && bump ? bump.config?.amount : 0, validApplied, globalDiscounts);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedMethod, setMethod] = useState(e.paymentMethods[0] ?? '');
-  const method = e.paymentMethods.includes(selectedMethod) ? selectedMethod : e.paymentMethods[0] ?? '';
+  const [selectedMethod, setMethod] = useState<string>(e.paymentMethods[0] ?? '');
+  const method = availableMethods.includes(selectedMethod) ? selectedMethod : availableMethods[0] ?? '';
+  const manualMethod = payments.methods.find(m => m.type === 'manual' && m.enabled && m.name === method);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [payment, setPayment] = useState({ number: '', expiry: '', cvc: '', paypal: '' });
@@ -43,7 +48,8 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (isSubmitting) return;
-    showToast.info('Connect a payment provider in Settings before accepting payments.');
+    track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: c.currency }, true);
+    showToast.info(manualMethod ? 'Transfer instructions are shown below. Payment remains pending until verified by the payment backend.' : 'Connect a verified payment provider before accepting payments.');
   };
 
   return (
@@ -97,7 +103,7 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
           <fieldset>
             <legend>{translateText("2. Payment details")}</legend>
             <div className="cp-payment-methods" role="group" aria-label={translateText("Payment method")}>
-              {localizeNode(e.paymentMethods.map(option => (
+              {localizeNode(availableMethods.map(option => (
                 <button
                   type="button"
                   aria-pressed={method === option}
@@ -111,9 +117,10 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
               )))}
             </div>
 
-            {localizeNode(!e.paymentMethods.length ? (
-              <p role="status">{translateText("No payment methods enabled. Enable a method in checkout settings to preview payment details.")}</p>
-            ) : cardMethod ? (
+            {payments.error && <p role="alert">{translateText('Payment methods could not be loaded. Please try again.')}</p>}
+            {localizeNode(!availableMethods.length ? (
+              <p role="status">{translateText(payments.loading ? 'Loading payment methods…' : 'No payment methods enabled. Contact your administrator to configure payment methods.')}</p>
+            ) : manualMethod ? <div className="cp-wallet-preview"><b>{manualMethod.name}</b><p>{manualMethod.account}</p><p>{manualMethod.instructions}</p><small>{translateText('Manual transfers require verification before fulfillment. This is a checkout preview.')}</small></div> : cardMethod ? (
               <>
                 <label>
                   {translateText("Card number")}
@@ -179,7 +186,7 @@ export function CheckoutScreen({ product, billing }: { product: Product; billing
           <button
             className="cp-primary"
             type="submit"
-            disabled={!e.paymentMethods.length || isSubmitting || !!e.checkout.requireTerms && !acceptedTerms}
+            disabled={!availableMethods.length || payments.loading || !!payments.error || isSubmitting || !!e.checkout.requireTerms && !acceptedTerms}
             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             {isSubmitting ? (

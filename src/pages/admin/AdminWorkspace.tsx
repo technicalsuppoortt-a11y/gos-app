@@ -11,12 +11,14 @@ import { readRows, saveRows, downloadCSV } from './repository';
 import { AdminSelect } from './AdminSelect';
 import { LandingEditor } from './LandingEditor';
 import { useOnboarding } from '../onboarding/onboarding-store';
+import { PaymentMethodsPanel } from '../settings/PaymentMethodsPanel';
 
 export function AdminWorkspace() {
   const location = useLocation();
   const id = location.pathname.replace(/\/$/, '').split('/').at(-1) ?? 'dashboard';
   const [params] = useSearchParams();
   const module = modules.find(m => m.id === (id === 'funnels' ? 'funnels-websites' : id)) ?? modules[0];
+  if (id === 'payments-gateways') return <PaymentMethodsPanel/>;
   if (module.id === 'funnels-websites' && ['1', 'templates'].includes(params.get('tab') ?? '')) {
     return <Navigate to="/admin/templates" replace />;
   }

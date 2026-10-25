@@ -1,3 +1,4 @@
+import { Tracking } from '../../backend/marketingTracking';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { TroubleshootControls, TroubleshootTimeSlots } from './BookingTroubleshoot';
 import { BookingBrandingFooter } from './BookingBrandingFooter';
@@ -286,6 +287,7 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
 
         // The appointment is the authoritative record: publish it before optional auxiliary writes.
         const result = await callBackend<{booking: Appointment}>('publicBooking', {slug, password, operation: rescheduleId ? 'reschedule' : 'create', booking, token: managementToken(booking.id)});
+        Tracking.bookMeeting({ calendarId: page.id, status: result.booking.status });
         setBookings(current => [...current.filter(b => b.id !== booking.id), result.booking]);
         setParams({ bookingId: booking.id }); setRescheduleId(undefined);
         try {
