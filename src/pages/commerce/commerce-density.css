@@ -11,8 +11,8 @@
 .tw-page .cw-header-actions{gap:6px;justify-content:flex-end}
 .tw-page .cw-button{min-height:34px;padding:7px 12px;border-color:#cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:12px;font-weight:500;line-height:1.4;box-shadow:0 1px 2px #0f172a06;transition:background .15s,border-color .15s,box-shadow .15s}
 .tw-page .cw-button:hover:not(:disabled){border-color:#94a3b8;background:#f8fafc}
-.tw-page .cw-button.primary{background:#7c5cfc;border-color:#7c5cfc;color:#fff;box-shadow:0 2px 4px #7c5cfc1a}
-.tw-page .cw-button.primary:hover:not(:disabled){background:#6d45ec;border-color:#6d45ec}
+.tw-page .cw-button.primary{background:#7C3AED;border-color:#7C3AED;color:#fff;box-shadow:0 2px 4px #7C3AED1a}
+.tw-page .cw-button.primary:hover:not(:disabled){background:#7C3AED;border-color:#7C3AED}
 .tw-page .cw-button.small{min-height:28px;font-size:10px;padding:5px 9px}
 .tw-page .cw-card{padding:14px 16px;border:1px solid #e2e8f0cc;border-radius:12px;background:#fff;box-shadow:0 1px 3px #0f172a04}
 .tw-page .cw-card>header{margin-bottom:10px;gap:8px}
@@ -35,14 +35,14 @@
 .tw-type-picker{max-width:none;margin:4px 0 0;padding:16px!important}
 .tw-type-picker .cw-type-options{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:12px 0 0}
 .tw-type-picker .cw-type-options>button{position:relative;display:flex;align-items:flex-start;flex-direction:column;gap:7px;min-height:162px;padding:14px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;box-shadow:0 1px 2px #0f172a03;transition:border-color .2s,box-shadow .2s,transform .2s,background .2s}
-.tw-type-picker .cw-type-options>button:hover{border-color:#a78bfa;box-shadow:0 5px 14px #7c5cfc14;transform:translateY(-2px)}
-.tw-type-picker .cw-type-options>button:focus-visible{outline:2px solid #7c5cfc;outline-offset:3px}
-.tw-type-picker .cw-type-options>button[aria-pressed=true]{border-color:#7c5cfc;background:#f5f3ff99;box-shadow:0 0 0 1px #7c5cfc10}
+.tw-type-picker .cw-type-options>button:hover{border-color:#A78BFA;box-shadow:0 5px 14px #7C3AED14;transform:translateY(-2px)}
+.tw-type-picker .cw-type-options>button:focus-visible{outline:2px solid #7C3AED;outline-offset:3px}
+.tw-type-picker .cw-type-options>button[aria-pressed=true]{border-color:#7C3AED;background:#f5f3ff99;box-shadow:0 0 0 1px #7C3AED10}
 .tw-type-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;background:#f1f5f9;color:#64748b;margin-bottom:2px}
-.tw-type-picker button:hover .tw-type-icon,.tw-type-picker button[aria-pressed=true] .tw-type-icon{color:#7c5cfc;background:#ece5ff}
+.tw-type-picker button:hover .tw-type-icon,.tw-type-picker button[aria-pressed=true] .tw-type-icon{color:#7C3AED;background:#ece5ff}
 .tw-type-picker .cw-type-options>button b{font-size:13px;font-weight:650;line-height:1.35;color:#0f172a}
 .tw-type-picker .cw-type-options>button small{font-size:11px;line-height:1.5;color:#64748b}
-.tw-type-selected{display:inline-flex;align-items:center;gap:4px;margin-top:auto;padding-top:4px;color:#7c5cfc;font-size:9px;font-weight:600}
+.tw-type-selected{display:inline-flex;align-items:center;gap:4px;margin-top:auto;padding-top:4px;color:#7C3AED;font-size:9px;font-weight:600}
 .tw-type-arrow{position:absolute;inset-inline-end:13px;top:19px;color:#94a3b8}
 .tw-page .tw-rich-editor textarea{min-height:118px;padding:9px 10px;font-size:12px;line-height:1.65}
 .tw-rich-toolbar{padding:3px 5px;gap:2px}
@@ -105,4 +105,4 @@
 @media(max-width:600px){.tw-page{padding:10px 12px 0}.tw-page .tw-type-picker .cw-type-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tw-type-picker{padding:12px!important}.tw-type-picker .cw-type-options>button{padding:11px;min-height:158px}.tw-page .cw-card{padding:12px}.tw-page .cw-card h2{font-size:14px}.tw-product-heading>.cw-back{width:100%;padding:0;background:transparent;border:0}.tw-page .cw-heading h1{font-size:18px}.tw-page .cw-header-actions>.cw-button{font-size:11px}.tw-create-type>.commerce-select{width:185px}.tw-page .cw-tabs{margin-bottom:10px}.tw-tabs button{font-size:10px}.tw-page .cw-editor-footer .cw-button{font-size:11px}.tw-page .tw-rich-editor textarea{min-height:120px}.tw-page .tw-service-image{max-height:none}}
 @media(max-width:370px){.tw-page .tw-type-picker .cw-type-options{grid-template-columns:1fr}.tw-type-picker .cw-type-options>button{min-height:126px}.tw-create-type{align-items:flex-start;flex-direction:column;gap:6px}.tw-create-type>.commerce-select{width:100%}}
 @media(prefers-reduced-motion:reduce){.tw-type-picker .cw-type-options>button{transition:none}.tw-type-picker .cw-type-options>button:hover{transform:none}}
-html.dark .tw-page .cw-card{background:#1e293b;border-color:#334155}html.dark .tw-page .cw-card h2,html.dark .tw-type-picker .cw-type-options>button b{color:#e2e8f0}html.dark .tw-type-picker .cw-type-options>button{background:#1e293b;border-color:#475569}html.dark .tw-type-picker .cw-type-options>button[aria-pressed=true]{background:#2b2345;border-color:#7c5cfc}html.dark .tw-type-icon{background:#172033;color:#94a3b8}html.dark .tw-type-picker button[aria-pressed=true] .tw-type-icon{background:#3b2d60;color:#c4b5fd}html.dark .tw-page .cw-button,html.dark .pp-page .pp-select .commerce-select-trigger{background:#172033;border-color:#475569;color:#e2e8f0}html.dark .tw-page .cw-button.primary{background:#7c5cfc;border-color:#7c5cfc;color:#fff}
+html.dark .tw-page .cw-card{background:#1e293b;border-color:#334155}html.dark .tw-page .cw-card h2,html.dark .tw-type-picker .cw-type-options>button b{color:#e2e8f0}html.dark .tw-type-picker .cw-type-options>button{background:#1e293b;border-color:#475569}html.dark .tw-type-picker .cw-type-options>button[aria-pressed=true]{background:#2b2345;border-color:#7C3AED}html.dark .tw-type-icon{background:#172033;color:#94a3b8}html.dark .tw-type-picker button[aria-pressed=true] .tw-type-icon{background:#0F172A;color:#A78BFA}html.dark .tw-page .cw-button,html.dark .pp-page .pp-select .commerce-select-trigger{background:#172033;border-color:#475569;color:#e2e8f0}html.dark .tw-page .cw-button.primary{background:#7C3AED;border-color:#7C3AED;color:#fff}

@@ -8,7 +8,7 @@ import { dateKey, formatTime, KEYS, subscribeStored } from './model';
 import type { Appointment, BookingPage, TroubleshootSlot } from './model';
 
 type SyncState = {syncStatus:'connecting'|'synced'|'error';lastSyncedTime:string};
-// The reference monitors Firestore. GOS currently synchronizes through browser storage.
+// The reference monitors Firestore. Upclick currently synchronizes through browser storage.
 export function readBookingSync():SyncState {
   try {
     for(const key of [KEYS.pages,KEYS.appointments]){

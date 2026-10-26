@@ -1,0 +1,19 @@
+/* Official Upclick palette. Keep these values literal for asset/theme parity. */
+:root{--upclick-primary:#7C3AED;--upclick-secondary:#A78BFA;--upclick-tint:#EDE9FE;--upclick-text:#0F172A;--upclick-muted:#94A38B;--upclick-gradient:linear-gradient(115deg,#7C3AED,#A78BFA);--upclick-gradient-soft:linear-gradient(115deg,#EDE9FE,#A78BFA);--purple:#7C3AED;--purple-dark:#7C3AED;--app-indigo:#7C3AED;--ink:#0F172A;--muted:#94A38B}
+html:not(.dark){color:#0F172A}
+.lp{--lp-primary:#7C3AED;--lp-primary-600:#7C3AED;--lp-primary-700:#7C3AED;--lp-primary-50:#EDE9FE;--lp-primary-100:#EDE9FE;--lp-primary-200:#A78BFA;--lp-ink:#0F172A;--lp-muted:#94A38B}
+.layout-brand .layout-brand-icon{background:transparent!important;border-radius:0}
+.layout-brand-wordmark b{max-width:108px}
+.layout-brand-copy small{letter-spacing:1px}
+.layout-help-card>.layout-help-guides{grid-column:2/4;display:block;width:auto;height:auto;margin-top:-3px;padding:0;text-align:start;color:#7C3AED;font-size:8px;font-weight:650}
+.layout-help-card{background:linear-gradient(145deg,#EDE9FE,#fff);border-color:#EDE9FE}
+.layout-help-card .layout-help-icon{background:#EDE9FE;color:#7C3AED}
+html.dark .layout-help-card{background:linear-gradient(145deg,#0F172A,#0F172A);border-color:#a78bfa40}
+html.dark .layout-help-card>.layout-help-guides{color:#A78BFA}
+.login-brand-mark{background:transparent!important;box-shadow:none!important}
+.login-brand-mark img,.login-showcase-brand img{width:100%;height:100%;object-fit:contain}
+.login-brand-word>span,.login-showcase-brand>span:last-child>span{display:none}
+.lp-logo img{display:block;width:132px;height:42px;object-fit:contain}
+.adm-brand-logo{width:126px;height:38px;object-fit:contain;object-position:left center}
+.dark .adm-brand-logo{content:url('/upclick-logo-light.svg')}
+@media(prefers-reduced-motion:reduce){.upclick-help{scroll-behavior:auto}}

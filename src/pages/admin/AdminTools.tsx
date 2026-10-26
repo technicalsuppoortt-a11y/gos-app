@@ -146,7 +146,7 @@ export function AdminTools() {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(serializable, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `gos-platform-tools-config.json`);
+    downloadAnchor.setAttribute('download', `upclick-platform-tools-config.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

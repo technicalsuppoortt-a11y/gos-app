@@ -168,6 +168,6 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
     res.json({ customToken });
   } catch (error) {
     console.error('Phoenix bridge failed', { code: error.code || error.name, message: error.message });
-    res.status(409).json({ code: error.code || 'platform/preparation-failed', error: error.code === 'auth/insufficient-permission' ? 'تعذر إصدار توكن الدخول للمنصة بسبب صلاحيات خدمة GOS. تواصل مع الدعم.' : error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
+    res.status(409).json({ code: error.code || 'platform/preparation-failed', error: error.code === 'auth/insufficient-permission' ? 'تعذر إصدار توكن الدخول للمنصة بسبب صلاحيات خدمة Upclick. تواصل مع الدعم.' : error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
   }
 });

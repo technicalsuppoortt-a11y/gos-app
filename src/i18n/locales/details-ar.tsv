@@ -159,7 +159,7 @@ Sort leads	ترتيب العملاء المحتملين
 Sources available to the assistant; add a URL, file, or text snippet.	مصادر متاحة للمساعد؛ أضف رابطًا أو ملفًا أو مقتطفًا نصيًا.
 Specific Date Hours	ساعات تواريخ محددة
 Stage distribution and value from your current CRM records.	توزيع المراحل وقيمتها من سجلات إدارة العملاء الحالية.
-Standard GOS booking page	صفحة حجز GOS القياسية
+Standard Upclick booking page	صفحة حجز Upclick القياسية
 Standard confirmation page	صفحة تأكيد قياسية
 Start fresh or choose a professionally designed template.	ابدأ من الصفر أو اختر قالبًا مصممًا باحتراف.
 Start time increments	الفواصل بين بدايات المواعيد
@@ -201,7 +201,7 @@ Team members pages	صفحات أعضاء الفريق
 Team members pagination	التنقل بين صفحات أعضاء الفريق
 Tell us about your business	أخبرنا عن نشاطك التجاري
 Tell us where to reach you	أخبرنا كيف نتواصل معك
-Template IDs are preserved for your connected template library. This local preview uses the standard GOS renderer.	يتم الاحتفاظ بمعرّفات القوالب لمكتبتك المرتبطة. تستخدم هذه المعاينة المحلية عارض GOS القياسي.
+Template IDs are preserved for your connected template library. This local preview uses the standard Upclick renderer.	يتم الاحتفاظ بمعرّفات القوالب لمكتبتك المرتبطة. تستخدم هذه المعاينة المحلية عارض Upclick القياسي.
 Template categories	فئات القوالب
 Template description	وصف القالب
 Template goal	هدف القالب
@@ -276,7 +276,7 @@ Unavailable renewal dates remain empty in JSON and are labeled “Not available�
 Unit	وحدة
 Units	الوحدات
 Update your personal details.	حدّث بياناتك الشخصية.
-Upload a PDF, DOCX, or TXT file. GOS will extract useful facts for your review.	ارفع ملف PDF أو DOCX أو TXT. سيستخرج GOS المعلومات المفيدة لمراجعتك.
+Upload a PDF, DOCX, or TXT file. Upclick will extract useful facts for your review.	ارفع ملف PDF أو DOCX أو TXT. سيستخرج Upclick المعلومات المفيدة لمراجعتك.
 Upload an image or enter its source URL.	ارفع صورة أو أدخل رابط مصدرها.
 Upload image or video	رفع صورة أو فيديو
 Usage Overview	نظرة عامة على الاستخدام
@@ -363,7 +363,7 @@ Your booking is held securely	حجزك محفوظ بأمان
 Your brand color is used in the live page preview.	يُستخدم لون علامتك التجارية في المعاينة المباشرة للصفحة.
 Your browser does not support video playback.	متصفحك لا يدعم تشغيل الفيديو.
 Your business context is in good shape.	سياق نشاطك التجاري مُعدّ بشكل جيد.
-Your business context is ready. Ask a question or tell GOS what you’d like to get done.	سياق نشاطك جاهز. اطرح سؤالًا أو أخبر GOS بما تريد إنجازه.
+Your business context is ready. Ask a question or tell Upclick what you’d like to get done.	سياق نشاطك جاهز. اطرح سؤالًا أو أخبر Upclick بما تريد إنجازه.
 Your business, moving forward.	أعمالك تتقدم.
 Your business. Your brand. A head start in minutes.	نشاطك. علامتك التجارية. انطلاقة في دقائق.
 Your changes are saved when you create or update this page.	تُحفظ تغييراتك عند إنشاء هذه الصفحة أو تحديثها.
@@ -405,7 +405,7 @@ demo conversations · Private to your workspace	محادثات تجريبية ·
 e.g. 10 hours	مثال: 10 ساعات
 e.g. Friendly appointment follow-up	مثال: متابعة ودودة للموعد
 e.g. Friendly fitness coach	مثال: مدرّب لياقة ودود
-e.g. GOS Fitness Coach	مثال: مدرّب لياقة GOS
+e.g. Upclick Fitness Coach	مثال: مدرّب لياقة Upclick
 e.g. Interior design for modern homes	مثال: تصميم داخلي للمنازل الحديثة
 e.g. Marketing	مثال: التسويق
 e.g. Pricing and membership	مثال: التسعير والعضوية
@@ -453,7 +453,7 @@ resources	الموارد
 rows · Map your columns	صفوف · حدّد مطابقة الأعمدة
 saved pipelines	مسارات محفوظة
 selected	محدد
-sources are used as approved facts. GOS will flag conflicting information for you.	مصادر تُستخدم كمعلومات معتمدة. سينبّهك GOS إلى المعلومات المتعارضة.
+sources are used as approved facts. Upclick will flag conflicting information for you.	مصادر تُستخدم كمعلومات معتمدة. سينبّهك Upclick إلى المعلومات المتعارضة.
 spots left	أماكن متبقية
 stars	نجوم
 student capacity	الحد الأقصى للطلاب

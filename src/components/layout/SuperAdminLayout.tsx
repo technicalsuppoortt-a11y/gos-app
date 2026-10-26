@@ -61,7 +61,7 @@ export const SuperAdminLayout: React.FC = () => {
     {mobileOpen && <button className="sa-mobile-scrim" aria-label={translateText("Close navigation")} onClick={() => setMobileOpen(false)}/>}
     <aside ref={sidebarRef} className={`sa-sidebar${mobileOpen ? ' is-mobile-open' : ''}`} role={mobileOpen ? 'dialog' : undefined} aria-modal={mobileOpen || undefined} aria-label={translateText("Platform navigation")} onClick={event => { if ((event.target as HTMLElement).closest('a')) setMobileOpen(false); }}>
       <button className="sa-mobile-close" aria-label={translateText("Close menu")} onClick={() => setMobileOpen(false)}><X size={18}/></button>
-      <a className="sa-brand" href="/super-admin"><span className="sa-brand-mark">{translateText("G")}</span><span><b>{translateText("AI Sales OS")}</b><small>{translateText("Platform control")}</small></span></a>
+      <a className="sa-brand" href="/super-admin"><span className="sa-brand-mark"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span><span><b>{translateText("Upclick")}</b><small>{translateText("Platform control")}</small></span></a>
       <div className="sa-nav-label">{translateText("PLATFORM")}</div>
       <nav className="sa-nav" aria-label={translateText("Super admin navigation")}>
         {localizeNode(navigation.map(({ label, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{localizeNode(label)}</span></NavLink>))}

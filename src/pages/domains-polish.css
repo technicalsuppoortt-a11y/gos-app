@@ -36,8 +36,8 @@
 .aw-domains-view .aw-domain-cta .aw-secondary { min-height: 31px; }
 .aw-export-formats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 18px 0; }
 .aw-export-formats>button { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding: 16px 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; text-align: start; color: #64748b; cursor: pointer; transition: border-color .2s,background-color .2s,box-shadow .2s; }
-.aw-export-formats>button.active { color: #6366f1; background: #f5f3ff; border-color: #c4b5fd; box-shadow: 0 0 0 2px #f5f3ff; }
-.aw-export-formats>button:hover { border-color: #c4b5fd; background: #faf5ff; }
+.aw-export-formats>button.active { color: #7C3AED; background: #f5f3ff; border-color: #A78BFA; box-shadow: 0 0 0 2px #f5f3ff; }
+.aw-export-formats>button:hover { border-color: #A78BFA; background: #faf5ff; }
 .aw-export-formats b { font-size: 12px; color: #0f172a; }
 .aw-export-formats small { font-size: 10px; color: #94a3b8; }
 .aw-export-check { position: absolute; inset-inline-end: 10px; top: 10px; }

@@ -84,8 +84,8 @@ console.log('Booking model: Scheduling, timezone, date overrides, breaks, bookin
 
 assert.equal(m.resolveBrandingName('  Mohamed Joe  ', 'Logged-in User'), 'Mohamed Joe');
 assert.equal(m.resolveBrandingName('   ', '  Jane Admin  '), 'Jane Admin');
-assert.equal(m.resolveBrandingName(undefined, undefined), 'GOS');
-assert.equal(m.resolveBrandingName('', ' '), 'GOS');
+assert.equal(m.resolveBrandingName(undefined, undefined), 'Upclick');
+assert.equal(m.resolveBrandingName('', ' '), 'Upclick');
 const target = new EventTarget();
 globalThis.window = target;
 storage.set(m.KEYS.appointments, '[]');

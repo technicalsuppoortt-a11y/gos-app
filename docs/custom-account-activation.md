@@ -1,6 +1,6 @@
-# Custom GOS account activation
+# Custom Upclick account activation
 
-The public React route is `/onboarding/activate-account`. It uses the dashboard's GOS rocket wordmark, DM Sans/Manrope typography, purple primary color, card surfaces, dark mode and Arabic layout. The page checks the Firebase link before showing the password form, displays confirmation after setup, and sends the user to `/dashboard` through the Continue button.
+The public React route is `/onboarding/activate-account`. It uses the dashboard's Upclick rocket wordmark, DM Sans/Manrope typography, purple primary color, card surfaces, dark mode and Arabic layout. The page checks the Firebase link before showing the password form, displays confirmation after setup, and sends the user to `/dashboard` through the Continue button.
 
 ## Exact source changes
 

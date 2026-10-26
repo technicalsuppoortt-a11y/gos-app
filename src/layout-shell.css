@@ -128,7 +128,7 @@ body.layout-locked #root {
   flex-shrink: 0;
   border-radius: 9px;
   background: #f0eeff;
-  color: #6d54f5;
+  color: #7C3AED;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -137,7 +137,7 @@ body.layout-locked #root {
 }
 
 .layout-brand-rocket {
-  color: #7c4df7;
+  color: #7C3AED;
   transform: rotate(-8deg);
   transition: transform 0.2s ease;
 }
@@ -201,8 +201,8 @@ body.layout-locked #root {
 
 .layout-collapse-btn:hover {
   background: #f1f0ff;
-  border-color: #d1cbf9;
-  color: #635bff;
+  border-color: #EDE9FE;
+  color: #7C3AED;
   transform: scale(1.05);
 }
 
@@ -268,11 +268,11 @@ body.layout-locked #root {
 
 .layout-nav-item:hover {
   background: #f0effe;
-  color: #5648e8;
+  color: #7C3AED;
 }
 
 .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7041f3 0%, #8765f4 58%, #b7a5f5 100%) !important;
+  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%) !important;
   color: #fff !important;
   font-weight: 650;
   box-shadow: 0 4px 12px rgba(110, 84, 228, 0.22);
@@ -467,7 +467,7 @@ body.layout-locked #root {
   place-items: center;
   border-radius: 8px;
   background: #f0eeff;
-  color: #6a5ee2;
+  color: #7C3AED;
 }
 
 .layout-help-copy {
@@ -502,7 +502,7 @@ body.layout-locked #root {
 .layout-help-card>a {
   grid-column: 2/4;
   margin-top: -3px;
-  color: #6559dc;
+  color: #7C3AED;
   font-size: 8px;
   font-weight: 650;
   text-decoration: none;
@@ -628,7 +628,7 @@ body.layout-locked #root {
   place-items: center;
   border-radius: 12px;
   background: #f0efff;
-  color: #6559e8;
+  color: #7C3AED;
 }
 
 .layout-header-title>div {
@@ -706,13 +706,13 @@ body.layout-locked #root {
 }
 
 .layout-search:focus-within {
-  border-color: #6366f1;
+  border-color: #7C3AED;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .layout-search:focus-within svg {
-  color: #6366f1;
+  color: #7C3AED;
 }
 
 .layout-search input {
@@ -770,7 +770,7 @@ body.layout-locked #root {
 
 .layout-notifications:hover {
   background: #f5f5fb;
-  color: #5c53df;
+  color: #7C3AED;
 }
 
 .layout-notifications>i {
@@ -833,14 +833,14 @@ body.layout-locked #root {
   border: 0;
   border-radius: 8px;
   background: #f4f3ff;
-  color: #6559e2;
+  color: #7C3AED;
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
 .layout-menu-button:hover {
   background: #ebe8ff;
-  color: #5244d4;
+  color: #7C3AED;
   transform: translateY(-1px);
 }
 
@@ -879,17 +879,17 @@ body.layout-locked #root {
 }
 
 .layout-booking-tab:hover {
-  color: #554bd1;
+  color: #7C3AED;
 }
 
 .layout-booking-tab.is-active {
-  color: #5a50df;
+  color: #7C3AED;
   font-weight: 650;
   background: transparent;
 }
 
 .layout-booking-tab.is-active svg {
-  color: #6055e6;
+  color: #7C3AED;
 }
 
 .layout-main {
@@ -978,7 +978,7 @@ body.layout-locked #root {
 }
 
 .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7041f3 0%, #8765f4 58%, #b7a5f5 100%);
+  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%);
   color: #fff;
   box-shadow: 0 4px 11px rgba(110, 84, 228, 0.17);
 }
@@ -1000,7 +1000,7 @@ html.dark .reference-user-sidebar {
 
 html.dark .layout-brand-icon {
   background: #1e1b38;
-  color: #a78bfa;
+  color: #A78BFA;
 }
 
 html.dark .layout-brand-wordmark b {
@@ -1038,7 +1038,7 @@ html.dark .layout-nav-item:hover {
 
 html.dark .layout-nav-item.is-active,
 html.dark .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7041f3 0%, #8765f4 58%, #8e7ce1 100%) !important;
+  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%) !important;
   color: #fff !important;
 }
 
@@ -1082,12 +1082,12 @@ html.dark .layout-logout:hover {
 
 html.dark .layout-menu-button {
   background: #1e2436;
-  color: #b4a1ff;
+  color: #A78BFA;
 }
 
 html.dark .layout-menu-button:hover {
   background: #2a3147;
-  color: #c9bdff;
+  color: #A78BFA;
 }
 
 html.dark .layout-header {

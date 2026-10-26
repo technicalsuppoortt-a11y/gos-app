@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "d8d4603d-d252-4d9b-845a-00b77564555b",
-    "name": "GOS API Copy 2",
+    "name": "Upclick API Copy 2",
     "description": "Laravel API for health, Firebase auth, Firestore status, tenant CRM, and the workspace knowledge base.\n\nBefore either folder:\n1. From api/, run php artisan serve.\n2. Assign your Firebase user once: php artisan crm:bootstrap --firebase-uid=THE_FIREBASE_UID --email=person@example.com --tenant=tenant-brand --role=ADMIN\n3. Paste that user's Firebase ID token into the collection variable firebaseIdToken. Do not commit a real token.\n4. Do not send X-Tenant-ID or tenant_id. The API uses the Laravel user's tenant_id.\n\nCRM folder: leave pipelineId as main. Run \"CRM — run in order\" from top to bottom.\n\nAI folder: set OPENAI_API_KEY in api/.env, then run php artisan queue:work in a second terminal. Indexing stays queued until that worker runs. Run \"AI and inbox — run in order\" from top to bottom. Create text source saves sourceId. After the worker finishes, send Get source again until its test passes. Ask playground saves playgroundTestId. The answered inbox request saves conversationId and externalMessageId for the duplicate request.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "39741109"

@@ -11,8 +11,8 @@ import {
   Crown,
   LogOut,
   X,
-  Rocket
 } from 'lucide-react';
+import { HelpDrawer } from './HelpDrawer';
 import './sidebar-settings.css';
 import { usePhoenixBrand } from '../../backend/phoenixBrand';
 import { settingsAliases } from '../../pages/settings/navigation';
@@ -131,6 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const impersonation = useSelector((state: RootState) => state.auth.impersonation);
   const [returning, setReturning] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const isRtl = uiDirection() === 'rtl';
   const drawerRef = useRef<HTMLElement>(null);
 
@@ -181,14 +182,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           to={basePath}
           className="layout-brand"
           onClick={close}
-          title={collapsed ? translateText("Growth Operating System") : undefined}
+          title={collapsed ? translateText("Upclick") : undefined}
         >
           {savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
-            {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <Rocket size={20} strokeWidth={2.2} className="layout-brand-rocket" />}
+            {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
           </span>}
           {!(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
-            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || translateText("GOS")}</b></span>
-            <small>{translateText("Growth Operating System")}</small>
+            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || translateText("Upclick")}</b></span>
+            <small>{translateText("Ideas to impact")}</small>
           </div>}
         </NavLink>
 
@@ -275,8 +276,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
             <b>{translateText("Need Help?")}</b>
             <small>{translateText("Guides and support")}</small>
           </div>
-          <button aria-label={translateText("Open help center")}><ArrowRight size={14}/></button>
-          <a href="#help">{translateText("View guides")}</a>
+          <button type="button" aria-label={translateText("Open help center")} aria-haspopup="dialog" onClick={() => { close(); setHelpOpen(true); }}><ArrowRight size={14}/></button>
+          <button type="button" className="layout-help-guides" onClick={() => { close(); setHelpOpen(true); }}>{translateText("View guides")}</button>
         </div>
 
         <button
@@ -330,6 +331,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           </>
         ))}
       </AnimatePresence>
+      {helpOpen && <HelpDrawer close={() => setHelpOpen(false)}/>}
     </>
   );
 };

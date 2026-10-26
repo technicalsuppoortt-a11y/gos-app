@@ -18,7 +18,7 @@ Provider IDs: `meta`, `whatsapp`, `gmail`, `outlook-email`, `google-calendar`, `
 
 | Endpoint | Request / response |
 | --- | --- |
-| `POST /integrations/:provider/authorize` | `{ returnUrl }` → `{ authorizeUrl }`. Create provider-specific authorization/configuration on the server. Validate the return URL against the allowed GOS origin. Store OAuth state and credentials on the server. |
+| `POST /integrations/:provider/authorize` | `{ returnUrl }` → `{ authorizeUrl }`. Create provider-specific authorization/configuration on the server. Validate the return URL against the allowed Upclick origin. Store OAuth state and credentials on the server. |
 | `GET /integrations/:provider` | `IntegrationState`: `{ status, account?, problem?, providerStatus?, sync? }`. Validate real provider authorization. Public status is `Connected`, `Not Connected` or `Needs Attention`; map reauthorization/error/disconnected states appropriately. `problem` must be a human-readable public explanation. |
 | `POST /integrations/:provider/test` | `{}` → `{ ok: boolean, problem?: string }`. Test authorized capabilities server-side. |
 | `PATCH /integrations/:provider/settings` | `{ sync: boolean }`; persist post-connect settings. |
@@ -33,7 +33,7 @@ Authorization returns to `/dashboard/settings/integrations?provider=ID&connectio
 | --- | --- |
 | `POST /billing/checkout` | `{ amount, currency: "EUR", method, idempotencyKey, returnUrl }` → `{ url }` for a hosted checkout or manual bank-transfer instruction page. Allowed amounts are 10, 25, 50, 100. |
 | `POST /billing/portal` | `{ returnUrl }` → `{ url }` for subscription management. |
-| `POST /billing/payment-methods/setup` | `{ method, returnUrl }` → `{ url }` for secure provider setup. No full card details are collected in GOS. |
+| `POST /billing/payment-methods/setup` | `{ method, returnUrl }` → `{ url }` for secure provider setup. No full card details are collected in Upclick. |
 | `POST /billing/payment-methods/default` | `{ id }`; validate ownership and permitted method type. |
 | `PATCH /billing/recharge` | `{ enabled, below, amount, method }`; validate threshold, amount and reusable payment method. |
 

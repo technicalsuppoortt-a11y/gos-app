@@ -1,4 +1,4 @@
-# GOS Platform Live Integration & Manual Testing Plan
+# Upclick Platform Live Integration & Manual Testing Plan
 **Target Project:** `gos-app-3c7fb` | **Architecture:** Firebase Auth + Firestore + v2 Functions + `gos-api`
 
 ---
@@ -8,7 +8,7 @@
 Before initiating manual or automated testing, confirm your local environment and network baseline:
 
 1. **Verify `.env.local` Configuration**:
-   Open [`.env.local`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/.env.local) and confirm the following keys are set:
+   Open [`.env.local`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/.env.local) and confirm the following keys are set:
    ```env
    VITE_FIREBASE_PROJECT_ID=gos-app-3c7fb
    VITE_FIREBASE_AUTH_DOMAIN=gos-app-3c7fb.firebaseapp.com
@@ -35,11 +35,11 @@ Verify that an administrator can provision a new workspace tenant, generate a va
 
 #### Step-by-Step Test Procedure
 1. **Sign in as System Admin**:
-   - Navigate to `/login` ([`LoginPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/auth/LoginPage.tsx)).
-   - Sign in with pre-seeded administrative credentials (e.g., `admin@gmail.com` / `12345678` from [`functions/seed.mjs`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/functions/seed.mjs#L11)).
+   - Navigate to `/login` ([`LoginPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/auth/LoginPage.tsx)).
+   - Sign in with pre-seeded administrative credentials (e.g., `admin@gmail.com` / `12345678` from [`functions/seed.mjs`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/functions/seed.mjs#L11)).
    - Verify you land on `/admin/dashboard` or `/dashboard`.
 2. **Access Admin User Management**:
-   - Navigate to `/admin/users` ([`AdminUsers.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/onboarding/AdminUsers.tsx)).
+   - Navigate to `/admin/users` ([`AdminUsers.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/onboarding/AdminUsers.tsx)).
    - Click **"Invite your first user"** or **"Send invite"**.
 3. **Dispatch a Disposable Invite**:
    - Enter a test name: `QA Tester`
@@ -66,21 +66,21 @@ Verify that an administrator can provision a new workspace tenant, generate a va
 ### Flow 2: Authentication & Action Link Recovery Flows
 
 #### 2.1 Login Flow
-1. Navigate to `/auth/login` ([`LoginPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/auth/LoginPage.tsx)).
+1. Navigate to `/auth/login` ([`LoginPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/auth/LoginPage.tsx)).
 2. Test both happy and unhappy paths:
    - **Invalid Password**: Ensure a clear toast appears (`The email or password is incorrect.`) without raw Firebase SDK codes (`auth/invalid-credential`).
-   - **Valid Login**: Enter valid credentials. Ensure the user is routed via [`routeForRole()`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/router/ProtectedRoute.tsx):
+   - **Valid Login**: Enter valid credentials. Ensure the user is routed via [`routeForRole()`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/router/ProtectedRoute.tsx):
      - `SUPER_ADMIN` $\rightarrow$ `/super-admin`
      - `ADMIN` $\rightarrow$ `/admin` or `/dashboard`
      - `USER` $\rightarrow$ `/dashboard`
-3. Verify session resolution: Reload the browser on `/dashboard` and confirm that [`FirebaseSession`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/backend/session.tsx#L143) restores auth state without redirecting to `/login`.
+3. Verify session resolution: Reload the browser on `/dashboard` and confirm that [`FirebaseSession`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/backend/session.tsx#L143) restores auth state without redirecting to `/login`.
 
 #### 2.2 Password Reset & Recovery
-1. Navigate to `/auth/forgot-password` ([`ForgotPasswordPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/auth/ForgotPasswordPage.tsx)).
+1. Navigate to `/auth/forgot-password` ([`ForgotPasswordPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/auth/ForgotPasswordPage.tsx)).
 2. Enter your registered email address and click **"Send reset link"**.
 3. Verify that the 30-second resend cooldown timer activates.
 4. Open the email reset link or capture the test action code (`oobCode`).
-5. Paste the link into the browser to land on `/auth/reset-password?oobCode=...` ([`ResetPasswordPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/auth/ResetPasswordPage.tsx)).
+5. Paste the link into the browser to land on `/auth/reset-password?oobCode=...` ([`ResetPasswordPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/auth/ResetPasswordPage.tsx)).
 6. Enter a new password satisfying the 4 criteria badges (8+ characters, mixed case, number, special character).
 7. Submit the form: Verify the countdown modal redirects to `/auth/login`, and sign in with the new password.
 
@@ -97,14 +97,14 @@ Test the following functional modules inside the `/dashboard/*` suite:
 
 | Page / Route | Core Components to Test | Expected Acceptance Behavior |
 | :--- | :--- | :--- |
-| **Home Dashboard**<br>`/dashboard` | [`HomeDashboard.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/dashboard/HomeDashboard.tsx) | Metric summary widgets render without infinite loading skeleton; recent activity reflects updates. |
-| **CRM & Leads**<br>`/dashboard/crm` | [`CRMLeads.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/CRMLeads.tsx) | Pipeline board displays stages (`Lead Captured`, `Contacted`, `Qualified`). Dragging a card between stages persists; contact search and CSV export trigger. |
-| **Unified Inbox**<br>`/dashboard/inbox` | [`Inbox.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/Inbox.tsx) | Channel filters (WhatsApp, Email, Webchat) switch conversation lists. Conversation threads load customer messages, timestamps, and read badges. |
-| **Booking & Calendars**<br>`/dashboard/booking` | [`BookingCalendar.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/booking/BookingCalendar.tsx) | Calendar view loads; clicking an available slot opens the appointment inspector; host availability ranges can be configured. |
-| **Public Booking**<br>`/book/:slug` | [`PublicBookingPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/booking/PublicBookingPage.tsx) | Anonymous visitors can view slots and submit bookings without being prompted for workspace login. |
-| **Products & Payments**<br>`/dashboard/products-payments` | [`ProductsPayments.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/ProductsPayments.tsx) | Product list loads products; clicking "Add Product" allows creating a service/digital product; currency symbol formats correctly. |
-| **Funnels & Websites**<br>`/dashboard/funnels` | [`FunnelBuilder.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/FunnelBuilder.tsx) | Template selector loads visual thumbnails; opening an asset loads the PageFly canvas builder. |
-| **Settings Hub**<br>`/dashboard/settings/profile` | [`SettingsWorkspace.tsx`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/src/pages/settings/SettingsWorkspace.tsx) | Profile name, business address, and currency update and persist across page refreshes. |
+| **Home Dashboard**<br>`/dashboard` | [`HomeDashboard.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/dashboard/HomeDashboard.tsx) | Metric summary widgets render without infinite loading skeleton; recent activity reflects updates. |
+| **CRM & Leads**<br>`/dashboard/crm` | [`CRMLeads.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/CRMLeads.tsx) | Pipeline board displays stages (`Lead Captured`, `Contacted`, `Qualified`). Dragging a card between stages persists; contact search and CSV export trigger. |
+| **Unified Inbox**<br>`/dashboard/inbox` | [`Inbox.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/Inbox.tsx) | Channel filters (WhatsApp, Email, Webchat) switch conversation lists. Conversation threads load customer messages, timestamps, and read badges. |
+| **Booking & Calendars**<br>`/dashboard/booking` | [`BookingCalendar.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/booking/BookingCalendar.tsx) | Calendar view loads; clicking an available slot opens the appointment inspector; host availability ranges can be configured. |
+| **Public Booking**<br>`/book/:slug` | [`PublicBookingPage.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/booking/PublicBookingPage.tsx) | Anonymous visitors can view slots and submit bookings without being prompted for workspace login. |
+| **Products & Payments**<br>`/dashboard/products-payments` | [`ProductsPayments.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/ProductsPayments.tsx) | Product list loads products; clicking "Add Product" allows creating a service/digital product; currency symbol formats correctly. |
+| **Funnels & Websites**<br>`/dashboard/funnels` | [`FunnelBuilder.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/FunnelBuilder.tsx) | Template selector loads visual thumbnails; opening an asset loads the PageFly canvas builder. |
+| **Settings Hub**<br>`/dashboard/settings/profile` | [`SettingsWorkspace.tsx`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/src/pages/settings/SettingsWorkspace.tsx) | Profile name, business address, and currency update and persist across page refreshes. |
 
 ---
 
@@ -230,7 +230,7 @@ import('firebase-admin/firestore').then(async ({ getFirestore }) => {
 ### Strategy B: Instant In-Browser Demo Mode
 
 To evaluate UI/UX aesthetics, animations, and typography immediately without writing any data to live Firestore:
-1. Temporarily toggle the demo flag in [`.env.local`](file:///d:/Froent_end_Courses/FreeLancer/GOS-app/.env.local):
+1. Temporarily toggle the demo flag in [`.env.local`](file:///d:/Froent_end_Courses/FreeLancer/Upclick-app/.env.local):
    ```env
    VITE_LOCAL_DEMO=true
    ```

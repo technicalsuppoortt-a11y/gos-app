@@ -28,7 +28,7 @@ export function domainCSV(rows: DomainReportRow[]) {
   return '\uFEFF' + [header, ...values].map(row => row.map(csvCell).join(',')).join('\r\n');
 }
 export function domainJSON(rows: DomainReportRow[], generatedAt = new Date().toISOString()) {
-  return JSON.stringify({ report: 'GOS Domains Summary', generatedAt, count: rows.length, domains: rows }, null, 2);
+  return JSON.stringify({ report: 'Upclick Domains Summary', generatedAt, count: rows.length, domains: rows }, null, 2);
 }
 
 const pageWidth = 842, pageHeight = 595;
@@ -56,7 +56,7 @@ export function renderDomainReportPage(rows: DomainReportRow[], pageIndex: numbe
   context.fillStyle = '#6366f1'; context.fillRect(40, 34, 4, 43);
   context.fillStyle = '#0f172a'; context.font = 'bold 22px Arial, sans-serif'; context.fillText('Domains Summary', 57, 54);
   context.font = '11px Arial, sans-serif'; context.fillStyle = '#64748b';
-  context.fillText(`GOS · ${totalRows} ${totalRows === 1 ? 'domain' : 'domains'} · Workspace report`, 57, 74);
+  context.fillText(`Upclick · ${totalRows} ${totalRows === 1 ? 'domain' : 'domains'} · Workspace report`, 57, 74);
   const date = new Date(generatedAt).toLocaleString('en-GB', { timeZone: 'Africa/Cairo', dateStyle: 'medium', timeStyle: 'short' });
   context.fillText(`Generated ${date} (Cairo)`, 40, 104);
   context.fillStyle = '#eef2ff'; context.fillRect(40, 121, 762, 31);
@@ -86,7 +86,7 @@ export function renderDomainReportPage(rows: DomainReportRow[], pageIndex: numbe
   });
   context.fillStyle = '#64748b'; context.font = '10px Arial, sans-serif';
   context.fillText('Renewal dates are included when available; missing dates are not estimated.', 40, 556);
-  context.fillText(`GOS · Page ${pageIndex + 1} of ${Math.max(1, Math.ceil(totalRows / perPage))}`, 680, 556);
+  context.fillText(`Upclick · Page ${pageIndex + 1} of ${Math.max(1, Math.ceil(totalRows / perPage))}`, 680, 556);
   return canvas;
 }
 
@@ -121,7 +121,7 @@ export function downloadDomainReport(rows: DomainReportRow[], format: 'csv' | 'j
   const generatedAt = new Date().toISOString();
   const blob = format === 'pdf' ? domainPDF(rows, generatedAt) : new Blob([format === 'csv' ? domainCSV(rows) : domainJSON(rows, generatedAt)], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8' });
   const url = URL.createObjectURL(blob), link = document.createElement('a');
-  link.href = url; link.download = `gos-domains-${generatedAt.slice(0, 10)}.${format}`;
+  link.href = url; link.download = `upclick-domains-${generatedAt.slice(0, 10)}.${format}`;
   document.body.append(link); link.click(); link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }

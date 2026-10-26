@@ -389,7 +389,7 @@ export function seedAccount() {
     zoom: { status: 'Connected', account: 'Alex Morgan · Pro', sync: true },
     stripe: { status: 'Connected', account: 'Northstar Growth Studio · acct_demo', sync: true },
     domains: { status: 'Connected', account: '3 domains connected', sync: true },
-    ai: { status: 'Connected', account: 'GOS AI · Managed', sync: true },
+    ai: { status: 'Connected', account: 'Upclick AI · Managed', sync: true },
     webhooks: { status: 'Needs Attention', account: '2 endpoints', problem: '1 failed delivery in the last 24h', sync: true },
   };
   write('local:integrations', integrations);

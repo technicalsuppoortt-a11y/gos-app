@@ -4,7 +4,7 @@ import { auth } from './firebase';
 import config from './phoenix-public-config.json';
 
 // Verify Phoenix passwords with Phoenix Auth. Passwords are never copied into
-// GOS until the server independently verifies them against the source account.
+// Upclick until the server independently verifies them against the source account.
 export async function loginWithPhoenix(email: string, password: string) {
   const app = initializeApp(config, `phoenix-login-${crypto.randomUUID()}`);
   const sourceAuth = getAuth(app);

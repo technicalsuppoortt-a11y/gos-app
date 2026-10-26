@@ -1,4 +1,4 @@
-/* Bilingual copy for the public GOS landing page.
+/* Bilingual copy for the public Upclick landing page.
    The Arabic object is typed against the English one so both stay in sync. */
 
 /* ---------- Hero preview tab views ----------
@@ -138,8 +138,8 @@ const enViews: Record<'copilot' | 'inbox' | 'crm' | 'booking' | 'products' | 'an
 
 const en = {
   meta: {
-    title: 'GOS — Turn Every Lead Into a Real Opportunity with AI Follow-Up',
-    description: 'GOS helps you respond instantly, follow up automatically and book appointments with AI — so no lead is ever lost.',
+    title: 'Upclick — Turn Every Lead Into a Real Opportunity with AI Follow-Up',
+    description: 'Upclick helps you respond instantly, follow up automatically and book appointments with AI — so no lead is ever lost.',
   },
   nav: {
     links: [
@@ -159,7 +159,7 @@ const en = {
     badge: 'Complete Follow-Up System',
     titleA: 'Turn Every Lead Into a Real Opportunity',
     titleB: 'with AI Follow-Up.',
-    lead: 'GOS helps you automatically respond quickly, follow up and book appointments — so no lead gets lost and they reach your business.',
+    lead: 'Upclick helps you automatically respond quickly, follow up and book appointments — so no lead gets lost and they reach your business.',
     checks: [
       'Instant and consistent responses',
       'Automate follow-ups and reminders',
@@ -168,7 +168,7 @@ const en = {
     ],
     primary: 'Book a Free Consultation',
     video: 'Watch a Quick Video',
-    note: 'No obligation call • we’ll understand your situation and show you how GOS can help.',
+    note: 'No obligation call • we’ll understand your situation and show you how Upclick can help.',
     builtFor: 'Built for different types of businesses:',
     businesses: ['Coaches & Consultants', 'Service Businesses', 'Agencies', 'E-commerce Stores', 'Local Businesses', 'Clinics & Healthcare', 'Education & Courses', 'Real Estate'],
   },
@@ -218,7 +218,7 @@ const en = {
     quoteA: 'AI follow-up doesn’t replace your team.',
     quoteB: 'It makes sure',
     quoteBold: 'no opportunity is lost between these steps.',
-    engine: { title: 'GOS', sub: 'Follow-Up System' },
+    engine: { title: 'Upclick', sub: 'Follow-Up System' },
     nodes: {
       ai: { title: 'AI Follow-Up', text: 'Understands, replies and qualifies' },
       team: { title: 'Your Team', text: 'Steps in for important cases and final decisions' },
@@ -269,8 +269,8 @@ const en = {
     badge: 'Before vs After',
     title: 'From Lost Opportunities to Real Revenue.',
     text: 'Same leads. A completely different result.',
-    beforeTitle: 'Before GOS',
-    afterTitle: 'After GOS',
+    beforeTitle: 'Before Upclick',
+    afterTitle: 'After Upclick',
     before: ['Slow and inconsistent responses', 'Leads get forgotten', 'No clear follow-up process', 'Prices sent and lost', 'Lost potential clients'],
     after: ['Instant and consistent responses', 'Automatic follow-up and reminders', 'More qualified leads', 'More booked calls', 'Turn more leads into paying clients'],
   },
@@ -289,7 +289,7 @@ const en = {
   tools: {
     badge: 'Everything in One Place',
     title: 'All the Tools You Need to Manage and Grow Your Business.',
-    text: 'GOS gives you all the essential tools to capture, follow up and convert leads — in one system.',
+    text: 'Upclick gives you all the essential tools to capture, follow up and convert leads — in one system.',
     items: [
       { title: 'AI Copilot', text: 'Your AI business assistant' },
       { title: 'AI Follow-Up', text: 'Respond, qualify, follow up and book' },
@@ -303,9 +303,9 @@ const en = {
   testimonials: {
     badge: 'Real Results',
     title: 'From Students to Business Owners.',
-    text: 'See how our students are building real businesses, getting customers and creating recurring revenue with GOS.',
+    text: 'See how our students are building real businesses, getting customers and creating recurring revenue with Upclick.',
     items: [
-      { quote: '“GOS helped me go from an idea to real customers in just two months. The step-by-step process made everything clear.”', name: 'Ahmed T.', role: 'Coach' },
+      { quote: '“Upclick helped me go from an idea to real customers in just two months. The step-by-step process made everything clear.”', name: 'Ahmed T.', role: 'Coach' },
       { quote: '“I used to follow up manually. Now my AI follow-up and booking system work automatically and bring me consistent customers.”', name: 'Sara M.', role: 'Consultant' },
       { quote: '“Everything I need is in one place: funnels, CRM, payments and AI. It’s a complete business system.”', name: 'Karim A.', role: 'Agency Owner' },
     ],
@@ -313,38 +313,38 @@ const en = {
   faq: {
     badge: 'FAQ',
     title: 'Frequently Asked Questions.',
-    text: 'Quick answers to the most common questions about GOS and the AI Follow-Up system.',
+    text: 'Quick answers to the most common questions about Upclick and the AI Follow-Up system.',
     viewAll: 'View All Questions',
     showLess: 'Show Fewer Questions',
     items: [
       { q: 'Does the AI replace my team?', a: 'No. The AI handles the repetitive first replies, qualification and reminders, then hands warm leads to your team for the important conversations and the final close.' },
-      { q: 'Can I take over the conversation anytime?', a: 'Yes. You can pause the AI on any conversation with one click and reply yourself from the GOS Inbox. The AI resumes only when you allow it.' },
-      { q: 'Can I use it on WhatsApp and Instagram?', a: 'Yes. GOS connects to WhatsApp, Instagram, Messenger, email and your website forms so every lead lands in a single inbox.' },
-      { q: 'Do I need to change my existing tools?', a: 'No. GOS works alongside your current setup and can replace disconnected tools gradually, at your own pace.' },
+      { q: 'Can I take over the conversation anytime?', a: 'Yes. You can pause the AI on any conversation with one click and reply yourself from the Upclick Inbox. The AI resumes only when you allow it.' },
+      { q: 'Can I use it on WhatsApp and Instagram?', a: 'Yes. Upclick connects to WhatsApp, Instagram, Messenger, email and your website forms so every lead lands in a single inbox.' },
+      { q: 'Do I need to change my existing tools?', a: 'No. Upclick works alongside your current setup and can replace disconnected tools gradually, at your own pace.' },
       { q: 'Can I train it on my business information?', a: 'Absolutely. Upload your services, prices, FAQs and policies to the Knowledge Base and the AI will answer using your information and tone.' },
       { q: 'How long does it take to get started?', a: 'Most businesses are live within a few days. We analyze your lead flow, set up your channels and rules, then activate the AI with you.' },
       { q: 'Which languages does the AI support?', a: 'The AI replies fluently in Arabic and English, and can match the language your lead writes in automatically.' },
       { q: 'Is my customer data secure?', a: 'Yes. Your data is encrypted in transit and at rest, and access is controlled by roles and permissions inside your workspace.' },
-      { q: 'What happens after the free consultation?', a: 'We share a clear plan for your business. If it’s a fit, we help you set up GOS step by step — with no obligation.' },
+      { q: 'What happens after the free consultation?', a: 'We share a clear plan for your business. If it’s a fit, we help you set up Upclick step by step — with no obligation.' },
       { q: 'Can I see results in the dashboard?', a: 'Yes. Analytics shows replies, follow-ups, bookings and revenue so you always know what is working.' },
     ],
   },
   cta: {
     badge: 'Your Next Step',
     title: 'Start Building Your Business Today.',
-    text: 'Get access to the complete GOS system and follow the proven process to turn more of your leads into paying customers.',
+    text: 'Get access to the complete Upclick system and follow the proven process to turn more of your leads into paying customers.',
     primary: 'Book a Free Consultation',
     video: 'Watch a Quick Video',
     perks: ['Complete system', 'Step-by-step guidance', 'Real business results'],
   },
   video: {
-    title: 'How GOS turns leads into booked calls',
+    title: 'How Upclick turns leads into booked calls',
     close: 'Close',
     play: 'Play',
     pause: 'Pause',
   },
   footer: {
-    rights: '© 2026 GOS — Growth Operating System. All rights reserved.',
+    rights: '© 2026 Upclick — Upclick. All rights reserved.',
   },
 };
 
@@ -476,8 +476,8 @@ const arViews: typeof enViews = {
 
 const ar: LandingCopy = {
   meta: {
-    title: 'GOS — حوّل كل عميل محتمل إلى فرصة حقيقية مع المتابعة بالذكاء الاصطناعي',
-    description: 'GOS يساعدك على الرد الفوري والمتابعة التلقائية وحجز المواعيد بالذكاء الاصطناعي — حتى لا يضيع أي عميل محتمل.',
+    title: 'Upclick — حوّل كل عميل محتمل إلى فرصة حقيقية مع المتابعة بالذكاء الاصطناعي',
+    description: 'Upclick يساعدك على الرد الفوري والمتابعة التلقائية وحجز المواعيد بالذكاء الاصطناعي — حتى لا يضيع أي عميل محتمل.',
   },
   nav: {
     links: [
@@ -497,7 +497,7 @@ const ar: LandingCopy = {
     badge: 'نظام متابعة متكامل',
     titleA: 'حوّل كل عميل محتمل إلى فرصة حقيقية',
     titleB: 'مع المتابعة بالذكاء الاصطناعي.',
-    lead: 'GOS يساعدك على الرد بسرعة والمتابعة تلقائياً وحجز المواعيد — حتى لا يضيع أي عميل محتمل ويصل إلى عملك.',
+    lead: 'Upclick يساعدك على الرد بسرعة والمتابعة تلقائياً وحجز المواعيد — حتى لا يضيع أي عميل محتمل ويصل إلى عملك.',
     checks: [
       'ردود فورية ومتسقة',
       'أتمتة المتابعات والتذكيرات',
@@ -506,7 +506,7 @@ const ar: LandingCopy = {
     ],
     primary: 'احجز استشارة مجانية',
     video: 'شاهد فيديو سريع',
-    note: 'مكالمة بدون أي التزام • سنفهم وضعك ونوضح لك كيف يمكن لـ GOS مساعدتك.',
+    note: 'مكالمة بدون أي التزام • سنفهم وضعك ونوضح لك كيف يمكن لـ Upclick مساعدتك.',
     builtFor: 'مصمم لأنواع مختلفة من الأعمال:',
     businesses: ['المدربون والمستشارون', 'شركات الخدمات', 'الوكالات', 'المتاجر الإلكترونية', 'الأعمال المحلية', 'العيادات والرعاية الصحية', 'التعليم والدورات', 'العقارات'],
   },
@@ -556,7 +556,7 @@ const ar: LandingCopy = {
     quoteA: 'المتابعة بالذكاء الاصطناعي لا تحل محل فريقك.',
     quoteB: 'بل تضمن',
     quoteBold: 'عدم ضياع أي فرصة بين هذه الخطوات.',
-    engine: { title: 'GOS', sub: 'نظام المتابعة' },
+    engine: { title: 'Upclick', sub: 'نظام المتابعة' },
     nodes: {
       ai: { title: 'المتابعة الذكية', text: 'يفهم ويرد ويؤهل العملاء' },
       team: { title: 'فريقك البشري', text: 'يتدخل في الحالات المهمة والقرارات النهائية' },
@@ -607,8 +607,8 @@ const ar: LandingCopy = {
     badge: 'قبل وبعد',
     title: 'من فرص مفقودة إلى مبيعات حقيقية.',
     text: 'نفس العملاء المحتملين. نتيجة مختلفة تماماً.',
-    beforeTitle: 'قبل استخدام GOS',
-    afterTitle: 'بعد استخدام GOS',
+    beforeTitle: 'قبل استخدام Upclick',
+    afterTitle: 'بعد استخدام Upclick',
     before: ['ردود بطيئة وغير منتظمة', 'نسيان العملاء المحتملين', 'لا توجد عملية متابعة واضحة', 'أسعار تُرسل ثم تضيع', 'خسارة عملاء محتملين'],
     after: ['ردود فورية ومتسقة', 'متابعة وتذكيرات تلقائية', 'عملاء محتملون مؤهلون أكثر', 'مكالمات محجوزة أكثر', 'تحويل المزيد إلى عملاء يدفعون'],
   },
@@ -627,7 +627,7 @@ const ar: LandingCopy = {
   tools: {
     badge: 'كل شيء في مكان واحد',
     title: 'كل ما تحتاجه لإدارة عملائك وتنمية مبيعاتك.',
-    text: 'GOS يمنحك كل الأدوات الأساسية لالتقاط العملاء ومتابعتهم وتحويلهم — في نظام واحد.',
+    text: 'Upclick يمنحك كل الأدوات الأساسية لالتقاط العملاء ومتابعتهم وتحويلهم — في نظام واحد.',
     items: [
       { title: 'المساعد الذكي', text: 'مساعدك الذكي للأعمال' },
       { title: 'المتابعة الذكية', text: 'رد وتأهيل ومتابعة وحجز' },
@@ -641,9 +641,9 @@ const ar: LandingCopy = {
   testimonials: {
     badge: 'نتائج حقيقية',
     title: 'من طلاب إلى أصحاب أعمال حقيقيين.',
-    text: 'شاهد كيف يبني طلابنا أعمالاً حقيقية ويحصلون على عملاء ويحققون إيرادات متكررة مع GOS.',
+    text: 'شاهد كيف يبني طلابنا أعمالاً حقيقية ويحصلون على عملاء ويحققون إيرادات متكررة مع Upclick.',
     items: [
-      { quote: '“ساعدني GOS في الانتقال من فكرة إلى عملاء حقيقيين خلال شهرين فقط. الخطوات الواضحة جعلت كل شيء سهلاً.”', name: 'أحمد ت.', role: 'مدرب' },
+      { quote: '“ساعدني Upclick في الانتقال من فكرة إلى عملاء حقيقيين خلال شهرين فقط. الخطوات الواضحة جعلت كل شيء سهلاً.”', name: 'أحمد ت.', role: 'مدرب' },
       { quote: '“كنت أتابع يدوياً. الآن نظام المتابعة والحجز بالذكاء الاصطناعي يعمل تلقائياً ويجلب لي عملاء باستمرار.”', name: 'سارة م.', role: 'مستشارة' },
       { quote: '“كل ما أحتاجه في مكان واحد: الصفحات، إدارة العملاء، المدفوعات والذكاء الاصطناعي. إنه نظام أعمال متكامل.”', name: 'كريم أ.', role: 'صاحب وكالة' },
     ],
@@ -651,38 +651,38 @@ const ar: LandingCopy = {
   faq: {
     badge: 'الأسئلة الشائعة',
     title: 'أكثر الأسئلة شيوعاً.',
-    text: 'إجابات سريعة على أكثر الأسئلة شيوعاً حول GOS ونظام المتابعة بالذكاء الاصطناعي.',
+    text: 'إجابات سريعة على أكثر الأسئلة شيوعاً حول Upclick ونظام المتابعة بالذكاء الاصطناعي.',
     viewAll: 'عرض كل الأسئلة',
     showLess: 'عرض أسئلة أقل',
     items: [
       { q: 'هل يحل الذكاء الاصطناعي محل فريقي؟', a: 'لا. يتولى الذكاء الاصطناعي الردود الأولى المتكررة والتأهيل والتذكيرات، ثم يسلّم العملاء الجاهزين لفريقك للمحادثات المهمة والإغلاق النهائي.' },
       { q: 'هل يمكنني التدخل في المحادثة في أي وقت؟', a: 'نعم. يمكنك إيقاف الذكاء الاصطناعي في أي محادثة بنقرة واحدة والرد بنفسك من صندوق الوارد، ولا يستأنف إلا بإذنك.' },
-      { q: 'هل يمكنني استخدامه على واتساب وإنستغرام؟', a: 'نعم. يتصل GOS بواتساب وإنستغرام وماسنجر والبريد ونماذج موقعك ليصل كل عميل إلى صندوق وارد واحد.' },
-      { q: 'هل أحتاج إلى تغيير أدواتي الحالية؟', a: 'لا. يعمل GOS جنباً إلى جنب مع أدواتك الحالية ويمكنه استبدال الأدوات المتفرقة تدريجياً وبالسرعة التي تناسبك.' },
+      { q: 'هل يمكنني استخدامه على واتساب وإنستغرام؟', a: 'نعم. يتصل Upclick بواتساب وإنستغرام وماسنجر والبريد ونماذج موقعك ليصل كل عميل إلى صندوق وارد واحد.' },
+      { q: 'هل أحتاج إلى تغيير أدواتي الحالية؟', a: 'لا. يعمل Upclick جنباً إلى جنب مع أدواتك الحالية ويمكنه استبدال الأدوات المتفرقة تدريجياً وبالسرعة التي تناسبك.' },
       { q: 'هل يمكنني تدريبه على معلومات عملي؟', a: 'بالتأكيد. ارفع خدماتك وأسعارك وأسئلتك الشائعة وسياساتك إلى قاعدة المعرفة وسيجيب الذكاء الاصطناعي بمعلوماتك وأسلوبك.' },
       { q: 'كم يستغرق البدء؟', a: 'معظم الأنشطة تبدأ خلال أيام قليلة. نحلل تدفق عملائك، ونربط قنواتك وقواعدك، ثم نفعّل الذكاء الاصطناعي معك.' },
       { q: 'ما اللغات التي يدعمها الذكاء الاصطناعي؟', a: 'يرد الذكاء الاصطناعي بطلاقة بالعربية والإنجليزية، ويطابق لغة العميل تلقائياً.' },
       { q: 'هل بيانات عملائي آمنة؟', a: 'نعم. بياناتك مشفرة أثناء النقل والتخزين، والوصول إليها محكوم بالأدوار والصلاحيات داخل مساحة عملك.' },
-      { q: 'ماذا يحدث بعد الاستشارة المجانية؟', a: 'نشاركك خطة واضحة لعملك. وإذا كان مناسباً، نساعدك في إعداد GOS خطوة بخطوة — بدون أي التزام.' },
+      { q: 'ماذا يحدث بعد الاستشارة المجانية؟', a: 'نشاركك خطة واضحة لعملك. وإذا كان مناسباً، نساعدك في إعداد Upclick خطوة بخطوة — بدون أي التزام.' },
       { q: 'هل يمكنني رؤية النتائج في لوحة التحكم؟', a: 'نعم. تعرض التحليلات الردود والمتابعات والحجوزات والإيرادات لتعرف دائماً ما الذي ينجح.' },
     ],
   },
   cta: {
     badge: 'خطوتك التالية',
     title: 'ابدأ في بناء عملك اليوم.',
-    text: 'احصل على نظام GOS المتكامل واتبع العملية المجربة لتحويل المزيد من عملائك المحتملين إلى عملاء يدفعون.',
+    text: 'احصل على نظام Upclick المتكامل واتبع العملية المجربة لتحويل المزيد من عملائك المحتملين إلى عملاء يدفعون.',
     primary: 'احجز استشارة مجانية الآن',
     video: 'شاهد فيديو سريع',
     perks: ['نظام متكامل', 'إرشاد خطوة بخطوة', 'نتائج أعمال حقيقية'],
   },
   video: {
-    title: 'كيف يحوّل GOS العملاء المحتملين إلى مكالمات محجوزة',
+    title: 'كيف يحوّل Upclick العملاء المحتملين إلى مكالمات محجوزة',
     close: 'إغلاق',
     play: 'تشغيل',
     pause: 'إيقاف مؤقت',
   },
   footer: {
-    rights: '© 2026 GOS — نظام تشغيل النمو. جميع الحقوق محفوظة.',
+    rights: '© 2026 Upclick — نظام تشغيل النمو. جميع الحقوق محفوظة.',
   },
 };
 

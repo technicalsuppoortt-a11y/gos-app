@@ -4,7 +4,7 @@ These features reuse the existing shell, settings cards, billing navigation, dia
 
 ## Get App
 
-The shared header covers user and admin dashboards; the superadmin topbar mounts the same install trigger. The HTML entry captures `beforeinstallprompt` before React mounts. Installed/standalone windows hide the trigger; iOS receives Safari Share → Add to Home Screen guidance. Unsupported browsers receive browser-menu instructions. The manifest uses GOS icons and starts at `/dashboard`, where existing role guards select the appropriate dashboard. The service worker is network-only and does not cache authenticated or financial responses.
+The shared header covers user and admin dashboards; the superadmin topbar mounts the same install trigger. The HTML entry captures `beforeinstallprompt` before React mounts. Installed/standalone windows hide the trigger; iOS receives Safari Share → Add to Home Screen guidance. Unsupported browsers receive browser-menu instructions. The manifest uses Upclick icons and starts at `/dashboard`, where existing role guards select the appropriate dashboard. The service worker is network-only and does not cache authenticated or financial responses.
 
 ## Marketing Tracking
 

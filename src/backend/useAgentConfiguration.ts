@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { backendError, callBackend } from './firebase';
 
 export type AgentProfile = { name: string; role: string; language: string; goal: string };
-const defaults: AgentProfile = { name: 'GOS Assistant', role: 'Business assistant', language: 'Auto-detect Arabic / English', goal: 'Appointments' };
+const defaults: AgentProfile = { name: 'Upclick Assistant', role: 'Business assistant', language: 'Auto-detect Arabic / English', goal: 'Appointments' };
 
 export function useAgentConfiguration() {
   const [profile, setProfile] = useState(defaults);

@@ -85,7 +85,7 @@ function DiscountEditor({ id }: { id?: string }) {
                 <div>
                   <label htmlFor={`${idPrefix}-code`} className="block text-sm font-medium text-slate-700 mb-1.5">{translateText("Discount Code ")}<span className="text-red-500">*</span>
                   </label>
-                  <div className="flex rounded-lg shadow-sm border border-slate-300 focus-within:ring-2 focus-within:ring-[#7C5CFC]/20 focus-within:border-[#7C5CFC] bg-white overflow-hidden transition-shadow">
+                  <div className="flex rounded-lg shadow-sm border border-slate-300 focus-within:ring-2 focus-within:ring-[#7C3AED]/20 focus-within:border-[#7C3AED] bg-white overflow-hidden transition-shadow">
                     <input
                       id={`${idPrefix}-code`}
                       ref={codeRef}
@@ -113,7 +113,7 @@ function DiscountEditor({ id }: { id?: string }) {
                         key={t}
                         className={`relative flex cursor-pointer rounded-xl border p-4 focus:outline-none transition-all ${
                           form.type === t
-                            ? 'bg-purple-50/50 border-[#7C5CFC] shadow-[0_0_0_1px_#7C5CFC]'
+                            ? 'bg-purple-50/50 border-[#7C3AED] shadow-[0_0_0_1px_#7C3AED]'
                             : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                         }`}
                       >
@@ -128,7 +128,7 @@ function DiscountEditor({ id }: { id?: string }) {
                           }}
                         />
                         <span className="flex items-center gap-3">
-                          <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${form.type === t ? 'bg-[#7C5CFC] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                          <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${form.type === t ? 'bg-[#7C3AED] text-white' : 'bg-slate-100 text-slate-500'}`}>
                             {localizeNode(t === 'Percentage' ? <Percent size={16} /> : <span className="font-bold">€</span>)}
                           </span>
                           <span className="flex flex-col">
@@ -238,7 +238,7 @@ function DiscountEditor({ id }: { id?: string }) {
                     <span className="text-sm font-medium text-slate-700">{localizeNode(form.active ? 'Active' : 'Inactive')}</span>
                     <div className="relative inline-block w-10 h-5 align-middle select-none">
                       <input type="checkbox" className="sr-only peer" checked={form.active} onChange={e => update('active', e.target.checked)} />
-                      <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:bg-[#7C5CFC] transition-colors"></div>
+                      <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:bg-[#7C3AED] transition-colors"></div>
                       <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.active ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </div>
                   </label>
@@ -312,7 +312,7 @@ function DiscountEditor({ id }: { id?: string }) {
                         {localizeNode(form.code || 'CODE')}
                       </div>
                       {localizeNode(form.active ? (
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#7C5CFC] bg-[#7C5CFC]/10 px-2 py-1 rounded-md border border-[#7C5CFC]/20">{translateText("Active")}</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#7C3AED] bg-[#7C3AED]/10 px-2 py-1 rounded-md border border-[#7C3AED]/20">{translateText("Active")}</span>
                       ) : (
                         <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-slate-200 px-2 py-1 rounded-md border border-slate-300">{translateText("Inactive")}</span>
                       ))}

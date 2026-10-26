@@ -64,7 +64,7 @@ try {
   const preferences = { ...settings.defaultWorkspacePreferences, name: 'Acme Academy', currency: 'USD', taxRate: 14, paypal: false };
   await settings.saveWorkspacePreferences('tenant-a', preferences);
   assert.deepEqual(settings.readWorkspacePreferences('tenant-a'), preferences);
-  assert.equal(settings.readWorkspacePreferences('tenant-b').name, 'GOS Store');
+  assert.equal(settings.readWorkspacePreferences('tenant-b').name, 'Upclick Store');
   await assert.rejects(settings.saveWorkspacePreferences('tenant-a', { ...preferences, taxRate: 101 }), /Tax rate/);
   await assert.rejects(settings.saveWorkspacePreferences('tenant-a', { ...preferences, redirectUrl: 'javascript:alert(1)' }), /redirect URL/);
   assert.deepEqual(settings.readWorkspacePreferences('tenant-a'), preferences, 'Invalid settings cannot replace saved data');

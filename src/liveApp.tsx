@@ -8,6 +8,7 @@ import './i18n/rtl.css';
 import './theme-surfaces.css';
 import './theme-controls.css';
 import './module-updates.css';
+import './branding/upclick.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

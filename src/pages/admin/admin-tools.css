@@ -698,7 +698,7 @@
 /* Category-specific icon orb accents */
 .adm-tool-card[data-category="Intelligence"] .adm-tool-icon-orb {
   background: rgba(124, 58, 237, 0.12);
-  color: #7c3aed;
+  color: #7C3AED;
 }
 .adm-tool-card[data-category="Growth"] .adm-tool-icon-orb {
   background: rgba(16, 185, 129, 0.12);
@@ -718,7 +718,7 @@
 }
 .adm-tool-card[data-category="Infrastructure"] .adm-tool-icon-orb {
   background: rgba(99, 102, 241, 0.12);
-  color: #6366f1;
+  color: #7C3AED;
 }
 .adm-tool-card[data-category="Developer"] .adm-tool-icon-orb {
   background: rgba(20, 184, 166, 0.12);

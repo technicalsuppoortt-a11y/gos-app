@@ -21,7 +21,7 @@ export function useGosAI() {
         await gosApi.me(controller.signal);
         const [knowledge, config] = await Promise.all([gosApi.sources(controller.signal), gosApi.assistant(controller.signal)]);
         if (controller.signal.aborted) return;
-        if (!Array.isArray(knowledge.sources) || !config.assistant?.channels) throw new Error('The GOS API returned invalid knowledge or assistant data.');
+        if (!Array.isArray(knowledge.sources) || !config.assistant?.channels) throw new Error('The Upclick API returned invalid knowledge or assistant data.');
         setSources(knowledge.sources); setAssistant(config.assistant); setLoading(false);
         if (knowledge.sources.some(source => ['queued', 'processing'].includes(source.status))) timer = setTimeout(poll, 3000);
       } catch (e) { if (!controller.signal.aborted) { setError((e as Error).message); setLoading(false); } }
@@ -30,7 +30,7 @@ export function useGosAI() {
       try {
         const result = await gosApi.sources(controller.signal);
         if (controller.signal.aborted) return;
-        if (!Array.isArray(result.sources)) throw new Error('The GOS API returned an invalid source list.');
+        if (!Array.isArray(result.sources)) throw new Error('The Upclick API returned an invalid source list.');
         setSources(previous => {
           result.sources.forEach(source => {
             if (source.status === 'ready' && previous.some(old => old.id === source.id && old.status !== 'ready')) showToast.success(`${source.name} is ready.`);

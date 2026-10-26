@@ -17,14 +17,14 @@ const countBy = <T,>(rows: T[], key: (r: T) => string, value: string) => rows.fi
 /* ═════════════════════════ SALES ═════════════════════════ */
 const salesKpis: Kpi[] = [
   { key: 'rev', label: 'Total Sales Revenue', value: '€12,430', delta: '52%', icon: CircleDollarSign, tone: 'green', color: '#16a34a', spark: [10, 12, 11, 14, 13, 15, 14, 18, 17, 21, 22, 25, 24, 32] },
-  { key: 'aov', label: 'Average Order Value', value: '€142.80', delta: '8.4%', icon: ShoppingCart, tone: 'violet', color: '#7c3aed', spark: [12, 13, 12, 14, 13, 15, 16, 15, 17, 16, 18, 17, 19, 20] },
+  { key: 'aov', label: 'Average Order Value', value: '€142.80', delta: '8.4%', icon: ShoppingCart, tone: 'violet', color: '#7C3AED', spark: [12, 13, 12, 14, 13, 15, 16, 15, 17, 16, 18, 17, 19, 20] },
   { key: 'refund', label: 'Refund Rate', value: '1.9%', delta: '0.4%', down: true, icon: RotateCcw, tone: 'orange', color: '#f59e0b', spark: [24, 23, 24, 21, 22, 20, 21, 19, 18, 19, 17, 16, 17, 15] },
   { key: 'mrr', label: 'Recurring Revenue (MRR)', value: '€2,494', delta: '12%', icon: Repeat, tone: 'blue', color: '#3b82f6', spark: [11, 12, 12, 13, 14, 14, 15, 16, 16, 17, 18, 19, 19, 21] },
 ];
 const grossRevenue = series(DAYS, 260, 32, 85, 1).map((v, i) => v + (i > 23 ? (i - 23) * 95 : 0));
 const netRevenue = grossRevenue.map((v, i) => Math.round(v * 0.84 - (i % 7 === 3 ? 60 : 0)));
 const revenueMix: Segment[] = [
-  { name: 'Online Courses', value: 4455, color: '#7c3aed' }, { name: 'Services', value: 3480, color: '#ec4899' },
+  { name: 'Online Courses', value: 4455, color: '#7C3AED' }, { name: 'Services', value: 3480, color: '#ec4899' },
   { name: 'Digital Products', value: 1990, color: '#3b82f6' }, { name: 'Subscriptions', value: 1490, color: '#f59e0b' }, { name: 'Bundles', value: 1015, color: '#14b8a6' },
 ];
 type Txn = { id: string; customer: string; avatar: number; product: string; method: string; amount: string; date: string; status: 'Paid' | 'Pending' | 'Refunded' };
@@ -34,12 +34,12 @@ const txns: Txn[] = ([
   ['#TX-2046', 'Lina Mansour', 45, 'Agency Starter Kit', 'Card', '€67', 'Oct 25, 2024', 'Pending'],
   ['#TX-2045', 'Ahmed Ali', 15, 'WhatsApp Automation Setup', 'Bank transfer', '€497', 'Oct 25, 2024', 'Paid'],
   ['#TX-2044', 'Nour Hassan', 44, 'Business Growth Bundle', 'Card', '€197', 'Oct 24, 2024', 'Refunded'],
-  ['#TX-2043', 'Youssef Adel', 33, 'GOS Pro Membership', 'Card', '€29', 'Oct 24, 2024', 'Paid'],
+  ['#TX-2043', 'Youssef Adel', 33, 'Upclick Pro Membership', 'Card', '€29', 'Oct 24, 2024', 'Paid'],
   ['#TX-2042', 'Mariam Saleh', 49, 'Social Media Templates Pack', 'Apple Pay', '€47', 'Oct 23, 2024', 'Paid'],
   ['#TX-2041', 'Karim Nabil', 51, 'Done-For-You Funnel Setup', 'PayPal', '€497', 'Oct 23, 2024', 'Pending'],
   ['#TX-2040', 'Hana Fawzy', 41, 'Complete AI Marketing Course', 'Card', '€297', 'Oct 22, 2024', 'Paid'],
   ['#TX-2039', 'Tarek Samir', 53, 'Agency Starter Kit', 'Card', '€67', 'Oct 22, 2024', 'Refunded'],
-  ['#TX-2038', 'Dina Mostafa', 36, 'GOS Pro Membership', 'Card', '€29', 'Oct 21, 2024', 'Paid'],
+  ['#TX-2038', 'Dina Mostafa', 36, 'Upclick Pro Membership', 'Card', '€29', 'Oct 21, 2024', 'Paid'],
   ['#TX-2037', 'Mostafa Gamal', 59, 'Strategy Call (1-on-1)', 'Apple Pay', '€97', 'Oct 21, 2024', 'Paid'],
 ] as const).map(([id, customer, av, product, method, amount, date, status]) => ({ id, customer, avatar: av, product, method, amount, date, status }));
 
@@ -51,17 +51,17 @@ export function SalesView({ notify, compare }: ViewProps) {
     <KpiRow items={salesKpis} compare={compare} />
     <div className="an-body">
       <Card title={translateText("Revenue Breakdown")} action={rangeAction(notify, 'Revenue Breakdown')}>
-        <div className="an-summary"><b>€12,430</b><Delta value="52%" /><span>{translateText("net · €14,798 gross")}</span><Legend items={[['Gross revenue', '#c4b5fd'], ['Net revenue', '#7c3aed']]} /></div>
+        <div className="an-summary"><b>€12,430</b><Delta value="52%" /><span>{translateText("net · €14,798 gross")}</span><Legend items={[['Gross revenue', '#A78BFA'], ['Net revenue', '#7C3AED']]} /></div>
         <ChartFrame yLabels={['€2,000', '€1,500', '€1,000', '€500', '€0']} x={dayLabels(true)}>
           <defs>
-            <linearGradient id="anGrossBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#d8ccff" /><stop offset="1" stopColor="#efeaff" /></linearGradient>
-            <linearGradient id="anNetFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" stopOpacity=".28" /><stop offset="1" stopColor="#7c3aed" stopOpacity="0" /></linearGradient>
+            <linearGradient id="anGrossBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#EDE9FE" /><stop offset="1" stopColor="#efeaff" /></linearGradient>
+            <linearGradient id="anNetFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7C3AED" stopOpacity=".28" /><stop offset="1" stopColor="#7C3AED" stopOpacity="0" /></linearGradient>
           </defs>
           {localizeNode(grossRevenue.map((v, i) => { const slot = VW / DAYS, h = (Math.min(v, 2000) / 2000) * VH; return <rect key={i} className="an-bar" x={i * slot + slot * 0.2} y={VH - h} width={slot * 0.6} height={h} rx="1.2" fill="url(#anGrossBar)"><title>{localizeNode(`Sep ${i + 1} · Gross €${v.toLocaleString()} · Net €${netRevenue[i].toLocaleString()}`)}</title></rect>; }))}
           {localizeNode((() => { const pts = toPoints(netRevenue, 2000, true); return <>
             <path d={areaPath(pts)} fill="url(#anNetFill)" />
-            <path d={smoothPath(pts)} fill="none" stroke="#7c3aed" strokeWidth="1.9" vectorEffect="non-scaling-stroke" />
-            <path d={dotsPath(pts)} stroke="#7c3aed" strokeWidth="4.4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            <path d={smoothPath(pts)} fill="none" stroke="#7C3AED" strokeWidth="1.9" vectorEffect="non-scaling-stroke" />
+            <path d={dotsPath(pts)} stroke="#7C3AED" strokeWidth="4.4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </>; })())}
         </ChartFrame>
       </Card>
@@ -85,15 +85,15 @@ export function SalesView({ notify, compare }: ViewProps) {
 /* ═════════════════════════ LEADS ═════════════════════════ */
 const leadKpis: Kpi[] = [
   { key: 'new', label: 'Total New Leads', value: '892', delta: '35%', icon: Users, tone: 'pink', color: '#ec4899', spark: [12, 14, 13, 17, 16, 19, 18, 22, 21, 25, 24, 29, 28, 34] },
-  { key: 'growth', label: 'Lead Growth Rate', value: '35.2%', delta: '9.1%', icon: TrendingUp, tone: 'violet', color: '#7c3aed', spark: [8, 9, 11, 10, 12, 13, 12, 15, 14, 16, 18, 17, 20, 22] },
+  { key: 'growth', label: 'Lead Growth Rate', value: '35.2%', delta: '9.1%', icon: TrendingUp, tone: 'violet', color: '#7C3AED', spark: [8, 9, 11, 10, 12, 13, 12, 15, 14, 16, 18, 17, 20, 22] },
   { key: 'cpl', label: 'Cost Per Lead (CPL)', value: '€4.80', delta: '12%', down: true, icon: Coins, tone: 'orange', color: '#f59e0b', spark: [26, 25, 26, 24, 23, 24, 22, 21, 22, 20, 19, 20, 18, 17] },
   { key: 'qualified', label: 'Qualified Leads', value: '318', delta: '21%', icon: BadgeCheck, tone: 'teal', color: '#14b8a6', spark: [9, 11, 10, 13, 12, 16, 14, 13, 17, 16, 21, 19, 24, 30] },
 ];
 const funnel = [
-  { label: 'Visits', value: '18,432', note: 'All tracked sessions', width: 100, color: '#7c3aed' },
-  { label: 'Leads', value: '892', note: '4.8% of visits', width: 74, color: '#8b5cf6' },
-  { label: 'MQLs', value: '318', note: '35.7% of leads', width: 52, color: '#a78bfa' },
-  { label: 'Customers', value: '186', note: '58.5% of MQLs', width: 34, color: '#c4b5fd' },
+  { label: 'Visits', value: '18,432', note: 'All tracked sessions', width: 100, color: '#7C3AED' },
+  { label: 'Leads', value: '892', note: '4.8% of visits', width: 74, color: '#7C3AED' },
+  { label: 'MQLs', value: '318', note: '35.7% of leads', width: 52, color: '#A78BFA' },
+  { label: 'Customers', value: '186', note: '58.5% of MQLs', width: 34, color: '#A78BFA' },
 ];
 const leadQuality: Segment[] = [
   { name: 'Hot', value: 118, color: '#f43f5e' }, { name: 'Warm', value: 200, color: '#f59e0b' },
@@ -153,14 +153,14 @@ export function LeadsView({ notify, compare }: ViewProps) {
 
 /* ═════════════════════════ TRAFFIC ═════════════════════════ */
 const trafficKpis: Kpi[] = [
-  { key: 'visitors', label: 'Unique Visitors', value: '18,432', delta: '41%', icon: Users, tone: 'violet', color: '#7c3aed', spark: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 23, 24, 28] },
+  { key: 'visitors', label: 'Unique Visitors', value: '18,432', delta: '41%', icon: Users, tone: 'violet', color: '#7C3AED', spark: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 23, 24, 28] },
   { key: 'views', label: 'Page Views', value: '52,816', delta: '33%', icon: MousePointerClick, tone: 'blue', color: '#3b82f6', spark: [12, 13, 12, 15, 14, 16, 15, 18, 19, 18, 21, 22, 21, 25] },
   { key: 'bounce', label: 'Bounce Rate', value: '38.4%', delta: '6.2%', down: true, icon: Undo2, tone: 'orange', color: '#f59e0b', spark: [24, 25, 23, 24, 22, 23, 21, 22, 20, 19, 20, 18, 17, 16] },
   { key: 'session', label: 'Avg. Session Duration', value: '3m 12s', delta: '14%', icon: Timer, tone: 'teal', color: '#14b8a6', spark: [11, 12, 11, 13, 14, 13, 15, 14, 16, 17, 16, 18, 19, 21] },
 ];
 const visitors = series(DAYS, 470, 9, 70, 2);
 const pageViews = visitors.map((v, i) => Math.round(v * 2.75 + Math.sin(i * 0.9) * 90));
-const devices: Segment[] = [{ name: 'Mobile', value: 11428, color: '#7c3aed' }, { name: 'Desktop', value: 5714, color: '#3b82f6' }, { name: 'Tablet', value: 1290, color: '#f59e0b' }];
+const devices: Segment[] = [{ name: 'Mobile', value: 11428, color: '#7C3AED' }, { name: 'Desktop', value: 5714, color: '#3b82f6' }, { name: 'Tablet', value: 1290, color: '#f59e0b' }];
 const code = (c: string) => <span className="an-code">{localizeNode(c)}</span>;
 const favicon = (kind: string) => kind === 'web' ? <span className="an-ch web"><Globe size={10} strokeWidth={2.4} /></span> : <ChannelIcon kind={kind} />;
 
@@ -170,13 +170,13 @@ export function TrafficView({ notify, compare }: ViewProps) {
     <KpiRow items={trafficKpis} compare={compare} />
     <div className="an-body">
       <Card title={translateText("Daily Traffic Trends")} action={rangeAction(notify, 'Daily Traffic Trends')}>
-        <div className="an-summary"><b>18,432</b><Delta value="41%" /><span>{translateText("unique visitors")}</span><Legend items={[['Visitors', '#7c3aed'], ['Page views', '#3b82f6']]} /></div>
+        <div className="an-summary"><b>18,432</b><Delta value="41%" /><span>{translateText("unique visitors")}</span><Legend items={[['Visitors', '#7C3AED'], ['Page views', '#3b82f6']]} /></div>
         <ChartFrame yLabels={['2,400', '1,600', '800', '0']}>
           <defs>
             <linearGradient id="anViewsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#3b82f6" stopOpacity=".16" /><stop offset="1" stopColor="#3b82f6" stopOpacity="0" /></linearGradient>
-            <linearGradient id="anVisitorsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" stopOpacity=".3" /><stop offset="1" stopColor="#7c3aed" stopOpacity="0" /></linearGradient>
+            <linearGradient id="anVisitorsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7C3AED" stopOpacity=".3" /><stop offset="1" stopColor="#7C3AED" stopOpacity="0" /></linearGradient>
           </defs>
-          {localizeNode([{ d: pageViews, c: '#3b82f6', fill: 'anViewsFill', n: 'Page views' }, { d: visitors, c: '#7c3aed', fill: 'anVisitorsFill', n: 'Visitors' }].map(s => { const pts = toPoints(s.d, 2400); return <g key={s.n} className="an-series"><title>{localizeNode(s.n)}</title>
+          {localizeNode([{ d: pageViews, c: '#3b82f6', fill: 'anViewsFill', n: 'Page views' }, { d: visitors, c: '#7C3AED', fill: 'anVisitorsFill', n: 'Visitors' }].map(s => { const pts = toPoints(s.d, 2400); return <g key={s.n} className="an-series"><title>{localizeNode(s.n)}</title>
             <path d={areaPath(pts)} fill={`url(#${s.fill})`} />
             <path d={smoothPath(pts)} fill="none" stroke={s.c} strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
           </g>; }))}
@@ -185,7 +185,7 @@ export function TrafficView({ notify, compare }: ViewProps) {
       <Card title={translateText("Audience Breakdown")} action={rangeAction(notify, 'Audience Breakdown')}>
         <div className="an-split">
           <div className="an-device"><Donut segments={devices} center={<><b>62%</b><small>{translateText("Mobile")}</small></>} /><DonutLegend segments={devices} /></div>
-          <HBarList color="#8b5cf6" items={[
+          <HBarList color="#7C3AED" items={[
             { label: 'Egypt', value: '6,267', pct: 34, icon: code('EG') }, { label: 'Saudi Arabia', value: '4,055', pct: 22, icon: code('SA') },
             { label: 'UAE', value: '2,949', pct: 16, icon: code('AE') }, { label: 'Germany', value: '1,659', pct: 9, icon: code('DE') },
             { label: 'United Kingdom', value: '1,290', pct: 7, icon: code('GB') }, { label: 'Other', value: '2,212', pct: 12, icon: code('··') },
@@ -211,7 +211,7 @@ export function TrafficView({ notify, compare }: ViewProps) {
 
 /* ═════════════════════════ CONVERSATIONS ═════════════════════════ */
 const convKpis: Kpi[] = [
-  { key: 'inq', label: 'Total Inquiries', value: '1,284', delta: '22%', icon: MessageSquareText, tone: 'violet', color: '#7c3aed', spark: [10, 12, 11, 14, 13, 15, 17, 16, 19, 18, 21, 22, 24, 27] },
+  { key: 'inq', label: 'Total Inquiries', value: '1,284', delta: '22%', icon: MessageSquareText, tone: 'violet', color: '#7C3AED', spark: [10, 12, 11, 14, 13, 15, 17, 16, 19, 18, 21, 22, 24, 27] },
   { key: 'resp', label: 'Avg. Response Time', value: '1m 48s', delta: '31%', down: true, icon: Timer, tone: 'blue', color: '#3b82f6', spark: [26, 24, 25, 22, 23, 20, 21, 19, 18, 17, 18, 15, 14, 13] },
   { key: 'res', label: 'Resolution Rate', value: '92.6%', delta: '4.1%', icon: CircleCheck, tone: 'green', color: '#16a34a', spark: [14, 15, 15, 16, 15, 17, 17, 18, 17, 19, 19, 20, 20, 21] },
   { key: 'ai', label: 'AI Auto-reply Rate', value: '68%', delta: '15%', icon: Bot, tone: 'pink', color: '#ec4899', spark: [9, 10, 12, 11, 13, 14, 13, 16, 17, 16, 19, 20, 21, 24] },
@@ -219,7 +219,7 @@ const convKpis: Kpi[] = [
 const hourlyAi = [4, 3, 2, 2, 1, 2, 4, 9, 18, 28, 36, 42, 40, 34, 30, 32, 35, 38, 44, 52, 56, 48, 30, 14];
 const hourlyHuman = [2, 1, 1, 1, 0, 1, 2, 5, 10, 16, 22, 24, 22, 18, 16, 18, 19, 20, 22, 24, 22, 18, 12, 6];
 const hourLabels: Array<[number, string]> = ([[0, '12am'], [4, '4am'], [8, '8am'], [12, '12pm'], [16, '4pm'], [20, '8pm'], [23, '11pm']] as Array<[number, string]>).map(([h, l]) => [(h + 0.5) / 24, l]);
-const channels: Segment[] = [{ name: 'WhatsApp', value: 591, color: '#22c55e' }, { name: 'Messenger', value: 270, color: '#3b82f6' }, { name: 'Live Chat', value: 231, color: '#7c3aed' }, { name: 'Instagram', value: 192, color: '#ec4899' }];
+const channels: Segment[] = [{ name: 'WhatsApp', value: 591, color: '#22c55e' }, { name: 'Messenger', value: 270, color: '#3b82f6' }, { name: 'Live Chat', value: 231, color: '#7C3AED' }, { name: 'Instagram', value: 192, color: '#ec4899' }];
 const channelIcons = { WhatsApp: <ChannelIcon kind="whatsapp" />, Messenger: <ChannelIcon kind="messenger" />, 'Live Chat': <ChannelIcon kind="chat" />, Instagram: <ChannelIcon kind="instagram" /> };
 
 export function ConversationsView({ notify, compare }: ViewProps) {
@@ -228,11 +228,11 @@ export function ConversationsView({ notify, compare }: ViewProps) {
     <KpiRow items={convKpis} compare={compare} />
     <div className="an-body">
       <Card title={translateText("Hourly Chat Volume")} action={rangeAction(notify, 'Hourly Chat Volume')}>
-        <div className="an-summary"><b>1,284</b><Delta value="22%" /><span>{translateText("peak 8–9 PM")}</span><Legend items={[['AI handled', '#7c3aed'], ['Human agents', '#c4b5fd']]} /></div>
+        <div className="an-summary"><b>1,284</b><Delta value="22%" /><span>{translateText("peak 8–9 PM")}</span><Legend items={[['AI handled', '#7C3AED'], ['Human agents', '#A78BFA']]} /></div>
         <ChartFrame yLabels={['80', '60', '40', '20', '0']} x={hourLabels}>
-          <defs><linearGradient id="anAiBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7c3aed" /><stop offset="1" stopColor="#a78bfa" /></linearGradient></defs>
+          <defs><linearGradient id="anAiBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7C3AED" /><stop offset="1" stopColor="#A78BFA" /></linearGradient></defs>
           {localizeNode(hourlyAi.map((ai, h) => { const slot = VW / 24, ah = (ai / 80) * VH, hh = (hourlyHuman[h] / 80) * VH; return <g key={h} className="an-bar-group"><title>{localizeNode(`${h}:00 · AI ${ai} · Human ${hourlyHuman[h]}`)}</title>
-            <rect x={h * slot + slot * 0.2} y={VH - ah - hh} width={slot * 0.6} height={hh} rx="1.2" fill="#d8ccff" />
+            <rect x={h * slot + slot * 0.2} y={VH - ah - hh} width={slot * 0.6} height={hh} rx="1.2" fill="#EDE9FE" />
             <rect x={h * slot + slot * 0.2} y={VH - ah} width={slot * 0.6} height={ah} rx="1.2" fill="url(#anAiBar)" />
           </g>; }))}
         </ChartFrame>
@@ -242,7 +242,7 @@ export function ConversationsView({ notify, compare }: ViewProps) {
       </Card>
       <Card title={translateText("Conversation Outcomes")}>
         <HBarList items={[
-          { label: 'Lead qualified', value: '488', pct: 38, color: '#7c3aed' }, { label: 'Support resolved', value: '244', pct: 19, color: '#14b8a6' },
+          { label: 'Lead qualified', value: '488', pct: 38, color: '#7C3AED' }, { label: 'Support resolved', value: '244', pct: 19, color: '#14b8a6' },
           { label: 'Booked a call', value: '270', pct: 21, color: '#3b82f6' }, { label: 'Purchased', value: '180', pct: 14, color: '#16a34a' }, { label: 'Unresolved', value: '102', pct: 8, color: '#f43f5e' },
         ]} />
       </Card>
@@ -261,7 +261,7 @@ const bookingKpis: Kpi[] = [
   { key: 'booked', label: 'Total Booked Sessions', value: '173', delta: '28%', icon: CalendarDays, tone: 'blue', color: '#3b82f6', spark: [11, 10, 13, 12, 15, 14, 13, 16, 18, 17, 20, 19, 23, 26] },
   { key: 'attend', label: 'Attendance Rate', value: '91.3%', delta: '3.2%', icon: UserCheck, tone: 'green', color: '#16a34a', spark: [14, 15, 14, 16, 16, 17, 16, 18, 18, 19, 19, 20, 21, 21] },
   { key: 'cancel', label: 'Cancellation Rate', value: '6.4%', delta: '1.8%', down: true, icon: CalendarX2, tone: 'pink', color: '#ec4899', spark: [22, 23, 21, 22, 20, 21, 19, 20, 18, 17, 18, 16, 16, 15] },
-  { key: 'upcoming', label: 'Upcoming Meetings', value: '24', delta: '6', icon: Clock, tone: 'violet', color: '#7c3aed', spark: [8, 9, 9, 11, 10, 12, 13, 12, 14, 15, 14, 16, 18, 19], sub: 'next 7 days' },
+  { key: 'upcoming', label: 'Upcoming Meetings', value: '24', delta: '6', icon: Clock, tone: 'violet', color: '#7C3AED', spark: [8, 9, 9, 11, 10, 12, 13, 12, 14, 15, 14, 16, 18, 19], sub: 'next 7 days' },
 ];
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const slots = ['9a', '10a', '11a', '12p', '1p', '2p', '3p', '4p', '5p', '6p'];
@@ -315,26 +315,26 @@ function heat(v: number) { return v === 0 ? '#f3f2f9' : `rgba(124,58,237,${(0.12
 /* ═════════════════════════ PRODUCTS ═════════════════════════ */
 const productKpis: Kpi[] = [
   { key: 'best', label: 'Best Selling Product', value: 'Social Media Templates', delta: '18%', icon: Trophy, tone: 'orange', color: '#f59e0b', spark: [10, 11, 13, 12, 14, 15, 14, 17, 16, 18, 20, 19, 22, 24], sub: '312 units · €14,664' },
-  { key: 'units', label: 'Total Units Sold', value: '906', delta: '31%', icon: Package, tone: 'violet', color: '#7c3aed', spark: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 23, 24, 28] },
+  { key: 'units', label: 'Total Units Sold', value: '906', delta: '31%', icon: Package, tone: 'violet', color: '#7C3AED', spark: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 23, 24, 28] },
   { key: 'conv', label: 'Product Conversion Rate', value: '4.6%', delta: '0.8%', icon: Target, tone: 'green', color: '#16a34a', spark: [12, 13, 12, 14, 15, 14, 16, 15, 17, 18, 17, 19, 21, 22] },
   { key: 'refunded', label: 'Refunded Products', value: '7', delta: '3', down: true, icon: RotateCcw, tone: 'pink', color: '#ec4899', spark: [20, 21, 19, 20, 18, 19, 17, 16, 17, 15, 14, 15, 13, 12] },
 ];
 const productRevenue: Segment[] = [
-  { name: 'AI Marketing Course', value: 36828, color: '#7c3aed' }, { name: 'WhatsApp Setup', value: 17892, color: '#22c55e' },
+  { name: 'AI Marketing Course', value: 36828, color: '#7C3AED' }, { name: 'WhatsApp Setup', value: 17892, color: '#22c55e' },
   { name: 'Funnel Setup', value: 17892, color: '#3b82f6' }, { name: 'Templates Pack', value: 14664, color: '#ec4899' },
   { name: 'Agency Starter Kit', value: 14070, color: '#f59e0b' }, { name: 'Growth Bundle', value: 10638, color: '#14b8a6' }, { name: 'Other', value: 7150, color: '#cbd5e1' },
 ];
 const productLines = [
-  { name: 'Templates Pack', color: '#7c3aed', data: series(DAYS, 6, 0.25, 2.4, 1) },
+  { name: 'Templates Pack', color: '#7C3AED', data: series(DAYS, 6, 0.25, 2.4, 1) },
   { name: 'Agency Starter Kit', color: '#ec4899', data: series(DAYS, 4, 0.18, 2, 3) },
   { name: 'AI Marketing Course', color: '#3b82f6', data: series(DAYS, 2.5, 0.12, 1.4, 5) },
-  { name: 'GOS Pro', color: '#14b8a6', data: series(DAYS, 1.5, 0.08, 1.1, 7) },
+  { name: 'Upclick Pro', color: '#14b8a6', data: series(DAYS, 1.5, 0.08, 1.1, 7) },
 ];
 const productRows = [
   { name: 'Social Media Templates Pack', img: socialPackImg, type: 'Digital Product', price: '€47', units: 312, revenue: '€14,664', conv: '6.8%', refunds: 2, spark: [8, 9, 11, 10, 12, 14, 13, 15, 17, 16, 19] },
   { name: 'Agency Starter Kit', img: agencyKitImg, type: 'Digital Product', price: '€67', units: 210, revenue: '€14,070', conv: '5.9%', refunds: 1, spark: [8, 9, 11, 10, 12, 11, 13, 12, 15, 14, 17] },
   { name: 'Complete AI Marketing Course', img: aiCourseImg, type: 'Online Course', price: '€297', units: 124, revenue: '€36,828', conv: '4.2%', refunds: 2, spark: [8, 10, 9, 12, 11, 14, 12, 15, 18, 16, 20] },
-  { name: 'GOS Pro Membership', img: gosProImg, type: 'Subscription', price: '€29/mo', units: 86, revenue: '€2,494', conv: '3.8%', refunds: 0, spark: [7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14] },
+  { name: 'Upclick Pro Membership', img: gosProImg, type: 'Subscription', price: '€29/mo', units: 86, revenue: '€2,494', conv: '3.8%', refunds: 0, spark: [7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14] },
   { name: 'Business Growth Bundle', img: growthBundleImg, type: 'Bundle', price: '€197', units: 54, revenue: '€10,638', conv: '3.1%', refunds: 1, spark: [9, 8, 10, 11, 10, 12, 13, 12, 14, 15, 17] },
   { name: '1-on-1 Strategy Call', img: strategyCallImg, type: 'Service', price: '€97', units: 48, revenue: '€4,656', conv: '5.2%', refunds: 0, spark: [9, 10, 9, 11, 10, 12, 11, 13, 12, 14, 16] },
   { name: 'WhatsApp Automation Setup', img: whatsappSetupImg, type: 'Service', price: '€497', units: 36, revenue: '€17,892', conv: '2.7%', refunds: 1, spark: [7, 9, 8, 10, 12, 11, 13, 12, 14, 16, 18] },
@@ -367,7 +367,7 @@ export function ProductsView({ notify, compare }: ViewProps) {
               <td className="text-start"><span className="an-product-cell"><img src={p.img} alt={translateText("")} />{localizeNode(p.name)}</span></td>
               <td className="text-center"><span className={`an-type mx-auto ${p.type.toLowerCase().replace(/\s+/g, '-')}`}>{localizeNode(p.type)}</span></td>
               <td className="text-center">{localizeNode(p.price)}</td><td className="text-center"><b>{localizeNode(p.units)}</b></td><td className="text-center">{localizeNode(p.revenue)}</td><td className="text-center">{localizeNode(p.conv)}</td><td className="text-center">{localizeNode(p.refunds)}</td>
-              <td className="text-center"><Sparkline data={p.spark} color="#7c3aed" fill={false} className="an-table-spark mx-auto" /></td>
+              <td className="text-center"><Sparkline data={p.spark} color="#7C3AED" fill={false} className="an-table-spark mx-auto" /></td>
             </tr>))}</tbody>
           </table>
         </div>

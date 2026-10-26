@@ -26,14 +26,14 @@
 }
 
 .gos-combo-trigger:hover:not(:disabled) {
-  border-color: #9d8df1;
+  border-color: #A78BFA;
   background-color: #fdfcff;
 }
 
 .gos-combo-trigger:focus-visible,
 .gos-combo-trigger[aria-expanded="true"] {
   outline: none;
-  border-color: #7560eb;
+  border-color: #7C3AED;
   box-shadow: 0 0 0 3px rgba(117, 96, 235, 0.16), 0 1px 2px rgba(16, 24, 40, 0.04);
   background-color: #ffffff;
 }
@@ -68,7 +68,7 @@
 
 .gos-combo-trigger[aria-expanded="true"] .gos-combo-chevron {
   transform: rotate(180deg);
-  color: #7560eb;
+  color: #7C3AED;
 }
 
 .gos-combo.is-open {
@@ -87,7 +87,7 @@
   text-transform: uppercase;
   border-radius: 5px;
   background: #f3effe;
-  color: #6a4cd7;
+  color: #7C3AED;
   border: 1px solid #e2dbf7;
   flex-shrink: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -165,7 +165,7 @@
 
 .gos-combo-search:focus-within {
   background: #ffffff;
-  border-color: #8c77fc;
+  border-color: #A78BFA;
   box-shadow: 0 0 0 2px rgba(140, 119, 252, 0.12);
 }
 
@@ -280,23 +280,23 @@
 
 .gos-combo-check {
   flex: none;
-  color: #7254d4;
+  color: #7C3AED;
   margin-inline-start: auto;
 }
 
 .gos-combo-option.is-highlighted {
   background: #f1edfc;
-  color: #553bb4;
+  color: #7C3AED;
 }
 
 .gos-combo-option.is-highlighted .gos-combo-pill {
   background: #ffffff;
-  border-color: #cdbffa;
-  color: #553bb4;
+  border-color: #A78BFA;
+  color: #7C3AED;
 }
 
 .gos-combo-option.is-highlighted .gos-combo-option-sub {
-  color: #6e58b8;
+  color: #7C3AED;
 }
 
 .gos-combo-option.is-selected {
@@ -326,7 +326,7 @@
 
 .dark .gos-combo-trigger:focus-visible,
 .dark .gos-combo-trigger[aria-expanded="true"] {
-  border-color: #8c76fc;
+  border-color: #A78BFA;
   box-shadow: 0 0 0 3px rgba(140, 118, 252, 0.22);
   background-color: #171f30;
 }
@@ -336,13 +336,13 @@
 }
 
 .dark .gos-combo-trigger[aria-expanded="true"] .gos-combo-chevron {
-  color: #a494fd;
+  color: #A78BFA;
 }
 
 .dark .gos-combo-pill {
   background: #25223e;
-  color: #c4b5fd;
-  border-color: #3d3566;
+  color: #A78BFA;
+  border-color: #7C3AED;
 }
 
 .dark .gos-combo-panel {
@@ -363,7 +363,7 @@
 
 .dark .gos-combo-search:focus-within {
   background: #151d2d;
-  border-color: #8c76fc;
+  border-color: #A78BFA;
   box-shadow: 0 0 0 2px rgba(140, 118, 252, 0.2);
 }
 
@@ -403,17 +403,17 @@
 
 .dark .gos-combo-option.is-highlighted {
   background: #272242;
-  color: #d4c8ff;
+  color: #EDE9FE;
 }
 
 .dark .gos-combo-option.is-highlighted .gos-combo-pill {
   background: #1b1731;
-  border-color: #483d78;
-  color: #ddd6fe;
+  border-color: #7C3AED;
+  color: #EDE9FE;
 }
 
 .dark .gos-combo-option.is-highlighted .gos-combo-option-sub {
-  color: #ab9be0;
+  color: #A78BFA;
 }
 
 .dark .gos-combo-option.is-selected {
@@ -421,7 +421,7 @@
 }
 
 .dark .gos-combo-check {
-  color: #b7a0ff;
+  color: #A78BFA;
 }
 
 .dark .gos-combo-empty {

@@ -1,6 +1,6 @@
 /* ============================================================
-   GOS CRM & Leads v2 — Full Design System
-   Primary: #7C5CFC (purple), Slate text system
+   Upclick CRM & Leads v2 — Full Design System
+   Primary: #7C3AED (purple), Slate text system
    ============================================================ */
 
 /* ─── Page Wrapper ─────────────────────────────────────────── */
@@ -39,7 +39,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #7c5cfc, #a78bfa);
+  background: linear-gradient(135deg, #7C3AED, #A78BFA);
   color: #fff;
   flex: none;
 }
@@ -53,7 +53,7 @@
 .crm2-header-sub {
   margin: 0;
   font-size: 11px;
-  color: #8882b5;
+  color: #A78BFA;
 }
 .crm2-header-right {
   display: flex;
@@ -70,19 +70,19 @@
   padding: 8px 14px;
   border: 0;
   border-radius: 9px;
-  background: linear-gradient(118deg, #7c5cfc, #6d52e5);
+  background: linear-gradient(118deg, #7C3AED, #A78BFA);
   color: #fff;
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
   white-space: nowrap;
   transition: filter 0.18s, transform 0.18s, box-shadow 0.18s;
-  box-shadow: 0 3px 10px #7c5cfc25;
+  box-shadow: 0 3px 10px #7C3AED25;
 }
 .crm2-btn-primary:hover {
   filter: brightness(1.07);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px #7c5cfc30;
+  box-shadow: 0 6px 18px #7C3AED30;
 }
 .crm2-btn-chevron {
   display: grid;
@@ -100,7 +100,7 @@
   border: 1px solid #e4dff7;
   border-radius: 8px;
   background: #fff;
-  color: #5b548a;
+  color: #A78BFA;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -108,9 +108,9 @@
   transition: border-color 0.15s, background 0.15s;
 }
 .crm2-btn-secondary:hover {
-  border-color: #c4b5fd;
+  border-color: #A78BFA;
   background: #faf8ff;
-  color: #7c5cfc;
+  color: #7C3AED;
 }
 .crm2-pipeline-selector {
   display: inline-flex;
@@ -121,7 +121,7 @@
   border: 1px solid #e4dff7;
   border-radius: 8px;
   background: #faf8ff url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a94a7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
-  color: #5b548a;
+  color: #A78BFA;
   font-size: 11px;
   font-weight: 650;
   cursor: pointer;
@@ -129,12 +129,12 @@
   -webkit-appearance: none;
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
-.crm2-pipeline-selector:hover { 
-  border-color: #c4b5fd; 
+.crm2-pipeline-selector:hover {
+  border-color: #A78BFA;
   background-color: #fcfbff;
 }
 .crm2-pipeline-selector:focus {
-  border-color: #7c5cfc;
+  border-color: #7C3AED;
   box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.15);
   outline: none;
 }
@@ -156,14 +156,14 @@
   padding: 10px 14px;
   border: 0;
   background: transparent;
-  color: #8882b5;
+  color: #A78BFA;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s;
 }
 .crm2-subnav-btn.active {
-  color: #7c5cfc;
+  color: #7C3AED;
   font-weight: 700;
 }
 .crm2-subnav-btn.active::after {
@@ -174,7 +174,7 @@
   inset-inline-end: 8px;
   height: 2px;
   border-radius: 2px 2px 0 0;
-  background: #7c5cfc;
+  background: #7C3AED;
 }
 .crm2-subnav-indicator {
   position: absolute;
@@ -183,7 +183,7 @@
   inset-inline-end: 0;
   height: 2px;
   border-radius: 2px 2px 0 0;
-  background: #7c5cfc;
+  background: #7C3AED;
 }
 .crm2-subnav-content {
   position: relative;

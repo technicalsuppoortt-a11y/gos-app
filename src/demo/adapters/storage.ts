@@ -8,5 +8,5 @@ export async function getDownloadURL(target: { fullPath: string }) {
   // Delivery links obey the app's HTTPS/HTTP validation; image previews stay local.
   return file.type.startsWith('image/') ? URL.createObjectURL(file) : window.location.origin + '/product-access?token=demo&file=' + encodeURIComponent(target.fullPath);
 }
-export async function getBlob(target: { fullPath: string }) { const file = files.get(target.fullPath); if (!file) return new Blob(['GOS demo download. No real customer files are included.'], { type: 'text/plain' }); return file; }
+export async function getBlob(target: { fullPath: string }) { const file = files.get(target.fullPath); if (!file) return new Blob(['Upclick demo download. No real customer files are included.'], { type: 'text/plain' }); return file; }
 export async function deleteObject(target: { fullPath: string }) { files.delete(target.fullPath); }

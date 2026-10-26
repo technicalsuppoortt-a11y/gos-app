@@ -1,4 +1,4 @@
-# GOS REST integration
+# Upclick REST integration
 
 The API defaults to `https://gos-api.vercel.app`. Override it with
 `VITE_GOS_API_BASE_URL` in your Vite environment, then restart Vite.
@@ -65,7 +65,7 @@ display an availability notice in REST Inbox instead of pretending to save.
 - `npm run smoke:gos-api`: authenticated live text/file upload and indexing.
 
 For the live smoke test, set `FIREBASE_ID_TOKEN` in the process environment to
-a fresh token for a user provisioned in the GOS API. Do not put a real token in
+a fresh token for a user provisioned in the Upclick API. Do not put a real token in
 source control or the Postman collection. The script verifies health, current
 user and token; uploads the fixture as text and a real TXT multipart file;
 checks both are listed and ready with indexed chunks; then checks the grounded

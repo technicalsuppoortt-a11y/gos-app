@@ -38,7 +38,7 @@ export function GosPlayground() {
     const controller = new AbortController();
     gosApi.playground(controller.signal)
       .then(result => {
-        if (!Array.isArray(result.tests)) throw new Error('The GOS API returned invalid playground history.');
+        if (!Array.isArray(result.tests)) throw new Error('The Upclick API returned invalid playground history.');
         setTests(result.tests);
       })
       .catch(e => {

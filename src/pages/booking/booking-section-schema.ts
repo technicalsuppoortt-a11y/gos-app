@@ -1,5 +1,5 @@
 // Create/Edit source: public/Feedback/Calander/BookingSection.tsx.
-// GOS keeps stable string IDs and numeric durations while preserving the reference's settings.
+// Upclick keeps stable string IDs and numeric durations while preserving the reference's settings.
 export type LocationType = 'none' | 'zoom' | 'meet' | 'teams' | 'phone' | 'in-person' | 'ask-invitee' | 'custom';
 export type LocationOption = { id: string; type: LocationType; label: string; address: string; customLabel: string; linked: boolean };
 export const LOCATION_TYPES: Record<LocationType, string> = { none: 'None', zoom: 'Zoom', meet: 'Google Meet', teams: 'Microsoft Teams', phone: 'Phone call', 'in-person': 'In person', 'ask-invitee': 'Invitee location', custom: 'Custom location' };

@@ -13,7 +13,7 @@ import type { RootState } from '../../store';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
 import { type LandingCopy } from './landing-content';
-import { cmsEvent, readCMS, type LandingCMS } from './cms';
+import { cmsEvent, readCMS } from './cms';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
 import { NativeDashboardPreview } from './NativeDashboardPreview';
@@ -35,8 +35,9 @@ const prefersReducedMotion = () => typeof window !== 'undefined' && window.match
 
 function Logo({ inverted = false }: { inverted?: boolean }) {
   return (
-    <span className={`lp-logo${inverted ? ' is-inverted' : ''}`} aria-label="GOS">
-      GOS
+    <span className={`lp-logo${inverted ? ' is-inverted' : ''}`} aria-label="Upclick">
+      <img src="/upclick-mark.svg" alt="" width="36" height="38"/>
+      <span className="lp-logo__wordmark">Upclick</span>
     </span>
   );
 }
@@ -187,8 +188,8 @@ function HeroMock({ copy }: { copy: LandingCopy }) {
 
       <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
         <aside className="lp-mock__side">
-          <div className="lp-mock__logo">GOS<span>WORKSPACE</span></div>
-          <ul role="tablist" aria-orientation="vertical" aria-label="GOS">
+          <div className="lp-mock__logo" role="img" aria-label="Upclick"><img className="lp-preview-logo lp-preview-logo-dark" src="/upclick-logo.svg" width="84" height="27" alt=""/><img className="lp-preview-logo lp-preview-logo-light" src="/upclick-logo-light.svg" width="84" height="27" alt=""/><span>WORKSPACE</span></div>
+          <ul role="tablist" aria-orientation="vertical" aria-label="Upclick">
             {navItems.map(({ label: item, Icon }, index) => {
               const selected = activeTab === index;
               return (
@@ -694,12 +695,12 @@ function CtaWaves({ side }: { side: 'start' | 'end' }) {
           <stop offset="1" stopColor="#05041f" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={`${id}-b`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#2a2190" stopOpacity="0.75" />
-          <stop offset="1" stopColor="#2a2190" stopOpacity="0" />
+          <stop offset="0" stopColor="#7C3AED" stopOpacity="0.75" />
+          <stop offset="1" stopColor="#7C3AED" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={`${id}-c`} x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#3b2fc4" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#3b2fc4" stopOpacity="0" />
+          <stop offset="0" stopColor="#7C3AED" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#7C3AED" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d="M0 0 H230 C150 80 270 170 180 260 C120 320 170 370 220 400 H0 Z" fill={`url(#${id}-a)`} />
@@ -843,7 +844,10 @@ export const LandingPage: React.FC = () => {
   const preview = new URLSearchParams(window.location.search).get('cms-preview') === '1';
   const [cms, setCMS] = useState(() => readCMS(preview));
   useEffect(() => { const refresh = () => setCMS(readCMS(preview)); window.addEventListener(cmsEvent, refresh); window.addEventListener('storage', refresh); return () => { window.removeEventListener(cmsEvent, refresh); window.removeEventListener('storage', refresh); }; }, [preview]);
-  const copy = cms[language] ?? cms.en;
+  const copy = useMemo(() => {
+    const content = cms[language] ?? cms.en;
+    return { ...content, nav: { ...content.nav, links: content.nav.links.filter(link => link.id !== 'pricing') } };
+  }, [cms, language]);
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
@@ -906,7 +910,6 @@ export const LandingPage: React.FC = () => {
         <Toolkit copy={copy} />
         <Testimonials copy={copy} />
         <Faq copy={copy} />
-        <Pricing cms={cms} language={language} />
         <FinalCta copy={copy} onVideo={openVideo} />
       </main>
       <footer className="lp-cms-footer lp-container">{copy.footer.rights}</footer>
@@ -917,8 +920,3 @@ export const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
-
-function Pricing({cms,language}:{cms:LandingCMS;language:Language}) {
-  const [annual,setAnnual] = useState(false); const ar=language==='ar';
-  return <section className="lp-section" id="pricing"><div className="lp-container"><div className="lp-section-head"><h2 className="lp-h2">{cms.pricingTitle[language]}</h2><p className="lp-lead">{cms.pricingDescription[language]}</p><div className="lp-pricing-cycle"><button aria-pressed={!annual} onClick={()=>setAnnual(false)}>{ar?'شهري':'Monthly'}</button><button aria-pressed={annual} onClick={()=>setAnnual(true)}>{ar?'سنوي':'Annual'}</button></div></div><div className="lp-pricing-grid">{cms.pricing.map((p,i)=><article className="lp-pricing-card" key={i}><h3>{ar?p.nameAr:p.name}</h3><strong>{new Intl.NumberFormat(ar?'ar-EG':'en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(annual?p.annual:p.monthly)}<small> / {annual?(ar?'سنة':'year'):(ar?'شهر':'month')}</small></strong><p>{ar?p.featuresAr:p.features}</p><BookButton id={`lp-pricing-${i}`} label={cms.pricingCTA[language]}/></article>)}</div></div></section>;
-}

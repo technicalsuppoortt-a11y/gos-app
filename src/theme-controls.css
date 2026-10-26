@@ -7,7 +7,7 @@ html.dark {
   --ui-text: #edf0f7;
   --ui-text-secondary: #c0c7d5;
   --ui-text-muted: #a0aabc;
-  --ui-accent-text: #b5aaff;
+  --ui-accent-text: #A78BFA;
   --ui-accent-surface: #292440;
   --panel: var(--ui-surface);
   --ink: var(--ui-text);
@@ -18,7 +18,7 @@ html.dark {
 
 /* The booking editor's 34 x 19 track and 15px thumb are the standard.
    Labelled domain/troubleshoot controls keep their labels outside the track. */
-:root { --switch-active: #6366f1; --switch-rest: #cbd5e1; }
+:root { --switch-active: #7C3AED; --switch-rest: #cbd5e1; }
 html.dark { --switch-rest: #475569; }
 .sa-menu-button, .sa-mobile-scrim, .sa-mobile-close { display: none; }
 :is(button[role=switch], input[role=switch], .af-switch):not(.aw-default):not(.bk-troubleshoot-toggle):not(.af-status-switch),

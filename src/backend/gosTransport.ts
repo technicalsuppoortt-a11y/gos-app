@@ -30,7 +30,7 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
           });
         } catch (error) {
           if (options.signal?.aborted) throw error;
-          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the GOS API. Check your connection and try again.');
+          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the Upclick API. Check your connection and try again.');
         }
         if (response.status === 401 && !options.public && attempt === 0) continue;
         options.onResponse?.(response.status);
@@ -40,9 +40,9 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
         if (!response.ok || payload?.success === false) {
           const errors = payload?.error?.details ?? payload?.errors;
           const detail = errors && typeof errors === 'object' ? Object.values(errors).flat().filter(v => typeof v === 'string').join(' ') : '';
-          throw new GosApiError(detail || payload?.error?.message || payload?.message || `GOS API request failed (${response.status}).`, response.status, payload?.error?.code ?? (typeof payload?.error === 'string' ? payload.error : payload?.code));
+          throw new GosApiError(detail || payload?.error?.message || payload?.message || `Upclick API request failed (${response.status}).`, response.status, payload?.error?.code ?? (typeof payload?.error === 'string' ? payload.error : payload?.code));
         }
-        if (payload?.data === undefined) throw new Error('The GOS API returned an unexpected response.');
+        if (payload?.data === undefined) throw new Error('The Upclick API returned an unexpected response.');
         return payload.data as T;
       }
       throw new Error('Your session has expired. Sign in again.');

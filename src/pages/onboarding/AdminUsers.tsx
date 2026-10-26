@@ -32,12 +32,12 @@ import { switchToUser } from '../../backend/impersonation';
 import './onboarding.css';
 
 const AVATAR_GRADIENTS = [
-  'linear-gradient(135deg, #6366f1, #8b5cf6)',
+  'linear-gradient(135deg, #7C3AED, #7C3AED)',
   'linear-gradient(135deg, #3b82f6, #60a5fa)',
   'linear-gradient(135deg, #10b981, #34d399)',
   'linear-gradient(135deg, #f59e0b, #fbbf24)',
   'linear-gradient(135deg, #ec4899, #f472b6)',
-  'linear-gradient(135deg, #8b5cf6, #c084fc)',
+  'linear-gradient(135deg, #7C3AED, #A78BFA)',
   'linear-gradient(135deg, #06b6d4, #22d3ee)',
 ];
 
@@ -779,7 +779,7 @@ export function AdminUsers() {
                     padding: '7px 12px',
                     fontSize: '12px',
                     fontWeight: 600,
-                    color: copiedLink ? '#059669' : '#4f46e5',
+                    color: copiedLink ? '#059669' : '#7C3AED',
                     background: copiedLink ? '#ecfdf5' : '#eef2ff',
                     border: copiedLink ? '1px solid #a7f3d0' : '1px solid #e0e7ff',
                     borderRadius: '8px',

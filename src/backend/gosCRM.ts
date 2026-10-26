@@ -55,7 +55,7 @@ export async function refreshGosCRM(signal?: AbortSignal) {
   const scope = store.getState().auth.tenant?.id;
   const [leads, pipelines] = await Promise.all([gosApi.leads(undefined, signal), gosApi.pipelines(signal)]);
   if (signal?.aborted || !scope || store.getState().auth.tenant?.id !== scope) return;
-  if (!Array.isArray(leads.leads) || !Array.isArray(pipelines.pipelines)) throw new Error('The GOS API returned invalid CRM data.');
+  if (!Array.isArray(leads.leads) || !Array.isArray(pipelines.pipelines)) throw new Error('The Upclick API returned invalid CRM data.');
   const current = store.getState().crm;
   const apiPipelines = (pipelines.pipelines as Pipeline[]).map(pipeline => {
     const existing = current.pipelines.find(item => item.id === pipeline.id);
@@ -107,7 +107,7 @@ export async function bulkGosCRM(ids: string[], action: 'tag' | 'owner' | 'stage
   }
   if (apiIds.length && action !== 'delete') await refreshGosCRM();
 }
-// Pipeline DELETE is not in the GOS contract. Persist a reversible workspace archive.
+// Pipeline DELETE is not in the Upclick contract. Persist a reversible workspace archive.
 export async function archiveGosPipeline(pipelineId: string) {
   const state = store.getState(); const scope = state.auth.tenant?.id;
   const pipeline = state.crm.pipelines.find(item => item.id === pipelineId && !item.archived);

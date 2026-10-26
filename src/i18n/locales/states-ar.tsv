@@ -5,7 +5,7 @@
 2.4 MB	2.4 ميجابايت
 AI paused workspace-wide	الذكاء الاصطناعي متوقف مؤقتًا في مساحة العمل
 About us	نبذة عنا
-Activate GOS Assistant	تفعيل مساعد GOS
+Activate Upclick Assistant	تفعيل مساعد Upclick
 Booking form or checkout is captured in the same workspace record.	يُسجّل نموذج الحجز أو إتمام الشراء في سجل مساحة العمل نفسه.
 Bring your products together in one offer.	اجمع منتجاتك في عرض واحد.
 Build and sell your online course with lessons, resources and student access.	أنشئ دورتك وبعها عبر الإنترنت مع الدروس والموارد ووصول الطلاب.
@@ -43,7 +43,7 @@ Opening checkout…	جارٍ فتح إتمام الشراء...
 Opening provider…	جارٍ فتح المزوّد...
 Opens on exit intent	يفتح عند محاولة المغادرة
 Opens on page load	يفتح عند تحميل الصفحة
-Pause GOS Assistant	إيقاف مساعد GOS مؤقتًا
+Pause Upclick Assistant	إيقاف مساعد Upclick مؤقتًا
 Pause voice message	إيقاف الرسالة الصوتية مؤقتًا
 Pause voice note	إيقاف الملاحظة الصوتية مؤقتًا
 Payment is recorded against the canonical offer.	تُسجّل الدفعة في العرض الأساسي.
@@ -108,7 +108,7 @@ Your free pass is waiting!	تجربتك المجانية بانتظارك!
 Your heading	عنوانك
 Your host will review your request before confirming.	سيراجع المضيف طلبك قبل تأكيده.
 Your meeting address	عنوان اجتماعك
-Your payment provider securely stores your payment details. GOS does not store full card numbers.	يحفظ مزوّد الدفع بياناتك بأمان. لا يخزّن GOS أرقام البطاقات كاملة.
+Your payment provider securely stores your payment details. Upclick does not store full card numbers.	يحفظ مزوّد الدفع بياناتك بأمان. لا يخزّن Upclick أرقام البطاقات كاملة.
 Your product stays private until you publish.	يبقى منتجك خاصًا حتى نشره.
 Your request is recorded. Contact the host to arrange payment.	تم تسجيل طلبك. تواصل مع المضيف لترتيب الدفع.
 Your service is live and ready to accept bookings.	خدمتك منشورة وجاهزة لاستقبال الحجوزات.

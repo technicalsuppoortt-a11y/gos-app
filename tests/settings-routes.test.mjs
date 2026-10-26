@@ -39,7 +39,7 @@ try {
       assert.ok(html.includes('aria-label="Search team members"'));
     }
     if (path==='billing') {
-      for (const label of ['€47.80','GOS Pro','Subscription','Wallet','Usage','Transactions','WhatsApp','Email','AI Follow-Up','Other Services','Payment Methods','Auto Recharge','VISA','PayPal','Bank Transfer','Date','Type','Description','Service','Amount','Balance']) assert.ok(html.includes(label),`Billing has ${label}`);
+      for (const label of ['€47.80','Upclick Pro','Subscription','Wallet','Usage','Transactions','WhatsApp','Email','AI Follow-Up','Other Services','Payment Methods','Auto Recharge','VISA','PayPal','Bank Transfer','Date','Type','Description','Service','Amount','Balance']) assert.ok(html.includes(label),`Billing has ${label}`);
       assert.ok(html.includes('Preview data'),'Reference wallet values are identified as preview data');
     }
     if (path==='integrations') {

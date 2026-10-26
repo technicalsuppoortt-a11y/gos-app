@@ -44,7 +44,7 @@ function BookingTabs() {
       {localizeNode(active === tab.value && (
         <motion.div
           layoutId="activeBookingTab"
-          className="absolute inset-0 bg-[#efedff] dark:bg-[#30265b] rounded-[9px]"
+          className="absolute inset-0 bg-[#efedff] dark:bg-[#0F172A] rounded-[9px]"
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       ))}
@@ -90,7 +90,7 @@ export const UserLayout: React.FC = () => {
         {/* Onboarding progress is temporarily disabled. */}
         <WorkspaceData><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><h1>{translateText("Module access restricted")}</h1><p>{translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p></section>)}</div></WorkspaceData>
       </main>
-      {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 GOS Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
+      {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 Upclick Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
     </div>
   </div>;
 };

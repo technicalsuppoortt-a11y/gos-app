@@ -176,7 +176,7 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={`relative inline-flex shrink-0 items-center px-[2px] rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:cursor-not-allowed disabled:opacity-50 ${track} ${
         checked
-          ? "bg-[#7C5CFC] shadow-[0_2px_8px_-2px_rgba(124,92,252,0.6)]"
+          ? "bg-[#7C3AED] shadow-[0_2px_8px_-2px_rgba(124,92,252,0.6)]"
           : "bg-slate-200 dark:bg-white/15"
       }`}
     >
@@ -232,7 +232,7 @@ function Avatar({
         />
       ) : (
         <span
-          className="grid h-full w-full place-items-center rounded-full bg-gradient-to-br from-[#A48BFF] to-[#6D4DF2] font-semibold text-white ring-2 ring-white dark:ring-[#111522]"
+          className="grid h-full w-full place-items-center rounded-full bg-gradient-to-br from-[#A78BFA] to-[#7C3AED] font-semibold text-white ring-2 ring-white dark:ring-[#111522]"
           style={{ fontSize: Math.round(size * 0.36) }}
         >
           {localizeNode(person.initials)}
@@ -317,7 +317,7 @@ function VoicePlayer({ note, tone = "light" }: { note: VoiceNote; tone?: "light"
           }
         }}
         aria-label={translateText(playing ? "Pause voice message" : "Play voice message")}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#7C5CFC] text-white shadow-sm transition hover:bg-[#6a4bf0]"
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#7C3AED] text-white shadow-sm transition hover:bg-[#7C3AED]"
       >
         {localizeNode(playing ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" className="ms-0.5" />)}
       </button>
@@ -705,7 +705,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   <span
                     className={`grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold tabular-nums ${
                       isActive
-                        ? "bg-[#7C5CFC] text-white"
+                        ? "bg-[#7C3AED] text-white"
                         : "bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300"
                     }`}
                   >
@@ -717,7 +717,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           }))}
         </div>
         <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 ps-3 pe-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
-          <Sparkles size={15} className="text-[#7C5CFC]" fill="currentColor" />
+          <Sparkles size={15} className="text-[#7C3AED]" fill="currentColor" />
           <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : 'AI Active')}</span>
           <Toggle
             checked={aiMode}
@@ -759,7 +759,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   </span>
                 ))}
                 {localizeNode(folder === id && (
-                  <motion.span layoutId="inbox-folder-underline" className="absolute inset-x-1.5 -bottom-px h-[2px] rounded-full bg-[#7C5CFC]" />
+                  <motion.span layoutId="inbox-folder-underline" className="absolute inset-x-1.5 -bottom-px h-[2px] rounded-full bg-[#7C3AED]" />
                 ))}
               </button>
             )))}
@@ -791,7 +791,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               >
                 <SlidersHorizontal size={15} />
                 {localizeNode(tagFilter.length > 0 && (
-                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#7C5CFC] px-1 text-[9px] font-bold text-white">
+                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#7C3AED] px-1 text-[9px] font-bold text-white">
                     {localizeNode(tagFilter.length)}
                   </span>
                 ))}
@@ -812,7 +812,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         >
                           <span
                             className={`grid h-4 w-4 place-items-center rounded border transition ${
-                              checked ? "border-[#7C5CFC] bg-[#7C5CFC] text-white" : "border-slate-300 dark:border-white/20"
+                              checked ? "border-[#7C3AED] bg-[#7C3AED] text-white" : "border-slate-300 dark:border-white/20"
                             }`}
                           >
                             {localizeNode(checked && <Check size={11} strokeWidth={3} />)}
@@ -845,7 +845,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         : "border-transparent hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                     }`}
                   >
-                    {localizeNode(isActive && <span className="absolute bottom-0 start-0 top-0 w-1 bg-[#7C5CFC]" />)}
+                    {localizeNode(isActive && <span className="absolute bottom-0 start-0 top-0 w-1 bg-[#7C3AED]" />)}
                     <Avatar person={c} size={40} channel={c.channel} />
                     <span className="min-w-0 flex-1 pt-0.5">
                       <span className={`block truncate text-[13px] font-bold ${HEADING}`}>
@@ -1038,7 +1038,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               onClick={() => navigate("/dashboard/booking")}
                               className="group mt-3 flex w-full items-center gap-3 rounded-xl border border-purple-100 bg-white p-3 text-start shadow-[0_1px_2px_rgba(124,92,252,0.08)] transition hover:-translate-y-px hover:border-purple-200 hover:shadow-md dark:border-purple-400/20 dark:bg-white/5"
                             >
-                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 text-[#7C5CFC] dark:from-purple-500/25 dark:to-purple-500/10">
+                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 text-[#7C3AED] dark:from-purple-500/25 dark:to-purple-500/10">
                                 <CalendarDays size={19} strokeWidth={2.2} />
                               </span>
                               <span className="min-w-0 flex-1">
@@ -1093,7 +1093,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   {localizeNode(mode === id && (
                     <motion.span
                       layoutId="inbox-mode-underline"
-                      className={`absolute inset-x-2 bottom-0 h-[2px] rounded-full ${id === "note" ? "bg-amber-400" : "bg-[#7C5CFC]"}`}
+                      className={`absolute inset-x-2 bottom-0 h-[2px] rounded-full ${id === "note" ? "bg-amber-400" : "bg-[#7C3AED]"}`}
                     />
                   ))}
                 </button>
@@ -1266,7 +1266,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 aria-disabled={!canSend}
                 aria-label={translateText(mode === "note" ? "Add note" : "Send message")}
                 className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl p-3 text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 ${
-                  mode === "note" ? "bg-amber-500 hover:bg-amber-600" : "bg-[#7C5CFC] hover:bg-[#6b4ce6]"
+                  mode === "note" ? "bg-amber-500 hover:bg-amber-600" : "bg-[#7C3AED] hover:bg-[#7C3AED]"
                 }`}
               >
                 {localizeNode(mode === "note" ? <StickyNote size={18} /> : <Send size={18} strokeWidth={2.2} />)}
@@ -1375,7 +1375,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 }}
                 className={`flex h-7 items-center gap-1 rounded-lg px-2.5 text-[11.5px] font-semibold transition ${
                   editingLead
-                    ? "bg-[#7C5CFC] text-white hover:bg-[#6a4bf0]"
+                    ? "bg-[#7C3AED] text-white hover:bg-[#7C3AED]"
                     : "bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-700 dark:bg-white/10 dark:text-slate-300"
                 }`}
               >
@@ -1524,7 +1524,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             <button
               id="inbox-take-over"
               onClick={toggleTakeover}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7C5CFC] py-3 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#6b4ce6] active:scale-[0.99]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7C3AED] py-3 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#7C3AED] active:scale-[0.99]"
             >
               {localizeNode(active.takenOver ? <Bot size={16} /> : <UserRound size={16} />)}
               {localizeNode(active.takenOver ? "Hand back to AI" : "Take over conversation")}

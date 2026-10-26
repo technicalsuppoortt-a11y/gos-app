@@ -72,7 +72,7 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
   const [draft, setDraft] = useState(data.business), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const update = (key: keyof typeof draft, value: string) => setDraft(p => ({ ...p, [key]: value }));
   return <div className="st-business w-full">
-    <PanelHeading title={translateText("Business Settings")} description="Your business identity and defaults used across GOS."/>
+    <PanelHeading title={translateText("Business Settings")} description="Your business identity and defaults used across Upclick."/>
     <form className="st-business-form w-full" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, business: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
       <Card title={translateText("Business identity")} description="Your brand appears on customer-facing pages and communications." className="w-full">
         <div className="st-form-grid two">

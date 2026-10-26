@@ -118,7 +118,7 @@ export function exportCSV(leads: CanonicalLead[]) {
   const quote = (v: unknown) => { const text = String(v ?? ''); return `"${(/^[=+@\-\t\r]/.test(text) ? "'" : '') + text.replaceAll('"', '""')}"`; };
   const csv = [fields.join(','), ...leads.map(l => fields.map(f => quote(Array.isArray(l[f]) ? l[f].join(';') : l[f])).join(','))].join('\r\n');
   const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a'); a.href = url; a.download = 'gos-contacts.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const a = document.createElement('a'); a.href = url; a.download = 'upclick-contacts.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 // Handles quoted commas, escaped quotes, CRLF and multiline CSV cells.
 export function parseCSV(text: string): string[][] {

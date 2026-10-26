@@ -34,7 +34,7 @@ if (import.meta.env.PROD) {
   document.head.prepend(policy);
 }
 const robots = document.createElement('meta'); robots.name = 'robots'; robots.content = 'noindex, nofollow'; document.head.append(robots);
-document.title = 'GOS · Demo Account';
+document.title = 'Upclick · Demo Account';
 
 // Defense in depth for forgotten transports, independent of Firestore adapters.
 window.fetch = async () => { throw new Error('Network requests are unavailable in the demo account.'); };

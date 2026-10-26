@@ -149,9 +149,9 @@ export const ResetPasswordPage: React.FC = () => {
       {/* Form Side */}
       <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-6 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
         <header className="flex items-center justify-between">
-          <a href="/auth/login" aria-label={translateText("GOS home")} className="login-brand flex w-fit items-center gap-2">
-            <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20">{translateText("g")}</span>
-            <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("gos")}<span className="text-indigo-600">.</span></span>
+          <a href="/auth/login" aria-label={translateText("Upclick home")} className="login-brand flex w-fit items-center gap-2">
+            <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
+            <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upclick")}<span className="text-indigo-600">.</span></span>
           </a>
           <button
             type="button"
@@ -377,7 +377,7 @@ export const ResetPasswordPage: React.FC = () => {
         </motion.div>
 
         <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400">
-          <span>{translateText("© 2025 GOS Inc.")}</span>
+          <span>{translateText("© 2025 Upclick Inc.")}</span>
           <div className="flex gap-4">
             <a className="transition hover:text-slate-700 dark:hover:text-white" href="/privacy">
               {translateText("Privacy")}
@@ -396,16 +396,16 @@ export const ResetPasswordPage: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_76%_18%,rgba(135,112,255,.34),transparent_40%),radial-gradient(ellipse_at_18%_88%,rgba(65,129,180,.22),transparent_38%),linear-gradient(140deg,#282448,#211e3a_56%,#302653)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_76%_18%,rgba(135,112,255,.34),transparent_40%),radial-gradient(ellipse_at_18%_88%,rgba(65,129,180,.22),transparent_38%),linear-gradient(140deg,#282448,#211e3a_56%,#0F172A)]" />
         <div className="pointer-events-none absolute -right-40 -top-48 h-[560px] w-[560px] rounded-full border border-white/[.06] shadow-[0_0_0_50px_rgba(255,255,255,.025),0_0_0_110px_rgba(255,255,255,.018)]" />
 
         <div className="login-showcase-header relative z-10 flex items-center justify-between">
           <div className="login-showcase-brand flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 font-bold text-white ring-1 ring-white/15">
-              {translateText("g")}
+              <img src="/upclick-mark.svg" width="36" height="36" alt=""/>
             </span>
             <span className="text-lg font-bold tracking-[-1px]">
-              {translateText("gos")}
+              {translateText("Upclick")}
               <span className="text-violet-300">.</span>
             </span>
           </div>
@@ -456,7 +456,7 @@ export const ResetPasswordPage: React.FC = () => {
         </div>
 
         <div className="login-showcase-footer relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-indigo-100/45">
-          <span>{translateText("GOS Identity Protection")}</span>
+          <span>{translateText("Upclick Identity Protection")}</span>
           <span className="flex items-center gap-1.5">
             <Shield size={12} />
             {translateText("256-Bit TLS 1.3")}

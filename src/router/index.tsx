@@ -124,7 +124,7 @@ export const router = createBrowserRouter([
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
       { path: 'content', element: <Suspended><PagePlaceholder title={translateText("Content Generator")}/></Suspended> },
-      { path: 'academy', element: <Suspended><PagePlaceholder title={translateText("GOS Academy")}/></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title={translateText("Upclick Academy")}/></Suspended> },
       { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
       { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
       { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },

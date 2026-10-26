@@ -67,7 +67,7 @@ const {BookingBrandingFooter}=await module('BookingBrandingFooter.tsx');
 const footer=(hostName,userName,visible=true)=>renderToStaticMarkup(h(BookingBrandingFooter,{hostName,visible}),userName);
 assert.match(footer('  Mohamed Joe  ','Signed-in Admin'),/Powered by Mohamed Joe/);
 assert.match(footer('   ','Signed-in Admin'),/Powered by Signed-in Admin/);
-assert.match(footer(undefined,undefined),/Powered by GOS/);
+assert.match(footer(undefined,undefined),/Powered by Upclick/);
 assert.equal(footer('Mohamed Joe','Signed-in Admin',false),'','branding visibility is preserved');
 const {default:PublicBookingPage}=await module('PublicBookingPage.tsx');
 const {BookingWorkspace}=await module('BookingWorkspace.tsx');
@@ -114,7 +114,7 @@ bookingModel.persistAppointment({...newBooking,id:'pending-public',name:'Pending
 assert.match(workspace('dashboard'),/2 bookings/);
 assert.match(workspace('bookings'),/Pending Client/,'pending public bookings appear in Upcoming');
 records.set(bookingModel.KEYS.pages,JSON.stringify([{...publicPage,hostName:''}]));
-assert.match(publicView('?bookingId=new-public'),/Powered by GOS/,'anonymous visitors get the fallback');
+assert.match(publicView('?bookingId=new-public'),/Powered by Upclick/,'anonymous visitors get the fallback');
 console.log('Public flow renders: host footer, confirmation CTA, calendar return route, dashboard counts and Upcoming confirmed/pending bookings passed.');
 
 

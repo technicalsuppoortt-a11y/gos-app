@@ -39,7 +39,7 @@
   width: 72px;
   height: 72px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #7c5cfc, #5b3ed6);
+  background: linear-gradient(135deg, #7C3AED, #A78BFA);
   color: white;
   box-shadow: 0 10px 25px -5px rgba(124, 92, 252, 0.4);
   z-index: 2;
@@ -49,7 +49,7 @@
   position: absolute;
   inset: -4px;
   border-radius: inherit;
-  border: 2px solid #7c5cfc;
+  border: 2px solid #7C3AED;
   opacity: 0;
   animation: gos-pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
   z-index: -1;
@@ -105,7 +105,7 @@
   left: 0;
   height: 100%;
   width: 30%;
-  background: linear-gradient(90deg, #6c47ff, #a98bff);
+  background: linear-gradient(90deg, #7C3AED, #A78BFA);
   border-radius: 4px;
   animation: gos-progress-slide 1.4s ease-in-out infinite alternate;
 }
@@ -128,4 +128,4 @@
     animation-duration: 3s;
   }
 }
-.route-error-panel{box-sizing:border-box;width:100%;min-height:250px;padding:40px 24px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;background:linear-gradient(135deg,#f8fafc,#f3e8ff);color:#334155;text-align:center}.route-error-panel h1{font-size:22px;font-weight:650}.route-error-panel p{max-width:520px;font-size:14px;line-height:1.6}.route-error-panel>div{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}.route-error-panel button{padding:10px 16px;background:#7e22ce;border-radius:8px;color:white}.route-error-panel a{padding:10px;text-decoration:underline}.route-error-panel :focus-visible{outline:2px solid #a855f7;outline-offset:3px}.dark .route-error-panel{background:linear-gradient(135deg,#171a29,#30213c);color:#e2e8f0}
+.route-error-panel{box-sizing:border-box;width:100%;min-height:250px;padding:40px 24px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;background:linear-gradient(135deg,#f8fafc,#f3e8ff);color:#334155;text-align:center}.route-error-panel h1{font-size:22px;font-weight:650}.route-error-panel p{max-width:520px;font-size:14px;line-height:1.6}.route-error-panel>div{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}.route-error-panel button{padding:10px 16px;background:#7C3AED;border-radius:8px;color:white}.route-error-panel a{padding:10px;text-decoration:underline}.route-error-panel :focus-visible{outline:2px solid #7C3AED;outline-offset:3px}.dark .route-error-panel{background:linear-gradient(135deg,#171a29,#30213c);color:#e2e8f0}

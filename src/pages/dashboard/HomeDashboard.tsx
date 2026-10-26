@@ -42,9 +42,9 @@ const TONES: Record<
 > = {
   purple: {
     soft: "bg-[#efeaff] dark:bg-purple-500/20",
-    text: "text-[#6D4AFF] dark:text-purple-300",
-    stroke: "#7C5CFC",
-    tile: "bg-[#f5f2ff] border-[#e6dfff] hover:border-[#cfc2ff] dark:bg-purple-500/10 dark:border-purple-500/25",
+    text: "text-[#7C3AED] dark:text-purple-300",
+    stroke: "#7C3AED",
+    tile: "bg-[#f5f2ff] border-[#EDE9FE] hover:border-[#A78BFA] dark:bg-purple-500/10 dark:border-purple-500/25",
   },
   green: {
     soft: "bg-emerald-100/80 dark:bg-emerald-500/20",
@@ -73,7 +73,7 @@ const TONES: Record<
   indigo: {
     soft: "bg-indigo-100/80 dark:bg-indigo-500/20",
     text: "text-indigo-600 dark:text-indigo-300",
-    stroke: "#6366F1",
+    stroke: "#7C3AED",
     tile: "bg-indigo-50 border-indigo-100 hover:border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/25",
   },
   slate: {
@@ -507,7 +507,7 @@ function SectionHeader({
           <button
             type="button"
             onClick={onAction}
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-purple-100 bg-white px-2 py-0.5 text-[11px] font-semibold text-[#6D4AFF] transition hover:border-purple-200 hover:bg-purple-50 dark:border-purple-500/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
+            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-purple-100 bg-white px-2 py-0.5 text-[11px] font-semibold text-[#7C3AED] transition hover:border-purple-200 hover:bg-purple-50 dark:border-purple-500/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
           >
             {localizeNode(action)}
             <ArrowRight size={11} />
@@ -516,7 +516,7 @@ function SectionHeader({
           <button
             type="button"
             onClick={onAction}
-            className="group inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-[#6D4AFF] transition hover:text-purple-700 dark:text-purple-300"
+            className="group inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-[#7C3AED] transition hover:text-purple-700 dark:text-purple-300"
           >
             {localizeNode(action)}
             <ArrowRight
@@ -602,7 +602,7 @@ function ProgressRing({ value }: { value: number }) {
           cy="12"
           r={r}
           fill="none"
-          stroke="#6D4AFF"
+          stroke="#7C3AED"
           strokeWidth="2.4"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -610,7 +610,7 @@ function ProgressRing({ value }: { value: number }) {
           className="transition-[stroke-dashoffset] duration-700"
         />
       </svg>
-      <IcTarget size={10} className="text-[#6D4AFF] dark:text-purple-300" />
+      <IcTarget size={10} className="text-[#7C3AED] dark:text-purple-300" />
     </span>
   );
 }
@@ -669,7 +669,7 @@ const CREATE_ITEMS: {
   {
     label: "Contact",
     icon: IcUsers,
-    color: "#8B5CF6",
+    color: "#7C3AED",
     to: "/dashboard/crm-leads/contacts?action=new",
   },
 ];
@@ -705,7 +705,7 @@ function CreateNewMenu() {
         onClick={() => setOpen((o) => !o)}
         className="group flex w-full items-center gap-2 rounded-lg p-1 transition hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
       >
-        <span className="grid h-5 w-5 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#6D4AFF] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
+        <span className="grid h-5 w-5 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#7C3AED] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
           <Plus size={13} strokeWidth={3} />
         </span>
         <span className="flex-1 text-xs font-semibold tracking-tight text-start">{translateText("Create New")}</span>
@@ -771,7 +771,7 @@ function HeroBanner() {
       node: (
         <RoundBadge
           icon={IcUsers}
-          className="bg-[#efeaff] text-[#6D4AFF] dark:bg-purple-500/20 dark:text-purple-300"
+          className="bg-[#efeaff] text-[#7C3AED] dark:bg-purple-500/20 dark:text-purple-300"
         />
       ),
       title: String(m.leads.length),
@@ -819,7 +819,7 @@ function HeroBanner() {
       </div>
 
       {/* Motivation quote badge — top area */}
-      <figure className="absolute end-[180px] top-3 hidden w-[190px] rotate-[4deg] rtl:-rotate-[4deg] rounded-xl border border-white/15 bg-gradient-to-br from-[#2b1d63]/95 to-[#1a1340]/95 px-3.5 py-2 text-white shadow-[0_14px_30px_-12px_rgba(43,29,99,0.7)] backdrop-blur-sm transition-transform duration-500 hover:rotate-[1deg] xl:block 2xl:end-[200px]">
+      <figure className="absolute end-[180px] top-3 hidden w-[190px] rotate-[4deg] rtl:-rotate-[4deg] rounded-xl border border-white/15 bg-gradient-to-br from-[#0F172A]/95 to-[#1a1340]/95 px-3.5 py-2 text-white shadow-[0_14px_30px_-12px_rgba(43,29,99,0.7)] backdrop-blur-sm transition-transform duration-500 hover:rotate-[1deg] xl:block 2xl:end-[200px]">
         <blockquote className="text-[11px] font-semibold leading-snug tracking-tight">
           {translateText("“Big progress comes from consistent action.”")}
         </blockquote>
@@ -945,7 +945,7 @@ function QuickActions() {
         <button
           type="button"
           onClick={() => navigate("/dashboard/settings/tools")}
-          className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold text-[#6D4AFF] transition hover:text-purple-700 xl:inline-flex"
+          className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold text-[#7C3AED] transition hover:text-purple-700 xl:inline-flex"
         >
           {translateText("All Tools")}
           <ArrowRight size={11} />
@@ -985,7 +985,7 @@ function ToolsGrid() {
             </span>
             <ChevronRight
               size={13}
-              className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 group-hover:text-[#6D4AFF]"
+              className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 group-hover:text-[#7C3AED]"
             />
           </button>
         )))}
@@ -1084,7 +1084,7 @@ function RevenueOverview() {
                       setActive(null);
                       setMenuOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-[11px] transition hover:bg-slate-50 dark:hover:bg-white/5 ${k === range ? "font-semibold text-[#6D4AFF]" : "text-slate-600 dark:text-slate-300"}`}
+                    className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-[11px] transition hover:bg-slate-50 dark:hover:bg-white/5 ${k === range ? "font-semibold text-[#7C3AED]" : "text-slate-600 dark:text-slate-300"}`}
                   >
                     {localizeNode(RANGES[k].label)}
                     {k === range && <Check size={11} />}
@@ -1136,7 +1136,7 @@ function RevenueOverview() {
                 >
                   <span
                     style={{ height: `${pct(d.value)}%` }}
-                    className={`w-full rounded-t-[3px] bg-gradient-to-t transition-all duration-300 ${i === activeIndex ? "from-[#6D4AFF] to-[#a48bff] shadow-[0_6px_14px_-4px_rgba(109,74,255,0.6)]" : "from-[#c4b5ff] to-[#e3dbff] group-hover:from-[#a48bff] group-hover:to-[#cfc2ff] dark:from-purple-500/40 dark:to-purple-400/20"}`}
+                    className={`w-full rounded-t-[3px] bg-gradient-to-t transition-all duration-300 ${i === activeIndex ? "from-[#7C3AED] to-[#A78BFA] shadow-[0_6px_14px_-4px_rgba(109,74,255,0.6)]" : "from-[#A78BFA] to-[#EDE9FE] group-hover:from-[#A78BFA] group-hover:to-[#A78BFA] dark:from-purple-500/40 dark:to-purple-400/20"}`}
                   />
                 </button>
               )))}
@@ -1151,7 +1151,7 @@ function RevenueOverview() {
               <polyline
                 points={linePts}
                 fill="none"
-                stroke="#6D4AFF"
+                stroke="#7C3AED"
                 strokeOpacity="0.35"
                 strokeWidth="1.5"
                 strokeLinejoin="round"
@@ -1167,7 +1167,7 @@ function RevenueOverview() {
                   bottom: `${pct(activeDatum.value)}%`,
                 }}
               >
-                <span className="absolute left-1/2 top-0 block h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#6D4AFF] shadow ring-4 ring-purple-200/60 dark:border-[#121829] dark:ring-purple-500/30" />
+                <span className="absolute left-1/2 top-0 block h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#7C3AED] shadow ring-4 ring-purple-200/60 dark:border-[#121829] dark:ring-purple-500/30" />
                 <div
                   className={`absolute whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2 py-1 text-center shadow-lg dark:border-white/10 dark:bg-[#1b2238] ${pct(activeDatum.value) > 55 ? "top-2.5" : "bottom-2.5"} ${activeIndex >= data.length - 3 ? "right-[-6px]" : activeIndex <= 2 ? "left-[-6px]" : "left-1/2 -translate-x-1/2"}`}
                 >
@@ -1235,7 +1235,7 @@ function RankBadge({ n }: { n: number }) {
   useUILanguage();
   return (
     <span
-      className={`grid h-5 w-5 shrink-0 place-items-center rounded text-[10px] font-bold ${n === 1 ? "bg-[#efeaff] text-[#6D4AFF] dark:bg-purple-500/15 dark:text-purple-300" : "text-slate-500 dark:text-slate-400"}`}
+      className={`grid h-5 w-5 shrink-0 place-items-center rounded text-[10px] font-bold ${n === 1 ? "bg-[#efeaff] text-[#7C3AED] dark:bg-purple-500/15 dark:text-purple-300" : "text-slate-500 dark:text-slate-400"}`}
     >
       {localizeNode(n)}
     </span>

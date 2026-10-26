@@ -15,7 +15,7 @@ export function PrivacyPage() {
   const navigate = useNavigate();
   const auth = useSelector((s: RootState) => s.auth);
   const isAuthenticated = !!auth.token || !!auth.user;
-  const appName = import.meta.env.VITE_APP_NAME || 'GOS Platform';
+  const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
 
   return (
     <div className="st-privacy-standalone" dir={isRtl ? 'rtl' : 'ltr'}>

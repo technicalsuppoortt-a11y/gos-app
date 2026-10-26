@@ -19,7 +19,7 @@ export const InstagramIcon: React.FC<IconProps> = ({ size = 16, className }) => 
           <stop offset="0.25" stopColor="#F9A23A" />
           <stop offset="0.5" stopColor="#E1306C" />
           <stop offset="0.78" stopColor="#C13584" />
-          <stop offset="1" stopColor="#5B51D8" />
+          <stop offset="1" stopColor="#7C3AED" />
         </radialGradient>
       </defs>
       <rect width="24" height="24" rx="7" fill={`url(#${id})`} />
@@ -66,7 +66,7 @@ export const MessengerIcon: React.FC<IconProps> = ({ size = 16, className }) => 
         <linearGradient id={id} x1="0.15" y1="1" x2="0.85" y2="0">
           <stop offset="0" stopColor="#0866FF" />
           <stop offset="0.6" stopColor="#5B6CFF" />
-          <stop offset="1" stopColor="#A259FF" />
+          <stop offset="1" stopColor="#7C3AED" />
         </linearGradient>
       </defs>
       <circle cx="12" cy="12" r="12" fill={`url(#${id})`} />
@@ -81,14 +81,14 @@ export const MessengerIcon: React.FC<IconProps> = ({ size = 16, className }) => 
 
 export const WebChatIcon: React.FC<IconProps> = ({ size = 16, className }) => { useUILanguage(); return ((
   <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden="true">
-    <rect width="24" height="24" rx="7" fill="#7C5CFC" />
+    <rect width="24" height="24" rx="7" fill="#7C3AED" />
     <path
       fill="#fff"
       d="M7.6 6.9h8.8a1.7 1.7 0 0 1 1.7 1.7v5.6a1.7 1.7 0 0 1-1.7 1.7h-4.6l-3.2 2.4v-2.4h-1a1.7 1.7 0 0 1-1.7-1.7V8.6a1.7 1.7 0 0 1 1.7-1.7z"
     />
-    <circle cx="9.4" cy="11.4" r=".95" fill="#7C5CFC" />
-    <circle cx="12" cy="11.4" r=".95" fill="#7C5CFC" />
-    <circle cx="14.6" cy="11.4" r=".95" fill="#7C5CFC" />
+    <circle cx="9.4" cy="11.4" r=".95" fill="#7C3AED" />
+    <circle cx="12" cy="11.4" r=".95" fill="#7C3AED" />
+    <circle cx="14.6" cy="11.4" r=".95" fill="#7C3AED" />
   </svg>
 )); };
 

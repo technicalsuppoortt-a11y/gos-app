@@ -125,7 +125,7 @@ export function DonutLegend({ segments, format = v => v.toLocaleString(), icons 
 }
 
 export type HBar = { label: string; value: string; pct: number; color?: string; icon?: React.ReactNode };
-export function HBarList({ items, color = '#7c3aed' }: { items: HBar[]; color?: string }) {
+export function HBarList({ items, color = '#7C3AED' }: { items: HBar[]; color?: string }) {
   useUILanguage();
   const max = Math.max(...items.map(i => i.pct), 1);
   return <ul className="an-hbars">

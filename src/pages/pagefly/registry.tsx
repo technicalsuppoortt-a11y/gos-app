@@ -269,7 +269,7 @@ export const ELEMENTS: ElementDef[] = [
     v('mc-inline', 'Inline newsletter', () => el.form([el.field('Email', 'email', { name: 'EMAIL', required: true, placeholder: 'Enter your email' }), el.submit('Subscribe')], {}, { flexDirection: 'row', flexWrap: 'wrap' })),
     v('mc-stacked', 'Stacked signup', () => el.form([el.field('First name', 'text', { name: 'FNAME', placeholder: 'First name' }), el.field('Email', 'email', { name: 'EMAIL', required: true, placeholder: 'Email address' }), el.field('I agree to receive emails', 'checkbox', { name: 'CONSENT' }), el.submit('Get my free guide')])),
   ], fields: [
-    { key: 'actionUrl', label: 'Mailchimp form action URL', type: 'url', help: 'Find it in Mailchimp → Audience → Signup forms → Embedded forms (the form "action" URL). Leave empty to collect submissions in GOS.' },
+    { key: 'actionUrl', label: 'Mailchimp form action URL', type: 'url', help: 'Find it in Mailchimp → Audience → Signup forms → Embedded forms (the form "action" URL). Leave empty to collect submissions in Upclick.' },
     { key: 'listName', label: 'Audience / list name', type: 'text' },
     { key: 'successMessage', label: 'Success message', type: 'textarea' },
     { key: 'redirectUrl', label: 'Redirect after submit (optional)', type: 'url' },

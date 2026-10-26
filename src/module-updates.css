@@ -43,7 +43,7 @@
 .bk-bookings-actions .bk-filter { order: 1; flex: 0 0 auto; }
 .bk-bookings-actions .bk-button { order: 2; flex: 0 0 auto; margin-inline-start: 0; white-space: nowrap; }
 .pf-initialization .pf-start-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.pf-initialization .pf-ai-choice { border-color: var(--purple, #7660db); }
+.pf-initialization .pf-ai-choice { border-color: var(--purple, #7C3AED); }
 .aw-ai-generator { max-height: calc(100dvh - 140px); overflow-y: auto; }
 @media (max-width: 600px) {
   .pf-initialization .pf-start-options { grid-template-columns: 1fr; }

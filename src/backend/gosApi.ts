@@ -3,7 +3,7 @@ import { createGosTransport, GosApiError } from './gosTransport';
 
 export const gosRequest = createGosTransport(import.meta.env.VITE_GOS_API_BASE_URL || 'https://gos-api.vercel.app', async refresh => {
   await auth.authStateReady();
-  if (!auth.currentUser) throw new Error('Sign in to connect to the GOS API.');
+  if (!auth.currentUser) throw new Error('Sign in to connect to the Upclick API.');
   return auth.currentUser.getIdToken(refresh);
 });
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; content?: string; chunk_count?: number; error?: string };
@@ -39,7 +39,7 @@ export const gosApi = {
   lead: async (leadId: string, signal?: AbortSignal): Promise<{ lead: ApiRecord | null; leads?: ApiRecord[] }> => {
     try {
       const result = await gosRequest<{ lead: ApiRecord }>('/crm/leads/' + id(leadId), { signal });
-      if (!result.lead || result.lead.id !== leadId) throw new Error('The GOS API returned a mismatched contact ID.');
+      if (!result.lead || result.lead.id !== leadId) throw new Error('The Upclick API returned a mismatched contact ID.');
       return result;
     }
     catch (error) {

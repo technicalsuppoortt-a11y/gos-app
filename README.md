@@ -1,4 +1,4 @@
-# Feedback Report for the 'GOS' project by Mahmoud Ashraf
+# Feedback Report for the 'Upclick' project by Mahmoud Ashraf
 
 ## First : Backend
 - Auth

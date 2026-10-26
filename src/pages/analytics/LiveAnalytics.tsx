@@ -12,7 +12,7 @@ export function LiveAnalytics({ tab }: { tab: string }) {
   const [search, setSearch] = useState('');
   const points = data.daily.map(day => tab === 'Sales' || tab === 'Products' ? day.revenue : day.events);
   const metric = (key: string, label: string, value: string, icon: Kpi['icon'], tone: string, color: string): Kpi => ({ key, label, value, icon, tone, color, spark: points, delta: '—' });
-  const kpis = [metric('leads', 'Total Leads', String(data.leads.length), Users, 'violet', '#7c3aed'), metric('revenue', 'Verified Revenue', data.money(data.revenue), CircleDollarSign, 'green', '#16a34a'), metric('conversations', 'Conversations', String(data.conversations.length), MessageSquare, 'pink', '#ec4899'), metric('bookings', 'Bookings', String(data.bookings.length), CalendarDays, 'blue', '#3b82f6')];
+  const kpis = [metric('leads', 'Total Leads', String(data.leads.length), Users, 'violet', '#7C3AED'), metric('revenue', 'Verified Revenue', data.money(data.revenue), CircleDollarSign, 'green', '#16a34a'), metric('conversations', 'Conversations', String(data.conversations.length), MessageSquare, 'pink', '#ec4899'), metric('bookings', 'Bookings', String(data.bookings.length), CalendarDays, 'blue', '#3b82f6')];
   const events = data.events.filter(event => {
     const relevant = tab === 'Overview' || tab === 'Reports' || (tab === 'Sales' ? /payment|order|purchase/.test(event.type) : tab === 'Leads' ? /lead|crm/.test(event.type + event.resource) : tab === 'Conversations' ? /message|conversation/.test(event.type + event.resource) : tab === 'Bookings' ? /booking|calendar/.test(event.type + event.resource) : tab === 'Products' ? /product/.test(event.type + event.resource) : /page|visit|traffic/.test(event.type));
     return relevant && `${event.type} ${event.resource ?? ''}`.toLowerCase().includes(search.toLowerCase());
@@ -21,7 +21,7 @@ export function LiveAnalytics({ tab }: { tab: string }) {
     const cell = (value: unknown) => '"' + String(value ?? '').replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"';
     const csv = [['Event', 'Resource', 'Timestamp'], ...events.map(event => [event.type, event.resource ?? event.resourceId, toIsoDateString(event.createdAt)])].map(row => row.map(cell).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const anchor = document.createElement('a'); anchor.href = url; anchor.download = `gos-${tab.toLowerCase()}-${new Date().toISOString().slice(0,10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
+    const anchor = document.createElement('a'); anchor.href = url; anchor.download = `upclick-${tab.toLowerCase()}-${new Date().toISOString().slice(0,10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
     showToast.success('Report exported');
   };
   const maximum = Math.max(1, ...points);
@@ -31,7 +31,7 @@ export function LiveAnalytics({ tab }: { tab: string }) {
     <div className="an-body">
       <Card title={translateText(tab === 'Sales' || tab === 'Products' ? 'Verified Revenue' : 'Operational Events')}>
         <ChartFrame yLabels={[String(maximum), String(maximum / 2), '0']} x={data.daily.filter((_, i) => i % Math.ceil(Number(days)/6) === 0).map(day => [data.daily.indexOf(day) / Math.max(1, data.daily.length - 1), day.label])}>
-          <path d={smoothPath(toPoints(points, maximum))} stroke="#7c3aed" fill="none" strokeWidth="3"/>
+          <path d={smoothPath(toPoints(points, maximum))} stroke="#7C3AED" fill="none" strokeWidth="3"/>
         </ChartFrame>
         <p className="text-xs text-slate-500">{translateText('Only recorded events and verified transactions are included.')} {data.currencies.length > 1 ? `Revenue shown in ${data.currency}; other currencies excluded.` : ''}</p>
       </Card>

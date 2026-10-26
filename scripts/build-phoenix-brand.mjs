@@ -1,4 +1,4 @@
-// Apply the same color-role conversion used by Phoenix's GOS preview.
+// Apply the same color-role conversion used by Phoenix's Upclick preview.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import postcss from 'postcss';
@@ -51,7 +51,7 @@ for (const file of files.sort()) {
   output.push(root.toString());
 }
 const targetFile = path.join('src', 'context', 'phoenix-brand-generated.css');
-const newContent = `/* Generated from GOS styles with Phoenix color roles. */\n${output.join('\n')}`;
+const newContent = `/* Generated from Upclick styles with Phoenix color roles. */\n${output.join('\n')}`;
 
 async function writeSafely(target, data, maxRetries = 5) {
   try {

@@ -65,7 +65,7 @@ export function APIQADialog({ pipelineId, leadId, close }: { pipelineId: string;
       }
     });
   }
-  return <CRMActionBoundary busy={actions.busy}><Dialog title="GOS API QA — 42 collection requests" close={() => { if (!actions.busy) close(); }}>
+  return <CRMActionBoundary busy={actions.busy}><Dialog title="Upclick API QA — 42 collection requests" close={() => { if (!actions.busy) close(); }}>
     <div className="crm-dialog-content">
       <p className="crm-muted">Requests run individually against your signed-in workspace. Examples are editable. Changes affect real records. IDs from successful responses fill the next request’s variables.</p>
       <label className="crm-field">Collection request<CustomSelect aria-label="Collection request" value={String(index)} onChange={value => { const next = Number(value); setIndex(next); setBody(apiRequests[next].body); setResult(''); setFile(undefined); setConfirmed(false); }} options={apiRequests.map((item, i) => ({ value: String(i), label: `${i + 1}. ${item.name}${history[i] ? ' · ' + history[i] : ''}` }))}/></label>

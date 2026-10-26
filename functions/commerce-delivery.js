@@ -13,7 +13,7 @@ export function calendarAttachment(booking, title, id) {
   if (!Number.isFinite(start.getTime())) throw new Error('Invalid booking start time.');
   const stamp = date => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
   const escape = value => String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/[,;]/g, '\\$&');
-  const content = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//GOS//Commerce//EN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', `UID:${id}@gos`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escape(title)}`, `LOCATION:${escape(booking.location)}`, 'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
+  const content = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Upclick//Commerce//EN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', `UID:${id}@gos`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `SUMMARY:${escape(title)}`, `LOCATION:${escape(booking.location)}`, 'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
   return { filename: 'calendar-invitation.ics', content: Buffer.from(content).toString('base64') };
 }
 

@@ -373,7 +373,7 @@ const AssistantRobot = () => { useUILanguage(); return ((
     className="af-robot-render"
     viewBox="0 0 64 64"
     role="img"
-    aria-label={translateText("GOS assistant robot")}
+    aria-label={translateText("Upclick assistant robot")}
   >
     <defs>
       <linearGradient id="af-robot-shell" x1="10%" y1="8%" x2="90%" y2="100%">
@@ -391,7 +391,7 @@ const AssistantRobot = () => { useUILanguage(); return ((
       </linearGradient>
     </defs>
     <path d="M32 7v5" stroke="#93a3b8" strokeWidth="3" strokeLinecap="round" />
-    <circle cx="32" cy="6" r="3" fill="#8b72ef" />
+    <circle cx="32" cy="6" r="3" fill="#A78BFA" />
     <rect
       x="8"
       y="18"
@@ -1255,8 +1255,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             type="button" role="switch" aria-checked={assistantEnabled} disabled={api.loading || api.saving || Boolean(api.error)}
             aria-label={
               translateText(assistantEnabled
-                ? "Pause GOS Assistant"
-                : "Activate GOS Assistant")
+                ? "Pause Upclick Assistant"
+                : "Activate Upclick Assistant")
             }
             onClick={() => {
               void setAssistantEnabled(!assistantEnabled);
@@ -1481,7 +1481,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         )))}
       </div>
       <div className="af-perf-chart flex-1 min-h-0 w-full relative">
-  <div className="af-perf-chart-plot"><svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="Recorded operational events over time"><polyline fill="none" stroke="#7c6cf0" strokeWidth="2" points={metrics.daily.map((day,index) => (index / Math.max(1,metrics.daily.length-1) * 600) + ',' + (118 - day.events / Math.max(1,...metrics.daily.map(item => item.events)) * 110)).join(' ')}/></svg></div>
+  <div className="af-perf-chart-plot"><svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="Recorded operational events over time"><polyline fill="none" stroke="#A78BFA" strokeWidth="2" points={metrics.daily.map((day,index) => (index / Math.max(1,metrics.daily.length-1) * 600) + ',' + (118 - day.events / Math.max(1,...metrics.daily.map(item => item.events)) * 110)).join(' ')}/></svg></div>
   <div className="af-perf-chart-x">{metrics.daily.filter((_,index) => index % 5 === 0).map((day,index) => <span key={day.date} style={{left: (index / 6 * 100) + '%'}}>{day.label}</span>)}</div>
  </div>
     </section>
@@ -2042,7 +2042,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                 {localizeNode(tab === item && (
                   <motion.div
                     layoutId="activeAIFollowUpTab"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#735be6] rounded-full"
+                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#7C3AED] rounded-full"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 ))}
@@ -2311,7 +2311,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                       onChange={(event) =>
                         setNewAssistantName(event.target.value)
                       }
-                      placeholder={translateText("e.g. GOS Fitness Coach")}
+                      placeholder={translateText("e.g. Upclick Fitness Coach")}
                     />
                   </label>
                   <label>{translateText("Role / persona")}<input

@@ -66,7 +66,7 @@ test('validation, malformed responses and network errors become usable errors', 
   const malformed = createGosTransport('https://example.com', async () => 'token', async () => new Response('<html>error</html>'));
   await assert.rejects(malformed('/ai/sources'), /unexpected response/);
   const offline = createGosTransport('https://example.com', async () => 'token', async () => { throw new TypeError('Failed to fetch'); });
-  await assert.rejects(offline('/ai/sources'), /Cannot reach the GOS API/);
+  await assert.rejects(offline('/ai/sources'), /Cannot reach the Upclick API/);
 });
 test('supports CSV exports and cancellation', async () => {
   const csv = createGosTransport('https://example.com', async () => 'token', async (_, options) => { assert.equal(options.headers.get('Accept'), 'text/csv'); return new Response('name,email\nSarah,sarah@example.com'); });

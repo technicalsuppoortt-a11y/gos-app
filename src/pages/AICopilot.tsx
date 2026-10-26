@@ -158,7 +158,7 @@ export const AICopilot: React.FC = () => {
       } else if (draft.kind === 'landing') {
         const document = createBuilderDocument('funnel', draft.name, '', 1);
         document.funnel.status = 'Draft'; document.pages.forEach(page => { page.status = 'Draft'; });
-        record = { id: draftId, name: draft.name, kind: 'funnel', domain: '', image: '', updated: new Date().toISOString(), document, description: draft.content || '', settings: { seo: draft.name, navigation: '', color: '#6366f1' } };
+        record = { id: draftId, name: draft.name, kind: 'funnel', domain: '', image: '', updated: new Date().toISOString(), document, description: draft.content || '', settings: { seo: draft.name, navigation: '', color: '#7C3AED' } };
       } else record = { name: draft.name, title: draft.name, description: draft.content || '', prompt: draft.content || '', iconKey: 'message', custom: true, category: 'Campaign', status: 'Draft' };
       await callBackend('createCopilotDraft', { draft, record, requestId: draftId });
       setDrafts(current => ({ ...current, [draftId]: { ...draft, status: 'published' } }));

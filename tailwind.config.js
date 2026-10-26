@@ -8,19 +8,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f2f1ff',
-          100: '#e8e6ff',
-          200: '#d3ceff',
-          300: '#b5aaff',
-          400: '#9487f2',
-          500: '#7669e4',
-          600: '#665bd0',
-          700: '#554bb2',
-          800: '#453e90',
-          900: '#38336f',
-          950: '#252247',
-        },
+        primary: {50: '#EDE9FE',100: '#EDE9FE',200: '#EDE9FE',300: '#A78BFA',400: '#A78BFA',500: '#7C3AED',600: '#7C3AED',700: '#7C3AED',800: '#7C3AED',900: '#0F172A',950: '#0F172A'},
+        violet: {50: '#EDE9FE',100: '#EDE9FE',200: '#EDE9FE',300: '#A78BFA',400: '#A78BFA',500: '#7C3AED',600: '#7C3AED',700: '#7C3AED',800: '#7C3AED',900: '#0F172A',950: '#0F172A'},
+        purple: {50: '#EDE9FE',100: '#EDE9FE',200: '#EDE9FE',300: '#A78BFA',400: '#A78BFA',500: '#7C3AED',600: '#7C3AED',700: '#7C3AED',800: '#7C3AED',900: '#0F172A',950: '#0F172A'},
+        indigo: {50: '#EDE9FE',100: '#EDE9FE',200: '#EDE9FE',300: '#A78BFA',400: '#A78BFA',500: '#7C3AED',600: '#7C3AED',700: '#7C3AED',800: '#7C3AED',900: '#0F172A',950: '#0F172A'},
         dark: {
           bg: 'var(--bg, #0b1020)',
           card: 'var(--ui-surface, #151a27)',

@@ -9,7 +9,7 @@ import { createPageAsset, pageTemplates } from './page-templates';
 import type { Asset, BuilderMode, Workspace } from './asset-model';
 
 const palettes = [
-  { name: 'Indigo', colors: ['#4f46e5', '#818cf8', '#eef2ff'] },
+  { name: 'Indigo', colors: ['#7C3AED', '#818cf8', '#eef2ff'] },
   { name: 'Ocean', colors: ['#0369a1', '#38bdf8', '#f0f9ff'] },
   { name: 'Forest', colors: ['#15803d', '#4ade80', '#f0fdf4'] },
   { name: 'Rose', colors: ['#be185d', '#f472b6', '#fdf2f8'] },

@@ -191,9 +191,9 @@ export const LoginPage: React.FC = () => {
     <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-4 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
       {/* Top Header Bar with Brand and Controls */}
       <header className="login-top-bar flex items-center justify-between w-full">
-        <a href="/auth/login" aria-label={translateText("GOS home")} className="login-brand flex items-center gap-2">
-          <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20">{translateText("g")}</span>
-          <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("gos")}<span className="text-indigo-600">.</span></span>
+        <a href="/auth/login" aria-label={translateText("Upclick home")} className="login-brand flex items-center gap-2">
+          <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
+          <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upclick")}<span className="text-indigo-600">.</span></span>
         </a>
 
         {/* Top Controls: Language Switcher (EN/AR) & Dark/Light Mode Switcher */}
@@ -241,6 +241,8 @@ export const LoginPage: React.FC = () => {
           </button>
         </div>
       </header>
+
+      <Link to="/" className="login-home-link"><ArrowUpRight size={15} aria-hidden="true"/><span>{currentLang === 'ar' ? 'زيارة موقع Upclick' : 'Visit Upclick website'}</span></Link>
 
       {/* Main Form Content with clean top spacing without dead space */}
       <motion.div className="login-form-content mx-auto mt-4 sm:mt-6 mb-auto w-full max-w-md py-1" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, ease: 'easeOut' }}>
@@ -301,7 +303,7 @@ export const LoginPage: React.FC = () => {
       </motion.div>
 
       <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400 mt-6">
-        <span>{translateText("© 2026 GOS Inc.")}</span>
+        <span>{translateText("© 2026 Upclick Inc.")}</span>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
             {translateText("Privacy Policy")}
@@ -314,9 +316,9 @@ export const LoginPage: React.FC = () => {
     </section>
 
     <motion.aside className="login-showcase relative hidden min-h-[100dvh] overflow-hidden bg-[#201d3b] text-white lg:flex lg:flex-col lg:justify-between lg:px-10 lg:py-8 xl:px-14" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .6 }}>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_76%_18%,rgba(135,112,255,.34),transparent_40%),radial-gradient(ellipse_at_18%_88%,rgba(65,129,180,.22),transparent_38%),linear-gradient(140deg,#282448,#211e3a_56%,#302653)]"/>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_76%_18%,rgba(135,112,255,.34),transparent_40%),radial-gradient(ellipse_at_18%_88%,rgba(65,129,180,.22),transparent_38%),linear-gradient(140deg,#282448,#211e3a_56%,#0F172A)]"/>
       <div className="pointer-events-none absolute -right-40 -top-48 h-[560px] w-[560px] rounded-full border border-white/[.06] shadow-[0_0_0_50px_rgba(255,255,255,.025),0_0_0_110px_rgba(255,255,255,.018)]"/>
-      <div className="login-showcase-header relative z-10 flex items-center justify-between"><div className="login-showcase-brand flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 font-bold text-white ring-1 ring-white/15">{translateText("g")}</span><span className="text-lg font-bold tracking-[-1px]">{translateText("gos")}<span className="text-violet-300">.</span></span></div><span className="login-showcase-badge flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-1.5 text-[10px] font-medium tracking-wide text-violet-100"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" YOUR BUSINESS, IN SYNC")}</span></div>
+      <div className="login-showcase-header relative z-10 flex items-center justify-between"><div className="login-showcase-brand flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 font-bold text-white ring-1 ring-white/15"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span><span className="text-lg font-bold tracking-[-1px]">{translateText("Upclick")}<span className="text-violet-300">.</span></span></div><span className="login-showcase-badge flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-1.5 text-[10px] font-medium tracking-wide text-violet-100"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" YOUR BUSINESS, IN SYNC")}</span></div>
 
       <div className="login-showcase-content relative z-10 mx-auto my-auto w-full max-w-xl py-9">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .12, duration: .55 }}>
@@ -335,7 +337,7 @@ export const LoginPage: React.FC = () => {
             <div className="login-chart flex h-[68px] items-end gap-1.5">{localizeNode([30,42,36,54,45,61,48,72,58,82,68,96,76,100,82,92,74,100,86,100].map((height,index)=><i key={index} style={{ height: `${height}%` }} className={`flex-1 rounded-t-[3px] ${index>14 ? 'bg-violet-300/90' : 'bg-violet-300/35'}`}/>))}</div>
             <div className="login-chart-labels mt-2 flex justify-between text-[9px] text-indigo-100/45"><span>{translateText("Oct 1")}</span><span>{translateText("Oct 7")}</span><span>{translateText("Oct 14")}</span><span>{translateText("Oct 21")}</span><span>{translateText("Oct 31")}</span></div>
           </div>
-          <div className="login-team-row mt-3 flex items-center justify-between border-t border-white/10 pt-3"><div className="flex items-center gap-2"><span className="login-team-avatars flex -space-x-2"><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#332d55] bg-orange-200 text-[8px] font-bold not-italic text-orange-900">{translateText("SC")}</i><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#332d55] bg-sky-200 text-[8px] font-bold not-italic text-sky-900">{translateText("MJ")}</i><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#332d55] bg-emerald-200 text-[8px] font-bold not-italic text-emerald-900">{translateText("PP")}</i></span><span className="text-[10px] text-indigo-100/65">{translateText("Your team is on top of it")}</span></div><span className="login-health flex items-center gap-1.5 text-[10px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" All systems go")}</span></div>
+          <div className="login-team-row mt-3 flex items-center justify-between border-t border-white/10 pt-3"><div className="flex items-center gap-2"><span className="login-team-avatars flex -space-x-2"><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#0F172A] bg-orange-200 text-[8px] font-bold not-italic text-orange-900">{translateText("SC")}</i><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#0F172A] bg-sky-200 text-[8px] font-bold not-italic text-sky-900">{translateText("MJ")}</i><i className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#0F172A] bg-emerald-200 text-[8px] font-bold not-italic text-emerald-900">{translateText("PP")}</i></span><span className="text-[10px] text-indigo-100/65">{translateText("Your team is on top of it")}</span></div><span className="login-health flex items-center gap-1.5 text-[10px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" All systems go")}</span></div>
         </motion.div>
 
         <div className="login-showcase-proof mt-5 flex items-center gap-2 text-[11px] text-indigo-100/60"><Check size={14} className="text-emerald-300"/>{translateText(" Leads, conversations, bookings, and payments work together.")}</div>

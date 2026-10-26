@@ -175,7 +175,7 @@ export async function login(email: string, password: string) {
       return loginWithPhoenix(email, password);
     });
     const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
-    // Linked accounts refresh saved Phoenix changes even when their GOS
+    // Linked accounts refresh saved Phoenix changes even when their Upclick
     // password already works, so manual login matches Open Platform.
     if (profile?.phoenixUid && !usedPhoenix) credential = await loginWithPhoenix(email, password);
     return await resolveSession(credential.user, true);

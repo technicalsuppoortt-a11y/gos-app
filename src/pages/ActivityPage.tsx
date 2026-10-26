@@ -68,7 +68,7 @@ export const ActivityPage: React.FC = () => {
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'gos-activity-log.csv';
+    link.download = 'upclick-activity-log.csv';
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };

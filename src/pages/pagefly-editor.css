@@ -54,12 +54,12 @@
 .pf-initialization footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
 .pf-template-filters{display:flex;gap:12px;margin:16px 0 24px}
 .pf-template-filters label{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #e2e8f0;padding:10px 14px;border-radius:10px;background:#fff;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.pf-template-filters label:focus-within{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+.pf-template-filters label:focus-within{border-color:#7C3AED;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
 .pf-template-filters label svg{color:#94a3b8}
 .pf-template-filters input{width:100%;min-width:0;border:0;outline:0;font-size:13px;color:#334155;background:transparent}
 .pf-template-filters input::placeholder{color:#94a3b8}
 .pf-template-filters select{min-width:180px;border:1px solid #e2e8f0;padding-block:10px 10px;padding-inline:14px 36px;border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:14px;appearance:none;font-size:13px;color:#475569;cursor:pointer;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.pf-template-filters select:focus{outline:0;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+.pf-template-filters select:focus{outline:0;border-color:#7C3AED;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
 .pf-template-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .pf-template-card{padding:0;border:1px solid #ddd;border-radius:7px;overflow:hidden;background:#fff;text-align:start;cursor:pointer;transition:box-shadow .15s,border-color .15s}.pf-template-card:hover{border-color:#2384e8;box-shadow:0 4px 16px #00000012}
 .pf-template-preview{min-height:165px;padding:18px 14px;display:flex;flex-direction:column;align-items:flex-start;background-size:cover;background-position:center;color:white}.pf-template-preview small{font-size:8px;text-transform:uppercase;letter-spacing:1px}.pf-template-preview strong{font-size:18px;line-height:1.2;max-width:180px;margin:12px 0 16px}.pf-template-preview>span{font-size:8px;padding:7px;border-radius:2px;margin-top:auto}
@@ -89,7 +89,7 @@
 .pf-live-accordion summary{padding:14px;cursor:pointer;font-weight:600}.pf-live-accordion p{padding:0 14px 14px;margin:0}
 .pf-live-tabs [role=tablist]{display:flex;border-bottom:1px solid #ddd;gap:4px}
 .pf-live-tabs [role=tab]{padding:12px 18px;border:0;border-bottom:2px solid transparent;background:transparent;color:inherit;cursor:pointer}
-.pf-live-tabs [role=tab][aria-selected=true]{border-bottom-color:#6544e8;color:#6544e8;background:#f6f3ff}
+.pf-live-tabs [role=tab][aria-selected=true]{border-bottom-color:#7C3AED;color:#7C3AED;background:#f6f3ff}
 .pf-live-tabs [role=tabpanel]{padding:18px;border:1px solid #eee;border-top:0}
 .pf-image-action{padding:0;border:0;background:transparent;width:100%;height:100%;cursor:pointer}
 .pf-part-selected{outline:2px solid #2384e8!important;outline-offset:3px}
@@ -99,7 +99,7 @@
 .pf-part-toolbar b{padding:3px 5px}.pf-part-toolbar button{display:flex;align-items:center;justify-content:center;width:25px;height:25px;border:0;background:transparent;border-radius:3px;color:#fff;cursor:pointer}.pf-part-toolbar button:hover,.pf-part-toolbar button:focus-visible{background:#ffffff30}
 .pf-part-toolbar b,.fn-element-actions button span{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fb-inspector-scroll>h2{overflow-wrap:break-word}
 .pf-part-toolbar button:disabled{opacity:.35;cursor:default}
-.pf-template-categories{display:flex;gap:6px;margin-top:20px;border-bottom:1px solid #e2e8f0;padding-bottom:10px}.pf-template-categories button{padding:8px 18px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:12px;cursor:pointer}.pf-template-categories button[aria-selected=true]{background:#eef2ff;color:#4f46e5;font-weight:600}
+.pf-template-categories{display:flex;gap:6px;margin-top:20px;border-bottom:1px solid #e2e8f0;padding-bottom:10px}.pf-template-categories button{padding:8px 18px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:12px;cursor:pointer}.pf-template-categories button[aria-selected=true]{background:#eef2ff;color:#7C3AED;font-weight:600}
 .aw-workspace.pf-template-page {
   max-width: 100% !important;
   width: 100%;

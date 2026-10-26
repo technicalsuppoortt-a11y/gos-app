@@ -19,7 +19,7 @@ export function Modal({ title, close, children, wide = false }: React.PropsWithC
   useUILanguage();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const el = ref.current; el?.showModal(); return () => el?.close(); }, []);
-  return <dialog className={`bk-dialog ${wide ? 'bk-builder-dialog' : ''}`} ref={ref} aria-label={translateText(title)} onCancel={e => { e.preventDefault(); close(); }} onClick={e => { if (e.target === e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) close(); } }}><header><div><span className="bk-eyebrow">{translateText("GOS / BOOKING WORKSPACE")}</span><h2>{localizeNode(title)}</h2></div><button className="bk-icon" type="button" onClick={close} aria-label={translateText("Close dialog")}><X size={19}/></button></header>{localizeNode(children)}</dialog>;
+  return <dialog className={`bk-dialog ${wide ? 'bk-builder-dialog' : ''}`} ref={ref} aria-label={translateText(title)} onCancel={e => { e.preventDefault(); close(); }} onClick={e => { if (e.target === e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) close(); } }}><header><div><span className="bk-eyebrow">{translateText("Upclick / BOOKING WORKSPACE")}</span><h2>{localizeNode(title)}</h2></div><button className="bk-icon" type="button" onClick={close} aria-label={translateText("Close dialog")}><X size={19}/></button></header>{localizeNode(children)}</dialog>;
 }
 export function Menu({ label, children, icon }: React.PropsWithChildren<{ label: string; icon?: React.ReactNode }>) {
   useUILanguage();

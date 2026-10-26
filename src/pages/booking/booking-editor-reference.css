@@ -1,7 +1,7 @@
 /* Brand Primary Theme Colors & Elevation */
 :root {
-  --bk-accent: #6366f1;
-  --bk-accent-hover: #4f46e5;
+  --bk-accent: #7C3AED;
+  --bk-accent-hover: #7C3AED;
   --bk-accent-soft: #eef2ff;
   --bk-shadow-subtle: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
   --bk-shadow-popover: 0 12px 35px -5px rgba(0, 0, 0, 0.12), 0 6px 12px -3px rgba(0, 0, 0, 0.06);
@@ -9,8 +9,8 @@
 
 .bk-editor-page,
 .bk-reference-editor {
-  --bk-accent: #6366f1;
-  --bk-accent-hover: #4f46e5;
+  --bk-accent: #7C3AED;
+  --bk-accent-hover: #7C3AED;
   --bk-accent-soft: #eef2ff;
 }
 
@@ -115,7 +115,7 @@
 .bk-configurator-card.expanded .bk-configurator-heading .bk-accordion-chevron,
 .bk-configurator-card.expanded .bk-configurator-heading > svg:last-child {
   transform: rotate(180deg);
-  color: var(--bk-accent, #6366f1);
+  color: var(--bk-accent, #7C3AED);
 }
 
 /* Smooth Accordion Body Height Transition */
@@ -258,7 +258,7 @@
 
 .bk-reference-editor .bk-input-prefix span {
   padding-inline-start: 9px;
-  color: #9995b3;
+  color: #EDE9FE;
   font-size: 12px;
 }
 
@@ -274,7 +274,7 @@
 .bk-dialog .bk-form input:focus,
 .bk-dialog .bk-form textarea:focus {
   outline: none;
-  border-color: var(--bk-accent, #6366f1) !important;
+  border-color: var(--bk-accent, #7C3AED) !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
 }
 
@@ -326,7 +326,7 @@
 
 .bk-toggle[aria-checked=true],
 .bk-reference-editor .bk-toggle[aria-checked=true] {
-  background: var(--bk-accent, #6366f1) !important;
+  background: var(--bk-accent, #7C3AED) !important;
 }
 
 .bk-toggle[aria-checked=true] > span,
@@ -341,7 +341,7 @@
 
 .bk-toggle:focus-visible,
 .bk-reference-editor .bk-toggle:focus-visible {
-  outline: 2px solid var(--bk-accent, #6366f1);
+  outline: 2px solid var(--bk-accent, #7C3AED);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
@@ -377,7 +377,7 @@
   background: none;
   border: 0;
   padding: 3px 0;
-  color: var(--bk-accent, #6366f1) !important;
+  color: var(--bk-accent, #7C3AED) !important;
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
@@ -385,7 +385,7 @@
 }
 
 .bk-text-action:hover {
-  color: var(--bk-accent-hover, #4f46e5) !important;
+  color: var(--bk-accent-hover, #7C3AED) !important;
   text-decoration: underline;
 }
 
@@ -446,7 +446,7 @@
 }
 
 .bk-availability-row > .bk-select .bk-select-trigger:hover {
-  border-color: var(--bk-accent, #6366f1) !important;
+  border-color: var(--bk-accent, #7C3AED) !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
 }
 
@@ -494,7 +494,7 @@
 
 .bk-time-select .bk-select-trigger:hover,
 .bk-reference-editor.bk-editor-page .bk-time-select .bk-select-trigger:hover {
-  border-color: var(--bk-accent, #6366f1) !important;
+  border-color: var(--bk-accent, #7C3AED) !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
 }
 
@@ -538,7 +538,7 @@
 
 .bk-availability-row .bk-icon:hover {
   background: var(--bk-accent-soft, #eef2ff);
-  color: var(--bk-accent, #6366f1);
+  color: var(--bk-accent, #7C3AED);
   border-color: rgba(99, 102, 241, 0.2);
 }
 
@@ -667,12 +667,12 @@
 
 .bk-date-trigger svg {
   flex-shrink: 0;
-  color: var(--bk-accent, #6366f1);
+  color: var(--bk-accent, #7C3AED);
   transition: color 0.2s ease;
 }
 
 .bk-date-trigger:focus-within {
-  border-color: var(--bk-accent, #6366f1) !important;
+  border-color: var(--bk-accent, #7C3AED) !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
 }
 
@@ -766,8 +766,8 @@
 }
 
 .bk-date-tabs button[aria-selected=true] {
-  color: var(--bk-accent, #6366f1);
-  border-bottom-color: var(--bk-accent, #6366f1);
+  color: var(--bk-accent, #7C3AED);
+  border-bottom-color: var(--bk-accent, #7C3AED);
 }
 
 .bk-date-month {
@@ -810,18 +810,18 @@
 }
 
 .bk-date-days button.today {
-  box-shadow: inset 0 0 0 1px var(--bk-accent, #6366f1);
-  color: var(--bk-accent, #6366f1);
+  box-shadow: inset 0 0 0 1px var(--bk-accent, #7C3AED);
+  color: var(--bk-accent, #7C3AED);
 }
 
 .bk-date-days button.selected {
-  background: var(--bk-accent, #6366f1) !important;
+  background: var(--bk-accent, #7C3AED) !important;
   color: white !important;
 }
 
 .bk-date-days button.in-range {
   background: rgba(99, 102, 241, 0.12) !important;
-  color: var(--bk-accent-hover, #4f46e5) !important;
+  color: var(--bk-accent-hover, #7C3AED) !important;
 }
 
 .bk-date-popover footer {
@@ -1123,7 +1123,7 @@
   --bk-text: #d7dde8;
   --bk-muted: #929bab;
   --bk-accent: #818cf8;
-  --bk-accent-hover: #6366f1;
+  --bk-accent-hover: #7C3AED;
   --bk-accent-soft: #1e2238;
 }
 
@@ -1146,7 +1146,7 @@
 }
 
 .dark .bk-toggle[aria-checked=true] {
-  background: #6366f1 !important;
+  background: #7C3AED !important;
 }
 
 .dark .bk-availability-row,

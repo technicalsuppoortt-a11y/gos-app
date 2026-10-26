@@ -468,7 +468,7 @@ export function Dialog({ title, close, children }: { title: string; close: () =>
       <div ref={ref} className="adm-dialog" role="dialog" aria-modal="true" aria-labelledby="adm-dialog-title">
         <header>
           <div>
-            <span className="adm-eyebrow">{ar ? 'إدارة GOS' : 'GOS ADMIN'}</span>
+            <span className="adm-eyebrow">{ar ? 'إدارة Upclick' : 'Upclick ADMIN'}</span>
             <h2 id="adm-dialog-title">{title}</h2>
           </div>
           <button onClick={close} aria-label={ar ? 'إغلاق' : 'Close'}>
@@ -768,7 +768,7 @@ function AnalyticsOverview() {
                   <b>{qualifiedLeads} ({leads.length ? Math.round(qualifiedLeads / leads.length * 100) : 0}%)</b>
                 </div>
                 <div className="adm-conversion-track">
-                  <div className="adm-conversion-fill" style={{ width: `${leads.length ? (qualifiedLeads / leads.length) * 100 : 0}%`, background: '#8c76f0' }} />
+                  <div className="adm-conversion-fill" style={{ width: `${leads.length ? (qualifiedLeads / leads.length) * 100 : 0}%`, background: '#A78BFA' }} />
                 </div>
               </div>
               <div className="adm-conversion-row">

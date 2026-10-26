@@ -28,7 +28,7 @@ import './frame.css';
 
 // The Vite ?landing-demo graph uses only the read-only adapters in this folder.
 // These are the production page components, not separate preview renderers.
-store.dispatch(loginSuccess({ user: { id: 'landing-demo-user', name: 'Mohamed Joe', email: 'demo@example.com' }, tenant: { id: 'landing-demo', name: 'GOS Demo Workspace' }, role: 'USER', token: 'demo-only' }));
+store.dispatch(loginSuccess({ user: { id: 'landing-demo-user', name: 'Mohamed Joe', email: 'demo@example.com' }, tenant: { id: 'landing-demo', name: 'Upclick Demo Workspace' }, role: 'USER', token: 'demo-only' }));
 const daysAgo = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
 const leads = ['Sarah Ahmed', 'Omar Khaled', 'Lina Hassan', 'Adam Ali', 'Mona Samir', 'Youssef Adel'].map((name, i) => makeLead({
   id: `demo-lead-${i}`, name, email: `contact${i + 1}@example.com`, source: ['Instagram', 'WhatsApp', 'Website'][i % 3],
@@ -52,7 +52,7 @@ seedDemo('entity:transactions', transactions);
 seedDemo('entity:events', Array.from({ length: 24 }, (_, i) => ({ id: `demo-event-${i}`, type: ['workspace.updated', 'booking.saved', 'copilot.responded', 'settings.updated'][i % 4], resource: ['products', 'calendars', 'crm', 'settings'][i % 4], createdAt: daysAgo(i / 2), actorId: 'landing-demo-user' })));
 seedDemo('entity:conversations', leads.slice(0, 3).map((lead, i) => ({ id: `demo-conversation-${i}`, name: lead.name, customer_name: lead.name, channel: ['whatsapp', 'instagram', 'email'][i], last_message_body: ['Hi, can you tell me about your services?', 'I’d like to book a discovery call.', 'Thank you for the details!'][i], status: 'open', unread_count: i === 0 ? 2 : 0, updated_at: daysAgo(i / 24), messages: [{ id: `demo-message-${i}`, body: 'Hi, I’d like to learn more about your services.', role: 'customer', created_at: daysAgo(i / 24) }] })));
 const document = createBuilderDocument('funnel', 'Discovery Call Funnel', '/dashboard/funnel-consultation.png', 3);
-seedDemo('gos.assets.workspace.v1', { assets: [{ id: 'demo-funnel', kind: 'funnel', name: 'Discovery Call Funnel', domain: '', image: '/dashboard/funnel-consultation.png', updated: daysAgo(1), document, description: 'Demo funnel', settings: { seo: 'Discovery Call', navigation: '', color: '#7546f5' } }], domains: [] });
+seedDemo('gos.assets.workspace.v1', { assets: [{ id: 'demo-funnel', kind: 'funnel', name: 'Discovery Call Funnel', domain: '', image: '/dashboard/funnel-consultation.png', updated: daysAgo(1), document, description: 'Demo funnel', settings: { seo: 'Discovery Call', navigation: '', color: '#7C3AED' } }], domains: [] });
 seedDemo('entity:assets', [{ id: 'demo-funnel', name: 'Discovery Call Funnel', kind: 'funnel', document }]);
 
 const router = createMemoryRouter([{ element: <NativeWorkspace/>, children: previewScreens.map(screen => ({ path: screen.path, element: screen.id === 'settings' ? <SettingsWorkspace/> : screen.id === 'marketing-tracking' ? <MarketingTracking/> : screen.id === 'copilot' ? <AICopilot/> : <DashboardPage page={screen.page!}/> })) }], { initialEntries: ['/dashboard'] });

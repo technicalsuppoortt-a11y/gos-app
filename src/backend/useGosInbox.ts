@@ -29,7 +29,7 @@ export function useGosInbox(enabled: boolean, selectedId: string) {
     const load = async () => {
       try {
         const result = await gosApi.conversations(controller.signal);
-        if (!Array.isArray(result.conversations)) throw new Error('The GOS API returned an invalid conversation list.');
+        if (!Array.isArray(result.conversations)) throw new Error('The Upclick API returned an invalid conversation list.');
         const target = result.conversations.find(row => row.id === selectedId)?.id || result.conversations[0]?.id;
         const detail = target && result.conversations.some(row => row.id === target) ? await gosApi.conversation(target, controller.signal) : null;
         if (controller.signal.aborted) return;

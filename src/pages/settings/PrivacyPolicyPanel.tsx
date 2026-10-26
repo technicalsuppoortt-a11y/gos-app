@@ -37,7 +37,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
   const isRtl = uiDirection() === 'rtl';
 
   // Environment variables with solid fallbacks
-  const appName = import.meta.env.VITE_APP_NAME || 'GOS Platform';
+  const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
   const supportEmail = 'technicalsuppoortt@gmail.com';
   const appUrl = 'https://gos-app-3c7fb.web.app/';
   const fallbackWebUrl = 'https://gos-app-3c7fb.web.app/';
@@ -583,7 +583,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
               </span>
 
               <header className="st-privacy-section-header">
-                <span className="st-privacy-num-badge" style={{ background: '#7546f5', color: '#fff' }}>5</span>
+                <span className="st-privacy-num-badge" style={{ background: '#7C3AED', color: '#fff' }}>5</span>
                 <h3>{localizeNode(content.section5.title)}</h3>
               </header>
 
