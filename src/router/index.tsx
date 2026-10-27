@@ -34,7 +34,7 @@ const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder'
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
 const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(module => ({ default: module.MarketingTracking })));
-const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
+const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
@@ -149,16 +149,16 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['SUPER_ADMIN']}><SuperAdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
-      { path: 'clients', element: <Suspended><PagePlaceholder title={translateText("Clients")}/></Suspended> },
-      { path: 'subscriptions', element: <Suspended><PagePlaceholder title={translateText("Subscriptions")}/></Suspended> },
-      { path: 'analytics', element: <Suspended><PagePlaceholder title={translateText("Platform Analytics")}/></Suspended> },
-      { path: 'settings', element: <Suspended><PagePlaceholder title={translateText("Platform Settings")}/></Suspended> },
-      { path: 'users', element: <Suspended><PagePlaceholder title={translateText("Team Management")}/></Suspended> },
+      { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'subscriptions', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin" replace/> },
-      { path: 'integrations', element: <Suspended><PagePlaceholder title={translateText("Platform Integrations")}/></Suspended> },
-      { path: 'payments', element: <Suspended><PaymentMethodsPanel/></Suspended> },
+      { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
-      { path: 'logs', element: <Suspended><PagePlaceholder title={translateText("Logs & Monitoring")}/></Suspended> },
+      { path: 'logs', element: <Suspended><SuperAdminWorkspace/></Suspended> },
     ],
   },
   { path: '*', element: <DefaultRedirect/> },
