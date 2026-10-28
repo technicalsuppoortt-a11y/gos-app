@@ -53,10 +53,10 @@
 
 # Admin Dashbaord
 
-- Light mode is broken
-- remove domains & ssl , pixel , onboarding
-- Handled Backend of All Tools Management
-- Add Support chat between admin and his users
+- Light mode is broken => done
+- remove domains & ssl , pixel , onboarding => done
+- Handled Backend of All Tools Management => done
+- Add Support chat between admin and his users => done
 - Switch Accounts between admin and users
 
 - User Management
@@ -67,16 +67,16 @@
         - Plans
         - make free option
 
-- Plans and Subscription
-    - make like ai busseiness
+- Plans and Subscription => done
+    - make like ai busseiness 
     - in considered integration wallet and creidet
     - Add ones
 
-- Payment Methods
+- Payment Methods => done
     - Add Payment Methods => paymob
     - Add Icons For Payment Methods
 
-- Dashboard Management
+- Dashboard Management 
     - Join Funnels & Websites , CRM & Leads Management , Booking & Calendar , Products & Payments , Templates
     - Handled Backend
 
@@ -85,7 +85,7 @@
     - Can control of every thins and every media
 
 - Settings
-    - Join Integrations & Webhooks , AI Models & Usage , Transactions
+    - Join Integrations & Webhooks , AI Models & Usage , Transactions => done
     - add wallet for ai models & usage
 
 ============================================
@@ -94,8 +94,8 @@
 # Super Admin Dashbaord
 - Handled Backend
 - Remove Marketing Tracking
-- Add Suport Chat
-- Add Plans and subscription 
+- Add Suport Chat => done
+- Add Plans and subscription => done
  - Add ones
 - Add Templete Control
 - All accounts , All Admins

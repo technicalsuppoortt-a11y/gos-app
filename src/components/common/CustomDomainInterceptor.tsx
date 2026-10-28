@@ -1,10 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import React, { useEffect, useState, Suspense, type ReactNode } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../backend/firebase';
 import { isPlatformHostname, normalizeHost, SITE_DOMAINS, PUBLISHED_SITES } from '../../backend/siteDomains';
-import { PublishedPage } from '../../pages/PublishedPage';
 import type { Asset } from '../../pages/asset-model';
 import { Globe } from 'lucide-react';
+
+const PublishedPage = React.lazy(() => import('../../pages/PublishedPage').then(module => ({ default: module.PublishedPage })));
 
 export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
   const [isCustomDomain, setIsCustomDomain] = useState(false);
@@ -149,10 +150,16 @@ export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PublishedPage
-      asset={resolvedAsset}
-      pageId={resolvedPageId}
-      onNavigate={(id) => setResolvedPageId(id)}
-    />
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 44, height: 44, border: '3px solid rgba(56,189,248,0.2)', borderTopColor: '#38bdf8', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+      </div>
+    }>
+      <PublishedPage
+        asset={resolvedAsset}
+        pageId={resolvedPageId}
+        onNavigate={(id) => setResolvedPageId(id)}
+      />
+    </Suspense>
   );
 }

@@ -20,9 +20,149 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    </script>
+    <style>
+      #app-preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at 50% 42%, #EDE9FE 0%, transparent 52%), #f8f9fd;
+        color: #0F172A;
+        font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+        user-select: none;
+      }
+      html.dark #app-preloader {
+        background: radial-gradient(ellipse at 50% 42%, rgba(124, 58, 237, 0.12) 0%, transparent 55%), #0F172A;
+        color: #EDE9FE;
+      }
+      .pre-loader-brand {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 96px;
+        height: 96px;
+        margin-bottom: 22px;
+      }
+      .pre-glow {
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7C3AED, #A78BFA);
+        filter: blur(24px);
+        opacity: 0.22;
+        animation: pre-breathe 2.4s ease-in-out infinite;
+      }
+      .pre-ring {
+        position: absolute;
+        inset: 0;
+        border: 2px solid rgba(167, 139, 250, 0.25);
+        border-top-color: #7C3AED;
+        border-radius: 50%;
+        animation: pre-spin 1.2s linear infinite;
+      }
+      .pre-mark {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #ffffff, #EDE9FE);
+        box-shadow: 0 10px 25px rgba(124, 58, 237, 0.12);
+        border: 1px solid rgba(167, 139, 250, 0.3);
+      }
+      html.dark .pre-mark {
+        background: linear-gradient(145deg, #171d2b, #252d3e);
+        border-color: rgba(167, 139, 250, 0.2);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      }
+      .pre-mark img {
+        width: 42px;
+        height: 46px;
+        object-fit: contain;
+      }
+      .pre-title {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.8px;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .pre-sub {
+        font-size: 11px;
+        font-weight: 600;
+        color: #7C3AED;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+      html.dark .pre-sub {
+        color: #A78BFA;
+      }
+      .pre-progress {
+        position: relative;
+        width: 140px;
+        height: 3px;
+        margin-top: 24px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #EDE9FE;
+      }
+      html.dark .pre-progress {
+        background: rgba(167, 139, 250, 0.2);
+      }
+      .pre-bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -40%;
+        width: 40%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #7C3AED, #A78BFA);
+        animation: pre-slide 1.5s ease-in-out infinite;
+      }
+      @keyframes pre-spin {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes pre-breathe {
+        0%, 100% { transform: scale(0.9); opacity: 0.15; }
+        50% { transform: scale(1.15); opacity: 0.3; }
+      }
+      @keyframes pre-slide {
+        0% { left: -40%; width: 40%; }
+        50% { width: 60%; }
+        100% { left: 100%; width: 30%; }
+      }
+    </style>
   </head>
   <body dir="ltr">
-    <div id="root"></div>
+    <div id="root">
+      <div id="app-preloader" aria-label="Loading Upclick">
+        <div class="pre-loader-brand">
+          <span class="pre-glow"></span>
+          <span class="pre-ring"></span>
+          <div class="pre-mark">
+            <img src="/upclick-mark.svg" alt="" width="42" height="46" />
+          </div>
+        </div>
+        <h1 class="pre-title">Upclick</h1>
+        <span class="pre-sub">Ideas to impact</span>
+        <div class="pre-progress">
+          <div class="pre-bar"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

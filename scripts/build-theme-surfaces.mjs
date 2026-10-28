@@ -70,7 +70,7 @@ for (const file of files.sort()) {
       }
     });
     if (!declarations.length) return;
-    const selectors = rule.selectors.filter(s => !s.includes('::')).map(s => s.trim());
+    const selectors = rule.selectors.filter(s => !s.match(/::|:(?:before|after|first-letter|first-line|placeholder|selection)\b/)).map(s => s.trim());
     if (!selectors.length) return;
     const wrappers = [];
     for (let parent = rule.parent; parent && parent.type !== 'root'; parent = parent.parent) {

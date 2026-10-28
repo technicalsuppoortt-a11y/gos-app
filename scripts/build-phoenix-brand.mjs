@@ -35,7 +35,8 @@ for (const file of files.sort()) {
       const scope = 'html[data-gp-brand="true"]';
       const scoped = /^(?:html|:root)(?=[\s.:[#]|$)/.test(selector) ? selector.replace(/^(html|:root)/, scope)
         : selector.startsWith('.dark ') ? `${scope}.dark ${selector.slice(6)}` : `${scope} ${selector}`;
-      const pseudo = scoped.indexOf('::');
+      const pseudoMatch = scoped.match(/::|:(?:before|after|first-letter|first-line|placeholder|selection)\b/);
+      const pseudo = pseudoMatch ? pseudoMatch.index : -1;
       return pseudo < 0 ? scoped + guard : scoped.slice(0, pseudo) + guard + scoped.slice(pseudo);
     });
   });

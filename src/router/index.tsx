@@ -1,7 +1,5 @@
 import { PlatformToolBoundary } from '../backend/platformTools';
 import type { RouteObject } from 'react-router-dom';
-import { SupportChat } from '../pages/support/SupportChat';
-import { CommercePolicyPage } from '../pages/commerce/CommercePolicyPage';
 import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
@@ -11,9 +9,13 @@ import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
 import type { Role } from '../types/auth';
-import { EmailActionPage } from '../pages/auth/EmailActionPage';
-import PhoenixSignIn from '../pages/auth/PhoenixSignIn';
 import '../route-loading.css';
+
+const SupportChat = lazy(() => import('../pages/support/SupportChat').then(module => ({ default: module.SupportChat })));
+const CommercePolicyPage = lazy(() => import('../pages/commerce/CommercePolicyPage').then(module => ({ default: module.CommercePolicyPage })));
+const EmailActionPage = lazy(() => import('../pages/auth/EmailActionPage').then(module => ({ default: module.EmailActionPage })));
+const PhoenixSignIn = lazy(() => import('../pages/auth/PhoenixSignIn'));
+
 const ActivationPage = lazy(() => import('../pages/auth/ActivationLinkPage').then(module => ({ default: module.ActivationPage })));
 const ActivateAccountPage = lazy(() => import('../pages/onboarding/ActivateAccountPage'));
 // OnboardingWizard is temporarily disabled.
@@ -73,7 +75,7 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
-  { path: '/auth/phoenix', element: <PhoenixSignIn/> },
+  { path: '/auth/phoenix', element: <Suspended><PhoenixSignIn/></Suspended> },
   { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
   { path: '/onboarding/activate-account', element: <Suspended><ActivateAccountPage/></Suspended> },
   // Keep activation links usable while the onboarding cycle is disabled.
@@ -82,21 +84,21 @@ export const router = createBrowserRouter([
   { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
-  { path: '/commerce/policies/:kind', element: <CommercePolicyPage/> },
+  { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage/></Suspended> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
   { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
   { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
   { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace/> },
   // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
-  { path: '/', element: new URLSearchParams(window.location.search).has('oobCode') ? <EmailActionPage/> : <Suspended><LandingPage/></Suspended> },
+  { path: '/', element: new URLSearchParams(window.location.search).has('oobCode') ? <Suspended><EmailActionPage/></Suspended> : <Suspended><LandingPage/></Suspended> },
   { path: '/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
   { path: '/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
   { path: '/auth/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
   { path: '/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
   { path: '/auth/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
-  { path: '/auth/action', element: <EmailActionPage/> },
-  { path: '/__/auth/action', element: <EmailActionPage/> },
+  { path: '/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
+  { path: '/__/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
   ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
   { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
@@ -147,7 +149,7 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" replace/> },
-      { path: 'support', element: <SupportChat/> },
+      { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
       ...['dashboard','conversations','plans','payments-gateways','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
@@ -160,7 +162,7 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['SUPER_ADMIN']}><SuperAdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
-      { path: 'support', element: <SupportChat/> },
+      { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'subscriptions', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },

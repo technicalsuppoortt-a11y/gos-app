@@ -959,7 +959,7 @@
   }
 }
 
-[dir="rtl"] @keyframes admDrawerSlide {
+@keyframes admDrawerSlideRtl {
   from {
     opacity: 0;
     transform: translateX(-18px);
@@ -968,6 +968,10 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+[dir="rtl"] .adm-drawer-content {
+  animation-name: admDrawerSlideRtl;
 }
 
 .adm-drawer-head {

@@ -6,7 +6,6 @@ import i18n from '../i18n/i18n';
 import { storageSet } from '../utils/browserStorage';
 import { usePhoenixBrand } from '../backend/phoenixBrand';
 import './phoenix-brand.css';
-import './phoenix-brand-generated.css';
 import { bindCapturedBrandColors } from '../branding/themeColors';
 import fontCatalog from '../branding/brandFontCatalog.json';
 
@@ -24,7 +23,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const design = configuration?.brand.theme;
     if (!design) return;
     const set = (key: string, value: string) => root.style.setProperty(`--gp-${key}`, value);
-    root.dataset.gpBrand = String(design.paletteId !== 'dashboard-default');
+    const isCustomBrand = design.paletteId !== 'dashboard-default';
+    root.dataset.gpBrand = String(isCustomBrand);
+    if (isCustomBrand) {
+      void import('./phoenix-brand-generated.css');
+    }
     for (const [key, value] of Object.entries(design[theme])) {
       if (typeof value === 'string' && CSS.supports('color', value)) set(key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`), value);
     }
