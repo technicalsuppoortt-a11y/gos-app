@@ -22,12 +22,10 @@ import { showToast } from '../../utils/toast';
 import {
   type ToolItem,
   type ToolStatus,
-  loadTools,
-  toggleToolEnabled,
-  updateTool,
-  resetTools,
+  initialTools,
 } from './tools-data';
 import './admin-tools.css';
+import { usePlatformTools, persistPlatformTools, defaultPlatformTools } from '../../backend/platformTools';
 
 const CATEGORY_OPTIONS = [
   { id: 'All', labelEn: 'All Categories', labelAr: 'جميع الفئات' },
@@ -45,16 +43,26 @@ export function AdminTools() {
   const ar = language.startsWith('ar');
   const t = (en: string, arabic: string) => (ar ? arabic : en);
 
-  const [tools, setTools] = useState<ToolItem[]>(() => loadTools());
+  const [tools, setTools] = useState<ToolItem[]>(() => defaultPlatformTools);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | ToolStatus>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [configuringTool, setConfiguringTool] = useState<ToolItem | null>(null);
 
-  // Sync tools on mount
+  const source = usePlatformTools();
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState('');
+  async function commit(next: ToolItem[]) {
+    if (saving || source.loading || source.error) return false;
+    setSaving(true); setFailure('');
+    try { await persistPlatformTools(next, source.revision); setTools(next); return true; }
+    catch (error) { setFailure(error instanceof Error ? error.message : 'Could not save tools.'); return false; }
+    finally { setSaving(false); }
+  }
+  // The cloud is authoritative; browser values are never published on mount.
   useEffect(() => {
-    setTools(loadTools());
-  }, []);
+    setTools(defaultPlatformTools.map(tool => ({ ...tool, ...source.tools[tool.id] })));
+  }, [source.tools]);
 
   // Compute status counts
   const totalCount = tools.length;
@@ -92,9 +100,9 @@ export function AdminTools() {
   });
 
   // Toggle quick switch on card
-  const handleQuickToggle = (tool: ToolItem) => {
-    const updated = toggleToolEnabled(tool.id, tools);
-    setTools(updated);
+  const handleQuickToggle = async (tool: ToolItem) => {
+    const updated = tools.map(item => item.id === tool.id ? { ...item, enabled: !item.enabled, status: (!item.enabled ? 'Active' : 'Disabled') as ToolStatus } : item);
+    if (!await commit(updated)) return;
     const wasEnabled = tool.enabled;
     const toolTitle = tool.name[ar ? 1 : 0];
     if (wasEnabled) {
@@ -109,22 +117,20 @@ export function AdminTools() {
   };
 
   // Bulk enable all
-  const handleEnableAll = () => {
+  const handleEnableAll = async () => {
     const next = tools.map((t) => ({
       ...t,
       enabled: true,
       status: (t.status === 'Maintenance' ? 'Maintenance' : 'Active') as ToolStatus,
     }));
-    setTools(next);
-    loadTools(); // save next
-    localStorage.setItem('gos.admin.tools.v1', JSON.stringify(next.map(({ icon, ...rest }) => rest)));
+    if (!await commit(next)) return;
     showToast.success(
       ar ? 'تم تفعيل جميع الأدوات عالمياً.' : 'All platform tools enabled globally.'
     );
   };
 
   // Reset to factory defaults
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
     if (
       window.confirm(
         ar
@@ -132,8 +138,7 @@ export function AdminTools() {
           : 'Are you sure you want to reset all platform tools to default settings?'
       )
     ) {
-      const reset = resetTools();
-      setTools(reset);
+      if (!await commit(defaultPlatformTools)) return;
       showToast.info(
         ar ? 'تمت استعادة الإعدادات الافتراضية بنجاح.' : 'Tools reset to factory defaults.'
       );
@@ -142,7 +147,7 @@ export function AdminTools() {
 
   // Export JSON configuration
   const handleExportConfig = () => {
-    const serializable = tools.map(({ icon, ...rest }) => rest);
+    const serializable = tools.map(({ id, enabled, status, accessTier, maintenanceNotice, settings }) => ({ id, enabled, status, accessTier, maintenanceNotice, settings }));
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(serializable, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
@@ -156,9 +161,8 @@ export function AdminTools() {
   };
 
   // Save drawer edits
-  const handleSaveDrawer = (updatedTool: ToolItem) => {
-    const updatedList = updateTool(updatedTool, tools);
-    setTools(updatedList);
+  const handleSaveDrawer = async (updatedTool: ToolItem) => {
+    if (!await commit(tools.map(tool => tool.id === updatedTool.id ? updatedTool : tool))) return;
     setConfiguringTool(null);
     showToast.success(
       ar
@@ -168,7 +172,9 @@ export function AdminTools() {
   };
 
   return (
-    <div className="adm-tools-workspace">
+    <div className="adm-tools-workspace" aria-busy={saving || source.loading}>
+      {(failure || source.error) && <p role="alert">{failure || source.error}</p>}
+      {(saving || source.loading) && <p role="status">{saving ? t('Saving…','جار الحفظ…') : t('Loading tools…','جار التحميل…')}</p>}
       {/* Page Header & Global Toolbar */}
       <header className="adm-tools-head">
         <div className="adm-tools-title-row">
@@ -202,7 +208,7 @@ export function AdminTools() {
             </span>
             <span className="adm-tool-chip">
               <Sparkles size={12} />
-              {t('SLA: 99.9%', 'الاستقرار: 99.9%')}
+              {t('Revision:', 'الإصدار:')} {source.revision}
             </span>
           </div>
         </div>
@@ -333,7 +339,7 @@ export function AdminTools() {
             <button
               type="button"
               className="adm-tools-btn adm-tools-btn-enable"
-              onClick={handleEnableAll}
+              disabled={saving || source.loading || !!source.error} onClick={handleEnableAll}
               title={t('Enable all tools globally across all tenants', 'تفعيل جميع الأدوات عبر كافة مساحات العمل')}
             >
               <Power size={13} className="adm-btn-power-icon" />
@@ -351,7 +357,7 @@ export function AdminTools() {
             <button
               type="button"
               className="adm-tools-btn adm-tools-btn-reset"
-              onClick={handleResetDefaults}
+              disabled={saving || source.loading || !!source.error} onClick={handleResetDefaults}
               title={t('Reset tools to defaults', 'إعادة تعيين للافتراضي')}
               aria-label={t('Reset tools to defaults', 'إعادة تعيين للافتراضي')}
             >
@@ -362,7 +368,7 @@ export function AdminTools() {
       </header>
 
       {/* 4x3 Zero-Scroll Grid Container */}
-      <main className="adm-tools-grid" role="region" aria-label={t('Platform Tools Grid', 'شبكة أدوات المنصة')}>
+      <fieldset disabled={saving || source.loading || !!source.error} style={{border:0,padding:0,margin:0, minHeight:0,overflow:'auto'}}><main className="adm-tools-grid" role="region" aria-label={t('Platform Tools Grid', 'شبكة أدوات المنصة')}>
         {visibleTools.map((tool) => {
           const Icon = tool.icon;
           const statusClass = tool.status.toLowerCase();
@@ -409,13 +415,10 @@ export function AdminTools() {
 
                 <div className="adm-tool-telemetry">
                   <span>
-                    {t('Tenants:', 'المساحات:')}{' '}
-                    <b>
-                      {tool.stats.activeTenants} / {tool.stats.totalTenants}
-                    </b>
+                    {t('Source:', 'المصدر:')} <b>Firebase</b>
                   </span>
                   <span>
-                    {t('Uptime:', 'الاستقرار:')} <b>{tool.stats.uptime}</b>
+                    {t('Plans:', 'الخطط:')} <b>{tool.accessTier === 'all' ? t('All', 'الكل') : tool.accessTier === 'agency_only' ? 'Agency' : 'Pro / Agency'}</b>
                   </span>
                 </div>
               </div>
@@ -485,12 +488,13 @@ export function AdminTools() {
             </button>
           </div>
         )}
-      </main>
+      </main></fieldset>
 
       {/* Drawer / Compact Modal for Configuration */}
       {configuringTool && (
         <ToolConfigDrawer
           tool={configuringTool}
+          revision={source.revision}
           ar={ar}
           t={t}
           onClose={() => setConfiguringTool(null)}
@@ -504,13 +508,14 @@ export function AdminTools() {
 // Drawer Component
 interface ToolConfigDrawerProps {
   tool: ToolItem;
+  revision: number;
   ar: boolean;
   t: (en: string, ar: string) => string;
   onClose: () => void;
   onSave: (tool: ToolItem) => void;
 }
 
-function ToolConfigDrawer({ tool, ar, t, onClose, onSave }: ToolConfigDrawerProps) {
+function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfigDrawerProps) {
   const [draft, setDraft] = useState<ToolItem>({ ...tool });
   const drawerRef = useRef<HTMLDivElement>(null);
   const Icon = tool.icon;
@@ -755,19 +760,16 @@ function ToolConfigDrawer({ tool, ar, t, onClose, onSave }: ToolConfigDrawerProp
 
           <div className="adm-drawer-telemetry">
             <div className="adm-drawer-tele-item">
-              <small>{t('Current Version', 'الإصدار الحالي')}</small>
-              <strong>{draft.stats.version}</strong>
+              <small>{t('Configuration Revision', 'إصدار الإعدادات')}</small>
+              <strong>{revision}</strong>
             </div>
             <div className="adm-drawer-tele-item">
-              <small>{t('30-Day SLA Uptime', 'الاستقرار (30 يوماً)')}</small>
-              <strong>{draft.stats.uptime}</strong>
+              <small>{t('Data Source', 'مصدر البيانات')}</small>
+              <strong>Firebase Firestore</strong>
             </div>
             <div className="adm-drawer-tele-item">
-              <small>{t('Tenant Adoption', 'المساحات المستخدمة')}</small>
-              <strong>
-                {draft.stats.activeTenants} / {draft.stats.totalTenants} (
-                {Math.round((draft.stats.activeTenants / draft.stats.totalTenants) * 100)}%)
-              </strong>
+              <small>{t('Workspace Access', 'وصول المساحات')}</small>
+              <strong>{draft.accessTier === 'all' ? t('All plans', 'جميع الخطط') : draft.accessTier === 'agency_only' ? 'Agency' : 'Pro / Agency'}</strong>
             </div>
             <div className="adm-drawer-tele-item">
               <small>{t('Native Route', 'المسار المباشر')}</small>
@@ -785,7 +787,7 @@ function ToolConfigDrawer({ tool, ar, t, onClose, onSave }: ToolConfigDrawerProp
             type="button"
             className="adm-tools-action-btn"
             onClick={() => {
-              const initial = loadTools().find((t) => t.id === tool.id) ?? tool;
+              const initial = tool;
               setDraft(initial);
               showToast.info(t('Reverted to loaded values.', 'تمت استعادة القيم المحفوظة.'));
             }}

@@ -1,3 +1,6 @@
+import { PlatformToolBoundary } from '../backend/platformTools';
+import type { RouteObject } from 'react-router-dom';
+import { SupportChat } from '../pages/support/SupportChat';
 import { CommercePolicyPage } from '../pages/commerce/CommercePolicyPage';
 import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
@@ -19,7 +22,11 @@ const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(modu
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
 const LandingPage = lazy(() => import('../pages/landing/LandingPage').then(module => ({ default: module.LandingPage })));
-const UserLayout = lazy(() => import('../components/layout/UserLayout').then(module => ({ default: module.UserLayout })));
+const UserLayout = lazy(() => import('../pages/support/UserSupportEntry').then(module => ({ default: module.UserLayoutWithSupport })));
+const UserSupportPage = lazy(() => import('../pages/support/UserSupportEntry').then(module => ({ default: module.UserSupportPage })));
+function controlToolRoute(route: RouteObject): RouteObject {
+  return { ...route, ...(route.element ? { element: <PlatformToolBoundary>{route.element}</PlatformToolBoundary> } : {}), ...(route.children ? { children: route.children.map(controlToolRoute) } : {}) } as RouteObject;
+}
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -35,6 +42,8 @@ const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => (
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
 const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(module => ({ default: module.MarketingTracking })));
 const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
+const SuperAdminPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.SuperAdminPlansPage })));
+const UserPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.UserPlansPage })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
@@ -89,13 +98,15 @@ export const router = createBrowserRouter([
   { path: '/auth/action', element: <EmailActionPage/> },
   { path: '/__/auth/action', element: <EmailActionPage/> },
   { path: '/auth/*', element: <DefaultRedirect/> },
-  ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<Suspended><FunnelBuilder/></Suspended> }] })),
-  { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren },
+  ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
+  { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
   {
     path: '/dashboard',
     element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
+      { path: 'support', element: <Suspended><UserSupportPage/></Suspended> },
+      { path: 'plans', element: <Suspended><UserPlansPage/></Suspended> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
       ...['funnels/*', 'websites/*', 'domains/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
       { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace/> },
@@ -129,17 +140,17 @@ export const router = createBrowserRouter([
       { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
       { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
       { path: 'settings/*', element: <Suspended><SettingsWorkspace/></Suspended> },
-    ],
+    ].map(controlToolRoute),
   },
   {
     path: '/admin',
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" replace/> },
+      { path: 'support', element: <SupportChat/> },
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
-      { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
-      ...['dashboard','conversations','onboarding','plans','payments-gateways','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
+      ...['dashboard','conversations','plans','payments-gateways','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
       { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },
     ],
@@ -149,8 +160,10 @@ export const router = createBrowserRouter([
     element: <GuardedLayout roles={['SUPER_ADMIN']}><SuperAdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
+      { path: 'support', element: <SupportChat/> },
       { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'subscriptions', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },

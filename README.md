@@ -1,62 +1,103 @@
-# Feedback Report for the 'Upclick' project by Mahmoud Ashraf
+# General 
+- Logo
+- Sidebar tabs in arabic
+- Long title of page in top bar
+- Comment Need Help?
+- Make Search Bar work in topbar
+- Selection color in light / dark mode
+- dark mode colors
 
-## First : Backend
-- Auth
-    - Login / Forgot Password
-- Admin Dashbaord
- - User Mangement
-   - Create User which Create Activation Link for user
-   - Handled Activation link with Change password
-- User Dashboard
-    1- Handled Dashboard Logic => Activity , Top Product , Top Funnel
-    2- Handled Funnel & Website Logic
-        - Can Create/edit/delete Funnel or Website
-        - Can Publish on Real Link
-        - Connected Leads with Fuunel & Websites Vistor when Submited Forms
-        - Handled Logic of Domains
-    3- Handled CRM & Leads Logic 
-        - Can Create/edit/delete Lead
-        - Can move leads between Stages
-        - Handled all Leads types => 
-            - Lead Booked in the calendar
-            - Lead Record his data in Funnel or Website
-            - Lead Buy Servie or Product
-            - General Lead => like from Social media
-        - Can Create/edit/delete Pipline
-        - Can Create/edit/delete Contact
-        - Can Create/edit/delete Tasks and assign for leads
+===========================================
 
-    4- Handled Booking & Calendar Logic
-        - Can Add/edit/delete Calander
-        - Publich Prview Boooking pages or calanders
-        - Can Show Booking => which can Cancel/View/Reschedule
-        - Can Create/edit/delete Contact
-        - Cand Invite/EDit/Delete teammates
-    
-    5- Handled Products & Payments Logic
-        - Can Create/Edit/Delete Course Product
-        - Can Create/Edit/Delete Digital Product
-        - Can Create/Edit/Delete Service Product
-        - Handled View/Publish Product Link
-        - Handled for rach type of product Pricing , Funnel & Pages ,Product Settings
-            - which add default Sales pages , Thanks pages , Policy pages , Privacy Pages to choose from it
-        - Handled Discounts & Coupons Logic => can add/edit/delete
-        - Handled Transactions => view table
-        - Handled Orders , Customers , Payments
-            - view / add /edit /delete
-    
-- Follow Up Collection
-    - Handled Business knowledge
-    - Handled Test AI Assistent
-    - Handled Leads and CREM
-    - Handled Inbox => but as first phase => wait integration with social media
 
-## Additions
-    - Handled GET APP 
-    - Handled and Added Pixel with called "Marketing Tracking"
-    - Add Payment Methods  with Instagram Projcet as a refrence
-        - Manual Transfer Methods like Vodafone Cash
-        - Professional Payment Gateways like Stripe
-            - Which each one have it configure and it inputs
-    - Add Demo Account wich mocha data for view user Dashoard as real user
-    - Make Dashboard as An real mini version  in landing page
+# User Dashboad
+
+- Funnel & Website
+    - Add Form type
+        - Can use this forms as a ready templete in funnel or website
+    - Connected with leads
+    - must in three type => identify which go to pipline crm?
+
+- CRM & Leads 
+    - Add Filter Leads by webiste , funnel , forms , booking , services
+    - Add quick right panal details
+    - Can move lead from pipline to pipline
+
+- AI Follow-Up
+    - Flow and trigers  (many chat refrence) => knwoldege base
+
+- Booking & Calendar
+    - Bookings : View quick details => like quesion answers
+    - must identify which go to pipline crm?
+
+- Products & Payments
+    - View Quick details in right panel
+    - must identify which go to pipline crm?
+
+- Marketing Tracking
+     - Rename Marketing Tracking to Pixel
+     - make like ai bussiness with same icons
+
+- Settings
+    - Join pixel to Setting
+    - make when click setting in full sidebar
+    - light mode broken
+
+- Inbox
+    - Integration and guideline how to connected 
+    - Can support multi connection => lead have more than number or email
+
+- Add Support chat between admin and his users
+
+===========================================
+
+# Admin Dashbaord
+
+- Light mode is broken
+- remove domains & ssl , pixel , onboarding
+- Handled Backend of All Tools Management
+- Add Support chat between admin and his users
+- Switch Accounts between admin and users
+
+- User Management
+    - Rename to sub accounts
+    - add view details
+    - make like ai busseiness
+        - add cards analysis
+        - Plans
+        - make free option
+
+- Plans and Subscription
+    - make like ai busseiness
+    - in considered integration wallet and creidet
+    - Add ones
+
+- Payment Methods
+    - Add Payment Methods => paymob
+    - Add Icons For Payment Methods
+
+- Dashboard Management
+    - Join Funnels & Websites , CRM & Leads Management , Booking & Calendar , Products & Payments , Templates
+    - Handled Backend
+
+- Landing Management
+    - Add Preview
+    - Can control of every thins and every media
+
+- Settings
+    - Join Integrations & Webhooks , AI Models & Usage , Transactions
+    - add wallet for ai models & usage
+
+============================================
+
+
+# Super Admin Dashbaord
+- Handled Backend
+- Remove Marketing Tracking
+- Add Suport Chat
+- Add Plans and subscription 
+ - Add ones
+- Add Templete Control
+- All accounts , All Admins
+- Hanldes Team Member with roles and permission
+- Switch between users

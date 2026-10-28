@@ -1,5 +1,8 @@
+import { checkPlatformTool } from './platform-tools.js';
+import { createSupportCallable } from './support.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
+import { billingServiceRequest } from './billing-service.js';
 import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
@@ -34,11 +37,16 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 
 initializeApp();
 const db = getFirestore(), auth = getAuth();
+export const supportChat = createSupportCallable({ actor, db });
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
+export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
-export const productAccess = onCall(request => productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] }));
+export const productAccess = onCall(async request => {
+  if (typeof request.data?.tenantId === 'string' && /^[\w-]{1,150}$/.test(request.data.tenantId)) await checkPlatformTool(db, request.data.tenantId, 'portal');
+  return productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] });
+});
 export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
 export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/transactions/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
 async function actor(request) {
@@ -51,6 +59,7 @@ async function workspace(request, permission) {
   const user = await actor(request);
   const member = (await db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()).data();
   if (!member?.active || !(member.permissions?.includes('*') || member.permissions?.includes(permission))) throw new HttpsError('permission-denied', 'Your role cannot perform this action.');
+  await checkPlatformTool(db, user.tenantId, permission);
   return { user, root: db.doc(`tenants/${user.tenantId}`) };
 }
 function audit(root, user, type, resourceId, extra = {}) {
@@ -67,6 +76,7 @@ export const hostingDomain = onCall({ timeoutSeconds: 180, cors: true, invoker: 
 export const deleteWorkspaceAsset = onCall({ timeoutSeconds: 180 }, request => deleteAssetRequest(request, { workspace, db, hosting: hostingClient() }));
 export const verifyDomain = onCall({ timeoutSeconds: 60, cors: true, invoker: 'public' }, async request => {
   const { user, root } = await workspace(request, 'funnels');
+  await checkPlatformTool(db, user.tenantId, 'domains');
   const { host, funnelId = '', tenantId, disconnect = false, delete: shouldDelete = false } = request.data ?? {};
   if (!host || typeof host !== 'string') throw new HttpsError('invalid-argument', 'Enter a valid domain name.');
   if (tenantId && tenantId !== root.id) throw new HttpsError('permission-denied', 'This domain belongs to another workspace.');
@@ -139,7 +149,7 @@ export const manageUser = onCall(async request => {
     try {
       await auth.setCustomUserClaims(account.uid, { role, tenantId });
       const batch = db.batch();
-      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, status: 'Pending', created: new Date().toISOString(), mfa: false });
+      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId: role === 'ADMIN' || user.role === 'ADMIN' ? user.uid : '', status: 'Pending', created: new Date().toISOString(), mfa: false });
       batch.create(db.doc(`tenants/${tenantId}`), { name: `${account.displayName}'s workspace`, ownerId: account.uid });
       batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status: 'Pending', active: false, permissions: ['*'] });
       batch.create(db.collection('userManagementAudit').doc(), { actorId: user.uid, type: 'user.created', userId: account.uid, createdAt: FieldValue.serverTimestamp() });
@@ -194,6 +204,7 @@ export const queueMessage = onCall(async request => {
     if (existing.exists) return { id: existing.id, status: existing.data().status };
     const conversationRef = root.collection('conversations').doc(conversationId);
     const thread = (await tx.get(conversationRef)).data();
+    if (thread?.channel === 'email' || thread?.channel === 'sms') await checkPlatformTool(db, user.tenantId, 'email-sms');
     if (!thread?.leadId) throw new HttpsError('not-found', 'Link this conversation to a CRM contact first.');
     const lead = (await tx.get(root.collection('leads').doc(thread.leadId))).data();
     const integration = (await tx.get(root.collection('integrations').doc(thread.channel))).data();
@@ -489,4 +500,5 @@ export const pauseFollowUpOnConversationChange = onDocumentWritten('tenants/{ten
 export { phoenixPlatform } from './phoenix.js';
 export { publicBooking } from './public-booking.js';
 export { processScheduledActions } from './workers.js';
+export { billingSweep } from './billing-service.js';
 export { processCommerceDeliveries } from './commerce-delivery.js';

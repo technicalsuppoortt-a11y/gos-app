@@ -11,11 +11,12 @@ import './payment-methods.css';
 const manualProviders = paymentProviders.filter(([, , type]) => type === 'manual');
 const gateways = [
   { ids: ['stripe'], name: 'Stripe', description: 'International payments via Visa & Mastercard' },
-  { ids: ['paypal'], name: 'PayPal', description: 'Global digital wallet' },
-  { ids: ['paytabs'], name: 'PayTabs', description: 'Payment gateway for the Middle East & GCC' },
+  { ids: ['paddle'], name: 'Paddle', description: 'Subscriptions and global payments' },
   { ids: ['fawry', 'kashier'], name: 'Fawry / Kashier', description: 'Local Egyptian payments and cards' },
+  { ids: ['paymob'], name: 'Paymob', description: 'Cards and mobile wallets in Egypt and the Middle East' },
 ];
-const ManualIcon = ({ provider }: { provider: string }) => provider === 'bank' ? <Landmark size={20}/> : provider === 'stc' ? <Wallet size={20}/> : <Smartphone size={20}/>;
+const brandAssets: Record<string, string> = { vodafone: 'vodafone.svg', instapay: 'instapay.png', etisalat: 'etisalat.ico', orange: 'orange.svg', stc: 'stc.svg' };
+const ManualIcon = ({ provider }: { provider: string }) => provider === 'bank' ? <Landmark size={24}/> : <span className={`pm-brand-frame ${provider}`}><img className="pm-brand-logo" src={`/payment-brands/${brandAssets[provider]}`} alt="" aria-hidden="true"/></span>;
 
 export function PaymentMethodsPanel() {
   useUILanguage();

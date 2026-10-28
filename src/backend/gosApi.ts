@@ -1,11 +1,12 @@
 import { auth } from './firebase';
+import { checkGosToolPolicy } from './gosToolPolicy';
 import { createGosTransport, GosApiError } from './gosTransport';
 
 export const gosRequest = createGosTransport(import.meta.env.VITE_GOS_API_BASE_URL || 'https://gos-api.vercel.app', async refresh => {
   await auth.authStateReady();
   if (!auth.currentUser) throw new Error('Sign in to connect to the Upclick API.');
   return auth.currentUser.getIdToken(refresh);
-});
+}, fetch, checkGosToolPolicy);
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; content?: string; chunk_count?: number; error?: string };
 export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
 export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: unknown[]; verdict?: string };

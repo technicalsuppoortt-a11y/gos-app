@@ -21,6 +21,10 @@ export function validateGatewayConfiguration(provider, input, previous = {}) {
     if (!new RegExp(`^(sk|rk)_${mode}_[A-Za-z0-9]+$`).test(result.secretKey)) throw new HttpsError('invalid-argument', 'Secret Key must match the selected Stripe mode.');
     if (result.webhookSecret && !/^whsec_[A-Za-z0-9]+$/.test(result.webhookSecret)) throw new HttpsError('invalid-argument', 'Enter a valid Webhook Secret.');
   }
+  if (provider === 'paymob') {
+    if (!/^\d+(\s*,\s*\d+)*$/.test(result.integrationIds)) throw new HttpsError('invalid-argument', 'Enter numeric Paymob integration IDs separated by commas.');
+  }
+  if (provider === 'paddle' && !result.clientToken.startsWith(input.mode === 'live' ? 'live_' : 'test_')) throw new HttpsError('invalid-argument', 'Client-side Token must match the selected Paddle mode.');
   if (provider === 'paytabs' && !/^\d+$/.test(result.profileId)) throw new HttpsError('invalid-argument', 'Profile ID must contain digits only.');
   return result;
 }

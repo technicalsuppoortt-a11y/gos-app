@@ -1,7 +1,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { gatewayFields, gatewaySummary } from './payment-gateway-model.js';
 import { validateGatewayConfiguration } from './payment-gateway-validation.js';
-const providers = new Map([['vodafone','manual'],['instapay','manual'],['etisalat','manual'],['orange','manual'],['bank','manual'],['stc','manual'],['stripe','gateway'],['paypal','gateway'],['paytabs','gateway'],['fawry','gateway'],['kashier','gateway']]);
+const providers = new Map([['vodafone','manual'],['instapay','manual'],['etisalat','manual'],['orange','manual'],['bank','manual'],['stc','manual'],['paddle','gateway'],['paymob','gateway'],['stripe','gateway'],['paypal','gateway'],['paytabs','gateway'],['fawry','gateway'],['kashier','gateway']]);
 export function validatePaymentMethods(methods, previous = []) {
   if (!Array.isArray(methods) || methods.length > providers.size) throw new HttpsError('invalid-argument', 'Invalid payment methods.');
   const seen = new Set();
@@ -36,7 +36,7 @@ export async function configurePaymentMethodsRequest(request, { actor, db }) {
       if (request.data.expectedGatewayRevision !== (privateConfig.revision ?? 0)) throw new HttpsError('aborted', 'Gateway configuration changed in another session. Reopen the configuration and try again.');
       if (request.data.expectedRevision !== (previous.revision ?? 0)) throw new HttpsError('aborted', 'Payment methods changed in another session. Review the latest configuration and save again.');
       const credentials = validateGatewayConfiguration(provider, request.data.configuration, privateConfig.credentials);
-      const method = validatePaymentMethods([{ id: provider, provider, type: 'gateway', name: ({ stripe: 'Stripe', paypal: 'PayPal', paytabs: 'PayTabs', fawry: 'Fawry', kashier: 'Kashier' })[provider], account: request.data.label, instructions: '', enabled: request.data.enabled }])[0];
+      const method = validatePaymentMethods([{ id: provider, provider, type: 'gateway', name: ({ paddle: 'Paddle', paymob: 'Paymob', stripe: 'Stripe', paypal: 'PayPal', paytabs: 'PayTabs', fawry: 'Fawry', kashier: 'Kashier' })[provider], account: request.data.label, instructions: '', enabled: request.data.enabled }])[0];
       const methods = [...(previous.methods ?? []).filter(m => m.provider !== provider), method];
       const revision = (previous.revision ?? 0) + 1;
       const audit = { updatedBy: user.uid, updatedAt: new Date().toISOString() };

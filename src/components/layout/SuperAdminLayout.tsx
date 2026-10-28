@@ -3,7 +3,7 @@ import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Activity, AppWindow, BarChart3, Bell, CreditCard, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X } from 'lucide-react';
+import { Activity, AppWindow, BarChart3, Bell, CreditCard, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
@@ -14,10 +14,12 @@ import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
 import { Radio } from 'lucide-react';
 
-const navigation = [
+const navigation: { label: string; ar?: string; to: string; icon: typeof Radio; end?: boolean }[] = [
   { label: 'Marketing Tracking', to: '/super-admin/marketing-tracking', icon: Radio },
+  { label: 'Support', to: '/super-admin/support', icon: Bell },
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
   { label: 'All Clients', to: '/super-admin/clients', icon: Users },
+  { label: 'Plans & Credits', ar: 'الباقات والرصيد', to: '/super-admin/plans', icon: Layers },
   { label: 'All Softwares', to: '/super-admin/subscriptions', icon: AppWindow },
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
@@ -28,7 +30,7 @@ const navigation = [
 ];
 
 export const SuperAdminLayout: React.FC = () => {
-  useUILanguage();
+  const language = useUILanguage();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,7 +66,7 @@ export const SuperAdminLayout: React.FC = () => {
       <a className="sa-brand" href="/super-admin"><span className="sa-brand-mark"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span><span><b>{translateText("Upclick")}</b><small>{translateText("Platform control")}</small></span></a>
       <div className="sa-nav-label">{translateText("PLATFORM")}</div>
       <nav className="sa-nav" aria-label={translateText("Super admin navigation")}>
-        {localizeNode(navigation.map(({ label, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{localizeNode(label)}</span></NavLink>))}
+        {localizeNode(navigation.map(({ label, ar, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{ar && language.startsWith('ar') ? ar : localizeNode(label)}</span></NavLink>))}
       </nav>
       <button className="sa-logout" onClick={signOut}><LogOut size={15}/>{translateText("Log out")}</button>
     </aside>

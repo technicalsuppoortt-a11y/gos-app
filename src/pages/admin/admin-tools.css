@@ -1245,3 +1245,5 @@
   font-size: 12px;
   margin: 0;
 }
+
+.adm-tools-cat-popup{--adm-border:#e7e8f0;--adm-surface:#fff;--adm-text:#24243a;--adm-muted:#64748b;--adm-accent:#7c3aed;--adm-accent-soft:#eeeafd}.dark .adm-tools-cat-popup{--adm-border:#303348;--adm-surface:#1b1d2b;--adm-text:#eef0fb;--adm-muted:#a4a8bf;--adm-accent:#a78bfa;--adm-accent-soft:#302849}.adm-tools-workspace>fieldset{flex:1;width:100%}.adm-tools-workspace>fieldset:disabled{opacity:.65}.adm-tools-workspace .adm-tools-grid{height:auto;min-height:100%}.adm-tools-workspace .adm-tool-desc{color:var(--adm-muted)}

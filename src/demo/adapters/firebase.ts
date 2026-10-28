@@ -2,6 +2,7 @@ import { getAuth } from './auth';
 import { read, write, rows, entityMutation, spendCredits } from '../store';
 import { gatewayFields, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
 import { normalizeTrackingConfig, trackingDefaults } from '../../../functions/marketing-tracking-model.js';
+import { demoBilling } from './billing';
 export const auth = getAuth(), primaryAuth = auth;
 export const db = {}, primaryDb = db, firebaseApp = {}, firebaseConfig = {}, functions = {};
 export const storage = { app: { options: { storageBucket: 'isolated-demo' } } };
@@ -88,6 +89,7 @@ async function demoRequest(name: string, data: any): Promise<any> {
     case 'commerceService': return { message: 'Demo access updated. No real purchase or account was changed.', ...(data.action === 'certificate' ? { certificate: { id: crypto.randomUUID(), name: data.email, course: rows('products').find(row => row.id === data.productId)?.name ?? 'Demo Course', issuedAt: new Date().toISOString() } } : {}) };
     case 'productAccess': return { name: 'Demo Product', files: [], message: 'Demo access updated.' };
     case 'activateUser': return { success: true };
+    case 'billingService': return demoBilling(data);
     default: throw new Error('Unknown local demo action: ' + name);
   }
 }

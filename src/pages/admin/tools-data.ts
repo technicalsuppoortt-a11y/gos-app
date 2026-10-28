@@ -334,7 +334,7 @@ export const initialTools: ToolItem[] = [
     categoryLabel: ['Infrastructure', 'البنية التحتية'],
     status: 'Active',
     enabled: true,
-    route: '/admin/domains',
+    route: '/admin/funnels',
     stats: {
       activeTenants: 24,
       totalTenants: 32,

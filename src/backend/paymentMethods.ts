@@ -9,6 +9,7 @@ export type GatewayConfiguration = GatewaySummary & { gatewayRevision: number };
 const getGateway = (provider: GatewayProvider) => callBackend<GatewayConfiguration>('configurePaymentMethods', { operation: 'getGateway', provider });
 export const paymentProviders = [
   ['vodafone', 'Vodafone Cash', 'manual'], ['instapay', 'InstaPay', 'manual'], ['etisalat', 'Etisalat Cash', 'manual'], ['orange', 'Orange Cash', 'manual'], ['bank', 'Bank Transfer', 'manual'], ['stc', 'STC Pay', 'manual'],
+  ['paddle', 'Paddle', 'gateway'], ['paymob', 'Paymob', 'gateway'],
   ['stripe', 'Stripe', 'gateway'], ['paypal', 'PayPal', 'gateway'], ['paytabs', 'PayTabs', 'gateway'], ['fawry', 'Fawry', 'gateway'], ['kashier', 'Kashier', 'gateway'],
 ] as const;
 export interface PaymentMethod { id: string; provider: string; name: string; type: 'manual' | 'gateway'; account: string; instructions: string; enabled: boolean; status: 'Configured' | 'Connected' }

@@ -22,7 +22,9 @@ const userItems: SidebarItem[] = [
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Marketing Tracking', href: '/marketing-tracking', icon: Radio },
+  { name: 'Plans & Pricing', href: '/plans', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'], children: settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon })) },
+  { name: 'Support', href: '/support', icon: MessageCircle },
 ];
 
 const bookingTabs = [
@@ -60,8 +62,8 @@ export const UserLayout: React.FC = () => {
   const location = useLocation();
   const canAccess = useModuleAccess();
   const module = moduleForPath(location.pathname);
-  const permitted = ['settings', 'integrations'].includes(module) || canAccess(module);
-  const visibleItems = userItems.filter(item => item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
+  const permitted = ['settings', 'integrations', 'support', 'plans'].includes(module) || canAccess(module);
+  const visibleItems = userItems.filter(item => item.href === '/plans' || item.href === '/support' || item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
@@ -84,7 +86,7 @@ export const UserLayout: React.FC = () => {
   return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route' : ''}${isBuilder ? ' is-builder-route' : ''}`} dir={uiDirection()}>
     <Sidebar items={visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace flex-1 flex flex-col min-w-0${isFullPage ? ' layout-workspace-inbox' : ''}`}>
-      <Header title={translateText(isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
+      <Header title={translateText(location.pathname === '/dashboard/support' ? 'Support' : isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
       {localizeNode(isBooking && <BookingTabs/>)}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         {/* Onboarding progress is temporarily disabled. */}

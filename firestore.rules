@@ -23,9 +23,39 @@ service cloud.firestore {
         collectionName in ['events', 'userTemplates'] && permit(tenantId, 'home') ||
         collectionName == 'files' && permit(tenantId, 'products');
     }
+    match /settings/platformTools {
+      allow read: if signedIn();
+      allow write: if featureAdmin() && request.resource.data.keys().hasOnly(['tools', 'revision', 'updatedAt', 'updatedBy']) && request.resource.data.tools is map && request.resource.data.tools.size() <= 12 && request.resource.data.revision is int && request.resource.data.updatedBy == request.auth.uid;
+    }
+    match /settings/adminGeneral { allow read, write: if featureAdmin(); }
+    match /supportRooms/{roomId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      allow write: if false;
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/supportRooms/$(roomId)).data.participants;
+        allow write: if false;
+      }
+    }
     match /settings/paymentMethods { allow read: if true; allow write: if false; }
     // Credential values are accessible only through authenticated, admin-only callables.
     match /paymentGatewayConfigurations/{provider} { allow read, write: if false; }
+    // Billing: plans, subscriptions, wallets, ledger and requests are server-owned (billingService callable).
+    function superAdmin() { return signedIn() && profile().role == 'SUPER_ADMIN'; }
+    function billingParty(subscriberId, providerId) {
+      return signedIn() && (request.auth.uid == subscriberId || request.auth.uid == providerId || profile().role == 'SUPER_ADMIN');
+    }
+    match /billingPlans/{planId} {
+      allow read: if superAdmin() || signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.ownerId == 'platform' && profile().role == 'ADMIN' ||
+        profile().role == 'USER' && resource.data.ownerId == profile().get('supportParentId', ''));
+      allow write: if false;
+    }
+    match /billingSubscriptions/{subscriberId} { allow read: if signedIn() && request.auth.uid == subscriberId || billingParty(subscriberId, resource.data.providerId); allow write: if false; }
+    match /billingWallets/{walletId} { allow read: if signedIn() && request.auth.uid == walletId || billingParty(walletId, resource.data.providerId); allow write: if false; }
+    match /billingLedger/{entryId} { allow read: if billingParty(resource.data.walletId, resource.data.providerId); allow write: if false; }
+    match /add_on_requests/{requestId} { allow read: if billingParty(resource.data.requesterId, resource.data.providerId); allow write: if false; }
+    match /billingRequests/{requestId} { allow read: if billingParty(resource.data.requesterId, resource.data.providerId); allow write: if false; }
     match /settings/marketingTracking {
       allow read: if true;
       allow write: if signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN'] && validTracking();

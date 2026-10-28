@@ -1,5 +1,7 @@
 // Shared field definitions only. Credential values are kept in server-only documents.
 export const gatewayFields = {
+  paddle: [{ key: 'clientToken', label: 'Client-side Token' }, { key: 'apiKey', label: 'API Key', secret: true }, { key: 'webhookSecret', label: 'Webhook Secret', secret: true }],
+  paymob: [{ key: 'publicKey', label: 'Public Key' }, { key: 'secretKey', label: 'Secret Key', secret: true }, { key: 'integrationIds', label: 'Integration IDs (comma-separated)' }, { key: 'hmacSecret', label: 'HMAC Secret', secret: true }],
   stripe: [{ key: 'publishableKey', label: 'Publishable Key' }, { key: 'secretKey', label: 'Secret Key', secret: true }, { key: 'webhookSecret', label: 'Webhook Secret', secret: true, optional: true }],
   paypal: [{ key: 'clientId', label: 'Client ID' }, { key: 'clientSecret', label: 'Client Secret', secret: true }],
   paytabs: [{ key: 'profileId', label: 'Profile ID' }, { key: 'serverKey', label: 'Server Key', secret: true }],

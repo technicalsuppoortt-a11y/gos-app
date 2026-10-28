@@ -27,3 +27,7 @@
 .pm-methods .pm-gateway-accounts { font-size: 9px; color: var(--st-muted); overflow-wrap: anywhere; }
 @media(max-width:1100px) { .pm-methods .pm-manual-options { grid-template-columns: repeat(3,minmax(0,1fr)); } .pm-methods .pm-gateway-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(max-width:480px) { .pm-methods .pm-manual-options { grid-template-columns: repeat(2,minmax(0,1fr)); } .pm-methods .pm-gateway-grid { grid-template-columns: minmax(0,1fr); } .pm-methods .pm-added-row { flex-wrap: wrap; gap: 8px; } .pm-methods .pm-account { min-width: 60%; } }
+
+.pm-brand-logo{width:48px;height:28px;object-fit:contain;background:#fff;border-radius:4px;padding:2px}.pm-added-row .pm-brand-logo{width:32px;height:24px}
+
+.pm-brand-frame{display:flex;align-items:center;justify-content:center;width:56px;height:28px;overflow:hidden;background:#fff;border-radius:4px}.pm-brand-frame.instapay .pm-brand-logo{width:88px;height:88px;max-width:none;flex:none}.pm-added-row .pm-brand-frame{width:32px;height:24px}.pm-added-row .pm-brand-frame.instapay .pm-brand-logo{width:50px;height:50px}

@@ -17,12 +17,14 @@ import './product-header.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
 import { DemoAccountControl } from './DemoAccountControl';
+import { isLive, useSubscription } from '../../backend/billing';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/marketing-tracking': { title: 'Marketing Tracking', description: 'Pixels, events and conversion insights.' },
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
   '/admin/users': { title: 'Users Management', description: 'Invite and manage your workspace users.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
+  '/dashboard/plans': { title: 'Plans & Pricing', description: 'Your subscription, credits and available plans.' },
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
   '/dashboard/booking': { title: 'Booking & Calendar', description: 'Create booking links, manage your availability and let clients book appointments with you.' },
   '/dashboard/funnels': { title: 'Funnel & Website', description: 'Build and manage the paths that turn visitors into customers.' },
@@ -46,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   useUILanguage();
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const { data: subscription } = useSubscription(currentUser?.id ?? null);
   const initials = (currentUser?.name || 'MJ').slice(0, 2).toUpperCase();
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,6 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <GetAppButton/>
       <div className="layout-preference-controls"><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><CreditBadge/>
+      <button type="button" onClick={() => navigate('/dashboard/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>
