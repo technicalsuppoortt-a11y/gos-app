@@ -11,7 +11,7 @@ function load(path, mocks = {}) {
   const source = fs.readFileSync(new URL(path, import.meta.url), 'utf8').replaceAll('import.meta.env.VITE_GOS_API_BASE_URL', "'https://example.com'");
   const code = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2023, module: ts.ModuleKind.CommonJS } }).outputText;
   const exports = {};
-  vm.runInNewContext(code, { exports, require: id => { if (!(id in mocks)) throw Error(id); return mocks[id]; }, crypto: webcrypto, console, AbortController, setTimeout, clearTimeout });
+  vm.runInNewContext(code, { exports, require: id => { if (!(id in mocks)) throw Error(id); return mocks[id]; }, crypto: webcrypto, console, AbortController, setTimeout, clearTimeout, fetch: () => { throw Error("Unexpected network call in isolated CRM test"); } });
   return exports;
 }
 const { GosApiError } = load('../src/backend/gosTransport.ts');
@@ -28,6 +28,7 @@ function harness({ detailMissing = false, forbidden = false, documentExists = tr
   const store = { getState: () => state, dispatch: action => { state = { ...state, crm: slice.default(state.crm, action) }; return action; } };
   store.dispatch(slice.hydrateCRM({ leads: [row('firestore-old-id', 'Mahmoud Ashraf')], pipelines: [main] }));
   const { gosApi } = load('../src/backend/gosApi.ts', {
+    './gosToolPolicy': { checkGosToolPolicy: async () => {} },
     './firebase': { auth: {} }, './gosTransport': { GosApiError, createGosTransport: () => async (path, options = {}) => {
       requests.push({ path, options });
       if (forbidden) throw new GosApiError('Forbidden', 403);

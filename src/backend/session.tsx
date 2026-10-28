@@ -115,6 +115,9 @@ export async function endActivation() {
   if (auth.currentUser) await auth.currentUser.getIdToken(true);
 }
 
+const resolvedProfileSignatures = new WeakMap<User, string>();
+const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name]);
+
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
   const [tokenResult, profile] = await Promise.all([
     user.getIdTokenResult(forceRefreshToken),
@@ -160,6 +163,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     store.dispatch(setLanguage(phoenix.brand.language));
     if (store.getState().ui.theme !== phoenix.brand.mode) store.dispatch(toggleTheme());
   } else if (!impersonating) clearPhoenixBrand();
+  resolvedProfileSignatures.set(user, profileSignature(data));
   return {
     user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email || 'User', email: user.email!, avatar: data?.avatar },
     role,
@@ -205,19 +209,22 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
         const original = store.getState().auth.impersonation;
         if (original && (session.user.id !== original.user.id || !['ADMIN', 'SUPER_ADMIN'].includes(session.role))) clearImpersonationContext();
         store.dispatch(loginSuccess(session));
+        const resolvedProfile = resolvedProfileSignatures.get(user);
+        let refreshingProfile = false;
         profileUnsubscribe = onSnapshot(doc(db, 'users', user.uid), async snapshot => {
-          if (activationInProgress) return;
+          if (current !== generation || activationInProgress) return;
           const value = snapshot.data();
           if (!snapshot.exists()) { await forceSignOut(new SessionError('NO_PROFILE')); return; }
           if (value?.status === 'Deactivated') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
           if (value?.status !== 'Active') { await forceSignOut(new SessionError('PENDING')); return; }
-          const active = store.getState().auth;
-          const state = active.impersonation ?? active;
-          if (value.role !== state.role || value.tenantId !== state.tenant?.id || value.name !== state.user?.name) {
+          // Compare source profiles. Display-name fallbacks and authoritative token
+          // claims may differ from Firestore without indicating a profile change.
+          if (!refreshingProfile && profileSignature(value) !== resolvedProfile) {
+            refreshingProfile = true;
             try {
               // The refresh triggers onIdTokenChanged, which resolves and commits once.
               await user.getIdToken(true);
-            } catch (error) { await forceSignOut(error); }
+            } catch (error) { if (current === generation) await forceSignOut(error); }
           }
         }, error => { void forceSignOut(error); });
       } catch (error) {

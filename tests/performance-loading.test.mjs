@@ -105,3 +105,35 @@ test('generated responsive thumbnails are much smaller and preserve custom uploa
   assert.ok(thumbnails < originals * 0.1, 'both thumbnail sizes together use less than 10% of the original bytes');
 });
 
+test('profile display-name fallbacks and token roles do not cause an endless refresh loop', async () => {
+  for (const claims of [{ role: 'USER', tenantId: 'tenant-a' }, { role: 'ADMIN', tenantId: 'tenant-a' }]) {
+    let onToken, onProfile, refreshes = 0, reads = 0;
+    const profile = { status: 'Active', role: 'USER', tenantId: 'tenant-a' };
+    const user = { uid: 'user-a', email: 'name@example.com', displayName: 'Display name', getIdTokenResult: async () => ({ claims, token: 'verified' }), getIdToken: async () => { refreshes++; } };
+    const state = { auth: {}, ui: { language: 'en', theme: 'light' } };
+    const store = { getState: () => state, dispatch: action => { if (action.type === 'login') state.auth = action.payload; } };
+    const { FirebaseSession } = load('../src/backend/session.tsx', {
+      react: { useState: () => [false, () => {}], useEffect: fn => fn() },
+      'react/jsx-runtime': { jsx: (type, props) => ({ type, props }) },
+      '../utils/browserStorage': { sessionStorageFallback: { getItem() {}, setItem() {}, removeItem() {} } },
+      'firebase/auth': { onIdTokenChanged: (_auth, fn) => { onToken = fn; return () => {}; } },
+      'firebase/firestore': { doc: (_db, ...parts) => parts.join('/'), getDoc: async () => { reads++; return { data: () => profile }; }, onSnapshot: (_ref, fn) => { onProfile = fn; return () => {}; } },
+      './firebase': { primaryAuth: {}, primaryDb: {} }, './impersonation': { clearImpersonationContext() {} }, '../store': { store },
+      '../store/slices/authSlice': { loginSuccess: payload => ({ type: 'login', payload }) }, './sessionState': { SessionReadyContext: { Provider: 'provider' } },
+      './phoenixBrand': { clearPhoenixBrand() {} }, '../store/slices/uiSlice': {}, './phoenixLogin': {},
+    });
+    const tree = FirebaseSession({ children: 'public page' });
+    assert.equal(tree.props.children, 'public page', 'public routes mount while auth is pending');
+    assert.equal(tree.props.value, false, 'protected routes still receive pending readiness');
+    await onToken(user);
+    for (let i = 0; i < 3; i++) await onProfile({ exists: () => true, data: () => profile });
+    assert.equal(refreshes, 0);
+    assert.equal(reads, 1);
+    assert.equal(state.auth.role, claims.role);
+    assert.equal(state.auth.user.name, 'Display name');
+    await onProfile({ exists: () => true, data: () => ({ ...profile, name: 'Updated name' }) });
+    assert.equal(refreshes, 1, 'real changes still refresh claims');
+    assert.equal(reads, 1, 'the token observer owns the next resolution');
+  }
+});
+
