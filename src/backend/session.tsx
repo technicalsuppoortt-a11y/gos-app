@@ -6,7 +6,7 @@ import { primaryAuth as auth, primaryDb as db, callBackend } from './firebase';
 import { clearImpersonationContext, returnToAdmin } from './impersonation';
 import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
-import { WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
+import { SessionReadyContext } from './sessionState';
 import type { StoredAuth, Role } from '../types/auth';
 import { clearPhoenixBrand, loadPhoenixBrand } from './phoenixBrand';
 import { setLanguage, toggleTheme } from '../store/slices/uiSlice';
@@ -116,11 +116,14 @@ export async function endActivation() {
 }
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
-  const tokenResult = await user.getIdTokenResult(forceRefreshToken);
+  const [tokenResult, profile] = await Promise.all([
+    user.getIdTokenResult(forceRefreshToken),
+    getDoc(doc(db, 'users', user.uid)),
+  ]);
   const claimRole = (typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role : undefined) as Role | undefined;
   const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
 
-  let data = (await getDoc(doc(db, 'users', user.uid))).data();
+  let data = profile.data();
 
   // Invited users may have been provisioned under a different document ID.
   if (!data && user.email) {
@@ -212,13 +215,8 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
           const state = active.impersonation ?? active;
           if (value.role !== state.role || value.tenantId !== state.tenant?.id || value.name !== state.user?.name) {
             try {
+              // The refresh triggers onIdTokenChanged, which resolves and commits once.
               await user.getIdToken(true);
-              const next = await resolveSession(user);
-              if (current === generation) {
-                const original = store.getState().auth.impersonation;
-                if (original && (next.user.id !== original.user.id || !['ADMIN', 'SUPER_ADMIN'].includes(next.role))) clearImpersonationContext();
-                store.dispatch(loginSuccess(next));
-              }
             } catch (error) { await forceSignOut(error); }
           }
         }, error => { void forceSignOut(error); });
@@ -230,6 +228,5 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
     }, error => { void forceSignOut(error); setReady(true); });
     return () => { generation++; unsubscribe(); profileUnsubscribe(); };
   }, []);
-  if (!ready) return <WorkspaceSkeleton variant="spinner" fullScreen/>;
-  return <>{children}</>;
+  return <SessionReadyContext.Provider value={ready}>{children}</SessionReadyContext.Provider>;
 }

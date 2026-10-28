@@ -4,6 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import type { Role } from '../types/auth';
+import { useSessionReady } from '../backend/sessionState';
 import { WorkspaceLoading, WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
 
 
@@ -21,6 +22,8 @@ export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Ro
 
   const location = useLocation();
 
+  const sessionReady = useSessionReady();
+  if (!sessionReady) return <WorkspaceSkeleton variant="spinner" fullScreen/>;
   if (!isAuthenticated || !role) return <Navigate to="/auth/login" state={{ from: location }} replace />;
   if (!allowedRoles.includes(role)) return <Navigate to={routeForRole(role)} replace />;
   // The onboarding redirect is temporarily disabled with the setup cycle.
@@ -30,6 +33,8 @@ export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Ro
 export const DefaultRedirect: React.FC = () => {
   useUILanguage();
   const { isAuthenticated, role } = useSelector((state: RootState) => state.auth);
+  const sessionReady = useSessionReady();
+  if (!sessionReady) return <WorkspaceSkeleton variant="spinner" fullScreen/>;
   return <Navigate to={isAuthenticated ? routeForRole(role) : '/auth/login'} replace />;
 };
 

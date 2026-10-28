@@ -1,3 +1,4 @@
+import { thumbnailImageProps } from '../utils/thumbnailImages';
 import { usePaymentMethods } from '../backend/paymentMethods';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { ProductCardActions } from './commerce/ProductCardActions';
@@ -483,8 +484,8 @@ function ProductCard({
       >
         {localizeNode(
           item.image ? (
-            <img
-              src={item.image}
+            <img decoding="async"
+              {...thumbnailImageProps(item.image)} src={item.image}
               alt={translateText(`${item.name} thumbnail`)}
               loading="lazy"
               draggable={false}

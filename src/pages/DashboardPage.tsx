@@ -1,28 +1,32 @@
-import { AICopilot } from './AICopilot';
-import { FunnelBuilder } from './FunnelBuilder';
-import { KnowledgePanel } from './settings/KnowledgePanel';
 import { cloudStorage } from '../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Bot, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronRight, CreditCard, ExternalLink, FileText, Globe2, Link2, MessageCircle, MoreHorizontal, Plus, Send, ShieldCheck, Sparkles, Upload, Users, WandSparkles } from 'lucide-react';
 import './home-upgrades.css';
-import { HomeDashboard } from './dashboard/HomeDashboard';
 
-import { Inbox } from './Inbox';
-import { CRMLeads } from './CRMLeads';
-import { AIFollowUp, defaultWorkflows } from './AIFollowUp';
-import { BookingCalendar } from './BookingCalendar';
-import { ProductsPayments } from './ProductsPayments';
-import { ProductTemplateLibrary } from './commerce/ProductTemplateLibrary';
-import { BookingTemplates } from './booking/BookingTemplates';
-import { TemplatesWorkspace, type TemplateScope } from './TemplatesWorkspace';
 import { Select } from '../components/ui/Select';
-import { Analytics } from './Analytics';
 
 import { useSelector } from 'react-redux';
 import { showToast } from '../utils/toast';
 import type { RootState } from '../store';
+
+import { Suspended } from '../router/RouteBoundary';
+import { retryImport } from '../router/chunkRecovery';
+import type { TemplateScope } from './TemplatesWorkspace';
+const AICopilot = React.lazy(() => retryImport(() => import('./AICopilot')).then(module => ({ default: module.AICopilot })));
+const FunnelBuilder = React.lazy(() => retryImport(() => import('./FunnelBuilder')).then(module => ({ default: module.FunnelBuilder })));
+const KnowledgePanel = React.lazy(() => retryImport(() => import('./settings/KnowledgePanel')).then(module => ({ default: module.KnowledgePanel })));
+const HomeDashboard = React.lazy(() => retryImport(() => import('./dashboard/HomeDashboard')).then(module => ({ default: module.HomeDashboard })));
+const Inbox = React.lazy(() => retryImport(() => import('./Inbox')).then(module => ({ default: module.Inbox })));
+const CRMLeads = React.lazy(() => retryImport(() => import('./CRMLeads')).then(module => ({ default: module.CRMLeads })));
+const AIFollowUp = React.lazy(() => retryImport(() => import('./AIFollowUp')).then(module => ({ default: module.AIFollowUp })));
+const BookingCalendar = React.lazy(() => retryImport(() => import('./BookingCalendar')).then(module => ({ default: module.BookingCalendar })));
+const ProductsPayments = React.lazy(() => retryImport(() => import('./ProductsPayments')).then(module => ({ default: module.ProductsPayments })));
+const ProductTemplateLibrary = React.lazy(() => retryImport(() => import('./commerce/ProductTemplateLibrary')).then(module => ({ default: module.ProductTemplateLibrary })));
+const BookingTemplates = React.lazy(() => retryImport(() => import('./booking/BookingTemplates')).then(module => ({ default: module.BookingTemplates })));
+const TemplatesWorkspace = React.lazy(() => retryImport(() => import('./TemplatesWorkspace')).then(module => ({ default: module.TemplatesWorkspace })));
+const Analytics = React.lazy(() => retryImport(() => import('./Analytics')).then(module => ({ default: module.Analytics })));
 
 type PageKey='home'|'copilot'|'funnels'|'crm'|'inbox'|'follow-up'|'booking'|'products'|'analytics'|'knowledge';
 function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{eyebrow?:string;title:string;description?:string;action?:string;actionIcon?:React.ElementType}){
@@ -30,7 +34,7 @@ function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{ey
 function Pill({children,tone='neutral'}:{children:React.ReactNode;tone?:string}){
   useUILanguage();return <span className={`pill pill-${tone}`}>{localizeNode(children)}</span>}
 
-export const DashboardPage:React.FC<{page:PageKey}>=({page})=>{
+const DashboardContent:React.FC<{page:PageKey}>=({page})=>{
   useUILanguage();
  const location=useLocation();
  const [activeChannel,setActiveChannel]=React.useState('whatsapp');
@@ -62,3 +66,5 @@ export const DashboardPage:React.FC<{page:PageKey}>=({page})=>{
  return <>{localizeNode(templateScope && !['booking', 'products', 'follow-up'].includes(page) && <div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page + '?tab=templates'}>{localizeNode(page === 'follow-up' ? 'Automation templates' : 'Templates')} <ArrowRight size={14}/></Link></div>)}{localizeNode(content)}</>;
 };
 
+
+export const DashboardPage: React.FC<{page: PageKey}> = ({page}) => <Suspended><DashboardContent page={page}/></Suspended>;

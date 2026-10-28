@@ -1,4 +1,5 @@
 import { FirebaseSession } from './backend/session';
+import { useSessionReady } from './backend/sessionState';
 import { CustomDomainInterceptor } from './components/common/CustomDomainInterceptor';
 import { useUILanguage } from './i18n/display';
 import { RouterProvider } from 'react-router-dom';
@@ -11,13 +12,18 @@ import './i18n/i18n';
 import { TrackingRuntime, setTrackingRouteSubscription } from './backend/marketingTracking';
 setTrackingRouteSubscription(fn => router.subscribe(fn));
 
+function ReadyTracking() {
+  const ready = useSessionReady();
+  return ready ? <TrackingRuntime/> : null;
+}
+
 function App() {
   const language = useUILanguage();
   return (
     <Provider store={store}>
       <ThemeProvider>
         <CustomDomainInterceptor>
-          <FirebaseSession><TrackingRuntime/><RouterProvider router={router} /></FirebaseSession>
+          <FirebaseSession><ReadyTracking/><RouterProvider router={router} /></FirebaseSession>
         </CustomDomainInterceptor>
         <Toaster 
           position={language === 'ar' ? 'bottom-left' : 'bottom-right'}

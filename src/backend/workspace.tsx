@@ -1,5 +1,7 @@
-import { useEffect, useState, useSyncExternalStore, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
+import { workspaceResources } from './workspaceResources';
 import { collection, doc, onSnapshot, query, where, writeBatch } from 'firebase/firestore';
 import { db, backendError, callBackend } from './firebase';
 import { forceSignOut, SessionError } from './session';
@@ -40,6 +42,7 @@ const cache = new Map<string, string>();
 const subscribers = new Set<() => void>();
 let tenantId = '';
 let loaded = false;
+const initializedResources = new Set<string>();
 const revisions = new Map<string, number>();
 const entityCollections = ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'assets', 'domains', 'copilotConversations', 'members', 'userTemplates'] as const;
 function entityFor(key: string): string | undefined {
@@ -87,7 +90,8 @@ export const cloudStorage = {
     return cache.get(cacheKey(key)) ?? null;
   },
   setItem(key: string, value: string): Promise<unknown> {
-    if (!tenantId || !loaded) {
+    const required = key === 'gos.assets.workspace.v1' ? ['assets', 'domains'] : [entityFor(key) || 'workspaceState'];
+    if (!tenantId || !loaded || required.some(resource => !initializedResources.has(resource))) {
       if (key === 'gos.assets.workspace.v1') return Promise.resolve();
       throw new Error('Your workspace is still loading. Please try again.');
     }
@@ -171,11 +175,15 @@ export function useEntities<T>(resource: typeof entityCollections[number]): T[] 
 }
 export function WorkspaceData({ children }: { children: ReactNode }) {
   const scope = useSelector((state: RootState) => state.auth.tenant?.id);
+  const { pathname } = useLocation();
+  const pathRef = useRef(pathname); pathRef.current = pathname;
+  const requestResources = useRef<() => void>(() => {});
+  const allowedResources = useRef<string[]>([]);
   const [status, setStatus] = useState({ scope: '', ready: false, error: '' });
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     assetPersistence.reset();
-    cache.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
+    cache.clear(); initializedResources.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
     notify();
     if (!scope) return;
     let crmState = store.getState().crm;
@@ -183,7 +191,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     const unsubscribeCrm = store.subscribe(() => {
       const next = store.getState().crm;
       const previous = crmState; crmState = next;
-      if (hydrating || !loaded) return;
+      if (hydrating || !loaded || !initializedResources.has('leads') || !initializedResources.has('pipelines')) return;
       if (next.leads !== previous.leads) void cloudStorage.setItem('gos-crm-leads-v1', JSON.stringify(next.leads));
       if (next.pipelines !== previous.pipelines) void cloudStorage.setItem('gos-crm-pipelines-v1', JSON.stringify(next.pipelines));
     });
@@ -194,45 +202,81 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     };
     let unsubscribers: (() => void)[] = [];
     let permissionSignature = '';
+    let generation = 0;
+    let active = true;
     const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', store.getState().auth.user!.id), membership => {
+      if (!active) return;
       const member = membership.data();
       const signature = JSON.stringify([member?.active, member?.permissions]);
       if (signature === permissionSignature) return;
       permissionSignature = signature;
+      const current = ++generation;
       unsubscribers.forEach(unsubscribe => unsubscribe());
+      unsubscribers = [];
       assetPersistence.reset();
-      cache.clear(); loaded = false; hydrate(); notify();
+      cache.clear(); initializedResources.clear(); loaded = false; hydrate(); notify();
+      setStatus({ scope, ready: false, error: '' });
       if (!member?.active) { void forceSignOut(new SessionError('ACCESS_DENIED')); return; }
       const permissions = member.permissions as string[];
       const resources = entityCollections.filter(resource => resource === 'members' || permissions.includes('*') || permissions.includes('analytics') || permissions.includes(resourcePermissions[resource]));
-      const pending = new Set<string>(['workspaceState', ...resources]);
-      let failed = false;
-      unsubscribers = [...pending].map(resource => onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', store.getState().auth.user!.id)) : collection(db, 'tenants', scope, resource), snapshot => {
-      if (resource === 'workspaceState') {
-        for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
-        snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
-      } else {
-        let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
-        if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
-        if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
-        cache.set(`entity:${resource}`, JSON.stringify(rows));
-      }
-      if (resource === 'leads' || resource === 'pipelines') hydrate();
-      pending.delete(resource);
-      if (!pending.size && !failed) { loaded = true; setStatus({ scope, ready: true, error: '' }); }
-      notify();
-      }, error => {
-        failed = true; loaded = false;
-        if (isAuthFailure(error)) { void forceSignOut(error); return; }
-        setStatus({ scope, ready: false, error: backendError(error) });
-      }));
+      const allowed = ['workspaceState', ...resources];
+      allowedResources.current = allowed;
+      const subscribed = new Set<string>();
+      const failures = new Map<string, string>();
+      const isCurrent = () => active && current === generation;
+      const required = () => workspaceResources(pathRef.current, allowed);
+      const updateStatus = () => {
+        if (!isCurrent()) return;
+        const needed = required();
+        const error = needed.map(resource => failures.get(resource)).find(Boolean) || '';
+        const ready = !error && needed.every(resource => initializedResources.has(resource));
+        if (ready) loaded = true;
+        setStatus(previous => previous.scope === scope && previous.ready === ready && previous.error === error
+          ? previous : { scope, ready, error });
+      };
+      requestResources.current = () => {
+        if (!isCurrent()) return;
+        for (const resource of required()) {
+          if (subscribed.has(resource)) continue;
+          subscribed.add(resource);
+          unsubscribers.push(onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', store.getState().auth.user!.id)) : collection(db, 'tenants', scope, resource), snapshot => {
+            if (!isCurrent()) return;
+            const previous = new Map(cache);
+            if (resource === 'workspaceState') {
+              for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
+              snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
+            } else {
+              let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
+              if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
+              if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
+              cache.set('entity:' + resource, JSON.stringify(rows));
+            }
+            initializedResources.add(resource);
+            failures.delete(resource);
+            const changed = previous.size !== cache.size || [...cache].some(([key, value]) => previous.get(key) !== value);
+            if (changed && (resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
+            updateStatus();
+            if (changed) notify();
+          }, error => {
+            if (!isCurrent()) return;
+            if (isAuthFailure(error)) { void forceSignOut(error); return; }
+            failures.set(resource, backendError(error));
+            updateStatus();
+          }));
+        }
+        updateStatus();
+      };
+      requestResources.current();
     }, error => {
+      if (!active) return;
       if (isAuthFailure(error)) { void forceSignOut(error); return; }
       setStatus({ scope, ready: false, error: backendError(error) });
     });
-    return () => { assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); loaded = false; tenantId = ''; hydrate(); };
+    return () => { active = false; generation++; requestResources.current = () => {}; assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); initializedResources.clear(); loaded = false; tenantId = ''; hydrate(); };
   }, [scope, retry]);
-  if (status.scope !== scope || !status.ready) {
+  useEffect(() => { requestResources.current(); }, [pathname]);
+  const routeReady = workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));
+  if (status.scope !== scope || !status.ready || !routeReady) {
     if (status.error && status.scope === scope) return <div className="grid h-full min-h-0 place-items-center p-6" role="alert"><div><p>{status.error}</p><button type="button" className="mt-3 rounded-lg border px-4 py-2" onClick={() => { setStatus({ scope, ready: false, error: '' }); setRetry(value => value + 1); }}>Try again</button></div></div>;
     return <WorkspaceLoading/>;
   }

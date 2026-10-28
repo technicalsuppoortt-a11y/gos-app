@@ -1,3 +1,4 @@
+import { thumbnailImageProps } from '../../utils/thumbnailImages';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -53,7 +54,7 @@ export function BookingTemplates() {
     <header className="bk-page-heading"><div className="bk-heading-icon"><CalendarDays size={22}/></div><div><h1>{translateText("Booking templates")}</h1><p>{translateText("Start with a complete booking page, then personalize it for your business.")}</p></div></header>
     {localizeNode(error && <p role="alert" className="bk-error">{localizeNode(error)}</p>)}
     <div className="bk-template-grid">{localizeNode(templates.map(template => <article className="bk-card bk-template-card" key={template.key}>
-      <img src={template.image} alt={translateText(`${template.category} booking page`)} loading="lazy"/>
+      <img decoding="async" {...thumbnailImageProps(template.image)} src={template.image} alt={translateText(`${template.category} booking page`)} loading="lazy"/>
       <div className="bk-template-content"><div className="bk-template-meta"><span className="bk-pill">{localizeNode(template.category)}</span><span><Clock3 size={14}/>{localizeNode(template.duration)}{translateText(" min")}</span></div>
         <h2>{localizeNode(template.name)}</h2><p>{localizeNode(template.description)}</p><ul><li><Check size={14}/>{translateText("Weekday availability & time selection")}</li><li><Check size={14}/>{translateText("Contact details & ")}{localizeNode(template.questions.length)}{translateText(" intake questions")}</li><li><Check size={14}/>{translateText("Confirmation & rescheduling")}</li></ul>
         <footer><button className="bk-button" onClick={() => setPreview(createBookingTemplate(template))}><Eye size={14}/>{translateText("Preview")}</button><button className="bk-button primary" onClick={() => install(template)}>{translateText("Use template")}<ArrowRight size={14}/></button></footer>

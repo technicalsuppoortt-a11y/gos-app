@@ -32,7 +32,7 @@ function thumbnail(t: Template) {
  return 'data:image/svg+xml,' + encodeURIComponent(svg.replaceAll('COLOR', t.color));
 }
 function TemplateImage({ template }: { template: Template }) {
-  useUILanguage(); return <img className="tl-thumbnail" src={thumbnail(template)} alt={translateText(template.name + ' layout preview')} />; }
+  useUILanguage(); return <img loading="lazy" decoding="async" className="tl-thumbnail" width="440" height="210" src={useMemo(() => thumbnail(template), [template.category, template.color])} alt={translateText(template.name + ' layout preview')} />; }
 function Filter({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
   useUILanguage();
  return <label className="tl-filter flex flex-col gap-1.5"><span>{localizeNode(label)}</span><Select label={label} value={value} onChange={onChange} options={options} /></label>;

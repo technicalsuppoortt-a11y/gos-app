@@ -24,7 +24,7 @@ const AdminUsers = lazy(() => import('../pages/onboarding/AdminUsers').then(modu
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(module => ({ default: module.LoginPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
 const LandingPage = lazy(() => import('../pages/landing/LandingPage').then(module => ({ default: module.LandingPage })));
-const UserLayout = lazy(() => import('../pages/support/UserSupportEntry').then(module => ({ default: module.UserLayoutWithSupport })));
+const UserLayout = lazy(() => import('../components/layout/UserLayout').then(module => ({ default: module.UserLayout })));
 const UserSupportPage = lazy(() => import('../pages/support/UserSupportEntry').then(module => ({ default: module.UserSupportPage })));
 function controlToolRoute(route: RouteObject): RouteObject {
   return { ...route, ...(route.element ? { element: <PlatformToolBoundary>{route.element}</PlatformToolBoundary> } : {}), ...(route.children ? { children: route.children.map(controlToolRoute) } : {}) } as RouteObject;
