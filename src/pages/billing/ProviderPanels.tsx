@@ -650,7 +650,7 @@ export function RequestsPanel({ requests, mode, title }: { requests: BillingRequ
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '4px 0', borderBottom: '1px dashed var(--bl-border)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Package size={12} color="var(--bl-accent-2)" />
-                        <span>{addon.name || addon.id}</span>
+                        <span>{(typeof addon.name === 'object' && addon.name !== null ? c.pick(addon.name) : addon.name) || addon.id}</span>
                         <span className="bl-pill plain" style={{ fontSize: 10, padding: '1px 5px' }}>
                           {addon.type === 'unit' ? c.t('Dynamic Credits', 'رصيد مرن') : c.t('Fixed Pack', 'باقة ثابتة')}
                         </span>

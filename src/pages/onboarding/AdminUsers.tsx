@@ -287,8 +287,14 @@ function SubAccountDetailsModal({
     }[s] || s);
 
   const availableCredits = wallet.data?.balance ?? user.credits ?? 0;
+  const subPlanName = sub.data?.plan?.name
+    ? (typeof sub.data.plan.name === 'object'
+        ? (ar ? sub.data.plan.name.ar : sub.data.plan.name.en)
+        : sub.data.plan.name)
+    : '';
+
   const planName =
-    sub.data?.planName ||
+    subPlanName ||
     (isPending
       ? isFreePlanEnabled
         ? `${freePlanName || t('Free Plan', 'الخطة المجانية')} (${t('Auto-assigned', 'تلقائي')})`

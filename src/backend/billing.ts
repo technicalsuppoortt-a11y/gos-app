@@ -7,7 +7,7 @@ import type { RootState } from '../store';
 import type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry, ProviderBillingSettings } from '../../functions/billing-engine.js';
 import { DEFAULT_BILLING_SETTINGS, PLATFORM } from '../../functions/billing-engine.js';
 
-export type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry, ProviderBillingSettings } from '../../functions/billing-engine.js';
+export type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, Currency, LedgerEntry, LocalizedText, ProviderBillingSettings } from '../../functions/billing-engine.js';
 export { DEFAULT_BILLING_SETTINGS, PLATFORM, TOOL_IDS, CHANNEL_IDS, BILLING_TYPES, CURRENCIES, DEFAULT_TRIAL, effectiveStatus, entitledTools, isLive } from '../../functions/billing-engine.js';
 
 type Live<T> = { data: T; loading: boolean; error: string };

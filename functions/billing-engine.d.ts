@@ -89,7 +89,7 @@ export interface ProviderBillingSettings {
   updatedAt?: string;
 }
 
-export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; updatedAt: string }
+export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; updatedAt: string; lifetimeAllocated?: number; lifetimeSpent?: number; }
 
 export interface LedgerEntry {
   id: string; walletId: string; providerId: string;
