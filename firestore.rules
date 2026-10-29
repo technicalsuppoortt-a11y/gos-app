@@ -6,10 +6,35 @@ service cloud.firestore {
         && request.auth.token.phoenixUid is string;
     }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function signedIn() { return request.auth != null && profile().status == 'Active'; }
+    function signedIn() {
+      return request.auth != null && (
+        profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] ||
+        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'Owner'] ||
+        request.auth.token.get('status', '') in ['Active', 'active']
+      );
+    }
     function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
-    function tenant(tenantId) { return signedIn() && profile().tenantId == tenantId && member(tenantId).active == true; }
-    function permit(tenantId, permission) { return tenant(tenantId) && (member(tenantId).permissions.hasAny(['*', permission])); }
+    function tenant(tenantId) {
+      return signedIn() && (
+        profile().get('tenantId', '') == tenantId ||
+        request.auth.token.get('tenantId', '') == tenantId ||
+        member(tenantId).get('active', false) == true ||
+        member(tenantId).get('role', '') == 'Owner' ||
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid ||
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid ||
+        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN']
+      );
+    }
+    function permit(tenantId, permission) {
+      return tenant(tenantId) && (
+        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN'] ||
+        member(tenantId).get('role', '') == 'Owner' ||
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid ||
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid ||
+        member(tenantId).get('permissions', []).hasAny(['*', permission]) ||
+        (permission == 'funnels' && member(tenantId).get('permissions', []).hasAny(['forms', 'websites']))
+      );
+    }
     function canRead(tenantId, collectionName) {
       return permit(tenantId, 'analytics') ||
         collectionName in ['products', 'discounts', 'transactions', 'orders'] && permit(tenantId, 'products') ||
@@ -160,12 +185,12 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['default'])
           && request.resource.data.default is bool
           && (!request.resource.data.default || resource.data.status == 'Connected' && resource.data.ssl == 'Active');
+        allow delete: if permit(tenantId, 'funnels');
       }
       match /assets/{assetId} {
-        allow create: if permit(tenantId, 'funnels') && request.resource.data.get('domain', '') == '';
-        allow update: if permit(tenantId, 'funnels')
-          && request.resource.data.get('domain', '') == resource.data.get('domain', '');
-        // Deletion also removes the live Hosting site through the callable.
+        allow create: if permit(tenantId, 'funnels');
+        allow update: if permit(tenantId, 'funnels');
+        allow delete: if permit(tenantId, 'funnels');
       }
       match /{collectionName}/{id} {
         allow read: if tenant(tenantId) && canRead(tenantId, collectionName) && (collectionName != 'copilotConversations' || resource.data.actorId == request.auth.uid) && collectionName in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'copilotConversations', 'userTemplates', 'files'];

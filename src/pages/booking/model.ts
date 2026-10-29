@@ -6,6 +6,7 @@ import type { AfterBooking, SectionSettings } from './booking-section-schema';
 export type Question = { id: string; label: string; type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'radio' | 'text-block'; required: boolean; options: string[]; active?: boolean; text?: string };
 export type Hours = { day: number; enabled: boolean; start: string; end: string };
 export type BookingPage = {
+  crmRouting?: { pipelineId?: string; stageId?: string };
   id: string; name: string; slug: string; duration: number; durationOptions: number[];
   location: string; locationOptions: string[]; active: boolean; color: string; note: string;
   description: string; hostName: string; hostTimezone: string; availability: Hours[];

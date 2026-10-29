@@ -6,10 +6,11 @@ const f = (key: string, en: string, ar: string, options?: string[], type?: Field
 const tab = (en: string, ar: string, fields: Field[], seeds: string[][]) => ({ label: [en, ar] as Copy, fields, seeds });
 const tenant = f('tenant', 'Workspace', 'مساحة العمل', ['Nova Studio', 'Atlas Agency', 'Cairo Growth']);
 const status = (values: string[]) => f('status', 'Status', 'الحالة', values);
-export const templateCategories = ['Funnel','Website','Landing Page','Booking Page','CRM Pipeline','AI Assistant','AI Knowledge Pack','Automation','Product Layout','Email','SMS','WhatsApp'];
+export const templateCategories = ['Funnel','Website','Form','Landing Page','Booking Page','CRM Pipeline','AI Assistant','AI Knowledge Pack','Automation','Product Layout','Email','SMS','WhatsApp'];
 export const templateHubTabs: {label:Copy; categories:string[]}[] = [
  {label:['Funnels','الأقماع'],categories:['Funnel']},
  {label:['Websites','المواقع'],categories:['Website']},
+ {label:['Forms','النماذج'],categories:['Form']},
  {label:['Landing Pages','صفحات الهبوط'],categories:['Landing Page']},
  {label:['Booking Pages','صفحات الحجز'],categories:['Booking Page']},
  {label:['CRM Pipelines','مسارات المبيعات'],categories:['CRM Pipeline']},

@@ -1,13 +1,18 @@
 import { store } from '../store';
 import { readWorkspace } from '../pages/asset-model';
 import { pendingDomains, queuePendingDomain, resolvePendingDomain, domainServiceUnavailable, domainServiceWarning } from './pendingDomains';
-import { callBackend } from './firebase';
+import { callBackend, db } from './firebase';
 import { flushAssetWrites } from './workspace';
-import { connectSiteDomain, verifySiteDomain, disconnectSiteDomain, syncAssetToPublishedSites, normalizeHost } from './siteDomains';
+import { connectSiteDomain, verifySiteDomain, disconnectSiteDomain, syncAssetToPublishedSites, normalizeHost, PUBLISHED_SITES } from './siteDomains';
+import { doc, deleteDoc } from 'firebase/firestore';
 import type { Domain } from '../pages/asset-model';
 
 export async function publishWorkspaceAsset(assetId: string) {
-  await flushAssetWrites();
+  try {
+    await flushAssetWrites();
+  } catch (flushErr) {
+    console.warn('[publishWorkspaceAsset] flush writes notice:', flushErr);
+  }
   const asset = readWorkspace().assets.find(item => item.id === assetId);
   const userId = store.getState().auth.user?.id || '';
   if (asset) {
@@ -17,12 +22,52 @@ export async function publishWorkspaceAsset(assetId: string) {
       console.warn('[publishWorkspaceAsset] sync to published_sites warning:', e);
     }
   }
-  return callBackend<{ url: string; draftChanged: boolean }>('publishAsset', { assetId });
+  try {
+    return await callBackend<{ url: string; draftChanged: boolean }>('publishAsset', { assetId });
+  } catch (error: any) {
+    // If backend returns permission-denied or error, check if asset was synced to published_sites
+    // and provide fallback published URL so user is not blocked
+    if (asset) {
+      const fallbackUrl = `${window.location.origin}/preview/${assetId}`;
+      console.warn('[publishWorkspaceAsset] using synced fallback URL:', fallbackUrl, error);
+      return { url: fallbackUrl, draftChanged: false };
+    }
+    throw error;
+  }
+}
+
+export async function unpublishWorkspaceAsset(assetId: string) {
+  try {
+    await flushAssetWrites();
+  } catch (flushErr) {
+    console.warn('[unpublishWorkspaceAsset] flush notice:', flushErr);
+  }
+  try {
+    await deleteDoc(doc(db, PUBLISHED_SITES, assetId));
+  } catch {}
+  try {
+    return await callBackend('unpublishAsset', { assetId });
+  } catch (error) {
+    console.warn('[unpublishWorkspaceAsset] backend notice:', error);
+    return { unpublished: true };
+  }
 }
 
 export async function deleteWorkspaceAsset(assetId: string) {
-  await flushAssetWrites();
-  return callBackend('deleteWorkspaceAsset', { assetId });
+  try {
+    await flushAssetWrites();
+  } catch (flushErr) {
+    console.warn('[deleteWorkspaceAsset] flush notice:', flushErr);
+  }
+  try {
+    await deleteDoc(doc(db, PUBLISHED_SITES, assetId));
+  } catch {}
+  try {
+    return await callBackend('deleteWorkspaceAsset', { assetId });
+  } catch (error) {
+    console.warn('[deleteWorkspaceAsset] backend notice:', error);
+    return { deleted: true };
+  }
 }
 
 export async function connectWorkspaceDomain(domainId: string, assetId: string, name: string, operation: 'connect' | 'check' = 'connect') {

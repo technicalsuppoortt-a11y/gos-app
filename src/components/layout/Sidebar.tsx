@@ -7,22 +7,20 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  CircleHelp,
   Crown,
   LogOut,
   X,
 } from 'lucide-react';
-import { HelpDrawer } from './HelpDrawer';
 import './sidebar-settings.css';
 import { usePhoenixBrand } from '../../backend/phoenixBrand';
 import { settingsAliases } from '../../pages/settings/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { setSidebarOpen, toggleSidebarCollapse } from '../../store/slices/uiSlice';
-import { logout } from '../../store/slices/authSlice';
-import { showToast } from '../../utils/toast';
 import { logoutFirebase } from '../../backend/session';
+import { showToast } from '../../utils/toast';
 import { returnToAdmin } from '../../backend/impersonation';
+import { SubAccountSwitcher } from './SubAccountSwitcher';
 
 export interface SidebarItem {
   name: string;
@@ -115,11 +113,12 @@ function SidebarEntry({
 }
 
 interface SidebarProps {
+  navigationLabel?: string;
   items: SidebarItem[];
   basePath: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLabel = 'Main navigation' }) => {
   useUILanguage();
   const dispatch = useDispatch();
   const platformTenant = useSelector((state: RootState) => state.auth.tenant);
@@ -131,7 +130,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const impersonation = useSelector((state: RootState) => state.auth.impersonation);
   const [returning, setReturning] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const isRtl = uiDirection() === 'rtl';
   const drawerRef = useRef<HTMLElement>(null);
 
@@ -222,7 +220,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
 
       {/* Internally scrollable navigation tabs container */}
       <div className="layout-nav-scroll-area">
-        <nav className="layout-nav" aria-label={translateText("Main navigation")}>
+        <nav className="layout-nav" aria-label={translateText(navigationLabel)}>
+          {impersonation && (
+            <div style={{ padding: '0 4px 10px' }}>
+              <SubAccountSwitcher isCollapsed={collapsed} />
+            </div>
+          )}
           {impersonation && <button
             type="button"
             className="layout-nav-item is-active"
@@ -269,16 +272,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           </span>
           <span className="layout-plan"><Crown size={12}/>{translateText(" Pro")}</span>
         </button>
-
-        <div className="layout-help-card">
-          <span className="layout-help-icon"><CircleHelp size={17}/></span>
-          <div className="layout-help-copy">
-            <b>{translateText("Need Help?")}</b>
-            <small>{translateText("Guides and support")}</small>
-          </div>
-          <button type="button" aria-label={translateText("Open help center")} aria-haspopup="dialog" onClick={() => { close(); setHelpOpen(true); }}><ArrowRight size={14}/></button>
-          <button type="button" className="layout-help-guides" onClick={() => { close(); setHelpOpen(true); }}>{translateText("View guides")}</button>
-        </div>
 
         <button
           className="layout-logout"
@@ -331,7 +324,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath }) => {
           </>
         ))}
       </AnimatePresence>
-      {helpOpen && <HelpDrawer close={() => setHelpOpen(false)}/>}
     </>
   );
 };

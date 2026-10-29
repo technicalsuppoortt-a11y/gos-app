@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from '../hosting-service.js';
+import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest, unpublishAssetRequest } from '../hosting-service.js';
 
 const template = '<html><head><title>Page</title><script type="module" src="/assets/public.js"></script></head><body><script id="gos-publication-data" type="application/json">{}</script></body></html>';
 const asset = () => ({ id: 'asset', name: 'Site', kind: 'website', document: { pages: [{ id: 'home', path: '/', name: 'Home', status: 'Draft', sections: [{ id: 'cols', children: [{ gosNestedArrayV1: JSON.stringify([{ id: 'heading', content: { title: 'Saved' } }]) }] }] }], funnel: { pagesFlow: ['home'], status: 'Draft' }, steps: [] }, settings: { color: '#fff' } });
@@ -39,6 +39,26 @@ test('publish uses the stored document, decodes columns and marks Published afte
   assert.equal(h.records.get('tenants/tenant-a/assets/asset').publishedUrl, result.url);
   assert.ok(h.calls[1][2]['/index.html'].includes('"children":[[{"id":"heading"'));
   assert.equal(h.records.get('tenants/tenant-a/hosting/asset').lease, null);
+  // Firestore rejects nested arrays at any depth, including decoded canvases.
+  const verify = (value, inArray = false) => {
+    if (Array.isArray(value)) { assert.equal(inArray, false, 'Nested array in publication write'); value.forEach(v => verify(v, true)); }
+    else if (value && typeof value === 'object') Object.values(value).forEach(v => verify(v));
+  };
+  verify(h.records.get('published_sites/asset'));
+  assert.equal(typeof h.records.get('published_sites/asset').steps[0].publishedCanvas[0].children[0].gosNestedArrayV1, 'string');
+});
+
+test('unpublish removes live content and capture capability while retaining the editable draft', async () => {
+  const h = fixture({ 'tenants/tenant-a/assets/asset': asset() });
+  await publishAssetRequest({ data: { assetId: 'asset' } }, h.deps);
+  await unpublishAssetRequest({ data: { assetId: 'asset' } }, h.deps);
+  assert.equal(h.records.has('published_sites/asset'), false);
+  assert.equal(h.records.has('tenants/tenant-a/hosting/asset'), false);
+  const draft = h.records.get('tenants/tenant-a/assets/asset');
+  assert.equal(draft.document.funnel.status, 'Draft');
+  assert.equal(draft.publishedUrl, '');
+  assert.equal(draft.document.pages[0].sections.length, 1);
+  assert.ok(h.calls.some(call => call[0] === 'deleteSite'));
 });
 test('a newer edit during deployment stays a draft instead of being falsely marked published', async () => {
   const h = fixture({ 'tenants/tenant-a/assets/asset': asset() });

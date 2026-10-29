@@ -1,3 +1,4 @@
+import { encodeFirestoreValue } from './firestore-codec.js';
 import { captureForms } from './lead-capture.js';
 import { createHash, randomUUID, randomBytes } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -5,6 +6,32 @@ import { buildPublicationFiles, domainVerification, domainIssueGuidance, hosting
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+export async function unpublishAssetRequest(request, { workspace, db, hosting }) {
+  const { root } = await workspace(request, 'funnels');
+  const { assetId } = request.data ?? {};
+  if (!validId(assetId)) throw new HttpsError('invalid-argument', 'Choose an existing asset.');
+  const ref = root.collection('assets').doc(assetId), stateRef = root.collection('hosting').doc(assetId), lease = randomUUID();
+  await db.runTransaction(async tx => {
+    const [asset, state] = await Promise.all([tx.get(ref), tx.get(stateRef)]);
+    if (!asset.exists) throw new HttpsError('not-found', 'This form is unavailable.');
+    if (state.data()?.lease && Date.now() - state.data().startedAt < 300000) throw new HttpsError('aborted', 'Wait for publishing to finish.');
+    tx.set(stateRef, { lease, startedAt: Date.now() }, { merge: true });
+  });
+  try {
+    await hosting.deleteSite(hostingSiteId(root.id, assetId));
+    await db.runTransaction(async tx => {
+      const [asset, state] = await Promise.all([tx.get(ref), tx.get(stateRef)]);
+      if (state.data()?.lease !== lease) throw new HttpsError('aborted', 'The publication changed.');
+      if (asset.exists) tx.update(ref, { publishedUrl: '', 'document.funnel.status': 'Draft', 'document.pages': asset.data().document.pages.map(p => ({ ...p, status: 'Draft' })) });
+      tx.delete(stateRef);
+      tx.delete(db.collection('published_sites').doc(assetId));
+    });
+    return { unpublished: true };
+  } catch (error) {
+    await db.runTransaction(async tx => { const state = await tx.get(stateRef); if (state.data()?.lease === lease) tx.set(stateRef, { lease: null }, { merge: true }); });
+    throw new HttpsError('failed-precondition', error.message || 'Unable to unpublish.');
+  }
+}
 function decode(value) {
   if (Array.isArray(value)) return value.map(decode);
   if (value && typeof value === 'object') {
@@ -59,15 +86,15 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
     return await db.runTransaction(async tx => {
       const [latest, state] = await Promise.all([tx.get(ref), tx.get(stateRef)]);
       if (state.data()?.lease !== lease) throw new HttpsError('aborted', 'The publishing operation changed. Refresh the asset.');
-      const draftChanged = !latest.exists || digest(latest.data().document) !== digest(saved.document);
-      tx.set(stateRef, { ...release, siteId, captureTokenHash: createHash('sha256').update(captureToken).digest('hex'), captureForms: captureForms(asset.document), lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
+      const draftChanged = !latest.exists || digest(latest.data().document) !== digest(saved.document) || digest(latest.data().crmRouting ?? {}) !== digest(saved.crmRouting ?? {});
+      tx.set(stateRef, { ...release, siteId, captureTokenHash: createHash('sha256').update(captureToken).digest('hex'), captureForms: captureForms(asset.document), crmRouting: asset.crmRouting ?? {}, lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
       if (latest.exists) tx.update(ref, { publishedUrl: release.url });
       // A newer edit remains a draft; it cannot be labelled as the deployed copy.
       if (!draftChanged) tx.update(ref, { 'document.funnel.status': 'Published', 'document.pages': saved.document.pages.map(page => ({ ...page, status: 'Published' })) });
 
       // Synchronize with public published_sites collection for custom domain resolution
       const publishedSiteRef = db.collection('published_sites').doc(assetId);
-      tx.set(publishedSiteRef, {
+      tx.set(publishedSiteRef, encodeFirestoreValue({
         ownerUid: user?.uid || '',
         tenantId: root.id,
         kind: asset.kind || 'funnel',
@@ -87,7 +114,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
         })),
         settings: asset.settings || {},
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
 
       return { ...release, draftChanged };
     });

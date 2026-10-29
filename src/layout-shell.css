@@ -449,13 +449,13 @@ body.layout-locked #root {
 
 .layout-help-card {
   display: grid;
-  grid-template-columns: 28px 1fr 20px;
+  grid-template-columns: 26px 1fr 20px 20px;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   border: 1px solid #ecebfa;
   border-radius: 10px;
   background: linear-gradient(145deg, #faf9ff, #fff);
-  padding: 7px;
+  padding: 7px 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -480,12 +480,13 @@ body.layout-locked #root {
 
 .layout-help-card b {
   color: #35364a;
-  font-size: 9px;
+  font-size: 9.5px;
+  font-weight: 700;
 }
 
 .layout-help-card small {
   color: #999baa;
-  font-size: 8px;
+  font-size: 8.5px;
 }
 
 .layout-help-card>button {
@@ -497,15 +498,150 @@ body.layout-locked #root {
   border-radius: 5px;
   background: transparent;
   color: #9295a3;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.layout-help-card>a {
-  grid-column: 2/4;
-  margin-top: -3px;
+.layout-help-card>button:hover {
+  background: #f0eeff;
+  color: #7C3AED;
+}
+
+.layout-help-card>button.layout-help-chat-trigger {
+  color: #7C3AED;
+  background: rgba(124, 58, 237, 0.08);
+  border-radius: 5px;
+}
+
+.layout-help-card>button.layout-help-chat-trigger:hover {
+  background: #7C3AED;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+.layout-help-links {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.layout-help-guides {
+  color: #7C3AED;
+  font-size: 8.5px;
+  font-weight: 650;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: start;
+}
+
+.layout-help-guides:hover {
+  text-decoration: underline;
+}
+
+.layout-help-chat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   color: #7C3AED;
   font-size: 8px;
   font-weight: 650;
-  text-decoration: none;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 4px;
+  padding: 1px 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.layout-help-chat-link:hover {
+  background: #7C3AED;
+  color: #ffffff;
+  border-color: #7C3AED;
+}
+
+.layout-collapsed-support-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 4px auto;
+  border-radius: 8px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layout-collapsed-support-btn:hover {
+  background: #7C3AED;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+  transform: scale(1.05);
+}
+
+.dark .layout-help-card {
+  border-color: #303348;
+  background: linear-gradient(145deg, #1b1d2b, #141522);
+}
+
+.dark .layout-help-card b {
+  color: #eef0fb;
+}
+
+.dark .layout-help-card small {
+  color: #a4a8bf;
+}
+
+.dark .layout-help-icon {
+  background: rgba(124, 58, 237, 0.2);
+  color: #A78BFA;
+}
+
+.dark .layout-help-card>button:hover {
+  background: rgba(124, 58, 237, 0.25);
+  color: #A78BFA;
+}
+
+.dark .layout-help-card>button.layout-help-chat-trigger {
+  color: #A78BFA;
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.dark .layout-help-card>button.layout-help-chat-trigger:hover {
+  background: #7C3AED;
+  color: #ffffff;
+}
+
+.dark .layout-help-guides {
+  color: #A78BFA;
+}
+
+.dark .layout-help-chat-link {
+  color: #A78BFA;
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+.dark .layout-help-chat-link:hover {
+  background: #7C3AED;
+  color: #ffffff;
+}
+
+.dark .layout-collapsed-support-btn {
+  background: rgba(124, 58, 237, 0.2);
+  color: #A78BFA;
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+.dark .layout-collapsed-support-btn:hover {
+  background: #7C3AED;
+  color: #ffffff;
 }
 
 .layout-logout {
@@ -618,6 +754,7 @@ body.layout-locked #root {
   min-width: 0;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .layout-header-icon {
@@ -657,6 +794,7 @@ body.layout-locked #root {
   align-items: center;
   gap: 10px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .layout-header-breadcrumb>span {
@@ -679,7 +817,9 @@ body.layout-locked #root {
 
 .layout-header-actions {
   display: flex;
-  flex: none;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-end;
   align-items: center;
   gap: 11px;
 }

@@ -92,8 +92,8 @@ export function OptionsMenu({ label, actions }: { label: string; actions: { labe
   return <div className="crm-options" ref={ref}><button className="crm-options-trigger" aria-label={translateText(label)} aria-expanded={open} onClick={() => setOpen(!open)}><MoreHorizontal size={16}/></button>{localizeNode(open && <div className="crm-options-popup" aria-label={translateText(label)}>{localizeNode(actions.map(action => <button key={action.label} onClick={() => { setOpen(false); action.onSelect(); }}>{localizeNode(action.label)}</button>))}</div>)}</div>;
 }
 
-export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEnd, onMove }: {
-  lead: CanonicalLead; pipeline: Pipeline; base: string; dragging: boolean;
+export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEnd, onMove, onOpen }: {
+  onOpen?: () => void; lead: CanonicalLead; pipeline: Pipeline; base: string; dragging: boolean;
   onDragStart: (id: string) => void; onDragEnd: () => void; onMove: (id: string, stage: LeadStage) => void;
 }) {
   useUILanguage();
@@ -110,7 +110,7 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   }, [menuOpen]);
   return <article className={`crm-lead-card ${dragging ? 'crm-is-dragging' : ''}`} draggable={!menuOpen}
     onDragStart={e => { e.dataTransfer.setData('text/plain', lead.id); e.dataTransfer.effectAllowed = 'move'; onDragStart(lead.id); }} onDragEnd={onDragEnd}>
-    <Link className="crm-card-link" draggable={false} to={`${base}/opportunities/${encodeURIComponent(lead.id)}`} aria-label={translateText(`Open opportunity for ${lead.name || 'contact'}`)}/>
+    <button className="crm-card-link" type="button" onClick={onOpen} aria-label={translateText(`Quick details for ${lead.name || 'contact'}`)}/>
     <div className="crm-card-content">
       <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name || 'Unnamed contact')}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
       <div className="crm-card-tags">{localizeNode((lead.tags || []).slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>

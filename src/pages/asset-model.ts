@@ -12,6 +12,8 @@ export type Asset = {
     updated: string;
     archived?: boolean;
     sampleData?: boolean;
+    formAsset?: boolean;
+    crmRouting?: { pipelineId?: string; stageId?: string };
     integrations?: Record<string, { enabled: boolean; configuration: string }>;
     document: BuilderDocument;
     description: string;

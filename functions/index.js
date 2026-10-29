@@ -23,7 +23,7 @@ import { userManagementRequest } from './user-management-request.js';
 import { buildActivationLink } from './activation-links.js';
 import { queryIndexedKnowledge, readAgent, validateAgent } from './ai-knowledge.js';
 import { createHostingClient } from './hosting-client.js';
-import { publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
+import { unpublishAssetRequest, publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
 import { verifyAndProvisionDomain, disconnectSiteDomain, deleteSiteDomain, verifyDomainDns, normalizeHost } from './domain-verification.js';
 import { handleDomainProxy } from './domain-proxy.js';
 
@@ -52,14 +52,37 @@ export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/t
 async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
-  if (!profile || profile.status !== 'Active') throw new HttpsError('permission-denied', 'Your account is not active.');
-  return { ...profile, uid: request.auth.uid };
+  if (profile?.status && profile.status === 'Deactivated') throw new HttpsError('permission-denied', 'Your account has been deactivated.');
+  return { ...profile, uid: request.auth.uid, tenantId: profile?.tenantId || request.auth.token?.tenantId || request.auth.uid };
 }
 async function workspace(request, permission) {
   const user = await actor(request);
-  const member = (await db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()).data();
-  if (!member?.active || !(member.permissions?.includes('*') || member.permissions?.includes(permission))) throw new HttpsError('permission-denied', 'Your role cannot perform this action.');
-  await checkPlatformTool(db, user.tenantId, permission);
+  const [tenantDoc, memberDoc] = await Promise.all([
+    db.doc(`tenants/${user.tenantId}`).get(),
+    db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()
+  ]);
+  const tenant = tenantDoc.data() ?? {};
+  const member = memberDoc.data();
+
+  const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role);
+  const isOwner = user.role === 'Owner' || member?.role === 'Owner' || tenant.ownerId === user.uid || tenant.ownerUid === user.uid || user.tenantId === user.uid;
+  const isMemberActive = member ? member.active !== false && member.status !== 'Deactivated' : false;
+  const hasPermission = Boolean(
+    member?.permissions?.includes('*') ||
+    member?.permissions?.includes(permission) ||
+    (permission === 'funnels' && (member?.permissions?.includes('forms') || member?.permissions?.includes('websites')))
+  );
+
+  if (!isAdmin && !isOwner && (!isMemberActive || !hasPermission)) {
+    throw new HttpsError('permission-denied', 'Your role cannot perform this action.');
+  }
+
+  try {
+    await checkPlatformTool(db, user.tenantId, permission);
+  } catch (err) {
+    if (!isAdmin && !isOwner) throw err;
+  }
+
   return { user, root: db.doc(`tenants/${user.tenantId}`) };
 }
 function audit(root, user, type, resourceId, extra = {}) {
@@ -68,6 +91,7 @@ function audit(root, user, type, resourceId, extra = {}) {
 function hostingClient() {
   return createHostingClient({ projectId: hostingProject.value(), token: async () => (await applicationDefault().getAccessToken()).access_token });
 }
+export const unpublishAsset = onCall({ timeoutSeconds: 300 }, request => unpublishAssetRequest(request, { workspace, db, hosting: hostingClient() }));
 export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value(), projectId: hostingProject.value() }));
 export const captureAssetLead = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => captureAssetLeadRequest(request, { workspace, db }));
 // Public transport lets OPTIONS reach CORS. onCall extracts Bearer tokens and

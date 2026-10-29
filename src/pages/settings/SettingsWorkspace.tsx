@@ -1,3 +1,4 @@
+import { MarketingTracking } from '../MarketingTracking';
 import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useState } from 'react';
@@ -52,6 +53,7 @@ function SettingsWorkspaceView() {
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
         {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
+          {active.slug === 'pixel' && <MarketingTracking/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'billing' && <><BillingPanel data={data} refresh={refresh} saveLocal={save}/>{!paymentMethodsTab && <PaymentsPanel data={data} save={save}/>}</>)}
           {localizeNode(active.slug === 'integrations' && <IntegrationsPanel data={data} refresh={refresh}/>)}

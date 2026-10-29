@@ -1,3 +1,4 @@
+import { decodeFirestoreValue } from '../../backend/firestoreCodec';
 import React, { useEffect, useState, Suspense, type ReactNode } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../backend/firebase';
@@ -90,7 +91,7 @@ export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
               id: p.id,
               name: p.name || 'Page',
               path: p.path || '/',
-              sections: p.publishedCanvas || p.canvas || [],
+              sections: decodeFirestoreValue(p.publishedCanvas || p.canvas || []),
               showHeader: p.publishedPage?.showHeader ?? true,
               showFooter: p.publishedPage?.showFooter ?? true,
               backgroundColor: p.publishedPage?.backgroundColor || '#ffffff'

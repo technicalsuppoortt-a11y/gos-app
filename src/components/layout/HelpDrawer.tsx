@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, BookOpen, CalendarDays, Mail, Plug, ShieldCheck, Users, X } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CalendarDays, Mail, MessageCircle, Plug, ShieldCheck, Users, X } from 'lucide-react';
 import { uiDirection, useUILanguage } from '../../i18n/display';
 import './help-drawer.css';
 
@@ -32,7 +32,7 @@ export function HelpDrawer({ close }: { close: () => void }) {
     <div className="upclick-help-body"><p>{t('A little guidance. A bigger next step.', 'إرشادات بسيطة لخطوتك التالية.')}</p>
       <section><h3><BookOpen size={17}/>{t('Quick-start guides', 'أدلة البداية')}</h3><div className="upclick-help-guides">{guides.map(({ icon: Icon, title, text, to }) => <article key={to}><Icon size={20}/><div><h4>{title}</h4><p>{text}</p><Link to={to} onClick={close}>{t('Open workspace', 'فتح مساحة العمل')}<ArrowUpRight size={14}/></Link></div></article>)}</div></section>
       <section><h3>{t('Frequently asked questions', 'الأسئلة الشائعة')}</h3>{faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</section>
-      <section className="upclick-help-support"><h3>{t('Talk to someone', 'تواصل معنا')}</h3><a href={`mailto:technicalsuppoortt@gmail.com?subject=${encodeURIComponent('Upclick workspace support')}`}><Mail size={18}/><span><b>{t('Email support', 'الدعم عبر البريد الإلكتروني')}</b><small>technicalsuppoortt@gmail.com</small></span><ArrowUpRight size={16}/></a><Link to="/dashboard/settings/team" onClick={close}><ShieldCheck size={18}/><span><b>{t('Workspace administrator', 'مسؤول مساحة العمل')}</b><small>{t('Get help with team access and permissions', 'للمساعدة في الوصول وصلاحيات الفريق')}</small></span><ArrowUpRight size={16}/></Link></section>
+      <section className="upclick-help-support"><h3>{t('Talk to someone', 'تواصل معنا')}</h3><Link to="/dashboard/support" onClick={close}><MessageCircle size={18}/><span><b>{t('Live support chat', 'محادثة الدعم المباشر')}</b><small>{t('Chat directly with our support specialists', 'تحدث مباشرة مع فريق الدعم الفني')}</small></span><ArrowUpRight size={16}/></Link><a href={`mailto:technicalsuppoortt@gmail.com?subject=${encodeURIComponent('Upclick workspace support')}`}><Mail size={18}/><span><b>{t('Email support', 'الدعم عبر البريد الإلكتروني')}</b><small>technicalsuppoortt@gmail.com</small></span><ArrowUpRight size={16}/></a><Link to="/dashboard/settings/team" onClick={close}><ShieldCheck size={18}/><span><b>{t('Workspace administrator', 'مسؤول مساحة العمل')}</b><small>{t('Get help with team access and permissions', 'للمساعدة في الوصول وصلاحيات الفريق')}</small></span><ArrowUpRight size={16}/></Link></section>
     </div><footer>{t('Ideas to impact. We’re here to help.', 'من الأفكار إلى الأثر. نحن هنا لمساعدتك.')}</footer>
   </dialog>, document.body);
 }

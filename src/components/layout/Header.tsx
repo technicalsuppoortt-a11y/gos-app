@@ -2,11 +2,10 @@ import { logoutFirebase } from '../../backend/session';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/slices/uiSlice';
-import { logout } from '../../store/slices/authSlice';
 import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -105,18 +104,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           <button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button>
           <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" title={translateText(productName)} aria-current="page">{localizeNode(productName)}</h1>
         </nav>
-      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb"><span>{translateText("Workspace")}</span><i>/</i><h1>{localizeNode(pageTitle)}</h1></div>)}
+      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb flex-shrink-0"><span>{translateText("Workspace")}</span><i>/</i><h1>{localizeNode(pageTitle)}</h1></div>)}
     </div>
     <div className="layout-header-actions">
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : <label className="layout-search"><Search size={16}/><input aria-label={translateText("Search")} placeholder={translateText("Search anything...")}/><kbd>{translateText("⌘ K")}</kbd></label>)}
       <button 
         type="button" 
         onClick={() => navigate('/')} 
-        className="layout-landing-link hidden md:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+        className="layout-landing-link inline-flex items-center justify-center w-[34px] h-[34px] shrink-0 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:border-[#7C3AED]/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition-all shadow-sm"
+        title={translateText("View Landing Page")}
         aria-label={translateText("View Landing Page")}
       >
-        <Globe size={15} />
-        <span>{translateText("View Landing Page")}</span>
+        <Globe size={16} />
       </button>
       <GetAppButton/>
       <div className="layout-preference-controls"><LanguageSwitcher/><ThemeToggle/></div>

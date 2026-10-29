@@ -258,7 +258,7 @@ html.dark .bl-pill.violet { color: #c4b5fd; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 340px));
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   justify-content: flex-start;
 }
 .bl-ref-card {
@@ -267,7 +267,9 @@ html.dark .bl-pill.violet { color: #c4b5fd; }
   flex-direction: column;
   max-width: 350px;
   width: 100%;
-  padding: 18px 18px 14px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 18px 18px 16px;
   border-radius: 16px;
   background: var(--bl-surface);
   border: 1px solid var(--bl-border);

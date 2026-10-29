@@ -1,3 +1,4 @@
+import { resolveCRMRoute } from './crm-routing.js';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 
@@ -7,7 +8,7 @@ export function captureForms(document) {
   const forms = [];
   const visit = (items, page) => {
     for (const item of items ?? []) {
-      if (['Form', 'Contact Form'].includes(item.type)) forms.push({ pageId: page.id, formId: item.id, step: page.name });
+      if (['Form', 'Contact Form'].includes(item.type) && !item.content?.publishedFormUrl) forms.push({ pageId: page.id, formId: item.id, step: page.name, ...(item.content?.customFields ? { fieldSchema: item.content.customFields } : {}) });
       for (const column of item.children ?? []) {
         let children = Array.isArray(column?.gosNestedArrayV1) ? column.gosNestedArrayV1 : column;
         if (typeof column?.gosNestedArrayV1 === 'string') { try { children = JSON.parse(column.gosNestedArrayV1); } catch { children = []; } }
@@ -35,6 +36,12 @@ export async function captureAssetLeadRequest(request, { db, workspace, now = ()
   const message = text(input.message, 5000, 'message'), phone = text(input.phone, 60, 'phone');
   if (!name && !email && !phone && !message) throw new HttpsError('invalid-argument', 'Enter your contact details before submitting.');
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpsError('invalid-argument', 'Enter a valid email address.');
+  const customFields = {};
+  if (input.customFields && (typeof input.customFields !== 'object' || Array.isArray(input.customFields) || Object.keys(input.customFields).length > 60)) throw new HttpsError('invalid-argument', 'Too many form fields.');
+  for (const [key, value] of Object.entries(input.customFields ?? {})) {
+    if (!/^[\w-]{1,150}$/.test(key)) throw new HttpsError('invalid-argument', 'Invalid form field.');
+    customFields[key] = text(value, 5000, key);
+  }
   const preview = input.preview === true;
   let root, actorId = 'visitor';
   if (preview) { const scope = await workspace(request, 'funnels'); root = scope.root; actorId = scope.user.uid; }
@@ -46,7 +53,7 @@ export async function captureAssetLeadRequest(request, { db, workspace, now = ()
   const leadRef = root.collection('leads').doc(leadId), eventRef = root.collection('events').doc(`capture-${leadId}`);
   const stateRef = root.collection('hosting').doc(assetId), assetRef = root.collection('assets').doc(assetId);
   const rateRef = root.collection('captureLimits').doc(hash(`${assetId}/${request.rawRequest?.ip ?? actorId}`));
-  const fingerprint = hash(JSON.stringify([pageId, formId, name, email, message, phone, preview]));
+  const fingerprint = hash(JSON.stringify([pageId, formId, name, email, message, phone, preview, ...(Object.keys(customFields).length ? [customFields] : [])]));
   return db.runTransaction(async tx => {
     const [state, asset, existing, limit] = await Promise.all([tx.get(stateRef), tx.get(assetRef), tx.get(leadRef), tx.get(rateRef)]);
     if (!asset.exists || asset.data().archived) throw new HttpsError('not-found', 'This form is no longer available.');
@@ -57,6 +64,18 @@ export async function captureAssetLeadRequest(request, { db, workspace, now = ()
     const allowed = preview ? captureForms(asset.data().document) : state.data()?.captureForms ?? [];
     const form = allowed.find(item => item.pageId === pageId && item.formId === formId);
     if (!form) throw new HttpsError('not-found', 'This form is no longer available.');
+    let schema = [];
+    try { schema = JSON.parse(form.fieldSchema || '[]'); } catch { throw new HttpsError('failed-precondition', 'Republish this form to receive submissions.'); }
+    if (!Array.isArray(schema) || schema.length > 60) throw new HttpsError('failed-precondition', 'Check the form field configuration.');
+    const labels = {};
+    for (const field of schema) {
+      const value = customFields[field.id] || '';
+      labels[field.id] = String(field.label || field.id);
+      if (field.required && !value.trim()) throw new HttpsError('invalid-argument', `Please answer: ${field.label}`);
+      if (field.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new HttpsError('invalid-argument', `Enter a valid email for ${field.label}.`);
+      if (field.type === 'select' && value && !field.options?.some(option => option.trim() === value)) throw new HttpsError('invalid-argument', `Choose a valid option for ${field.label}.`);
+    }
+
     if (existing.exists) {
       if (existing.data().captureFingerprint !== fingerprint) throw new HttpsError('already-exists', 'This submission has already been processed.');
       return { accepted: true, leadId };
@@ -64,12 +83,13 @@ export async function captureAssetLeadRequest(request, { db, workspace, now = ()
     const timestamp = now(), previous = limit.data();
     const recent = previous && timestamp - previous.windowStart < 60000;
     if (recent && previous.count >= 20) throw new HttpsError('resource-exhausted', 'Too many submissions. Please wait a minute and try again.');
-    const createdAt = new Date(timestamp).toISOString(), source = asset.data().kind === 'funnel' ? 'Funnel' : 'Website';
+    const routing = await resolveCRMRoute(tx, root, preview ? asset.data().crmRouting : state.data()?.crmRouting);
+    const createdAt = new Date(timestamp).toISOString(), source = asset.data().formAsset ? 'Forms' : asset.data().kind === 'funnel' ? 'Funnel' : 'Website';
     tx.set(rateRef, { windowStart: recent ? previous.windowStart : timestamp, count: recent ? previous.count + 1 : 1 });
     tx.set(leadRef, {
       id: leadId, sourceAssetId: assetId, sourcePageId: pageId, sourceFormId: formId,
       name: name || email || phone || 'Website visitor', email, message, phone, source, preview,
-      stage: 'LEAD_CAPTURED', lifecycleStage: 'LEAD_CAPTURED', pipelineId: 'main',
+      ...routing, customFields, customFieldLabels: labels,
       owner: 'Unassigned', company: '', value: 0, interest: message, avatar: (name || email || 'V').slice(0, 2).toUpperCase(), color: 'lilac',
       bookingStatus: 'Not Scheduled', qualificationStatus: 'Pending', followUpState: 'NEW',
       hasWhatsAppConsent: false, hasMessagingConsent: false, hasEmailConsent: false,

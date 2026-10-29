@@ -1,0 +1,7542 @@
+{
+  "scannedStylesheets": 74,
+  "correctedDeclarations": 860,
+  "correctedVariables": 12,
+  "referenceSurface": "#ffffff",
+  "minimumRatio": 4.5,
+  "utilityOccurrences": 108,
+  "utilities": [
+    {
+      "file": "src/components/common/PagePlaceholder.tsx",
+      "line": 31,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/common/PagePlaceholder.tsx",
+      "line": 53,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 151,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 157,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 159,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 293,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 310,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 341,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 354,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 419,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 442,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 451,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 489,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/ui/Select.tsx",
+      "line": 61,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/ui/Select.tsx",
+      "line": 65,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/ui/Select.tsx",
+      "line": 83,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/ui/Select.tsx",
+      "line": 114,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/analytics/LiveAnalytics.tsx",
+      "line": 36,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/analytics/LiveAnalytics.tsx",
+      "line": 45,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/AssetViews.tsx",
+      "line": 308,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/AssetViews.tsx",
+      "line": 308,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/AssetViews.tsx",
+      "line": 308,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ActivationLinkPage.tsx",
+      "line": 6,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ForgotPasswordPage.tsx",
+      "line": 96,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ForgotPasswordPage.tsx",
+      "line": 139,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ForgotPasswordPage.tsx",
+      "line": 201,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ForgotPasswordPage.tsx",
+      "line": 210,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 209,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 221,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 252,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 269,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 273,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 273,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 295,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 298,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 305,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 308,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 89,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 203,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 217,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 228,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 253,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 267,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 331,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/ResetPasswordPage.tsx",
+      "line": 379,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 497,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 500,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 524,
+      "utility": "text-gray-500"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 596,
+      "utility": "text-slate-100"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 596,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/BuilderWorkspace.tsx",
+      "line": 596,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/commerce/ProductWorkspace.tsx",
+      "line": 361,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/crm/CRMRecord.tsx",
+      "line": 196,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/crm/CRMRecord.tsx",
+      "line": 197,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/crm/CRMRecord.tsx",
+      "line": 197,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 28,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 81,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 714,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 733,
+      "utility": "text-slate-200"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 856,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 922,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 988,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1102,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1177,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1189,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1218,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1224,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1238,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1259,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1285,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1318,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 60,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 62,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 81,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 131,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 136,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 152,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 233,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 262,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 275,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 301,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 311,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 317,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 325,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountEditorPage.tsx",
+      "line": 335,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DiscountsWorkspace.tsx",
+      "line": 52,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/FunnelInsights.tsx",
+      "line": 45,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/GosPlayground.tsx",
+      "line": 100,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/GosPlayground.tsx",
+      "line": 249,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 100,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 101,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 103,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 709,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 856,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 909,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 973,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1048,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1193,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1224,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1256,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1329,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1474,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1507,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1519,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/MarketingTracking.tsx",
+      "line": 45,
+      "utility": "text-slate-100"
+    },
+    {
+      "file": "src/pages/PrivacyPage.tsx",
+      "line": 91,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/PrivacyPage.tsx",
+      "line": 102,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/settings/PrivacyPolicyPanel.tsx",
+      "line": 648,
+      "utility": "text-slate-400"
+    }
+  ],
+  "variableFindings": [
+    {
+      "file": "src/branding/upclick.css",
+      "line": 2,
+      "selector": ":root",
+      "property": "--upclick-muted",
+      "before": "#94A38B",
+      "after": "#475569",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/branding/upclick.css",
+      "line": 2,
+      "selector": ":root",
+      "property": "--muted",
+      "before": "#94A38B",
+      "after": "#475569",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/branding/upclick.css",
+      "line": 4,
+      "selector": ".lp",
+      "property": "--lp-muted",
+      "before": "#94A38B",
+      "after": "#475569",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ":root",
+      "property": "--muted",
+      "before": "#9695a7",
+      "after": "#475569",
+      "contrastOnWhite": 2.94
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 1,
+      "selector": ".ai-copilot-page",
+      "property": "--ai-muted",
+      "before": "#747b98",
+      "after": "#475569",
+      "contrastOnWhite": 4.18
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-page-match",
+      "property": "--af-muted",
+      "before": "#77809b",
+      "after": "#475569",
+      "contrastOnWhite": 3.93
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 2,
+      "selector": ".an-page",
+      "property": "--an-muted",
+      "before": "#7a8399",
+      "after": "#475569",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 5,
+      "selector": ".funnel-builder-page",
+      "property": "--fb-muted",
+      "before": "#858ba1",
+      "after": "#475569",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 1,
+      "selector": ".ob-root,.ob-admin,.ob-progress,.ob-dialog",
+      "property": "--ob-muted",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-page",
+      "property": "--pp-muted",
+      "before": "#788199",
+      "after": "#475569",
+      "contrastOnWhite": 3.89
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 1,
+      "selector": ".st-workspace",
+      "property": "--st-muted",
+      "before": "#8a8da6",
+      "after": "#475569",
+      "contrastOnWhite": 3.26
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-workspace",
+      "property": "--saw-muted",
+      "before": "#9ba6bd",
+      "after": "#475569",
+      "contrastOnWhite": 2.45
+    }
+  ],
+  "findings": [
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-heading p",
+      "before": "#758098",
+      "after": "#334155",
+      "contrastOnWhite": 3.96
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-heading>button",
+      "before": "#7a8295",
+      "after": "#334155",
+      "contrastOnWhite": 3.85
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-tabs button",
+      "before": "#738097",
+      "after": "#334155",
+      "contrastOnWhite": 3.99
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-item p",
+      "before": "#738097",
+      "after": "#334155",
+      "contrastOnWhite": 3.99
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-item time",
+      "before": "#77849b",
+      "after": "#334155",
+      "contrastOnWhite": 3.78
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-popover footer>span",
+      "before": "#8b94a6",
+      "after": "#475569",
+      "contrastOnWhite": 3.05
+    },
+    {
+      "file": "src/components/layout/notification-center.css",
+      "line": 1,
+      "selector": ".nc-empty",
+      "before": "#818ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.42
+    },
+    {
+      "file": "src/components/layout/sidebar-settings.css",
+      "line": 8,
+      "selector": ".layout-settings-link",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/components/layout/sidebar-settings.css",
+      "line": 15,
+      "selector": ".module-access-message p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-brand",
+      "before": "#f4f6fb",
+      "after": "#334155",
+      "contrastOnWhite": 1.08
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-brand small",
+      "before": "#7e879a",
+      "after": "#475569",
+      "contrastOnWhite": 3.61
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-nav-label",
+      "before": "#707a8e",
+      "after": "#334155",
+      "contrastOnWhite": 4.32
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-nav-link",
+      "before": "#9aa3b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.54
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-nav-link svg",
+      "before": "#80899c",
+      "after": "#334155",
+      "contrastOnWhite": 3.51
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 3,
+      "selector": ".sa-logout",
+      "before": "#929bad",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 4,
+      "selector": ".sa-breadcrumb",
+      "before": "#a2aabc",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 4,
+      "selector": ".sa-search input",
+      "before": "#dfe3ed",
+      "after": "#334155",
+      "contrastOnWhite": 1.28
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 4,
+      "selector": ".sa-search kbd",
+      "before": "#8790a3",
+      "after": "#334155",
+      "contrastOnWhite": 3.21
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 4,
+      "selector": ".sa-account",
+      "before": "#dfe3ec",
+      "after": "#334155",
+      "contrastOnWhite": 1.29
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-welcome small",
+      "before": "#a3a8bb",
+      "after": "#475569",
+      "contrastOnWhite": 2.37
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-overview-label",
+      "before": "#c4cada",
+      "after": "#334155",
+      "contrastOnWhite": 1.64
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-overview-label button",
+      "before": "#758096",
+      "after": "#334155",
+      "contrastOnWhite": 3.97
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-metric-label",
+      "before": "#a9b0c0",
+      "after": "#334155",
+      "contrastOnWhite": 2.17
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-metric-value",
+      "before": "#f4f6fb",
+      "after": "#334155",
+      "contrastOnWhite": 1.08
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-clients-heading h2",
+      "before": "#eff1f7",
+      "after": "#334155",
+      "contrastOnWhite": 1.13
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-table-scroll th",
+      "before": "#8d96a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.97
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-table-scroll td",
+      "before": "#d2d7e1",
+      "after": "#334155",
+      "contrastOnWhite": 1.44
+    },
+    {
+      "file": "src/components/layout/super-admin.css",
+      "line": 5,
+      "selector": ".sa-manage-clients",
+      "before": "#a3a9ba",
+      "after": "#334155",
+      "contrastOnWhite": 2.35
+    },
+    {
+      "file": "src/components/ui/combobox.css",
+      "line": 64,
+      "selector": ".gos-combo-chevron",
+      "before": "#7e879c",
+      "after": "#334155",
+      "contrastOnWhite": 3.6
+    },
+    {
+      "file": "src/components/ui/combobox.css",
+      "line": 162,
+      "selector": ".gos-combo-search",
+      "before": "#6e7990",
+      "after": "#334155",
+      "contrastOnWhite": 4.37
+    },
+    {
+      "file": "src/components/ui/combobox.css",
+      "line": 173,
+      "selector": ".gos-combo-search-icon",
+      "before": "#8692a8",
+      "after": "#334155",
+      "contrastOnWhite": 3.14
+    },
+    {
+      "file": "src/components/ui/combobox.css",
+      "line": 275,
+      "selector": ".gos-combo-option-sub",
+      "before": "#808b9f",
+      "after": "#334155",
+      "contrastOnWhite": 3.44
+    },
+    {
+      "file": "src/components/ui/combobox.css",
+      "line": 310,
+      "selector": ".gos-combo-empty",
+      "before": "#828ca0",
+      "after": "#334155",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/global-controls.css",
+      "line": 2,
+      "selector": ".global-language-control",
+      "before": "#84899a",
+      "after": "#334155",
+      "contrastOnWhite": 3.48
+    },
+    {
+      "file": "src/global-controls.css",
+      "line": 3,
+      "selector": ".global-language-control>svg",
+      "before": "#85899a",
+      "after": "#334155",
+      "contrastOnWhite": 3.48
+    },
+    {
+      "file": "src/global-controls.css",
+      "line": 4,
+      "selector": ".global-language-control button",
+      "before": "#818697",
+      "after": "#334155",
+      "contrastOnWhite": 3.63
+    },
+    {
+      "file": "src/global-controls.css",
+      "line": 7,
+      "selector": ".sa-preferences .global-language-control button",
+      "before": "#a5adbf",
+      "after": "#334155",
+      "contrastOnWhite": 2.25
+    },
+    {
+      "file": "src/global-controls.css",
+      "line": 7,
+      "selector": ".sa-preferences .global-language-control>svg",
+      "before": "#929bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".workspace-pill",
+      "before": "#aaa8b9",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".workspace-meta small,.user-meta small",
+      "before": "#9998aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".workspace-switch>svg",
+      "before": "#9998aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".nav-label",
+      "before": "#aaa9b7",
+      "after": "#334155",
+      "contrastOnWhite": 2.32
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".nav-link",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".nav-link svg",
+      "before": "#9998aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".nav-badge",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".credits-top span+span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".credits-bottom",
+      "before": "#9a99a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.8
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".team-user>button,.subtle-icon",
+      "before": "#9b99a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".breadcrumb",
+      "before": "#9b9aaa",
+      "after": "#334155",
+      "contrastOnWhite": 2.76
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".crumb-slash",
+      "before": "#d4d2de",
+      "after": "#334155",
+      "contrastOnWhite": 1.49
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".search-trigger",
+      "before": "#aaa8b7",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".search-trigger kbd,.command-input kbd",
+      "before": "#9795a5",
+      "after": "#334155",
+      "contrastOnWhite": 2.93
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".icon-button",
+      "before": "#878698",
+      "after": "#334155",
+      "contrastOnWhite": 3.56
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".top-user",
+      "before": "#9392a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".app-footer",
+      "before": "#aaa9b7",
+      "after": "#475569",
+      "contrastOnWhite": 2.32
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".page-heading p",
+      "before": "#9796a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".eyebrow",
+      "before": "#a2a1b0",
+      "after": "#334155",
+      "contrastOnWhite": 2.54
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".muted-caption",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".pill-neutral",
+      "before": "#858496",
+      "after": "#334155",
+      "contrastOnWhite": 3.66
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".welcome-kicker",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".art-card small",
+      "before": "#9593a2",
+      "after": "#475569",
+      "contrastOnWhite": 3.01
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".metric-top",
+      "before": "#888798",
+      "after": "#334155",
+      "contrastOnWhite": 3.52
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".metric-bottom",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".quick-text small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".quick-arrow",
+      "before": "#b7b5c2",
+      "after": "#334155",
+      "contrastOnWhite": 2.02
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".learning-panel>p",
+      "before": "#908e9f",
+      "after": "#334155",
+      "contrastOnWhite": 3.2
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".course-copy small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".activity-text span",
+      "before": "#8f8d9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.24
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".activity-row time",
+      "before": "#aaa9b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.32
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".history-label",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".history-item",
+      "before": "#8d8b9c",
+      "after": "#334155",
+      "contrastOnWhite": 3.33
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".history-upgrade p",
+      "before": "#9795a6",
+      "after": "#334155",
+      "contrastOnWhite": 2.93
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".copilot-heading p",
+      "before": "#9896a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".copilot-context",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".copilot-greeting p",
+      "before": "#9694a5",
+      "after": "#334155",
+      "contrastOnWhite": 2.97
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".suggestion-label",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".suggestion-chips button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".suggestion-chips button svg",
+      "before": "#b1afbc",
+      "after": "#334155",
+      "contrastOnWhite": 2.16
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".composer-tools button",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".composer-tools>span",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".user-prompt p,.bot-response p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".answer-source",
+      "before": "#9492a3",
+      "after": "#334155",
+      "contrastOnWhite": 3.04
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".crm-summary>div>span",
+      "before": "#9a98a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.82
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".crm-summary>div>small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".crm-ai-insight>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".toolbar-search",
+      "before": "#a4a2af",
+      "after": "#334155",
+      "contrastOnWhite": 2.51
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".toolbar select,.follow-controls select,.chart-header select",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".toolbar-filter",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".view-toggle button",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".column-heading",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".column-count",
+      "before": "#908e9f",
+      "after": "#334155",
+      "contrastOnWhite": 3.2
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".column-heading button",
+      "before": "#aba9b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.31
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".lead-card-top",
+      "before": "#b3b1bd",
+      "after": "#334155",
+      "contrastOnWhite": 2.11
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".lead-company",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".lead-card-bottom>span",
+      "before": "#a3a1ae",
+      "after": "#334155",
+      "contrastOnWhite": 2.54
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".kanban-empty",
+      "before": "#aaa8b7",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-panel th,.follow-table th",
+      "before": "#a4a2b1",
+      "after": "#334155",
+      "contrastOnWhite": 2.51
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-panel td,.follow-table td",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-lead small",
+      "before": "#a09ead",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".drawer-top",
+      "before": "#a09ead",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".lead-profile p",
+      "before": "#9997a6",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".drawer-actions button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".drawer-tabs button",
+      "before": "#a09ead",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".detail-row span",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".detail-row b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".timeline>div small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".inbox-rail-title",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".channel-item",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".all-inbox-icon",
+      "before": "#908e9d",
+      "after": "#334155",
+      "contrastOnWhite": 3.21
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-list-head h2 span",
+      "before": "#a09ead",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-search",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-sort",
+      "before": "#908e9f",
+      "after": "#334155",
+      "contrastOnWhite": 3.2
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-sort button",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-preview time",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-preview p",
+      "before": "#9290a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.13
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".conversation-preview>small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".thread-person small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".thread-actions button",
+      "before": "#9d9ba9",
+      "after": "#334155",
+      "contrastOnWhite": 2.73
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".thread-context",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".thread-context b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".message-date",
+      "before": "#aaa8b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".message-row.received .message-sender",
+      "before": "#9997a6",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".message-bubble",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".message-row time",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".mode-label",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".takeover-toggle",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".mode-explain",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".message-input>button:first-child",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".composer-foot",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-panel-head button",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-profile>p",
+      "before": "#9997a6",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-profile>div button",
+      "before": "#8c8a9a",
+      "after": "#334155",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-details h4",
+      "before": "#a3a1b0",
+      "after": "#334155",
+      "contrastOnWhite": 2.54
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-details>div>span:first-child",
+      "before": "#a09eac",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".contact-details>div>b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".interest-card small",
+      "before": "#9997a7",
+      "after": "#475569",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".ai-ownership small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".human-tip",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".tab-switch button",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-time",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".next-action",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".next-action small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-pagination",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-pagination button",
+      "before": "#858394",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".table-pagination button:disabled",
+      "before": "#c4c2cd",
+      "after": "#334155",
+      "contrastOnWhite": 1.76
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".timezone-label",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".calendar-navigation button",
+      "before": "#817f90",
+      "after": "#334155",
+      "contrastOnWhite": 3.91
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".week-day",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".week-day b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".time-labels",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".connected-top small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".calendar-sync-note",
+      "before": "#699580",
+      "after": "#334155",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".subtle-outline",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".calendar-list .section-heading>button",
+      "before": "#a6a4b1",
+      "after": "#334155",
+      "contrastOnWhite": 2.45
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".calendar-list-item small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".upcoming-item small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".upcoming-item time",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".booking-bottom p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".funnel-breadcrumb",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".funnel-breadcrumb b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".builder-tabs button",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".builder-group-label",
+      "before": "#9c9aa9",
+      "after": "#334155",
+      "contrastOnWhite": 2.76
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".builder-sidebar>p",
+      "before": "#aaa8b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".builder-block",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".builder-connection small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".canvas-toolbar>span",
+      "before": "#9e9cab",
+      "after": "#334155",
+      "contrastOnWhite": 2.69
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".canvas-toolbar>div button",
+      "before": "#9997a6",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".canvas-toolbar>button",
+      "before": "#807e8e",
+      "after": "#334155",
+      "contrastOnWhite": 3.97
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".mock-site-nav",
+      "before": "#888577",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".mock-circle span",
+      "before": "#f5e8dc",
+      "after": "#334155",
+      "contrastOnWhite": 1.2
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".mock-sticker",
+      "before": "#fff7ed",
+      "after": "#334155",
+      "contrastOnWhite": 1.06
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".inspector-select>span,.inspector-field label",
+      "before": "#a19fad",
+      "after": "#334155",
+      "contrastOnWhite": 2.6
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".inspector-field input,.inspector-field textarea,.inspector-field select",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".inspector-field small",
+      "before": "#7eae98",
+      "after": "#475569",
+      "contrastOnWhite": 2.5
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-summary>div>span:first-child",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-summary>div>small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".gateway-card>span:nth-child(2) small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".gateway-card>button",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-toolbar>div button",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-toolbar>div button span",
+      "before": "#9492a1",
+      "after": "#334155",
+      "contrastOnWhite": 3.05
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".art-book",
+      "before": "#f2edff",
+      "after": "#334155",
+      "contrastOnWhite": 1.15
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-price-row>b small",
+      "before": "#9997a7",
+      "after": "#475569",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-price-row>span",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-connection",
+      "before": "#879b90",
+      "after": "#334155",
+      "contrastOnWhite": 2.95
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".product-tip>span",
+      "before": "#9996a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".range-control",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".chart-header p",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".chart-summary small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".chart-y-labels",
+      "before": "#aaa8b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".chart-x-labels",
+      "before": "#aaa8b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".donut-chart span",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".revenue-legend>div>span",
+      "before": "#858394",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".revenue-legend small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".follow-stats span",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".follow-stats small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".horizontal-bars>div",
+      "before": "#8f8d9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.24
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".source-row>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".knowledge-overview small",
+      "before": "#9997a8",
+      "after": "#475569",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".confidence-score>span",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".knowledge-section-head p",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".brief-details label",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".brief-details b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".website-source small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".add-url",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".clickable>svg",
+      "before": "#9a98a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".faq-list summary svg",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".faq-list details p",
+      "before": "#898797",
+      "after": "#334155",
+      "contrastOnWhite": 3.51
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".knowledge-upload p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".knowledge-upload>small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".context-sources .section-heading button",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".source-list-item small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".knowledge-safe",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".settings-nav-title",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".settings-nav button",
+      "before": "#858394",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".settings-nav button svg",
+      "before": "#9b99a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".settings-heading p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".settings-card>p",
+      "before": "#9b99a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".brand-upload small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".form-grid label,.form-modal>label",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".form-grid input,.form-grid select,.form-grid textarea,.form-modal input,.form-modal select",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".integration-state p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".form-modal>label small",
+      "before": "#9d9baa",
+      "after": "#475569",
+      "contrastOnWhite": 2.73
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".modal-info",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".command-input",
+      "before": "#9997a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".command-hint",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".command-links a",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".command-links a>span",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".toast",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/index.css",
+      "line": 6,
+      "selector": ".empty-state p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 170,
+      "selector": ".layout-brand-copy small",
+      "before": "#85899a",
+      "after": "#475569",
+      "contrastOnWhite": 3.48
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 289,
+      "selector": ".layout-nav-icon",
+      "before": "#777b8e",
+      "after": "#334155",
+      "contrastOnWhite": 4.19
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 430,
+      "selector": ".layout-profile-copy small",
+      "before": "#9295a3",
+      "after": "#475569",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 487,
+      "selector": ".layout-help-card small",
+      "before": "#999baa",
+      "after": "#475569",
+      "contrastOnWhite": 2.75
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 499,
+      "selector": ".layout-help-card>button",
+      "before": "#9295a3",
+      "after": "#334155",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 521,
+      "selector": ".layout-logout",
+      "before": "#777b8b",
+      "after": "#334155",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 651,
+      "selector": ".layout-header-title p",
+      "before": "#7c8091",
+      "after": "#334155",
+      "contrastOnWhite": 3.92
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 665,
+      "selector": ".layout-header-breadcrumb>span",
+      "before": "#797d8f",
+      "after": "#334155",
+      "contrastOnWhite": 4.08
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 670,
+      "selector": ".layout-header-breadcrumb>i",
+      "before": "#b8bac5",
+      "after": "#334155",
+      "contrastOnWhite": 1.93
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 822,
+      "selector": ".layout-header-user small",
+      "before": "#9396a5",
+      "after": "#475569",
+      "contrastOnWhite": 2.94
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 882,
+      "selector": ".layout-booking-tab svg",
+      "before": "#85899a",
+      "after": "#334155",
+      "contrastOnWhite": 3.48
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 961,
+      "selector": ".layout-footer",
+      "before": "#9699a7",
+      "after": "#475569",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/layout-shell.css",
+      "line": 1255,
+      "selector": ".layout-mobile-close",
+      "before": "#77798a",
+      "after": "#334155",
+      "contrastOnWhite": 4.3
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-eyebrow",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-page-header p",
+      "before": "#9291a2",
+      "after": "#334155",
+      "contrastOnWhite": 3.09
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-search",
+      "before": "#9998a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-search>button",
+      "before": "#9998a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-type-filter>span",
+      "before": "#9b99a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-type-filter select",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-date-filter button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-results-count",
+      "before": "#9998a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.84
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-feed-heading p",
+      "before": "#9a98a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-table th",
+      "before": "#a09ead",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-table td",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-event-badge.system",
+      "before": "#737c8f",
+      "after": "#334155",
+      "contrastOnWhite": 4.19
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-description span",
+      "before": "#858496",
+      "after": "#334155",
+      "contrastOnWhite": 3.66
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-table time",
+      "before": "#89889a",
+      "after": "#334155",
+      "contrastOnWhite": 3.47
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-table time svg",
+      "before": "#aaa8b7",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-feed-footer",
+      "before": "#a09ead",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/pages/activity-page.css",
+      "line": 1,
+      "selector": ".activity-empty>p",
+      "before": "#9291a2",
+      "after": "#334155",
+      "contrastOnWhite": 3.09
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 4,
+      "selector": ".ai-copilot-toolbar",
+      "before": "#8990a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 11,
+      "selector": ".ai-copilot-welcome>p",
+      "before": "#747b99",
+      "after": "#334155",
+      "contrastOnWhite": 4.17
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 16,
+      "selector": ".ai-suggestion-arrow",
+      "before": "#7780a1",
+      "after": "#334155",
+      "contrastOnWhite": 3.9
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 16,
+      "selector": ".ai-suggestion-card small",
+      "before": "#79809b",
+      "after": "#475569",
+      "contrastOnWhite": 3.91
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 17,
+      "selector": ".ai-trust-note",
+      "before": "#8b90a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.17
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 18,
+      "selector": ".ai-composer-caption",
+      "before": "#969bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.76
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-search",
+      "before": "#9298aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-list h3",
+      "before": "#858ba1",
+      "after": "#334155",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-item>svg",
+      "before": "#7b83a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.75
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-item small",
+      "before": "#969bb0",
+      "after": "#475569",
+      "contrastOnWhite": 2.76
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-security",
+      "before": "#999eb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 19,
+      "selector": ".ai-history-security b",
+      "before": "#777d98",
+      "after": "#334155",
+      "contrastOnWhite": 4.06
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 20,
+      "selector": ".ai-source-note",
+      "before": "#9a9fb1",
+      "after": "#334155",
+      "contrastOnWhite": 2.64
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 20,
+      "selector": ".ai-thinking",
+      "before": "#7d839c",
+      "after": "#334155",
+      "contrastOnWhite": 3.75
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 22,
+      "selector": ".ai-draft-status",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 22,
+      "selector": ".ai-draft-card label",
+      "before": "#777d96",
+      "after": "#334155",
+      "contrastOnWhite": 4.07
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 22,
+      "selector": ".ai-preview-top",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 22,
+      "selector": ".ai-draft-preview p",
+      "before": "#868ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 22,
+      "selector": ".ai-draft-footer>span",
+      "before": "#9297a9",
+      "after": "#475569",
+      "contrastOnWhite": 2.91
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 53,
+      "selector": ".ai-history-controls button",
+      "before": "#717894",
+      "after": "#334155",
+      "contrastOnWhite": 4.36
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 56,
+      "selector": ".ai-history-filter-menu label",
+      "before": "#7a8097",
+      "after": "#334155",
+      "contrastOnWhite": 3.92
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 56,
+      "selector": ".ai-history-empty",
+      "before": "#8c91a6",
+      "after": "#334155",
+      "contrastOnWhite": 3.13
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 58,
+      "selector": ".ai-history-modal p",
+      "before": "#9095a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 58,
+      "selector": ".ai-history-modal>header>button",
+      "before": "#777d93",
+      "after": "#334155",
+      "contrastOnWhite": 4.09
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 58,
+      "selector": ".ai-history-modal-list small,.ai-history-modal-list time",
+      "before": "#9297aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 59,
+      "selector": ".ai-recording-state small",
+      "before": "#a37e87",
+      "after": "#475569",
+      "contrastOnWhite": 3.56
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 66,
+      "selector": ".ai-filter-group h3",
+      "before": "#9297aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 67,
+      "selector": ".ai-attachment-preview small",
+      "before": "#9297aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 67,
+      "selector": ".ai-attachment-preview>button",
+      "before": "#747a91",
+      "after": "#334155",
+      "contrastOnWhite": 4.26
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 68,
+      "selector": ".ai-message-file",
+      "before": "#747a92",
+      "after": "#334155",
+      "contrastOnWhite": 4.25
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 68,
+      "selector": ".ai-message-file small",
+      "before": "#9196aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.94
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 69,
+      "selector": ".ai-audio-time",
+      "before": "#7b8098",
+      "after": "#334155",
+      "contrastOnWhite": 3.9
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-disconnected",
+      "before": "#8990a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-channel-main>small",
+      "before": "#727b96",
+      "after": "#475569",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-tabs button",
+      "before": "#747b91",
+      "after": "#334155",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-kpi>div>span",
+      "before": "#78809a",
+      "after": "#334155",
+      "contrastOnWhite": 3.92
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-kpi small i",
+      "before": "#949bb0",
+      "after": "#475569",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-search",
+      "before": "#8b91a6",
+      "after": "#334155",
+      "contrastOnWhite": 3.13
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-search button",
+      "before": "#8a90a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-channel-filters>button",
+      "before": "#848ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.4
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-conversation-title time",
+      "before": "#9299ad",
+      "after": "#334155",
+      "contrastOnWhite": 2.84
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-conversation-copy p",
+      "before": "#81889d",
+      "after": "#334155",
+      "contrastOnWhite": 3.53
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-conversation-meta>span:not(.af-channel-mark)",
+      "before": "#989eb0",
+      "after": "#475569",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-state-slate",
+      "before": "#798196",
+      "after": "#334155",
+      "contrastOnWhite": 3.89
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-empty",
+      "before": "#9198ac",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-status-switch",
+      "before": "#888ea1",
+      "after": "#334155",
+      "contrastOnWhite": 3.27
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-assistant-profile span",
+      "before": "#9096a9",
+      "after": "#334155",
+      "contrastOnWhite": 2.95
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-icon-button",
+      "before": "#80879d",
+      "after": "#334155",
+      "contrastOnWhite": 3.58
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-assistant-config span",
+      "before": "#81889b",
+      "after": "#334155",
+      "contrastOnWhite": 3.54
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-knowledge-item",
+      "before": "#6f7890",
+      "after": "#334155",
+      "contrastOnWhite": 4.41
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-knowledge-item span",
+      "before": "#a1a6b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.43
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-workflow-row small",
+      "before": "#9298aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-performance-rows span",
+      "before": "#777f95",
+      "after": "#334155",
+      "contrastOnWhite": 4
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-chart-heading span",
+      "before": "#989eb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-chart-y",
+      "before": "#a0a5b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-chart-x",
+      "before": "#9da3b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.52
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-template-card>small",
+      "before": "#9299ab",
+      "after": "#475569",
+      "contrastOnWhite": 2.85
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-lifecycle-grid small",
+      "before": "#969caf",
+      "after": "#475569",
+      "contrastOnWhite": 2.74
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-automation-main>small",
+      "before": "#8d94a8",
+      "after": "#475569",
+      "contrastOnWhite": 3.03
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-assistant-wide p",
+      "before": "#7e859b",
+      "after": "#334155",
+      "contrastOnWhite": 3.67
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-knowledge-grid small",
+      "before": "#9298aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-outcome-list span",
+      "before": "#717991",
+      "after": "#334155",
+      "contrastOnWhite": 4.33
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-settings-grid p",
+      "before": "#898fa2",
+      "after": "#334155",
+      "contrastOnWhite": 3.22
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-modal-head p",
+      "before": "#9298aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-modal-copy",
+      "before": "#747c93",
+      "after": "#334155",
+      "contrastOnWhite": 4.16
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-test-preview p",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-lead-profile span,.af-lead-profile small",
+      "before": "#81889e",
+      "after": "#475569",
+      "contrastOnWhite": 3.53
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-drawer-status>span",
+      "before": "#777f95",
+      "after": "#334155",
+      "contrastOnWhite": 4
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-drawer-note",
+      "before": "#9096a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.95
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-consent-row small",
+      "before": "#9197a9",
+      "after": "#475569",
+      "contrastOnWhite": 2.92
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-message-demo>small",
+      "before": "#969bad",
+      "after": "#475569",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1,
+      "selector": ".af-lead-activity small",
+      "before": "#8b92a6",
+      "after": "#475569",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 9,
+      "selector": ".af-knowledge-compact-list i",
+      "before": "#a0a6b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.44
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 9,
+      "selector": ".af-date-filter",
+      "before": "#747b92",
+      "after": "#334155",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 9,
+      "selector": ".af-select-trigger>svg",
+      "before": "#8a90a4",
+      "after": "#334155",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 15,
+      "selector": ".af-connected.af-disconnected",
+      "before": "#8b91a2",
+      "after": "#334155",
+      "contrastOnWhite": 3.15
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 15,
+      "selector": ".af-tabs button svg",
+      "before": "#77809b",
+      "after": "#334155",
+      "contrastOnWhite": 3.93
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 20,
+      "selector": ".af-filter-menu-trigger .af-select-trigger",
+      "before": "#8b91a6",
+      "after": "#334155",
+      "contrastOnWhite": 3.13
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 145,
+      "selector": ".af-conversation-title time",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 189,
+      "selector": ".af-feed-panel .af-conversation-side time",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 241,
+      "selector": ".af-perf-chart-y span",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 248,
+      "selector": ".af-perf-chart-tooltip span",
+      "before": "#cbd5e1",
+      "after": "#334155",
+      "contrastOnWhite": 1.48
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 272,
+      "selector": ".af-template-card-open>small",
+      "before": "#838ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.41
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 290,
+      "selector": ".af-settings-save>span",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 292,
+      "selector": ".af-wizard-progress",
+      "before": "#9298aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 306,
+      "selector": ".af-sequence-step>label",
+      "before": "#737b91",
+      "after": "#334155",
+      "contrastOnWhite": 4.22
+    },
+    {
+      "file": "src/pages/ai-followup.css",
+      "line": 1406,
+      "selector": ".af-composer-hint",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 18,
+      "selector": ".an-header p",
+      "before": "#757e98",
+      "after": "#334155",
+      "contrastOnWhite": 4.04
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 23,
+      "selector": ".an-user",
+      "before": "#7b849a",
+      "after": "#334155",
+      "contrastOnWhite": 3.74
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 27,
+      "selector": ".an-user small",
+      "before": "#8991a4",
+      "after": "#475569",
+      "contrastOnWhite": 3.16
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 88,
+      "selector": ".an-chart-y span",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 93,
+      "selector": ".an-chart-x span",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 115,
+      "selector": ".an-source-list em",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 132,
+      "selector": ".an-products em",
+      "before": "#7f889d",
+      "after": "#334155",
+      "contrastOnWhite": 3.55
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 142,
+      "selector": ".an-table th",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 189,
+      "selector": ".an-empty",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 208,
+      "selector": ".an-donut-legend em",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 222,
+      "selector": ".an-hbars em",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 230,
+      "selector": ".an-funnel-meta span",
+      "before": "#8a92a7",
+      "after": "#475569",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 241,
+      "selector": ".an-heat-slot",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 242,
+      "selector": ".an-heat-legend",
+      "before": "#8a92a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 266,
+      "selector": ".an-report-foot small",
+      "before": "#8a92a7",
+      "after": "#475569",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 278,
+      "selector": ".an-export-copy small",
+      "before": "#8a92a7",
+      "after": "#475569",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 282,
+      "selector": ".an-schedule small",
+      "before": "#7a8399",
+      "after": "#475569",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 291,
+      "selector": ".an-modal header p",
+      "before": "#828a9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.45
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 292,
+      "selector": ".an-modal header>button",
+      "before": "#757e93",
+      "after": "#334155",
+      "contrastOnWhite": 4.07
+    },
+    {
+      "file": "src/pages/analytics.css",
+      "line": 315,
+      "selector": ".an-preview-kpis small",
+      "before": "#7a8399",
+      "after": "#475569",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 4,
+      "selector": ".aw-select-trigger>span:last-child",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 16,
+      "selector": ".aw-select-scroll",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 23,
+      "selector": ".aw-search-clear",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 25,
+      "selector": ".aw-search kbd",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 30,
+      "selector": ".aw-clear-filters",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 39,
+      "selector": ".fb-step-popup-title",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-controls.css",
+      "line": 45,
+      "selector": ".fb-step-option-row>button.fb-step-delete",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-workspace p",
+      "before": "#7b8499",
+      "after": "#334155",
+      "contrastOnWhite": 3.75
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-workspace small",
+      "before": "#8a93a8",
+      "after": "#475569",
+      "contrastOnWhite": 3.08
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-search",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-card-meta",
+      "before": "#8a93a8",
+      "after": "#475569",
+      "contrastOnWhite": 3.08
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-card-meta a",
+      "before": "#7c879e",
+      "after": "#475569",
+      "contrastOnWhite": 3.61
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-badge.gray",
+      "before": "#7b8499",
+      "after": "#334155",
+      "contrastOnWhite": 3.75
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-default",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-breadcrumb",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-domain-link",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-step-card>footer",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-page-row",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-browser",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-preview-site nav button",
+      "before": "#ddd",
+      "after": "#334155",
+      "contrastOnWhite": 1.36
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 1,
+      "selector": ".aw-dns-steps span",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/asset-workspace.css",
+      "line": 3,
+      "selector": ".aw-thumb-nav>span",
+      "before": "#cbd5e1",
+      "after": "#334155",
+      "contrastOnWhite": 1.48
+    },
+    {
+      "file": "src/pages/billing/billing.css",
+      "line": 966,
+      "selector": ".bl-receipt-zoom-caption",
+      "before": "#e2e8f0",
+      "after": "#334155",
+      "contrastOnWhite": 1.23
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-module-toolbar p",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-system-day-head>div",
+      "before": "#798197",
+      "after": "#334155",
+      "contrastOnWhite": 3.89
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-system-hours",
+      "before": "#8b92a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-calendar-legend",
+      "before": "#778096",
+      "after": "#334155",
+      "contrastOnWhite": 3.95
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-system-month>b",
+      "before": "#8990a3",
+      "after": "#334155",
+      "contrastOnWhite": 3.19
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-results-count",
+      "before": "#8a91a4",
+      "after": "#334155",
+      "contrastOnWhite": 3.15
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-bookings-table th",
+      "before": "#8c93a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.07
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-bookings-table td small",
+      "before": "#969daf",
+      "after": "#475569",
+      "contrastOnWhite": 2.71
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-table-footer",
+      "before": "#858ca0",
+      "after": "#475569",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-panel-title p",
+      "before": "#8b92a4",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-hours-row>span:not(.bc-second-interval)",
+      "before": "#9399aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.85
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-second-interval",
+      "before": "#707990",
+      "after": "#334155",
+      "contrastOnWhite": 4.35
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-day-off",
+      "before": "#a0a5b3",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-rule-grid>label,.bc-policy-panel>label",
+      "before": "#737c91",
+      "after": "#334155",
+      "contrastOnWhite": 4.18
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-blocked-dates small",
+      "before": "#949bad",
+      "after": "#475569",
+      "contrastOnWhite": 2.78
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-select>button svg",
+      "before": "#858ca1",
+      "after": "#334155",
+      "contrastOnWhite": 3.35
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-automation-copy>small",
+      "before": "#858ca0",
+      "after": "#475569",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-automation-copy>small svg",
+      "before": "#a4a9b6",
+      "after": "#475569",
+      "contrastOnWhite": 2.35
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-automation-side p",
+      "before": "#858ca0",
+      "after": "#334155",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-integration-card>div>small",
+      "before": "#9097a8",
+      "after": "#475569",
+      "contrastOnWhite": 2.93
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-integration-card>em",
+      "before": "#979daf",
+      "after": "#334155",
+      "contrastOnWhite": 2.71
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-question-row>button",
+      "before": "#9a9fb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.64
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-policy-toggle small",
+      "before": "#9298a9",
+      "after": "#475569",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/booking-calendar-modules.css",
+      "line": 1,
+      "selector": ".bc-form-hint",
+      "before": "#7c8297",
+      "after": "#475569",
+      "contrastOnWhite": 3.82
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 5,
+      "selector": ".bc-heading p",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 12,
+      "selector": ".bc-metric-foot",
+      "before": "#a0a5b4",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 18,
+      "selector": ".bc-search",
+      "before": "#959bad",
+      "after": "#334155",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 18,
+      "selector": ".bc-search kbd",
+      "before": "#a2a7b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.41
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 19,
+      "selector": ".bc-link-info>small",
+      "before": "#858ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 19,
+      "selector": ".bc-link-info>.bc-link-url",
+      "before": "#9ca1b0",
+      "after": "#334155",
+      "contrastOnWhite": 2.58
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 20,
+      "selector": ".bc-more>summary",
+      "before": "#8b91a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.14
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 20,
+      "selector": ".bc-empty",
+      "before": "#8f95a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.99
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 21,
+      "selector": ".bc-calendar-connection small",
+      "before": "#8d94a7",
+      "after": "#475569",
+      "contrastOnWhite": 3.03
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 22,
+      "selector": ".bc-builder-title p",
+      "before": "#7f879c",
+      "after": "#334155",
+      "contrastOnWhite": 3.59
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 22,
+      "selector": ".bc-builder-title p svg",
+      "before": "#81899d",
+      "after": "#334155",
+      "contrastOnWhite": 3.5
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 22,
+      "selector": ".bc-status.paused",
+      "before": "#858b9c",
+      "after": "#334155",
+      "contrastOnWhite": 3.4
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 22,
+      "selector": ".bc-icon-button",
+      "before": "#858ca0",
+      "after": "#334155",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 22,
+      "selector": ".bc-builder-actions button",
+      "before": "#737b90",
+      "after": "#334155",
+      "contrastOnWhite": 4.23
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 23,
+      "selector": ".bc-editor-tabs button",
+      "before": "#757d91",
+      "after": "#334155",
+      "contrastOnWhite": 4.12
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 24,
+      "selector": ".bc-calendar-toolbar button",
+      "before": "#737b90",
+      "after": "#334155",
+      "contrastOnWhite": 4.23
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 25,
+      "selector": ".bc-hours>span",
+      "before": "#9298a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 25,
+      "selector": ".bc-calendar-hint",
+      "before": "#8e95a7",
+      "after": "#475569",
+      "contrastOnWhite": 3
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 25,
+      "selector": ".bc-month-placeholder",
+      "before": "#8b91a5",
+      "after": "#475569",
+      "contrastOnWhite": 3.14
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 26,
+      "selector": ".bc-tab-content>p",
+      "before": "#858ca0",
+      "after": "#334155",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 26,
+      "selector": ".bc-reminder-option small",
+      "before": "#949bad",
+      "after": "#475569",
+      "contrastOnWhite": 2.78
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-preview-tabs button",
+      "before": "#727b91",
+      "after": "#334155",
+      "contrastOnWhite": 4.24
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-host small",
+      "before": "#8a90a3",
+      "after": "#475569",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-meeting-description",
+      "before": "#747d91",
+      "after": "#334155",
+      "contrastOnWhite": 4.13
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-mini-cal-head button",
+      "before": "#7a8297",
+      "after": "#334155",
+      "contrastOnWhite": 3.84
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-mini-calendar .weekdays span",
+      "before": "#a0a5b3",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-time-chips button",
+      "before": "#70798f",
+      "after": "#334155",
+      "contrastOnWhite": 4.36
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-powered",
+      "before": "#9298a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-powered svg",
+      "before": "#848b9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.4
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-share-card p",
+      "before": "#848ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.4
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 27,
+      "selector": ".bc-share-card>div",
+      "before": "#858ca0",
+      "after": "#334155",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 28,
+      "selector": ".bc-modal header p",
+      "before": "#9298a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 28,
+      "selector": ".bc-modal-note",
+      "before": "#777f94",
+      "after": "#334155",
+      "contrastOnWhite": 4
+    },
+    {
+      "file": "src/pages/booking-calendar.css",
+      "line": 28,
+      "selector": ".bc-modal footer>button:first-child",
+      "before": "#747c91",
+      "after": "#475569",
+      "contrastOnWhite": 4.17
+    },
+    {
+      "file": "src/pages/booking/booking-editor-reference.css",
+      "line": 83,
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "before": "#979bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.75
+    },
+    {
+      "file": "src/pages/booking/booking-editor-reference.css",
+      "line": 261,
+      "selector": ".bk-reference-editor .bk-input-prefix span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 44,
+      "selector": ".bk-booking-card.off .bk-title-link",
+      "before": "#929aab",
+      "after": "#334155",
+      "contrastOnWhite": 2.83
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 53,
+      "selector": ".bk-pill.gray",
+      "before": "#8992a3",
+      "after": "#334155",
+      "contrastOnWhite": 3.13
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 54,
+      "selector": ".bk-count",
+      "before": "#7e879a",
+      "after": "#334155",
+      "contrastOnWhite": 3.61
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 59,
+      "selector": ".bk-subtabs button",
+      "before": "#7e889e",
+      "after": "#334155",
+      "contrastOnWhite": 3.56
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 66,
+      "selector": ".bk-invitee a",
+      "before": "#8390a6",
+      "after": "#334155",
+      "contrastOnWhite": 3.23
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 66,
+      "selector": ".bk-invitee small",
+      "before": "#9a9eb0",
+      "after": "#475569",
+      "contrastOnWhite": 2.66
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 72,
+      "selector": ".bk-table th",
+      "before": "#9099ac",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 104,
+      "selector": ".bk-calendar-hours span",
+      "before": "#949db0",
+      "after": "#334155",
+      "contrastOnWhite": 2.72
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 124,
+      "selector": ".bk-eyebrow",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 131,
+      "selector": ".bk-form input:disabled",
+      "before": "#9099aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.87
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 136,
+      "selector": ".bk-tip",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 143,
+      "selector": ".bk-input-prefix span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 148,
+      "selector": ".bk-success-orb.canceled",
+      "before": "#8d8a9c",
+      "after": "#334155",
+      "contrastOnWhite": 3.36
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 156,
+      "selector": ".bk-wizard-steps",
+      "before": "#a0a7b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.42
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 161,
+      "selector": ".bk-date-grid button:disabled",
+      "before": "#b1b8c7",
+      "after": "#334155",
+      "contrastOnWhite": 1.99
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 162,
+      "selector": ".bk-slot-list>b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 169,
+      "selector": ".bk-powered",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 229,
+      "selector": ".bk-configurator-heading>svg:first-child",
+      "before": "#979bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.75
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 267,
+      "selector": ".bk-select-trigger>span:last-child",
+      "before": "#8e91aa",
+      "after": "#334155",
+      "contrastOnWhite": 3.1
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 389,
+      "selector": ".bk-diagnostic-slot>s",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-workspace.css",
+      "line": 391,
+      "selector": ".bk-diagnostic-explanation",
+      "before": "#9b7786",
+      "after": "#334155",
+      "contrastOnWhite": 3.91
+    },
+    {
+      "file": "src/pages/commerce/commerce-density.css",
+      "line": 46,
+      "selector": ".tw-type-arrow",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-table th",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-table small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-toolbar>label",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-empty",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-activity small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-student-metrics>span,.ce-analytics-metrics>div",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 2,
+      "selector": ".ce-revenue-chart>div",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 16,
+      "selector": ".pp-records-empty p",
+      "before": "#7a8399",
+      "after": "#334155",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 19,
+      "selector": ".ce-learning-progress small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 20,
+      "selector": ".ce-column-chart small,.ce-growth-chart small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 20,
+      "selector": ".ce-chart-caption",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/commerce-enhancements.css",
+      "line": 20,
+      "selector": ".ce-donut small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/course-records.css",
+      "line": 37,
+      "selector": ".ce-table-pagination",
+      "before": "#73809a",
+      "after": "#334155",
+      "contrastOnWhite": 3.97
+    },
+    {
+      "file": "src/pages/commerce/course-records.css",
+      "line": 43,
+      "selector": ".ce-students-tabs button",
+      "before": "#73809a",
+      "after": "#334155",
+      "contrastOnWhite": 3.97
+    },
+    {
+      "file": "src/pages/commerce/course-workspace.css",
+      "line": 57,
+      "selector": ".course-drag",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 10,
+      "selector": ".dw-editor-counter",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 13,
+      "selector": ".dw-page .tw-file-drop span,.dw-page .tw-file-drop small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 13,
+      "selector": ".dw-page .tw-file-item:nth-child(4)>svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 13,
+      "selector": ".dw-page .tw-file-item small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 13,
+      "selector": ".dw-page .cw-icon-button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 16,
+      "selector": ".dw-pricing-options small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 16,
+      "selector": ".dw-money>span:not(.cw-select)",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 18,
+      "selector": ".dw-tools small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 18,
+      "selector": ".dw-tools em",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 19,
+      "selector": ".dw-actions button svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/digital-workspace.css",
+      "line": 31,
+      "selector": ".dw-page .dw-access .tw-toggle-row>span>svg,.dw-page .dw-access .cw-field>span>svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/dynamic-checkout.css",
+      "line": 1,
+      "selector": ".cx-chips button,.cx-field-row>button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/dynamic-checkout.css",
+      "line": 1,
+      "selector": ".cx-slots small",
+      "before": "#9893a6",
+      "after": "#475569",
+      "contrastOnWhite": 2.97
+    },
+    {
+      "file": "src/pages/commerce/dynamic-checkout.css",
+      "line": 1,
+      "selector": ".cx-copy-button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 40,
+      "selector": ".tw-checkout-option strong del",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 90,
+      "selector": ".pricing-page .tw-section-heading p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 95,
+      "selector": ".pricing-page .cw-card header p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 98,
+      "selector": ".pricing-page .cw-field input:disabled,.pricing-page .commerce-select-trigger:disabled",
+      "before": "#a1a0b3",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 105,
+      "selector": ".pricing-page .tw-pricing-types small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 144,
+      "selector": ".pricing-page .cw-help",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 152,
+      "selector": ".pricing-page .pricing-drag-handle",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/pricing-workspace.css",
+      "line": 182,
+      "selector": ".pricing-drag-handle",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-reviews.css",
+      "line": 15,
+      "selector": ".pr-stars>span",
+      "before": "#c8c6d1",
+      "after": "#334155",
+      "contrastOnWhite": 1.69
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-back",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-heading p",
+      "before": "#7b7e92",
+      "after": "#334155",
+      "contrastOnWhite": 4.01
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-curated",
+      "before": "#7b7e92",
+      "after": "#334155",
+      "contrastOnWhite": 4.01
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-search",
+      "before": "#9295a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.97
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-industry",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-categories button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-results",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-card p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-tags span",
+      "before": "#9393a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.02
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-preview-button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-empty",
+      "before": "#9393a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.02
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-dialog-inner>header",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-preview-layout p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-preview-layout li",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-note",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-curriculum small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-resources>small,.pt-slots>small",
+      "before": "#9393a5",
+      "after": "#475569",
+      "contrastOnWhite": 3.02
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 2,
+      "selector": ".pt-pricing legend",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-template-library.css",
+      "line": 16,
+      "selector": ".pt-search button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/product-workspace.css",
+      "line": 1,
+      "selector": ".cw-support-note",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/product-workspace.css",
+      "line": 1,
+      "selector": ".cw-empty-content",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/product-workspace.css",
+      "line": 1,
+      "selector": ".cw-rich-toolbar",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/product-workspace.css",
+      "line": 1,
+      "selector": ".cw-bundle-options small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 40,
+      "selector": ".sw-count",
+      "before": "#8991a8",
+      "after": "#334155",
+      "contrastOnWhite": 3.14
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 51,
+      "selector": ".sw-empty-media",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 68,
+      "selector": ".sw-provider-copy small",
+      "before": "#9096a9",
+      "after": "#475569",
+      "contrastOnWhite": 2.95
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 75,
+      "selector": ".sw-preview-media>button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 79,
+      "selector": ".sw-rating span",
+      "before": "#8a91a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.15
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 104,
+      "selector": ".tw-service .sw-status p",
+      "before": "#8c93a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 110,
+      "selector": ".sw-quick-settings small",
+      "before": "#8c93a9",
+      "after": "#475569",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 111,
+      "selector": ".sw-quick-settings em",
+      "before": "#8c93a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 113,
+      "selector": ".sw-quick-settings button>svg",
+      "before": "#8c93a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/pages/commerce/service-workspace.css",
+      "line": 118,
+      "selector": ".sw-included p",
+      "before": "#8c93a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.06
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-breadcrumb",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-media-cover small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-character-count",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-module-heading>small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-lesson>small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-file-drop small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-file-item small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-toggle-row small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-secure",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-tags>small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-dates",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-checkout-product small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-checkout-option small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 1,
+      "selector": ".tw-component-list label small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/type-workspace.css",
+      "line": 298,
+      "selector": ".cw-pipeline-step-num",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 23,
+      "selector": ".crm-pipeline-workspace .crm-view-switch button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 44,
+      "selector": ".crm-stage-head .crm-options-trigger",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 73,
+      "selector": ".crm-pipeline-workspace .crm-card-person small",
+      "before": "#9198ad",
+      "after": "#475569",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 76,
+      "selector": ".crm-pipeline-workspace .crm-card-tags .crm-tag",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 85,
+      "selector": ".crm-pipeline-workspace .crm-card-time",
+      "before": "#929aaf",
+      "after": "#334155",
+      "contrastOnWhite": 2.81
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 90,
+      "selector": ".crm-followup-none",
+      "before": "#a1a9b9",
+      "after": "#334155",
+      "contrastOnWhite": 2.36
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 92,
+      "selector": ".crm-card-menu-button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-pipeline.css",
+      "line": 96,
+      "selector": ".crm-card-menu label",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 12,
+      "selector": ".crm-workspace .crm2-header-sub",
+      "before": "#8a94a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.05
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 18,
+      "selector": ".crm-workspace .crm2-subnav-btn",
+      "before": "#8390a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.23
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 23,
+      "selector": ".crm-workspace-summary small",
+      "before": "#8793a6",
+      "after": "#475569",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 30,
+      "selector": ".crm-search",
+      "before": "#8a96ac",
+      "after": "#334155",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 35,
+      "selector": ".crm-result",
+      "before": "#8b98ad",
+      "after": "#334155",
+      "contrastOnWhite": 2.92
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 37,
+      "selector": ".crm-view-switch button",
+      "before": "#8490a7",
+      "after": "#334155",
+      "contrastOnWhite": 3.22
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 49,
+      "selector": ".crm-stage-head span",
+      "before": "#7d88a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 50,
+      "selector": ".crm-stage-head button",
+      "before": "#9ba6b9",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 53,
+      "selector": ".crm-stage-add",
+      "before": "#8b96ab",
+      "after": "#334155",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 58,
+      "selector": ".crm-card-person small",
+      "before": "#94a0b3",
+      "after": "#475569",
+      "contrastOnWhite": 2.65
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 58,
+      "selector": ".crm-card-person>svg",
+      "before": "#bbc3d2",
+      "after": "#334155",
+      "contrastOnWhite": 1.77
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 60,
+      "selector": ".crm-person-slate",
+      "before": "#7c8ba2",
+      "after": "#334155",
+      "contrastOnWhite": 3.46
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 63,
+      "selector": ".crm-card-tags span",
+      "before": "#92915e",
+      "after": "#334155",
+      "contrastOnWhite": 3.26
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 64,
+      "selector": ".crm-card-bottom>span",
+      "before": "#a4afbf",
+      "after": "#334155",
+      "contrastOnWhite": 2.22
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 65,
+      "selector": ".crm-card-time",
+      "before": "#98a5b7",
+      "after": "#334155",
+      "contrastOnWhite": 2.5
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 66,
+      "selector": ".crm-card-move",
+      "before": "#8794a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.07
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 67,
+      "selector": ".crm-empty-stage",
+      "before": "#a1adbf",
+      "after": "#334155",
+      "contrastOnWhite": 2.27
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 68,
+      "selector": ".crm-bulk-bar",
+      "before": "#8794a9",
+      "after": "#334155",
+      "contrastOnWhite": 3.07
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 72,
+      "selector": ".crm-contacts-table th",
+      "before": "#8b96aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.98
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 73,
+      "selector": ".crm-contacts-table td",
+      "before": "#718098",
+      "after": "#334155",
+      "contrastOnWhite": 4.01
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 73,
+      "selector": ".crm-contacts-table td small",
+      "before": "#a1adbe",
+      "after": "#475569",
+      "contrastOnWhite": 2.27
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 73,
+      "selector": ".crm-contacts-table td button",
+      "before": "#9aa6b9",
+      "after": "#334155",
+      "contrastOnWhite": 2.46
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 79,
+      "selector": ".crm-section-heading p",
+      "before": "#95a0b2",
+      "after": "#334155",
+      "contrastOnWhite": 2.64
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 82,
+      "selector": ".crm-presets p",
+      "before": "#94a0b2",
+      "after": "#334155",
+      "contrastOnWhite": 2.65
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 84,
+      "selector": ".crm-feed-item p",
+      "before": "#8d9bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.82
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 84,
+      "selector": ".crm-feed-item small",
+      "before": "#a0aec0",
+      "after": "#475569",
+      "contrastOnWhite": 2.26
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 85,
+      "selector": ".crm-task-row small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 85,
+      "selector": ".crm-task-done",
+      "before": "#a1a9b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.36
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 86,
+      "selector": ".crm-overview-grid b small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 86,
+      "selector": ".crm-overview-grid p",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 87,
+      "selector": ".crm-empty",
+      "before": "#a0adbf",
+      "after": "#334155",
+      "contrastOnWhite": 2.28
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 89,
+      "selector": ".crm-form-grid label,.crm-field",
+      "before": "#8693a8",
+      "after": "#334155",
+      "contrastOnWhite": 3.11
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 188,
+      "selector": ".crm-muted",
+      "before": "#95a0b2",
+      "after": "#475569",
+      "contrastOnWhite": 2.64
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 189,
+      "selector": ".crm-upload span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 191,
+      "selector": ".crm-record-breadcrumb",
+      "before": "#99a4b6",
+      "after": "#334155",
+      "contrastOnWhite": 2.52
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 192,
+      "selector": ".crm-record-header p",
+      "before": "#97a3b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.55
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 194,
+      "selector": ".crm-record-summary>span:last-child",
+      "before": "#a1aabd",
+      "after": "#334155",
+      "contrastOnWhite": 2.33
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 194,
+      "selector": ".crm-deal-stages button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 489,
+      "selector": ".crm-template-stage-row>span",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 517,
+      "selector": ".crm-contact-form-status",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 533,
+      "selector": ".crm-thread header p",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 537,
+      "selector": ".crm-message time",
+      "before": "#7d879b",
+      "after": "#334155",
+      "contrastOnWhite": 3.61
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 540,
+      "selector": ".crm-appointment small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 544,
+      "selector": ".crm-order-metrics small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 545,
+      "selector": ".crm-orders-table th",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/crm/crm-workspace.css",
+      "line": 545,
+      "selector": ".crm-orders-table td small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 19,
+      "selector": ".discounts-page-heading p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 35,
+      "selector": ".dc-editor-heading p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 51,
+      "selector": ".dc-editor-missing",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 78,
+      "selector": ".dc-select>button>svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 177,
+      "selector": ".dc-stat small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 185,
+      "selector": ".dc-search",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 191,
+      "selector": ".dc-sort>svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 207,
+      "selector": ".dc-description",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 216,
+      "selector": ".dc-actions>button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 223,
+      "selector": ".dc-empty",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 224,
+      "selector": ".dc-pagination",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 236,
+      "selector": ".dc-summary>div>span:first-child",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 265,
+      "selector": ".dc-type-options small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 276,
+      "selector": ".dc-date-input>button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/discounts-workspace.css",
+      "line": 284,
+      "selector": ".dc-description-field>small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/domains-polish.css",
+      "line": 42,
+      "selector": ".aw-export-formats small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/domains-polish.css",
+      "line": 45,
+      "selector": ".aw-export-note>span",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 8,
+      "selector": ".fb-back,.fb-edit-title,.fb-icon-button",
+      "before": "#737993",
+      "after": "#334155",
+      "contrastOnWhite": 4.3
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 8,
+      "selector": ".fb-viewport-switch button",
+      "before": "#78809a",
+      "after": "#334155",
+      "contrastOnWhite": 3.92
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 8,
+      "selector": ".fb-dropdown b",
+      "before": "#82879a",
+      "after": "#334155",
+      "contrastOnWhite": 3.57
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 8,
+      "selector": ".fb-version-menu button span",
+      "before": "#989daf",
+      "after": "#334155",
+      "contrastOnWhite": 2.7
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-tabs button,.fb-inspector-tabs button",
+      "before": "#737991",
+      "after": "#334155",
+      "contrastOnWhite": 4.31
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-panel-caption",
+      "before": "#969aad",
+      "after": "#334155",
+      "contrastOnWhite": 2.79
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-panel-caption span",
+      "before": "#7f8295",
+      "after": "#334155",
+      "contrastOnWhite": 3.8
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-page-item>svg:first-child",
+      "before": "#7d83a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.73
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-element-tabs button",
+      "before": "#858aa0",
+      "after": "#334155",
+      "contrastOnWhite": 3.42
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 10,
+      "selector": ".fb-block-search",
+      "before": "#959bad",
+      "after": "#334155",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-page-picker>span",
+      "before": "#7d83a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.73
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-canvas-controls>svg",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-url-input",
+      "before": "#959bae",
+      "after": "#334155",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-url-input input",
+      "before": "#737993",
+      "after": "#334155",
+      "contrastOnWhite": 4.3
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-url-input button",
+      "before": "#8188a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.52
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-programs-section>p",
+      "before": "#8b90a5",
+      "after": "#334155",
+      "contrastOnWhite": 3.17
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 12,
+      "selector": ".fb-program-card small",
+      "before": "#858ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 13,
+      "selector": ".fb-url-pair",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 13,
+      "selector": ".fb-featured-preview>img,.fb-featured-preview>span",
+      "before": "#8e94a8",
+      "after": "#334155",
+      "contrastOnWhite": 3.02
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 13,
+      "selector": ".fb-acc-option",
+      "before": "#757b90",
+      "after": "#334155",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 18,
+      "selector": ".fb-preview-brand small",
+      "before": "#8b90a1",
+      "after": "#475569",
+      "contrastOnWhite": 3.18
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 20,
+      "selector": ".fb-live-page-nav nav button",
+      "before": "#d0d2da",
+      "after": "#334155",
+      "contrastOnWhite": 1.51
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 21,
+      "selector": ".fb-preview-action-modal>p:not(.fb-preview-eyebrow)",
+      "before": "#797f91",
+      "after": "#334155",
+      "contrastOnWhite": 3.99
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 21,
+      "selector": ".fb-preview-action-modal>small",
+      "before": "#9599a8",
+      "after": "#475569",
+      "contrastOnWhite": 2.84
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-journey-modal header p,.fb-ai-modal header p",
+      "before": "#9297aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-journey-modal>header>button,.fb-ai-modal>header>button",
+      "before": "#7c8296",
+      "after": "#334155",
+      "contrastOnWhite": 3.82
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-journey-step small",
+      "before": "#858ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-journey-modal>footer>span",
+      "before": "#858ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-ai-action>svg",
+      "before": "#959bb0",
+      "after": "#334155",
+      "contrastOnWhite": 2.77
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 24,
+      "selector": ".fb-ai-modal>small",
+      "before": "#9297aa",
+      "after": "#475569",
+      "contrastOnWhite": 2.9
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 38,
+      "selector": ".fb-select-trigger svg",
+      "before": "#8188a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.52
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 39,
+      "selector": ".fb-section-edit-hint",
+      "before": "#777d95",
+      "after": "#475569",
+      "contrastOnWhite": 4.08
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 61,
+      "selector": ".fb-price-grid article>small",
+      "before": "#777d91",
+      "after": "#475569",
+      "contrastOnWhite": 4.1
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 62,
+      "selector": ".fb-price-grid article>strong em",
+      "before": "#858a9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.43
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 63,
+      "selector": ".fb-price-grid article>span",
+      "before": "#777d91",
+      "after": "#334155",
+      "contrastOnWhite": 4.1
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 69,
+      "selector": ".fb-canvas-section>small",
+      "before": "#878ca0",
+      "after": "#475569",
+      "contrastOnWhite": 3.34
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 71,
+      "selector": ".fb-inline-cards small",
+      "before": "#858ba0",
+      "after": "#475569",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 73,
+      "selector": ".fb-canvas-section details p",
+      "before": "#7e8498",
+      "after": "#334155",
+      "contrastOnWhite": 3.72
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 94,
+      "selector": ".fb-image-dropzone",
+      "before": "#7c8498",
+      "after": "#334155",
+      "contrastOnWhite": 3.74
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 95,
+      "selector": ".fb-image-dropzone>span",
+      "before": "#9298aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 98,
+      "selector": ".fb-mission-grid p",
+      "before": "#777d91",
+      "after": "#334155",
+      "contrastOnWhite": 4.1
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 99,
+      "selector": ".fb-values-grid span",
+      "before": "#81879a",
+      "after": "#334155",
+      "contrastOnWhite": 3.58
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 100,
+      "selector": ".fb-stats-grid span",
+      "before": "#7d8297",
+      "after": "#334155",
+      "contrastOnWhite": 3.81
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 105,
+      "selector": ".fb-settings-intro",
+      "before": "#7d8397",
+      "after": "#334155",
+      "contrastOnWhite": 3.77
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 110,
+      "selector": ".fb-image-manager button,.fb-manager-card-head button",
+      "before": "#737991",
+      "after": "#334155",
+      "contrastOnWhite": 4.31
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 112,
+      "selector": ".fb-empty-widget,.fb-empty-section",
+      "before": "#9298aa",
+      "after": "#334155",
+      "contrastOnWhite": 2.88
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 112,
+      "selector": ".fb-empty-columns>div",
+      "before": "#9aa0b0",
+      "after": "#334155",
+      "contrastOnWhite": 2.62
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 112,
+      "selector": ".fb-spacer-preview",
+      "before": "#858ba0",
+      "after": "#334155",
+      "contrastOnWhite": 3.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 112,
+      "selector": ".fb-price-grid article li",
+      "before": "#72788c",
+      "after": "#334155",
+      "contrastOnWhite": 4.39
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 117,
+      "selector": ".fb-mobile-site-menu button,.fb-preview-mobile-menu button",
+      "before": "#f5f5f9",
+      "after": "#334155",
+      "contrastOnWhite": 1.09
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 172,
+      "selector": ".fb-mode-heading small",
+      "before": "#9297a8",
+      "after": "#475569",
+      "contrastOnWhite": 2.91
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 174,
+      "selector": ".fb-step-arrow",
+      "before": "#a2a6b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.43
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 175,
+      "selector": ".fb-responsive-visibility>span",
+      "before": "#777d91",
+      "after": "#334155",
+      "contrastOnWhite": 4.1
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 179,
+      "selector": ".fb-add-step-modal p",
+      "before": "#82879a",
+      "after": "#334155",
+      "contrastOnWhite": 3.57
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-lead-social small",
+      "before": "#7c8193",
+      "after": "#475569",
+      "contrastOnWhite": 3.88
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-lead-form-card>small",
+      "before": "#9297a6",
+      "after": "#475569",
+      "contrastOnWhite": 2.92
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-lead-success>span",
+      "before": "#747a8e",
+      "after": "#334155",
+      "contrastOnWhite": 4.27
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-booking-coach>p",
+      "before": "#c7c8d9",
+      "after": "#334155",
+      "contrastOnWhite": 1.65
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-booking-service small,.fb-coach-profile small",
+      "before": "#bdc0d4",
+      "after": "#475569",
+      "contrastOnWhite": 1.8
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-booking-secure",
+      "before": "#bdc0d4",
+      "after": "#334155",
+      "contrastOnWhite": 1.8
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-booking-days>*",
+      "before": "#858a9a",
+      "after": "#334155",
+      "contrastOnWhite": 3.44
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 180,
+      "selector": ".fb-confirm-location small",
+      "before": "#777d90",
+      "after": "#475569",
+      "contrastOnWhite": 4.1
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 182,
+      "selector": ".fb-mini-site-nav",
+      "before": "#72788b",
+      "after": "#334155",
+      "contrastOnWhite": 4.4
+    },
+    {
+      "file": "src/pages/funnel-builder.css",
+      "line": 202,
+      "selector": ".fb-delete-step-dialog p",
+      "before": "#73788b",
+      "after": "#334155",
+      "contrastOnWhite": 4.39
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-chart p,.fn-leads p,.fn-integrations>header p",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-dropoff small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-device-ring small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-leads>footer",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-no-results",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-integration-grid p",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/funnel-polish.css",
+      "line": 1,
+      "selector": ".fn-connection",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/home-upgrades.css",
+      "line": 1,
+      "selector": ".masterclass-details>div:first-child span",
+      "before": "#9896a7",
+      "after": "#334155",
+      "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-top>span",
+      "before": "#828090",
+      "after": "#334155",
+      "contrastOnWhite": 3.86
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-top>a:last-child:not(.ob-brand)",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-eyebrow",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-field>small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-optional",
+      "before": "#a19bab",
+      "after": "#334155",
+      "contrastOnWhite": 2.7
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-icon",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-callout",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-demo-note",
+      "before": "#a19bad",
+      "after": "#334155",
+      "contrastOnWhite": 2.69
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 2,
+      "selector": ".ob-dialog p",
+      "before": "#898293",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-step-sidebar>p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-step",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-step.done",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-sidebar-bottom",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-sidebar-bottom svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-sidebar-bottom b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-setup-topline",
+      "before": "#a39bae",
+      "after": "#334155",
+      "contrastOnWhite": 2.67
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-step-heading p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-dropzone small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-color-row code",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-setup-footer>span",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-back",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-industry",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-industry small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-language small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-section-note",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-connection small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-asset-summary small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-label",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-window-dots",
+      "before": "#ddd3e9",
+      "after": "#334155",
+      "contrastOnWhite": 1.44
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-window-dots>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-window-dots svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-metrics small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-metrics b span,.ob-preview-metrics b svg",
+      "before": "#a2c7b0",
+      "after": "#334155",
+      "contrastOnWhite": 1.85
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-asset small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-bottom",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-caption>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 3,
+      "selector": ".ob-preview-caption p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-activation-art>p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-art-welcome p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-art-tiles>div",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-art-tiles small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-art-footer",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-activation-form p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-email-card small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-password-rules",
+      "before": "#b5abbf",
+      "after": "#334155",
+      "contrastOnWhite": 2.2
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 4,
+      "selector": ".ob-checkbox",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-page-head p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-stats span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-search",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-admin th",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-empty p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-progress-header small",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-progress-tasks a",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-progress-tasks a>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/onboarding/onboarding.css",
+      "line": 5,
+      "selector": ".ob-progress-context",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/products-payments-overrides.css",
+      "line": 85,
+      "selector": ".pp-payment-options em",
+      "before": "#7a8399",
+      "after": "#334155",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/products-payments-overrides.css",
+      "line": 134,
+      "selector": ".pp-favorite-btn",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/products-payments-overrides.css",
+      "line": 322,
+      "selector": ".pp-txn-kpi em",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-header p",
+      "before": "#757e98",
+      "after": "#334155",
+      "contrastOnWhite": 4.04
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-global-search,.pp-search",
+      "before": "#79829a",
+      "after": "#334155",
+      "contrastOnWhite": 3.84
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-global-search kbd,.pp-search kbd",
+      "before": "#8a91a3",
+      "after": "#334155",
+      "contrastOnWhite": 3.15
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-user small",
+      "before": "#8991a4",
+      "after": "#475569",
+      "contrastOnWhite": 3.16
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-user>svg",
+      "before": "#7b849a",
+      "after": "#334155",
+      "contrastOnWhite": 3.74
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-metric em",
+      "before": "#707a93",
+      "after": "#334155",
+      "contrastOnWhite": 4.29
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-select>button svg",
+      "before": "#7c849a",
+      "after": "#334155",
+      "contrastOnWhite": 3.73
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-view-toggle button",
+      "before": "#707991",
+      "after": "#334155",
+      "contrastOnWhite": 4.35
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-product-metric",
+      "before": "#737c93",
+      "after": "#334155",
+      "contrastOnWhite": 4.17
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-close",
+      "before": "#7d859a",
+      "after": "#334155",
+      "contrastOnWhite": 3.69
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-quick-metrics small",
+      "before": "#81899d",
+      "after": "#475569",
+      "contrastOnWhite": 3.5
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-description",
+      "before": "#727b93",
+      "after": "#334155",
+      "contrastOnWhite": 4.23
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-tab-panel p",
+      "before": "#778097",
+      "after": "#334155",
+      "contrastOnWhite": 3.95
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-content-item small",
+      "before": "#8a92a5",
+      "after": "#475569",
+      "contrastOnWhite": 3.12
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-auto-row small",
+      "before": "#8e96a8",
+      "after": "#475569",
+      "contrastOnWhite": 2.97
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-secondary-heading p",
+      "before": "#7a8399",
+      "after": "#475569",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-secondary-table>div:first-child b",
+      "before": "#858da1",
+      "after": "#475569",
+      "contrastOnWhite": 3.32
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-settings-cards>button>small",
+      "before": "#858da1",
+      "after": "#475569",
+      "contrastOnWhite": 3.32
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-settings-cards>button>svg",
+      "before": "#737d93",
+      "after": "#334155",
+      "contrastOnWhite": 4.13
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-modal p",
+      "before": "#828a9e",
+      "after": "#334155",
+      "contrastOnWhite": 3.45
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-modal header>button",
+      "before": "#757e93",
+      "after": "#334155",
+      "contrastOnWhite": 4.07
+    },
+    {
+      "file": "src/pages/products-payments.css",
+      "line": 1,
+      "selector": ".pp-modal-note",
+      "before": "#737c92",
+      "after": "#334155",
+      "contrastOnWhite": 4.18
+    },
+    {
+      "file": "src/pages/settings/privacy-policy.css",
+      "line": 386,
+      "selector": ".st-privacy-search-icon",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/settings/privacy-policy.css",
+      "line": 472,
+      "selector": ".st-privacy-search-clear",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 5,
+      "selector": ".st-nav-item>svg:last-child",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 6,
+      "selector": ".st-badge.neutral",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 9,
+      "selector": ".st-account-list dt svg",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 10,
+      "selector": ".st-demo-note",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 13,
+      "selector": ".st-category-tabs button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 13,
+      "selector": ".st-search",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 13,
+      "selector": ".st-scope-list li",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 13,
+      "selector": ".st-steps li",
+      "before": "#a3a0b0",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 26,
+      "selector": ".st-member-cell small",
+      "before": "#808294",
+      "after": "#475569",
+      "contrastOnWhite": 3.79
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 26,
+      "selector": ".st-knowledge-item small",
+      "before": "#7b8192",
+      "after": "#475569",
+      "contrastOnWhite": 3.89
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 26,
+      "selector": ".st-qr-preview p",
+      "before": "#797e8b",
+      "after": "#334155",
+      "contrastOnWhite": 4.06
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 66,
+      "selector": ".st-workspace .st-search",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/settings/settings.css",
+      "line": 224,
+      "selector": ".st-search-kbd",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-workspace",
+      "before": "#eef0fa",
+      "after": "#334155",
+      "contrastOnWhite": 1.14
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-workspace p,.saw-modal p",
+      "before": "#9ba6bd",
+      "after": "#334155",
+      "contrastOnWhite": 2.45
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-stat>span",
+      "before": "#b7bfd0",
+      "after": "#334155",
+      "contrastOnWhite": 1.85
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-bar-column>span",
+      "before": "#c7c4df",
+      "after": "#334155",
+      "contrastOnWhite": 1.69
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-grid td",
+      "before": "#d8deee",
+      "after": "#334155",
+      "contrastOnWhite": 1.35
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-product-metrics span",
+      "before": "#9ba6bd",
+      "after": "#334155",
+      "contrastOnWhite": 2.45
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-product-metrics b",
+      "before": "#eef0fa",
+      "after": "#334155",
+      "contrastOnWhite": 1.14
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-form-grid label,.saw-modal-form label",
+      "before": "#c4cbe0",
+      "after": "#334155",
+      "contrastOnWhite": 1.62
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-empty",
+      "before": "#9ba6bd",
+      "after": "#334155",
+      "contrastOnWhite": 2.45
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1,
+      "selector": ".saw-detail dt",
+      "before": "#9ba6bd",
+      "after": "#334155",
+      "contrastOnWhite": 2.45
+    },
+    {
+      "file": "src/pages/support/support.css",
+      "line": 7,
+      "selector": ".support-message.own>.support-forwarded",
+      "before": "#ede9fe",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/support/support.css",
+      "line": 7,
+      "selector": ".support-message.own .support-file-label small",
+      "before": "#ede9fe",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-eyebrow",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-heading p",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-search",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-search button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-filter>span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-view button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-tabs button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-tabs button span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-results",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-results-muted",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-card-copy p",
+      "before": "#9994a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.93
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-tags span",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-meta",
+      "before": "#a59eb2",
+      "after": "#475569",
+      "contrastOnWhite": 2.58
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-actions button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-empty",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 2,
+      "selector": ".tl-footer",
+      "before": "#EDE9FE",
+      "after": "#475569",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 3,
+      "selector": ".tl-dialog header button",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 3,
+      "selector": ".tl-preview-badges",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 3,
+      "selector": ".tl-details dt",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 3,
+      "selector": ".tl-steps li",
+      "before": "#b0a5ba",
+      "after": "#334155",
+      "contrastOnWhite": 2.35
+    },
+    {
+      "file": "src/pages/templates-workspace.css",
+      "line": 3,
+      "selector": ".tl-success",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/website-funnel-polish.css",
+      "line": 24,
+      "selector": ".aw-ai-progress li",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".role-head p",
+      "before": "#9997a8",
+      "after": "#334155",
+      "contrastOnWhite": 2.86
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".role-tool small,.role-service small",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".role-tool>svg",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".role-activity-row small,.role-activity-row time",
+      "before": "#a09eae",
+      "after": "#475569",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".platform-revenue>.section-heading select",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".chart-labels",
+      "before": "#aaa8b5",
+      "after": "#334155",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".chart-bars small",
+      "before": "#aaa8b5",
+      "after": "#475569",
+      "contrastOnWhite": 2.34
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".client-table th",
+      "before": "#a09eae",
+      "after": "#334155",
+      "contrastOnWhite": 2.63
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".client-table td",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".usage-line>div",
+      "before": "#858394",
+      "after": "#334155",
+      "contrastOnWhite": 3.7
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 1,
+      "selector": ".usage-line>div b",
+      "before": "#EDE9FE",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".layout-logout",
+      "before": "#777b8b",
+      "after": "#334155",
+      "contrastOnWhite": 4.21
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-brand-wordmark,.super-admin-shell .layout-brand-copy small",
+      "before": "#f2f3f8",
+      "after": "#475569",
+      "contrastOnWhite": 1.11
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-nav-item",
+      "before": "#aab0c2",
+      "after": "#334155",
+      "contrastOnWhite": 2.17
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-nav-item>svg",
+      "before": "#959caf",
+      "after": "#334155",
+      "contrastOnWhite": 2.74
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-help-card b",
+      "before": "#eef0f8",
+      "after": "#334155",
+      "contrastOnWhite": 1.14
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-help-card small,.super-admin-shell .layout-profile-copy small",
+      "before": "#979eb1",
+      "after": "#475569",
+      "contrastOnWhite": 2.68
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-profile-copy b",
+      "before": "#eff1f7",
+      "after": "#334155",
+      "contrastOnWhite": 1.13
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-logout",
+      "before": "#aeb4c3",
+      "after": "#334155",
+      "contrastOnWhite": 2.08
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-header-breadcrumb>span,.super-admin-shell .layout-header-breadcrumb h1,.super-admin-shell .layout-header-breadcrumb>i",
+      "before": "#c2c7d5",
+      "after": "#334155",
+      "contrastOnWhite": 1.69
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-search input",
+      "before": "#e5e8f0",
+      "after": "#334155",
+      "contrastOnWhite": 1.23
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-header-user b",
+      "before": "#e9ebf3",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-header-user small",
+      "before": "#9ba2b4",
+      "after": "#475569",
+      "contrastOnWhite": 2.55
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-overview-top",
+      "before": "#bec4d4",
+      "after": "#334155",
+      "contrastOnWhite": 1.74
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-metric-label",
+      "before": "#aab0c0",
+      "after": "#334155",
+      "contrastOnWhite": 2.17
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-metric-label svg",
+      "before": "#7d879e",
+      "after": "#334155",
+      "contrastOnWhite": 3.6
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-recent-heading h2",
+      "before": "#eef0f6",
+      "after": "#334155",
+      "contrastOnWhite": 1.14
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-clients-table-wrap th",
+      "before": "#858da1",
+      "after": "#334155",
+      "contrastOnWhite": 3.32
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-clients-table-wrap td",
+      "before": "#d9dce6",
+      "after": "#334155",
+      "contrastOnWhite": 1.37
+    },
+    {
+      "file": "src/role-dashboards.css",
+      "line": 4,
+      "selector": ".super-admin-shell .layout-footer-status",
+      "before": "#aeb5c6",
+      "after": "#475569",
+      "contrastOnWhite": 2.05
+    },
+    {
+      "file": "src/route-loading.css",
+      "line": 81,
+      "selector": ".gos-loader-brand span",
+      "before": "#7a7e93",
+      "after": "#334155",
+      "contrastOnWhite": 4.01
+    }
+  ]
+}

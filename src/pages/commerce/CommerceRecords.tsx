@@ -1,3 +1,4 @@
+import { QuickDetails } from '../../components/ui/QuickDetails';
 import { useRef, useState } from 'react';
 import { CheckCircle2, CreditCard, Loader2, Plus, ShieldCheck, ShoppingBag, Users } from 'lucide-react';
 import { cloudStorage, readCloud, useEntities } from '../../backend/workspace';
@@ -29,6 +30,7 @@ export function CommerceRecords({ tab, notify }: { tab: string; notify: (message
   return <RecordsView key={`${scope}:${tab}`} scope={scope} tab={tab} notify={notify}/>;
 }
 function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notify: (message: string) => void }) {
+  const [quick, setQuick] = useState<RecordRow | null>(null);
   const products = useProducts();
   const orders = useEntities<RecordRow>('orders');
   const contacts = useEntities<RecordRow>('contacts');
@@ -38,6 +40,8 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [draft, setDraft] = useState({ name: '', email: '', phone: '', productId: '', provider: 'stripe' });
   const saving = useRef(false);
+  const quickEmail = quick?.customerEmail || quick?.customer_email || quick?.customer?.email || quick?.email || '';
+  const relatedPayments = quick ? payments.filter(t => (t.orderId || t.order_id) === quick.id || quickEmail && (t.customerEmail || t.customer_email || t.customer?.email || t.email) === quickEmail) : [];
   const label = tab === 'Orders' ? 'Create Order' : tab === 'Customers' ? 'Add Customer' : 'Add Payment Method';
   const EmptyIcon = tab === 'Orders' ? ShoppingBag : tab === 'Customers' ? Users : CreditCard;
   const emptyDescription = tab === 'Orders' ? 'Create your first order to keep purchases and customer details in one place.' : tab === 'Customers' ? 'Add your first customer to start building relationships and tracking purchases.' : 'Add a payment method to prepare your checkout. Verified payments will appear here.';
@@ -124,8 +128,9 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
     finally { saving.current = false; setBusy(false); }
   }
   return <section className="pp-secondary-view">
+    {quick && <QuickDetails title="Purchase & customer details" close={() => setQuick(null)}><h3>Customer</h3><dl><dt>Name</dt><dd>{quick.customerName || quick.customer?.name || quick.name || (typeof quick.customer === 'string' ? quick.customer : '—')}</dd><dt>Email</dt><dd>{quickEmail || '—'}</dd><dt>Phone</dt><dd>{quick.customerPhone || quick.customer?.phone || quick.phone || '—'}</dd></dl><h3>Record details</h3><dl>{Object.entries(quick).filter(([, v]) => v !== null && typeof v !== 'object').map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{String(value)}</dd></div>)}</dl><h3>Purchased products</h3>{(Array.isArray(quick.items) ? quick.items : [quick]).map((item: RecordRow, i: number) => <p key={i}>{item.productName || item.product_name || products.find(p => p.id === (item.productId || item.product_id))?.name || '—'} {item.quantity ? `× ${item.quantity}` : ''}</p>)}<h3>Transaction history</h3>{!relatedPayments.length && <p>No recorded transactions for this customer.</p>}{relatedPayments.map(t => <article key={t.id}><b>{money(t)} · {t.status}</b><p>{t.createdAt || t.at}</p></article>)}</QuickDetails>}
     <div className="pp-secondary-heading"><div><h2>{translateText(tab)}</h2><p>{translateText(`Manage your ${tab.toLowerCase()} across products and payments.`)}</p></div><button onClick={openCreate}><Plus size={14}/>{translateText(label)}</button></div>
-    {rows.length ? <div className="pp-secondary-table"><div>{headers.map(header => <b key={header}>{translateText(header)}</b>)}</div>{rows.map((row, index) => <div key={`${row[0]}:${index}`}>{row.map((cell, column) => <span key={column}>{column === 0 && tab === 'Payments' ? <span className="pp-table-cell-with-icon"><CreditCard size={14} className="pp-cell-icon"/><b>{cell}</b></span> : column === row.length - 1 ? <em className={`pp-secondary-status ${cell.toLowerCase()}`}>{translateText(cell)}</em> : cell}</span>)}</div>)}</div>
+    {rows.length ? <div className="pp-secondary-table"><div>{headers.map(header => <b key={header}>{translateText(header)}</b>)}<b>Details</b></div>{rows.map((row, index) => <div key={`${row[0]}:${index}`}>{row.map((cell, column) => <span key={column}>{column === 0 && tab === 'Payments' ? <span className="pp-table-cell-with-icon"><CreditCard size={14} className="pp-cell-icon"/><b>{cell}</b></span> : column === row.length - 1 ? <em className={`pp-secondary-status ${cell.toLowerCase()}`}>{translateText(cell)}</em> : cell}</span>)}<button className="cw-button" onClick={() => setQuick(tab === 'Orders' ? [...draftOrders, ...orders][index] : tab === 'Customers' ? contacts[index] : payments[index - methodRows.length] || { id: row[0], provider: row[1], status: row[4] })}>Quick details</button></div>)}</div>
       : <div className="pp-records-empty"><span className="pp-records-empty-icon"><EmptyIcon size={28} strokeWidth={1.5} aria-hidden="true"/></span><h3>{translateText(`No ${tab} Yet`)}</h3><p>{translateText(emptyDescription)}</p><button type="button" className="cw-button primary" onClick={openCreate}><Plus size={15}/>{translateText(label)}</button></div>}
     {tab === 'Payments' && (
       <div className="pp-payments-banner">

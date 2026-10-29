@@ -4,7 +4,7 @@ import { legacyWebTemplateRows, seedRows, templateCategories, type RecordRow } f
 import { MASTER_TEMPLATES, systemAssetCategory, type Template } from '../system-template-data';
 
 const key = 'gos.system.templates.v2';
-export const isWebTemplate = (row: RecordRow) => ['Funnel', 'Website'].includes(row.category);
+export const isWebTemplate = (row: RecordRow) => ['Funnel', 'Website', 'Form'].includes(row.category);
 function storedRows(key: string): RecordRow[] | null {
  try {
   const rows = JSON.parse(storageGet(key) ?? 'null');
@@ -21,7 +21,7 @@ export function readSystemTemplates(): RecordRow[] {
  ];
  const defaults: RecordRow[] = pageTemplates.map(template => ({
   id: `system-page-${template.id}`, name: template.name, tenant: 'Platform', status: 'Published',
-  category: template.mode === 'funnel' ? 'Funnel' : 'Website', content: template.body, pageTemplateId: template.id,
+  category: template.mode === 'funnel' ? 'Funnel' : template.mode === 'form' ? 'Form' : 'Website', content: template.body, pageTemplateId: template.id,
  }));
  const masters: RecordRow[] = MASTER_TEMPLATES.map(template => ({id:`system-${template.id}`,name:template.name,tenant:'Platform',status:'Published',category:systemAssetCategory(template),content:JSON.stringify(template.content,null,2),blueprintId:template.id}));
  const rows: RecordRow[] = [...legacy, ...defaults, ...masters].map(row => ({ ...row, tenant: 'Platform', category: row.category === 'AI Prompt' ? 'AI Assistant' : row.category }));
@@ -52,7 +52,7 @@ export function publishedWorkspaceTemplates(): Template[] {
 /** Published defaults are consumed by tenant galleries; drafts never appear there. */
 export function publishedPageTemplates(): PageTemplate[] {
  return publishedSystemTemplates().filter(isWebTemplate).map(row => {
-  const mode = row.category === 'Funnel' ? 'funnel' : 'website';
+  const mode = row.category === 'Funnel' ? 'funnel' : row.category === 'Form' ? 'form' : 'website';
   const base = pageTemplates.find(template => template.id === row.pageTemplateId) ?? pageTemplates.find(template => template.mode === mode)!;
   let body=row.content || base.body;
   try {const content=JSON.parse(body);if(typeof content.headline==='string')body=content.headline;} catch { /* Plain text content. */ }

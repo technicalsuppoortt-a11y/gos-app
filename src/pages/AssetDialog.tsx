@@ -172,6 +172,7 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
        showToast.success('Page deleted successfully');
      } else {
        await deleteWorkspaceAsset(dialog.assetId!);
+       await setWorkspace(current => ({ ...current, assets: current.assets.filter(a => a.id !== dialog.assetId) }));
        showToast.success('Asset deleted successfully');
        close();
        go(section);

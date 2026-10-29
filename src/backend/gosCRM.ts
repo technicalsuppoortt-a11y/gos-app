@@ -241,7 +241,10 @@ export async function dispatchGosCRM(action: { type: string; payload?: any }): P
       if (!missingApiLead(error)) throw error;
       return await moveWorkspaceLead(p.id, p.stage);
     }
-    store.dispatch(updateLead({ id: p.id, changes: normalizeLead(data.lead) })); return data.lead;
+    const canonical = normalizeLead(data.lead);
+    const scope = store.getState().auth.tenant?.id;
+    if (scope) await setDoc(doc(db, 'tenants', scope, 'leads', p.id), JSON.parse(JSON.stringify(canonical)), { merge: true });
+    store.dispatch(updateLead({ id: p.id, changes: canonical })); return data.lead;
   }
   if (action.type === 'crm/addLeadNote') {
     const saveNoteToWorkspace = () => {
@@ -282,7 +285,7 @@ export async function dispatchGosCRM(action: { type: string; payload?: any }): P
     // Tasks, consent and follow-up fields are not in the Laravel contract.
     // Await their tenant-scoped Firestore write before reporting a successful save.
     const local = Object.fromEntries(Object.entries(changes).filter(([key]) => !(key in body) && key !== 'pipelineId' && key !== 'lifecycleStage' && key !== 'stage'));
-    if (Object.keys(local).length) {
+    if (Object.keys(local).length || changes.pipelineId !== undefined || changes.stage !== undefined || changes.lifecycleStage !== undefined) {
       const activity = { id: crypto.randomUUID(), type: 'system' as const, title: 'Contact updated', detail: Object.keys(local).join(', '), at: new Date().toISOString() };
       const next = { ...canonical, ...changes, activities: [activity, ...canonical.activities] };
       await setDoc(doc(db, 'tenants', scope, 'leads', p.id), JSON.parse(JSON.stringify(next)), { merge: true });

@@ -1,3 +1,4 @@
+import { resolveCRMRoute } from './crm-routing.js';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { validateBooking } from './policy.js';
@@ -60,7 +61,8 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     }
     const leadRef = root.collection('leads').doc(createHash('sha256').update(saved.email).digest('hex').slice(0, 32));
     const lead = (await tx.get(leadRef)).data();
-    if (operation !== 'cancel') tx.set(leadRef, { ...(lead ?? { id: leadRef.id, name: saved.name, email: saved.email, source: 'Booking', hasWhatsAppConsent: false, hasEmailConsent: false }), bookingStatus: 'Booked', followUpState: 'BOOKED', bookingId: booking.id, lastActivity: new Date().toISOString() });
+    const routing = await resolveCRMRoute(tx, root, calendar.crmRouting, 'BOOKING');
+    if (operation !== 'cancel') tx.set(leadRef, { ...(lead ?? { id: leadRef.id, name: saved.name, email: saved.email, source: 'Booking', hasWhatsAppConsent: false, hasEmailConsent: false }), ...(!lead || calendar.crmRouting?.pipelineId ? routing : {}), bookingStatus: 'Booked', followUpState: 'BOOKED', bookingId: booking.id, lastActivity: new Date().toISOString() });
     tx.set(lock, { version: (lockDoc.data()?.version ?? 0) + 1 });
     tx.set(ref, { ...saved, managementTokenHash: digest });
     tx.create(root.collection('events').doc(), { type: `booking.${operation}`, resourceId: booking.id, actorId: 'public', createdAt: FieldValue.serverTimestamp() });

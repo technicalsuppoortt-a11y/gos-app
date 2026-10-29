@@ -34,6 +34,7 @@ export interface Student { id: string; name: string; email: string; status: 'Act
 export interface CommerceOrder { id: string; customer: string; email: string; at: string; amount: number; currency: CommerceConfig['currency']; status: 'Paid' | 'Pending' | 'Refunded'; productName?: string; sample?: boolean }
 export interface CommerceActivity { id: string; title: string; at: string }
 export interface CommerceConfig {
+  crmRouting?: { pipelineId?: string; stageId?: string };
   salesVideoUrl?: string; thankYouVideoUrl?: string; customCheckoutFields?: CheckoutField[]; thankYouTemplate?: ThankYouTemplate; salesTemplate?: SalesTemplate;
   students?: Student[]; orders?: CommerceOrder[]; activities?: CommerceActivity[];
   funnelId?: string; funnelPageId?: string; customDomain?: string; webhookUrl?: string; webhookEvents?: string[];

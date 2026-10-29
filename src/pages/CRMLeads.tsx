@@ -1,3 +1,4 @@
+import { LeadQuickView } from './crm/LeadQuickView';
 import { selectUnifiedCRMLeads } from '../store/crmSelectors';
 import { CRMActionBoundary } from './crm/CRMActions';
 import { useCRMActions } from './crm/useCRMActions';
@@ -85,6 +86,8 @@ const tabs = [
   { path: "templates", label: "Templates / Pipeline Presets", icon: BookOpen },
 ];
 
+const sourceGroup = (source: string) => ({ Website: 'Websites', Form: 'Forms', Service: 'Services', Checkout: 'General', Manual: 'General' } as Record<string, string>)[source] || source || 'General';
+
 export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   useUILanguage();
   const api = useGosCRM();
@@ -139,6 +142,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   });
   const [sort, setSort] = useState("recent");
   const [listView, setListView] = useState(false);
+  const [quickId, setQuickId] = useState<string | null>(null);
+  const quickLead = leads.find(l => l.id === quickId);
   const [dragged, setDragged] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const [dialog, setDialog] = useState<
@@ -216,7 +221,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             ...(lead.tags || []),
           ].some((v) => (v || "").toLowerCase().includes(q))) &&
         (filters.status === "archived" ? lead.archived : !lead.archived) &&
-        (!filters.source || lead.source === filters.source) &&
+        (!filters.source || sourceGroup(lead.source) === filters.source) &&
         (!filters.tag || (lead.tags || []).includes(filters.tag)) &&
         (!filters.owner || lead.owner === filters.owner) &&
         (!filters.stage || displayStage(lead, pipeline) === filters.stage) &&
@@ -240,7 +245,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   const chosen = selected.filter((id) => visible.some((l) => l.id === id));
   const close = () => { if (!actions.busy) setDialog(null); };
   const openLead = (id: string) =>
-    navigate(`${base}/opportunities/${encodeURIComponent(id)}`);
+    setQuickId(id);
   const newLead = (stage = pipeline.stages[0].id) => {
     setAddStage(stage);
     setDialog("add");
@@ -298,7 +303,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 value: "",
                 label: `All ${field === "status" ? "active contacts" : field + "s"}`,
               },
-              ...(field === "stage"
+              ...(field === "source" ? [...new Set(["Websites", "Funnel", "Forms", "Services", "Booking", "General", ...pipelineLeads.map(l => sourceGroup(l.source))])].filter(Boolean).map(value => ({ value, label: value })) : field === "stage"
                 ? pipeline.stages.map((s) => ({ value: s.id, label: s.label }))
                 : field === "status"
                   ? [
@@ -369,6 +374,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             <Plus size={15} />{translateText("Add Lead")}</button>
         </div>
       </header>
+      {dragged && <div className="crm-pipeline-transfer" aria-label="Move to another pipeline">{pipelines.filter(p => p.id !== pipeline.id).map(p => <button key={p.id} className="crm2-btn-secondary" onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }} onDrop={async e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain') || dragged; setDragged(null); setOver(null); if (id && p.stages[0]) { const moved = await dispatch(updateLead({ id, changes: { pipelineId: p.id, stage: p.stages[0].id, lifecycleStage: p.stages[0].id } })); if (moved) notify('Lead moved to ' + p.name); } }}>Move to {p.name}</button>)}</div>}
       <nav className="crm2-subnav" aria-label={translateText("CRM navigation")}>
         {localizeNode(tabs.map((t) => (
           <button
@@ -543,6 +549,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                           lead={lead}
                           pipeline={pipeline}
                           base={base}
+                          onOpen={() => setQuickId(lead.id)}
                           dragging={dragged === lead.id}
                           onDragStart={setDragged}
                           onDragEnd={() => {
@@ -674,6 +681,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                         <td className="text-start">
                           <Link
                             to={`${base}/opportunities/${encodeURIComponent(lead.id)}`}
+                            onClick={e => { e.preventDefault(); openLead(lead.id); }}
                             className="crm-table-person"
                           >
                             <CRMAvatar lead={lead} />
@@ -1215,6 +1223,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
           </div>
         </Dialog>
       ))}
+      {quickLead && <LeadQuickView key={quickLead.id} lead={quickLead} busy={actions.busy} close={() => setQuickId(null)} fullRecord={() => navigate(`${base}/opportunities/${encodeURIComponent(quickLead.id)}`)} save={changes => dispatch(updateLead({ id: quickLead.id, changes }))}/>}
     </div></CRMActionBoundary>
   );
 }

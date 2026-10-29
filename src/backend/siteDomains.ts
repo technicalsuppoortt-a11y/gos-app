@@ -1,3 +1,4 @@
+import { encodeFirestoreValue } from './firestoreCodec';
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { db, callBackend, backendError } from './firebase';
 import type { Asset, Domain } from '../pages/asset-model';
@@ -389,7 +390,7 @@ export async function syncAssetToPublishedSites(asset: Asset, ownerUid = ''): Pr
     publishedPage: page
   }));
 
-  await setDoc(doc(db, PUBLISHED_SITES, asset.id), {
+  await setDoc(doc(db, PUBLISHED_SITES, asset.id), encodeFirestoreValue({
     ownerUid: ownerUid || '',
     kind: asset.kind || 'funnel',
     funnelId: asset.id,
@@ -400,7 +401,7 @@ export async function syncAssetToPublishedSites(asset: Asset, ownerUid = ''): Pr
     steps,
     settings: asset.settings || {},
     updatedAt: new Date().toISOString()
-  }, { merge: true });
+  }), { merge: true });
 }
 
 export function mapFirestoreDomainToModel(id: string, data: any): Domain {

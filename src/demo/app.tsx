@@ -12,6 +12,7 @@ import '../global-controls.css';
 import '../i18n/rtl.css';
 import '../theme-surfaces.css';
 import '../theme-controls.css';
+import '../light-contrast.css';
 import '../module-updates.css';
 
 store.dispatch(loginSuccess(demoSession));

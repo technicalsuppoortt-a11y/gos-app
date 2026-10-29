@@ -35,6 +35,21 @@ test('published nested forms atomically create a CRM lead and attributed lead.ca
   const event = h.records.get(`tenants/tenant-a/events/capture-${result.leadId}`);
   assert.equal(event.type, 'lead.captured'); assert.equal(event.resourceId, 'asset'); assert.equal(event.leadId, result.leadId);
 });
+test('published form routing uses its release configuration and validates custom answers', async () => {
+  const h = fixture();
+  const state = h.records.get('tenants/tenant-a/hosting/asset');
+  state.crmRouting = { pipelineId: 'sales', stageId: 'QUALIFIED' };
+  state.captureForms[0].fieldSchema = JSON.stringify([{ id: 'industry', label: 'Industry', type: 'select', required: true, options: ['Design', 'Retail'] }]);
+  h.records.set('tenants/tenant-a/pipelines/sales', { stages: [{ id: 'QUALIFIED' }] });
+  h.records.get('tenants/tenant-a/assets/asset').formAsset = true;
+  await assert.rejects(h.capture(input()), /Please answer/);
+  await assert.rejects(h.capture(input({ customFields: { industry: 'Other' } })), /valid option/);
+  const result = await h.capture(input({ customFields: { industry: 'Design' }, pipelineId: 'forged' }));
+  const lead = h.records.get(`tenants/tenant-a/leads/${result.leadId}`);
+  assert.equal(lead.pipelineId, 'sales'); assert.equal(lead.stage, 'QUALIFIED');
+  assert.equal(lead.source, 'Forms'); assert.equal(lead.customFields.industry, 'Design');
+  assert.equal(lead.customFieldLabels.industry, 'Industry');
+});
 test('retrying an accepted submission creates neither a duplicate lead nor another conversion', async () => {
   const h = fixture(); const first = await h.capture(input());
   assert.deepEqual(await h.capture(input()), first);

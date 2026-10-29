@@ -61,7 +61,7 @@ test('follow-up and consent use workspace persistence rather than unsupported La
 test('contact updates PATCH supported fields and pipeline changes also call the stage endpoint', async () => {
   const h = harness();
   await h.dispatchGosCRM({ type: 'crm/updateLead', payload: { id: 'lead-1', changes: { owner: 'Alex', pipelineId: 'sales', lifecycleStage: 'LEAD_CAPTURED', stage: 'LEAD_CAPTURED' } } });
-  assert.deepEqual(h.calls.map(call => call[0]), ['patch', 'stage']);
+  assert.deepEqual(h.calls.map(call => call[0]), ['patch', 'stage', 'write']);
   assert.equal(h.calls[0][2].pipeline_id, 'sales');
   assert.equal(h.calls[0][2].lifecycle_stage, undefined);
   assert.equal(h.calls[1][2], 'LEAD_CAPTURED');

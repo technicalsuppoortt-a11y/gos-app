@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, Crown, Eye, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sliders, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, Crown, Eye, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
 import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useLedger, usePlans, useRequests, useSubscription, useWallet, type BillingPlan } from '../../backend/billing';
 import { LedgerTable, RequestsPanel } from './ProviderPanels';
 import { CheckoutModal } from './CheckoutModal';
@@ -325,7 +325,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
         const addonMode = billingSettings?.addonMode || 'both';
         const rate = billingSettings?.unitRate || DEFAULT_BILLING_SETTINGS.unitRate;
         const showDynamic = addonMode === 'dynamic' || addonMode === 'both';
-        const showFixed = addonMode === 'fixed' || addonMode === 'both';
+        const showFixed = addonMode === 'fixed' || addonMode === 'both' || addons.length > 0;
         const hasContent = showDynamic || (showFixed && addons.length > 0);
 
         if (!hasContent) {
@@ -548,8 +548,8 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
             {/* Fixed Add-on Packages */}
             {showFixed && addons.length > 0 && (
               <>
-                <div style={{ marginBlockEnd: 14 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
+                <div style={{ marginBlockStart: showDynamic ? 28 : 0, marginBlockEnd: 16 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--bl-text)' }}>
                     {c.t('Fixed Add-on Packages', 'باقات الإضافات الجاهزة')}
                   </h3>
                   <p style={{ margin: 0, fontSize: 13, color: 'var(--bl-muted)' }}>
@@ -560,61 +560,147 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
                   {addons.map(plan => {
                     const quantity = quantities[plan.id] ?? 1;
                     const owned = plan.addonType === 'tool' && tools.includes(plan.addonTool ?? '');
+                    const extraFeatures = (c.ar ? plan.features?.ar : plan.features?.en) || [];
+
                     return (
                       <article key={plan.id} className="bl-ref-card">
-                        <span className="bl-ref-badge-top bl-pill violet plain">{billingLabel(plan, c)}</span>
-                        <h3 className="bl-ref-title">{c.pick(plan.name)}</h3>
-                        <div className="bl-ref-price-wrap">
-                          <div className="bl-ref-price">
-                            {c.money(plan.price * (plan.addonType === 'tool' ? 1 : quantity), plan.currency)}
-                            <span>/ {c.t('one-time', 'مرة واحدة')}</span>
+                        {/* Top Category Icon & Type Badge Header */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBlockEnd: 12 }}>
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 36,
+                            height: 36,
+                            borderRadius: 10,
+                            background: plan.addonType === 'seats'
+                              ? 'rgba(59, 130, 246, 0.12)'
+                              : plan.addonType === 'tool'
+                              ? 'rgba(16, 185, 129, 0.12)'
+                              : 'rgba(124, 58, 237, 0.12)',
+                            color: plan.addonType === 'seats'
+                              ? '#3b82f6'
+                              : plan.addonType === 'tool'
+                              ? '#10b981'
+                              : '#7c3aed',
+                            flexShrink: 0,
+                          }}>
+                            {plan.addonType === 'seats' ? <Users size={18} /> : plan.addonType === 'tool' ? <Sparkles size={18} /> : <Coins size={18} />}
+                          </div>
+                          <span className="bl-pill violet plain" style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999 }}>
+                            {billingLabel(plan, c)}
+                          </span>
+                        </div>
+
+                        {/* Title */}
+                        <h3 style={{
+                          margin: '0 0 8px',
+                          fontSize: 16.5,
+                          fontWeight: 800,
+                          color: 'var(--bl-text)',
+                          lineHeight: 1.35,
+                          minHeight: 44,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}>
+                          {c.pick(plan.name)}
+                        </h3>
+
+                        {/* Price */}
+                        <div style={{ marginBlockEnd: 14, paddingBlockEnd: 12, borderBlockEnd: '1px solid var(--bl-border)' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                            <span style={{ fontSize: 28, fontWeight: 850, color: 'var(--bl-text)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                              {c.money(plan.price * (plan.addonType === 'tool' ? 1 : quantity), plan.currency)}
+                            </span>
+                            <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--bl-muted)' }}>
+                              / {c.t('one-time', 'مرة واحدة')}
+                            </span>
                           </div>
                         </div>
-                        <ul className="bl-ref-features" style={{ marginBlockEnd: 12 }}>
+
+                        {/* Features List */}
+                        <ul style={{
+                          listStyle: 'none',
+                          margin: 0,
+                          padding: 0,
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 8,
+                          marginBlockEnd: 16,
+                          minHeight: 84,
+                        }}>
                           {plan.addonType === 'credits' && (
-                            <li className="bl-ref-feature-item">
-                              <Coins size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
-                              <span>{c.t(`+${(plan.credits * quantity).toLocaleString()} credits (expire at cycle end)`, `+${c.num(plan.credits * quantity)} رصيد (ينتهي بنهاية الدورة)`)}</span>
+                            <li style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)', lineHeight: 1.4 }}>
+                              <Coins size={14} style={{ color: 'var(--bl-accent-2)', flexShrink: 0, marginTop: 2 }} />
+                              <span style={{ fontWeight: 600 }}>{c.t(`+${(plan.credits * quantity).toLocaleString()} credits (expire at cycle end)`, `+${c.num(plan.credits * quantity)} رصيد (ينتهي بنهاية الدورة)`)}</span>
                             </li>
                           )}
                           {plan.addonType === 'seats' && (
-                            <li className="bl-ref-feature-item">
-                              <Users size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
-                              <span>{c.t(`+${(plan.addonSeats ?? 0) * quantity} team seats`, `+${c.num((plan.addonSeats ?? 0) * quantity)} مقاعد فريق`)}</span>
+                            <li style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)', lineHeight: 1.4 }}>
+                              <Users size={14} style={{ color: 'var(--bl-accent-2)', flexShrink: 0, marginTop: 2 }} />
+                              <span style={{ fontWeight: 600 }}>{c.t(`+${(plan.addonSeats ?? 0) * quantity} team seats`, `+${c.num((plan.addonSeats ?? 0) * quantity)} مقاعد فريق`)}</span>
                             </li>
                           )}
                           {plan.addonType === 'tool' && (
-                            <li className="bl-ref-feature-item">
-                              <Sparkles size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
-                              <span>{toolName(plan.addonTool ?? '', c.ar)}</span>
+                            <li style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)', lineHeight: 1.4 }}>
+                              <Sparkles size={14} style={{ color: 'var(--bl-accent-2)', flexShrink: 0, marginTop: 2 }} />
+                              <span style={{ fontWeight: 600 }}>{toolName(plan.addonTool ?? '', c.ar)}</span>
                             </li>
                           )}
-                          {(c.ar ? plan.features.ar : plan.features.en).map((feature, index) => (
-                            <li key={index} className="bl-ref-feature-item">
-                              <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                          {extraFeatures.map((feature, index) => (
+                            <li key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)', lineHeight: 1.4 }}>
+                              <CheckCircle2 size={14} style={{ color: '#10b981', flexShrink: 0, marginTop: 2 }} />
                               <span>{feature}</span>
                             </li>
                           ))}
                         </ul>
-                        {plan.addonType !== 'tool' && (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBlockEnd: 12, padding: '6px 10px', borderRadius: 10, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)' }}>
-                            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{c.t('Quantity', 'الكمية')}</span>
-                            <div className="bl-qty" aria-label={c.t('Quantity', 'الكمية')}>
-                              <button type="button" aria-label={c.t('Decrease', 'تقليل')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.max(1, quantity - 1) }))}>−</button>
-                              <span>{c.num(quantity)}</span>
-                              <button type="button" aria-label={c.t('Increase', 'زيادة')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.min(100, quantity + 1) }))}>+</button>
+
+                        {/* Footer Section: Stepper + CTA Button */}
+                        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {plan.addonType !== 'tool' ? (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '6px 12px',
+                              borderRadius: 10,
+                              background: 'var(--bl-surface-2)',
+                              border: '1px solid var(--bl-border)',
+                              height: 38,
+                              boxSizing: 'border-box',
+                            }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--bl-text)' }}>
+                                {c.t('Quantity', 'الكمية')}
+                              </span>
+                              <div className="bl-qty" aria-label={c.t('Quantity', 'الكمية')}>
+                                <button type="button" aria-label={c.t('Decrease', 'تقليل')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.max(1, quantity - 1) }))}>−</button>
+                                <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 700 }}>{c.num(quantity)}</span>
+                                <button type="button" aria-label={c.t('Increase', 'زيادة')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.min(100, quantity + 1) }))}>+</button>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          className="bl-ref-cta-btn upgrade"
-                          style={{ marginBlockEnd: 0 }}
-                          disabled={!live || owned || isPending(plan.id)}
-                          onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon' })}
-                        >
-                          {owned ? <><Check size={15} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</> : isPending(plan.id) ? <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</> : <><Sparkles size={15} />{c.t('Request Add-on', 'طلب الإضافة الآن')}</>}
-                        </button>
+                          ) : (
+                            <div style={{ height: 38 }} aria-hidden="true" />
+                          )}
+
+                          <button
+                            type="button"
+                            className={`bl-ref-cta-btn ${owned ? 'current' : 'upgrade'}`}
+                            style={{ margin: 0, height: 40 }}
+                            disabled={!live || owned || isPending(plan.id)}
+                            onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon' })}
+                          >
+                            {owned ? (
+                              <><Check size={15} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</>
+                            ) : isPending(plan.id) ? (
+                              <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
+                            ) : (
+                              <><Sparkles size={15} />{c.t('Request Add-on', 'طلب الإضافة الآن')}</>
+                            )}
+                          </button>
+                        </div>
                       </article>
                     );
                   })}

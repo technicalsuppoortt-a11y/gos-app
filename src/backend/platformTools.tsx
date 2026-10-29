@@ -37,7 +37,7 @@ export async function persistPlatformTools(tools: ToolItem[], expectedRevision: 
     tx.set(ref, { tools: values, revision: expectedRevision + 1, updatedBy: uid, updatedAt: serverTimestamp() });
   });
 }
-const routes: Record<string, string> = { copilot: 'ai-copilot', funnels: 'funnel-builder', websites: 'funnel-builder', domains: 'custom-domains', crm: 'crm-pipeline', inbox: 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'products-payments': 'products-payments', 'follow-up': 'ai-followup', 'ai-followup': 'ai-followup', analytics: 'analytics-bi', integrations: 'webhooks-api', templates: 'email-sms', academy: 'client-portal' };
+const routes: Record<string, string> = { copilot: 'ai-copilot', funnels: 'funnel-builder', websites: 'funnel-builder', forms: 'funnel-builder', domains: 'custom-domains', crm: 'crm-pipeline', inbox: 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'products-payments': 'products-payments', 'follow-up': 'ai-followup', 'ai-followup': 'ai-followup', analytics: 'analytics-bi', integrations: 'webhooks-api', templates: 'email-sms', academy: 'client-portal' };
 /** Wrap only authenticated user layouts; existing pages and permissions remain in place. */
 export function PlatformToolBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();

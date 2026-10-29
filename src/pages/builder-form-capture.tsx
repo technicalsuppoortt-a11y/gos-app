@@ -5,7 +5,7 @@ import { showToast } from '../utils/toast';
 import { Tracking } from '../backend/marketingTracking';
 
 export type PublicCaptureConfig = { tenantId: string; captureToken: string; endpoint: string };
-type Submission = { formId: string; requestId: string; name: string; email: string; phone: string; message: string };
+type Submission = { customFields?: Record<string, string>; formId: string; requestId: string; name: string; email: string; phone: string; message: string };
 export const BuilderFormCaptureContext = createContext<((submission: Submission) => Promise<unknown>) | null>(null);
 
 export async function sendBuilderLead(assetId: string, pageId: string, device: string, submission: Submission, capture?: PublicCaptureConfig) {
@@ -38,10 +38,13 @@ export function useBuilderFormCapture(item: BuilderSection) {
     const values = { name: String(fields.get('name') ?? ''), email: String(fields.get('email') ?? ''), phone: String(fields.get('phone') ?? ''), message: String(fields.get('message') ?? '') };
     // A builder can label a name field "Full Name" or add custom text inputs.
     if (!values.name) values.name = String(fields.get('full_name') ?? '');
+    if (!values.email) values.email = form.querySelector<HTMLInputElement>('input[type=email]')?.value ?? '';
+    if (!values.phone) values.phone = form.querySelector<HTMLInputElement>('input[type=tel]')?.value ?? '';
     if (!Object.values(values).some(value => value.trim())) values.message = [...fields.entries()].map(([key, value]) => `${key}: ${String(value)}`).join('\n');
-    const signature = JSON.stringify(values);
+    const customFields = Object.fromEntries([...fields.entries()].map(([key, value]) => [key, String(value)]));
+    const signature = JSON.stringify({ ...values, customFields });
     if (attempt.current?.signature !== signature) attempt.current = { signature, id: crypto.randomUUID() };
     lock.current = true; setBusy(true);
-    void capture({ ...values, formId: item.id, requestId: attempt.current.id }).then(() => { attempt.current = null; success(); form.reset(); }).catch(error => showToast.error(backendError(error))).finally(() => { lock.current = false; setBusy(false); });
+    void capture({ ...values, customFields, formId: item.id, requestId: attempt.current.id }).then(() => { attempt.current = null; success(); form.reset(); }).catch(error => showToast.error(backendError(error))).finally(() => { lock.current = false; setBusy(false); });
   } };
 }

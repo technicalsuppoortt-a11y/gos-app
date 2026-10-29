@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, Radio, Lock } from 'lucide-react';
+import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, ArrowLeft, Lock } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
@@ -12,21 +12,21 @@ import { settingsTabs } from '../../pages/settings/navigation';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { useSubscription, isLive } from '../../backend/billing';
+import { SupportQuickChat } from '../../pages/support/SupportQuickChat';
 // OnboardingProgress is temporarily disabled with the onboarding cycle.
 
 const userItems: SidebarItem[] = [
   { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'AI Copilot', href: '/copilot', icon: Sparkles },
-  { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/domains', '/funnels', '/websites', '/domains'] },
+  { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/domains', '/dashboard/forms', '/funnels', '/websites', '/forms', '/domains'] },
   { name: 'Inbox', href: '/inbox', icon: MessageCircle,  },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },
   { name: 'AI Follow-Up', href: '/follow-up', icon: Send },
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Marketing Tracking', href: '/marketing-tracking', icon: Radio },
   { name: 'Plans & Pricing', href: '/plans', icon: CreditCard },
-  { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'], children: settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon })) },
+  { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'] },
   { name: 'Support', href: '/support', icon: MessageCircle },
 ];
 
@@ -87,14 +87,14 @@ export const UserLayout: React.FC = () => {
 
   const visibleItems = isLocked
     ? userItems.filter(item => item.href === '/plans' || item.href === '/support')
-    : userItems.filter(item => item.href === '/plans' || item.href === '/support' || item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
+    : userItems.filter(item => item.href === '/plans' || item.href === '/support' || item.href === '/settings' || canAccess(moduleForPath('/dashboard' + item.href)));
 
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
   const isCRM = /^\/(dashboard\/)?crm(?:\/|$)/.test(location.pathname);
   const isProductWorkspace = /^\/dashboard\/products-payments\/(?:products|course)\/[^/]+(?:\/(?:edit|pricing|orders|students))?$/.test(location.pathname);
-  const isBuilder = /^\/(?:dashboard\/)?(funnels|websites)\/[^/]+\/edit(?:\/|$)/.test(location.pathname);
+  const isBuilder = /^\/(?:dashboard\/)?(funnels|websites|forms)\/[^/]+\/edit(?:\/|$)/.test(location.pathname);
 
   useEffect(() => {
     document.documentElement.classList.add('layout-locked');
@@ -109,7 +109,7 @@ export const UserLayout: React.FC = () => {
   const isDashboard = location.pathname === '/dashboard';
   const isFullPage = isInbox || isCRM || isBooking || isNativeTemplates || isBuilder;
   return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM ? ' is-crm-route' : ''}${isBuilder ? ' is-builder-route' : ''}`} dir={uiDirection()}>
-    <Sidebar items={visibleItems} basePath="/dashboard"/>
+    <Sidebar navigationLabel={isSettings ? "Settings navigation" : "Main navigation"} items={isSettings ? [{ name: 'Back to Main Sidebar', href: '', icon: ArrowLeft, end: true }, ...settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon }))] : visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace flex-1 flex flex-col min-w-0${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={translateText(location.pathname === '/dashboard/support' ? 'Support' : isBooking ? 'Booking & Calendar' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
       {localizeNode(isBooking && <BookingTabs/>)}
@@ -119,6 +119,7 @@ export const UserLayout: React.FC = () => {
       </main>
       {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 Upclick Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
     </div>
+    <SupportQuickChat/>
   </div>;
 };
 

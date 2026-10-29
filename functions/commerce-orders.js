@@ -1,3 +1,4 @@
+import { resolveCRMRoute } from './crm-routing.js';
 import { createHash } from 'node:crypto';
 
 // Orders and transactions are backend-owned. Never run fulfillment from a preview or draft save.
@@ -16,6 +17,7 @@ export async function fulfillCommerceOrder({ tenantId, orderId, order }, { db, n
       if (!product?.config || receipt?.status === order.status || receipt?.fulfilled && paid) return;
       const leadId = /^[\w-]{1,150}$/.test(order.leadId || '') ? order.leadId : createHash('sha256').update(email).digest('hex').slice(0, 32), leadRef = root.collection('leads').doc(leadId);
       const lead = (await tx.get(leadRef)).data();
+      const routing = await resolveCRMRoute(tx, root, product.config.crmRouting, 'PAYMENT_COMPLETED');
       const grantId = `${productId}-${createHash('sha256').update(email).digest('hex')}`;
       const students = product.config.students || [], match = students.find(student => student.email.toLowerCase() === email);
       if (refunded) {
@@ -24,7 +26,7 @@ export async function fulfillCommerceOrder({ tenantId, orderId, order }, { db, n
       } else {
         const automations = product.config.automations || {};
         if (automations.grantAccess && /course/i.test(product.type) && !match) tx.update(productRef, { 'config.students': [...students, { id: receiptId, name: order.customerName || order.customer?.name || email, email, status: product.config.enrollment === 'After approval' ? 'Pending' : 'Active', progress: 0, enrolledAt: at }] });
-        if (automations.crmTag) tx.set(leadRef, { ...(lead || { id: leadId, name: order.customerName || email, email, source: 'Checkout', stage: 'PAYMENT_COMPLETED', lifecycleStage: 'PAYMENT_COMPLETED', activities: [], notes: [] }), tags: [...new Set([...(lead?.tags || []), automations.crmTag])], lastActivity: at }, { merge: true });
+        tx.set(leadRef, { ...(lead || { id: leadId, name: order.customerName || email, email, source: 'Checkout', stage: 'PAYMENT_COMPLETED', lifecycleStage: 'PAYMENT_COMPLETED', activities: [], notes: [] }), ...(!lead || product.config.crmRouting?.pipelineId ? routing : {}), tags: [...new Set([...(lead?.tags || []), ...(automations.crmTag ? [automations.crmTag] : [])])], lastActivity: at }, { merge: true });
         const notifications = [['confirmation', automations.confirmation], ['fileDelivery', automations.fileDelivery], ['calendarInvite', automations.calendarInvite]];
         for (const [kind, enabled] of notifications) if (enabled) tx.set(root.collection('commerceDeliveries').doc(`${receiptId}-${kind}`), { kind, email, productId, orderId, bookingId: order.bookingId || '', status: 'queued', createdAt: at });
       }

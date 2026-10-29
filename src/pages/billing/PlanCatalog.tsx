@@ -15,7 +15,7 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
   const [editing, setEditing] = useState<BillingPlan | null | 'new'>(null);
   const [inspecting, setInspecting] = useState<BillingPlan | null>(null);
   const [archiving, setArchiving] = useState<BillingPlan | null>(null);
-  const [addonMode, setAddonMode] = useState<'fixed' | 'dynamic'>('fixed');
+  const [addonMode, setAddonMode] = useState<'fixed' | 'dynamic' | 'both'>('both');
   const rows = useMemo(() => plans.filter(plan => plan.kind === kind)
     .filter(plan => !currency || plan.currency === currency)
     .filter(plan => `${plan.name.en} ${plan.name.ar}`.toLowerCase().includes(search.trim().toLowerCase())), [plans, kind, search, currency]);
@@ -35,8 +35,7 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
           onModeChange={setAddonMode}
         />
       )}
-      {(!addon || addonMode === 'fixed') && (
-        <section className="bl-card">
+      <section className="bl-card">
           <div className="bl-card-head">
             <div>
               <h2>{addon ? <Package size={17} /> : <Gem size={17} />}{addon ? c.t('Add-ons', 'الإضافات') : c.t('Subscription plans', 'باقات الاشتراك')} <span className="bl-count">{rows.length}</span></h2>
@@ -97,7 +96,6 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
             <Empty icon={addon ? <Package size={22} /> : <Gem size={22} />} title={addon ? c.t('No add-ons yet', 'لا توجد إضافات بعد') : c.t('No plans yet', 'لا توجد باقات بعد')} text={locked ? c.t('Activate your platform subscription to start creating plans.', 'فعّل اشتراكك مع المنصة لتبدأ إنشاء الباقات.') : c.t('Create your first one to start selling.', 'أنشئ أول واحدة لتبدأ البيع.')} action={!locked && <button type="button" className="bl-btn primary" onClick={() => setEditing('new')}><Plus size={15} />{addon ? c.t('New add-on', 'إضافة جديدة') : c.t('Add new plan', 'إضافة باقة جديدة')}</button>} />
           )}
         </section>
-      )}
       {inspecting && <PlanDetailsModal plan={inspecting} subscribers={subscribers} isPlatform={isPlatform} onClose={() => setInspecting(null)} />}
       {editing && <PlanEditor kind={kind} plan={editing === 'new' ? null : editing} isPlatform={isPlatform} allowedTools={allowedTools} onClose={() => setEditing(null)} />}
       {archiving && (

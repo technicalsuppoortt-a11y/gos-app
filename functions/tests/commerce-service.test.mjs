@@ -68,6 +68,17 @@ test('paid events fulfill once, tag the CRM and queue configured jobs; refund re
   await fulfillCommerceOrder({ tenantId: 'a', orderId: 'order', order: { ...order, status: 'Refunded' } }, h.deps);
   assert.equal(h.records.get('tenants/a/products/product').config.students[0].status, 'Suspended');
 });
+test('paid buyers enter the configured CRM stage even without an automation tag', async () => {
+  const h = harness('Course');
+  const product = h.records.get('tenants/a/products/product');
+  product.config.automations.crmTag = '';
+  product.config.crmRouting = { pipelineId: 'buyers', stageId: 'ACTIVE_CUSTOMER' };
+  h.records.set('tenants/a/pipelines/buyers', { stages: [{ id: 'ACTIVE_CUSTOMER' }] });
+  await fulfillCommerceOrder({ tenantId: 'a', orderId: 'buyer-order', order: { productId: 'product', customerEmail: 'buyer@example.com', status: 'Paid' } }, h.deps);
+  const lead = [...h.records].find(([key]) => key.includes('/leads/'))[1];
+  assert.equal(lead.pipelineId, 'buyers'); assert.equal(lead.stage, 'ACTIVE_CUSTOMER');
+  assert.deepEqual(lead.tags, []);
+});
 test('webhooks block private IPv4 and calendar invitations contain UTC event bounds', () => {
   for (const value of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '192.168.1.1', '172.16.0.1', '100.64.0.1']) assert.equal(publicIPv4(value), false);
   assert.equal(publicIPv4('8.8.8.8'), true);

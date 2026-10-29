@@ -4,15 +4,63 @@ import type { Asset, BuilderMode } from './asset-model';
 
 import type { PageTemplate } from './page-template-data';
 export { pageTemplates, type PageTemplate } from './page-template-data';
-export function createPageAsset(kind:BuilderMode,name:string,template?:PageTemplate):Asset {
-  kind=template?.mode??kind;
-  const title=name.trim()||template?.name||(kind==='funnel'?'Untitled funnel':'Untitled page');
-  const document=initializePage(kind,title,template);
-  return {id:crypto.randomUUID(),kind,name:title,document,image:template?.image||'/dashboard/hero-landscape.png',description:template?.body||'Blank page',domain:'',updated:new Date().toISOString(),settings:{seo:title,navigation:document.pages.map(page=>page.name).join(', '),color:template?.color||'#6366f1'}};
+export function createPageAsset(kind:BuilderMode|'form',name:string,template?:PageTemplate):Asset {
+  const isForm = template?.mode === 'form' || kind === 'form';
+  const effectiveKind: BuilderMode = isForm ? 'website' : (template?.mode === 'funnel' ? 'funnel' : (kind === 'funnel' ? 'funnel' : 'website'));
+  const title = name.trim() || template?.name || (isForm ? 'Untitled form' : effectiveKind === 'funnel' ? 'Untitled funnel' : 'Untitled page');
+  const document = initializePage(isForm ? 'form' : effectiveKind, title, template);
+  return {
+    id: crypto.randomUUID(),
+    kind: effectiveKind,
+    formAsset: isForm,
+    name: title,
+    document,
+    image: template?.image || (isForm ? '/dashboard/product-consultation.png' : '/dashboard/hero-landscape.png'),
+    description: template?.body || 'Blank page',
+    domain: '',
+    updated: new Date().toISOString(),
+    settings: {
+      seo: title,
+      navigation: document.pages.map(page => page.name).join(', '),
+      color: template?.color || (isForm ? '#7C3AED' : '#6366f1')
+    }
+  };
 }
 const block = (type: BuilderSection['type'], title: string, body = '', content: Record<string, string> = {}): BuilderSection => ({ id: crypto.randomUUID(), type, content: { title, body, ...content }, styles: { backgroundColor: '#ffffff', padding: '28', textAlign: 'Left', typography: 'Default', customCss: '', visibility: 'All devices', animation: 'None' } });
 
-export function initializePage(mode: BuilderMode, name: string, template?: PageTemplate) {
+export function initializePage(mode: BuilderMode | 'form', name: string, template?: PageTemplate) {
+  if (mode === 'form' || template?.mode === 'form') {
+    const document = createBuilderDocument('website', name, template?.image || '/dashboard/product-consultation.png', 1);
+    const page = document.pages[0];
+    const fields = template?.fields || [
+      { id: 'name', label: 'Full name', type: 'text', required: true, options: [], placeholder: 'Your name' },
+      { id: 'email', label: 'Email address', type: 'email', required: true, options: [], placeholder: 'you@example.com' },
+      { id: 'message', label: 'Message', type: 'textarea', required: false, options: [], placeholder: 'How can we help you?' }
+    ];
+    page.name = 'Form Page';
+    page.path = '/';
+    page.status = 'Draft';
+    page.showHeader = false;
+    page.showFooter = false;
+    page.headline = template?.title || name;
+    page.subheadline = template?.body || '';
+    page.cta = template?.cta || 'Submit';
+    page.sections = [
+      block('Form', template?.title || name, template?.body || '', {
+        title: template?.title || name,
+        button: template?.cta || 'Submit',
+        customFields: JSON.stringify(fields),
+        fields: '[]',
+        successMessage: 'Thank you! Your submission has been received.'
+      })
+    ];
+    document.theme = { color: template?.color || '#7C3AED', font: 'Inter', corners: 'Square' };
+    document.funnel.goal = template?.goal || 'Lead generation';
+    document.pages = [page];
+    document.steps = [];
+    document.funnel.pagesFlow = [];
+    return document;
+  }
   const document = createBuilderDocument(mode, name, template?.image || '', 1);
   const page = document.pages[0];
   Object.assign(page, { name: 'Landing Page', path: '/', status: 'Draft', showHeader: false, showFooter: false, headline: template?.title || '', subheadline: template?.body || '', cta: template?.cta || '', seoTitle: name, seoDescription: template?.body || '', featuredImage: template?.image || '', sections: [] });
@@ -24,7 +72,7 @@ export function initializePage(mode: BuilderMode, name: string, template?: PageT
         ? block('Pricing', 'Choose your plan', 'Simple pricing. Clear value.', { plans: JSON.stringify([{ id: crypto.randomUUID(), name: template.name, price: template.id === 'studio' ? '49' : '29', period: template.id === 'studio' ? 'month' : 'one-time', features: template.benefits, button: 'Get started', highlighted: true }]) })
         : block('Form', template.cta, 'Leave your details and our team will be in touch.', { fields: JSON.stringify(['Name', 'Email', 'Message']), button: template.cta, successMessage: 'Thank you! Your request has been received.' });
     const benefits = block('Columns', '', '', { columnLayout: '3 Col (33/33/33)', gap: '20' });
-    benefits.children = template.benefits.map((title, index) => [block('Heading', title, '', { headingTag: 'H3' }), block('Paragraph', '', ['Designed around your needs, with a clear path forward.', 'Get practical support from people who care about your success.', 'Take the next step with confidence and ongoing guidance.'][index])]);
+    benefits.children = (template.benefits || []).map((title, index) => [block('Heading', title, '', { headingTag: 'H3' }), block('Paragraph', '', ['Designed around your needs, with a clear path forward.', 'Get practical support from people who care about your success.', 'Take the next step with confidence and ongoing guidance.'][index])]);
     page.sections = [block('Hero', template.title, template.body, { button: template.cta, destinationType: action, destination: conversion.id }), benefits, block('Testimonials', 'A better experience, from the first step', '', { testimonials: JSON.stringify([{ id: crypto.randomUUID(), author: 'Alex M.', role: 'Sample customer story', quote: 'Clear guidance and thoughtful support made getting started easy.', rating: 5, avatar: '' }]) }), conversion, block('FAQ', 'Questions before getting started?', 'Contact our team for help choosing the right option.')];
     document.theme = { color: template.color, font: 'Inter', corners: 'Square' };
     document.funnel.goal = template.goal;

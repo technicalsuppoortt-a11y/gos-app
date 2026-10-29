@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Sliders, Package, Sparkles, Check, Save, Coins, ShieldCheck, DollarSign, Layers } from 'lucide-react';
-import { billing, CURRENCIES, useBillingSettings, type Currency, type ProviderBillingSettings } from '../../backend/billing';
+import { Sliders, Package, Sparkles, Check, Save, Coins, Layers } from 'lucide-react';
+import { billing, CURRENCIES, useBillingSettings, type Currency } from '../../backend/billing';
 import { Spinner, useAction, useCopy } from './ui';
 
 interface UnitPricingSettingsProps {
   providerId: string;
   isPlatform: boolean;
   onSaved?: () => void;
-  onModeChange?: (mode: 'fixed' | 'dynamic') => void;
+  onModeChange?: (mode: 'fixed' | 'dynamic' | 'both') => void;
 }
 
 export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeChange }: UnitPricingSettingsProps) {
@@ -15,7 +15,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
   const { busy, run } = useAction();
   const { data: settings, loading } = useBillingSettings(providerId);
 
-  const [mode, setMode] = useState<'fixed' | 'dynamic'>('fixed');
+  const [mode, setMode] = useState<'fixed' | 'dynamic' | 'both'>('both');
   const [creditsPerUnit, setCreditsPerUnit] = useState<number>(100);
   const [pricePerUnit, setPricePerUnit] = useState<number>(5);
   const [currency, setCurrency] = useState<Currency>('USD');
@@ -27,7 +27,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
 
   useEffect(() => {
     if (settings) {
-      const activeMode: 'fixed' | 'dynamic' = settings.addonMode === 'dynamic' ? 'dynamic' : 'fixed';
+      const activeMode: 'fixed' | 'dynamic' | 'both' = ['fixed', 'dynamic', 'both'].includes(settings.addonMode) ? settings.addonMode : 'both';
       setMode(activeMode);
       onModeChange?.(activeMode);
       if (settings.unitRate) {
@@ -41,9 +41,24 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
     }
   }, [settings]);
 
-  const handleModeSelect = (nextMode: 'fixed' | 'dynamic') => {
+  const handleModeSelect = (nextMode: 'fixed' | 'dynamic' | 'both') => {
     setMode(nextMode);
     onModeChange?.(nextMode);
+    void billing('saveBillingSettings', {
+      providerId,
+      addonMode: nextMode,
+      unitRate: {
+        creditsPerUnit: Number(creditsPerUnit) || 100,
+        pricePerUnit: Number(pricePerUnit) || 0,
+        currency,
+        minUnits: Number(minUnits) || 1,
+        maxUnits: Number(maxUnits) || 100,
+      },
+    }).then(() => {
+      onSaved?.();
+    }).catch(err => {
+      console.error('Failed to auto-save mode:', err);
+    });
   };
 
   const saveSettings = () => {
@@ -107,13 +122,19 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
         </button>
       </div>
 
-      {/* Purchase Mode Selector (2 Options Only: Fixed Packages vs Dynamic Slider) */}
-      <div style={{ marginBlockEnd: mode === 'dynamic' ? 20 : 0 }}>
+      {/* Purchase Mode Selector (3 Options: Both, Fixed Packages, or Dynamic Slider) */}
+      <div style={{ marginBlockEnd: mode !== 'fixed' ? 20 : 0 }}>
         <label style={{ display: 'block', fontSize: 12.5, fontWeight: 700, marginBlockEnd: 8, color: 'var(--bl-text)' }}>
           {c.t('Allowed Purchase Mode in Checkout', 'نمط الشراء المتاح عند الدفع')}
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
           {[
+            {
+              id: 'both' as const,
+              icon: <Layers size={17} />,
+              title: c.t('Both (Packages & Dynamic Slider)', 'كلاهما (الباقات الثابتة والشريط)'),
+              desc: c.t('Recommended. Subscribers can purchase fixed packages and top up custom credits via slider.', 'الخيار الموصى به. يتيح للمشتركين شراء باقات الإضافات الثابتة وشحن رصيد مخصص.'),
+            },
             {
               id: 'fixed' as const,
               icon: <Package size={17} />,
@@ -158,8 +179,8 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
         </div>
       </div>
 
-      {/* Unit Rate Configuration (Active ONLY when mode is dynamic) */}
-      {mode === 'dynamic' && (
+      {/* Unit Rate Configuration (Active when mode is dynamic or both) */}
+      {mode !== 'fixed' && (
         <div style={{ padding: 18, borderRadius: 14, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBlockEnd: 14 }}>
             <Coins size={16} style={{ color: 'var(--bl-accent)' }} />
