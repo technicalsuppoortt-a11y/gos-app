@@ -66,3 +66,78 @@ test('cancellation and rejection synchronize; tenant and publication checks reje
   rows.get('billingPlans/credits').visible = false;
   await assert.rejects(call('requestAddon', { planId: 'credits' }), { code: 'not-found' });
 });
+
+test('initializeAccountPlan conditionally assigns active Free Plan or returns free_plan_disabled', async () => {
+  const { rows, call } = await fixture();
+  // New admin account 'new-admin'
+  rows.set('users/new-admin', { uid: 'new-admin', role: 'ADMIN', name: 'New Admin', email: 'admin@example.com' });
+
+  // Case 1: When no free plan is active / enabled
+  const disabledResult = await call('initializeAccountPlan', { subscriberId: 'new-admin' }, platform);
+  assert.equal(disabledResult.assigned, false);
+  assert.equal(disabledResult.reason, 'free_plan_disabled');
+  assert.equal(rows.has('billingSubscriptions/new-admin'), false);
+
+  // Case 2: When Super Admin publishes the platform Free Trial
+  await call('savePlan', { plan: { kind: 'trial', enabled: true, durationDays: 30, credits: 1000, name: { en: 'Platform Free Trial', ar: 'تجربة مجانية' } } }, platform);
+  const activeResult = await call('initializeAccountPlan', { subscriberId: 'new-admin' }, platform);
+  assert.equal(activeResult.assigned, true);
+  assert.equal(activeResult.status, 'assigned');
+  assert.equal(rows.get('billingSubscriptions/new-admin').status, 'trialing');
+  assert.equal(rows.get('billingWallets/new-admin').balance, 1000);
+
+  // Case 3: Re-running for already active account is idempotent
+  const secondResult = await call('initializeAccountPlan', { subscriberId: 'new-admin' }, platform);
+  assert.equal(secondResult.assigned, false);
+  assert.equal(secondResult.reason, 'already_live');
+
+  // Case 4: Client sub-account under an admin gets default 14-day 100-credit trial when no custom trial doc exists
+  rows.set('users/client-user-1', { uid: 'client-user-1', role: 'USER', name: 'Client User 1', email: 'client1@example.com', supportParentId: admin.uid });
+  const clientResult = await call('initializeAccountPlan', { subscriberId: 'client-user-1' }, admin);
+  assert.equal(clientResult.assigned, true);
+  assert.equal(clientResult.status, 'assigned');
+  assert.equal(rows.get('billingSubscriptions/client-user-1').status, 'trialing');
+  assert.equal(rows.get('billingWallets/client-user-1').balance, 100);
+
+  // Case 5: When admin explicitly turns off free trial (enabled: false), new client receives free_plan_disabled
+  await call('savePlan', { plan: { kind: 'trial', enabled: false, durationDays: 14, credits: 100, name: { en: 'Disabled Trial', ar: 'تجربة معطلة' } } }, admin);
+  rows.set('users/client-user-2', { uid: 'client-user-2', role: 'USER', name: 'Client User 2', email: 'client2@example.com', supportParentId: admin.uid });
+  const disabledClientResult = await call('initializeAccountPlan', { subscriberId: 'client-user-2' }, admin);
+  assert.equal(disabledClientResult.assigned, false);
+  assert.equal(disabledClientResult.reason, 'free_plan_disabled');
+});
+
+test('saveBillingSettings and itemized cart addons with dynamic and fixed units', async () => {
+  const { rows, call } = await fixture();
+  // 1. Super Admin configures unit rate and mode
+  const { settings } = await call('saveBillingSettings', {
+    addonMode: 'both',
+    unitRate: { creditsPerUnit: 100, pricePerUnit: 5, currency: 'USD', minUnits: 1, maxUnits: 50 },
+  }, platform);
+  assert.equal(settings.addonMode, 'both');
+  assert.equal(settings.unitRate.creditsPerUnit, 100);
+  assert.equal(settings.unitRate.pricePerUnit, 5);
+
+  // 2. Client submits plan request combined with attached fixed & dynamic addons
+  const { request } = await call('requestPlan', {
+    planId: 'client-plan',
+    addons: [
+      { id: 'fixed_addon_500', type: 'fixed', qty: 1, credits: 500, price: 20, name: 'Fixed 500' },
+      { id: 'dynamic_units', type: 'unit', qty: 3, credits: 300, price: 15, name: 'Dynamic 300' },
+    ],
+  });
+  assert.equal(request.mainPlanPrice, 20);
+  assert.equal(request.totalAmount, 55); // 20 + 20 + 15 = 55
+  assert.equal(request.addons.length, 2);
+
+  // 3. Admin approves request
+  await call('decideRequest', { requestId: request.id, decision: 'approve' }, admin);
+  assert.equal(rows.get(`billingRequests/${request.id}`).status, 'approved');
+  
+  // Client balance: previous was 100 (from client-plan grant) + 100 (new period start) + 500 (fixed) + 300 (dynamic)
+  // Let's verify client wallet balance
+  const clientWallet = rows.get('billingWallets/client');
+  assert.ok(clientWallet.balance >= 800);
+});
+
+

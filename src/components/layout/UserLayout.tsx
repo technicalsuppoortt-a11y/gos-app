@@ -4,11 +4,14 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, Radio } from 'lucide-react';
+import { BarChart3, CalendarDays, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, Radio, Lock } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
 import { settingsTabs } from '../../pages/settings/navigation';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
+import { useSubscription, isLive } from '../../backend/billing';
 // OnboardingProgress is temporarily disabled with the onboarding cycle.
 
 const userItems: SidebarItem[] = [
@@ -60,10 +63,32 @@ function BookingTabs() {
 export const UserLayout: React.FC = () => {
   useUILanguage();
   const location = useLocation();
+  const navigate = useNavigate();
+  const user = useSelector((s: RootState) => s.auth.user);
+  const role = useSelector((s: RootState) => s.auth.role);
+  const { data: sub, loading: subLoading } = useSubscription(user?.id ?? null);
+  const live = isLive(sub);
+  const isLocked = role === 'USER' && !subLoading && !live;
+
+  useEffect(() => {
+    if (isLocked) {
+      const allowed = location.pathname === '/dashboard/plans' || location.pathname.startsWith('/dashboard/plans/') || location.pathname === '/dashboard/support';
+      if (!allowed) {
+        navigate('/dashboard/plans', { replace: true });
+      }
+    }
+  }, [isLocked, location.pathname, navigate]);
+
   const canAccess = useModuleAccess();
   const module = moduleForPath(location.pathname);
-  const permitted = ['settings', 'integrations', 'support', 'plans'].includes(module) || canAccess(module);
-  const visibleItems = userItems.filter(item => item.href === '/plans' || item.href === '/support' || item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
+  const permitted = isLocked
+    ? (module === 'plans' || module === 'support')
+    : (['settings', 'integrations', 'support', 'plans'].includes(module) || canAccess(module));
+
+  const visibleItems = isLocked
+    ? userItems.filter(item => item.href === '/plans' || item.href === '/support')
+    : userItems.filter(item => item.href === '/plans' || item.href === '/support' || item.href === '/settings' || item.href === '/marketing-tracking' || canAccess(moduleForPath('/dashboard' + item.href)));
+
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
   const isInbox = location.pathname === '/dashboard/inbox';
@@ -90,7 +115,7 @@ export const UserLayout: React.FC = () => {
       {localizeNode(isBooking && <BookingTabs/>)}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         {/* Onboarding progress is temporarily disabled. */}
-        <WorkspaceData><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><h1>{translateText("Module access restricted")}</h1><p>{translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p></section>)}</div></WorkspaceData>
+        <WorkspaceData><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}><Lock size={26} /></div><h1>{isLocked ? translateText("Subscription Required") : translateText("Module access restricted")}</h1><p>{isLocked ? translateText("Your account does not have an active subscription. Please select a plan to unlock all platform tools.") : translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p>{isLocked && <button type="button" className="bl-btn primary" onClick={() => navigate('/dashboard/plans')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: '#7C3AED', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', margin: '16px auto 0' }}>{translateText("View Plans & Pricing")}</button>}</section>)}</div></WorkspaceData>
       </main>
       {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 Upclick Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
     </div>

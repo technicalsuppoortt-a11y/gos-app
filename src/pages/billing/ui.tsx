@@ -20,7 +20,15 @@ export function useCopy() {
     t: (en: string, arabic: string) => (ar ? arabic : en),
     pick: (value?: { en: string; ar: string } | null) => (value ? (ar ? value.ar || value.en : value.en || value.ar) : ''),
     num: (value: number) => new Intl.NumberFormat(locale).format(value ?? 0),
-    money: (value: number, currency = 'USD') => new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: value % 1 ? 2 : 0 }).format(value ?? 0),
+    money: (value: number, currency = 'USD') => {
+      const safeCurrency = (currency && typeof currency === 'string' && currency.trim().length === 3) ? currency.trim().toUpperCase() : 'USD';
+      const safeVal = Number.isFinite(value) ? value : 0;
+      try {
+        return new Intl.NumberFormat(locale, { style: 'currency', currency: safeCurrency, maximumFractionDigits: safeVal % 1 ? 2 : 0 }).format(safeVal);
+      } catch {
+        return `${safeVal.toLocaleString(locale)} ${safeCurrency}`;
+      }
+    },
     date: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso)) : '—'),
     dateTime: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : '—'),
   };

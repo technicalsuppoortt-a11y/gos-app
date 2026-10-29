@@ -61,7 +61,32 @@ export interface BillingSubscription {
   extraTools: string[];
   renewals: number;
   creditBlocked: boolean;
+  addons?: AddonItem[];
   updatedAt: string;
+}
+
+export interface AddonItem {
+  id: string;
+  type: 'fixed' | 'unit';
+  qty: number;
+  credits: number;
+  price: number;
+  name?: string | LocalizedText;
+  addonType?: AddonType;
+  addonTool?: string;
+}
+
+export interface ProviderBillingSettings {
+  providerId: string;
+  addonMode: 'fixed' | 'dynamic' | 'both';
+  unitRate: {
+    creditsPerUnit: number;
+    pricePerUnit: number;
+    currency: Currency;
+    minUnits: number;
+    maxUnits: number;
+  };
+  updatedAt?: string;
 }
 
 export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; updatedAt: string }
@@ -77,8 +102,14 @@ export interface BillingRequest {
   id: string; requesterId: string; requesterRole: 'ADMIN' | 'USER'; requesterName: string; requesterEmail: string;
   providerId: string; type: 'plan' | 'renewal' | 'addon'; planId: string; quantity: number;
   plan: { name: LocalizedText; kind: PlanKind; price: number; currency: Currency; credits: number; billingType: BillingPlan['billingType']; addonType: AddonType | null };
+  mainPlanPrice?: number;
+  addons?: AddonItem[];
+  totalAmount?: number;
   total: number; note: string; status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   createdAt: string; decidedAt?: string; decidedBy?: string; reason?: string;
+  paymentMethod?: string; paymentType?: 'manual' | 'gateway';
+  receiptUrl?: string; receiptPath?: string; imageUrl?: string; fileUrl?: string;
+  receiptName?: string; fileName?: string; transactionId?: string;
 }
 
 export interface BillingActor { uid: string; role: string; name?: string; email?: string; supportParentId?: string }
@@ -90,6 +121,7 @@ export interface BillingStore {
 }
 
 export const PLATFORM: 'platform';
+export const DEFAULT_BILLING_SETTINGS: ProviderBillingSettings;
 export const CHANNEL_IDS: readonly ['ai', 'whatsapp', 'messenger', 'instagram', 'email', 'sms'];
 export const BILLING_TYPES: BillingType[];
 export const PLAN_KINDS: PlanKind[];

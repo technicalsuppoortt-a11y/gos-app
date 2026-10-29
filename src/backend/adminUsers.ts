@@ -42,6 +42,7 @@ export interface ActivationResult {
   role: Role;
   tenant: Tenant | null;
   token: string;
+  planAssigned?: boolean;
 }
 
 export type ActivationErrorCode = 'EXISTING_ACCOUNT' | 'NO_INVITE' | 'LOOKUP_BLOCKED' | 'DEACTIVATED' | 'AUTH_FAILED' | 'WRITE_FAILED';
@@ -113,7 +114,7 @@ export async function activateInvitedUser(params: {
       }
       throw new ActivationError('AUTH_FAILED');
     }
-    await callBackend('activateUser', {});
+    const callRes = await callBackend<{ id?: string; status?: string; tenantId?: string; planAssigned?: boolean }>('activateUser', {});
     const profile = (await getDoc(doc(db, 'users', user.uid))).data();
     if (!profile || profile.status !== 'Active') throw new ActivationError('WRITE_FAILED');
     return {
@@ -122,6 +123,7 @@ export async function activateInvitedUser(params: {
       role: profile.role as Role,
       tenant: { id: profile.tenantId, name: profile.tenantName || 'Your workspace' },
       token: await user.getIdToken(true),
+      planAssigned: !!callRes?.planAssigned,
     };
   } catch (error) {
     try { await signOut(auth); } catch { /* noop */ }

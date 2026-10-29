@@ -14,6 +14,7 @@ import { LandingEditor } from './LandingEditor';
 import { useOnboarding } from '../onboarding/onboarding-store';
 import { PaymentMethodsPanel } from '../settings/PaymentMethodsPanel';
 import { AdminPlansPage } from '../billing/PlansPages';
+import { UserBillingSettingsPage } from '../billing/UserBillingSettingsPage';
 
 export function AdminWorkspace() {
   const location = useLocation();
@@ -23,6 +24,7 @@ export function AdminWorkspace() {
   if (id === 'settings') return <AdminGeneral/>;
   if (id === 'payments-gateways') return <PaymentMethodsPanel/>;
   if (id === 'plans') return <AdminPlansPage/>;
+  if (id === 'user-billing-settings') return <UserBillingSettingsPage/>;
   if (module.id === 'funnels-websites' && ['1', 'templates'].includes(params.get('tab') ?? '')) {
     return <Navigate to="/admin/templates" replace />;
   }
@@ -540,7 +542,7 @@ function DashboardOverview() {
 
   const shortcuts = [
     { to: '/admin/tools', icon: Grid2X2, title: t('Platform Tools', 'أدوات المنصة'), desc: t('Feature flags, maintenance & utilities', 'أعلام المزايا والصيانة والأدوات') },
-    { to: '/admin/users', icon: Users, title: t('Users Management', 'إدارة المستخدمين'), desc: t('Team accounts, roles & invites', 'حسابات الفريق والأدوار والدعوات') },
+    { to: '/admin/users', icon: Users, title: t('Sub Accounts', 'الحسابات الفرعية'), desc: t('Sub-accounts, roles & invites', 'حسابات الفريق والأدوار والدعوات') },
     { to: '/admin/onboarding', icon: Rocket, title: t('Onboarding Pipeline', 'مسار التهيئة'), desc: t('Workspace setup & onboarding flow', 'إعداد مساحات العمل وخطوات التهيئة') },
     { to: '/admin/payments-gateways', icon: CreditCard, title: t('Payment Gateways', 'طرق وبوابات الدفع'), desc: t('Stripe, PayPal & merchant payout settings', 'إعدادات سترايب وباي بال والتحويلات') },
     { to: '/admin/domains', icon: Globe, title: t('Domains & SSL', 'النطاقات والشهادات'), desc: t('Custom domains & DNS verification', 'النطاقات المخصصة والتحقق من DNS') },
@@ -564,7 +566,7 @@ function DashboardOverview() {
       <div className="adm-metrics">
         <Metric label={t('Active Tenants', 'المستأجرون النشطون')} value={String(activeTenants)} icon={<Building2 size={19} />} detail={t('Across all client workspaces', 'عبر كافة مساحات عمل العملاء')} />
         <Metric label={t('Total Revenue', 'إجمالي الإيرادات')} value={money.format(totalRevenue)} icon={<CreditCard size={19} />} detail={t('Completed ledger volume', 'حجم المدفوعات المكتملة في السجل')} />
-        <Metric label={t('Active Users', 'المستخدمون النشطون')} value={String(activeUsers)} icon={<Users size={19} />} detail={t('From Users Management', 'من إدارة المستخدمين')} />
+        <Metric label={t('Active Sub Accounts', 'الحسابات الفرعية النشطة')} value={String(activeUsers)} icon={<Users size={19} />} detail={t('From Sub Accounts', 'من الحسابات الفرعية')} />
         <Metric label={t('System Status', 'حالة النظام')} value={t('100% Operational', '100% يعمل')} icon={<ShieldCheck size={19} />} detail={t('6 of 6 core services healthy', '6 من 6 خدمات أساسية تعمل')} />
       </div>
 

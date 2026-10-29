@@ -52,8 +52,8 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
         { id: 'requests', label: c.t('Requests', 'الطلبات'), icon: <Inbox size={14} />, count: pending, hot: true },
         { id: 'subscribers', label: isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد'), icon: <Users size={14} /> },
       ]} />
-      {tab === 'plans' && <PlanCatalog kind="plan" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} />}
-      {tab === 'addons' && <PlanCatalog kind="addon" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} />}
+      {tab === 'plans' && <PlanCatalog kind="plan" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} ownerId={ownerId} />}
+      {tab === 'addons' && <PlanCatalog kind="addon" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} ownerId={ownerId} />}
       {tab === 'trial' && <TrialSettings trial={plans.find(plan => plan.kind === 'trial')} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} />}
       {tab === 'requests' && <RequestsPanel requests={requests} mode="incoming" title={isPlatform ? c.t('Requests from admins', 'طلبات الأدمن') : c.t('Requests from your clients', 'طلبات عملائك')} />}
       {tab === 'subscribers' && <SubscribersPanel subscribers={subscribers} wallets={wallets} plans={plans} isPlatform={isPlatform} title={isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد')} />}

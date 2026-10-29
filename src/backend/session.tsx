@@ -215,7 +215,7 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
           if (current !== generation || activationInProgress) return;
           const value = snapshot.data();
           if (!snapshot.exists()) { await forceSignOut(new SessionError('NO_PROFILE')); return; }
-          if (value?.status === 'Deactivated') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
+          if (value?.status === 'Deactivated' || value?.status === 'Inactive') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
           if (value?.status !== 'Active') { await forceSignOut(new SessionError('PENDING')); return; }
           // Compare source profiles. Display-name fallbacks and authoritative token
           // claims may differ from Firestore without indicating a profile change.

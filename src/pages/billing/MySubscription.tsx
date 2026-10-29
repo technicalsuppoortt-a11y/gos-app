@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, CalendarClock, Check, Coins, Crown, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Minus, Package, Plus, RefreshCw, Send, Sparkles, Users, Wallet } from 'lucide-react';
-import { billing, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useLedger, usePlans, useRequests, useSubscription, useWallet, type BillingPlan } from '../../backend/billing';
+import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, Crown, Eye, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sliders, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
+import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useLedger, usePlans, useRequests, useSubscription, useWallet, type BillingPlan } from '../../backend/billing';
 import { LedgerTable, RequestsPanel } from './ProviderPanels';
-import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, priceSuffix, toolName, useAction, useCopy } from './ui';
+import { CheckoutModal } from './CheckoutModal';
+import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, toolName, useAction, useCopy } from './ui';
 
 type View = 'overview' | 'plans' | 'addons' | 'requests' | 'history';
 
@@ -14,14 +15,24 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
   const { data: sub, loading: subLoading } = useSubscription(identity.uid);
   const { data: wallet } = useWallet(identity.uid);
   const { data: plans, loading: plansLoading, error: plansError } = usePlans(identity.providerId || null);
+  const { data: billingSettings } = useBillingSettings(identity.providerId || null);
   const { data: ledger } = useLedger(identity.uid);
   const { data: requests } = useRequests('requesterId', identity.uid);
   const { busy, run } = useAction();
   const [view, setView] = useState<View>('overview');
   const [cycle, setCycle] = useState<'all' | 'monthly' | 'annual' | 'fixed' | 'lifetime'>('all');
-  const [confirm, setConfirm] = useState<{ plan: BillingPlan; quantity: number } | null>(null);
-  const [note, setNote] = useState('');
+  const [checkoutTarget, setCheckoutTarget] = useState<{ plan: BillingPlan; quantity: number; mode: 'plan' | 'renewal' | 'addon' } | null>(null);
+  const [inspectingToolsPlan, setInspectingToolsPlan] = useState<BillingPlan | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [customSliderUnits, setCustomSliderUnits] = useState<number>(5);
+  const [rawCreditsInput, setRawCreditsInput] = useState<string | null>(null);
+  const [dismissedRejectionId, setDismissedRejectionId] = useState<string | null>(() => {
+    try { return localStorage.getItem('bl_dismissed_rejection_id'); } catch { return null; }
+  });
+  const handleDismissRejection = (id: string) => {
+    setDismissedRejectionId(id);
+    try { localStorage.setItem('bl_dismissed_rejection_id', id); } catch {}
+  };
 
   const status = effectiveStatus(sub);
   const live = isLive(sub);
@@ -45,7 +56,6 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
   const daysLeft = sub?.currentPeriodEnd ? Math.max(0, Math.ceil((new Date(sub.currentPeriodEnd).getTime() - now) / 86400000)) : null;
 
   const startTrial = () => run('trial', () => billing('startTrial'), c.t('Your free trial has started!', 'بدأت تجربتك المجانية!'));
-  const submit = () => confirm && run('request', () => billing(confirm.plan.kind === 'addon' ? 'requestAddon' : 'requestPlan', { planId: confirm.plan.id, quantity: confirm.quantity, note }), c.t('Request sent. You will be notified once it is approved.', 'تم إرسال الطلب. سيتم تفعيله بعد الموافقة.')).then(ok => { if (ok) { setConfirm(null); setNote(''); setView('requests'); } });
 
   if (!identity.uid || identity.loading || subLoading) return <div className="bl"><div className="bl-skeleton" style={{ minHeight: 220 }} /><div className="bl-skeleton" /></div>;
 
@@ -67,6 +77,74 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
       {plansError && <div className="bl-banner danger"><AlertTriangle size={17} /><p>{plansError}</p></div>}
       {sub?.creditBlocked && <div className="bl-banner warn"><AlertTriangle size={17} /><div><b>{c.t('Monthly credits could not be issued', 'تعذر صرف الرصيد الشهري')}</b><p>{c.t('Your provider does not have enough credits right now. They have been notified via their dashboard.', 'مزود الخدمة لا يملك رصيدًا كافيًا حاليًا.')}</p></div></div>}
       {status === 'expired' && <div className="bl-banner danger"><CalendarClock size={17} /><div><b>{c.t('Your subscription has expired', 'انتهى اشتراكك')}</b><p>{c.t('Tools are locked until you renew. Unused credits have expired.', 'الأدوات مقفلة حتى التجديد. الرصيد غير المستخدم انتهى.')}</p></div><button type="button" className="bl-btn sm danger" onClick={() => setView('plans')}><RefreshCw size={13} />{c.t('Renew now', 'جدد الآن')}</button></div>}
+      {!live && (
+        <div className="bl-banner warn" style={{ borderLeft: '4px solid #7C3AED', background: 'rgba(124, 58, 237, 0.08)' }}>
+          <Crown size={18} style={{ color: '#7C3AED', flexShrink: 0 }} />
+          <div>
+            <b style={{ color: '#7C3AED' }}>{c.t('Subscription required to access dashboard', 'يلزم الاشتراك للوصول إلى لوحة التحكم')}</b>
+            <p style={{ margin: '4px 0 0 0', opacity: 0.9 }}>{c.t('Please select a plan below to complete checkout and unlock all platform tools and features.', 'يرجى اختيار باقة أدناه لإتمام الدفع وفتح جميع أدوات ومزايا المنصة.')}</p>
+          </div>
+          <button type="button" className="bl-btn sm primary" onClick={() => setView('plans')}><Gem size={13} />{c.t('Choose a plan', 'اختيار باقة')}</button>
+        </div>
+      )}
+
+      {(() => {
+        const latestRejected = requests.find(r => r.status === 'rejected');
+        if (!latestRejected) return null;
+        if (latestRejected.id === dismissedRejectionId) return null;
+
+        // Hide if another request was sent after this rejected request
+        const newerRequest = requests.find(r => {
+          if (r.id === latestRejected.id) return false;
+          const rTime = new Date(r.createdAt).getTime() || 0;
+          const rejTime = new Date(latestRejected.createdAt).getTime() || 0;
+          return rTime >= rejTime || r.createdAt >= latestRejected.createdAt;
+        });
+        if (newerRequest) return null;
+
+        // Hide if any request is currently pending
+        if (pending.length > 0) return null;
+
+        // Hide if subscriber already has an active subscription for this plan
+        const planMatches = sub?.planId === latestRejected.planId || 
+          (sub?.plan?.name && latestRejected.plan?.name && (
+            (typeof sub.plan.name === 'string' && sub.plan.name === latestRejected.plan.name) ||
+            (sub.plan.name.en && sub.plan.name.en === latestRejected.plan.name.en)
+          ));
+        if (live && planMatches) return null;
+
+        return (
+          <div className="bl-banner danger" style={{ borderLeft: '4px solid #ef4444', background: 'rgba(239, 68, 68, 0.08)' }}>
+            <AlertTriangle size={18} style={{ color: '#ef4444', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <b style={{ color: '#ef4444' }}>{c.t('Payment / Request Rejected by Administrator', 'تم رفض طلب الدفع من قِبل الإدارة')}</b>
+              <p style={{ margin: '3px 0 0 0', fontSize: 13, lineHeight: 1.45 }}>
+                <b>{c.pick(latestRejected.plan.name)}: </b>
+                <span style={{ color: '#ef4444', fontWeight: 600 }}>{c.t('Reason', 'السبب')}: </span>
+                <span>{latestRejected.reason || c.t('No reason specified.', 'لم يتم تحديد سبب.')}</span>
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <button
+                type="button"
+                className="bl-btn sm danger"
+                onClick={() => setView('requests')}
+              >
+                <Eye size={13} />
+                {c.t('Review Request', 'معاينة الطلب')}
+              </button>
+              <button
+                type="button"
+                className="bl-btn icon ghost sm"
+                title={c.t('Dismiss', 'إغلاق')}
+                onClick={() => handleDismissRejection(latestRejected.id)}
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {view === 'overview' && <>
         <div className="bl-hero">
@@ -84,7 +162,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
               </div>
               {sub.currentPeriodEnd ? <div className="bl-progress" aria-label={c.t('Period progress', 'تقدم الفترة')}><b style={{ width: `${periodPct}%` }} /></div> : <div className="bl-hero-meta"><span><InfinityIcon size={14} />{c.t('Lifetime access', 'وصول مدى الحياة')}</span></div>}
               <div className="bl-hero-actions">
-                {sub.plan?.kind === 'plan' && sub.currentPeriodEnd && <button type="button" className="bl-btn solid" disabled={isPending(sub.planId)} onClick={() => { const plan = plans.find(item => item.id === sub.planId); if (plan) setConfirm({ plan, quantity: 1 }); else setView('plans'); }}><RefreshCw size={14} />{isPending(sub.planId) ? c.t('Renewal requested', 'تم طلب التجديد') : c.t('Renew plan', 'تجديد الباقة')}</button>}
+                {sub.plan?.kind === 'plan' && sub.currentPeriodEnd && <button type="button" className="bl-btn solid" disabled={isPending(sub.planId)} onClick={() => { const plan = plans.find(item => item.id === sub.planId); if (plan) setCheckoutTarget({ plan, quantity: 1, mode: 'renewal' }); else setView('plans'); }}><RefreshCw size={14} />{isPending(sub.planId) ? c.t('Renewal requested', 'تم طلب التجديد') : c.t('Renew plan', 'تجديد الباقة')}</button>}
                 <button type="button" className="bl-btn" onClick={() => setView('plans')}><Sparkles size={14} />{sub.plan?.kind === 'trial' ? c.t('Upgrade to paid', 'الترقية لباقة مدفوعة') : c.t('Change plan', 'تغيير الباقة')}</button>
                 <button type="button" className="bl-btn" onClick={() => setView('addons')}><Plus size={14} />{c.t('Add-ons', 'الإضافات')}</button>
               </div>
@@ -126,25 +204,115 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
           {trial && !sub?.trialUsedAt && !live && <button type="button" className="bl-btn success" disabled={!!busy} onClick={startTrial}>{busy === 'trial' ? <Spinner /> : <Gift size={15} />}{c.t(`Start ${trial.durationDays}-day free trial`, `ابدأ تجربة مجانية ${c.num(trial.durationDays ?? 0)} يوم`)}</button>}
         </div>
         {plansLoading ? <div className="bl-skeleton" /> : paidPlans.length ? (
-          <div className="bl-pricing">
+          <div className="bl-reference-grid">
             {paidPlans.map(plan => {
               const current = live && sub?.planId === plan.id;
               const features = (c.ar ? plan.features.ar : plan.features.en).length ? (c.ar ? plan.features.ar : plan.features.en) : (c.ar ? plan.features.en : plan.features.ar);
               return (
-                <article key={plan.id} className={`bl-price-card${current ? ' current' : ''}`}>
-                  {(current || plan.badge.en) && <span className={`bl-ribbon bl-pill violet plain`}>{current ? c.t('Current', 'الحالية') : c.pick(plan.badge)}</span>}
-                  <h3>{c.pick(plan.name)}</h3>
-                  <div className="bl-amount"><strong>{c.money(plan.price, plan.currency)}</strong><span>{priceSuffix(plan, c)}</span></div>
-                  <ul>
-                    <li><Coins size={14} />{c.t(`${plan.credits.toLocaleString()} credits / month`, `${c.num(plan.credits)} رصيد / شهريًا`)}</li>
-                    {audience === 'user' && <li><Sparkles size={14} />{c.t(`${plan.tools.length} tools included`, `${c.num(plan.tools.length)} أدوات متاحة`)}</li>}
-                    {audience === 'admin' && !!plan.channels?.length && <li><Sparkles size={14} />{plan.channels.join(' · ')}</li>}
-                    <li><Users size={14} />{plan.limits?.seats ? c.t(`${plan.limits.seats} team seats`, `${c.num(plan.limits.seats)} مقاعد فريق`) : c.t('Unlimited seats', 'مقاعد بلا حد')}</li>
-                    {audience === 'admin' && <li><Users size={14} />{plan.limits?.clients ? c.t(`Up to ${plan.limits.clients} clients`, `حتى ${c.num(plan.limits.clients)} عميل`) : c.t('Unlimited clients', 'عملاء بلا حد')}</li>}
-                    {features.map((feature, index) => <li key={index}><Check size={14} />{feature}</li>)}
+                <article key={plan.id} className={`bl-ref-card${current ? ' is-current' : ''}`}>
+                  {/* Current plan corner ribbon */}
+                  {current && (
+                    <div className="bl-ref-ribbon">
+                      {c.t('Current Plan', 'باقتك الحالية')}
+                    </div>
+                  )}
+                  {plan.badge.en && !current && (
+                    <span className="bl-ref-badge-top bl-pill violet plain">{c.pick(plan.badge)}</span>
+                  )}
+
+                  {/* Plan Title */}
+                  <h3 className="bl-ref-title">{c.pick(plan.name)}</h3>
+
+                  {/* Pricing Block */}
+                  <div className="bl-ref-price-wrap">
+                    <div className="bl-ref-price">
+                      {c.money(plan.price, plan.currency)}
+                      <span>/ {billingLabel(plan, c)}</span>
+                    </div>
+                    <div className="bl-ref-subprice">
+                      {c.t('Original price · estimated display', 'السعر المعتمد — تقديري للعرض')}
+                    </div>
+                  </div>
+
+                  {/* Credits Badge with lightning */}
+                  <div className="bl-ref-credits-pill">
+                    <Zap size={14} fill="currentColor" />
+                    <span>{c.t(`${plan.credits.toLocaleString()} credits / month`, `${c.num(plan.credits)} نقطة / شهريًا`)}</span>
+                  </div>
+
+                  {/* Main Action Button */}
+                  <button
+                    type="button"
+                    className={`bl-ref-cta-btn ${current ? 'current' : 'upgrade'}`}
+                    disabled={isPending(plan.id) || (current && !sub?.currentPeriodEnd) || noProvider}
+                    onClick={() => setCheckoutTarget({ plan, quantity: 1, mode: current ? 'renewal' : 'plan' })}
+                  >
+                    {isPending(plan.id) ? (
+                      <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
+                    ) : current ? (
+                      sub?.currentPeriodEnd ? (
+                        <><RefreshCw size={15} />{c.t('Renew Plan', 'تجديد الباقة')}</>
+                      ) : (
+                        <><Check size={15} />{c.t('Current Plan', 'باقتك الحالية')}</>
+                      )
+                    ) : (
+                      <><Sparkles size={15} />{live ? c.t('Upgrade Now', 'ترقية الآن') : c.t('Subscribe', 'اشترك الآن')}</>
+                    )}
+                  </button>
+
+                  {/* Features List */}
+                  <ul className="bl-ref-features">
+                    {audience === 'user' && (
+                      <li className="bl-ref-feature-item">
+                        <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                        <span>{plan.tools.length ? c.t(`Access to ${plan.tools.length} platform tools`, `دخول لـ ${c.num(plan.tools.length)} أدوات احترافية`) : c.t('Access to all tools', 'دخول لكافة الأدوات')}</span>
+                      </li>
+                    )}
+                    {audience === 'admin' && !!plan.channels?.length && (
+                      <li className="bl-ref-feature-item">
+                        <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                        <span>{c.t(`${plan.channels.length} channels included`, `${c.num(plan.channels.length)} قنوات تواصل مفعلة`)}</span>
+                      </li>
+                    )}
+                    <li className="bl-ref-feature-item">
+                      <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                      <span>{plan.limits?.seats ? c.t(`${plan.limits.seats} team seats included`, `${c.num(plan.limits.seats)} مقاعد فريق`) : c.t('Unlimited team seats', 'مقاعد فريق غير محدودة')}</span>
+                    </li>
+                    {audience === 'admin' && (
+                      <li className="bl-ref-feature-item">
+                        <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                        <span>{plan.limits?.clients ? c.t(`Up to ${plan.limits.clients} clients`, `حتى ${c.num(plan.limits.clients)} عميل`) : c.t('Unlimited clients', 'عملاء بلا حد')}</span>
+                      </li>
+                    )}
+                    {features.length > 0 ? (
+                      features.map((feature, index) => (
+                        <li key={index} className="bl-ref-feature-item">
+                          <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                          <span>{feature}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <>
+                        <li className="bl-ref-feature-item">
+                          <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                          <span>{c.t('VIP Technical Support', 'دعم فني VIP')}</span>
+                        </li>
+                        <li className="bl-ref-feature-item">
+                          <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                          <span>{c.t('Regular Updates', 'تحديثات دورية')}</span>
+                        </li>
+                      </>
+                    )}
                   </ul>
-                  <button type="button" className={`bl-btn ${current ? 'success' : 'primary'} block`} disabled={isPending(plan.id) || (current && !sub?.currentPeriodEnd) || noProvider} onClick={() => setConfirm({ plan, quantity: 1 })}>
-                    {isPending(plan.id) ? <><Inbox size={14} />{c.t('Request pending', 'الطلب قيد المراجعة')}</> : current ? (sub?.currentPeriodEnd ? <><RefreshCw size={14} />{c.t('Renew', 'تجديد')}</> : <><InfinityIcon size={14} />{c.t('Owned forever', 'مملوكة للأبد')}</>) : <><Send size={14} />{c.pick(plan.cta) || (live ? c.t('Upgrade plan', 'ترقية الباقة') : c.t('Subscribe', 'اشترك'))}</>}
+
+                  {/* Bottom View Tools Button */}
+                  <button
+                    type="button"
+                    className="bl-ref-tools-btn"
+                    onClick={() => setInspectingToolsPlan(plan)}
+                  >
+                    <Crown size={13} />
+                    {c.t('View Available Tools', 'عرض الأدوات المتاحة')}
                   </button>
                 </article>
               );
@@ -153,62 +321,368 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
         ) : <section className="bl-card"><Empty icon={<Gem size={22} />} title={c.t('No plans available', 'لا توجد باقات متاحة')} text={c.t(`No plans have been published by ${audience === 'admin' ? 'the platform' : 'your provider'} for this filter.`, `لم يتم نشر باقات من ${providerLabel} لهذا الفلتر.`)} /></section>}
       </>}
 
-      {view === 'addons' && (addons.length ? (
-        <>
-          {!live && <div className="bl-banner info"><Package size={16} /><p>{c.t('Add-ons require an active subscription.', 'الإضافات تتطلب اشتراكًا نشطًا.')}</p></div>}
-          <div className="bl-pricing">
-            {addons.map(plan => {
-              const quantity = quantities[plan.id] ?? 1;
-              const owned = plan.addonType === 'tool' && tools.includes(plan.addonTool ?? '');
-              return (
-                <article key={plan.id} className="bl-price-card">
-                  <span className="bl-ribbon bl-pill violet plain">{billingLabel(plan, c)}</span>
-                  <h3>{c.pick(plan.name)}</h3>
-                  <div className="bl-amount"><strong>{c.money(plan.price * (plan.addonType === 'tool' ? 1 : quantity), plan.currency)}</strong><span>{c.t('one-time', 'مرة واحدة')}</span></div>
-                  <ul>
-                    {plan.addonType === 'credits' && <li><Coins size={14} />{c.t(`+${(plan.credits * quantity).toLocaleString()} credits (expire at cycle end)`, `+${c.num(plan.credits * quantity)} رصيد (ينتهي بنهاية الدورة)`)}</li>}
-                    {plan.addonType === 'seats' && <li><Users size={14} />{c.t(`+${(plan.addonSeats ?? 0) * quantity} team seats`, `+${c.num((plan.addonSeats ?? 0) * quantity)} مقاعد فريق`)}</li>}
-                    {plan.addonType === 'tool' && <li><Sparkles size={14} />{toolName(plan.addonTool ?? '', c.ar)}</li>}
-                    {(c.ar ? plan.features.ar : plan.features.en).map((feature, index) => <li key={index}><Check size={14} />{feature}</li>)}
-                  </ul>
-                  {plan.addonType !== 'tool' && <div className="bl-qty" aria-label={c.t('Quantity', 'الكمية')}><button type="button" aria-label={c.t('Decrease', 'تقليل')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.max(1, quantity - 1) }))}><Minus size={13} /></button><span>{c.num(quantity)}</span><button type="button" aria-label={c.t('Increase', 'زيادة')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.min(100, quantity + 1) }))}><Plus size={13} /></button></div>}
-                  <button type="button" className="bl-btn primary block" disabled={!live || owned || isPending(plan.id)} onClick={() => setConfirm({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity })}>
-                    {owned ? <><Check size={14} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</> : isPending(plan.id) ? <><Inbox size={14} />{c.t('Request pending', 'الطلب قيد المراجعة')}</> : <><Send size={14} />{c.t('Request add-on', 'طلب الإضافة')}</>}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-        </>
-      ) : <section className="bl-card"><Empty icon={<Package size={22} />} title={c.t('No add-ons available', 'لا توجد إضافات متاحة')} /></section>)}
+      {view === 'addons' && (() => {
+        const addonMode = billingSettings?.addonMode || 'both';
+        const rate = billingSettings?.unitRate || DEFAULT_BILLING_SETTINGS.unitRate;
+        const showDynamic = addonMode === 'dynamic' || addonMode === 'both';
+        const showFixed = addonMode === 'fixed' || addonMode === 'both';
+        const hasContent = showDynamic || (showFixed && addons.length > 0);
+
+        if (!hasContent) {
+          return (
+            <section className="bl-card">
+              <Empty icon={<Package size={22} />} title={c.t('No add-ons available', 'لا توجد إضافات متاحة')} />
+            </section>
+          );
+        }
+
+        const perUnit = rate.creditsPerUnit || 100;
+        const minUnits = rate.minUnits || 1;
+        const maxUnits = rate.maxUnits || 100;
+        const minCredits = minUnits * perUnit;
+        const maxCredits = maxUnits * perUnit;
+
+        const currentInputValue = rawCreditsInput !== null ? rawCreditsInput : (customSliderUnits * perUnit).toString();
+        const parsedCredits = Number(currentInputValue);
+        const hasInput = currentInputValue.trim() !== '';
+        const isUnderMin = hasInput && (!Number.isFinite(parsedCredits) || parsedCredits < minCredits);
+        const isOverMax = hasInput && parsedCredits > maxCredits;
+        const isCreditInvalid = !hasInput || isUnderMin || isOverMax;
+
+        const creditValidationMsg = isUnderMin
+          ? c.t(`Minimum is ${minCredits.toLocaleString()} credits (${minUnits} ${minUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(minCredits)} رصيد (${c.num(minUnits)} وحدة)`)
+          : isOverMax
+          ? c.t(`Maximum is ${maxCredits.toLocaleString()} credits (${maxUnits} units)`, `الحد الأقصى هو ${c.num(maxCredits)} رصيد (${c.num(maxUnits)} وحدة)`)
+          : null;
+
+        const setUnitsAndSync = (newUnits: number) => {
+          const clamped = Math.max(minUnits, Math.min(maxUnits, newUnits));
+          setCustomSliderUnits(clamped);
+          setRawCreditsInput((clamped * perUnit).toString());
+        };
+
+        const dynamicCredits = !isCreditInvalid && parsedCredits > 0
+          ? parsedCredits
+          : (customSliderUnits * perUnit);
+        const dynamicUnitsFloat = dynamicCredits / perUnit;
+        const dynamicCost = Math.round((dynamicUnitsFloat * (rate.pricePerUnit || 5)) * 100) / 100;
+        const dynamicPlan: BillingPlan = {
+          id: 'dynamic_units',
+          ownerId: identity.providerId || 'platform',
+          audience,
+          kind: 'addon',
+          name: {
+            en: `${dynamicCredits.toLocaleString()} Custom Credits Top-up`,
+            ar: `شحن ${dynamicCredits.toLocaleString()} رصيد مخصص`,
+          },
+          description: {
+            en: `${dynamicCredits.toLocaleString()} credits at ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} per ${perUnit} credits`,
+            ar: `${dynamicCredits.toLocaleString()} رصيد بسعر ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} لكل ${perUnit} رصيد`,
+          },
+          badge: { en: 'Dynamic Top-up', ar: 'شحن مخصص' },
+          cta: { en: 'Buy Credits', ar: 'شحن الرصيد' },
+          features: {
+            en: [`+${dynamicCredits.toLocaleString()} platform credits`, 'Instant top-up to active balance'],
+            ar: [`+${c.num(dynamicCredits)} رصيد إضافي للمنصة`, 'شحن فوري للرصيد النشط'],
+          },
+          price: dynamicCost,
+          currency: rate.currency || 'USD',
+          billingType: 'once',
+          durationDays: null,
+          credits: dynamicCredits,
+          tools: [],
+          limits: {},
+          addonType: 'credits',
+          addonSeats: null,
+          addonTool: null,
+          visible: true,
+          enabled: true,
+          sortOrder: 0,
+          status: 'active',
+          createdAt: '',
+          updatedAt: '',
+          revision: 1,
+        };
+
+        return (
+          <>
+            {!live && <div className="bl-banner info"><Package size={16} /><p>{c.t('Add-ons require an active subscription.', 'الإضافات تتطلب اشتراكًا نشطًا.')}</p></div>}
+
+            {/* Dynamic Credit Top-up Card (Interactive Slider) */}
+            {showDynamic && (
+              <section className="bl-card" style={{ padding: '22px 26px', marginBlockEnd: 24, borderRadius: 16, border: '1px solid var(--bl-accent)', background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(167, 139, 250, 0.08) 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBlockEnd: 18 }}>
+                  <div>
+                    <span className="bl-pill violet plain" style={{ marginBlockEnd: 8 }}>
+                      <Coins size={12} />
+                      {c.t('Unit-Based Dynamic Top-up', 'شحن رصيد مرن بالوحدة')}
+                    </span>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, margin: '4px 0 6px' }}>
+                      {c.t('Custom Credit Top-up Slider', 'أداة شحن الرصيد المخصص')}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--bl-muted)', maxWidth: 600 }}>
+                      {c.t(`Top up exactly the credits you need at a fixed rate of ${c.money(rate.pricePerUnit, rate.currency)} per ${c.num(perUnit)} credits.`, `اشحن بالضبط كمية الرصيد التي تحتاجها بسعر ${c.money(rate.pricePerUnit, rate.currency)} لكل ${c.num(perUnit)} رصيد.`)}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'end' }}>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--bl-accent-2)' }}>
+                      {c.money(dynamicCost, rate.currency)}
+                    </div>
+                    <small style={{ color: 'var(--bl-muted)', fontSize: 12 }}>
+                      +{dynamicCredits.toLocaleString()} {c.t('credits', 'رصيد')}
+                    </small>
+                  </div>
+                </div>
+
+                <div style={{ padding: '16px 18px', borderRadius: 12, background: 'var(--bl-surface)', border: '1px solid var(--bl-border)', display: 'grid', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: 13 }}>
+                          {c.t('Enter Credits', 'أدخل كمية الرصيد')}:
+                        </span>
+                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={currentInputValue}
+                            onChange={e => {
+                              const text = e.target.value;
+                              const clean = text.replace(/[^\d]/g, '');
+                              setRawCreditsInput(clean);
+                              const n = Number(clean);
+                              if (clean !== '' && Number.isFinite(n) && n >= minCredits && n <= maxCredits) {
+                                const calcUnits = Math.round(n / perUnit);
+                                setCustomSliderUnits(calcUnits);
+                              }
+                            }}
+                            onBlur={() => {
+                              if (currentInputValue.trim() === '') {
+                                setRawCreditsInput((customSliderUnits * perUnit).toString());
+                              }
+                            }}
+                            placeholder={`${minCredits} - ${maxCredits}`}
+                            style={{
+                              width: 140,
+                              height: 36,
+                              padding: '0 10px',
+                              paddingInlineEnd: 55,
+                              borderRadius: 8,
+                              border: creditValidationMsg ? '1.5px solid #ef4444' : '1.5px solid var(--bl-accent)',
+                              background: 'var(--bl-surface-2)',
+                              color: creditValidationMsg ? '#ef4444' : 'var(--bl-text)',
+                              fontSize: 14,
+                              fontWeight: 700,
+                              outline: 'none',
+                              transition: 'border-color 0.2s',
+                            }}
+                          />
+                          <span style={{ position: 'absolute', insetInlineEnd: 10, fontSize: 11.5, color: creditValidationMsg ? '#ef4444' : 'var(--bl-muted)', fontWeight: 600, pointerEvents: 'none' }}>
+                            {c.t('credits', 'رصيد')}
+                          </span>
+                        </div>
+                        {!creditValidationMsg && (
+                          <small style={{ color: 'var(--bl-muted)', fontSize: 12 }}>
+                            (= <b style={{ color: 'var(--bl-accent)' }}>{Number.isInteger(dynamicUnitsFloat) ? dynamicUnitsFloat : dynamicUnitsFloat.toFixed(1)} {c.t(dynamicUnitsFloat === 1 ? 'unit' : 'units', 'وحدات')}</b>)
+                          </small>
+                        )}
+                      </div>
+
+                      {/* Min / Max Validation Error Alert */}
+                      {creditValidationMsg && (
+                        <div style={{ color: '#ef4444', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 6, background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                          <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                          <span>{creditValidationMsg}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 12, color: 'var(--bl-muted)', fontWeight: 600 }}>{c.t('Units Stepper', 'عداد الوحدات')}:</span>
+                      <div className="bl-qty">
+                        <button type="button" onClick={() => setUnitsAndSync(customSliderUnits - 1)}>−</button>
+                        <span>{customSliderUnits}</span>
+                        <button type="button" onClick={() => setUnitsAndSync(customSliderUnits + 1)}>+</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={minUnits}
+                    max={maxUnits}
+                    value={customSliderUnits}
+                    onChange={e => setUnitsAndSync(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--bl-accent)', cursor: 'pointer' }}
+                  />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, paddingBlockStart: 4 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {[1, 5, 10, 20, 50].filter(u => u >= minUnits && u <= maxUnits).map(u => (
+                        <button
+                          key={u}
+                          type="button"
+                          className={`bl-btn xs ${customSliderUnits === u ? 'primary' : 'ghost'}`}
+                          onClick={() => setUnitsAndSync(u)}
+                          style={{ borderRadius: 6, fontSize: 11.5, fontWeight: 700 }}
+                        >
+                          +{c.num(u * perUnit)}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="bl-btn primary"
+                      disabled={!live || isCreditInvalid}
+                      onClick={() => setCheckoutTarget({ plan: dynamicPlan, quantity: 1, mode: 'addon' })}
+                      style={{ padding: '8px 20px', fontWeight: 700 }}
+                    >
+                      <Sparkles size={14} />
+                      {c.t('Purchase Custom Credits', 'شحن هذا الرصيد الآن')}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Fixed Add-on Packages */}
+            {showFixed && addons.length > 0 && (
+              <>
+                <div style={{ marginBlockEnd: 14 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
+                    {c.t('Fixed Add-on Packages', 'باقات الإضافات الجاهزة')}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'var(--bl-muted)' }}>
+                    {c.t('Pre-defined feature, seat, or credit bundles configured by your provider.', 'باقات مميزات أو مقاعد أو رصيد محددة مسبقًا من قِبل مزود الخدمة.')}
+                  </p>
+                </div>
+                <div className="bl-reference-grid">
+                  {addons.map(plan => {
+                    const quantity = quantities[plan.id] ?? 1;
+                    const owned = plan.addonType === 'tool' && tools.includes(plan.addonTool ?? '');
+                    return (
+                      <article key={plan.id} className="bl-ref-card">
+                        <span className="bl-ref-badge-top bl-pill violet plain">{billingLabel(plan, c)}</span>
+                        <h3 className="bl-ref-title">{c.pick(plan.name)}</h3>
+                        <div className="bl-ref-price-wrap">
+                          <div className="bl-ref-price">
+                            {c.money(plan.price * (plan.addonType === 'tool' ? 1 : quantity), plan.currency)}
+                            <span>/ {c.t('one-time', 'مرة واحدة')}</span>
+                          </div>
+                        </div>
+                        <ul className="bl-ref-features" style={{ marginBlockEnd: 12 }}>
+                          {plan.addonType === 'credits' && (
+                            <li className="bl-ref-feature-item">
+                              <Coins size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
+                              <span>{c.t(`+${(plan.credits * quantity).toLocaleString()} credits (expire at cycle end)`, `+${c.num(plan.credits * quantity)} رصيد (ينتهي بنهاية الدورة)`)}</span>
+                            </li>
+                          )}
+                          {plan.addonType === 'seats' && (
+                            <li className="bl-ref-feature-item">
+                              <Users size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
+                              <span>{c.t(`+${(plan.addonSeats ?? 0) * quantity} team seats`, `+${c.num((plan.addonSeats ?? 0) * quantity)} مقاعد فريق`)}</span>
+                            </li>
+                          )}
+                          {plan.addonType === 'tool' && (
+                            <li className="bl-ref-feature-item">
+                              <Sparkles size={14} className="bl-ref-check-icon" style={{ color: 'var(--bl-accent-2)' }} />
+                              <span>{toolName(plan.addonTool ?? '', c.ar)}</span>
+                            </li>
+                          )}
+                          {(c.ar ? plan.features.ar : plan.features.en).map((feature, index) => (
+                            <li key={index} className="bl-ref-feature-item">
+                              <CheckCircle2 size={14} className="bl-ref-check-icon" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {plan.addonType !== 'tool' && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBlockEnd: 12, padding: '6px 10px', borderRadius: 10, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)' }}>
+                            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{c.t('Quantity', 'الكمية')}</span>
+                            <div className="bl-qty" aria-label={c.t('Quantity', 'الكمية')}>
+                              <button type="button" aria-label={c.t('Decrease', 'تقليل')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.max(1, quantity - 1) }))}>−</button>
+                              <span>{c.num(quantity)}</span>
+                              <button type="button" aria-label={c.t('Increase', 'زيادة')} onClick={() => setQuantities(q => ({ ...q, [plan.id]: Math.min(100, quantity + 1) }))}>+</button>
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          className="bl-ref-cta-btn upgrade"
+                          style={{ marginBlockEnd: 0 }}
+                          disabled={!live || owned || isPending(plan.id)}
+                          onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon' })}
+                        >
+                          {owned ? <><Check size={15} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</> : isPending(plan.id) ? <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</> : <><Sparkles size={15} />{c.t('Request Add-on', 'طلب الإضافة الآن')}</>}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </>
+        );
+      })()}
 
       {view === 'requests' && <RequestsPanel requests={requests} mode="outgoing" />}
 
       {view === 'history' && <section className="bl-card"><div className="bl-card-head"><div><h3><History size={16} />{c.t('Credit history', 'سجل الرصيد')}</h3><p>{c.t('Every grant, top-up, expiry and adjustment — recorded by the server.', 'كل منح وشحن وانتهاء وتعديل — مسجل من الخادم.')}</p></div></div><LedgerTable entries={ledger} /></section>}
 
-      {confirm && (
+      {/* Available Tools Inspection Modal */}
+      {inspectingToolsPlan && (
         <Modal
-          title={confirm.plan.kind === 'addon' ? c.t('Request add-on', 'طلب إضافة') : live && sub?.planId === confirm.plan.id ? c.t('Request renewal', 'طلب تجديد') : c.t('Request subscription', 'طلب اشتراك')}
-          subtitle={c.pick(confirm.plan.name)}
-          icon={confirm.plan.kind === 'addon' ? <Package size={18} /> : <Gem size={18} />}
-          onClose={() => setConfirm(null)}
-          footer={<>
-            <button type="button" className="bl-btn" onClick={() => setConfirm(null)}>{c.t('Cancel', 'إلغاء')}</button>
-            <button type="button" className="bl-btn primary" disabled={!!busy} onClick={submit}>{busy === 'request' ? <Spinner /> : <Send size={15} />}{c.t('Send request', 'إرسال الطلب')}</button>
-          </>}
+          title={c.t('Available Tools & Capabilities', 'الأدوات والإمكانات المتاحة')}
+          subtitle={c.pick(inspectingToolsPlan.name)}
+          icon={<Crown size={18} />}
+          onClose={() => setInspectingToolsPlan(null)}
+          footer={<button type="button" className="bl-btn" onClick={() => setInspectingToolsPlan(null)}>{c.t('Close', 'إغلاق')}</button>}
         >
-          <div className="bl-form">
-            <div className="bl-kv bl-section">
-              <div><span>{c.t('Item', 'العنصر')}</span><b>{c.pick(confirm.plan.name)}{confirm.quantity > 1 ? ` ×${c.num(confirm.quantity)}` : ''}</b></div>
-              <div><span>{c.t('Type', 'النوع')}</span><b>{billingLabel(confirm.plan, c)}</b></div>
-              <div><span>{c.t('Total', 'الإجمالي')}</span><b className="bl-price">{c.money(confirm.plan.price * confirm.quantity, confirm.plan.currency)}</b></div>
-            </div>
-            {confirm.plan.kind === 'plan' && live && sub?.planId !== confirm.plan.id && <div className="bl-banner warn"><AlertTriangle size={16} /><p>{c.t('Switching plans starts a new period. Your remaining credits expire and the new plan’s credits are issued.', 'تغيير الباقة يبدأ فترة جديدة. الرصيد المتبقي ينتهي ويُصرف رصيد الباقة الجديدة.')}</p></div>}
-            {confirm.plan.kind === 'plan' && live && sub?.planId === confirm.plan.id && <div className="bl-banner success"><RefreshCw size={16} /><p>{c.t('Renewing extends your current end date. Your monthly credits continue as usual.', 'التجديد يمدد تاريخ الانتهاء الحالي. رصيدك الشهري يستمر كالمعتاد.')}</p></div>}
-            <label className="bl-field"><span>{c.t('Note to provider (optional)', 'ملاحظة لمزود الخدمة (اختياري)')}</span><textarea className="bl-input" maxLength={300} value={note} onChange={event => setNote(event.target.value)} placeholder={c.t('e.g. Paid via bank transfer, ref #1234', 'مثال: تم الدفع بتحويل بنكي رقم 1234')} /></label>
-            <p style={{ margin: 0, color: 'var(--bl-muted)', fontSize: 12.5 }}>{c.t(`Your request goes to ${audience === 'admin' ? 'the platform' : 'your provider'} for approval. Once approved, it activates immediately.`, `يُرسل طلبك إلى ${providerLabel} للموافقة. بعد الموافقة يتفعّل فورًا.`)}</p>
+          <div style={{ display: 'grid', gap: 14 }}>
+            <p style={{ margin: 0, color: 'var(--bl-muted)', fontSize: 13.5 }}>
+              {c.t('Here are all the specialized tools and platform features included with this subscription plan:', 'فيما يلي كافة الأدوات والميزات الاحترافية المشمولة ضمن هذه الباقة:')}
+            </p>
+            {audience === 'admin' ? (
+              <div style={{ display: 'grid', gap: 8 }}>
+                {(inspectingToolsPlan.channels || []).map(ch => (
+                  <div key={ch} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)' }}>
+                    <CheckCircle2 size={16} color="var(--bl-success)" />
+                    <b>{ch}</b>
+                  </div>
+                ))}
+                {!inspectingToolsPlan.channels?.length && (
+                  <div style={{ textAlign: 'center', padding: 20, color: 'var(--bl-muted)', fontSize: 13 }}>{c.t('All platform channels unlocked by default.', 'كافة قنوات المنصة متاحة.')}</div>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+                {(inspectingToolsPlan.tools || []).map(tid => (
+                  <div key={tid} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)' }}>
+                    <CheckCircle2 size={16} color="var(--bl-success)" />
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{toolName(tid, c.ar)}</span>
+                  </div>
+                ))}
+                {!inspectingToolsPlan.tools?.length && (
+                  <div style={{ textAlign: 'center', padding: 20, color: 'var(--bl-muted)', fontSize: 13, gridColumn: '1 / -1' }}>{c.t('All platform tools unlocked with this plan.', 'كافة أدوات المنصة متاحة ضمن هذه الباقة.')}</div>
+                )}
+              </div>
+            )}
           </div>
         </Modal>
+      )}
+
+      {/* Unified Secure Checkout & Payment Modal */}
+      {checkoutTarget && (
+        <CheckoutModal
+          plan={checkoutTarget.plan}
+          quantity={checkoutTarget.quantity}
+          mode={checkoutTarget.mode}
+          onClose={() => setCheckoutTarget(null)}
+          onSuccess={() => {
+            setCheckoutTarget(null);
+            setView('requests');
+          }}
+        />
       )}
     </div>
   );

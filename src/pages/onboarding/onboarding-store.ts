@@ -26,12 +26,15 @@ export type Invite = {
   name?: string;
   email: string;
   role: Role;
-  status: 'Active' | 'Pending' | 'Deactivated' | 'Invited' | 'Activated';
+  status: 'Active' | 'Pending' | 'Deactivated' | 'Inactive' | 'Invited' | 'Activated';
   created: string;
   mfa: boolean;
   avatar?: string;
   passwordDigest?: string;
   tenantId?: string;
+  activatedAt?: string;
+  updatedAt?: string;
+  credits?: number;
 };
 
 export const INITIAL_MOCK_USERS: Invite[] = [];

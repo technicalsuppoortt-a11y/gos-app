@@ -1,11 +1,450 @@
-.gos-activation{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;padding:40px 20px;background:var(--bg,#f7f8fc);color:var(--ink,#27263c);font-family:'DM Sans',Inter,system-ui,sans-serif}
-.gos-activation-card{width:100%;max-width:448px;background:var(--panel,#fff);border:1px solid var(--line,#edecf3);border-radius:20px;padding:34px 36px 22px;box-shadow:0 12px 48px #27263c06,0 2px 8px #27263c03}
-.gos-activation-brand{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin:0 auto 34px;text-decoration:none;color:inherit}.gos-activation-logo{display:grid;place-items:center;width:43px;height:43px;border-radius:13px;background:var(--app-indigo,#7C3AED);color:#fff;box-shadow:0 4px 12px #7C3AED20}.gos-activation-brand>span:last-child{display:flex;flex-direction:column;gap:1px}.gos-activation-brand b{font-family:var(--font-head,'Manrope',sans-serif);font-size:23px;font-weight:800;letter-spacing:-.8px;line-height:1.2}.gos-activation-brand small{font-size:9px;color:var(--muted,#9695a7)}
-.gos-activation h1{font-family:var(--font-head,'Manrope',sans-serif);font-size:25px;font-weight:800;letter-spacing:-.9px;line-height:1.3;margin:12px 0 9px}.gos-activation-heading>p,.gos-activation-success>p,.gos-activation-invalid>p{font-size:13px;line-height:1.7;color:#EDE9FE;margin:0}.gos-activation-heading{text-align:center}.gos-activation-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--app-indigo,#7C3AED)}
-.gos-activation-account{display:flex;flex-direction:column;gap:5px;margin:24px 0;padding:13px 15px;border:1px solid var(--line,#edecf3);border-radius:10px;background:#fafafe}.gos-activation-account>span{font-size:10px;color:#EDE9FE}.gos-activation-account>b{font-size:12px;font-weight:600;overflow-wrap:anywhere;text-align:start}
-.gos-activation-form{display:flex;flex-direction:column;gap:16px}.gos-activation-field{display:flex;flex-direction:column;gap:8px}.gos-activation-field>label{font-size:12px;font-weight:600}.gos-activation-input{display:flex;align-items:center;gap:10px;border:1px solid #e4e2ed;border-radius:10px;padding:0 13px;height:46px;color:#a3a0b3;background:var(--panel,#fff);transition:border-color .15s,box-shadow .15s}.gos-activation-input:focus-within{border-color:var(--app-indigo,#7C3AED);box-shadow:0 0 0 3px #7C3AED12}.gos-activation-input input{min-width:0;flex:1;width:100%;height:100%;padding:0;border:0;outline:none;box-shadow:none;background:transparent;color:var(--ink,#27263c);font:inherit;font-size:14px}.gos-activation-input input:focus-visible{outline:none}.gos-activation-input input:disabled{opacity:.65}.gos-activation-input>button{display:grid;place-items:center;padding:4px;border:0;background:transparent;color:#EDE9FE;border-radius:5px}.gos-activation-help{display:flex;align-items:center;gap:5px;margin:-7px 0 0;font-size:10px;color:#EDE9FE}.gos-activation-help.is-valid,.gos-activation-match{color:#2d9b76}
-.gos-activation-primary{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:46px;border:0;border-radius:10px;background:var(--app-indigo,#7C3AED);color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s,box-shadow .15s;margin-top:5px}.gos-activation-primary:hover:not(:disabled){background:#7C3AED;box-shadow:0 4px 12px #7C3AED20}.gos-activation-primary:disabled{opacity:.5;cursor:not-allowed}.gos-activation[dir=rtl] .gos-activation-primary>svg:last-child{transform:rotate(180deg)}
-.gos-activation-signin{margin:20px 0 0;text-align:center;font-size:11px;color:#EDE9FE}.gos-activation-signin>a{color:var(--app-indigo,#7C3AED);font-weight:600}.gos-activation-footer{display:flex;align-items:center;justify-content:center;gap:6px;border-top:1px solid var(--line,#edecf3);padding-top:18px;margin-top:25px;color:#a09daf;font-size:10px}.gos-activation-caption{font-size:10px;color:#a09daf;margin:0;text-align:center}.gos-activation-error{font-size:11px;color:#c54356;margin:-6px 0 0}.gos-activation-error-box{border:1px solid #f4d5dc;background:#fff6f7;border-radius:9px;padding:12px;font-size:12px;line-height:1.6;color:#ac3448}.gos-activation-error-box>p{margin:7px 0 0}.gos-activation-loading{text-align:center;padding:28px 0;color:#EDE9FE}.gos-activation-loading>svg{color:var(--app-indigo,#7C3AED);margin:auto}.gos-activation-loading>p{font-size:12px;margin:13px 0 0}.gos-activation-success,.gos-activation-invalid{text-align:center;padding-top:3px}.gos-activation-state-icon{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;margin:0 auto 18px;background:#f0eeff;color:var(--app-indigo,#7C3AED)}.gos-activation-success .gos-activation-primary,.gos-activation-invalid .gos-activation-primary{margin-top:26px}
-.dark .gos-activation{background:#10111b;color:#eeedf6}.dark .gos-activation-card{background:#191a27;border-color:#2b2a3e}.dark .gos-activation-account{background:#202031;border-color:#323047}.dark .gos-activation-input{background:#202031;border-color:#38364c}.dark .gos-activation-input input{color:#eeedf6}.dark .gos-activation-footer{border-color:#2b2a3e}.dark .gos-activation-state-icon{background:#2d294b}.dark .gos-activation-error-box{background:#341f2b;border-color:#663042;color:#ffb6c5}
-@media(max-width:480px){.gos-activation{padding:24px 16px;gap:18px}.gos-activation-card{padding:28px 23px 20px;border-radius:16px}.gos-activation h1{font-size:23px}.gos-activation-brand{margin-bottom:28px}}
-@media(prefers-reduced-motion:reduce){.gos-activation *{transition:none!important}.gos-activation .animate-spin{animation:none}}
+.gos-activation {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  padding: 40px 20px;
+  background: var(--bg, #f8fafc);
+  color: var(--ink, #1e293b);
+  font-family: 'DM Sans', Inter, system-ui, sans-serif;
+}
+
+.gos-activation-card {
+  width: 100%;
+  max-width: 448px;
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 20px;
+  padding: 36px 36px 28px;
+  box-shadow: 0 12px 48px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.gos-activation-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: fit-content;
+  margin: 0 auto 30px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.gos-activation-logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #ede9fe;
+  color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
+.gos-activation-brand > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gos-activation-brand b {
+  font-family: var(--font-head, 'Manrope', sans-serif);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  color: var(--ink, #0f172a);
+}
+
+.gos-activation-brand small {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+
+.gos-activation h1 {
+  font-family: var(--font-head, 'Manrope', sans-serif);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.3;
+  margin: 10px 0 8px;
+  color: var(--ink, #0f172a);
+}
+
+.gos-activation-heading {
+  text-align: center;
+}
+
+.gos-activation-heading > p,
+.gos-activation-success > p,
+.gos-activation-invalid > p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted, #475569);
+  margin: 0;
+}
+
+.gos-activation-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #7C3AED;
+  background: rgba(124, 58, 237, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.gos-activation-account {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 22px 0 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.gos-activation-account > span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted, #64748b);
+}
+
+.gos-activation-account > b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #0f172a);
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.gos-activation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gos-activation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.gos-activation-field > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink, #334155);
+}
+
+.gos-activation-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0 13px;
+  height: 46px;
+  color: #64748b;
+  background: var(--panel, #ffffff);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.gos-activation-input:focus-within {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+.gos-activation-input input {
+  min-width: 0;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--ink, #0f172a);
+  font: inherit;
+  font-size: 14px;
+}
+
+.gos-activation-input input:focus-visible {
+  outline: none;
+}
+
+.gos-activation-input input:disabled {
+  opacity: 0.65;
+}
+
+.gos-activation-input > button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.gos-activation-input > button:hover {
+  color: #7C3AED;
+}
+
+.gos-activation-help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 0 0;
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+
+.gos-activation-help.is-valid,
+.gos-activation-match {
+  color: #059669;
+  font-weight: 600;
+}
+
+.gos-activation-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: #7C3AED;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  margin-top: 6px;
+}
+
+.gos-activation-primary:hover:not(:disabled) {
+  background: #6D28D9;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+}
+
+.gos-activation-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.gos-activation-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.gos-activation[dir='rtl'] .gos-activation-primary > svg:last-child {
+  transform: rotate(180deg);
+}
+
+.gos-activation-signin {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted, #64748b);
+}
+
+.gos-activation-signin > a {
+  color: #7C3AED;
+  font-weight: 600;
+  text-decoration: none;
+  margin-inline-start: 4px;
+}
+
+.gos-activation-signin > a:hover {
+  text-decoration: underline;
+}
+
+.gos-activation-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-top: 1px solid var(--line, #e2e8f0);
+  padding-top: 18px;
+  margin-top: 24px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.gos-activation-caption {
+  font-size: 11px;
+  color: #64748b;
+  margin: 0;
+  text-align: center;
+}
+
+.gos-activation-error {
+  font-size: 11px;
+  color: #dc2626;
+  margin: -6px 0 0;
+}
+
+.gos-activation-error-box {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #991b1b;
+}
+
+.gos-activation-error-box > p {
+  margin: 6px 0 0;
+}
+
+.gos-activation-loading {
+  text-align: center;
+  padding: 28px 0;
+  color: var(--muted, #64748b);
+}
+
+.gos-activation-loading > svg {
+  color: #7C3AED;
+  margin: auto;
+}
+
+.gos-activation-loading > p {
+  font-size: 13px;
+  margin: 13px 0 0;
+}
+
+.gos-activation-success,
+.gos-activation-invalid {
+  text-align: center;
+  padding-top: 6px;
+}
+
+.gos-activation-state-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  margin: 0 auto 18px;
+  background: #ede9fe;
+  color: #7C3AED;
+}
+
+.gos-activation-success .gos-activation-primary,
+.gos-activation-invalid .gos-activation-primary {
+  margin-top: 24px;
+}
+
+/* Dark mode support */
+.dark .gos-activation {
+  background: #0b0f19;
+  color: #f1f5f9;
+}
+
+.dark .gos-activation-card {
+  background: #151e30;
+  border-color: #243048;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+.dark .gos-activation-brand b {
+  color: #f8fafc;
+}
+
+.dark .gos-activation-brand small {
+  color: #94a3b8;
+}
+
+.dark .gos-activation h1 {
+  color: #f8fafc;
+}
+
+.dark .gos-activation-heading > p,
+.dark .gos-activation-success > p,
+.dark .gos-activation-invalid > p,
+.dark .gos-activation-account > span,
+.dark .gos-activation-help,
+.dark .gos-activation-signin,
+.dark .gos-activation-loading,
+.dark .gos-activation-footer {
+  color: #94a3b8;
+}
+
+.dark .gos-activation-account {
+  background: #0f172a;
+  border-color: #243048;
+}
+
+.dark .gos-activation-account > b {
+  color: #f8fafc;
+}
+
+.dark .gos-activation-field > label {
+  color: #e2e8f0;
+}
+
+.dark .gos-activation-input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.dark .gos-activation-input input {
+  color: #f8fafc;
+}
+
+.dark .gos-activation-input > button {
+  color: #94a3b8;
+}
+
+.dark .gos-activation-input > button:hover {
+  color: #a78bfa;
+}
+
+.dark .gos-activation-caption {
+  color: #64748b;
+}
+
+.dark .gos-activation-error-box {
+  background: #3f1d24;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+@media (max-width: 480px) {
+  .gos-activation {
+    padding: 24px 16px;
+    gap: 18px;
+  }
+  .gos-activation-card {
+    padding: 28px 20px 22px;
+    border-radius: 16px;
+  }
+  .gos-activation h1 {
+    font-size: 22px;
+  }
+  .gos-activation-brand {
+    margin-bottom: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gos-activation * {
+    transition: none !important;
+  }
+  .gos-activation .animate-spin {
+    animation: none;
+  }
+}

@@ -152,7 +152,7 @@ export const router = createBrowserRouter([
       { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
-      ...['dashboard','conversations','plans','payments-gateways','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
+      ...['dashboard','conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
       { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },
     ],

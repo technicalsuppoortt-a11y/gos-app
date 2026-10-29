@@ -26,6 +26,17 @@ export const ADDON_TYPES = ['credits', 'seats', 'tool'];
 export const CURRENCIES = ['USD', 'EGP', 'SAR', 'AED', 'EUR'];
 export const TOOL_IDS = ['ai-copilot', 'funnel-builder', 'crm-pipeline', 'unified-inbox', 'booking-engine', 'products-payments', 'custom-domains', 'webhooks-api', 'ai-followup', 'email-sms', 'analytics-bi', 'client-portal'];
 export const DEFAULT_TRIAL = { admin: { days: 90, credits: 1000 }, user: { days: 14, credits: 100 } };
+export const DEFAULT_BILLING_SETTINGS = {
+  providerId: '',
+  addonMode: 'both',
+  unitRate: {
+    creditsPerUnit: 100,
+    pricePerUnit: 5,
+    currency: 'USD',
+    minUnits: 1,
+    maxUnits: 100,
+  },
+};
 
 export class BillingError extends Error {
   constructor(code, message) { super(message); this.name = 'BillingError'; this.code = code; }
@@ -97,7 +108,9 @@ export function normalizePlan(input, { ownerId, allowedTools = null, existing = 
   const audience = ownerId === PLATFORM ? 'admin' : 'user';
   // Platform plans govern quotas and channels. Keep the legacy tool entitlement
   // field populated so admins can continue offering client tool permissions.
-  const tools = ownerId === PLATFORM ? [...TOOL_IDS] : [...new Set((Array.isArray(input.tools) ? input.tools : []).filter(tool => TOOL_IDS.includes(tool)))];
+  const tools = ownerId === PLATFORM
+    ? (Array.isArray(input.tools) && input.tools.length ? [...new Set(input.tools.filter(tool => TOOL_IDS.includes(tool)))] : [...TOOL_IDS])
+    : [...new Set((Array.isArray(input.tools) ? input.tools : []).filter(tool => TOOL_IDS.includes(tool)))];
   const billingType = kind === 'plan' ? (BILLING_TYPES.includes(input.billingType) ? input.billingType : fail('invalid-argument', 'Choose a billing type.')) : kind === 'trial' ? 'fixed' : 'once';
   const durationDays = kind === 'trial' ? int(input.durationDays, 'Trial duration (days)', 1, 365) : billingType === 'fixed' ? int(input.durationDays, 'Duration (days)', 1, 3650) : null;
   const addonType = kind === 'addon' ? (ADDON_TYPES.includes(input.addonType) ? input.addonType : fail('invalid-argument', 'Choose an add-on type.')) : null;
@@ -298,6 +311,31 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     return sub;
   }
 
+  async function applyAddonItem(account, providerId, addon, ref) {
+    const { sub, wallet: existing } = await freshen(account.uid);
+    if (!sub || !isLive(sub, now)) fail('failed-precondition', 'An active subscription is required before adding add-ons.');
+    if (addon.addonType === 'seats') {
+      sub.extraSeats = (sub.extraSeats ?? 0) + (addon.credits || addon.qty);
+      saveSub(sub);
+    } else if (addon.addonType === 'tool' && addon.addonTool) {
+      if (providerId !== PLATFORM) {
+        const provider = await freshen(providerId);
+        if (!entitledTools(provider.sub, now).includes(addon.addonTool)) fail('failed-precondition', 'The provider subscription no longer includes this tool.');
+      }
+      sub.extraTools = [...new Set([...(sub.extraTools ?? []), addon.addonTool])];
+      saveSub(sub);
+    } else if (addon.credits > 0) {
+      const wallet = existing ?? newWallet(account.uid, account.role, providerId);
+      const totalCredits = addon.type === 'unit' ? addon.credits : (addon.credits * addon.qty);
+      const addonLabel = typeof addon.name === 'string' ? addon.name : (addon.name?.en || 'Add-on credits');
+      await transfer(wallet, providerId, totalCredits, 'topup', `${addonLabel} (expires at cycle end)`, ref);
+      saveWallet(wallet);
+    }
+    sub.addons = [...(sub.addons || []), addon];
+    saveSub(sub);
+    return sub;
+  }
+
   async function providerPlan(planId, providerId, kinds) {
     const plan = await store.get(`billingPlans/${identifier(planId, 'plan')}`);
     if (!plan || plan.ownerId !== providerId || !kinds.includes(plan.kind) || plan.status !== 'active') fail('not-found', 'This plan is not available.');
@@ -310,6 +348,67 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const providerId = providerOf(account);
     if (!canDecide(providerId)) fail('permission-denied', 'You can only manage your own clients.');
     return { account, providerId };
+  }
+  async function findActiveFreePlan(providerId) {
+    // 1. Direct trial plan for this provider
+    const trial = await store.get(`billingPlans/${providerId}__trial`);
+    if (trial) {
+      if (trial.status === 'active' && trial.enabled !== false && trial.visible !== false) {
+        return trial;
+      }
+      // If trial exists and enabled === false, provider explicitly turned off free trial
+    } else if (providerId !== PLATFORM) {
+      // For workspace admin providers, free trial is enabled by default unless explicitly disabled
+      const defaults = DEFAULT_TRIAL.user;
+      return {
+        id: `${providerId}__trial`,
+        ownerId: providerId,
+        audience: 'user',
+        kind: 'trial',
+        name: { en: 'Free trial', ar: 'تجربة مجانية' },
+        description: { en: 'Complimentary trial period', ar: 'فترة تجريبية مجانية' },
+        badge: { en: 'Trial', ar: 'تجربة' },
+        cta: { en: 'Start free trial', ar: 'بدء التجربة المجانية' },
+        features: { en: ['Access all workspace features during trial'], ar: ['الوصول لكافة ميزات مساحة العمل أثناء التجربة'] },
+        price: 0,
+        currency: 'USD',
+        billingType: 'fixed',
+        durationDays: defaults.days,
+        credits: defaults.credits,
+        tools: [...TOOL_IDS],
+        channels: [],
+        limits: { seats: 1, clients: 0 },
+        addonType: null,
+        addonSeats: null,
+        addonTool: null,
+        visible: true,
+        enabled: true,
+        sortOrder: 0,
+        status: 'active',
+      };
+    }
+
+    // 2. Query published plans for ownerId === providerId where price === 0
+    const plans = await store.query('billingPlans', 'ownerId', providerId);
+    const freePlan = plans.find(p => p.status === 'active' && p.visible !== false && (p.kind === 'trial' ? p.enabled !== false : p.price === 0));
+    if (freePlan) return freePlan;
+
+    // If provider explicitly turned off trial, do not fall back to platform trial
+    if (trial && trial.enabled === false) {
+      return null;
+    }
+
+    // 3. Fallback to platform master trial/plan if provider is not platform
+    if (providerId !== PLATFORM) {
+      const platformTrial = await store.get(`billingPlans/${PLATFORM}__trial`);
+      if (platformTrial && platformTrial.status === 'active' && platformTrial.enabled !== false && platformTrial.visible !== false) {
+        return platformTrial;
+      }
+      const platformPlans = await store.query('billingPlans', 'ownerId', PLATFORM);
+      const platformFree = platformPlans.find(p => p.status === 'active' && p.visible !== false && (p.kind === 'trial' ? p.enabled !== false : p.price === 0));
+      if (platformFree) return platformFree;
+    }
+    return null;
   }
 
   const handlers = {
@@ -344,15 +443,80 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       return { success: true };
     },
 
+    async saveBillingSettings() {
+      const targetProvider = role === 'SUPER_ADMIN' ? (data.providerId || PLATFORM) : actor.uid;
+      if (role !== 'SUPER_ADMIN' && role !== 'ADMIN') fail('permission-denied', 'Only administrators can configure billing settings.');
+      const mode = ['fixed', 'dynamic', 'both'].includes(data.addonMode) ? data.addonMode : 'both';
+      const unitRate = {
+        creditsPerUnit: int(data.unitRate?.creditsPerUnit ?? 100, 'Credits per unit', 1, 1000000),
+        pricePerUnit: Math.max(0, Math.round(Number(data.unitRate?.pricePerUnit ?? 5) * 100) / 100),
+        currency: CURRENCIES.includes(data.unitRate?.currency) ? data.unitRate.currency : 'USD',
+        minUnits: int(data.unitRate?.minUnits ?? 1, 'Min units', 1, 1000),
+        maxUnits: int(data.unitRate?.maxUnits ?? 100, 'Max units', 1, 100000),
+      };
+      const settings = { providerId: targetProvider, addonMode: mode, unitRate, updatedAt: now };
+      store.set(`billingSettings/${targetProvider}`, settings);
+      return { settings };
+    },
+
+    async getBillingSettings() {
+      const targetId = data.providerId || (role === 'SUPER_ADMIN' ? PLATFORM : actor.uid);
+      const existing = await store.get(`billingSettings/${targetId}`);
+      return { settings: existing || { ...DEFAULT_BILLING_SETTINGS, providerId: targetId } };
+    },
+
     async startTrial() {
       const providerId = providerOf(actor);
-      const trial = await store.get(`billingPlans/${providerId}__trial`);
-      if (!trial || trial.status !== 'active' || !trial.enabled) fail('failed-precondition', 'No free trial is available right now.');
+      const trial = await findActiveFreePlan(providerId);
+      if (!trial) fail('failed-precondition', 'No free trial is available right now.');
       const { sub } = await freshen(actor.uid);
       if (sub?.trialUsedAt) fail('already-exists', 'You have already used your free trial.');
       if (isLive(sub, now)) fail('failed-precondition', 'You already have an active subscription.');
-      const subscription = await startPeriod(actor, providerId, trial, 'trial', { refType: 'trial', refId: trial.id });
+      const subscription = await startPeriod(actor, providerId, trial, trial.kind === 'trial' ? 'trial' : 'plan', { refType: 'trial', refId: trial.id });
       return { subscription };
+    },
+
+    async initializeAccountPlan() {
+      const targetUid = data.subscriberId ? identifier(data.subscriberId, 'subscriber') : actor.uid;
+      let account;
+      let providerId;
+      if (targetUid === actor.uid && actor.role !== 'SYSTEM') {
+        account = actor;
+        providerId = providerOf(account);
+      } else {
+        const target = await store.get(`users/${targetUid}`);
+        if (!target) fail('not-found', 'Account not found.');
+        account = { uid: targetUid, role: target.role, name: target.name, email: target.email, supportParentId: target.supportParentId };
+        providerId = providerOf(account);
+      }
+
+      // Check if already subscribed
+      const { sub: existingSub } = await freshen(account.uid);
+      if (existingSub && isLive(existingSub, now)) {
+        return { assigned: false, reason: 'already_live', subscription: existingSub };
+      }
+      if (existingSub?.trialUsedAt) {
+        return { assigned: false, reason: 'trial_already_used', subscription: existingSub };
+      }
+
+      // Check if Free Plan is active/published
+      const freePlan = await findActiveFreePlan(providerId);
+      if (!freePlan) {
+        return { assigned: false, reason: 'free_plan_disabled' };
+      }
+
+      // Automatically assign Free Plan
+      const isTrial = freePlan.kind === 'trial';
+      const ref = { refType: 'registration', refId: freePlan.id };
+      try {
+        const subscription = await startPeriod(account, providerId, freePlan, isTrial ? 'trial' : 'plan', ref);
+        return { assigned: true, status: 'assigned', subscription };
+      } catch (err) {
+        if (err instanceof BillingError && err.code === 'failed-precondition') {
+          return { assigned: false, reason: 'provider_quota_exceeded', error: err.message };
+        }
+        throw err;
+      }
     },
 
     async requestPlan() {
@@ -367,8 +531,20 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
 
     async requestAddon() {
       const providerId = providerOf(actor);
-      const plan = await providerPlan(data.planId, providerId, ['addon']);
-      if (!plan.visible) fail('not-found', 'This add-on is not available.');
+      let plan;
+      if (data.isDynamic || data.planId === 'dynamic_units') {
+        const credits = int(data.credits ?? 100, 'Credits', 1, 10000000);
+        const price = Math.max(0, Math.round(Number(data.price ?? data.totalAmount ?? 0) * 100) / 100);
+        const currency = CURRENCIES.includes(data.currency) ? data.currency : 'USD';
+        plan = {
+          id: 'dynamic_units', ownerId: providerId, kind: 'addon',
+          name: { en: `${credits.toLocaleString()} Custom Credits`, ar: `${credits.toLocaleString()} رصيد مخصص` },
+          price, currency, billingType: 'once', credits, addonType: 'credits', status: 'active', visible: true, tools: []
+        };
+      } else {
+        plan = await providerPlan(data.planId, providerId, ['addon']);
+        if (!plan.visible) fail('not-found', 'This add-on is not available.');
+      }
       const { sub } = await freshen(actor.uid);
       if (!isLive(sub, now)) fail('failed-precondition', 'An active subscription is required before requesting add-ons.');
       return { request: await createRequest(providerId, plan, 'addon', int(data.quantity ?? 1, 'Quantity', 1, 100)) };
@@ -382,22 +558,64 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       return { success: true };
     },
 
+    async attachReceipt() {
+      const requestId = identifier(data.requestId, 'request');
+      const request = await store.get(`billingRequests/${requestId}`);
+      if (!request) fail('not-found', 'Request not found.');
+      const isRequester = request.requesterId === actor.uid;
+      const isProvider = canDecide(request.providerId);
+      if (!isRequester && !isProvider) fail('permission-denied', 'You cannot update this request.');
+
+      const rawReceipt = data.receiptUrl || data.receiptPath || data.imageUrl || data.fileUrl || data.receipt || '';
+      const receiptUrl = cleanReceipt(rawReceipt);
+      const rawName = data.receiptName || data.fileName || data.receiptFileName || '';
+      const receiptName = text(rawName, 200, 'Receipt file name') || '';
+      const transactionId = data.transactionId ? text(data.transactionId, 120, 'Transaction ID') : request.transactionId;
+
+      const updated = {
+        ...request,
+        receiptUrl: receiptUrl || request.receiptUrl || '',
+        receiptPath: receiptUrl || request.receiptPath || '',
+        imageUrl: receiptUrl || request.imageUrl || '',
+        fileUrl: receiptUrl || request.fileUrl || '',
+        receiptName: receiptName || request.receiptName || 'receipt',
+        fileName: receiptName || request.fileName || 'receipt',
+        transactionId: transactionId || request.transactionId || '',
+        updatedAt: now,
+      };
+      writeRequest(requestId, updated);
+      return { success: true, request: updated };
+    },
+
     async decideRequest() {
       const request = await store.get(`billingRequests/${identifier(data.requestId, 'request')}`);
       if (!request) fail('not-found', 'Request not found.');
       if (!canDecide(request.providerId)) fail('permission-denied', 'You cannot decide on this request.');
       if (request.status !== 'pending') fail('failed-precondition', 'This request was already processed.');
-      const reason = text(data.reason, 300, 'Reason');
       if (data.decision === 'reject') {
+        const reason = text(data.reason, 300, 'Rejection reason', true);
         writeRequest(request.id, { ...request, status: 'rejected', reason, decidedAt: now, decidedBy: actor.uid });
         return { success: true };
       }
       if (data.decision !== 'approve') fail('invalid-argument', 'Choose approve or reject.');
-      const plan = await providerPlan(request.planId, request.providerId, request.type === 'addon' ? ['addon'] : ['plan']);
+      const reason = text(data.reason, 300, 'Reason', false);
+      const isDynamic = request.planId === 'dynamic_units';
+      const plan = isDynamic ? request.plan : await providerPlan(request.planId, request.providerId, request.type === 'addon' ? ['addon'] : ['plan']);
       const account = { uid: request.requesterId, role: request.requesterRole, name: request.requesterName, email: request.requesterEmail };
       const ref = { refType: 'request', refId: request.id };
-      if (request.type === 'addon') await applyAddon(account, request.providerId, plan, request.quantity ?? 1, ref);
-      else await startPeriod(account, request.providerId, plan, 'plan', ref);
+
+      if (request.addons && request.addons.length > 0) {
+        if (request.type !== 'addon') {
+          await startPeriod(account, request.providerId, plan, 'plan', ref);
+        }
+        for (const addon of request.addons) {
+          await applyAddonItem(account, request.providerId, addon, ref);
+        }
+      } else if (request.type === 'addon') {
+        await applyAddon(account, request.providerId, plan, request.quantity ?? 1, ref);
+      } else {
+        await startPeriod(account, request.providerId, plan, 'plan', ref);
+      }
       writeRequest(request.id, { ...request, status: 'approved', reason, decidedAt: now, decidedBy: actor.uid });
       return { success: true };
     },
@@ -459,22 +677,107 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
 
   // Preserve the existing approval queue and atomically expose add-on requests
   // under the dedicated collection using the same ID and lifecycle status.
+  function cleanReceipt(raw) {
+    if (typeof raw !== 'string' || !raw.trim()) return '';
+    const value = raw.trim();
+    if (value.startsWith('data:') && value.length > 900000) fail('invalid-argument', 'Receipt image is too large. Please upload an image under 650 KB or try again so it can be stored in cloud storage.');
+    if (!value.startsWith('data:') && value.length > 4000) fail('invalid-argument', 'Invalid receipt link.');
+    return value;
+  }
+
   function writeRequest(id, request) {
     store.set(`billingRequests/${id}`, request);
     if (request.type === 'addon') store.set(`add_on_requests/${id}`, request);
   }
 
   async function createRequest(providerId, plan, type, quantity) {
+    const rawReceipt = data.receiptUrl || data.receiptPath || data.imageUrl || data.fileUrl || data.receipt || data.url || data.attachmentUrl || data.documentUrl || '';
+    const receiptUrl = cleanReceipt(rawReceipt);
+    const rawName = data.receiptName || data.fileName || data.receiptFileName || data.name || '';
+    const receiptName = text(rawName, 200, 'Receipt file name') || '';
+    const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
+
+    const rawAddons = Array.isArray(data.addons) ? data.addons : [];
+    const cleanedAddons = rawAddons.map(a => ({
+      id: String(a.id || ''),
+      type: a.type === 'unit' ? 'unit' : 'fixed',
+      qty: Math.max(1, Math.min(1000, Number(a.qty) || 1)),
+      credits: Math.max(0, Math.min(10000000, Number(a.credits) || 0)),
+      price: Math.max(0, Math.min(1000000, Math.round((Number(a.price) || 0) * 100) / 100)),
+      name: a.name ?? (a.type === 'unit' ? 'Custom credits' : 'Add-on pack'),
+      addonType: a.addonType || 'credits',
+      addonTool: a.addonTool ? String(a.addonTool) : undefined,
+    }));
+
+    const mainPlanPrice = type === 'addon' ? 0 : Math.round(plan.price * quantity * 100) / 100;
+    const addonsTotal = cleanedAddons.reduce((sum, item) => sum + (item.price * (item.type === 'unit' ? 1 : item.qty)), 0);
+    const totalAmount = Math.round((type === 'addon' && !cleanedAddons.length ? (plan.price * quantity) : (mainPlanPrice + addonsTotal)) * 100) / 100;
+
     const open = (await store.query('billingRequests', 'requesterId', actor.uid)).find(item => item.status === 'pending' && item.planId === plan.id);
-    if (open) fail('already-exists', 'You already have a pending request for this item.');
+    if (open) {
+      if (receiptUrl || data.transactionId) {
+        const updated = {
+          ...open,
+          mainPlanPrice,
+          addons: cleanedAddons,
+          totalAmount,
+          total: totalAmount,
+          receiptUrl: receiptUrl || open.receiptUrl || '',
+          receiptPath: receiptUrl || open.receiptPath || '',
+          imageUrl: receiptUrl || open.imageUrl || '',
+          fileUrl: receiptUrl || open.fileUrl || '',
+          receiptName: receiptName || open.receiptName || '',
+          fileName: receiptName || open.fileName || '',
+          paymentMethod: text(data.paymentMethod, 60, 'Payment method') || open.paymentMethod,
+          transactionId: text(data.transactionId, 120, 'Transaction ID') || open.transactionId,
+          note: text(data.note, 300, 'Note') || open.note,
+          updatedAt: now,
+        };
+        writeRequest(open.id, updated);
+        return updated;
+      }
+      fail('already-exists', 'You already have a pending request for this item.');
+    }
     const id = store.id();
     const request = {
       id, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
       providerId, type, planId: plan.id, quantity,
       plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, billingType: plan.billingType, addonType: plan.addonType ?? null },
-      total: Math.round(plan.price * quantity * 100) / 100,
-      note: text(data.note, 300, 'Note'), status: 'pending', createdAt: now,
+      mainPlanPrice,
+      addons: cleanedAddons,
+      totalAmount,
+      total: totalAmount,
+      note: text(data.note, 300, 'Note'),
+      status: isGatewayInstant ? 'approved' : 'pending',
+      createdAt: now,
+      paymentMethod: text(data.paymentMethod, 60, 'Payment method') || (isGatewayInstant ? 'gateway' : 'manual'),
+      paymentType: data.paymentType === 'gateway' ? 'gateway' : 'manual',
+      receiptUrl,
+      receiptPath: receiptUrl,
+      imageUrl: receiptUrl,
+      fileUrl: receiptUrl,
+      receiptName,
+      fileName: receiptName,
+      transactionId: text(data.transactionId, 120, 'Transaction ID') || '',
+      decidedAt: isGatewayInstant ? now : undefined,
+      decidedBy: isGatewayInstant ? 'gateway-webhook' : undefined,
     };
+    if (isGatewayInstant) {
+      const account = { uid: actor.uid, role: actor.role, name: actor.name, email: actor.email };
+      const ref = { refType: 'gateway_payment', refId: request.id, method: request.paymentMethod };
+      if (cleanedAddons.length > 0) {
+        if (type !== 'addon') {
+          await startPeriod(account, providerId, plan, 'plan', ref);
+        }
+        for (const addon of cleanedAddons) {
+          await applyAddonItem(account, providerId, addon, ref);
+        }
+      } else if (type === 'addon') {
+        await applyAddon(account, providerId, plan, quantity, ref);
+      } else {
+        await startPeriod(account, providerId, plan, 'plan', ref);
+      }
+    }
     writeRequest(id, request);
     return request;
   }

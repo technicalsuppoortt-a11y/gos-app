@@ -22,7 +22,7 @@ import { isLive, useSubscription } from '../../backend/billing';
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/marketing-tracking': { title: 'Marketing Tracking', description: 'Pixels, events and conversion insights.' },
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
-  '/admin/users': { title: 'Users Management', description: 'Invite and manage your workspace users.' },
+  '/admin/users': { title: 'Sub Accounts', description: 'Invite and manage your workspace sub-accounts.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
   '/dashboard/plans': { title: 'Plans & Pricing', description: 'Your subscription, credits and available plans.' },
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },

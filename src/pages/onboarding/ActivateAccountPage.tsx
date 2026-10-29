@@ -31,6 +31,7 @@ function ActivateAccountForm() {
   const [busy, setBusy] = useState(false);
   const [passwordSaved, setPasswordSaved] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [planAssigned, setPlanAssigned] = useState<boolean>(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -62,6 +63,7 @@ function ActivateAccountForm() {
         setPasswordSaved(true);
       }
       const result = await activateInvitedUser({ email, password, afterReset: true });
+      setPlanAssigned(result.planAssigned !== false);
       store.dispatch(loginSuccess({ user: result.user, role: result.role, tenant: result.tenant, token: result.token }));
       setPassword(''); setConfirmation(''); setSuccess(true);
     } catch (failure) {
@@ -77,9 +79,19 @@ function ActivateAccountForm() {
       </Link>
       {success ? <div className="gos-activation-success" role="status">
         <span className="gos-activation-state-icon"><CheckCircle2 size={30}/></span>
-        <h1 id="activation-title">{t('You’re all set', 'حسابك جاهز')}</h1>
-        <p>{t('Your password is saved and your account is active. Welcome to your workspace.', 'تم حفظ كلمة المرور وتفعيل حسابك. مرحبًا بك في مساحة عملك.')}</p>
-        <button type="button" className="gos-activation-primary" onClick={() => navigate('/dashboard', { replace: true })}>{t('Continue to dashboard', 'المتابعة إلى لوحة التحكم')}<ArrowRight size={17}/></button>
+        {planAssigned ? (
+          <>
+            <h1 id="activation-title">{t('You’re all set', 'حسابك جاهز')}</h1>
+            <p>{t('Your password is saved and your account is active on the Free Plan. Welcome to your workspace.', 'تم حفظ كلمة المرور وتفعيل حسابك بالباقة المجانية. مرحبًا بك في مساحة عملك.')}</p>
+            <button type="button" className="gos-activation-primary" onClick={() => navigate('/dashboard', { replace: true })}>{t('Continue to dashboard', 'المتابعة إلى لوحة التحكم')}<ArrowRight size={17}/></button>
+          </>
+        ) : (
+          <>
+            <h1 id="activation-title">{t('Account Activated!', 'تم تفعيل الحساب!')}</h1>
+            <p>{t('Your account is active! Please select a subscription plan to unlock your workspace tools.', 'تم تفعيل حسابك بنجاح! يرجى اختيار باقة اشتراك لفتح الوصول الكامل لأدوات مساحة عملك.')}</p>
+            <button type="button" className="gos-activation-primary" onClick={() => navigate('/dashboard/plans', { replace: true })}>{t('Choose a Subscription Plan', 'اختيار باقة الاشتراك')}<ArrowRight size={17}/></button>
+          </>
+        )}
       </div> : loading ? <div className="gos-activation-loading" role="status"><LoaderCircle size={25} className="animate-spin"/><p>{t('Checking your invitation…', 'جارٍ التحقق من دعوتك…')}</p></div> : linkError ? <div className="gos-activation-invalid" role="alert">
         <span className="gos-activation-state-icon"><LockKeyhole size={27}/></span>
         <h1 id="activation-title">{t('This link is unavailable', 'هذا الرابط غير متاح')}</h1>

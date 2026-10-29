@@ -26,7 +26,7 @@ export const legacyWebTemplateRows: RecordRow[] = [
 export const modules = [
  { id:'dashboard', title:['Dashboard','لوحة التحكم'], icon:LayoutDashboard, description:['Your platform, at a glance.','نظرة شاملة على أداء المنصة.'], tabs:[] },
  { id:'tools', title:['All Tools','كل الأدوات'], icon:Grid2X2, description:['Centralized platform features & native tools control center.','مركز التحكم الموحد لميزات وأدوات المنصة.'], tabs:[] },
- { id:'users', title:['Users Management','إدارة المستخدمين'], icon:Users, description:['',''], tabs:[] },
+ { id:'users', title:['Sub Accounts','الحسابات الفرعية'], icon:Users, description:['Manage sub-accounts, roles & team access.','إدارة الحسابات الفرعية والأدوار وصلاحيات الفريق.'], tabs:[] },
  { id:'conversations', title:['Conversations','المحادثات'], icon:MessagesSquare, description:['Monitor channels, conversations and human handoffs.','راقب القنوات والمحادثات والتحويل إلى الفريق.'], tabs:[
  tab('Inbox','صندوق الوارد',[tenant,f('channel','Channel','القناة',['WhatsApp','Instagram','Email']),f('owner','Assigned to','المسؤول',['AI','Human']),f('message','Last message','آخر رسالة'),status(['Open','Resolved'])],[['Pricing inquiry','Nova Studio','Open','WhatsApp','AI','Can I book a consultation?'],['Course access','Atlas Agency','Open','Email','Human','Please help with my order.'],['New appointment','Cairo Growth','Resolved','Instagram','AI','Thank you for confirming.']]),
  tab('Handoff logs','سجل التحويل',[tenant,f('reason','Reason','السبب'),f('agent','Agent','الموظف'),status(['Pending','Completed'])],[['Escalation #104','Nova Studio','Completed','Billing question','Sara Ali'],['Escalation #105','Atlas Agency','Pending','Needs specialist','Omar Hassan']]),

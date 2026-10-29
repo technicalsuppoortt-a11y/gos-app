@@ -4,11 +4,11 @@ import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { backendError, callBackend, db } from './firebase';
 import { isDemoAccount } from './demoContext';
 import type { RootState } from '../store';
-import type { BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry } from '../../functions/billing-engine.js';
-import { PLATFORM } from '../../functions/billing-engine.js';
+import type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry, ProviderBillingSettings } from '../../functions/billing-engine.js';
+import { DEFAULT_BILLING_SETTINGS, PLATFORM } from '../../functions/billing-engine.js';
 
-export type { BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry } from '../../functions/billing-engine.js';
-export { PLATFORM, TOOL_IDS, CHANNEL_IDS, BILLING_TYPES, CURRENCIES, DEFAULT_TRIAL, effectiveStatus, entitledTools, isLive } from '../../functions/billing-engine.js';
+export type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry, ProviderBillingSettings } from '../../functions/billing-engine.js';
+export { DEFAULT_BILLING_SETTINGS, PLATFORM, TOOL_IDS, CHANNEL_IDS, BILLING_TYPES, CURRENCIES, DEFAULT_TRIAL, effectiveStatus, entitledTools, isLive } from '../../functions/billing-engine.js';
 
 type Live<T> = { data: T; loading: boolean; error: string };
 
@@ -59,8 +59,29 @@ export function useBillingIdentity() {
 
 export const useSubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null);
 export const useWallet = (uid: string | null) => useDoc<BillingWallet>(uid ? `billingWallets/${uid}` : null);
+export const useTrial = (ownerId: string | null) => useDoc<BillingPlan>(ownerId ? `billingPlans/${ownerId}__trial` : null);
 export const useSubscribers = (providerId: string | null) => useCollection<BillingSubscription>('billingSubscriptions', 'providerId', providerId);
 export const useProviderWallets = (providerId: string | null) => useCollection<BillingWallet>('billingWallets', 'providerId', providerId);
+
+export function useBillingSettings(providerId: string | null) {
+  const docPath = providerId ? `billingSettings/${providerId}` : null;
+  const state = useDoc<ProviderBillingSettings>(docPath);
+  const data = useMemo<ProviderBillingSettings>(() => {
+    if (state.data) {
+      return {
+        ...DEFAULT_BILLING_SETTINGS,
+        ...state.data,
+        providerId: providerId || '',
+        unitRate: {
+          ...DEFAULT_BILLING_SETTINGS.unitRate,
+          ...(state.data.unitRate || {}),
+        },
+      };
+    }
+    return { ...DEFAULT_BILLING_SETTINGS, providerId: providerId || '' };
+  }, [state.data, providerId]);
+  return { ...state, data };
+}
 
 export function usePlans(ownerId: string | null, includeHidden = false) {
   const state = useCollection<BillingPlan>('billingPlans', 'ownerId', ownerId);

@@ -3,19 +3,29 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { getFirestore } from 'firebase-admin/firestore';
 import { BillingError, executeBilling } from './billing-engine.js';
 
+/** Firestore rejects `undefined` values — drop them recursively before writing. */
+function stripUndefined(value) {
+  if (Array.isArray(value)) return value.map(stripUndefined);
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined).map(([k, v]) => [k, stripUndefined(v)]));
+  }
+  return value;
+}
+
 /** Firestore transaction adapter: every read happens through `tx`, writes are applied at the end. */
 function transactionStore(db, tx) {
   return {
     get: async path => { const snapshot = await tx.get(db.doc(path)); return snapshot.exists ? snapshot.data() : undefined; },
-    query: async (collection, field, value) => (await tx.get(db.collection(collection).where(field, '==', value))).docs.map(doc => ({ ...doc.data(), id: doc.id })),
+    query: async (collection, field, value) => (await db.collection(collection).where(field, '==', value).get()).docs.map(doc => ({ ...doc.data(), id: doc.id })),
     id: () => db.collection('billingLedger').doc().id,
-    commit: writes => { for (const [path, data] of writes) tx.set(db.doc(path), data); },
+    commit: writes => { for (const [path, data] of writes) tx.set(db.doc(path), stripUndefined(data)); },
   };
 }
 
 function toHttpsError(error) {
   if (error instanceof BillingError) return new HttpsError(error.code, error.message);
-  return error;
+  console.error('Unhandled billing error in billingService:', error);
+  return new HttpsError('internal', error?.message || 'An internal billing error occurred.');
 }
 
 export async function billingServiceRequest(request, { actor, db }) {

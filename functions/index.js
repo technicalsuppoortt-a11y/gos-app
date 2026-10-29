@@ -173,10 +173,12 @@ export const manageUser = onCall(async request => {
     await ref.update({ role });
     await auth.revokeRefreshTokens(id);
   } else if (operation === 'status') {
-    const disabled = request.data.status === 'Deactivated';
-    if (!disabled && ['Pending', 'Invited'].includes(target.status)) throw new HttpsError('failed-precondition', 'This user must set their password and sign in to activate their invitation.');
+    const disabled = request.data.status === 'Deactivated' || request.data.status === 'Inactive';
+    if (!disabled && ['Pending', 'Invited'].includes(target.status) && !target.activatedAt) {
+      // If user is pending, admin can choose to activate directly or wait for sign in
+    }
     const account = await auth.getUser(id);
-    const nextStatus = disabled ? 'Deactivated' : target.activatedAt || account.metadata.lastSignInTime ? 'Active' : 'Pending';
+    const nextStatus = disabled ? 'Deactivated' : 'Active';
     // Deny access in Firestore before revoking Auth sessions.
     if (disabled) await ref.update({ status: 'Deactivated' });
     await auth.updateUser(id, { disabled });
