@@ -34,7 +34,10 @@ export function useCopy() {
   };
 }
 
-export const toolName = (id: string, ar: boolean) => initialTools.find(tool => tool.id === id)?.name[ar ? 1 : 0] ?? id;
+export const toolName = (id: string, ar: boolean) => {
+  if (id === 'inbox' || id === 'unified-inbox') return ar ? 'صندوق الوارد (الموحد)' : 'Inbox (Unified Multi-Channel)';
+  return initialTools.find(tool => tool.id === id)?.name[ar ? 1 : 0] ?? id;
+};
 export const TOOLS = TOOL_IDS.map(id => ({ id }));
 
 export function billingLabel(plan: Pick<BillingPlan, 'kind' | 'billingType' | 'durationDays'> & { addonType?: BillingPlan['addonType'] }, c: Copy) {

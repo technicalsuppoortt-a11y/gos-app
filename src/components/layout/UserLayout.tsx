@@ -12,6 +12,8 @@ import { settingsTabs } from '../../pages/settings/navigation';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { useSubscription, isLive } from '../../backend/billing';
+import { isDemoAccount } from '../../backend/demoContext';
+import { isDemoSessionActive } from '../../demo/mode';
 import { SupportQuickChat } from '../../pages/support/SupportQuickChat';
 // OnboardingProgress is temporarily disabled with the onboarding cycle.
 
@@ -68,7 +70,7 @@ export const UserLayout: React.FC = () => {
   const role = useSelector((s: RootState) => s.auth.role);
   const { data: sub, loading: subLoading } = useSubscription(user?.id ?? null);
   const live = isLive(sub);
-  const isLocked = role === 'USER' && !subLoading && !live;
+  const isLocked = !(isDemoAccount || isDemoSessionActive()) && role === 'USER' && !subLoading && !live;
 
   useEffect(() => {
     if (isLocked) {

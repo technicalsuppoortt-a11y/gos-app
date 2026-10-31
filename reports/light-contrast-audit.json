@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 78,
-  "correctedDeclarations": 854,
+  "correctedDeclarations": 853,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -83,17 +83,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 124,
+      "line": 126,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 132,
+      "line": 134,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 135,
+      "line": 137,
       "utility": "text-slate-400"
     },
     {
@@ -762,14 +762,6 @@
       "before": "#f4f6fb",
       "after": "#334155",
       "contrastOnWhite": 1.08
-    },
-    {
-      "file": "src/components/layout/super-admin.css",
-      "line": 3,
-      "selector": ".sa-brand small",
-      "before": "#7e879a",
-      "after": "#475569",
-      "contrastOnWhite": 3.61
     },
     {
       "file": "src/components/layout/super-admin.css",

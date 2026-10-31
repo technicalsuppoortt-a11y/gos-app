@@ -71,7 +71,10 @@ export function effectiveStatus(sub, now = new Date().toISOString()) {
 export const isLive = (sub, now) => ['active', 'trialing'].includes(effectiveStatus(sub, now));
 export function entitledTools(sub, now) {
   if (!isLive(sub, now)) return [];
-  return [...new Set([...(sub.plan?.tools ?? []), ...(sub.extraTools ?? [])])];
+  const list = [...new Set([...(sub.plan?.tools ?? []), ...(sub.extraTools ?? [])])];
+  if (list.includes('unified-inbox') && !list.includes('inbox')) list.push('inbox');
+  if (list.includes('inbox') && !list.includes('unified-inbox')) list.push('unified-inbox');
+  return list;
 }
 export function planSnapshot(plan) {
   return { id: plan.id, kind: plan.kind, name: plan.name, billingType: plan.billingType, durationDays: plan.durationDays ?? null, price: plan.price, currency: plan.currency, credits: plan.credits, tools: plan.tools ?? [], channels: plan.channels ?? [], limits: plan.limits ?? {} };
@@ -108,9 +111,10 @@ export function normalizePlan(input, { ownerId, allowedTools = null, existing = 
   const audience = ownerId === PLATFORM ? 'admin' : 'user';
   // Platform plans govern quotas and channels. Keep the legacy tool entitlement
   // field populated so admins can continue offering client tool permissions.
+  const mapTool = tool => (tool === 'inbox' ? 'unified-inbox' : tool);
   const tools = ownerId === PLATFORM
-    ? (Array.isArray(input.tools) && input.tools.length ? [...new Set(input.tools.filter(tool => TOOL_IDS.includes(tool)))] : [...TOOL_IDS])
-    : [...new Set((Array.isArray(input.tools) ? input.tools : []).filter(tool => TOOL_IDS.includes(tool)))];
+    ? (Array.isArray(input.tools) && input.tools.length ? [...new Set(input.tools.map(mapTool).filter(tool => TOOL_IDS.includes(tool)))] : [...TOOL_IDS])
+    : [...new Set((Array.isArray(input.tools) ? input.tools : []).map(mapTool).filter(tool => TOOL_IDS.includes(tool)))];
   const billingType = kind === 'plan' ? (BILLING_TYPES.includes(input.billingType) ? input.billingType : fail('invalid-argument', 'Choose a billing type.')) : kind === 'trial' ? 'fixed' : 'once';
   const durationDays = kind === 'trial' ? int(input.durationDays, 'Trial duration (days)', 1, 365) : billingType === 'fixed' ? int(input.durationDays, 'Duration (days)', 1, 3650) : null;
   const addonType = kind === 'addon' ? (ADDON_TYPES.includes(input.addonType) ? input.addonType : fail('invalid-argument', 'Choose an add-on type.')) : null;

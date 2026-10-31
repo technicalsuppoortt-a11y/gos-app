@@ -194,7 +194,7 @@ export const initialTools: ToolItem[] = [
   },
   {
     id: 'unified-inbox',
-    name: ['Unified Multi-Channel Inbox', 'صندوق الوارد الموحد'],
+    name: ['Inbox (Unified Multi-Channel)', 'صندوق الوارد (الموحد)'],
     description: ['Omnichannel inbox for WhatsApp, Instagram, Live Chat & Email.', 'صندوق رسائل موحد للواتساب وإنستغرام والدردشة المباشرة والبريد.'],
     icon: MessagesSquare,
     category: 'Operations',

@@ -8,6 +8,8 @@ import { initialTools, type ToolItem } from '../pages/admin/tools-data';
 import { useUILanguage } from '../i18n/display';
 import { toolPolicyAllows } from './toolPolicy';
 import { effectiveStatus, entitledTools, useSubscription } from './billing';
+import { isDemoAccount } from './demoContext';
+import { isDemoSessionActive } from '../demo/mode';
 
 type ToolState = Pick<ToolItem, 'enabled' | 'status' | 'settings' | 'accessTier'> & { maintenanceNotice: string };
 export type PlatformTools = Record<string, ToolState>;
@@ -37,9 +39,10 @@ export async function persistPlatformTools(tools: ToolItem[], expectedRevision: 
     tx.set(ref, { tools: values, revision: expectedRevision + 1, updatedBy: uid, updatedAt: serverTimestamp() });
   });
 }
-const routes: Record<string, string> = { copilot: 'ai-copilot', funnels: 'funnel-builder', websites: 'funnel-builder', forms: 'funnel-builder', domains: 'custom-domains', crm: 'crm-pipeline', inbox: 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'products-payments': 'products-payments', 'follow-up': 'ai-followup', 'ai-followup': 'ai-followup', analytics: 'analytics-bi', integrations: 'webhooks-api', templates: 'email-sms', academy: 'client-portal' };
+const routes: Record<string, string> = { copilot: 'ai-copilot', funnels: 'funnel-builder', websites: 'funnel-builder', forms: 'funnel-builder', domains: 'custom-domains', crm: 'crm-pipeline', inbox: 'unified-inbox', 'unified-inbox': 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'products-payments': 'products-payments', 'follow-up': 'ai-followup', 'ai-followup': 'ai-followup', analytics: 'analytics-bi', integrations: 'webhooks-api', templates: 'email-sms', academy: 'client-portal' };
 /** Wrap only authenticated user layouts; existing pages and permissions remain in place. */
 export function PlatformToolBoundary({ children }: { children: ReactNode }) {
+  if (isDemoAccount || isDemoSessionActive()) return children;
   const { pathname } = useLocation();
   const ar = useUILanguage().startsWith('ar');
   const { tools, loading, error } = usePlatformTools();
