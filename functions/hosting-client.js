@@ -22,7 +22,7 @@ export function buildPublicationFiles(asset, template, appOrigin, localResources
     }
     return value;
   }
-  const publicAsset = resolveMedia({ id: asset.id, kind: asset.kind, name: asset.name, image: asset.image, domain: asset.domain ?? '', settings: asset.settings, document: asset.document });
+  const publicAsset = resolveMedia({ id: asset.id, kind: asset.kind, formAsset: asset.formAsset === true, name: asset.name, image: asset.image, domain: asset.domain ?? '', settings: asset.settings, document: asset.document });
   const files = {};
   for (const page of pages) {
     const path = normalizePagePath(page.path);

@@ -7,6 +7,15 @@ import { buildPublicationFiles, createHostingClient, domainVerification, hosting
 const template = '<html><head><title>Page</title><script type="module" src="/assets/public.js"></script></head><body><script id="gos-publication-data" type="application/json">{}</script></body></html>';
 const asset = () => ({ id: 'asset', name: 'A <safe> title', kind: 'funnel', image: '/pagefly/coach.png', settings: { color: '#6544e8' }, integrations: { private: 'secret' }, document: { pages: [{ id: 'home', name: 'Home', path: '/start', sections: [], seoTitle: 'My <title>' }, { id: 'thanks', name: 'Thanks', path: '/thank-you', sections: [] }], funnel: { pagesFlow: ['home', 'thanks'] }, steps: [{ id: 'step', pageId: 'home' }] } });
 
+test('publication retains standalone form identity and dynamic field styling', () => {
+  const row = asset(); row.formAsset = true;
+  row.document.pages[0].sections = [{ id: 'form', type: 'Form', content: { customFields: JSON.stringify([{id:'email',type:'email',required:true}]), themeCardBg: '#111827', themeTextColor: '#f8fafc' } }];
+  const html = buildPublicationFiles(row, template, 'https://dashboard.web.app')['/index.html'];
+  const data = JSON.parse(html.match(/id="gos-publication-data" type="application\/json">(.*?)<\/script>/)[1]);
+  assert.equal(data.asset.formAsset, true);
+  assert.deepEqual(data.asset.document.pages[0].sections, row.document.pages[0].sections);
+});
+
 test('published page files cover the root, deep links and assets without exposing integrations', () => {
   const files = buildPublicationFiles(asset(), template, 'https://dashboard.web.app');
   assert.deepEqual(Object.keys(files).sort(), ['/index.html', '/start/index.html', '/thank-you/index.html']);

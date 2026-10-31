@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useCallback, useEffect, useState } from 'react';
 import { 
   BookOpen, CheckCircle2, ChevronDown, ChevronUp, CreditCard, 
@@ -289,7 +290,7 @@ export function PaymentMethodsPanel() {
     {draft && <Modal title={t(`Configure ${draft.name}`)} close={close} disableBackdropClose={busy} disableEscapeClose={busy}>
       <form autoComplete="off" onSubmit={event => { event.preventDefault(); if (draft.type === 'gateway') void persistGateway(); else void persist([...methods.filter(method => method.id !== draft.id), draft]); }}>
         <fieldset disabled={busy}>
-          {['fawry', 'kashier'].includes(draft.provider) && <Field label="Provider"><select aria-label={t('Provider')} value={draft.provider} onChange={event => configure(event.target.value)}><option value="fawry">Fawry</option><option value="kashier">Kashier</option></select></Field>}
+          {['fawry', 'kashier'].includes(draft.provider) && <Field label="Provider"><DashboardSelect aria-label={t('Provider')} value={draft.provider} onChange={event => configure(event.target.value)}><option value="fawry">Fawry</option><option value="kashier">Kashier</option></DashboardSelect></Field>}
           {draft.type === 'manual' ? <>
             <Field label="Transfer account / wallet number"><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
             <Field label="Customer instructions"><textarea maxLength={1000} value={draft.instructions} onChange={event => setDraft({ ...draft, instructions: event.target.value })}/></Field>
@@ -298,8 +299,8 @@ export function PaymentMethodsPanel() {
             {gatewayProvider && <GatewaySetupGuide provider={gatewayProvider} />}
             {gatewayLoading && <p className="st-note" role="status">{t('Loading gateway configuration…')}</p>}
             {gateway && gatewayProvider && <>
-              <Field label="Mode"><select aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></select></Field>
-              {gatewayProvider === 'paytabs' && <Field label="PayTabs region"><select aria-label={t('PayTabs region')} value={credentials.region} onChange={event => setCredentials({ ...credentials, region: event.target.value })}>{paytabsRegions.map(region => <option key={region} value={region}>{t(({ SAU: 'Saudi Arabia', ARE: 'United Arab Emirates', EGY: 'Egypt', OMN: 'Oman', JOR: 'Jordan', IRQ: 'Iraq', KWT: 'Kuwait', GLOBAL: 'Global' })[region] ?? region)}</option>)}</select></Field>}
+              <Field label="Mode"><DashboardSelect aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></DashboardSelect></Field>
+              {gatewayProvider === 'paytabs' && <Field label="PayTabs region"><DashboardSelect aria-label={t('PayTabs region')} value={credentials.region} onChange={event => setCredentials({ ...credentials, region: event.target.value })}>{paytabsRegions.map(region => <option key={region} value={region}>{t(({ SAU: 'Saudi Arabia', ARE: 'United Arab Emirates', EGY: 'Egypt', OMN: 'Oman', JOR: 'Jordan', IRQ: 'Iraq', KWT: 'Kuwait', GLOBAL: 'Global' })[region] ?? region)}</option>)}</DashboardSelect></Field>}
               {gatewayFields[gatewayProvider].map(field => <Field key={`${gatewayProvider}-${field.key}`} label={field.optional ? `${field.label} (optional)` : field.label}>
                 {field.secret ? (
                   <div className="st-password-wrap">

@@ -35,11 +35,21 @@ export function useBuilderFormCapture(item: BuilderSection) {
     if (!capture) { success(); return; }
     if (lock.current) return;
     const form = event.currentTarget, fields = new FormData(form);
+    if (!form.reportValidity()) return;
     const values = { name: String(fields.get('name') ?? ''), email: String(fields.get('email') ?? ''), phone: String(fields.get('phone') ?? ''), message: String(fields.get('message') ?? '') };
     // A builder can label a name field "Full Name" or add custom text inputs.
     if (!values.name) values.name = String(fields.get('full_name') ?? '');
     if (!values.email) values.email = form.querySelector<HTMLInputElement>('input[type=email]')?.value ?? '';
     if (!values.phone) values.phone = form.querySelector<HTMLInputElement>('input[type=tel]')?.value ?? '';
+    // Custom field IDs are stable schema keys, and may be generated UUIDs.
+    // Resolve common contact labels without renaming any saved fields.
+    try {
+      const schema: { id: string; label: string; type: string }[] = JSON.parse(item.content.customFields || '[]');
+      const nameField = schema.find(field => /^(full[ _-]?name|name|your name)$/i.test(field.label.trim()));
+      const messageField = schema.find(field => field.type === 'textarea');
+      if (!values.name && nameField) values.name = String(fields.get(nameField.id) ?? '');
+      if (!values.message && messageField) values.message = String(fields.get(messageField.id) ?? '');
+    } catch { /* Standard forms do not require a custom field schema. */ }
     if (!Object.values(values).some(value => value.trim())) values.message = [...fields.entries()].map(([key, value]) => `${key}: ${String(value)}`).join('\n');
     const customFields = Object.fromEntries([...fields.entries()].map(([key, value]) => [key, String(value)]));
     const signature = JSON.stringify({ ...values, customFields });

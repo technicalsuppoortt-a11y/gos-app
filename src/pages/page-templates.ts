@@ -2,8 +2,8 @@ import { createBuilderDocument } from './BuilderWorkspace';
 import type { BuilderSection } from './BuilderWorkspace';
 import type { Asset, BuilderMode } from './asset-model';
 
-import type { PageTemplate } from './page-template-data';
-export { pageTemplates, type PageTemplate } from './page-template-data';
+import { type PageTemplate, FORM_BACKGROUND_PRESETS } from './page-template-data';
+export { pageTemplates, type PageTemplate, FORM_BACKGROUND_PRESETS, type FormBackgroundPreset } from './page-template-data';
 export function createPageAsset(kind:BuilderMode|'form',name:string,template?:PageTemplate):Asset {
   const isForm = template?.mode === 'form' || kind === 'form';
   const effectiveKind: BuilderMode = isForm ? 'website' : (template?.mode === 'funnel' ? 'funnel' : (kind === 'funnel' ? 'funnel' : 'website'));
@@ -37,6 +37,7 @@ export function initializePage(mode: BuilderMode | 'form', name: string, templat
       { id: 'email', label: 'Email address', type: 'email', required: true, options: [], placeholder: 'you@example.com' },
       { id: 'message', label: 'Message', type: 'textarea', required: false, options: [], placeholder: 'How can we help you?' }
     ];
+    const preset = FORM_BACKGROUND_PRESETS.find(p => p.id === template?.backgroundPreset) || FORM_BACKGROUND_PRESETS[0];
     page.name = 'Form Page';
     page.path = '/';
     page.status = 'Draft';
@@ -45,12 +46,17 @@ export function initializePage(mode: BuilderMode | 'form', name: string, templat
     page.headline = template?.title || name;
     page.subheadline = template?.body || '';
     page.cta = template?.cta || 'Submit';
+    page.backgroundColor = template?.backgroundColor || preset.background;
     page.sections = [
       block('Form', template?.title || name, template?.body || '', {
         title: template?.title || name,
         button: template?.cta || 'Submit',
         customFields: JSON.stringify(fields),
         fields: '[]',
+        themeBackgroundId: preset.id,
+        themeCardBg: preset.cardBackground,
+        themeCardBorder: preset.cardBorder,
+        themeTextColor: preset.textColor,
         successMessage: 'Thank you! Your submission has been received.'
       })
     ];

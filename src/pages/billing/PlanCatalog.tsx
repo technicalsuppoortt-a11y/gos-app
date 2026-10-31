@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useMemo, useState } from 'react';
 import { Archive, Download, Eye, EyeOff, Gem, Layers, Package, Pencil, Plus, Search, Sparkles } from 'lucide-react';
 import { billing, isLive, PLATFORM, type BillingPlan, type BillingSubscription } from '../../backend/billing';
@@ -49,7 +50,7 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
           <div className="bl-card-body" style={{ paddingBlockEnd: 0 }}>
             <div className="bl-toolbar">
               <label className="bl-search"><Search size={15} /><input className="bl-input" value={search} onChange={event => setSearch(event.target.value)} placeholder={c.t('Search plans…', 'ابحث في الباقات…')} aria-label={c.t('Search plans', 'بحث في الباقات')} /></label>
-              {currencies.length > 1 && <select className="bl-input" style={{ width: 170 }} value={currency} onChange={event => setCurrency(event.target.value)} aria-label={c.t('Currency', 'العملة')}><option value="">{c.t('All currencies', 'كل العملات')}</option>{currencies.map(code => <option key={code} value={code}>{code}</option>)}</select>}
+              {currencies.length > 1 && <DashboardSelect className="bl-input" style={{ width: 170 }} value={currency} onChange={event => setCurrency(event.target.value)} aria-label={c.t('Currency', 'العملة')}><option value="">{c.t('All currencies', 'كل العملات')}</option>{currencies.map(code => <option key={code} value={code}>{code}</option>)}</DashboardSelect>}
             </div>
           </div>
           {rows.length ? (

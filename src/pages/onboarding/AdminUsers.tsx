@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
@@ -1046,7 +1047,7 @@ export function AdminUsers() {
             <div className="ob-pagination-info">
               <div className="ob-rows-per-page">
                 <span>{t('Rows per page:', 'الصفوف بالصفحة:')}</span>
-                <select
+                <DashboardSelect
                   aria-label={t('Rows per page', 'الصفوف بالصفحة')}
                   value={pageSize}
                   onChange={e => {
@@ -1058,7 +1059,7 @@ export function AdminUsers() {
                   <option value={5}>5</option>
                   <option value={10}>10</option>
                   <option value={25}>25</option>
-                </select>
+                </DashboardSelect>
               </div>
               <span className="ob-pagination-counter">
                 {t(

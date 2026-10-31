@@ -4,6 +4,7 @@ import { Children, isValidElement, useId, useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode, SelectHTMLAttributes } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useSelectPortal } from '../../components/ui/select-layer';
 
 type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'multiple' | 'size'>;
 type Option = { value:string; label:ReactNode; text:string; disabled:boolean };
@@ -17,13 +18,12 @@ function optionsFrom(children:ReactNode):Option[] {
   });
 }
 // Native-compatible props keep each existing field's value and change handler intact.
-export function BookingSelect({children,value,defaultValue,onChange,disabled,required,name,id,className='',...props}:Props) {
+export function BookingSelect({children,value,defaultValue,onChange,disabled,required,name,id,className='',style,...props}:Props) {
   useUILanguage();
   const autoId = useId();
-  const trigger = useRef<HTMLButtonElement>(null);
-  const [uncontrolled,setUncontrolled] = useState(String(defaultValue ?? ''));
+  const { trigger, container, onOpenChange } = useSelectPortal();
+  const [uncontrolled,setUncontrolled] = useState(() => String(defaultValue ?? optionsFrom(children)[0]?.value ?? ''));
   const [invalid,setInvalid] = useState(false);
-  const [container,setContainer] = useState<HTMLElement | null>(null);
   const items = optionsFrom(children).filter((item,index,all)=>all.findIndex(o=>o.value===item.value)===index);
   const current = String(value ?? uncontrolled);
   const selected = items.find(o=>o.value===current);
@@ -32,8 +32,8 @@ export function BookingSelect({children,value,defaultValue,onChange,disabled,req
     setUncontrolled(actual);setInvalid(false);
     onChange?.({target:{value:actual,name:name||''},currentTarget:{value:actual,name:name||''}} as ChangeEvent<HTMLSelectElement>);
   };
-  return <span className={'bk-select '+className}>
-    <Select.Root dir={uiDirection()} value={current||empty} onValueChange={choose} disabled={disabled} onOpenChange={open=>{if(open)setContainer(trigger.current?.closest('dialog')||null)}}>
+  return <span style={style} className={'bk-select '+className}>
+    <Select.Root dir={uiDirection()} value={current||empty} onValueChange={choose} disabled={disabled} onOpenChange={onOpenChange}>
       <Select.Trigger ref={trigger} type="button" id={id||autoId} className="bk-select-trigger" aria-label={translateText(props['aria-label'])} aria-labelledby={props['aria-labelledby']} aria-required={required} aria-invalid={invalid||undefined} title={translateText(selected?.text)} onFocus={props.onFocus as never} onBlur={props.onBlur as never}>
         <Select.Value placeholder={translateText("Select an option")}>{localizeNode(selected?.label||'Select an option')}</Select.Value><Select.Icon><ChevronDown size={14}/></Select.Icon>
       </Select.Trigger>

@@ -52,14 +52,129 @@
 .pf-start-options button{display:flex;align-items:flex-start;gap:10px;flex-direction:column;padding:20px;border:1px solid #ddd;border-radius:8px;background:#fff;text-align:start;cursor:pointer;color:#444}
 .pf-start-options button.selected{border-color:#2384e8;box-shadow:0 0 0 1px #2384e8;background:#f6faff}.pf-start-options b{font-size:14px}.pf-start-options span{font-size:12px;color:#777}
 .pf-initialization footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
-.pf-template-filters{display:flex;gap:12px;margin:16px 0 24px}
-.pf-template-filters label{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #e2e8f0;padding:10px 14px;border-radius:10px;background:#fff;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.pf-template-filters label:focus-within{border-color:#7C3AED;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
-.pf-template-filters label svg{color:#94a3b8}
-.pf-template-filters input{width:100%;min-width:0;border:0;outline:0;font-size:13px;color:#334155;background:transparent}
-.pf-template-filters input::placeholder{color:#94a3b8}
-.pf-template-filters select{min-width:180px;border:1px solid #e2e8f0;padding-block:10px 10px;padding-inline:14px 36px;border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;background-size:14px;appearance:none;font-size:13px;color:#475569;cursor:pointer;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.pf-template-filters select:focus{outline:0;border-color:#7C3AED;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+.pf-template-filters {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pf-template-filters label {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.pf-template-filters label:hover {
+  border-color: #cbd5e1;
+}
+
+.pf-template-filters label:focus-within {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.pf-template-filters label svg {
+  color: #7C3AED;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.pf-template-filters label:focus-within svg {
+  transform: scale(1.1);
+}
+
+.pf-template-filters input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #0f172a;
+  background: transparent;
+}
+
+.pf-template-filters input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.pf-template-filters select {
+  min-width: 190px;
+  border: 1px solid #e2e8f0;
+  padding-block: 10px 10px;
+  padding-inline: 14px 40px;
+  border-radius: 12px;
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C3AED' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
+  background-size: 15px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-size: 13px;
+  font-weight: 550;
+  color: #1e293b;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.pf-template-filters select:hover {
+  border-color: #a78bfa;
+  background-color: #faf5ff;
+}
+
+.pf-template-filters select:focus {
+  outline: 0;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.pf-template-filters select.is-filtered {
+  border-color: #7C3AED;
+  background-color: #f5f3ff;
+  color: #6d28d9;
+}
+
+.pf-clear-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.pf-clear-filters-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+[dir="rtl"] .pf-template-filters select {
+  background-position: left 14px center !important;
+  padding-right: 14px !important;
+  padding-left: 40px !important;
+}
 .pf-template-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .pf-template-card{padding:0;border:1px solid #ddd;border-radius:7px;overflow:hidden;background:#fff;text-align:start;cursor:pointer;transition:box-shadow .15s,border-color .15s}.pf-template-card:hover{border-color:#2384e8;box-shadow:0 4px 16px #00000012}
 .pf-template-preview{min-height:165px;padding:18px 14px;display:flex;flex-direction:column;align-items:flex-start;background-size:cover;background-position:center;color:white}.pf-template-preview small{font-size:8px;text-transform:uppercase;letter-spacing:1px}.pf-template-preview strong{font-size:18px;line-height:1.2;max-width:180px;margin:12px 0 16px}.pf-template-preview>span{font-size:8px;padding:7px;border-radius:2px;margin-top:auto}
@@ -98,8 +213,45 @@
 .pf-part-toolbar{position:fixed;z-index:80;display:flex;align-items:center;gap:2px;padding:3px 5px;border-radius:4px;background:#2384e8;color:#fff;box-shadow:0 3px 10px #0002;font:10px Inter,Arial,sans-serif}
 .pf-part-toolbar b{padding:3px 5px}.pf-part-toolbar button{display:flex;align-items:center;justify-content:center;width:25px;height:25px;border:0;background:transparent;border-radius:3px;color:#fff;cursor:pointer}.pf-part-toolbar button:hover,.pf-part-toolbar button:focus-visible{background:#ffffff30}
 .pf-part-toolbar b,.fn-element-actions button span{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fb-inspector-scroll>h2{overflow-wrap:break-word}
-.pf-part-toolbar button:disabled{opacity:.35;cursor:default}
-.pf-template-categories{display:flex;gap:6px;margin-top:20px;border-bottom:1px solid #e2e8f0;padding-bottom:10px}.pf-template-categories button{padding:8px 18px;border:0;border-radius:6px;background:transparent;color:#64748b;font-size:12px;cursor:pointer}.pf-template-categories button[aria-selected=true]{background:#eef2ff;color:#7C3AED;font-weight:600}
+.pf-template-categories {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pf-template-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-template-categories button {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.pf-template-categories button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.pf-template-categories button[aria-selected=true] {
+  background: #7C3AED;
+  color: #ffffff;
+  font-weight: 650;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+  transform: translateY(-1px);
+}
 .aw-workspace.pf-template-page {
   max-width: 100% !important;
   width: 100%;
@@ -186,3 +338,15 @@
 @keyframes pf-zoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
 @keyframes pf-slide{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:1100px){.funnel-builder-page .fb-builder-grid.pf-variants-open{grid-template-columns:320px minmax(0,1fr) 190px}.pf-variants-open .pf-sidebar-content{flex-basis:163px}}
+
+.pf-template-card.pf-template-blank-card {
+  border: 2px dashed #A78BFA !important;
+  background: rgba(124, 58, 237, 0.03) !important;
+}
+.pf-template-card.pf-template-blank-card .pf-template-preview {
+  background: linear-gradient(135deg, #f8fafc 0%, #ede9fe 100%) !important;
+}
+.pf-template-card.pf-template-blank-card .pf-template-preview :is(small, strong, span) {
+  color: #1e1b4b !important;
+}
+

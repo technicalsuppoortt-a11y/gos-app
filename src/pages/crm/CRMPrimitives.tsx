@@ -1,4 +1,5 @@
 import { useCRMBusy } from './useCRMActions';
+import { useSelectPortal } from '../../components/ui/select-layer';
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import { useEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
@@ -140,18 +141,19 @@ export function CustomSelect({ value: propValue, onChange: propOnChange, default
   const busy = useCRMBusy();
   const [internalValue, setInternalValue] = useState(defaultValue ?? options[0]?.value ?? "");
   const value = propValue !== undefined ? propValue : internalValue;
+  const portal = useSelectPortal();
   const onChange = propOnChange || setInternalValue;
   
   // Radix portals prevent menus from being clipped by the fixed CRM viewport.
   const encode = (v: string) => 'crm:' + v;
   return <div className={`crm-custom-select ${className}`}>
     {localizeNode(name && <input type="hidden" name={name} value={value}/>)}
-    <Select.Root disabled={busy || disabled} dir={uiDirection()} value={encode(value)} onValueChange={v => onChange(v.slice(4))}>
-      <Select.Trigger className="crm-custom-select-trigger" aria-label={translateText(ariaLabel)} disabled={busy || disabled}>
+    <Select.Root disabled={busy || disabled} dir={uiDirection()} value={encode(value)} onValueChange={v => onChange(v.slice(4))} onOpenChange={portal.onOpenChange}>
+      <Select.Trigger ref={portal.trigger} className="crm-custom-select-trigger" aria-label={translateText(ariaLabel)} disabled={busy || disabled}>
         {localizeNode(Icon && <Icon size={14} className="crm-custom-select-icon"/>)}
         <Select.Value placeholder={translateText(placeholder || 'Select…')}/><Select.Icon asChild><ChevronDown size={14} className="crm-custom-select-chevron"/></Select.Icon>
       </Select.Trigger>
-      <Select.Portal><Select.Content className="crm-select-content" position="popper" sideOffset={6} collisionPadding={10}>
+      <Select.Portal container={portal.container}><Select.Content className="crm-select-content" position="popper" sideOffset={6} collisionPadding={10}>
         <Select.ScrollUpButton className="crm-select-scroll"><ChevronDown size={14} style={{ transform: 'rotate(180deg)' }}/></Select.ScrollUpButton>
         <Select.Viewport>{localizeNode(options.map(opt => <Select.Item className="crm-select-item" key={opt.value} value={encode(opt.value)}><Select.ItemText>{localizeNode(opt.label)}</Select.ItemText><Select.ItemIndicator><Check size={14}/></Select.ItemIndicator></Select.Item>))}</Select.Viewport>
         <Select.ScrollDownButton className="crm-select-scroll"><ChevronDown size={14}/></Select.ScrollDownButton>

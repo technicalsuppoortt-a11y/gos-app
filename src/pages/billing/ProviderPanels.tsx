@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -1010,9 +1011,9 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
       <div className="bl-card-body" style={{ paddingBlockEnd: 0 }}>
         <div className="bl-toolbar">
           <label className="bl-search"><Search size={15} /><input className="bl-input" value={search} onChange={event => setSearch(event.target.value)} placeholder={c.t('Search by name, email or plan…', 'ابحث بالاسم أو البريد أو الباقة…')} aria-label={c.t('Search subscribers', 'بحث في المشتركين')} /></label>
-          <select className="bl-input" style={{ width: 180 }} value={status} onChange={event => setStatus(event.target.value)} aria-label={c.t('Status', 'الحالة')}>
+          <DashboardSelect className="bl-input" style={{ width: 180 }} value={status} onChange={event => setStatus(event.target.value)} aria-label={c.t('Status', 'الحالة')}>
             {[['all', 'All statuses', 'كل الحالات'], ['active', 'Active', 'نشط'], ['trialing', 'Free trial', 'تجربة مجانية'], ['expired', 'Expired', 'منتهي']].map(([value, en, ar]) => <option key={value} value={value}>{c.t(en, ar)}</option>)}
-          </select>
+          </DashboardSelect>
         </div>
       </div>
       {rows.length ? (
@@ -1054,10 +1055,10 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
           {dialog.type === 'assign' ? (
             <div className="bl-form">
               <label className="bl-field"><span>{c.t('Plan', 'الباقة')}</span>
-                <select className="bl-input" value={planId} onChange={event => setPlanId(event.target.value)}>
+                <DashboardSelect className="bl-input" value={planId} onChange={event => setPlanId(event.target.value)}>
                   <option value="">{c.t('Choose…', 'اختر…')}</option>
                   {assignable.map(plan => <option key={plan.id} value={plan.id}>{c.pick(plan.name)} · {billingLabel(plan, c)} · {c.money(plan.price, plan.currency)}</option>)}
-                </select>
+                </DashboardSelect>
               </label>
               <div className="bl-banner info"><RefreshCw size={16} /><p>{c.t('Use this after receiving an offline payment. A new plan starts a new period and resets credits (unused credits expire). Re-assigning the current plan extends it.', 'استخدمها بعد استلام دفع خارجي. الباقة الجديدة تبدأ فترة جديدة وتعيد ضبط الرصيد (الرصيد غير المستخدم ينتهي). تعيين نفس الباقة يمدد مدتها.')}{!isPlatform && ' ' + c.t('Plan credits are deducted from your wallet.', 'رصيد الباقة يُخصم من محفظتك.')}</p></div>
             </div>

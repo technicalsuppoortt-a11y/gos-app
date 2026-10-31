@@ -1,4 +1,7 @@
+import { BookingSelect as DashboardSelect } from './booking/BookingSelect';
+import { resolveFormTheme } from './form-theme';
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { createPageAsset } from './page-templates';
 import type { Asset, Workspace } from './asset-model';
 import type { BuilderSection } from './BuilderWorkspace';
@@ -6,7 +9,7 @@ import { CRMRouting } from './CRMRouting';
 import { publishWorkspaceAsset, unpublishWorkspaceAsset, deleteWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
 import { showToast } from '../utils/toast';
-import { pageTemplates, type FormField, type FormFieldType } from './page-template-data';
+import { pageTemplates, type FormField, type FormFieldType, FORM_BACKGROUND_PRESETS, type FormBackgroundPreset } from './page-template-data';
 import {
   Plus,
   Search,
@@ -39,7 +42,8 @@ import {
   LoaderCircle,
   HelpCircle,
   Star,
-  Check
+  Check,
+  Palette
 } from 'lucide-react';
 import './form-fields.css';
 
@@ -178,7 +182,7 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
     fieldCount = 0;
   }
 
-  return (
+  return createPortal(
     <div className="delete-form-modal-overlay" onClick={onClose}>
       <div className="delete-form-modal-card" onClick={e => e.stopPropagation()}>
         <div className="delete-form-modal-header">
@@ -248,7 +252,8 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -272,7 +277,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
   // Modals & Deletion State
   const [showCRMModal, setShowCRMModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [formToDelete, setFormToDelete] = useState<Asset | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -522,13 +527,48 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
       const a = createPageAsset('form', tmpl.name, tmpl);
       await save(w => ({ ...w, assets: [a, ...w.assets] }));
       setSelected(a.id);
-      setShowTemplatesModal(false);
       showToast.success(`Created form from "${tmpl.name}"`);
     } catch (e) {
       showToast.error(backendError(e));
     } finally {
       setBusy(false);
     }
+  };
+
+  // Background & Theme Application
+  const applyBackground = (preset: FormBackgroundPreset) => {
+    void updateAsset(a => ({
+      ...a,
+      updated: new Date().toISOString(),
+      document: {
+        ...a.document,
+        pages: a.document.pages.map((p, i) =>
+          i
+            ? p
+            : {
+                ...p,
+                backgroundColor: preset.background,
+                sections: p.sections.map((s, j) =>
+                  j
+                    ? s
+                    : {
+                        ...s,
+                        styles: { ...s.styles, backgroundColor: preset.cardBackground },
+                        content: {
+                          ...s.content,
+                          themeBackgroundId: preset.id,
+                          themeCardBg: preset.cardBackground,
+                          themeCardBorder: preset.cardBorder,
+                          themeTextColor: preset.textColor
+                        }
+                      }
+                )
+              }
+        )
+      }
+    }));
+    showToast.success(`Theme set to "${preset.name}"`);
+    setShowThemeModal(false);
   };
 
   // Filtered forms in Hub
@@ -579,6 +619,10 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
     const formTitle = block.content.title || asset.name;
     const submitBtnText = block.content.button || 'Submit';
     const successMsg = block.content.successMessage || 'Thank you. We will be in touch.';
+    const formTheme = resolveFormTheme(asset.document.pages[0], block);
+    const currentBg = formTheme.background;
+    const currentThemeId = block.content.themeBackgroundId || 'blank';
+    const isDarkCanvas = formTheme.dark;
 
     return (
       <section className="forms-workspace form-studio">
@@ -624,6 +668,15 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
           </div>
 
           <div className="form-studio-nav-right">
+            <button
+              className="aw-secondary"
+              onClick={() => setShowThemeModal(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <Palette size={14} color="#7C3AED" />
+              Theme & Background
+            </button>
+
             <button
               className="aw-secondary"
               onClick={() => setShowCRMModal(true)}
@@ -774,7 +827,17 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
             </aside>
 
             {/* COLUMN 2: VISUAL FORM CANVAS */}
-            <main className="form-canvas-wrapper">
+            <main
+              className={`form-canvas-wrapper ${isDarkCanvas ? 'dark-canvas' : ''}`}
+              data-form-theme={isDarkCanvas ? 'dark' : 'light'}
+              style={{
+                ...formTheme.variables,
+                background: currentBg,
+                transition: 'background 0.3s ease',
+                padding: '24px 20px',
+                borderRadius: 16
+              }}
+            >
               {/* Form Title & Subtitle Card */}
               <div className="form-canvas-header-card">
                 <div>
@@ -1020,7 +1083,8 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                     <div className="form-inspector-section">
                       <label>
                         Field Input Type
-                        <select
+                        <DashboardSelect
+                          className="form-select-control"
                           value={activeField.type}
                           onChange={e => updateActiveField({ type: e.target.value as FormFieldType })}
                         >
@@ -1032,7 +1096,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                           <option value="select">Dropdown Select</option>
                           <option value="radio">Radio Choice</option>
                           <option value="checkbox">Checkbox</option>
-                        </select>
+                        </DashboardSelect>
                       </label>
                     </div>
 
@@ -1218,10 +1282,11 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                           <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--form-text-muted)', display: 'block', marginBottom: 4 }}>
                             Default Selected Choice
                           </label>
-                          <select
+                          <DashboardSelect
+                            className="form-select-control"
                             value={activeField.defaultValue || ''}
                             onChange={e => updateActiveField({ defaultValue: e.target.value })}
-                            style={{ width: '100%', fontSize: 12, padding: '6px 8px', borderRadius: 6 }}
+                            style={{ width: '100%', fontSize: 13, minHeight: 40 }}
                           >
                             <option value="">None (Prompt with placeholder)</option>
                             {(activeField.options || []).map((opt, i) => (
@@ -1229,7 +1294,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                                 {opt}
                               </option>
                             ))}
-                          </select>
+                          </DashboardSelect>
                         </div>
                       </div>
                     )}
@@ -1247,17 +1312,29 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
              VIEW: LIVE INTERACTIVE PREVIEW
              ========================================================================= */
           <div
+            data-form-theme={isDarkCanvas ? 'dark' : 'light'}
             style={{
-              maxWidth: 680,
-              margin: '20px auto',
+              ...formTheme.variables,
+              flex: 1,
               width: '100%',
-              padding: 36,
-              borderRadius: 20,
-              background: 'var(--form-bg)',
-              border: '1px solid var(--form-border)',
-              boxShadow: 'var(--form-shadow-lg)'
+              minHeight: '80vh',
+              background: currentBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '40px 16px',
+              transition: 'background 0.3s ease'
             }}
           >
+            <div
+              style={{
+                maxWidth: 680,
+                width: '100%',
+                padding: 36,
+                borderRadius: 24,
+                ...formTheme.cardStyle
+              }}
+            >
             {previewSubmitted ? (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <CheckCircle2 size={56} color="#10B981" style={{ margin: '0 auto 16px' }} />
@@ -1375,10 +1452,11 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
               </form>
             )}
           </div>
-        )}
+        </div>
+      )}
 
         {/* MODAL: CRM ROUTING */}
-        {showCRMModal && (
+        {showCRMModal && createPortal(
           <div className="form-modal-overlay" onClick={() => setShowCRMModal(false)}>
             <div className="form-modal-dialog" onClick={e => e.stopPropagation()}>
               <div className="form-modal-header">
@@ -1402,11 +1480,12 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* MODAL: SHARE & EMBED */}
-        {showShareModal && asset.publishedUrl && (
+        {showShareModal && asset.publishedUrl && createPortal(
           <div className="form-modal-overlay" onClick={() => setShowShareModal(false)}>
             <div className="form-modal-dialog" onClick={e => e.stopPropagation()}>
               <div className="form-modal-header">
@@ -1479,13 +1558,13 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                     Embed Directly into Existing Funnel or Website Page
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                    <select
+                    <DashboardSelect
+                      className="form-select-control"
                       value={targetId}
                       onChange={e => {
                         setTargetId(e.target.value);
                         setTargetPageId('');
                       }}
-                      style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--form-border)', fontSize: 13 }}
                     >
                       <option value="">Select funnel or website...</option>
                       {targets.map(t => (
@@ -1493,13 +1572,13 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                           {t.name} ({t.kind})
                         </option>
                       ))}
-                    </select>
+                    </DashboardSelect>
 
-                    <select
+                    <DashboardSelect
+                      className="form-select-control"
                       value={targetPage?.id || ''}
                       onChange={e => setTargetPageId(e.target.value)}
                       disabled={!target}
-                      style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--form-border)', fontSize: 13 }}
                     >
                       <option value="">Select destination page...</option>
                       {target?.document.pages.map(p => (
@@ -1507,7 +1586,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                           {p.name}
                         </option>
                       ))}
-                    </select>
+                    </DashboardSelect>
                   </div>
 
                   <button
@@ -1571,7 +1650,130 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
+        )}
+
+        {/* MODAL: FORM BACKGROUND & THEME SELECTOR */}
+        {showThemeModal && createPortal(
+          <div className="form-modal-overlay" onClick={() => setShowThemeModal(false)}>
+            <div className="form-modal-dialog" style={{ maxWidth: 740 }} onClick={e => e.stopPropagation()}>
+              <div className="form-modal-header">
+                <div>
+                  <h2>Form Background & Theme</h2>
+                  <small style={{ color: 'var(--form-text-muted)', fontSize: 13 }}>
+                    Select a professional styling for your form canvas, card container, and published page.
+                  </small>
+                </div>
+                <button className="form-icon-btn" onClick={() => setShowThemeModal(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="form-modal-body" style={{ maxHeight: '70vh' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 14 }}>
+                  {FORM_BACKGROUND_PRESETS.map(preset => {
+                    const isCurrent = (block.content.themeBackgroundId || 'blank') === preset.id;
+                    return (
+                      <div
+                        key={preset.id}
+                        onClick={() => applyBackground(preset)}
+                        style={{
+                          padding: 14,
+                          borderRadius: 12,
+                          border: isCurrent ? '2px solid #7C3AED' : '1.5px solid var(--form-border)',
+                          background: 'var(--form-bg)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 10,
+                          transition: 'all 0.15s ease',
+                          boxShadow: isCurrent ? '0 0 0 3px rgba(124, 58, 237, 0.15)' : 'none'
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: 76,
+                            borderRadius: 8,
+                            background: preset.background,
+                            border: `1px solid ${preset.previewBorder}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: 6,
+                              background: preset.cardBackground,
+                              border: preset.cardBorder,
+                              color: preset.textColor,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                            }}
+                          >
+                            Form Card
+                          </div>
+                          {isCurrent && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: 6,
+                                right: 6,
+                                background: '#7C3AED',
+                                color: '#fff',
+                                borderRadius: '50%',
+                                width: 18,
+                                height: 18,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <Check size={11} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                            <b style={{ fontSize: 13, color: 'var(--form-text)' }}>{preset.name}</b>
+                            {preset.id === 'blank' && (
+                              <span style={{ fontSize: 10, fontWeight: 700, background: '#E2E8F0', padding: '1px 5px', borderRadius: 4 }}>
+                                BLANK
+                              </span>
+                            )}
+                          </div>
+                          <p style={{ margin: 0, fontSize: 11.5, color: 'var(--form-text-muted)', lineHeight: 1.35 }}>
+                            {preset.description}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={isCurrent ? 'aw-primary' : 'aw-secondary'}
+                          style={{ width: '100%', padding: '6px 12px', fontSize: 12, marginTop: 'auto' }}
+                        >
+                          {isCurrent ? 'Current Theme' : 'Apply Theme'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="form-modal-footer">
+                <button className="aw-secondary" onClick={() => setShowThemeModal(false)}>
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
         )}
       </section>
     );
@@ -1580,8 +1782,6 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
   // =========================================================================
   // VIEW: FORMS HUB / OVERVIEW
   // =========================================================================
-  const formTemplates = pageTemplates.filter(t => t.mode === 'form');
-
   return (
     <section className="forms-workspace">
       {/* Forms Hub Header */}
@@ -1596,7 +1796,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
         <div className="forms-hub-actions">
           <button
             className="aw-secondary"
-            onClick={() => setShowTemplatesModal(true)}
+            onClick={() => go('funnels?tab=templates&category=Forms')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <Sparkles size={16} color="#7C3AED" /> Browse Form Templates
@@ -1654,6 +1854,16 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{ border: 0, background: 'transparent', padding: 2, cursor: 'pointer', color: '#94a3b8', display: 'flex' }}
+              title="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <div className="forms-status-tabs">
@@ -1688,7 +1898,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
             Start with a ready-made template or build a custom form from scratch.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button className="aw-secondary" onClick={() => setShowTemplatesModal(true)}>
+            <button className="aw-secondary" onClick={() => go('funnels?tab=templates&category=Forms')}>
               <Sparkles size={15} /> Browse Templates
             </button>
             <button className="aw-primary" onClick={() => void createBlank()}>
@@ -1775,78 +1985,6 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* MODAL: BROWSE FORM TEMPLATES */}
-      {showTemplatesModal && (
-        <div className="form-modal-overlay" onClick={() => setShowTemplatesModal(false)}>
-          <div className="form-modal-dialog" style={{ maxWidth: 860 }} onClick={e => e.stopPropagation()}>
-            <div className="form-modal-header">
-              <div>
-                <h2>Ready-Made Form Templates</h2>
-                <small style={{ color: 'var(--form-text-muted)', fontSize: 13 }}>
-                  Select any pre-designed template to immediately load it into your workspace.
-                </small>
-              </div>
-              <button className="form-icon-btn" onClick={() => setShowTemplatesModal(false)}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="form-modal-body" style={{ maxHeight: '70vh' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 16 }}>
-                {formTemplates.map(tmpl => (
-                  <div
-                    key={tmpl.id}
-                    style={{
-                      padding: 18,
-                      borderRadius: 14,
-                      border: '1.5px solid var(--form-border)',
-                      background: 'var(--form-bg)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      gap: 12,
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase' }}>
-                          {tmpl.industry}
-                        </span>
-                        <span style={{ fontSize: 11, color: 'var(--form-text-muted)' }}>
-                          {tmpl.fields?.length || 0} fields
-                        </span>
-                      </div>
-                      <h4 style={{ fontSize: 15, fontWeight: 750, margin: '0 0 6px 0', color: 'var(--form-text)' }}>
-                        {tmpl.name}
-                      </h4>
-                      <p style={{ fontSize: 12.5, color: 'var(--form-text-muted)', margin: 0, lineHeight: 1.4 }}>
-                        {tmpl.body}
-                      </p>
-                    </div>
-
-                    <button
-                      className="aw-primary"
-                      disabled={busy}
-                      onClick={() => void applyTemplate(tmpl.id)}
-                      style={{ width: '100%', padding: '8px 14px', fontSize: 13 }}
-                    >
-                      Use Template
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-modal-footer">
-              <button className="aw-secondary" onClick={() => setShowTemplatesModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
         </div>
       )}
 

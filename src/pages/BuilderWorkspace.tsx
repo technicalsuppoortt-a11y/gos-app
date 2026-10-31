@@ -1,5 +1,7 @@
 import './form-fields.css';
 import type { FormField } from './FormsWorkspace';
+import type { Asset } from './asset-model';
+import { readWorkspace } from './asset-model';
 import { useBuilderFormCapture } from './builder-form-capture';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { browserStorage as cloudStorage } from '../utils/browserStorage';
@@ -86,7 +88,7 @@ function MinusIcon({ size = 16 }: { size?: number }) {
   useUILanguage(); return <span style={{ fontSize: size, lineHeight: 1 }}>−</span>; }
 
 const section = (type: SectionType, title: string, body: string, extras: Record<string, string> = {}): BuilderSection => ({ id: `section-${type.toLowerCase().replace(/[^a-z]+/g, '-')}-${Math.random().toString(16).slice(2, 7)}`, type, content: { title, body, ...extras }, styles: { backgroundColor: '#ffffff', padding: '24', textAlign: ['Program Highlights','Testimonials','Pricing Preview','Program Cards','Pricing Table','Core Values','Stats'].includes(type) ? 'Center' : 'Left', typography: 'Default', customCss: '', visibility: 'All devices', animation: 'None' } });
-const parseContentArray = <T,>(raw: string | undefined): T[] => { try { return raw ? JSON.parse(raw) as T[] : []; } catch { return []; } };
+const parseContentArray = <T,>(raw: string | undefined): T[] => { try { const parsed: unknown = raw ? JSON.parse(raw) : []; return Array.isArray(parsed) ? parsed as T[] : []; } catch { return []; } };
 const serializeContentArray = <T,>(items: T[]) => JSON.stringify(items);
 const iconChoices = [{name:'Dumbbell',Icon:Dumbbell},{name:'Heart',Icon:Heart},{name:'Star',Icon:Star},{name:'Zap',Icon:Zap},{name:'Sparkles',Icon:Sparkles},{name:'Calendar',Icon:CalendarDays},{name:'Trophy',Icon:Trophy},{name:'Flame',Icon:Flame},{name:'Target',Icon:Target},{name:'Check',Icon:CircleCheck},{name:'Arrow',Icon:ArrowUpRight},{name:'Bell',Icon:Bell},{name:'Leaf',Icon:Leaf}];
 const initialPages: BuilderPage[] = [
@@ -159,9 +161,37 @@ export function createBuilderDocument(mode: BuilderMode, name: string, image: st
   return { pages, steps, funnel: { name, goal:'Lead generation', audience:'Your ideal customers', offer:'Strength coaching', pagesFlow:pages.map(page=>page.id), events:['Form Submit','Booking'], status:'Draft' } };
 }
 
-export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderDocument; selectedPageId?: string; domain?: string; initialColor?: string; publishedUrl?: string; onPreview?: (document: BuilderDocument) => void | Promise<void>; onBack?: () => void; onStepChange?: (id:string)=>void; onDocumentChange?: (document: BuilderDocument) => void | Promise<unknown>; onPublish?: () => Promise<{ url: string; draftChanged: boolean }> }> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, publishedUrl, onPreview, onStepChange, onDocumentChange, onPublish }) => {
+export function getStoredWorkspaceForms(availableForms?: Asset[]): Asset[] {
+  if (availableForms) return availableForms.filter(isPublishedWorkspaceForm);
+  try {
+    return readWorkspace().assets.filter(isPublishedWorkspaceForm);
+  } catch {}
+  return [];
+}
+
+export function isPublishedWorkspaceForm(asset: Asset): boolean {
+  const legacy = asset as Asset & { status?: string; isPublished?: boolean };
+  const status = asset.document?.funnel?.status ?? legacy.status;
+  return Boolean(asset.formAsset && !asset.archived && (status ? status.toLowerCase() === 'published' : legacy.isPublished === true));
+}
+
+export const BuilderWorkspace: React.FC<{
+  mode: BuilderMode;
+  document?: BuilderDocument;
+  selectedPageId?: string;
+  domain?: string;
+  initialColor?: string;
+  publishedUrl?: string;
+  availableForms?: Asset[];
+  onPreview?: (document: BuilderDocument) => void | Promise<void>;
+  onBack?: () => void;
+  onStepChange?: (id: string) => void;
+  onDocumentChange?: (document: BuilderDocument) => void | Promise<unknown>;
+  onPublish?: () => Promise<{ url: string; draftChanged: boolean }>;
+}> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, publishedUrl, availableForms, onPreview, onStepChange, onDocumentChange, onPublish }) => {
   useUILanguage();
   const navigate = useNavigate();
+  const storedForms = useMemo<Asset[]>(() => getStoredWorkspaceForms(availableForms), [availableForms]);
   const [savedDemo] = useState(() => assetDocument ?? readLocalDraft());
   const initialAsset = useRef(assetDocument);
   const onChangeRef = useRef(onDocumentChange);
@@ -482,7 +512,7 @@ export const BuilderWorkspace: React.FC<{ mode: BuilderMode; document?: BuilderD
       </main>
       <aside className="fb-right-panel">
         <div className="fb-inspector-tabs">{localizeNode((['Content', 'Style', 'Advanced'] as InspectorTab[]).map(tab => <button className={inspectorTab === tab ? 'active' : ''} key={tab} onClick={() => setInspectorTab(tab)}>{localizeNode(tab)}</button>))}</div>
-        {localizeNode(selectedBlock ? <div className="fb-inspector-scroll"><h2>{localizeNode(elementLabel(selectedBlock))} {localizeNode(inspectorTab.toLowerCase())}</h2><DynamicElementInspector key={selectedBlock.id} item={selectedBlock} tab={inspectorTab} content={updateSelectedContent} styles={styles=>updateSelectedSection({styles})} upload={file=>updateSectionImage(selectedBlock.id,file)}/></div> : inspectorTab === 'Content' ? <div className="fb-inspector-scroll"><h2>{localizeNode(mode==='funnel'?'Funnel Step Settings':'Page Settings')}</h2><label>{translateText("Page Name")}<input value={currentPage.name} onChange={event => { updatePage({ name: event.target.value }); setFunnelSteps(steps=>steps.map(step=>step.pageId===activePageId?{...step,label:event.target.value}:step)); }}/></label><label>{translateText("URL")}<div className="fb-url-pair"><span>{localizeNode(siteOrigin)}</span><input value={currentPage.path} onChange={event => updatePage({ path: event.target.value })}/><Link2 size={13}/></div></label><label>{translateText("SEO Title")}<input value={currentPage.seoTitle} onChange={event => updatePage({ seoTitle: event.target.value })}/></label><label>{translateText("SEO Description")}<textarea value={currentPage.seoDescription} onChange={event => updatePage({ seoDescription: event.target.value })}/></label><div className="fb-image-field"><b>{translateText("Featured Image")}</b><input ref={fileRef} type="file" accept="image/*" hidden onChange={event => selectFeatureImage(event.target.files?.[0])}/><div className="fb-featured-preview">{localizeNode(currentPage.featuredImage ? <img src={currentPage.featuredImage} alt={translateText("Featured page")}/> : <span><Image size={21}/></span>)}<div><button onClick={() => fileRef.current?.click()}><Upload size={12}/>{translateText(" Change Image")}</button><button onClick={() => updatePage({ featuredImage: '' })}><Trash2 size={12}/>{translateText(" Remove")}</button></div></div></div>
+        {localizeNode(selectedBlock ? <div className="fb-inspector-scroll"><h2>{localizeNode(elementLabel(selectedBlock))} {localizeNode(inspectorTab.toLowerCase())}</h2><DynamicElementInspector storedForms={storedForms} key={selectedBlock.id} item={selectedBlock} tab={inspectorTab} content={updateSelectedContent} styles={styles=>updateSelectedSection({styles})} upload={file=>updateSectionImage(selectedBlock.id,file)}/></div> : inspectorTab === 'Content' ? <div className="fb-inspector-scroll"><h2>{localizeNode(mode==='funnel'?'Funnel Step Settings':'Page Settings')}</h2><label>{translateText("Page Name")}<input value={currentPage.name} onChange={event => { updatePage({ name: event.target.value }); setFunnelSteps(steps=>steps.map(step=>step.pageId===activePageId?{...step,label:event.target.value}:step)); }}/></label><label>{translateText("URL")}<div className="fb-url-pair"><span>{localizeNode(siteOrigin)}</span><input value={currentPage.path} onChange={event => updatePage({ path: event.target.value })}/><Link2 size={13}/></div></label><label>{translateText("SEO Title")}<input value={currentPage.seoTitle} onChange={event => updatePage({ seoTitle: event.target.value })}/></label><label>{translateText("SEO Description")}<textarea value={currentPage.seoDescription} onChange={event => updatePage({ seoDescription: event.target.value })}/></label><div className="fb-image-field"><b>{translateText("Featured Image")}</b><input ref={fileRef} type="file" accept="image/*" hidden onChange={event => selectFeatureImage(event.target.files?.[0])}/><div className="fb-featured-preview">{localizeNode(currentPage.featuredImage ? <img src={currentPage.featuredImage} alt={translateText("Featured page")}/> : <span><Image size={21}/></span>)}<div><button onClick={() => fileRef.current?.click()}><Upload size={12}/>{translateText(" Change Image")}</button><button onClick={() => updatePage({ featuredImage: '' })}><Trash2 size={12}/>{translateText(" Remove")}</button></div></div></div>
             <div className="fb-layout-settings"><h3>{translateText("Page Layout")}</h3><div className="fb-toggle-row"><span>{translateText("Header")}</span><button className={`fb-toggle ${currentPage.showHeader ? 'on' : ''}`} onClick={() => updatePage({ showHeader: !currentPage.showHeader })} role="switch" aria-label={translateText("Page header")} aria-checked={currentPage.showHeader}/></div><PopoverSelect value={currentPage.header} options={['Header 1', 'Header 2', 'Minimal header']} onChange={header => updatePage({ header })}/><div className="fb-toggle-row"><span>{translateText("Footer")}</span><button className={`fb-toggle ${currentPage.showFooter ? 'on' : ''}`} onClick={() => updatePage({ showFooter: !currentPage.showFooter })} role="switch" aria-label={translateText("Page footer")} aria-checked={currentPage.showFooter}/></div><PopoverSelect value={currentPage.footer} options={['Footer 1', 'Footer 2', 'Minimal footer']} onChange={footer => updatePage({ footer })}/></div>
             {localizeNode(['Background', 'Custom Code', 'Advanced Settings'].map(name => <div className="fb-accordion" key={name}><button onClick={() => setAccordion(value => ({ ...value, [name]: !value[name] }))}><span>{localizeNode(name)}</span>{localizeNode(accordion[name] ? <ChevronDown size={15}/> : <ChevronRight size={15}/>)}</button>{localizeNode(accordion[name] && <div>{localizeNode(name === 'Background' ? <><label>{translateText("Background color")}<input type="color" value={currentPage.backgroundColor ?? '#ffffff'} onChange={event=>updatePage({backgroundColor:event.target.value})}/></label><button className="fb-acc-option" onClick={() => fileRef.current?.click()}>{translateText("Background image ")}<span>{translateText("Choose")}</span></button></> : name === 'Custom Code' ? <textarea value={currentPage.customCode ?? ''} onChange={event=>updatePage({customCode:event.target.value})} placeholder={translateText("Add custom HTML or tracking code…")}/> : <><label className="fb-check-row"><input type="checkbox" checked={currentPage.hideOnMobile ?? false} onChange={event=>updatePage({hideOnMobile:event.target.checked})}/>{translateText(" Hide on mobile")}</label><label className="fb-check-row"><input type="checkbox" checked={currentPage.noIndex ?? false} onChange={event=>updatePage({noIndex:event.target.checked})}/>{translateText(" Disable indexing")}</label></>)}</div>)}</div>))}</div> : inspectorTab==='Style' ? <div className="fb-inspector-scroll"><h2>{translateText("Page style")}</h2><label>{translateText("Primary color")}<input type="color" value={themeColor} onChange={e=>setThemeColor(e.target.value)}/></label><label>{translateText("Heading font")}<PopoverSelect value={headingFont} options={['Manrope','DM Sans','Inter']} onChange={setHeadingFont}/></label></div> : <div className="fb-inspector-scroll"><h2>{translateText("Advanced")}</h2><label>{translateText("Visibility")}<PopoverSelect value={visibility} options={['All devices','Desktop only','Mobile only']} onChange={setVisibility}/></label><div className="fb-advanced-hint"><ShieldCheck size={14}/>{translateText(" Select a canvas element to edit its advanced settings.")}</div></div>)}
       </aside>
@@ -606,18 +636,18 @@ export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop
     }
 
     const customFields = parseContentArray<FormField>(item.content.customFields);
-    if (customFields.length) return orderedCompositeOutput(item, <><h2>{title}</h2><form className="fb-demo-form fb-custom-form" onSubmit={event => formCapture.submit(event, () => onNotify(item.content.successMessage || 'Thank you. Your response was received.'))}>{customFields.map(field => {
+    if (customFields.length) return orderedCompositeOutput(item, <><h2>{title}</h2>{body && <p>{body}</p>}{leadSent && <p role="status">{item.content.successMessage || 'Thank you. Your response was received.'}</p>}<form className="fb-demo-form fb-custom-form" onSubmit={event => formCapture.submit(event, () => { setLeadSent(true); onNotify(item.content.successMessage || 'Thank you. Your response was received.'); })}>{customFields.map(field => {
       if (field.type === 'checkbox') {
         return <label className="fb-custom-field is-checkbox" key={field.id}><input name={field.id} type="checkbox" required={field.required} defaultChecked={field.defaultValue === 'true'} /><span>{field.label}{field.required ? ' *' : ''}</span>{field.helperText && <small className="fb-field-helper">{field.helperText}</small>}</label>;
       }
       if (field.type === 'radio') {
-        return <div className="fb-custom-field fb-custom-radio-field" key={field.id}><span className="fb-field-label">{field.label}{field.required ? ' *' : ''}</span><div className="fb-custom-radio-group">{(field.options || []).map((opt, idx) => <label key={idx} className="fb-radio-option"><input type="radio" name={field.id} value={opt} required={field.required} defaultChecked={idx === 0 || opt === field.defaultValue} /><span>{opt}</span></label>)}</div>{field.helperText && <small className="fb-field-helper">{field.helperText}</small>}</div>;
+        return <div className="fb-custom-field fb-custom-radio-field" key={field.id}><span className="fb-field-label">{field.label}{field.required ? ' *' : ''}</span><div className="fb-custom-radio-group">{(field.options || []).map((opt, idx) => <label key={idx} className="fb-radio-option"><input type="radio" name={field.id} value={opt} required={field.required} defaultChecked={opt === field.defaultValue} /><span>{opt}</span></label>)}</div>{field.helperText && <small className="fb-field-helper">{field.helperText}</small>}</div>;
       }
       return <label className="fb-custom-field" key={field.id}><span className="fb-field-label">{field.label}{field.required ? ' *' : ''}</span>{field.type === 'textarea' ? <textarea name={field.id} required={field.required} placeholder={field.placeholder || ''} defaultValue={field.defaultValue || ''}/> : field.type === 'select' ? <select name={field.id} required={field.required} defaultValue={field.defaultValue || ''}><option value="">{field.placeholder || 'Choose an option'}</option>{(field.options || []).map((v, i) => <option key={i} value={v.trim()}>{v.trim()}</option>)}</select> : <input name={field.id} type={field.type} required={field.required} placeholder={field.placeholder || ''} defaultValue={field.defaultValue || ''}/>}{field.helperText && <small className="fb-field-helper">{field.helperText}</small>}</label>;
     })}<button className="fb-site-primary" type="submit" disabled={formCapture.busy}>{formCapture.busy ? 'Submitting…' : item.content.button || 'Submit'}</button></form></>);
     const fields = parseContentArray<string>(item.content.fields);
     if(item.content.template==='lead-capture') return orderedCompositeOutput(item, <div className="fb-lead-capture"><div className="fb-lead-copy"><span className="fb-section-eyebrow">{translateText("YOUR FIRST WEEK IS ON US")}</span><h1>{localizeNode(leadSent?'Your free pass is waiting!':title || 'Claim Your Free 7-Day Fitness Pass')}</h1><p>{localizeNode(leadSent?'Thanks for sharing your goals. A FitZone coach will contact you shortly.':body || 'Build momentum with expert coaching and a plan tailored to you.')}</p>{localizeNode(!leadSent&&<><ul>{localizeNode(['A personalized starter plan','One-to-one coach introduction','Full access to our training studio'].map(benefit=><li key={benefit}><CheckCircle2 size={15}/>{localizeNode(benefit)}</li>))}</ul><div className="fb-lead-social"><div className="fb-lead-avatars"><span>{translateText("AM")}</span><span>{translateText("SL")}</span><span>{translateText("JR")}</span></div><small><b>{translateText("Join 1,200+ members")}</b><br/>{translateText("Rated 4.9/5 by our community")}</small></div></>)}</div>{leadSent?<div className="fb-lead-form-card fb-lead-success"><CheckCircle2 size={35}/><b>{translateText("Application received")}</b><span>{item.content.successMessage}</span></div>:<form className="fb-lead-form-card" onSubmit={event=>formCapture.submit(event,()=>{setLeadSent(true);onNotify(item.content.successMessage || 'Your free pass request has been received.');})}><span className="fb-lead-form-eyebrow">{translateText("START YOUR FREE PASS")}</span><h2>{translateText("Tell us where to reach you")}</h2><label>{translateText("Full name")}<input name="name" required placeholder={translateText("Alex Morgan")}/></label><label>{translateText("Email address")}<input name="email" required type="email" placeholder={translateText("alex@example.com")}/></label><label>{translateText("Phone number")}<input name="phone" required type="tel" placeholder={translateText("+1 (555) 000-0000")}/></label><label>{translateText("Fitness goal")}<AssetSelect defaultValue={""} required={true} options={[{value:"",label:"Select your primary goal",disabled:true},{value:"Build strength",label:"Build strength"},{value:"Lose weight",label:"Lose weight"},{value:"Improve overall fitness",label:"Improve overall fitness"},{value:"Increase mobility",label:"Increase mobility"}]}/></label><button className="fb-site-primary" type="submit" disabled={formCapture.busy} aria-busy={formCapture.busy}>{formCapture.busy ? <><LoaderCircle size={14} className="animate-spin"/>{translateText("Submitting...")}</> : <>{item.content.button || 'Get Started Now'} <ArrowRight size={14}/></>}</button><small><ShieldCheck size={12}/>{translateText(" Your information stays private and secure.")}</small></form>}</div>);
-    return orderedCompositeOutput(item, <>{localizeNode(title && <EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart>)}{localizeNode(body && <EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart>)}{fields.length ? <form className="fb-demo-form" onSubmit={event => formCapture.submit(event, () => { onNotify(item.content.successMessage || 'Thanks! Your details have been received.');if(item.content.nextPage)onAction({...item,content:{...item.content,destinationType:'Next Step',destination:item.content.nextPage}}); })}>{localizeNode(fields.map((field,index) => field === 'Message' ? <textarea name="message" key={`${field}-${index}`} placeholder={translateText("Your message")}/> : field === 'Dropdowns' ? <AssetSelect key={`${field}-${index}`} label="Fitness goals" defaultValue={""} options={[{value:"",label:"What are your goals?",disabled:true},{value:"Lose weight",label:"Lose weight"},{value:"Build strength",label:"Build strength"},{value:"Improve overall fitness",label:"Improve overall fitness"}]}/> : <input name={field.toLowerCase().replace(/\s+/g, '_')} key={`${field}-${index}`} type={field === 'Email' ? 'email' : field === 'Phone' ? 'tel' : 'text'} placeholder={translateText(field === 'Name' ? 'Your name' : field)}/>))}<button className="fb-site-primary" type="submit" disabled={formCapture.busy} aria-busy={formCapture.busy}>{formCapture.busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Submitting...")}</> : <>{item.content.button || 'Submit'} <ArrowRight size={12}/></>}</button></form> : <div className="fb-empty-widget">{translateText("Add form fields from the Content settings panel.")}</div>}</>);
+    return orderedCompositeOutput(item, <>{localizeNode(title && <EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart>)}{localizeNode(body && <EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart>)}{fields.length ? <form className="fb-demo-form" onSubmit={event => formCapture.submit(event, () => { onNotify(item.content.successMessage || 'Thanks! Your details have been received.');if(item.content.nextPage)onAction({...item,content:{...item.content,destinationType:'Next Step',destination:item.content.nextPage}}); })}>{localizeNode(fields.map((field,index) => field === 'Message' ? <textarea name="message" key={`${field}-${index}`} placeholder={translateText("Your message")}/> : field === 'Dropdowns' ? <AssetSelect key={`${field}-${index}`} label="Fitness goals" defaultValue={""} options={[{value:"",label:"What are your goals?",disabled:true},{value:"Lose weight",label:"Lose weight"},{value:"Build strength",label:"Build strength"},{value:"Improve overall fitness",label:"Improve overall fitness"}]}/> : <input name={field.toLowerCase().replace(/\s+/g, '_')} key={`${field}-${index}`} type={field === 'Email' ? 'email' : field === 'Phone' ? 'tel' : 'text'} placeholder={translateText(field === 'Name' ? 'Your name' : field)}/>))}<button className="fb-site-primary" type="submit" disabled={formCapture.busy} aria-busy={formCapture.busy}>{formCapture.busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Submitting...")}</> : <>{item.content.button || 'Submit'} <ArrowRight size={12}/></>}</button></form> : <form className="fb-demo-form fb-custom-form" onSubmit={event => formCapture.submit(event, () => onNotify(item.content.successMessage || 'Thanks! Your message has been received.'))}><label className="fb-custom-field"><span className="fb-field-label">{translateText("Full name")} *</span><input name="name" required placeholder={translateText("Enter your full name")}/></label><label className="fb-custom-field"><span className="fb-field-label">{translateText("Email address")} *</span><input name="email" type="email" required placeholder={translateText("you@example.com")}/></label><label className="fb-custom-field"><span className="fb-field-label">{translateText("Message")} *</span><textarea name="message" required placeholder={translateText("How can we help you?")}/></label><button className="fb-site-primary" type="submit" disabled={formCapture.busy}>{formCapture.busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Submitting...")}</> : <>{item.content.button || translateText("Send message")} <ArrowRight size={12}/></>}</button></form>}</>);
   }
   if(item.type==='Heading' && item.content.template==='thank-you') return orderedCompositeOutput(item, <div className="fb-thank-you-banner"><motion.span className="fb-thank-you-check" initial={{scale:.65,opacity:0}} animate={{scale:1,opacity:1}} transition={{type:'spring',stiffness:250,damping:15}}><Check size={24}/></motion.span><span className="fb-section-eyebrow">{translateText("APPLICATION RECEIVED")}</span><EditableElementPart device={device} item={item} part="title" tag="h1">{localizeNode(title)}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart></div>);
   if (item.type === 'Testimonials') { const reviews = parseContentArray<Testimonial>(item.content.testimonials); return orderedCompositeOutput(item, <><span className="fb-section-eyebrow">{translateText("MEMBER STORIES")}</span>{localizeNode(title && <EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart>)}{localizeNode(reviews.length ? <div className="fb-review-grid">{localizeNode(reviews.map(review => <article key={review.id}>{localizeNode(review.avatar && <img src={review.avatar} alt={translateText("")}/>)}<div className="fb-review-stars">{localizeNode('★'.repeat(Math.max(0,Math.min(5,review.rating))))}</div><blockquote>{localizeNode(review.quote)}</blockquote><b>{localizeNode(review.author)}</b><small>{localizeNode(review.role)}</small></article>))}</div> : body ? <blockquote>{localizeNode(body)}</blockquote> : <div className="fb-empty-widget">{translateText("Customer testimonials will appear here.")}</div>)}</>); }
@@ -658,7 +688,7 @@ export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop
   return orderedCompositeOutput(item, <><EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart>{item.content.button && <EditableElementPart device={device} item={item} part="button" tag="button" className="fb-site-primary" onClick={()=>onAction(findSection([item],item.id+'::button')!)}>{item.content.button}<ArrowRight size={13}/></EditableElementPart>}</>);
 }
 
-function ElementContentPanel({ activeElement, onChange, onUpload }: { activeElement: BuilderSection; onChange: (key: string, value: string) => void; onUpload: (file: File) => void }) {
+function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = [] }: { activeElement: BuilderSection; onChange: (key: string, value: string) => void; onUpload: (file: File) => void; storedForms?: Asset[] }) {
   useUILanguage();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const value = (key: string, fallback = '') => activeElement.content[key] ?? fallback;
@@ -690,9 +720,108 @@ function ElementContentPanel({ activeElement, onChange, onUpload }: { activeElem
     }
     case 'Form':
     case 'Contact Form': {
+      const currentFormAssetId = value('formAssetId');
+      const linkedForm = storedForms.find((f: Asset) => f.id === currentFormAssetId);
       const fields = parseContentArray<string>(value('fields'));
-      const choices = ['Name','Email','Phone','Message','Dropdowns'];
-      return <div className="fb-element-settings">{localizeNode(activeElement.type === 'Contact Form' && titleFields)}<fieldset className="fb-field-toggle-group"><legend>{translateText("Form fields")}</legend>{localizeNode(choices.map(field => <label className="fb-check-row" key={field}><input type="checkbox" checked={fields.includes(field)} onChange={event => onChange('fields',serializeContentArray(event.target.checked ? [...fields,field] : fields.filter(item => item !== field)))}/>{localizeNode(field)}</label>))}</fieldset>{localizeNode(commonButton)}<label>{translateText("Success message")}<textarea value={value('successMessage')} onChange={event => onChange('successMessage',event.target.value)} placeholder={translateText("Shown after a successful submission")}/></label><button type="button" className="fb-add-row-button" onClick={() => onChange('fields',serializeContentArray([...fields,'Dropdowns']))}><Plus size={13}/>{translateText(" Add dropdown field")}</button></div>;
+      const choices = ['Name', 'Email', 'Phone', 'Message', 'Dropdowns'];
+
+      const selectWorkspaceForm = (formId: string) => {
+        if (!formId) {
+          onChange('formAssetId', '');
+          onChange('formName', '');
+          onChange('customFields', '[]');
+          onChange('publishedFormUrl', '');
+          return;
+        }
+        const targetForm = storedForms.find((f: Asset) => f.id === formId);
+        if (!targetForm) return;
+        const targetBlock = targetForm.document.pages.flatMap(page => page.sections).find(section => ['Form', 'Contact Form'].includes(section.type));
+        const targetCustomFields = targetBlock?.content.customFields || '[]';
+        onChange('formAssetId', targetForm.id);
+        onChange('publishedFormUrl', '');
+        onChange('formName', targetForm.name);
+        onChange('customFields', targetCustomFields);
+        if (!value('title') || value('title') === 'Contact Us') {
+          onChange('title', targetBlock?.content.title || targetForm.name);
+        }
+        onChange('button', targetBlock?.content.button || 'Submit');
+        onChange('successMessage', targetBlock?.content.successMessage || 'Thank you! Your response was received.');
+        showToast.success(`Form "${targetForm.name}" connected!`);
+      };
+
+      return (
+        <div className="fb-element-settings">
+          {/* Workspace Form Picker Integration */}
+          <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(124, 58, 237, 0.06)', border: '1px solid rgba(124, 58, 237, 0.2)', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Sparkles size={14} /> {translateText("Connect Workspace Form")}
+              </span>
+              {storedForms.length > 0 && (
+                <span style={{ fontSize: 11, color: '#6b7280' }}>
+                  {storedForms.length} {translateText("available")}
+                </span>
+              )}
+            </div>
+
+            {storedForms.length > 0 ? (
+              <>
+                <AssetSelect label="Workspace form" value={currentFormAssetId} onChange={selectWorkspaceForm} options={[{value:'',label:'Choose from created forms'}, ...storedForms.map(f => ({value:f.id,label:f.name}))]}/>
+
+                {linkedForm && (
+                  <div style={{ fontSize: 12, color: '#059669', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={13} />
+                    <span>{translateText("Connected to")} "{linkedForm.name}"</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
+                {translateText("No published forms available. Publish a form in Forms Workspace to connect it here, or configure standard fields below.")}
+              </p>
+            )}
+          </div>
+
+          {localizeNode(activeElement.type === 'Contact Form' && titleFields)}
+
+          {!currentFormAssetId && (
+            <fieldset className="fb-field-toggle-group">
+              <legend>{translateText("Form fields")}</legend>
+              {localizeNode(choices.map(field => (
+                <label className="fb-check-row" key={field}>
+                  <input
+                    type="checkbox"
+                    checked={fields.includes(field)}
+                    onChange={event => onChange('fields', serializeContentArray(event.target.checked ? [...fields, field] : fields.filter(item => item !== field)))}
+                  />
+                  {localizeNode(field)}
+                </label>
+              )))}
+            </fieldset>
+          )}
+
+          {localizeNode(commonButton)}
+
+          <label>
+            {translateText("Success message")}
+            <textarea
+              value={value('successMessage')}
+              onChange={event => onChange('successMessage', event.target.value)}
+              placeholder={translateText("Shown after a successful submission")}
+            />
+          </label>
+
+          {!currentFormAssetId && (
+            <button
+              type="button"
+              className="fb-add-row-button"
+              onClick={() => onChange('fields', serializeContentArray([...fields, 'Dropdowns']))}
+            >
+              <Plus size={13} /> {translateText("Add dropdown field")}
+            </button>
+          )}
+        </div>
+      );
     }
     case 'Testimonials': {
       const reviews=parseContentArray<Testimonial>(value('testimonials'));
@@ -736,7 +865,7 @@ function ElementContentPanel({ activeElement, onChange, onUpload }: { activeElem
   }
 }
 
-function DynamicElementInspector({item,tab,content,styles,upload}:{item:BuilderSection;tab:InspectorTab;content:(key:string,value:string)=>void;styles:(patch:Partial<BuilderSection['styles']>)=>void;upload:(file:File)=>void}) {
+function DynamicElementInspector({item,tab,content,styles,upload,storedForms}:{storedForms:Asset[];item:BuilderSection;tab:InspectorTab;content:(key:string,value:string)=>void;styles:(patch:Partial<BuilderSection['styles']>)=>void;upload:(file:File)=>void}) {
   useUILanguage();
   const value=(key:string,fallback='')=>item.content[key]??fallback;
   if(tab==='Content') {
@@ -747,7 +876,7 @@ function DynamicElementInspector({item,tab,content,styles,upload}:{item:BuilderS
       return <PageFlyInspector item={item} tab={tab} content={content} styles={styles}><div className="fb-element-settings"><label>{translateText("Active item")}<PopoverSelect value={value('activeItem')} options={items.map(entry=>({value:entry.id,label:entry.title}))} onChange={id=>content('activeItem',id)}/></label>{items.map((entry,index)=><article className="fb-manager-card" key={entry.id}><div className="fb-manager-card-head"><b>{translateText("Item ")}{localizeNode(index+1)}</b><button aria-label={translateText(`Move item ${index+1} up`)} disabled={!index} onClick={()=>move(index,-1)}>↑</button><button aria-label={translateText(`Move item ${index+1} down`)} disabled={index===items.length-1} onClick={()=>move(index,1)}>↓</button><button aria-label={translateText(`Remove item ${index+1}`)} disabled={items.length===1} onClick={()=>{update(items.filter(other=>other.id!==entry.id));if(value('activeItem')===entry.id)content('activeItem',items.find(other=>other.id!==entry.id)!.id);}}><Trash2 size={13}/></button></div><label>{translateText("Item title")}<input value={entry.title} onChange={e=>update(items.map(other=>other.id===entry.id?{...other,title:e.target.value}:other))}/></label><label>{translateText("Item content")}<textarea value={entry.body} onChange={e=>update(items.map(other=>other.id===entry.id?{...other,body:e.target.value}:other))}/></label></article>)}<button className="fb-add-row-button" onClick={()=>update([...items,{id:crypto.randomUUID(),title:'Item '+(items.length+1),body:'Add your content here.'}])}><Plus size={13}/>{translateText(" Add item")}</button></div></PageFlyInspector>;
     }
   }
-  return <PageFlyInspector item={item} tab={tab} content={content} styles={styles}><ElementContentPanel activeElement={item} onChange={content} onUpload={upload}/>{localizeNode(item.type==='Image'&&<><label>{translateText("Link action")}<PopoverSelect value={value('destinationType','None')} options={['None','External URL','Open Booking Modal','Scroll to Section']} onChange={next=>content('destinationType',next==='None'?'':next)}/></label>{localizeNode(['External URL','Scroll to Section'].includes(value('destinationType'))&&<label>{translateText("Link destination")}<input value={value('destination')} onChange={e=>content('destination',e.target.value)}/></label>)}</>)}</PageFlyInspector>;
+  return <PageFlyInspector item={item} tab={tab} content={content} styles={styles}><ElementContentPanel storedForms={storedForms} activeElement={item} onChange={content} onUpload={upload}/>{localizeNode(item.type==='Image'&&<><label>{translateText("Link action")}<PopoverSelect value={value('destinationType','None')} options={['None','External URL','Open Booking Modal','Scroll to Section']} onChange={next=>content('destinationType',next==='None'?'':next)}/></label>{localizeNode(['External URL','Scroll to Section'].includes(value('destinationType'))&&<label>{translateText("Link destination")}<input value={value('destination')} onChange={e=>content('destination',e.target.value)}/></label>)}</>)}</PageFlyInspector>;
 }
 
 function HistoryIcon() {

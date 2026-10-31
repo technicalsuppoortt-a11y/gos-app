@@ -1,0 +1,18 @@
+/* Saved form themes are independent of dashboard chrome and global color corrections. */
+[data-form-theme] { color: var(--form-text); color-scheme: light; }
+[data-form-theme=dark] { color-scheme: dark; }
+[data-form-theme] :is(h1,h2,h3,.fb-field-label,.fb-custom-field,.fb-radio-option,.form-field-card-bar strong) { color: var(--form-text) !important; }
+[data-form-theme] :is(p,.fb-field-helper,.form-field-preview-control) { color: var(--form-text-muted) !important; }
+[data-form-theme] :is(.form-canvas-header-card,.form-field-card) { background: var(--form-card-bg) !important; color: var(--form-text) !important; border-color: var(--form-border); }
+[data-form-theme] .form-field-card.is-selected { border-color: #7C3AED; box-shadow: 0 0 0 2px #7c3aed26; }
+[data-form-theme] :is(.fb-custom-form input:not([type=checkbox]):not([type=radio]),.fb-custom-form textarea,.fb-custom-form select,.form-field-preview-control,.form-custom-select-trigger) {
+  background: var(--form-bg) !important; color: var(--form-text) !important; border-color: var(--form-border) !important;
+}
+[data-form-theme] input::placeholder,[data-form-theme] textarea::placeholder { color: var(--form-text-muted) !important; opacity: 1; }
+[data-form-theme] :is(input,textarea,select) { color: var(--form-text) !important; }
+[data-form-theme] .form-field-card-type-tag { color: var(--form-accent-text); background: #7c3aed1a; }
+[data-form-theme] .form-canvas-header-card label { color: var(--form-accent-text) !important; }
+[data-form-theme] :is(.form-canvas-header-card,.form-field-card) { border-radius: var(--form-card-radius); }
+[data-form-theme] .form-custom-select-dropdown { background: var(--form-bg) !important; color: var(--form-text) !important; }
+[data-form-theme] .form-custom-select-option { color: var(--form-text) !important; }
+[data-form-theme] .form-custom-select-option:is(:hover,.is-selected) { color: var(--form-accent-text) !important; background: #7c3aed26 !important; }

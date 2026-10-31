@@ -1,0 +1,21 @@
+.pf-form-wireframe {
+  --fp-canvas: #f5f3ff;
+  --fp-card: #ffffff;
+  --fp-input: #f8fafc;
+  --fp-border: #ddd6fe;
+  --fp-ink: #0f172a;
+  --fp-muted: #475569;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 12 / 7;
+  background: var(--fp-canvas);
+}
+html.dark .pf-form-wireframe {
+  --fp-canvas: #100e1d;
+  --fp-card: #1b182c;
+  --fp-input: #252039;
+  --fp-border: #514367;
+  --fp-ink: #f8fafc;
+  --fp-muted: #cbd5e1;
+}
+.pf-form-wireframe svg { display: block; width: 100%; height: 100%; font-family: Inter, system-ui, sans-serif; }

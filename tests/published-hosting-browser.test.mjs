@@ -64,6 +64,44 @@ try {
   await page.getByRole('heading', { name: 'Thank you from the published page' }).waitFor();
   const response = await page.goto('https://site.test/unknown');
   assert.equal(response.status(), 404);
+  const standalone = structuredClone(asset);
+  standalone.formAsset = true;
+  standalone.document.pages = [{ id: 'form-page', name: 'Standalone form', path: '/', showHeader: false, showFooter: false, backgroundColor: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', sections: [{ id: 'custom-form', type: 'Form', styles, content: {
+    title: 'Tell us about your project', body: 'All dynamic fields render on this published page.', button: 'Send custom answers', successMessage: 'Custom answers received', themeCardBg: '#ffffff', themeCardBorder: '1px solid #ddd6fe', themeTextColor: '#0f172a',
+    customFields: JSON.stringify([
+      { id: 'generated-name', label: 'Full name', type: 'text', required: true },
+      { id: 'generated-email', label: 'Work email', type: 'email', required: true },
+      { id: 'generated-phone', label: 'Phone number', type: 'tel' },
+      { id: 'budget', label: 'Budget', type: 'number' },
+      { id: 'details', label: 'Project details', type: 'textarea', helperText: 'Include your timeline.' },
+      { id: 'industry', label: 'Industry', type: 'select', required: true, options: ['Design','Retail'] },
+      { id: 'contact-method', label: 'Preferred contact', type: 'radio', required: true, options: ['Email','Phone'] },
+      { id: 'consent', label: 'I agree', type: 'checkbox', required: true }
+    ])
+  } }] }];
+  standalone.document.funnel.pagesFlow = [];
+  standalone.document.steps = [];
+  Object.assign(files, buildPublicationFiles(standalone, await readFile('dist/published.html','utf8'), 'https://dashboard.test', true, capture));
+  await page.goto('https://site.test/');
+  await page.getByRole('heading', { name: 'Tell us about your project' }).waitFor();
+  assert.equal(await page.locator('.is-form-page').count(), 1);
+  await page.getByLabel('Full name').fill('Custom visitor');
+  await page.getByLabel('Work email').fill('custom@example.com');
+  await page.getByLabel('Phone number').fill('+201234567890');
+  await page.getByLabel('Budget').fill('500');
+  await page.getByLabel('Project details').fill('Launch next month');
+  await page.getByLabel('Industry').selectOption('Design');
+  await page.getByRole('radio', { name: 'Email', exact: true }).check();
+  await page.getByLabel('I agree').check();
+  await page.getByRole('button', { name: 'Send custom answers' }).click();
+  await page.getByRole('status').filter({ hasText: 'Custom answers received' }).waitFor();
+  assert.equal(submission.name, 'Custom visitor');
+  assert.equal(submission.message, 'Launch next month');
+  assert.equal(submission.customFields.industry, 'Design');
+  assert.equal(submission.customFields['contact-method'], 'Email');
+  assert.equal(submission.preview, undefined);
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.locator('.is-form-page').evaluate(node => node.scrollWidth <= innerWidth), true);
   assert.deepEqual(errors, []);
   assert.deepEqual(dashboardRequests, [], 'published runtime must remain independent of future dashboard deployments');
   console.log('Published root/deep links, next-step routing, refresh and blocked-storage rendering passed.');

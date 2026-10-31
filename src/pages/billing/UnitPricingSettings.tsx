@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useState, useEffect } from 'react';
 import { Sliders, Package, Sparkles, Check, Save, Coins, Layers } from 'lucide-react';
 import { billing, CURRENCIES, useBillingSettings, type Currency } from '../../backend/billing';
@@ -212,7 +213,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
                   value={pricePerUnit}
                   onChange={e => setPricePerUnit(Math.max(0, Number(e.target.value) || 0))}
                 />
-                <select
+                <DashboardSelect
                   className="bl-input"
                   style={{ width: 95 }}
                   value={currency}
@@ -221,7 +222,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
                   {CURRENCIES.map(curr => (
                     <option key={curr} value={curr}>{curr}</option>
                   ))}
-                </select>
+                </DashboardSelect>
               </div>
               <small>{c.t('Cost per 1 unit block', 'التكلفة لكل بلوك وحدة')}</small>
             </label>

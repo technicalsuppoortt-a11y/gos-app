@@ -11,6 +11,106 @@ export type FormField = {
   defaultValue?: string;
 };
 
+export type FormBackgroundPreset = {
+  id: string;
+  name: string;
+  description: string;
+  background: string;
+  cardBackground: string;
+  cardBorder: string;
+  textColor: string;
+  previewBg: string;
+  previewBorder: string;
+  isDark?: boolean;
+};
+
+export const FORM_BACKGROUND_PRESETS: FormBackgroundPreset[] = [
+  {
+    id: 'blank',
+    name: 'Blank / Clean White',
+    description: 'Minimalist white canvas, perfect for embeds and clean looks',
+    background: '#ffffff',
+    cardBackground: '#ffffff',
+    cardBorder: '1px solid #e2e8f0',
+    textColor: '#0f172a',
+    previewBg: '#ffffff',
+    previewBorder: '#cbd5e1',
+    isDark: false
+  },
+  {
+    id: 'slate-glow',
+    name: 'Modern Slate & Glow',
+    description: 'Deep dark mode with ambient indigo radial illumination',
+    background: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.22), transparent 60%), #090d16',
+    cardBackground: 'rgba(15, 23, 42, 0.85)',
+    cardBorder: '1px solid rgba(99, 102, 241, 0.25)',
+    textColor: '#f8fafc',
+    previewBg: '#090d16',
+    previewBorder: '#6366f1',
+    isDark: true
+  },
+  {
+    id: 'soft-mesh',
+    name: 'Soft Mesh Gradient',
+    description: 'Delicate pastel gradient with smooth modern light ambiance',
+    background: 'linear-gradient(135deg, #f0f4ff 0%, #fae8ff 50%, #e0f2fe 100%)',
+    cardBackground: 'rgba(255, 255, 255, 0.92)',
+    cardBorder: '1px solid rgba(226, 232, 240, 0.8)',
+    textColor: '#0f172a',
+    previewBg: 'linear-gradient(135deg, #e0e7ff, #fbcfe8)',
+    previewBorder: '#c7d2fe',
+    isDark: false
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora Borealis',
+    description: 'Deep tech gradient with vivid emerald and purple accents',
+    background: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 55%, #064e3b 100%)',
+    cardBackground: 'rgba(15, 23, 42, 0.85)',
+    cardBorder: '1px solid rgba(52, 211, 153, 0.3)',
+    textColor: '#f8fafc',
+    previewBg: 'linear-gradient(135deg, #1e1b4b, #064e3b)',
+    previewBorder: '#34d399',
+    isDark: true
+  },
+  {
+    id: 'frosted-glass',
+    name: 'Frosted Glassmorphism',
+    description: 'Translucent glass card on a soft fluid ambient background',
+    background: 'radial-gradient(at 100% 0%, #c7d2fe 0px, transparent 50%), radial-gradient(at 0% 100%, #fbcfe8 0px, transparent 50%), #f8fafc',
+    cardBackground: 'rgba(255, 255, 255, 0.75)',
+    cardBorder: '1px solid rgba(255, 255, 255, 0.65)',
+    textColor: '#0f172a',
+    previewBg: 'linear-gradient(135deg, #e2e8f0, #e0e7ff)',
+    previewBorder: '#cbd5e1',
+    isDark: false
+  },
+  {
+    id: 'tech-grid',
+    name: 'Technical SaaS Grid',
+    description: 'Sleek dark engineering aesthetic with fine contrast',
+    background: '#0b0f19',
+    cardBackground: '#111827',
+    cardBorder: '1px solid #1f2937',
+    textColor: '#f9fafb',
+    previewBg: '#111827',
+    previewBorder: '#374151',
+    isDark: true
+  },
+  {
+    id: 'warm-neutral',
+    name: 'Warm Neutral Oatmeal',
+    description: 'Organic warmth for lifestyle, clinics, wellness and creators',
+    background: '#fcfaf6',
+    cardBackground: '#ffffff',
+    cardBorder: '1px solid #e7e5e4',
+    textColor: '#1c1917',
+    previewBg: '#fcfaf6',
+    previewBorder: '#d6d3d1',
+    isDark: false
+  }
+];
+
 export type PageTemplate = {
   mode: 'funnel' | 'website' | 'form';
   id: string;
@@ -24,6 +124,8 @@ export type PageTemplate = {
   image: string;
   benefits?: string[];
   fields?: FormField[];
+  backgroundPreset?: string;
+  backgroundColor?: string;
 };
 
 export const pageTemplates: PageTemplate[] = [
@@ -41,6 +143,21 @@ export const pageTemplates: PageTemplate[] = [
   // Pre-designed Ready-Made Form Templates
   {
     mode: 'form',
+    id: 'blank-form-template',
+    name: 'Blank Form (Clean Canvas)',
+    industry: 'Universal',
+    goal: 'Custom Capture',
+    title: 'Clean minimal form canvas',
+    body: 'Start completely from scratch with a crisp, minimal background. Build your fields from the ground up.',
+    cta: 'Create Blank Form',
+    color: '#7C3AED',
+    image: '/forms/blank-form-template.svg',
+    backgroundPreset: 'blank',
+    benefits: ['Zero pre-filled inputs', 'Clean white canvas', 'Full customization freedom'],
+    fields: []
+  },
+  {
+    mode: 'form',
     id: 'contact-inquiry-form',
     name: 'Contact & Inquiry',
     industry: 'Business services',
@@ -49,7 +166,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'We typically respond within 24 hours. Let us know how we can help your business thrive.',
     cta: 'Send Message',
     color: '#7C3AED',
-    image: '/dashboard/product-consultation.png',
+    image: '/forms/contact-inquiry-form.svg',
     benefits: ['Instant CRM Lead Capture', 'Smart inquiry categorization', 'Automated routing'],
     fields: [
       { id: 'name', label: 'Full name', type: 'text', required: true, options: [], placeholder: 'e.g. Sarah Jenkins' },
@@ -77,7 +194,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Tell us about your goals, current hurdles, and preferred call times before we meet.',
     cta: 'Request Consultation',
     color: '#7C3AED',
-    image: '/dashboard/product-nutrition.png',
+    image: '/forms/consultation-request-form.svg',
     benefits: ['Pre-qualifies incoming prospects', 'Captures preferred call time', 'Syncs to CRM pipeline'],
     fields: [
       { id: 'name', label: 'Full name', type: 'text', required: true, options: [], placeholder: 'e.g. Alex Morgan' },
@@ -113,7 +230,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Get actionable growth strategies, private case studies, and early access to product releases.',
     cta: 'Subscribe to Briefing',
     color: '#7C3AED',
-    image: '/dashboard/product-consultation.png',
+    image: '/forms/newsletter-signup-form.svg',
     benefits: ['High conversion single-step capture', 'Audience segmentation dropdown', 'Instant welcome trigger'],
     fields: [
       { id: 'name', label: 'First name', type: 'text', required: true, options: [], placeholder: 'e.g. Elena' },
@@ -140,7 +257,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Help us understand your company, deliverables, timeline, and anticipated budget.',
     cta: 'Submit Project Brief',
     color: '#7C3AED',
-    image: '/dashboard/product-consultation.png',
+    image: '/forms/client-onboarding-form.svg',
     benefits: ['Detailed budget & timeline qualification', 'Ready for agency workflows', 'Automated pipeline triage'],
     fields: [
       { id: 'company_name', label: 'Company / Organization name', type: 'text', required: true, options: [], placeholder: 'e.g. Acme Corp' },
@@ -175,7 +292,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Spaces are strictly limited. Register today to lock in your attendee credentials and session access.',
     cta: 'Confirm Registration',
     color: '#7C3AED',
-    image: '/dashboard/hero-landscape.png',
+    image: '/forms/event-rsvp-form.svg',
     benefits: ['Attendee pass type selection', 'In-person vs Virtual attendance', 'Automated calendar & confirmation emails'],
     fields: [
       { id: 'name', label: 'Attendee full name', type: 'text', required: true, options: [], placeholder: 'e.g. Maya Lin' },
@@ -210,7 +327,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Help us elevate our product quality and customer experience with your candid review.',
     cta: 'Submit Review',
     color: '#7C3AED',
-    image: '/pagefly/headphones-product.png',
+    image: '/forms/feedback-review-form.svg',
     benefits: ['5-star satisfaction dropdown rating', 'NPS recommendation metric', 'Actionable customer insights'],
     fields: [
       { id: 'name', label: 'Your name', type: 'text', required: true, options: [], placeholder: 'e.g. Jordan Cole' },
@@ -238,7 +355,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'We are expanding rapidly and always seeking visionary talent. Submit your credentials to apply.',
     cta: 'Submit Application',
     color: '#7C3AED',
-    image: '/dashboard/product-consultation.png',
+    image: '/forms/job-application-form.svg',
     benefits: ['Role & department selection', 'Seniority qualification', 'Portfolio and LinkedIn capture'],
     fields: [
       { id: 'full_name', label: 'Full legal name', type: 'text', required: true, options: [], placeholder: 'e.g. Marcus Vance' },
@@ -274,7 +391,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Tell us what you need built, your timeframe, and your scope for an upfront quotation.',
     cta: 'Generate Quotation',
     color: '#7C3AED',
-    image: '/dashboard/product-consultation.png',
+    image: '/forms/quote-estimator-form.svg',
     benefits: ['Instant project categorization', 'Budget range qualification', 'Fast turnaround estimates'],
     fields: [
       { id: 'contact_name', label: 'Full name', type: 'text', required: true, options: [], placeholder: 'e.g. Jessica Taylor' },
@@ -309,7 +426,7 @@ export const pageTemplates: PageTemplate[] = [
     body: 'Book a tailored walkthrough with our technical architects and unlock early enterprise trial access.',
     cta: 'Schedule Live Demo',
     color: '#7C3AED',
-    image: '/dashboard/hero-landscape.png',
+    image: '/forms/enterprise-demo-form.svg',
     benefits: ['Company size verification', 'Custom use-case routing', 'VIP onboarding priority'],
     fields: [
       { id: 'name', label: 'Work name', type: 'text', required: true, options: [], placeholder: 'e.g. Liam Parker' },

@@ -1,0 +1,20 @@
+/* Above the form dialog's 1,000,000 layer; Radix copies this onto its fixed popper wrapper. */
+:root :is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel,.gos-combo-panel.is-portaled),
+:root [data-radix-popper-content-wrapper] > [role=listbox] {
+  z-index: 2147483000 !important;
+  max-height: min(340px, var(--radix-select-content-available-height, calc(100dvh - 24px)));
+  max-width: calc(100vw - 24px);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #A78BFA transparent;
+}
+:is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel,.crm-select-content,.adm-tools-cat-popup) [data-radix-select-viewport] {
+  max-height: min(300px, calc(var(--radix-select-content-available-height, 100dvh) - 48px)) !important;
+  overscroll-behavior: contain;
+}
+:is(.bk-select-trigger,.aw-select-trigger,.commerce-select-trigger,.adm-select-trigger,.gos-combo-trigger):focus-visible { outline: 2px solid #7C3AED; outline-offset: 3px; }
+:is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel)[data-state=open] { animation: select-layer-open .16s ease-out; }
+:is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel)[data-state=closed] { animation: select-layer-close .12s ease-in; }
+@keyframes select-layer-open { from { opacity: 0; } to { opacity: 1; } }
+@keyframes select-layer-close { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { :is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel) { animation: none !important; } }

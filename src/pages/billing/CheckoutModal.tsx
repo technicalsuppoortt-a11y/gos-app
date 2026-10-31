@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
@@ -696,7 +697,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                           <label style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--bl-muted)' }}>
                             {c.t('Change Package', 'تغيير الباقة')}
                           </label>
-                          <select
+                          <DashboardSelect
                             value={selectedAddonId || plan.id}
                             onChange={e => setSelectedAddonId(e.target.value)}
                             style={{
@@ -716,7 +717,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                                 {c.pick(a.name)} — {c.money(a.price, a.currency)} (+{c.num(a.credits || 0)} {c.t('credits', 'رصيد')})
                               </option>
                             ))}
-                          </select>
+                          </DashboardSelect>
                         </div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', borderRadius: 10, background: 'var(--bl-surface)', border: '1px solid var(--bl-border)' }}>

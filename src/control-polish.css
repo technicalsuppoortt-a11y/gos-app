@@ -1,0 +1,59 @@
+/* Shared app controls. Visitor-authored content keeps its own theme. */
+:root { --control-primary: #7C3AED; --control-secondary: #A78BFA; --control-panel: rgb(255 255 255 / .94); --control-ink: #334155; --control-line: #ddd6fe; --control-active: #f3e8ff; }
+html.dark { --control-panel: rgb(25 32 51 / .95); --control-ink: #f1f5f9; --control-line: #514367; --control-active: #35264f; }
+:is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown,.adm-tools-cat-popup,.ai-history-filter-menu) {
+  background: var(--control-panel) !important; color: var(--control-ink) !important;
+  border-color: var(--control-line) !important; border-radius: 12px;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 16px 45px #17102e26; scrollbar-width: thin; scrollbar-color: #A78BFA transparent;
+}
+:is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button { color: var(--control-ink); }
+:is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { background: var(--control-active) !important; color: #7C3AED !important; }
+html.dark :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { color: #A78BFA !important; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel,[role=menu]) {
+  background: var(--control-panel) !important; color: var(--control-ink) !important;
+  border: 1px solid var(--control-line) !important; border-radius: 12px;
+  box-shadow: 0 16px 45px #17102e26; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  transform-origin: var(--radix-select-content-transform-origin, top center);
+  animation: control-open .16s ease-out;
+  scrollbar-width: thin; scrollbar-color: #A78BFA transparent;
+}
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option] { color: var(--control-ink); border-radius: 7px; min-height: 34px; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { background: var(--control-active) !important; color: #7C3AED !important; }
+html.dark :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { color: #A78BFA !important; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel)[data-state=closed] { animation: control-close .12s ease-in; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [data-radix-select-viewport] { max-height: min(320px, var(--radix-select-content-available-height)); scrollbar-width: thin; scrollbar-color: #A78BFA transparent; }
+:is(.layout-dashboard-shell,.role-shell,[role=dialog]) :is([role=combobox],input[type=search],input[placeholder*="Search"],input[placeholder*="search"]):focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
+:is(.layout-dashboard-shell,.role-shell) :is([role=combobox],input[type=search]) { transition: border-color .18s, box-shadow .18s; }
+:is(.layout-dashboard-shell,.role-shell) [role=combobox][data-state=open] { border-color: #7C3AED; box-shadow: 0 0 0 3px #7c3aed1f; }
+/* The native-compatible adapter is also used by settings, CRM and form editors. */
+.bk-select { display: inline-flex; min-width: 0; vertical-align: middle; }
+.bk-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 36px; padding: 7px 11px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--control-panel); color: var(--control-ink); font: inherit; cursor: pointer; }
+.bk-select-trigger > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-select-trigger:disabled { opacity: .55; cursor: not-allowed; }
+.bk-select-content { z-index: 10001; min-width: var(--radix-select-trigger-width); max-width: calc(100vw - 24px); overflow: hidden; padding: 5px; }
+.bk-select-option { position: relative; display: flex; align-items: center; padding: 8px 30px 8px 10px; font-size: 13px; outline: none; cursor: pointer; }
+.bk-select-option > span:last-child:not(:first-child) { position: absolute; inset-inline-end: 8px; }
+.bk-select-option[data-disabled] { opacity: .5; cursor: not-allowed; }
+.bk-select-scroll { display: flex; justify-content: center; padding: 3px; color: var(--control-ink); }
+.bk-select-validation { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.bk-select:is(.form-select-control,.bl-input) { padding: 0; border: 0; background: transparent; }
+.pf-template-filters > .aw-select { min-width: 150px; }
+.pf-template-preview.pf-form-template-preview { background-size: cover; background-position: center; justify-content: flex-end; min-height: 190px; }
+.pf-template-preview.pf-form-template-preview { position: relative; isolation: isolate; }
+.pf-template-preview.pf-form-template-preview::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg,#17102ef5,transparent 95%); z-index: 0; }
+.pf-form-template-preview > :is(small,strong,span) { position: relative; z-index: 1; }
+.pf-template-card .pf-form-template-preview > small { color: #fff !important; text-shadow: 0 1px 3px #17102e; }
+.pf-template-card.pf-template-blank-card .pf-form-template-preview::after { content: none; }
+.pf-template-card.pf-template-blank-card .pf-form-template-preview > small { color: #334155 !important; text-shadow: none; }
+.pf-template-card.pf-template-blank-card .pf-form-template-preview > span { color: #fff !important; }
+html.dark .pf-template-card, html.dark .pf-template-description { background: #151a27; border-color: #3c3650; color: #f1f5f9; }
+html.dark .pf-template-description b { color: #f1f5f9; }
+html.dark .pf-template-description small { color: #cbd5e1; }
+html.dark .pf-template-description > span { color: #A78BFA; }
+html.dark .pf-template-filters > label, html.dark .pf-template-filters .aw-select-trigger { background: #192033; border-color: #514367; color: #f1f5f9; }
+html.dark .pf-template-filters input { background: transparent; color: #f1f5f9; }
+html.dark .pf-template-filters input::placeholder { color: #cbd5e1; }
+@keyframes control-open { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes control-close { to { opacity: 0; transform: translateY(-3px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel,[role=menu]) { animation: none !important; } }

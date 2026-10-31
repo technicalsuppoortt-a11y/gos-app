@@ -265,12 +265,29 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 9px 14px;
+  border-radius: 12px;
   background: var(--form-surface, #f8fafc);
   border: 1px solid var(--form-border, #e2e8f0);
-  min-width: 260px;
+  min-width: 280px;
   color: var(--form-text-muted, #64748b);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.forms-search-box:hover {
+  border-color: #cbd5e1;
+}
+
+.forms-search-box:focus-within {
+  border-color: #7C3AED;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.forms-search-box svg {
+  color: #7C3AED;
+  flex-shrink: 0;
 }
 
 .forms-search-box input {
@@ -751,24 +768,53 @@
 }
 
 .form-inspector-section input:not([type=checkbox]),
-.form-inspector-section select,
 .form-inspector-section textarea {
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
   border: 1px solid var(--form-border, #cbd5e1);
   background: var(--form-bg, #ffffff);
   color: var(--form-text, #0f172a);
-  font-size: 13.5px;
+  font-size: 13px;
   outline: none;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.form-inspector-section select {
+  box-sizing: border-box;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C3AED' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding: 9px 38px 9px 12px !important;
+  border-radius: 9px;
+  border: 1px solid var(--form-border, #cbd5e1);
+  background-color: var(--form-bg, #ffffff);
+  color: var(--form-text, #0f172a);
+  font-size: 13px;
+  font-weight: 550;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.form-inspector-section select:hover {
+  border-color: #a78bfa;
+  background-color: var(--form-surface, #f8fafc);
 }
 
 .form-inspector-section input:focus,
 .form-inspector-section select:focus,
 .form-inspector-section textarea:focus {
   border-color: #7C3AED;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Completely Redesigned Dropdown & Radio Option Builder */
@@ -820,27 +866,32 @@
 .form-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  z-index: 999999 !important;
+  padding: max(32px, 5vh) 20px 32px;
+  overflow-y: auto;
 }
 
 .form-modal-dialog {
   background: var(--form-bg, #ffffff);
   border-radius: 18px;
   border: 1px solid var(--form-border, #e2e8f0);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 620px;
-  max-height: 90vh;
+  max-height: calc(100vh - 64px);
+  margin: auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 1000000;
+  animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes modalPop {
@@ -860,11 +911,14 @@
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--form-border, #e2e8f0);
+  background: var(--form-bg, #ffffff);
+  flex-shrink: 0;
 }
 
 .form-modal-header h2 {
   font-size: 18px;
   font-weight: 750;
+  letter-spacing: -0.02em;
   color: var(--form-text, #0f172a);
   margin: 0;
 }
@@ -922,7 +976,8 @@
    ========================================================================== */
 
 .fb-custom-form select,
-.form-select-control {
+.form-select-control,
+.form-modal-body select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -938,22 +993,33 @@
   color: var(--form-text, #0F172A);
   font-size: 14px;
   font-weight: 500;
-  min-height: 46px;
+  min-height: 44px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
 .fb-custom-form select:hover,
-.form-select-control:hover {
+.form-select-control:hover,
+.form-modal-body select:hover {
   border-color: #A78BFA;
   background-color: var(--form-surface, #F8FAFC);
 }
 
 .fb-custom-form select:focus,
-.form-select-control:focus {
+.form-select-control:focus,
+.form-modal-body select:focus {
   outline: none;
   border-color: #7C3AED;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+[dir="rtl"] .fb-custom-form select,
+[dir="rtl"] .form-select-control,
+[dir="rtl"] .form-inspector-section select,
+[dir="rtl"] .form-modal-body select {
+  background-position: left 14px center !important;
+  padding-right: 14px !important;
+  padding-left: 42px !important;
 }
 
 /* Custom interactive Select Component */
@@ -1093,8 +1159,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  z-index: 9999;
+  padding: max(32px, 5vh) 20px 32px;
+  z-index: 999999 !important;
   animation: deleteModalFadeIn 0.2s ease-out;
 }
 

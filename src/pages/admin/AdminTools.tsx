@@ -1,3 +1,4 @@
+import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import * as Select from '@radix-ui/react-select';
@@ -704,7 +705,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
                 return (
                   <div key={field.key} className="adm-drawer-field">
                     <label>{field.label[ar ? 1 : 0]}</label>
-                    <select
+                    <DashboardSelect
                       value={String(currentValue)}
                       onChange={(e) => updateSettingValue(field.key, e.target.value)}
                     >
@@ -713,7 +714,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
                           {opt}
                         </option>
                       ))}
-                    </select>
+                    </DashboardSelect>
                   </div>
                 );
               }
@@ -738,7 +739,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
             {/* Tenant Access Tier Restriction */}
             <div className="adm-drawer-field">
               <label>{t('Tenant Plan Access Tier', 'مستوى خطة الوصول المسموحة')}</label>
-              <select
+              <DashboardSelect
                 value={draft.accessTier}
                 onChange={(e) =>
                   setDraft((p) => ({ ...p, accessTier: e.target.value as ToolItem['accessTier'] }))
@@ -747,7 +748,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
                 <option value="all">{t('All Plans (Starter, Pro, Agency)', 'جميع الخطط (الأساسية، الاحترافية، الوكالات)')}</option>
                 <option value="pro_agency">{t('Pro & Agency Tiers Only', 'الخطط الاحترافية والوكالات فقط')}</option>
                 <option value="agency_only">{t('Agency White-Label Tier Only', 'خطط الوكالات فقط')}</option>
-              </select>
+              </DashboardSelect>
             </div>
           </div>
         </section>

@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 74,
+  "scannedStylesheets": 77,
   "correctedDeclarations": 860,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -73,22 +73,22 @@
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 61,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/components/ui/Select.tsx",
       "line": 65,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 83,
+      "line": 69,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 114,
+      "line": 87,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/ui/Select.tsx",
+      "line": 118,
       "utility": "text-slate-500"
     },
     {
@@ -233,32 +233,32 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 497,
+      "line": 527,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 500,
+      "line": 530,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 524,
+      "line": 554,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 596,
+      "line": 626,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 596,
+      "line": 626,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 596,
+      "line": 626,
       "utility": "text-slate-500"
     },
     {
@@ -2516,7 +2516,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 487,
+      "line": 488,
       "selector": ".layout-help-card small",
       "before": "#999baa",
       "after": "#475569",
@@ -2524,7 +2524,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 499,
+      "line": 500,
       "selector": ".layout-help-card>button",
       "before": "#9295a3",
       "after": "#334155",
@@ -2532,7 +2532,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 521,
+      "line": 657,
       "selector": ".layout-logout",
       "before": "#777b8b",
       "after": "#334155",
@@ -2540,7 +2540,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 651,
+      "line": 787,
       "selector": ".layout-header-title p",
       "before": "#7c8091",
       "after": "#334155",
@@ -2548,7 +2548,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 665,
+      "line": 801,
       "selector": ".layout-header-breadcrumb>span",
       "before": "#797d8f",
       "after": "#334155",
@@ -2556,7 +2556,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 670,
+      "line": 806,
       "selector": ".layout-header-breadcrumb>i",
       "before": "#b8bac5",
       "after": "#334155",
@@ -2564,7 +2564,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 822,
+      "line": 958,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -2572,7 +2572,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 882,
+      "line": 1018,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -2580,7 +2580,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 961,
+      "line": 1097,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -2588,7 +2588,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1255,
+      "line": 1391,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",

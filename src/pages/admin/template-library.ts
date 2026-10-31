@@ -14,15 +14,23 @@ function storedRows(key: string): RecordRow[] | null {
 }
 export function readSystemTemplates(): RecordRow[] {
  const saved = storedRows(key);
- if (saved) return saved;
- const legacy = [
-  ...(storedRows('gos.admin.v1.templates.0') ?? seedRows('templates', 0)),
-  ...(storedRows('gos.admin.v1.funnels-websites.1') ?? legacyWebTemplateRows),
- ];
  const defaults: RecordRow[] = pageTemplates.map(template => ({
   id: `system-page-${template.id}`, name: template.name, tenant: 'Platform', status: 'Published',
   category: template.mode === 'funnel' ? 'Funnel' : template.mode === 'form' ? 'Form' : 'Website', content: template.body, pageTemplateId: template.id,
  }));
+ if (saved) {
+  const missing = defaults.filter(d => !saved.some(s => s.pageTemplateId === d.pageTemplateId || s.id === d.id));
+  if (missing.length > 0) {
+   const updated = [...saved, ...missing];
+   storageSet(key, JSON.stringify(updated));
+   return updated;
+  }
+  return saved;
+ }
+ const legacy = [
+  ...(storedRows('gos.admin.v1.templates.0') ?? seedRows('templates', 0)),
+  ...(storedRows('gos.admin.v1.funnels-websites.1') ?? legacyWebTemplateRows),
+ ];
  const masters: RecordRow[] = MASTER_TEMPLATES.map(template => ({id:`system-${template.id}`,name:template.name,tenant:'Platform',status:'Published',category:systemAssetCategory(template),content:JSON.stringify(template.content,null,2),blueprintId:template.id}));
  const rows: RecordRow[] = [...legacy, ...defaults, ...masters].map(row => ({ ...row, tenant: 'Platform', category: row.category === 'AI Prompt' ? 'AI Assistant' : row.category }));
  for (const category of templateCategories) {
@@ -51,11 +59,13 @@ export function publishedWorkspaceTemplates(): Template[] {
 }
 /** Published defaults are consumed by tenant galleries; drafts never appear there. */
 export function publishedPageTemplates(): PageTemplate[] {
- return publishedSystemTemplates().filter(isWebTemplate).map(row => {
-  const mode = row.category === 'Funnel' ? 'funnel' : row.category === 'Form' ? 'form' : 'website';
-  const base = pageTemplates.find(template => template.id === row.pageTemplateId) ?? pageTemplates.find(template => template.mode === mode)!;
-  let body=row.content || base.body;
+ const fromSystem: PageTemplate[] = publishedSystemTemplates().filter(isWebTemplate).map(row => {
+  const mode: 'funnel' | 'form' | 'website' = row.category === 'Funnel' ? 'funnel' : row.category === 'Form' ? 'form' : 'website';
+  const base = pageTemplates.find(template => template.id === row.pageTemplateId) ?? pageTemplates.find(template => template.mode === mode) ?? pageTemplates[0];
+  let body = row.content || base?.body || '';
   try {const content=JSON.parse(body);if(typeof content.headline==='string')body=content.headline;} catch { /* Plain text content. */ }
-  return {...base, id:row.pageTemplateId || row.id, mode, name:row.name, title:row.name===base.name?base.title:row.name, body};
+  return {...base, id:row.pageTemplateId || row.id, mode, name:row.name, title:row.name===base?.name?base.title:row.name, body};
  });
+ const missing = pageTemplates.filter(pt => !fromSystem.some(fs => fs.id === pt.id));
+ return [...fromSystem, ...missing];
 }

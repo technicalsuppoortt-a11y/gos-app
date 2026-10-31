@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 import './combobox.css';
+import './select-layer.css';
 
 export type ComboOption = {
   value: string;
@@ -46,6 +47,7 @@ export function Combobox({
     maxHeight?: number;
   }>({ top: 0, left: 0, width: 240, maxHeight: 280 });
   const [usePortal, setUsePortal] = React.useState(false);
+  const [portalContainer, setPortalContainer] = React.useState<HTMLElement | null>(null);
   const trigger = React.useRef<HTMLButtonElement>(null);
   const panel = React.useRef<HTMLDivElement>(null);
   const input = React.useRef<HTMLInputElement>(null);
@@ -117,9 +119,10 @@ export function Combobox({
   const openPanel = () => {
     const anchor = trigger.current;
     if (!anchor) return;
-    const inDialog = Boolean(anchor.closest('dialog, [role="dialog"], .ob-dialog'));
+    const inDialog = Boolean(anchor.closest('dialog, [role="dialog"], .ob-dialog, .form-modal-dialog, .st-modal, .crm-dialog, .bk-dialog, .cw-dialog'));
     const inTable = Boolean(anchor.closest('table, tbody, tr, td, .ob-table-card'));
-    const shouldPortal = portal !== undefined ? portal : (!inDialog && !inTable);
+    const shouldPortal = inDialog || (portal !== undefined ? portal : !inTable);
+    setPortalContainer(anchor.closest('dialog') ?? document.body);
     setUsePortal(shouldPortal);
 
     if (shouldPortal) {
@@ -183,6 +186,7 @@ export function Combobox({
   const keyboard = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       close();
     }
     if (e.key === 'Tab') setOpen(false);
@@ -309,6 +313,7 @@ export function Combobox({
         disabled={disabled}
         onClick={() => (open ? close() : openPanel())}
         onKeyDown={e => {
+          if (open) { keyboard(e); return; }
           if (!open && ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
             e.preventDefault();
             openPanel();
@@ -321,7 +326,7 @@ export function Combobox({
         </span>
         <ChevronDown size={15} className="gos-combo-chevron" />
       </button>
-      {open && (usePortal ? createPortal(menuContent, document.body) : menuContent)}
+      {open && (usePortal ? createPortal(menuContent, portalContainer ?? document.body) : menuContent)}
     </div>
   );
 }

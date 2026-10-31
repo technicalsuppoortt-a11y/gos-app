@@ -3,8 +3,8 @@ import path from 'node:path';
 import postcss from 'postcss';
 
 // Generate scoped corrections from authored CSS without changing dark tokens or site content.
-const excluded = ':where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.quick-details,[role=switch],.af-switch,.aw-default,.bk-switch-track)';
-const guard = `:not(${excluded}):not(${excluded} *)`;
+const excluded = ':where([data-public-asset],.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.quick-details,[role=switch],.af-switch,.aw-default,.bk-switch-track)';
+const guard = `:not([data-form-theme]):not([data-form-theme] *):not(${excluded}):not(${excluded} *)`;
 const chrome = '.layout-dashboard-shell,.role-shell,[role=dialog],.bk-dialog,.quick-details,.commerce-select-content';
 const scope = `:is(:where(${chrome}),:where(${chrome}) *)`;
 const files = [], findings = [], variableFindings = [], utilities = [], rules = new Map(), variableRules = new Map();

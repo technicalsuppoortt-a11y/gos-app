@@ -3,6 +3,7 @@ import React from 'react';
 import * as RadixSelect from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { useSelectPortal } from './select-layer';
 
 export type SelectOption = string | { value: string; label: string; disabled?: boolean };
 
@@ -32,6 +33,7 @@ export function Select({
   icon: Icon
 }: SelectProps) {
   useUILanguage();
+  const portal = useSelectPortal();
   const items = options.map(option => typeof option === 'string' ? { value: option, label: option } : option);
   const selected = items.find(option => option.value === value);
   
@@ -42,9 +44,11 @@ export function Select({
         value={value || (items.some(option => option.value === '') ? emptyValue : '')}
         onValueChange={next => onChange(next === emptyValue ? '' : next)}
         disabled={disabled}
+        onOpenChange={portal.onOpenChange}
       >
         <RadixSelect.Trigger
-          aria-label={translateText(label)}
+          ref={portal.trigger}
+          aria-label={translateText(label || placeholder)}
           className={twMerge(
             'flex items-center gap-2 w-full min-w-0 min-h-[40px]',
             'rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-600 dark:bg-[#192033]',
@@ -66,10 +70,10 @@ export function Select({
             <ChevronDown size={16} />
           </RadixSelect.Icon>
         </RadixSelect.Trigger>
-        <RadixSelect.Portal>
+        <RadixSelect.Portal container={portal.container}>
           <RadixSelect.Content
             className={twMerge(
-              'z-[9999] overflow-hidden',
+              'ui-select-panel z-[9999] overflow-hidden',
               'shadow-xl border border-slate-100 rounded-xl bg-white/95 backdrop-blur-md dark:bg-[#192033]/95 dark:border-slate-600',
               'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-2',
               'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-2',

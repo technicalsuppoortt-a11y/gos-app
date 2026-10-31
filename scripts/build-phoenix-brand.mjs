@@ -14,7 +14,7 @@ async function visit(folder) {
 }
 await visit('src');
 const excluded = ':where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page)';
-const guard = `:not(${excluded}):not(${excluded} *)`;
+const guard = `:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(${excluded}):not(${excluded} *)`;
 const output = [];
 for (const file of files.sort()) {
   const input = await fs.readFile(file, 'utf8');
