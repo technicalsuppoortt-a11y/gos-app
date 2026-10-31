@@ -63,7 +63,9 @@ try {
   await page.getByLabel('Pipeline selector', { exact: true }).click();
   await page.getByRole('option', { name: 'Disposable pipeline', exact: true }).click();
   await page.getByRole('button', { name: 'Quick details for Funnel contact', exact: true }).click();
-  await page.getByRole('dialog').getByLabel('Pipeline', { exact: true }).selectOption('main');
+  await page.getByRole('dialog').getByLabel('Pipeline', { exact: true }).click();
+  await page.getByRole('option', { name: 'Main Pipeline', exact: true }).click();
+  await page.getByRole('button', { name: 'Save pipeline routing', exact: true }).click();
   await page.waitForFunction(() => window.__store.getState().crm.leads.find(l => l.id === 'capture-funnel').pipelineId === 'main');
   await page.keyboard.press('Escape');
   await page.getByLabel('Pipeline selector', { exact: true }).click();
@@ -98,6 +100,7 @@ try {
   await page.getByRole('button', { name: 'Quick details for Sarah Chen', exact: true }).click();
   await page.getByRole('dialog', { name: 'Sarah Chen' }).waitFor();
   await page.keyboard.press('Escape');
+  await page.locator('dialog[open]').waitFor({ state: 'hidden' });
   assert.equal(await page.locator('dialog[open]').count(), 0);
   await page.getByLabel('Search contacts', { exact: true }).fill('Sarah');
   await page.waitForFunction(() => document.querySelectorAll('.crm-lead-card').length === 1);

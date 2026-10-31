@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 77,
-  "correctedDeclarations": 860,
+  "scannedStylesheets": 78,
+  "correctedDeclarations": 854,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 108,
+  "utilityOccurrences": 113,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,17 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 151,
+      "line": 196,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 207,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 255,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 157,
+      "line": 261,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 159,
+      "line": 263,
       "utility": "text-gray-400"
     },
     {
@@ -70,6 +80,21 @@
       "file": "src/components/layout/SubAccountSwitcher.tsx",
       "line": 489,
       "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/layout/SuperAdminLayout.tsx",
+      "line": 124,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/layout/SuperAdminLayout.tsx",
+      "line": 132,
+      "utility": "text-slate-200"
+    },
+    {
+      "file": "src/components/layout/SuperAdminLayout.tsx",
+      "line": 135,
+      "utility": "text-slate-400"
     },
     {
       "file": "src/components/ui/Select.tsx",
@@ -528,7 +553,7 @@
     },
     {
       "file": "src/pages/MarketingTracking.tsx",
-      "line": 45,
+      "line": 46,
       "utility": "text-slate-100"
     },
     {
@@ -4316,35 +4341,11 @@
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
-      "line": 124,
-      "selector": ".bk-eyebrow",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
       "line": 131,
       "selector": ".bk-form input:disabled",
       "before": "#9099aa",
       "after": "#334155",
       "contrastOnWhite": 2.87
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
-      "line": 136,
-      "selector": ".bk-tip",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
-      "line": 143,
-      "selector": ".bk-input-prefix span",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
@@ -4372,22 +4373,6 @@
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
-      "line": 162,
-      "selector": ".bk-slot-list>b",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
-      "line": 169,
-      "selector": ".bk-powered",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
       "line": 229,
       "selector": ".bk-configurator-heading>svg:first-child",
       "before": "#979bb0",
@@ -4401,14 +4386,6 @@
       "before": "#8e91aa",
       "after": "#334155",
       "contrastOnWhite": 3.1
-    },
-    {
-      "file": "src/pages/booking/booking-workspace.css",
-      "line": 389,
-      "selector": ".bk-diagnostic-slot>s",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
     },
     {
       "file": "src/pages/booking/booking-workspace.css",

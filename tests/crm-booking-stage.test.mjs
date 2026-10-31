@@ -30,6 +30,7 @@ function harness({ lookup = { lead: { id: 'booking-1' } }, stageError, writeErro
     'firebase/firestore': {
       doc: (_, ...parts) => parts.join('/'), getDoc: async ref => { calls.push(['getDoc', ref]); return { exists: () => exists }; },
       updateDoc: async (ref, changes) => { calls.push(['updateDoc', ref, changes]); if (writeError) throw writeError; },
+      setDoc: async (ref, changes) => { calls.push(['setDoc', ref, changes]); if (writeError) throw writeError; },
     },
     './gosApi': { gosApi: {
       lead: async id => { calls.push(['lookup', id]); if (lookup instanceof Error || lookup instanceof GosApiError) throw lookup; return lookup; },
@@ -41,7 +42,9 @@ function harness({ lookup = { lead: { id: 'booking-1' } }, stageError, writeErro
 
 test('API leads are checked before moving and retain the API stage path', async () => {
   const h = harness(); await h.run();
-  assert.deepEqual(h.calls.map(c => c[0]), ['lookup', 'move']);
+  assert.deepEqual(h.calls.map(c => c[0]), ['lookup', 'move', 'setDoc']);
+  assert.equal(h.calls[2][1], 'tenants/tenant-a/leads/booking-1');
+  assert.equal(h.calls[2][2].lifecycleStage, 'QUALIFIED');
   assert.equal(h.dispatched[0].type, 'crm/updateLead');
 });
 for (const lookup of [new GosApiError('Lead not found', 404, 'lead_not_found'), { lead: null }]) {

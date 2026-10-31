@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
             {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
           </span>}
           {!(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
-            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || translateText("Upclick")}</b></span>
+            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || 'Upclick'}</b></span>
             <small>{translateText("Ideas to impact")}</small>
           </div>}
         </NavLink>

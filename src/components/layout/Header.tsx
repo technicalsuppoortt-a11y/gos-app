@@ -70,10 +70,67 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const productName = product ? product.name : (productId === 'new' ? 'Create Product' : '');
 
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const searchableNav = [
+    { title: 'Dashboard', path: '/dashboard', category: 'Navigation' },
+    { title: 'AI Copilot', path: '/dashboard/copilot', category: 'Navigation' },
+    { title: 'Funnel & Website', path: '/dashboard/funnels', category: 'Navigation' },
+    { title: 'Inbox', path: '/dashboard/inbox', category: 'Navigation' },
+    { title: 'CRM & Leads', path: '/dashboard/crm', category: 'Navigation' },
+    { title: 'AI Follow-Up', path: '/dashboard/follow-up', category: 'Navigation' },
+    { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
+    { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
+    { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
+    { title: 'Plans & Pricing', path: '/dashboard/plans', category: 'Navigation' },
+    { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
+    { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
+    { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
+  ];
+
+  const searchResults = searchQuery.trim()
+    ? searchableNav.filter(item => {
+        const query = searchQuery.toLowerCase().trim();
+        const translatedTitle = translateText(item.title).toLowerCase();
+        return item.title.toLowerCase().includes(query) || translatedTitle.includes(query);
+      })
+    : [];
+
+  const handleSearchSubmit = (targetPath?: string) => {
+    const destination = targetPath || searchResults[0]?.path;
+    if (destination) {
+      navigate(destination);
+      setSearchQuery('');
+      setSearchOpen(false);
+      searchInputRef.current?.blur();
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        setSearchOpen(true);
+      } else if (event.key === 'Escape' && searchOpen) {
+        setSearchOpen(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
+      }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -107,7 +164,54 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb flex-shrink-0"><span>{translateText("Workspace")}</span><i>/</i><h1>{localizeNode(pageTitle)}</h1></div>)}
     </div>
     <div className="layout-header-actions">
-      {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : <label className="layout-search"><Search size={16}/><input aria-label={translateText("Search")} placeholder={translateText("Search anything...")}/><kbd>{translateText("⌘ K")}</kbd></label>)}
+      {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
+        <div className="relative" ref={searchContainerRef}>
+          <label className="layout-search">
+            <Search size={16}/>
+            <input 
+              ref={searchInputRef}
+              aria-label={translateText("Search")} 
+              placeholder={translateText("Search anything...")}
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+              onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearchSubmit();
+                }
+              }}
+            />
+            <kbd>{translateText("⌘ K")}</kbd>
+          </label>
+          <AnimatePresence>
+            {localizeNode(searchOpen && searchResults.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 4, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                transition={{ duration: 0.15 }}
+                className="absolute start-0 top-[calc(100%+6px)] w-72 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 p-1.5"
+              >
+                <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-2 py-1 uppercase tracking-wider">
+                  {translateText("Pages & Navigation")}
+                </div>
+                {searchResults.map(result => (
+                  <button
+                    key={result.path}
+                    type="button"
+                    onClick={() => handleSearchSubmit(result.path)}
+                    className="w-full flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors text-start"
+                  >
+                    <span>{translateText(result.title)}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{translateText("Jump to")} ↵</span>
+                  </button>
+                ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      ))}
       <button 
         type="button" 
         onClick={() => navigate('/')} 

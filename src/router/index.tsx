@@ -169,7 +169,7 @@ export const router = createBrowserRouter([
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'templates', element: <Navigate to="/super-admin" replace/> },
+      { path: 'templates', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
       { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },

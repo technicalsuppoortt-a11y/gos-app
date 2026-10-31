@@ -1,0 +1,1 @@
+import React from 'react'; import {createRoot} from 'react-dom/client'; import {MarketingTracking} from '/src/pages/MarketingTracking.tsx'; createRoot(document.getElementById('root')!).render(<MarketingTracking/>);

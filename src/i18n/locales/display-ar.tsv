@@ -245,8 +245,8 @@ Time zone	المنطقة الزمنية
 Local timezone	المنطقة الزمنية المحلية
 Funnels	أقماع المبيعات
 Funnel	قُمع مبيعات
-Funnel & Website	أقماع المبيعات والمواقع
-Funnels & Websites	أقماع المبيعات والمواقع
+Funnel & Website	الموقع والقوالب
+Funnels & Websites	الموقع والقوالب
 Websites	المواقع الإلكترونية
 Website	موقع إلكتروني
 Pages	الصفحات
@@ -732,8 +732,8 @@ All Types	جميع الأنواع
 All roles	جميع الأدوار
 All tags	جميع الوسوم
 All conversations	جميع المحادثات
-CRM & Leads	إدارة العملاء والعملاء المحتملين
-CRM & leads	إدارة العملاء والعملاء المحتملين
+CRM & Leads	إدارة العملاء CRM
+CRM & leads	إدارة العملاء CRM
 CRM Pipelines	مسارات إدارة العملاء
 CRM navigation	التنقل في إدارة العملاء
 CRM pipeline board	لوحة مسار العملاء
@@ -847,7 +847,7 @@ Archived	مؤرشف
 Archive contact	أرشفة جهة الاتصال
 Archive conversation	أرشفة المحادثة
 Restore	استعادة
-Inbox	صندوق الوارد
+Inbox	صندوق الرسائل
 Conversation	محادثة
 Conversations	المحادثات
 Conversation History	سجل المحادثات
@@ -892,8 +892,8 @@ Human takeover	تولّي المحادثة بشريًا
 Hand back to AI	إعادة المحادثة إلى الذكاء الاصطناعي
 AI Copilot	المساعد الذكي
 AI Business Copilot	مساعد الأعمال الذكي
-AI Follow-Up	المتابعة بالذكاء الاصطناعي
-AI Follow-up	المتابعة بالذكاء الاصطناعي
+AI Follow-Up	وكيل المبيعات الذكي
+AI Follow-up	وكيل المبيعات الذكي
 AI Follow-Up sections	أقسام المتابعة بالذكاء الاصطناعي
 AI Follow-Up sequence	تسلسل المتابعة بالذكاء الاصطناعي
 AI Agent	وكيل الذكاء الاصطناعي
@@ -1011,7 +1011,7 @@ Consent-first messaging	مراسلات مبنية على الموافقة
 Unsubscribe	إلغاء الاشتراك
 Subscribed	مشترك
 Unsubscribed	ألغى الاشتراك
-Products & Payments	المنتجات والمدفوعات
+Products & Payments	المعاملات والمدفوعات
 Products	المنتجات
 Product	منتج
 Product name	اسم المنتج
