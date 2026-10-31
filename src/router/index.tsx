@@ -52,6 +52,8 @@ const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module =>
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
 const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
+const TermsOfServicePage = lazy(() => import('../pages/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
+const DataDeletionPage = lazy(() => import('../pages/DataDeletionPage').then(module => ({ default: module.DataDeletionPage })));
 
 const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
 const ProductPublicPreview = lazy(() => import('../pages/commerce/ProductPublicPreview').then(module => ({ default: module.ProductPublicPreview })));
@@ -86,6 +88,12 @@ export const router = createBrowserRouter([
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage/></Suspended> },
   { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
+  { path: '/terms-of-service', element: <Suspended><TermsOfServicePage/></Suspended> },
+  { path: '/Terms-of-Service', element: <Navigate to="/terms-of-service" replace/> },
+  { path: '/terms', element: <Navigate to="/terms-of-service" replace/> },
+  { path: '/data-deletion', element: <Suspended><DataDeletionPage/></Suspended> },
+  { path: '/Data-Deletion', element: <Navigate to="/data-deletion" replace/> },
+  { path: '/data-deletion-instructions', element: <Navigate to="/data-deletion" replace/> },
   { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
   { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
   { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace/> },

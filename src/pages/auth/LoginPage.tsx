@@ -292,21 +292,35 @@ export const LoginPage: React.FC = () => {
           <ArrowRight size={16}/>{translateText('Try Demo Account')}
         </button>
 
-        <div className="login-trust mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-500 dark:text-slate-300">
+        <div className="login-trust mt-6 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-300">
           <BadgeCheck size={15} className="text-emerald-500 dark:text-emerald-400"/>
           <span>{translateText("Secure access to your workspace")}</span>
+          <span className="text-slate-300 dark:text-slate-600">•</span>
+          <Link to="/terms-of-service" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
+            {translateText("Terms of Service")}
+          </Link>
           <span className="text-slate-300 dark:text-slate-600">•</span>
           <Link to="/privacy" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
             {translateText("Privacy Policy")}
           </Link>
+          <span className="text-slate-300 dark:text-slate-600">•</span>
+          <Link to="/data-deletion" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
+            {translateText("Data Deletion")}
+          </Link>
         </div>
       </motion.div>
 
-      <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400 mt-6">
+      <footer className="login-footer flex flex-wrap items-center justify-between gap-y-2 text-[11px] text-slate-400 dark:text-slate-400 mt-6">
         <span>{translateText("© 2026 Upclick Inc.")}</span>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
+          <Link to="/terms-of-service" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
+            {translateText("Terms of Service")}
+          </Link>
           <Link to="/privacy" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
             {translateText("Privacy Policy")}
+          </Link>
+          <Link to="/data-deletion" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
+            {translateText("Data Deletion")}
           </Link>
           <a className="transition hover:text-slate-700 dark:hover:text-white" href="#help">
             {translateText("Help")}
@@ -344,9 +358,17 @@ export const LoginPage: React.FC = () => {
       </div>
       <div className="login-showcase-footer relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-indigo-100/45">
         <span>{translateText("Built for the people building what’s next.")}</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <Link to="/terms-of-service" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+            {translateText("Terms")}
+          </Link>
+          <span>•</span>
           <Link to="/privacy" className="hover:text-white transition-colors underline-offset-2 hover:underline">
-            {translateText("Privacy Policy")}
+            {translateText("Privacy")}
+          </Link>
+          <span>•</span>
+          <Link to="/data-deletion" className="hover:text-white transition-colors underline-offset-2 hover:underline">
+            {translateText("Data Deletion")}
           </Link>
           <span>•</span>
           <span className="flex items-center gap-1.5"><Shield size={12}/>{translateText("Your data stays yours")}</span>

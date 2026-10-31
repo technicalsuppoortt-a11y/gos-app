@@ -100,3 +100,22 @@
 - All accounts , All Admins
 - Hanldes Team Member with roles and permission
 - Switch between users
+
+======================
+
+- Contacts of crm outside
+- add plans in settings
+- sort settings tab
+- Automation and Campagin tab and remove Automation from ai follow up
+  - Settings
+  - Templetes
+  - Campagin
+  - Ai Flow
+  - Settings
+
+- تصنفيات الواتس
+- develop support
+- add form in funnel
+- when craete user => normal or admin or agency user
+- Default Funnels from joe acadmy
+- Move Launch brand in gos

@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 78,
-  "correctedDeclarations": 853,
+  "scannedStylesheets": 79,
+  "correctedDeclarations": 854,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 113,
+  "utilityOccurrences": 133,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -208,12 +208,32 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 305,
+      "line": 302,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 306,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 313,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 308,
+      "line": 316,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 319,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 322,
       "utility": "text-slate-500"
     },
     {
@@ -385,6 +405,56 @@
       "file": "src/pages/dashboard/HomeDashboard.tsx",
       "line": 1318,
       "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 282,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 396,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 422,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 437,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 483,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 499,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 592,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 643,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 676,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/DataDeletionPage.tsx",
+      "line": 787,
+      "utility": "text-slate-400"
     },
     {
       "file": "src/pages/DiscountEditorPage.tsx",
@@ -569,6 +639,36 @@
     {
       "file": "src/pages/settings/PrivacyPolicyPanel.tsx",
       "line": 648,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 361,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 479,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 491,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 515,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 551,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/TermsOfServicePage.tsx",
+      "line": 598,
       "utility": "text-slate-400"
     }
   ],
@@ -6226,6 +6326,14 @@
       "before": "#9896a7",
       "after": "#334155",
       "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/legal-pages.css",
+      "line": 345,
+      "selector": ".legal-search-box svg",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
     },
     {
       "file": "src/pages/onboarding/onboarding.css",
