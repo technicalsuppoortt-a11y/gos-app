@@ -62,6 +62,10 @@ export function CRMRecord() {
   const isFromContacts = /^\/(?:dashboard\/)?contacts(?:\/|$)/.test(location.pathname);
   const base = location.pathname.startsWith('/dashboard') ? (isFromContacts ? '/dashboard/contacts' : '/dashboard/crm') : (isFromContacts ? '/contacts' : '/crm');
   const tab = recordTabs.some(t => t.id === params.get('tab')) ? params.get('tab')! : 'Overview';
+  const [note, setNote] = useState('');
+  const [tag, setTag] = useState('');
+  const [taskTitle, setTaskTitle] = useState('');
+  const [due, setDue] = useState('');
 
   const [contactForm, setContactForm] = useState({
     name: lead?.name ?? '',

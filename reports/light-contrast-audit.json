@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 79,
+  "scannedStylesheets": 80,
   "correctedDeclarations": 854,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 133,
+  "utilityOccurrences": 135,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,68 +18,73 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 196,
+      "line": 199,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 207,
+      "line": 210,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 255,
+      "line": 258,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 261,
+      "line": 264,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 263,
+      "line": 266,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 293,
+      "line": 327,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 310,
+      "line": 344,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 341,
+      "line": 375,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 354,
+      "line": 388,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 419,
+      "line": 453,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 442,
+      "line": 486,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 451,
+      "line": 503,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 489,
+      "line": 552,
       "utility": "text-gray-500"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 569,
+      "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
@@ -94,6 +99,11 @@
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
       "line": 137,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CurrencySelector.tsx",
+      "line": 93,
       "utility": "text-slate-400"
     },
     {
@@ -128,17 +138,17 @@
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 308,
+      "line": 309,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 308,
+      "line": 309,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 308,
+      "line": 309,
       "utility": "text-slate-500"
     },
     {
@@ -278,32 +288,32 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 527,
+      "line": 584,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 530,
+      "line": 587,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 554,
+      "line": 611,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 626,
+      "line": 684,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 626,
+      "line": 684,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 626,
+      "line": 684,
       "utility": "text-slate-500"
     },
     {
@@ -313,17 +323,17 @@
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 196,
+      "line": 200,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 197,
+      "line": 201,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 197,
+      "line": 201,
       "utility": "text-slate-400"
     },
     {
@@ -738,7 +748,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 5,
+      "line": 49,
       "selector": ".funnel-builder-page",
       "property": "--fb-muted",
       "before": "#858ba1",
@@ -2681,7 +2691,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 958,
+      "line": 976,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -2689,7 +2699,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1018,
+      "line": 1036,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -2697,7 +2707,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1097,
+      "line": 1116,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -2705,7 +2715,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1391,
+      "line": 1410,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",
@@ -5753,7 +5763,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 8,
+      "line": 52,
       "selector": ".fb-back,.fb-edit-title,.fb-icon-button",
       "before": "#737993",
       "after": "#334155",
@@ -5761,7 +5771,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 8,
+      "line": 52,
       "selector": ".fb-viewport-switch button",
       "before": "#78809a",
       "after": "#334155",
@@ -5769,7 +5779,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 8,
+      "line": 52,
       "selector": ".fb-dropdown b",
       "before": "#82879a",
       "after": "#334155",
@@ -5777,7 +5787,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 8,
+      "line": 52,
       "selector": ".fb-version-menu button span",
       "before": "#989daf",
       "after": "#334155",
@@ -5785,7 +5795,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-tabs button,.fb-inspector-tabs button",
       "before": "#737991",
       "after": "#334155",
@@ -5793,7 +5803,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-panel-caption",
       "before": "#969aad",
       "after": "#334155",
@@ -5801,7 +5811,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-panel-caption span",
       "before": "#7f8295",
       "after": "#334155",
@@ -5809,7 +5819,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-page-item>svg:first-child",
       "before": "#7d83a0",
       "after": "#334155",
@@ -5817,7 +5827,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-element-tabs button",
       "before": "#858aa0",
       "after": "#334155",
@@ -5825,7 +5835,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 10,
+      "line": 54,
       "selector": ".fb-block-search",
       "before": "#959bad",
       "after": "#334155",
@@ -5833,7 +5843,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-page-picker>span",
       "before": "#7d83a0",
       "after": "#334155",
@@ -5841,7 +5851,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-canvas-controls>svg",
       "before": "#858ba0",
       "after": "#334155",
@@ -5849,7 +5859,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-url-input",
       "before": "#959bae",
       "after": "#334155",
@@ -5857,7 +5867,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-url-input input",
       "before": "#737993",
       "after": "#334155",
@@ -5865,7 +5875,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-url-input button",
       "before": "#8188a0",
       "after": "#334155",
@@ -5873,7 +5883,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-programs-section>p",
       "before": "#8b90a5",
       "after": "#334155",
@@ -5881,7 +5891,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 12,
+      "line": 56,
       "selector": ".fb-program-card small",
       "before": "#858ba0",
       "after": "#475569",
@@ -5889,7 +5899,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 13,
+      "line": 57,
       "selector": ".fb-url-pair",
       "before": "#858ba0",
       "after": "#334155",
@@ -5897,7 +5907,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 13,
+      "line": 57,
       "selector": ".fb-featured-preview>img,.fb-featured-preview>span",
       "before": "#8e94a8",
       "after": "#334155",
@@ -5905,7 +5915,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 13,
+      "line": 57,
       "selector": ".fb-acc-option",
       "before": "#757b90",
       "after": "#334155",
@@ -5913,7 +5923,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 18,
+      "line": 62,
       "selector": ".fb-preview-brand small",
       "before": "#8b90a1",
       "after": "#475569",
@@ -5921,7 +5931,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 20,
+      "line": 64,
       "selector": ".fb-live-page-nav nav button",
       "before": "#d0d2da",
       "after": "#334155",
@@ -5929,7 +5939,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 21,
+      "line": 65,
       "selector": ".fb-preview-action-modal>p:not(.fb-preview-eyebrow)",
       "before": "#797f91",
       "after": "#334155",
@@ -5937,7 +5947,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 21,
+      "line": 65,
       "selector": ".fb-preview-action-modal>small",
       "before": "#9599a8",
       "after": "#475569",
@@ -5945,7 +5955,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-journey-modal header p,.fb-ai-modal header p",
       "before": "#9297aa",
       "after": "#334155",
@@ -5953,7 +5963,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-journey-modal>header>button,.fb-ai-modal>header>button",
       "before": "#7c8296",
       "after": "#334155",
@@ -5961,7 +5971,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-journey-step small",
       "before": "#858ba0",
       "after": "#475569",
@@ -5969,7 +5979,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-journey-modal>footer>span",
       "before": "#858ba0",
       "after": "#475569",
@@ -5977,7 +5987,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-ai-action>svg",
       "before": "#959bb0",
       "after": "#334155",
@@ -5985,7 +5995,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 24,
+      "line": 68,
       "selector": ".fb-ai-modal>small",
       "before": "#9297aa",
       "after": "#475569",
@@ -5993,7 +6003,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 38,
+      "line": 82,
       "selector": ".fb-select-trigger svg",
       "before": "#8188a0",
       "after": "#334155",
@@ -6001,7 +6011,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 39,
+      "line": 83,
       "selector": ".fb-section-edit-hint",
       "before": "#777d95",
       "after": "#475569",
@@ -6009,7 +6019,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 61,
+      "line": 105,
       "selector": ".fb-price-grid article>small",
       "before": "#777d91",
       "after": "#475569",
@@ -6017,7 +6027,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 62,
+      "line": 106,
       "selector": ".fb-price-grid article>strong em",
       "before": "#858a9e",
       "after": "#334155",
@@ -6025,7 +6035,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 63,
+      "line": 107,
       "selector": ".fb-price-grid article>span",
       "before": "#777d91",
       "after": "#334155",
@@ -6033,7 +6043,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 69,
+      "line": 113,
       "selector": ".fb-canvas-section>small",
       "before": "#878ca0",
       "after": "#475569",
@@ -6041,7 +6051,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 71,
+      "line": 115,
       "selector": ".fb-inline-cards small",
       "before": "#858ba0",
       "after": "#475569",
@@ -6049,7 +6059,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 73,
+      "line": 117,
       "selector": ".fb-canvas-section details p",
       "before": "#7e8498",
       "after": "#334155",
@@ -6057,7 +6067,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 94,
+      "line": 138,
       "selector": ".fb-image-dropzone",
       "before": "#7c8498",
       "after": "#334155",
@@ -6065,7 +6075,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 95,
+      "line": 139,
       "selector": ".fb-image-dropzone>span",
       "before": "#9298aa",
       "after": "#334155",
@@ -6073,7 +6083,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 98,
+      "line": 142,
       "selector": ".fb-mission-grid p",
       "before": "#777d91",
       "after": "#334155",
@@ -6081,7 +6091,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 99,
+      "line": 143,
       "selector": ".fb-values-grid span",
       "before": "#81879a",
       "after": "#334155",
@@ -6089,7 +6099,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 100,
+      "line": 144,
       "selector": ".fb-stats-grid span",
       "before": "#7d8297",
       "after": "#334155",
@@ -6097,7 +6107,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 105,
+      "line": 149,
       "selector": ".fb-settings-intro",
       "before": "#7d8397",
       "after": "#334155",
@@ -6105,7 +6115,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 110,
+      "line": 154,
       "selector": ".fb-image-manager button,.fb-manager-card-head button",
       "before": "#737991",
       "after": "#334155",
@@ -6113,7 +6123,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 112,
+      "line": 156,
       "selector": ".fb-empty-widget,.fb-empty-section",
       "before": "#9298aa",
       "after": "#334155",
@@ -6121,7 +6131,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 112,
+      "line": 156,
       "selector": ".fb-empty-columns>div",
       "before": "#9aa0b0",
       "after": "#334155",
@@ -6129,7 +6139,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 112,
+      "line": 156,
       "selector": ".fb-spacer-preview",
       "before": "#858ba0",
       "after": "#334155",
@@ -6137,7 +6147,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 112,
+      "line": 156,
       "selector": ".fb-price-grid article li",
       "before": "#72788c",
       "after": "#334155",
@@ -6145,7 +6155,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 117,
+      "line": 161,
       "selector": ".fb-mobile-site-menu button,.fb-preview-mobile-menu button",
       "before": "#f5f5f9",
       "after": "#334155",
@@ -6153,7 +6163,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 172,
+      "line": 216,
       "selector": ".fb-mode-heading small",
       "before": "#9297a8",
       "after": "#475569",
@@ -6161,7 +6171,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 174,
+      "line": 218,
       "selector": ".fb-step-arrow",
       "before": "#a2a6b5",
       "after": "#334155",
@@ -6169,7 +6179,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 175,
+      "line": 219,
       "selector": ".fb-responsive-visibility>span",
       "before": "#777d91",
       "after": "#334155",
@@ -6177,7 +6187,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 179,
+      "line": 223,
       "selector": ".fb-add-step-modal p",
       "before": "#82879a",
       "after": "#334155",
@@ -6185,7 +6195,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-lead-social small",
       "before": "#7c8193",
       "after": "#475569",
@@ -6193,7 +6203,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-lead-form-card>small",
       "before": "#9297a6",
       "after": "#475569",
@@ -6201,7 +6211,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-lead-success>span",
       "before": "#747a8e",
       "after": "#334155",
@@ -6209,7 +6219,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-booking-coach>p",
       "before": "#c7c8d9",
       "after": "#334155",
@@ -6217,7 +6227,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-booking-service small,.fb-coach-profile small",
       "before": "#bdc0d4",
       "after": "#475569",
@@ -6225,7 +6235,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-booking-secure",
       "before": "#bdc0d4",
       "after": "#334155",
@@ -6233,7 +6243,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-booking-days>*",
       "before": "#858a9a",
       "after": "#334155",
@@ -6241,7 +6251,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 180,
+      "line": 224,
       "selector": ".fb-confirm-location small",
       "before": "#777d90",
       "after": "#475569",
@@ -6249,7 +6259,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 182,
+      "line": 226,
       "selector": ".fb-mini-site-nav",
       "before": "#72788b",
       "after": "#334155",
@@ -6257,7 +6267,7 @@
     },
     {
       "file": "src/pages/funnel-builder.css",
-      "line": 202,
+      "line": 246,
       "selector": ".fb-delete-step-dialog p",
       "before": "#73788b",
       "after": "#334155",

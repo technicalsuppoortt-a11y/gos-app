@@ -5,6 +5,7 @@ html.dark :is(
   .crm-summary,
   .lead-drawer,
   .product-summary,
+  .alm-preview-canvas,
   .adm-tool-switch-knob,
   .af-kpi,
   .af-panel,
@@ -97,6 +98,7 @@ html.dark :is(
   .fb-image-dropzone>svg,
   .fb-overlay-control span,
   .fb-confirmation-summary>a,
+  .fb-form-picker-title svg,
   .masterclass-progress>b,
   .gos-activation-signin > a,
   .gos-activation-loading > svg,
@@ -816,6 +818,7 @@ html.dark :is(
   .fb-step-thumb,
   .fb-inspector-divider,
   .fb-delete-step-icon,
+  .fb-form-connected-badge,
   .fn-bar,
   .fn-preview-scroll,
   .tool-pink,
@@ -1010,6 +1013,7 @@ html.dark :is(
   .fb-booking-date,
   .fb-booking-days>*,
   .fb-booking-time-title,
+  .fb-form-empty-note,
   .fn-date-range,
   .fn-focus-caption,
   .legal-brand-subtitle,
@@ -1290,6 +1294,9 @@ html.dark :is(
   .fb-preview-eyebrow,
   .fb-story-signature,
   .fb-lead-form-eyebrow,
+  .fb-form-picker-title,
+  .fb-form-picker-count,
+  .fb-create-form-btn,
   .gos-activation-eyebrow,
   .ob-text-link,
   .pp-txn-id,
@@ -3941,6 +3948,7 @@ html.dark :is(
   .aw-add-step,
   .bc-check-option,
   .fb-image-dropzone,
+  .fb-form-idle-hint,
   .gos-activation-input,
   .pf-tree-search,
   .pp-description-editor
@@ -4003,7 +4011,8 @@ html.dark :is(
 }
 html.dark :is(
   .aw-workspace .st-modal,
-  .tw-page .cw-button
+  .tw-page .cw-button,
+  .fb-form-picker-body .aw-select-trigger
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: var(--ui-surface);

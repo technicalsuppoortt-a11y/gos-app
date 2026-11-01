@@ -55,7 +55,7 @@ export function instantiateProductTemplate(template: ProductTemplate, origin: st
   // Masters never transfer workspace relationships, order records or student identities.
   config.crmRouting = undefined; delete config.calendarId; config.bookingUrl = ''; config.bookingSlots = [];
   config.funnelId = ''; config.funnelPageId = ''; config.orders = []; config.students = [];
-  config.experience!.upsellId = ''; config.experience!.downsellId = ''; config.experience!.checkout.bumpProductId = '';
+  config.experience!.upsellId = ''; delete (config.experience as ProductExperience & { downsellId?: string }).downsellId; config.experience!.checkout.bumpProductId = '';
   // Resolve bundled demo resources against the host; saved products require HTTP(S) delivery URLs.
   config.assets = config.assets.map(asset => ({ ...asset, url: new URL(asset.url, origin).href }));
   config.modules = config.modules.map(module => ({ ...module, id: crypto.randomUUID(), lessons: module.lessons.map(lesson => {
