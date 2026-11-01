@@ -1,4 +1,4 @@
-import { defaultConfig, formatPrice, newProduct, type Product, type ProductType, type Lesson } from './model';
+import { defaultConfig, formatPrice, newProduct, type Product, type ProductType, type Lesson, type ProductExperience } from './model';
 
 export interface ProductTemplate {
   id: string; category: 'Services' | 'Digital Products' | 'Courses'; industry: string; tags: string[];
