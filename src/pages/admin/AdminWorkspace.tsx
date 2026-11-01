@@ -1,4 +1,5 @@
 import { AdminGeneral } from './AdminGeneral';
+import { AdminLiveManagement } from './AdminLiveManagement';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -28,6 +29,7 @@ export function AdminWorkspace() {
   if (module.id === 'funnels-websites' && ['1', 'templates'].includes(params.get('tab') ?? '')) {
     return <Navigate to="/admin/templates" replace />;
   }
+  if (['funnels-websites', 'crm', 'booking', 'products', 'templates'].includes(module.id)) return <AdminLiveManagement key={module.id} moduleId={module.id}/>;
   return <Workspace key={`${module.id}-${params.get('tab') ?? '0'}`} module={module} />;
 }
 
@@ -84,7 +86,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
     return () => observer.disconnect();
   }, [compact]);
 
-  const filteredFields = section?.fields.filter(f => f.options && (module.id !== 'templates' || f.key !== 'category' || index === 9)) ?? [];
+  const filteredFields = section?.fields.filter(f => f.options && (module.id !== 'templates' || f.key !== 'category')) ?? [];
   const pages = Math.max(1, Math.ceil(visible.length / pageSize));
   const current = Math.min(page, pages);
 

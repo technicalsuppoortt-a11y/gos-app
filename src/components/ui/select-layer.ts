@@ -6,7 +6,7 @@ export function useSelectPortal() {
   const trigger = useRef<HTMLButtonElement>(null);
   const [container, setContainer] = useState<HTMLElement | undefined>(undefined);
   const onOpenChange = (open: boolean) => {
-    if (open) setContainer(trigger.current?.closest('dialog') ?? undefined);
+    if (open) setContainer(trigger.current?.closest('dialog') ?? trigger.current?.ownerDocument.body);
   };
   return { trigger, container, onOpenChange };
 }

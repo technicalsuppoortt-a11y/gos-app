@@ -112,6 +112,7 @@ export const FORM_BACKGROUND_PRESETS: FormBackgroundPreset[] = [
 ];
 
 export type PageTemplate = {
+  builderDocument?: import('./BuilderWorkspace').BuilderDocument;
   mode: 'funnel' | 'website' | 'form';
   id: string;
   name: string;

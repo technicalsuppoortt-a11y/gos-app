@@ -1,13 +1,15 @@
 import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Video } from 'lucide-react';
 import { translateText, useUILanguage } from '../../i18n/display';
-import { productPresets, type ProductPreset } from './productPresets';
-import type { ProductKind } from './model';
+import { type ProductPreset } from './productPresets';
+import { productKind, type ProductKind } from './model';
+import { useProductTemplateCatalog } from '../../backend/nativeTemplateCatalog';
 
 export function ProductPresetPicker({ kind, currency, onSelect }: { kind?: ProductKind; currency: string; onSelect: (preset: ProductPreset) => void }) {
   useUILanguage();
+  const productPresets: ProductPreset[] = useProductTemplateCatalog().map(template => ({ id: template.id, kind: productKind(template.product.type), label: template.product.name, name: template.product.name, amount: template.product.config!.amount, description: template.product.description, features: template.features, included: template.features, recurring: template.product.config?.billing === 'Subscription', product: template.product }));
   return <div className="cw-preset-grid">{productPresets.filter(preset => !kind || preset.kind === kind).map(preset => {
     const Icon = preset.kind === 'course' ? GraduationCap : preset.kind === 'service' ? Video : BookOpen;
-    const price = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(preset.amount);
+    const price = new Intl.NumberFormat(undefined, { style: 'currency', currency: preset.product?.config?.currency || currency }).format(preset.amount);
     return <div key={preset.id} className="cw-preset-card"><div>
       <div className="cw-preset-card-top"><span className="cw-preset-icon"><Icon size={18}/></span><span className="cw-preset-price">{price}{preset.recurring ? '/mo' : ''}</span></div>
       <span className="cw-preset-badge">{translateText('Ready to customize')}</span><h4 className="cw-preset-title">{translateText(preset.label)}</h4><p className="cw-preset-desc">{translateText(preset.description)}</p>

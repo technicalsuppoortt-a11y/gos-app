@@ -6,7 +6,7 @@ import { EditorBookingForm } from './EditorBookingForm';
 import { EditorNotifications } from './EditorNotifications';
 import { EditorDurations } from './EditorDurations';
 import { BookingSelect } from './BookingSelect';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ChevronDown, Bell, CalendarDays, Check, Clock3, ExternalLink, FileText, Layers, MapPin, Plus, Trash2, Users } from 'lucide-react';
 import { blankPage, publicUrl, slugify, bookingColor, uid, TIMEZONES, readMembers } from './model';
 import type { BookingPage } from './model';
@@ -33,9 +33,15 @@ function NumberInput({ label, value, change, min = 0, max = 10000, step = 1 }: {
   useUILanguage();
   return <label>{localizeNode(label)}<input type="number" min={min} max={max} step={step} value={value} onChange={e=>change(Math.max(min,Math.min(max,(step === 1 ? Math.round(Number(e.target.value)) : Number(e.target.value)))))}/></label>;
 }
-export function BookingBuilder({ page, pages, save, close }: { page?:BookingPage; pages:BookingPage[]; save:(page:BookingPage)=>void; close:()=>void }) {
+export function BookingBuilder({ page, pages, save, close, onDraftChange }: { page?:BookingPage; pages:BookingPage[]; save:(page:BookingPage)=>void; close:()=>void; onDraftChange?:(page:BookingPage)=>void }) {
   useUILanguage();
   const [draft,setDraft] = useState<BookingPage>(()=>structuredClone(page||blankPage()));
+  const draftObserver = useRef(onDraftChange); draftObserver.current = onDraftChange;
+  useEffect(() => { draftObserver.current?.(draft); }, [draft]);
+  useEffect(() => {
+    if (!onDraftChange || !page) return;
+    setDraft(current => current.name === page.name && current.description === page.description ? current : { ...current, name: page.name, description: page.description });
+  }, [page?.name, page?.description]);
   const [tab,setTab] = useState('Page');
   const [openSections,setOpenSections] = useState(['Page']);
   const toggleSection=(name:string)=>setOpenSections(sections=>sections.includes(name)?[]:[name]);

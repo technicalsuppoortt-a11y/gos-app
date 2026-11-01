@@ -5,11 +5,11 @@ import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useState, useEffect } from 'react';
 import { ArrowRight, Search, LoaderCircle, X, RotateCcw } from 'lucide-react';
-import { publishedPageTemplates } from './admin/template-library';
+import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
 import type { PageTemplate } from './page-templates';
 import './pagefly-editor.css';
 
-export function PageTemplateCards({templates=publishedPageTemplates(),install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
+export function PageTemplateCards({templates=[],install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
   useUILanguage();
   return <>{localizeNode(templates.map(template => {
     const isBlank = template.id === 'blank-form-template';
@@ -45,7 +45,7 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
     }
   }, [initialCategory]);
 
-  const pageTemplates=publishedPageTemplates();
+  const { templates: pageTemplates, loading, error } = usePageTemplateCatalogState();
   const categoryTemplates = pageTemplates.filter(template => {
     return category==='All' ? true : category==='Funnels' ? template.mode==='funnel' : category==='Websites' ? template.mode==='website' : template.mode==='form';
   });
@@ -111,8 +111,10 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
       )}
     </div>
     <div className="pf-template-library">
+      {loading && <p role="status">{translateText('Loading templates…')}</p>}
+      {error && <p role="alert">{error}</p>}
       <PageTemplateCards templates={filtered} install={install}/>
     </div>
-    {localizeNode(!filtered.length&&<p className="pf-empty-copy">{translateText("No templates match these filters.")}</p>)}
+    {localizeNode(!loading&&!error&&!filtered.length&&<p className="pf-empty-copy">{translateText("No templates match these filters.")}</p>)}
   </>;
 }

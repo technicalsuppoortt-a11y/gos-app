@@ -19,20 +19,25 @@ export function readSystemTemplates(): RecordRow[] {
   category: template.mode === 'funnel' ? 'Funnel' : template.mode === 'form' ? 'Form' : 'Website', content: template.body, pageTemplateId: template.id,
  }));
  if (saved) {
-  const missing = defaults.filter(d => !saved.some(s => s.pageTemplateId === d.pageTemplateId || s.id === d.id));
-  if (missing.length > 0) {
-   const updated = [...saved, ...missing];
+  const filteredSaved = saved.filter(row => templateCategories.includes(row.category));
+  const missing = defaults.filter(d => !filteredSaved.some(s => s.pageTemplateId === d.pageTemplateId || s.id === d.id));
+  if (missing.length > 0 || filteredSaved.length !== saved.length) {
+   const updated = [...filteredSaved, ...missing];
    storageSet(key, JSON.stringify(updated));
    return updated;
   }
-  return saved;
+  return filteredSaved;
  }
  const legacy = [
   ...(storedRows('gos.admin.v1.templates.0') ?? seedRows('templates', 0)),
   ...(storedRows('gos.admin.v1.funnels-websites.1') ?? legacyWebTemplateRows),
  ];
- const masters: RecordRow[] = MASTER_TEMPLATES.map(template => ({id:`system-${template.id}`,name:template.name,tenant:'Platform',status:'Published',category:systemAssetCategory(template),content:JSON.stringify(template.content,null,2),blueprintId:template.id}));
- const rows: RecordRow[] = [...legacy, ...defaults, ...masters].map(row => ({ ...row, tenant: 'Platform', category: row.category === 'AI Prompt' ? 'AI Assistant' : row.category }));
+ const masters: RecordRow[] = MASTER_TEMPLATES
+  .filter(template => templateCategories.includes(systemAssetCategory(template)))
+  .map(template => ({id:`system-${template.id}`,name:template.name,tenant:'Platform',status:'Published',category:systemAssetCategory(template),content:JSON.stringify(template.content,null,2),blueprintId:template.id}));
+ const rows: RecordRow[] = [...legacy, ...defaults, ...masters]
+  .map(row => ({ ...row, tenant: 'Platform', category: row.category === 'AI Prompt' ? 'AI Assistant' : row.category }))
+  .filter(row => templateCategories.includes(row.category));
  for (const category of templateCategories) {
   if (!rows.some(row => row.category === category)) rows.push({id:`system-${category.toLowerCase().replaceAll(' ','-')}`, name:`${category} starter`, tenant:'Platform', status:'Draft', category, content:''});
  }

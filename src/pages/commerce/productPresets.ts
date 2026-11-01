@@ -1,8 +1,10 @@
 import { defaultConfig, formatPrice, kindLabels, type Product, type ProductKind } from './model';
+import { instantiateProductTemplate } from './productTemplates';
 
 export interface ProductPreset {
   id: string; kind: ProductKind; label: string; name: string; amount: number; description: string;
   features: string[]; included: string[]; modules?: Array<[string, string[]]>; duration?: number; fulfillment?: string; recurring?: boolean;
+  product?: Product;
 }
 export const productPresets: ProductPreset[] = [
   { id: 'ebook', kind: 'digital', label: 'E-Book', name: 'The Creator’s Practical E-Book', amount: 29,
@@ -31,6 +33,10 @@ export const productPresets: ProductPreset[] = [
 ];
 
 export function applyProductPreset(product: Product, preset: ProductPreset): Product {
+  if (preset.product) {
+    const copy = instantiateProductTemplate({ id: preset.id, category: preset.kind === 'course' ? 'Courses' : preset.kind === 'service' ? 'Services' : 'Digital Products', industry: '', tags: [], features: preset.features, product: preset.product }, typeof window !== 'undefined' ? window.location.origin : 'https://templates.invalid');
+    return { ...copy, id: product.id, slug: product.slug, status: 'Draft', createdAt: product.createdAt, sales: '0', revenue: '0', config: { ...copy.config!, crmRouting: undefined, calendarId: '', bookingUrl: '', orders: [], students: [] } };
+  }
   const type = kindLabels[preset.kind], previous = product.config;
   const config = defaultConfig(type);
   config.currency = previous?.currency || config.currency;

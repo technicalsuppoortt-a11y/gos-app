@@ -7,6 +7,7 @@ export type Language = 'en' | 'ar';
 interface UIState {
   theme: Theme;
   language: Language;
+  currency: string;
   sidebarOpen: boolean;
   sidebarCollapsed: boolean;
 }
@@ -14,6 +15,7 @@ interface UIState {
 const initialState: UIState = {
   theme: storageGet('theme') === 'dark' ? 'dark' : 'light',
   language: storageGet('i18nextLng') === 'ar' ? 'ar' : 'en',
+  currency: storageGet('preferred_currency') || 'USD',
   sidebarOpen: false,
   sidebarCollapsed: storageGet('sidebar_collapsed') === 'true',
 };
@@ -36,6 +38,10 @@ const uiSlice = createSlice({
       storageSet('i18nextLng', action.payload);
       if (typeof document !== 'undefined') { document.documentElement.lang = action.payload; document.documentElement.dir = action.payload === 'ar' ? 'rtl' : 'ltr'; }
     },
+    setCurrency: (state, action: PayloadAction<string>) => {
+      state.currency = action.payload;
+      storageSet('preferred_currency', action.payload);
+    },
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
     },
@@ -56,10 +62,10 @@ const uiSlice = createSlice({
 export const { 
   toggleTheme, 
   setLanguage, 
+  setCurrency,
   toggleSidebar, 
   setSidebarOpen, 
   toggleSidebarCollapse, 
   setSidebarCollapsed 
 } = uiSlice.actions;
 export default uiSlice.reducer;
-

@@ -52,6 +52,10 @@ export function instantiateProductTemplate(template: ProductTemplate, origin: st
   product.createdAt = new Date().toISOString();
   product.status = 'Draft'; product.sales = '0'; product.revenue = '$0';
   const config = product.config!;
+  // Masters never transfer workspace relationships, order records or student identities.
+  config.crmRouting = undefined; delete config.calendarId; config.bookingUrl = ''; config.bookingSlots = [];
+  config.funnelId = ''; config.funnelPageId = ''; config.orders = []; config.students = [];
+  config.experience!.upsellId = ''; config.experience!.downsellId = ''; config.experience!.checkout.bumpProductId = '';
   // Resolve bundled demo resources against the host; saved products require HTTP(S) delivery URLs.
   config.assets = config.assets.map(asset => ({ ...asset, url: new URL(asset.url, origin).href }));
   config.modules = config.modules.map(module => ({ ...module, id: crypto.randomUUID(), lessons: module.lessons.map(lesson => {
@@ -71,8 +75,8 @@ export function instantiateProductTemplate(template: ProductTemplate, origin: st
   return product;
 }
 
-export function filterProductTemplates(category: string, industry: string, query: string) {
+export function filterProductTemplates(category: string, industry: string, query: string, catalog: ProductTemplate[] = productTemplates) {
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  return productTemplates.filter(template => (category === 'All' || template.category === category) && (industry === 'All industries' || template.industry === industry)
+  return catalog.filter(template => (category === 'All' || template.category === category) && (industry === 'All industries' || template.industry === industry)
     && words.every(word => `${template.product.name} ${template.product.description} ${template.category} ${template.industry} ${template.tags.join(' ')}`.toLowerCase().includes(word)));
 }

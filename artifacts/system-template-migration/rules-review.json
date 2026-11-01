@@ -1,0 +1,10 @@
+{
+  "projectId": "gos-app-3c7fb",
+  "productionRuleset": "projects/gos-app-3c7fb/rulesets/4c36c9d7-e5bf-4810-8254-da47bf10d03e",
+  "changed": true,
+  "scope": "Only /templateCatalog/{templateId}; all other live rules preserved byte-for-byte.",
+  "beforeHash": "2f9990cb942c4ee58d36b1511af0214c803e0647bdca7ce413fd64f64ad6a7c3",
+  "afterHash": "ac8afc922fb706dcb18ee652345fb4a25d856f7ef61d3a62437316c1303f9361",
+  "previousCatalogRules": "match /templateCatalog/{templateId} { allow read: if signedIn(); allow write: if false; }",
+  "preparedCatalogRules": "match /templateCatalog/{templateId} {\n      allow read: if signedIn();\n      allow create, update: if featureAdmin()\n        && request.resource.data.name is string && request.resource.data.name.size() > 0\n        && request.resource.data.name.size() <= 180\n        && request.resource.data.category in ['Funnels', 'Websites', 'Forms', 'Landing Pages', 'Booking Pages', 'CRM Pipelines', 'AI Assistants', 'AI Knowledge Packs', 'Automations', 'Products', 'Email/SMS/WhatsApp']\n        && request.resource.data.source == 'official'\n        && request.resource.data.active is bool\n        && request.resource.data.status in ['Published', 'Draft']\n        && request.resource.data.content is map\n        && request.resource.data.content.headline is string\n        && request.resource.data.content.steps is list\n        && request.resource.data.content.settings is map\n        && request.resource.data.updatedBy == request.auth.uid;\n      allow delete: if featureAdmin();\n    }"
+}

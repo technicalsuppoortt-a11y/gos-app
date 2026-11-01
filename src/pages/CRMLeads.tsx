@@ -1,3 +1,4 @@
+import { usePipelineTemplateCatalog } from '../backend/nativeTemplateCatalog';
 import { LeadQuickView } from './crm/LeadQuickView';
 import { selectUnifiedCRMLeads } from '../store/crmSelectors';
 import { CRMActionBoundary } from './crm/CRMActions';
@@ -20,6 +21,7 @@ import {
   BarChart3,
   BookOpen,
   Clock3,
+  Contact,
   Download,
   LayoutGrid,
   List,
@@ -79,7 +81,6 @@ import "./crm/crm-pipeline.css";
 
 const tabs = [
   { path: "pipeline", label: "Pipeline", icon: LayoutGrid },
-  { path: "contacts", label: "Contacts", icon: Users },
   { path: "activities", label: "Activities", icon: Lightbulb },
   { path: "tasks", label: "Tasks", icon: ListChecks },
   { path: "overview", label: "Overview", icon: BarChart3 },
@@ -88,7 +89,7 @@ const tabs = [
 
 const sourceGroup = (source: string) => ({ Website: 'Websites', Form: 'Forms', Service: 'Services', Checkout: 'General', Manual: 'General' } as Record<string, string>)[source] || source || 'General';
 
-export function CRMLeads({ notify }: { notify: (message: string) => void }) {
+export function CRMLeads({ notify, isContactsPage }: { notify: (message: string) => void; isContactsPage?: boolean }) {
   useUILanguage();
   const api = useGosCRM();
   const actions = useCRMActions();
@@ -96,21 +97,23 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
+  const isContactsOnly = Boolean(isContactsPage || /^\/(?:dashboard\/)?contacts(?:\/|$)/.test(location.pathname));
   const { pipelines: storedPipelines } = useSelector((s: RootState) => s.crm);
   const leads = useSelector(selectUnifiedCRMLeads);
   const pipelines = storedPipelines.filter(p => !p.archived);
   const pipeline =
     pipelines.find((p) => p.id === params.get("pipeline")) ?? pipelines[0];
   const exportCSV = (rows: typeof leads) => actions.run(() => exportGosCRM(rows, pipeline.id));
-  const tab =
-    params.get("tab") ||
-    (location.pathname.split("/").at(-1) === "crm"
-      ? "pipeline"
-      : location.pathname.split("/").at(-1)!) ||
-    "pipeline";
+  const tab = isContactsOnly
+    ? "contacts"
+    : (params.get("tab") ||
+      (location.pathname.split("/").at(-1) === "crm"
+        ? "pipeline"
+        : location.pathname.split("/").at(-1)!) ||
+      "pipeline");
   const base = location.pathname.startsWith("/dashboard")
-    ? "/dashboard/crm"
-    : "/crm";
+    ? (isContactsOnly ? "/dashboard/contacts" : "/dashboard/crm")
+    : (isContactsOnly ? "/contacts" : "/crm");
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -161,7 +164,8 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
   const [taskQuery, setTaskQuery] = useState("");
   const [customTemplates, setCustomTemplates] = useState(loadCustomTemplates);
   const [presetPage, setPresetPage] = useState(1);
-  const presetList = [...templates, ...customTemplates];
+  const systemPresets = usePipelineTemplateCatalog();
+  const presetList = [...systemPresets, ...customTemplates];
   const [compactPresets, setCompactPresets] = useState(
     () => window.innerWidth < 1100 || window.innerHeight < 700,
   );
@@ -200,6 +204,9 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
     const id = params.get("leadId");
     if (id)
       navigate(`${base}/contacts/${encodeURIComponent(id)}`, { replace: true });
+    if (params.get("action") === "new") {
+      setDialog("add");
+    }
   }, [params, base, navigate]);
   const knownPipelineIds = new Set(pipelines.map((p) => p.id));
   const pipelineLeads = leads.filter((l) => {
@@ -338,11 +345,11 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
       <header className="crm2-header">
         <div className="crm2-header-left">
           <span className="crm2-header-icon">
-            <BarChart3 size={20} />
+            {isContactsOnly ? <Contact size={20} /> : <BarChart3 size={20} />}
           </span>
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="crm2-header-title">{translateText("CRM & Leads")}</h1>
+              <h1 className="crm2-header-title">{translateText(isContactsOnly ? "Contacts" : "CRM & Leads")}</h1>
               {api.loading && (
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
@@ -350,7 +357,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                 </span>
               )}
             </div>
-            <p className="crm2-header-sub">{translateText("Manage your leads, conversations and turn them into customers")}</p>
+            <p className="crm2-header-sub">{translateText(isContactsOnly ? "Manage and view all your customer contacts and leads" : "Manage your leads, conversations and turn them into customers")}</p>
           </div>
         </div>
         <div className="crm2-header-right">
@@ -365,29 +372,33 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
             }}
             options={pipelines.map((p) => ({ value: p.id, label: p.name }))}
           />
-          <button
-            className="crm2-btn-secondary"
-            onClick={() => setDialog("settings")}
-          >
-            <Settings2 size={14} />{translateText("Pipeline Settings")}</button>
+          {!isContactsOnly && (
+            <button
+              className="crm2-btn-secondary"
+              onClick={() => setDialog("settings")}
+            >
+              <Settings2 size={14} />{translateText("Pipeline Settings")}</button>
+          )}
           <button className="crm2-btn-primary" onClick={() => newLead()}>
-            <Plus size={15} />{translateText("Add Lead")}</button>
+            <Plus size={15} />{translateText(isContactsOnly ? "Add Contact" : "Add Lead")}</button>
         </div>
       </header>
       {dragged && <div className="crm-pipeline-transfer" aria-label="Move to another pipeline">{pipelines.filter(p => p.id !== pipeline.id).map(p => <button key={p.id} className="crm2-btn-secondary" onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }} onDrop={async e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain') || dragged; setDragged(null); setOver(null); if (id && p.stages[0]) { const moved = await dispatch(updateLead({ id, changes: { pipelineId: p.id, stage: p.stages[0].id, lifecycleStage: p.stages[0].id } })); if (moved) notify('Lead moved to ' + p.name); } }}>Move to {p.name}</button>)}</div>}
-      <nav className="crm2-subnav" aria-label={translateText("CRM navigation")}>
-        {localizeNode(tabs.map((t) => (
-          <button
-            key={t.path}
-            onClick={() => goTab(t.path)}
-            className={`crm2-subnav-btn ${tab === t.path ? "active" : ""}`}
-            aria-current={tab === t.path ? "page" : undefined}
-          >
-            <t.icon size={14} />
-            {localizeNode(t.label)}
-          </button>
-        )))}
-      </nav>
+      {!isContactsOnly && (
+        <nav className="crm2-subnav" aria-label={translateText("CRM navigation")}>
+          {localizeNode(tabs.map((t) => (
+            <button
+              key={t.path}
+              onClick={() => goTab(t.path)}
+              className={`crm2-subnav-btn ${tab === t.path ? "active" : ""}`}
+              aria-current={tab === t.path ? "page" : undefined}
+            >
+              <t.icon size={14} />
+              {localizeNode(t.label)}
+            </button>
+          )))}
+        </nav>
+      )}
       {(tab === "pipeline" || tab === "contacts") && (
         <>
           <div className="crm-toolbar">
@@ -824,7 +835,7 @@ export function CRMLeads({ notify }: { notify: (message: string) => void }) {
                     className="crm2-btn-primary"
                     onClick={async () => {
                       const id = crypto.randomUUID();
-                      const presetIndex = templates.findIndex(item => item.name === template.name);
+                      const presetIndex = -1; // Catalog configurations always use their current saved stages.
                       const saved = presetIndex >= 0 ? await actions.run(() => installGosPreset(['new-lead', 'service-business', 'consultation-booking', 'sales-high-ticket', 'follow-up'][presetIndex])) : await dispatch(
                         savePipeline({
                           id,

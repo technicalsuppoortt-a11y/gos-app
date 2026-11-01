@@ -2,6 +2,8 @@ import './form-fields.css';
 import type { FormField } from './FormsWorkspace';
 import type { Asset } from './asset-model';
 import { readWorkspace } from './asset-model';
+import { findFormSection } from './form-sections';
+import { resolveFormTheme } from './form-theme';
 import { useBuilderFormCapture } from './builder-form-capture';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { browserStorage as cloudStorage } from '../utils/browserStorage';
@@ -24,7 +26,7 @@ import type { DropTarget } from './funnel-tree';
 import { AssetSelect, AssetSearch } from './AssetControls';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoaderCircle, ArrowDown, ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronRight, Columns2, CreditCard, Eye, FileText, Globe2, Heading, Image, LayoutGrid, Link2, List, Menu, Monitor, MoreHorizontal, MousePointer2, PanelTop, Play, Plus, Redo2, Save,  ShieldCheck, Smartphone, Sparkles, Tablet, Trash2, Type, Undo2, Upload, Users, Video, WandSparkles, X, Zap, Clock3, CalendarDays, MessageSquare, Layers, Dumbbell, Heart, Star, Trophy, Flame, Target, CircleCheck, ArrowUpRight, Bell, Leaf } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { showToast } from '../utils/toast';
 import './funnel-builder.css';
@@ -34,7 +36,8 @@ type BuilderTab = 'Page content' | 'Elements' | 'Third-party elements' | 'Global
 type InspectorTab = 'Content' | 'Style' | 'Advanced';
 type Device = 'desktop' | 'tablet' | 'mobile';
 type BuilderMode = 'funnel' | 'website';
-type FunnelStepType = 'Landing' | 'Form' | 'Thank You' | 'Booking' | 'Checkout' | 'Confirmation' | 'Upsell' | 'Survey';
+type FunnelStepType = string;
+const CreateFormContext = React.createContext<((connect: (asset: Asset) => void) => void) | undefined>(undefined);
 export type FunnelStep = { id: string; label: string; pageId: string; type?: FunnelStepType };
 type BlockKind = 'Text' | 'Image' | 'Button' | 'Video' | 'Icon' | 'Divider' | 'Section' | 'Columns' | 'Spacer' | 'Heading' | 'Paragraph' | 'Image Gallery' | 'Form' | 'Testimonials' | 'Pricing' | 'Booking' | 'Payment' | 'Layouts' | 'Tabs' | 'Accordion' | 'Popup' | 'Slideshow' | 'Content List' | 'Image Comparison' | 'YouTube Video' | 'Vimeo Video' | 'HTML Video' | 'SoundCloud' | 'List' | 'HTML/Liquid';
 type SectionType = BlockKind | 'Hero' | 'Program Highlights' | 'Testimonials' | 'Pricing Preview' | 'Brand Story' | 'Mission & Vision' | 'Team' | 'Core Values' | 'Stats' | 'Program Cards' | 'Pricing Table' | 'Contact Form' | 'Location & Hours' | 'FAQ';
@@ -183,12 +186,14 @@ export const BuilderWorkspace: React.FC<{
   initialColor?: string;
   publishedUrl?: string;
   availableForms?: Asset[];
+  formEditor?: boolean;
+  onCreateForm?: (connect: (asset: Asset) => void) => void;
   onPreview?: (document: BuilderDocument) => void | Promise<void>;
   onBack?: () => void;
   onStepChange?: (id: string) => void;
   onDocumentChange?: (document: BuilderDocument) => void | Promise<unknown>;
   onPublish?: () => Promise<{ url: string; draftChanged: boolean }>;
-}> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, publishedUrl, availableForms, onPreview, onStepChange, onDocumentChange, onPublish }) => {
+}> = ({ mode, document: assetDocument, selectedPageId, domain, initialColor, onBack, publishedUrl, availableForms, formEditor, onCreateForm, onPreview, onStepChange, onDocumentChange, onPublish }) => {
   useUILanguage();
   const navigate = useNavigate();
   const storedForms = useMemo<Asset[]>(() => getStoredWorkspaceForms(availableForms), [availableForms]);
@@ -262,6 +267,58 @@ export const BuilderWorkspace: React.FC<{
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', closeOnEscape); };
   }, [isPreviewOpen]);
   useEffect(() => { if (device !== 'mobile') setMobileNavOpen(false); }, [device]);
+  const builderLocation = useLocation();
+  const connectFormIdHandled = useRef(false);
+  useEffect(() => {
+    const searchParams = new URLSearchParams(builderLocation.search);
+    const connectFormId = searchParams.get('connectFormId') || (builderLocation.state as any)?.connectedFormId;
+    if (connectFormId && !connectFormIdHandled.current) {
+      connectFormIdHandled.current = true;
+      const targetForm = (availableForms || []).find(f => f.id === connectFormId) || readWorkspace().assets.find(f => f.id === connectFormId);
+      if (targetForm) {
+        const targetPages = targetForm.document?.pages || [];
+        const targetBlock = findFormSection(targetPages.flatMap(page => page.sections || []));
+        const targetCustomFields = targetBlock?.content.customFields || '[]';
+
+        let targetSectionId: string | null = null;
+        for (const page of pagesData) {
+          const formSec = findFormSection(page.sections);
+          if (formSec) {
+            targetSectionId = formSec.id;
+            break;
+          }
+        }
+
+        if (targetSectionId) {
+          setSelectedBlockId(targetSectionId);
+          setInspectorTab('Content');
+          updatePages(list => list.map(page => ({
+            ...page,
+            status: 'Draft',
+            sections: changeSection(page.sections, targetSectionId!, item => [{
+              ...item,
+              content: {
+                ...item.content,
+                formAssetId: targetForm.id,
+                publishedFormUrl: '',
+                formName: targetForm.name,
+                customFields: targetCustomFields,
+                title: (!item.content.title || item.content.title === 'Contact Us') ? (targetBlock?.content.title || targetForm.name) : item.content.title,
+                button: targetBlock?.content.button || item.content.button || 'Submit',
+                successMessage: targetBlock?.content.successMessage || item.content.successMessage || 'Thank you! Your response was received.'
+              }
+            }])
+          })));
+          showToast.success(`Form "${targetForm.name}" connected!`);
+        }
+        if (searchParams.has('connectFormId')) {
+          searchParams.delete('connectFormId');
+          const cleanQuery = searchParams.toString();
+          window.history.replaceState({}, '', window.location.pathname + (cleanQuery ? `?${cleanQuery}` : ''));
+        }
+      }
+    }
+  }, [builderLocation.search, builderLocation.state, availableForms, pagesData]);
   const foundBlock = findSection(currentPage.sections,selectedBlockId);
   const selectedBlock = foundBlock?.type==='Image' && selectedBlockId?.endsWith('::src') && !foundBlock.content.src ? {...foundBlock,content:{...foundBlock.content,src:currentPage.featuredImage}} : foundBlock;
   const shownGroups = useMemo(() => blockGroups.map(group => ({ ...group, items: group.items.filter(item => item.name.toLowerCase().includes(search.toLowerCase())) })).filter(group => group.items.length), [search]);
@@ -342,9 +399,9 @@ export const BuilderWorkspace: React.FC<{
   };
   const createFunnelStep = () => {
     const name = newStepName.trim();
-    if (!name) return;
+    if (!name || !newStepType.trim()) return;
     const id = `custom-${Date.now()}`;
-    const step: FunnelStep = { id, label:name, pageId:`funnel-step-${id}`, type:newStepType };
+    const step: FunnelStep = { id, label:name, pageId:`funnel-step-${id}`, type:newStepType.trim() };
     setFunnelSteps(previous => [...previous, step]);
     updatePages(list => [...list, createFunnelStepPage(step)]);
     setFunnel(value => ({ ...value, pagesFlow:[...funnelSteps.map(item=>item.pageId),step.pageId], status:'Draft' }));
@@ -483,7 +540,7 @@ export const BuilderWorkspace: React.FC<{
     setShowAIModal(false); notify(`AI suggestion applied: ${action}`);
   };
 
-  return <div className={`funnel-builder-page ${mode === 'funnel' ? 'fb-mode-funnel' : 'fb-mode-website'} ${visibility === 'Desktop only' ? 'visibility-desktop-only' : visibility === 'Mobile only' ? 'visibility-mobile-only' : ''}`} style={{ '--fb-accent': themeColor, '--fb-heading-font': headingFont, '--fb-card-radius': cornerStyle === 'Square' ? '2px' : cornerStyle === 'Soft' ? '13px' : '7px' } as React.CSSProperties}>
+  return <CreateFormContext.Provider value={onCreateForm}><div className={`funnel-builder-page ${mode === 'funnel' ? 'fb-mode-funnel' : 'fb-mode-website'} ${visibility === 'Desktop only' ? 'visibility-desktop-only' : visibility === 'Mobile only' ? 'visibility-mobile-only' : ''}`} style={{ '--fb-accent': themeColor, '--fb-heading-font': headingFont, '--fb-card-radius': cornerStyle === 'Square' ? '2px' : cornerStyle === 'Soft' ? '13px' : '7px' } as React.CSSProperties}>
     <input ref={selectedImageRef} type="file" accept="image/*" hidden onChange={event => { updateSectionImage(pendingImageSectionId || '', event.target.files?.[0]); event.currentTarget.value = ''; }}/>
     <header className="fb-editor-header">
       <div className="fb-editor-title"><button className="fb-back" onClick={() => onBack ? onBack() : navigate('/dashboard/funnels')} aria-label={translateText("Back to overview")}><ArrowLeft size={18}/></button><input aria-label={translateText("Funnel name")} value={funnel.name} onChange={event => setFunnel(value => ({ ...value, name: event.target.value, status: 'Draft' }))}/><button className="fb-edit-title" onClick={() => document.querySelector<HTMLInputElement>('.fb-editor-title input')?.focus()} aria-label={translateText("Edit funnel name")}><FileText size={14}/></button><span className={`fb-published-pill ${funnel.status.toLowerCase()}`}><i/>{localizeNode(funnel.status)}</span></div>
@@ -503,7 +560,7 @@ export const BuilderWorkspace: React.FC<{
       <main className="fb-center-panel">
         
         <div className="fb-canvas-controls"><div className="fb-page-picker"><span><PanelTop size={14}/></span><label>{localizeNode(mode === 'funnel' ? 'Step:' : 'Page:')}</label>{localizeNode(mode === 'funnel' ? <FunnelStepDropdown steps={assetDocument ? funnelSteps : [...funnelSteps, ...defaultFunnelSteps.filter(base => !funnelSteps.some(step => step.id === base.id))]} activeId={activeFunnelStepId} onSelect={activateFunnelStep} onDelete={requestDeleteFunnelStep} /> : <PopoverSelect className="fb-page-select" value={currentPage.name} options={websitePages.map(page => page.name)} onChange={name => { setActivePageId(websitePages.find(page => page.name === name)?.id ?? activePageId); setSelectedBlockId(null); }}/>)}</div>{localizeNode(mode === 'website' && <label className="fb-url-input"><Globe2 size={13}/><input aria-label={translateText("Page URL")} value={`${siteOrigin}${currentPage.path}`} onChange={event => updatePage({ path: event.target.value.replace(siteOrigin, '') || '/' })}/><button aria-label={translateText("Edit page URL")}><FileText size={13}/></button></label>)}<AssetAsyncButton disabled={actionBusy} className="fb-save-draft" onClick={saveDraft}><Save size={13}/>{translateText(" Save Draft")}</AssetAsyncButton><div className="fb-menu-anchor"><button className="fb-version-button" onClick={() => setShowVersions(value => !value)}><HistoryIcon/>{translateText(" Versions ")}<ChevronDown size={12}/></button>{localizeNode(showVersions && <div className="fb-dropdown fb-version-menu"><b>{translateText("Version history")}</b><button onClick={() => { setShowVersions(false); showToast.info('Publish changes to create a confirmed Firebase Hosting release.'); }}>{translateText("v1.3 · Published ")}<span>{translateText("Today")}</span></button><button onClick={() => { setFunnel(value => ({ ...value, status: 'Draft' })); setShowVersions(false); notify('Draft editing is active. Save Draft to persist your changes.'); }}>{translateText("v1.2 · Draft ")}<span>{translateText("Yesterday")}</span></button></div>)}</div></div>
-        <div className={`fb-site-frame ${device} ${isDark ? 'dark' : ''}`} onDragOver={event => event.preventDefault()} onDrop={handleDrop}>
+        <div data-form-theme={formEditor ? (resolveFormTheme(currentPage, findFormSection(currentPage.sections)).dark ? 'dark' : 'light') : undefined} style={formEditor ? resolveFormTheme(currentPage, findFormSection(currentPage.sections)).variables : undefined} className={`fb-site-frame ${device} ${isDark ? 'dark' : ''}`} onDragOver={event => event.preventDefault()} onDrop={handleDrop}>
           <ElementSelectionContext.Provider value={{selected:selectedBlockId,device,select:id=>{setSelectedBlockId(id);setInspectorTab('Content');}}}><div className={`fb-site-window ${isDark ? 'dark' : ''}`} style={{backgroundColor:currentPage.backgroundColor && !['#ffffff', '#fff', 'white', 'rgb(255, 255, 255)', 'rgb(255,255,255)'].includes(currentPage.backgroundColor.trim().toLowerCase()) ? currentPage.backgroundColor : (isDark ? '#0f172a' : (currentPage.backgroundColor ?? '#ffffff'))}}>{localizeNode(currentPage.showHeader && <div className="fb-site-topline"><span>● {localizeNode(funnel.name.split(' ')[0].toUpperCase())}</span>{localizeNode(currentPage.showHeader && <><nav className="fb-desktop-site-nav">{localizeNode(websitePages.map(page => <button key={page.id} onClick={() => { setActivePageId(page.id); setSelectedBlockId(null); }}>{localizeNode(page.name)}</button>))}</nav><button className="fb-mobile-nav-toggle" aria-label={translateText(mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu')} aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(value => !value)}>{localizeNode(mobileNavOpen ? <X size={16}/> : <Menu size={16}/>)}</button>{localizeNode(mobileNavOpen && <nav className="fb-mobile-site-menu">{localizeNode(websitePages.map(page => <button key={page.id} onClick={() => { setActivePageId(page.id); setSelectedBlockId(null); setMobileNavOpen(false); }}>{localizeNode(page.name)}<ArrowRight size={12}/></button>))}</nav>)}</>)}<button className="fb-site-header-cta" onClick={() => setShowJourney(true)}>{localizeNode(currentPage.cta || 'Get started')}</button></div>)}
 {localizeNode(<FunnelCanvas page={currentPage} selected={selectedBlockId} device={device} isDark={isDark} select={id=>{setSelectedBlockId(id);setInspectorTab('Content');}} drop={dropElement} content={editElementContent} duplicate={duplicateElement} remove={deleteElement} move={(id,target)=>updatePage({sections:moveSection(currentPage.sections,id,target)})} settings={id=>{setSelectedBlockId(id);setInspectorTab('Content');requestAnimationFrame(()=>document.querySelector<HTMLButtonElement>('.fb-inspector-tabs button')?.focus());}}/>)}
             {localizeNode(currentPage.showFooter && <footer className="fb-site-footer">{localizeNode(funnel.name)} <span>{translateText("Training for real life.")}</span><small>{translateText("© 2025 FitZone")}</small></footer>)}
@@ -557,6 +614,7 @@ export const BuilderWorkspace: React.FC<{
           </div>
         </div>
         
+        <label className="fb-custom-step-type">{translateText('Step type')}<input aria-label={translateText('Custom step type')} value={newStepType} onChange={event => setNewStepType(event.target.value)} maxLength={100} placeholder={translateText('Choose a preset above or enter any type')} required /></label>
         <div className="p-4 px-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
           <button type="button" className="h-[36px] px-5 rounded-xl text-[11px] font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => setShowAddStepModal(false)}>{translateText("Cancel")}</button>
           <button type="button" className="h-[36px] px-6 rounded-xl text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:hover:bg-indigo-600 disabled:cursor-not-allowed cursor-pointer border-0 shadow-sm shadow-indigo-600/20" disabled={!newStepName.trim()} onClick={createFunnelStep}>{translateText("Add Step ")}<ArrowRight size={14}/></button>
@@ -594,7 +652,7 @@ export const BuilderWorkspace: React.FC<{
     </motion.div>}</AnimatePresence>
     {localizeNode(showJourney && <div className="fb-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && setShowJourney(false)}><section className="fb-journey-modal"><header><div><span><Zap size={16}/></span><div><h2>{translateText("Visitor journey preview")}</h2><p>{translateText("One connected flow · ")}{localizeNode(funnel.name)}</p></div></div><button onClick={() => setShowJourney(false)}><X size={17}/></button></header><div className="fb-journey-list">{localizeNode(journey.map((step,index) => <div key={step} className="fb-journey-step"><span className="fb-journey-number">{localizeNode(index+1)}</span><div><b>{localizeNode(step)}</b><small>{localizeNode(index===2?'Booking form or checkout is captured in the same workspace record.':index===5?'Payment is recorded against the canonical offer.':index===6?'The lead profile and activity history are updated.':'Connected funnel event is recorded for this visitor.')}</small></div>{localizeNode(index<journey.length-1&&<i/>)}</div>))}</div><footer><span><ShieldCheck size={14}/>{translateText(" CRM, Booking, Checkout & Analytics stay connected")}</span><button onClick={() => setShowJourney(false)}>{translateText("Close Preview")}</button></footer></section></div>)}
     {localizeNode(showAIModal && <div className="fb-modal-backdrop" onMouseDown={event => event.target === event.currentTarget && setShowAIModal(false)}><section className="fb-ai-modal"><header><div><span><Sparkles size={17}/></span><div><h2>{translateText("AI Assist")}</h2><p>{translateText("Enhance this page using your business context.")}</p></div></div><button onClick={() => setShowAIModal(false)}><X size={16}/></button></header>{localizeNode(['Rewrite headline in brand voice', 'Insert connected Booking Calendar', 'Attach Product Checkout form'].map(action => <button className="fb-ai-action" key={action} onClick={() => applyAIAction(action)}><span><WandSparkles size={15}/></span><b>{localizeNode(action)}</b><ArrowRight size={14}/></button>))}<small><ShieldCheck size={12}/>{translateText(" Preview changes before you publish.")}</small></section></div>)}
-  </div>;
+  </div></CreateFormContext.Provider>;
 };
 
 export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop, onNotify, device = 'desktop', isDark = false }: { device?: string; item: BuilderSection; isDark?: boolean; onAction: (section: BuilderSection) => void; onImagePick: () => void; onImageDrop: (event: React.DragEvent) => void; onNotify: (message: string) => void }) {
@@ -669,9 +727,13 @@ export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop
     return orderedCompositeOutput(item, <><h2 className="fb-custom-heading">{localizeNode(title)}</h2>{body && <p className="fb-custom-text" style={textStyle(item,device)} onClick={()=>{if(item.content.destinationType&&item.content.destinationType!=='None')onAction(item);}}>{localizeNode(body)}</p>}</>);
   }
   if (['Video','YouTube Video','Vimeo Video','HTML Video'].includes(item.type)) {
-    if (!item.content.videoUrl) return orderedCompositeOutput(item, <div className="fb-video-placeholder"><Play size={20} fill="currentColor"/>{translateText(" Add a video URL in Content settings")}</div>);
-    if (/\.mp4($|\?)/i.test(item.content.videoUrl)) return orderedCompositeOutput(item, <div className="fb-video-frame" style={{aspectRatio:'16/9'}}><video src={item.content.videoUrl} controls autoPlay={item.content.autoplay==='true'} muted={item.content.muted!=='false'} playsInline/></div>);
-    const embedUrl=item.content.videoUrl.replace('watch?v=','embed/').replace('vimeo.com/','player.vimeo.com/video/'); const join=embedUrl.includes('?')?'&':'?';
+    if (!item.content.videoUrl) return orderedCompositeOutput(item, <div className="fb-video-placeholder"><Play size={20} fill="currentColor"/>{translateText(" Add a video URL or upload a video in Content settings")}</div>);
+    const isDirectVideo = item.content.videoUrl.startsWith('blob:')
+      || item.content.videoUrl.startsWith('data:video')
+      || /\.(mp4|webm|ogg|mov)($|\?)/i.test(item.content.videoUrl)
+      || (item.type === 'HTML Video' && !item.content.videoUrl.includes('youtube.com') && !item.content.videoUrl.includes('youtu.be') && !item.content.videoUrl.includes('vimeo.com'));
+    if (isDirectVideo) return orderedCompositeOutput(item, <div className="fb-video-frame" style={{aspectRatio:'16/9'}}><video src={item.content.videoUrl} controls autoPlay={item.content.autoplay==='true'} muted={item.content.muted!=='false'} playsInline style={{width:'100%',height:'100%',objectFit:'contain',background:'#000'}}/></div>);
+    const embedUrl=item.content.videoUrl.replace('watch?v=','embed/').replace('youtu.be/','www.youtube.com/embed/').replace('vimeo.com/','player.vimeo.com/video/'); const join=embedUrl.includes('?')?'&':'?';
     return orderedCompositeOutput(item, <div className="fb-video-frame" style={{aspectRatio:'16/9'}}><iframe title={translateText("Video preview")} src={`${embedUrl}${join}autoplay=${item.content.autoplay==='true'?1:0}&mute=${item.content.muted==='true'?1:0}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen/></div>);
   }
   if (item.type === 'Divider') return orderedCompositeOutput(item, <hr className={`fb-element-divider ${item.content.lineStyle?.toLowerCase() || 'solid'}`} style={{borderTopWidth:`${item.content.thickness || '1'}px`,borderColor:item.content.lineColor || '#d9dce5'}}/>);
@@ -689,8 +751,12 @@ export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop
 }
 
 function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = [] }: { activeElement: BuilderSection; onChange: (key: string, value: string) => void; onUpload: (file: File) => void; storedForms?: Asset[] }) {
+  const createForm = React.useContext(CreateFormContext);
+  const navigate = useNavigate();
+  const location = useLocation();
   useUILanguage();
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const value = (key: string, fallback = '') => activeElement.content[key] ?? fallback;
   const titleFields = <><label>{translateText("Section title")}<input value={value('title')} onChange={event => onChange('title',event.target.value)} placeholder={translateText("Add a title")}/></label><label>{translateText("Supporting text")}<textarea value={value('body')} onChange={event => onChange('body',event.target.value)} placeholder={translateText("Add supporting copy")}/></label></>;
   const commonButton = <label>{translateText("Button text")}<input value={value('button')} onChange={event => onChange('button',event.target.value)} placeholder={translateText("Button label")}/></label>;
@@ -703,7 +769,69 @@ function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = 
     case 'Vimeo Video':
     case 'HTML Video':
     case 'Video':
-      return <div className="fb-element-settings"><label>{translateText("Video URL")}<input value={value('videoUrl')} onChange={event => onChange('videoUrl',event.target.value)} placeholder={translateText("YouTube, Vimeo, or direct MP4 URL")}/></label><label className="fb-switch-setting"><input type="checkbox" checked={value('autoplay') === 'true'} onChange={event => onChange('autoplay',String(event.target.checked))}/>{translateText("Autoplay")}</label><label className="fb-switch-setting"><input type="checkbox" checked={value('muted','true') === 'true'} onChange={event => onChange('muted',String(event.target.checked))}/>{translateText("Mute by default")}</label></div>;
+    {
+      const isUploaded = Boolean(value('videoName')) || value('videoUrl').startsWith('blob:') || value('videoUrl').startsWith('data:video');
+      return (
+        <div className="fb-element-settings">
+          <p className="fb-settings-intro">{translateText("Upload a video or enter a video link.")}</p>
+          <button type="button" className="fb-upload-image-button" onClick={() => videoInputRef.current?.click()}>
+            <Upload size={14}/>{isUploaded && value('videoName') ? translateText(` Change Video (${value('videoName')})`) : translateText(" Upload Video")}
+          </button>
+          {isUploaded && (
+            <button
+              type="button"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                background: 'transparent',
+                border: 'none',
+                color: '#ef4444',
+                fontSize: 9,
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '0 2px 4px',
+                textAlign: 'start'
+              }}
+              onClick={() => {
+                onChange('videoUrl', '');
+                onChange('videoName', '');
+              }}
+            >
+              <Trash2 size={12}/>{translateText("Remove uploaded video")}
+            </button>
+          )}
+          <label>
+            {translateText("Video URL / Link")}
+            <input
+              value={value('videoUrl')}
+              onChange={event => {
+                onChange('videoUrl', event.target.value);
+                if (value('videoName')) onChange('videoName', '');
+              }}
+              placeholder={translateText("YouTube, Vimeo, or direct MP4 URL")}
+            />
+          </label>
+          <label className="fb-switch-setting"><input type="checkbox" checked={value('autoplay') === 'true'} onChange={event => onChange('autoplay',String(event.target.checked))}/>{translateText("Autoplay")}</label>
+          <label className="fb-switch-setting"><input type="checkbox" checked={value('muted','true') === 'true'} onChange={event => onChange('muted',String(event.target.checked))}/>{translateText("Mute by default")}</label>
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*,.mp4,.webm,.ogg,.mov"
+            hidden
+            onChange={event => {
+              const file = event.target.files?.[0];
+              if (file) {
+                const url = URL.createObjectURL(file);
+                onChange('videoUrl', url);
+                onChange('videoName', file.name);
+              }
+              event.currentTarget.value = '';
+            }}
+          />
+        </div>
+      );
+    }
     case 'Icon':
       return <div className="fb-element-settings"><span className="fb-settings-label">{translateText("Choose icon")}</span><div className="fb-icon-picker-grid">{localizeNode(iconChoices.map(({name,Icon}) => <button type="button" key={name} aria-label={translateText(name)} title={translateText(name)} className={value('iconName') === name ? 'selected' : ''} onClick={() => onChange('iconName',name)}><Icon size={18}/></button>))}</div><label>{translateText("Icon size · ")}{localizeNode(value('iconSize','28'))}{translateText("px")}<input type="range" min="12" max="72" value={value('iconSize','28')} onChange={event => onChange('iconSize',event.target.value)}/></label><label>{translateText("Icon color")}<input type="color" value={value('iconColor','#7C3AED')} onChange={event => onChange('iconColor',event.target.value)}/></label></div>;
     case 'Divider':
@@ -726,6 +854,7 @@ function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = 
       const choices = ['Name', 'Email', 'Phone', 'Message', 'Dropdowns'];
 
       const selectWorkspaceForm = (formId: string) => {
+        if (formId === '__create_form__') { handleCreateFormClick(); return; }
         if (!formId) {
           onChange('formAssetId', '');
           onChange('formName', '');
@@ -735,7 +864,12 @@ function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = 
         }
         const targetForm = storedForms.find((f: Asset) => f.id === formId);
         if (!targetForm) return;
-        const targetBlock = targetForm.document.pages.flatMap(page => page.sections).find(section => ['Form', 'Contact Form'].includes(section.type));
+        connectForm(targetForm);
+      };
+      const connectForm = (targetForm: Asset) => {
+        if (!targetForm) return;
+        const targetPages = targetForm.document?.pages || [];
+        const targetBlock = findFormSection(targetPages.flatMap(page => page.sections || []));
         const targetCustomFields = targetBlock?.content.customFields || '[]';
         onChange('formAssetId', targetForm.id);
         onChange('publishedFormUrl', '');
@@ -749,37 +883,87 @@ function ElementContentPanel({ activeElement, onChange, onUpload, storedForms = 
         showToast.success(`Form "${targetForm.name}" connected!`);
       };
 
+      const handleCreateFormClick = () => {
+        try {
+          const match = location.pathname.match(/\/dashboard\/(funnels|websites)\/([^/]+)/);
+          const currentFunnelId = match ? match[2] : '';
+          const returnUrl = location.pathname + location.search;
+          const searchParams = new URLSearchParams({
+            action: 'create',
+            returnToBuilder: 'true',
+            returnUrl,
+            currentFunnelId,
+          });
+          navigate(`/dashboard/forms?${searchParams.toString()}`, {
+            state: { returnToBuilder: true, returnUrl, currentFunnelId }
+          });
+          showToast.info(translateText('Opening Form Creation Workspace...'));
+        } catch (err) {
+          console.error('Failed to trigger form creation flow:', err);
+          showToast.error(backendError(err));
+        }
+      };
+
       return (
         <div className="fb-element-settings">
           {/* Workspace Form Picker Integration */}
-          <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(124, 58, 237, 0.06)', border: '1px solid rgba(124, 58, 237, 0.2)', marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Sparkles size={14} /> {translateText("Connect Workspace Form")}
+          <div className="fb-form-picker-card">
+            <div className="fb-form-picker-header">
+              <span className="fb-form-picker-title">
+                <Sparkles size={13} /> {translateText("Connect Form")}
               </span>
               {storedForms.length > 0 && (
-                <span style={{ fontSize: 11, color: '#6b7280' }}>
-                  {storedForms.length} {translateText("available")}
+                <span className="fb-form-picker-count">
+                  {storedForms.length} {storedForms.length === 1 ? translateText("form") : translateText("forms")}
                 </span>
               )}
             </div>
 
-            {storedForms.length > 0 ? (
-              <>
-                <AssetSelect label="Workspace form" value={currentFormAssetId} onChange={selectWorkspaceForm} options={[{value:'',label:'Choose from created forms'}, ...storedForms.map(f => ({value:f.id,label:f.name}))]}/>
+            <div className="fb-form-picker-body">
 
-                {linkedForm && (
-                  <div style={{ fontSize: 12, color: '#059669', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <AssetSelect
+                label="Workspace form"
+                placeholder={translateText("Choose a form...")}
+                value={currentFormAssetId}
+                onChange={selectWorkspaceForm}
+                options={[
+                  { value: '', label: translateText('Choose a form...') },
+                  ...storedForms.map(f => ({ value: f.id, label: f.name }))
+                ]}
+              />
+
+                {linkedForm ? (
+                <div className="fb-form-connected-badge">
+                  <div className="fb-form-connected-info">
                     <CheckCircle2 size={13} />
-                    <span>{translateText("Connected to")} "{linkedForm.name}"</span>
+                    <span className="fb-form-connected-name" title={linkedForm.name}>
+                      {translateText("Connected:")} <strong>{linkedForm.name}</strong>
+                    </span>
                   </div>
-                )}
-              </>
-            ) : (
-              <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
-                {translateText("No published forms available. Publish a form in Forms Workspace to connect it here, or configure standard fields below.")}
-              </p>
-            )}
+                  <span className="fb-form-connected-pill">{translateText("Active")}</span>
+                </div>
+              ) : (
+                <div className="fb-form-idle-hint">
+                  <span>{translateText("No form attached yet")}</span>
+                </div>
+              )}
+
+              {storedForms.length === 0 && (
+                <p className="fb-form-empty-note">
+                  {translateText("No forms available yet. Create a form to connect it here.")}
+                </p>
+              )}
+
+              <button
+                type="button"
+                className="fb-create-form-btn"
+                onClick={handleCreateFormClick}
+                title={translateText("Create a new form")}
+              >
+                <Plus size={13} strokeWidth={2.5} />
+                <span>{translateText("Create New Form")}</span>
+              </button>
+            </div>
           </div>
 
           {localizeNode(activeElement.type === 'Contact Form' && titleFields)}

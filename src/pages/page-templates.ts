@@ -8,7 +8,12 @@ export function createPageAsset(kind:BuilderMode|'form',name:string,template?:Pa
   const isForm = template?.mode === 'form' || kind === 'form';
   const effectiveKind: BuilderMode = isForm ? 'website' : (template?.mode === 'funnel' ? 'funnel' : (kind === 'funnel' ? 'funnel' : 'website'));
   const title = name.trim() || template?.name || (isForm ? 'Untitled form' : effectiveKind === 'funnel' ? 'Untitled funnel' : 'Untitled page');
-  const document = initializePage(isForm ? 'form' : effectiveKind, title, template);
+  const document = template?.builderDocument ? structuredClone(template.builderDocument) : initializePage(isForm ? 'form' : effectiveKind, title, template);
+  if (template?.builderDocument) {
+    document.funnel.name = title;
+    document.funnel.status = 'Draft';
+    document.pages.forEach(page => { page.status = 'Draft'; });
+  }
   return {
     id: crypto.randomUUID(),
     kind: effectiveKind,

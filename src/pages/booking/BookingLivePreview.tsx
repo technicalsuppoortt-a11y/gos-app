@@ -1,11 +1,15 @@
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { BookingBrandingFooter } from './BookingBrandingFooter';
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, Monitor, Smartphone, Video } from 'lucide-react';
-import { availableSlots, bookingColor, dateKey, displayedSlots, formatDay, formatTime, KEYS, readAppointments, remainingSpots, TIMEZONES, useStored } from './model';
+import { CalendarDays, Monitor, Smartphone } from 'lucide-react';
+import { availableSlots, bookingColor, dateKey, displayedSlots, firstAvailableDate, parseDate, troubleshootSlots, KEYS, readAppointments, remainingSpots, useStored } from './model';
 import type { BookingPage } from './model';
-import { Avatar, Empty } from './ui';
+import { Empty } from './ui';
+import { BookingPageView } from './BookingPageView';
+import { BookingPreviewViewport } from './BookingPreviewViewport';
+import { BookingConfirmationView } from './BookingConfirmationView';
+import type { Appointment } from './model';
 import { BookingSelect } from './BookingSelect';
 import { InviteeFields } from './InviteeFields';
 
@@ -32,16 +36,23 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
     observer.observe(viewport);observer.observe(frame);measure();
     return()=>{observer.disconnect();cancelAnimationFrame(pending);};
   },[device]);
-  const [month,setMonth] = useState(()=>new Date(new Date().getFullYear(),new Date().getMonth(),1));
-  const [date,setDate] = useState('');
+  const [bookings] = useStored(KEYS.appointments,readAppointments);
+  const [date,setDate] = useState(()=>firstAvailableDate(page,bookings));
+  const [month,setMonth] = useState(()=>{
+    const initial=parseDate(date||dateKey(new Date(),page.hostTimezone));
+    return new Date(initial.getFullYear(),initial.getMonth(),1);
+  });
   const [slot,setSlot] = useState('');
   const [choice,setChoice] = useState(page.duration);
-  const [meeting,setMeeting] = useState(page.location);
-  const [timezone,setTimezone] = useState(page.hostTimezone);
+  const [meeting,setMeeting] = useState(page.locationOptions[0]||page.location);
+  const [timezone,setTimezone] = useState(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [step,setStep] = useState<'time'|'details'|'done'>('time');
   const [answers,setAnswers] = useState<Record<string,string>>({});
   const [guests,setGuests] = useState<{name:string;email:string}[]>([]);
-  const [bookings] = useStored(KEYS.appointments,readAppointments);
+  const [inviteeLocation,setInviteeLocation] = useState('');
+  const [source,setSource] = useState('');
+  const [fromAd,setFromAd] = useState<boolean|null>(null);
+  const [showTroubleshoot,setShowTroubleshoot] = useState(false);
   const duration = page.durationOptions.includes(choice)?choice:page.duration;
   const location = page.locationOptions.includes(meeting)?meeting:page.location;
   const zone = page.timezoneDisplay==='locked'?page.hostTimezone:timezone;
@@ -113,25 +124,36 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
     duration,
     bookings
   ]);
-  const selected = slots.find(s=>s.start===slot&&!s.busy);
   const advance = (n:number)=>{setMonth(m=>new Date(m.getFullYear(),m.getMonth()+n,1));setDate('');setSlot('');setStep('time')};
+  const confirmation: Appointment = {
+    id:'preview',calendarId:page.id,serviceName:page.name,name:answers.name||'',email:answers.email||'',whatsapp:answers.whatsapp||'',
+    date,time:slots.find(s=>s.start===slot)?.time||'',start:slot,duration,timezone:zone,location,
+    status:page.requireApproval||!page.free?'Pending':'Confirmed',source,fromAd,customAnswers:answers,guests,
+    ...(!page.free?{payment:{amount:page.priceType==='hourly'?page.price*duration/60:page.priceType==='per_attendee'?page.price*(guests.length+1):page.price,currency:page.currency,status:'Pending' as const}}:{}),
+  };
   return <aside className="bk-editor-preview"><header className="bk-preview-heading"><div><b>{translateText("Live preview")}</b><small>{translateText("Changes appear as you edit.")}</small></div><div className="bk-segmented" aria-label={translateText("Preview device")}><button aria-label={translateText("Desktop preview")} aria-pressed={device==='desktop'} className={device==='desktop'?'active':''} onClick={()=>setDevice('desktop')}><Monitor size={16}/></button><button aria-label={translateText("Mobile preview")} aria-pressed={device==='mobile'} className={device==='mobile'?'active':''} onClick={()=>setDevice('mobile')}><Smartphone size={16}/></button></div></header>
-    <div className="bk-preview-scroll" ref={viewportRef}><div className="bk-preview-fit" style={{height:fit.height*fit.scale}}><div ref={frameRef} className={'bk-preview-frame '+device} style={{'--booking-color':bookingColor(page.color),transform:`translateX(-50%) scale(${fit.scale})` } as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
-      <div className="bk-preview-banner"><CalendarDays size={13}/><span>{translateText("Preview · Appointments are not saved here")}</span></div>
-      <div className="bk-preview-public"><section className="bk-preview-profile">
-        {localizeNode(page.image?<div className="bk-public-media">{localizeNode(page.mediaType==='video'?<video src={page.image} controls playsInline/>:<img src={page.image} alt={translateText(page.hostName)} style={{borderRadius:page.imageRound?'50%':12}}/>)}</div>:<Avatar name={page.hostName}/>)}
-        <small>{localizeNode(page.hostName)}</small><h2>{localizeNode(page.titleOverride||page.name||'Your booking page')}</h2><p>{localizeNode(page.description)}</p><div className="bk-public-meta"><span><Clock3 size={14}/>{localizeNode(duration)}{translateText(" minutes")}</span><span><Video size={14}/>{localizeNode(location)}</span></div>
-        <div className="bk-form"><label>{translateText("Duration")}<BookingSelect value={duration} onChange={e=>{setChoice(Number(e.target.value));setSlot('')}}>{localizeNode(page.durationOptions.map(d=><option key={d} value={d}>{localizeNode(d)}{translateText(" minutes")}</option>))}</BookingSelect></label><label>{translateText("Location")}<BookingSelect value={location} onChange={e=>setMeeting(e.target.value)}>{localizeNode(page.locationOptions.map(l=><option key={l} value={l}>{localizeNode(l)}</option>))}</BookingSelect></label>{localizeNode(page.showTimezone&&<label>{translateText("Timezone")}<BookingSelect value={zone} disabled={page.timezoneDisplay==='locked'} onChange={e=>setTimezone(e.target.value)}>{localizeNode([...new Set([page.hostTimezone,Intl.DateTimeFormat().resolvedOptions().timeZone,...TIMEZONES])].map(z=><option key={z} value={z}>{localizeNode(z)}</option>))}</BookingSelect></label>)}</div>
-      </section><section className="bk-preview-calendar">
-        {localizeNode(!page.active?<Empty title={translateText("This page is turned off")} detail="Turn it on to accept bookings."/>:step==='done'?<div className="bk-confirm-preview"><CalendarDays size={25}/><h3>{localizeNode(page.requireApproval?'Booking request received':'You’re booked!')}</h3><p>{localizeNode(page.afterBooking.confirmationBody)}</p><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></div>:step==='details'?<form className="bk-form" onSubmit={e=>{e.preventDefault();setStep('done')}}><button type="button" className="bk-back" onClick={()=>setStep('time')}><ArrowLeft size={13}/>{translateText("Change time")}</button><h3>{translateText("Your details")}</h3>{localizeNode(selected&&<p>{localizeNode(formatDay(date))} · {localizeNode(formatTime(selected.start,zone))}</p>)}<InviteeFields page={page} answers={answers} setAnswers={setAnswers} guests={guests} setGuests={setGuests}/>{localizeNode(["phone","ask-invitee"].includes(page.locations.find(l=>l.label===location)?.type||"")&&<label>{localizeNode(page.locations.find(l=>l.label===location)?.type==="phone"?"Phone number for this call":"Your meeting address")}<input required/></label>)}{localizeNode(!page.free&&<p className="bk-tip">{localizeNode(page.price)} {localizeNode(page.currency)} · {localizeNode(page.priceType.replace("_"," "))}{translateText(" · Payment arranged with the host.")}</p>)}<button className="bk-button primary" disabled={!selected}>{translateText("Preview confirmation")}</button></form>:<>
-          <h3>{translateText("Select a date & time")}</h3><div className="bk-month-nav"><button className="bk-icon" aria-label={translateText("Previous preview month")} onClick={()=>advance(-1)}><ChevronLeft size={16}/></button><b>{localizeNode(month.toLocaleDateString(page.language==='ar'?'ar':'en-US',{month:'long',year:'numeric'}))}</b><button className="bk-icon" aria-label={translateText("Next preview month")} onClick={()=>advance(1)}><ChevronRight size={16}/></button></div>
-          <div className="bk-date-grid">{localizeNode(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=><small key={d}>{localizeNode(d)}</small>))}{localizeNode(days.map((d,i)=>{const key=dateKey(new Date(month.getFullYear(),month.getMonth(),d));const enabled=d>0&&d<=count&&enabledDates.has(key);return <button key={i} disabled={!enabled} aria-label={translateText(formatDay(key))} aria-pressed={key===date} className={key===date?'selected':''} onClick={()=>{setDate(key);setSlot('')}}>{localizeNode(d>0&&d<=count?d:'')}</button>}))}</div>
-          <div className="bk-slot-list"><b>{localizeNode(date?formatDay(date):'Choose a date to see available times')}</b>{localizeNode(slots.map(s=><button key={s.start} disabled={s.busy} className={selected?.start===s.start?'selected':''} aria-pressed={selected?.start===s.start} onClick={()=>setSlot(s.start)}>{localizeNode(formatTime(s.start,zone))}{localizeNode(page.groupCapacity>1&&page.displaySpotsLeft&&!s.busy&&<small>{localizeNode(remainingSpots(page,s.start,duration,bookings))}{translateText(" spots left")}</small>)}</button>))}{localizeNode(date&&!slots.length&&<p className="bk-muted">{translateText("No available times for this date.")}</p>)}</div><button className="bk-button primary" disabled={!selected} onClick={()=>setStep('details')}>{translateText("Continue")}<ArrowRight size={13}/></button>
-        </>)}
-      </section></div><BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/>
+    <div className="bk-preview-banner"><CalendarDays size={13}/><span>{translateText("Preview · Appointments are not saved here")}</span></div>
+    <div className="bk-preview-scroll" ref={viewportRef}><div className="bk-preview-fit" style={{height:fit.height*fit.scale}}><div ref={frameRef} className={'bk-preview-frame '+device} style={{width:device==='mobile'?390:1040,maxWidth:'none',transform:`translateX(-50%) scale(${fit.scale})`}}>
+      <BookingPreviewViewport mobile={device==='mobile'}>
+        <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
+          <header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{translateText("Booking")}</span></header>
+          <div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
+            {!page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/> : step==='done' ? <BookingConfirmationView success={confirmation} page={page} error=""><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></BookingConfirmationView> : <BookingPageView
+              page={page} bookings={bookings} showTroubleshoot={showTroubleshoot} setShowTroubleshoot={setShowTroubleshoot} enabledDates={enabledDates}
+              duration={duration} setDuration={setChoice} location={location} setLocation={setMeeting}
+              displayTimezone={zone} setTimezone={setTimezone} step={step==='details'?'confirm-form':'select-slot'}
+              setStep={next=>setStep(current=>{const value=typeof next==='function'?next(current==='details'?'confirm-form':'select-slot'):next;return value==='confirm-form'?'details':'time';})}
+              error="" setError={()=>{}} month={month} changeMonth={advance} days={days} total={count}
+              date={date} setDate={setDate} slot={slot} setSlot={setSlot} rescheduleId={undefined}
+              slots={showTroubleshoot&&date?troubleshootSlots(page,date,duration,bookings):slots.map(s=>({...s,spotsLeft:remainingSpots(page,s.start,duration,bookings),detail:''}))}
+              submit={e=>{e.preventDefault();setStep('done')}} answers={answers} setAnswers={setAnswers}
+              guests={guests} setGuests={setGuests} inviteeLocation={inviteeLocation} setInviteeLocation={setInviteeLocation}
+              source={source} setSource={setSource} fromAd={fromAd} setFromAd={setFromAd} saving={false}
+            />}
+            <BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/>
+          </div></div>
+        </main>
+      </BookingPreviewViewport>
     </div></div></div>
   </aside>;
 }
-
-
-

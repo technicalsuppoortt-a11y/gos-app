@@ -808,11 +808,28 @@ body.layout-locked #root {
   font-style: normal;
 }
 
+.layout-header-title {
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.layout-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .layout-header-breadcrumb h1 {
   margin: 0;
   color: #191b2d;
   font-size: 13px;
   font-weight: 650;
+  white-space: nowrap;
 }
 
 .layout-header-actions {
@@ -821,23 +838,24 @@ body.layout-locked #root {
   min-width: 0;
   justify-content: flex-end;
   align-items: center;
-  gap: 11px;
+  gap: 8px;
 }
 
 .layout-search {
   box-sizing: border-box;
   display: flex;
-  width: clamp(210px, 22vw, 320px);
-  height: 38px;
+  width: clamp(130px, 12vw, 185px);
+  height: 35px;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 9px;
   background: #f8fafc;
-  padding: 0 12px;
+  padding: 0 10px;
   color: #71768b;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 1;
 }
 
 .layout-search:hover {
@@ -862,7 +880,7 @@ body.layout-locked #root {
   outline: 0;
   background: transparent;
   color: #1e293b;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 450;
   line-height: 1.4;
 }
@@ -870,22 +888,22 @@ body.layout-locked #root {
 .layout-search input::placeholder {
   color: #94a3b8;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .layout-search kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  min-width: 24px;
-  padding: 0 6px;
+  height: 18px;
+  min-width: 20px;
+  padding: 0 4px;
   border: 1px solid #e2e8f0;
   border-radius: 5px;
   background: #ffffff;
   color: #64748b;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.2px;
   white-space: nowrap;
@@ -1045,6 +1063,7 @@ body.layout-locked #root {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth !important;
 }
 
 .layout-main::-webkit-scrollbar {

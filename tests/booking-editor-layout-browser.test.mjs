@@ -14,25 +14,25 @@ try {
  await page.addInitScript(()=>{localStorage.setItem('i18nextLng','en');localStorage.setItem('gos.auth',JSON.stringify({user:{id:'test',email:'test@example.com',name:'Test'},role:'USER',token:'test',tenant:{id:'test',name:'GOS'}}));});
  await page.goto('http://127.0.0.1:5220/dashboard/booking/new');
  await page.locator('.bk-editor-page').waitFor();
+ const preview=page.frameLocator('iframe[title="Booking page preview"]');
  const inputs=await page.locator('.bk-editor-configurator input:not([type=checkbox]):not([type=radio]):not([type=file]):not(.bk-select-validation)').evaluateAll(elements=>elements.filter(e=>e.getBoundingClientRect().height).map(e=>e.getBoundingClientRect().height));
  assert.ok(inputs.length>0);assert.ok(inputs.every(height=>height<=34));
  const textarea=page.locator('.bk-editor-configurator textarea').first();assert.ok((await textarea.boundingBox()).height<=70);
  const fits=async()=>{
   await page.waitForFunction(()=>{const viewport=document.querySelector('.bk-preview-scroll'),frame=document.querySelector('.bk-preview-frame');if(!viewport||!frame)return false;const v=viewport.getBoundingClientRect(),f=frame.getBoundingClientRect(),expected=Math.min(1,(viewport.clientWidth-8)/frame.offsetWidth,(viewport.clientHeight-8)/frame.offsetHeight);return f.height>0&&Math.abs(f.width/frame.offsetWidth-expected)<.002&&f.left>=v.left-1&&f.right<=v.right+1&&f.top>=v.top-1&&f.bottom<=v.bottom+1;});
   assert.equal(await page.locator('.bk-preview-scroll').evaluate(e=>getComputedStyle(e).overflowY),'hidden');
-  assert.equal(await page.locator('.bk-preview-calendar .bk-slot-list').evaluate(e=>getComputedStyle(e).overflowY),'visible');
  };
  await fits();
- await page.locator('.bk-preview-calendar .bk-date-grid button:not(:disabled)').first().click();
- await page.locator('.bk-preview-calendar .bk-slot-list button').first().click();await fits();
- assert.ok(await page.locator('.bk-preview-calendar .bk-slot-list button').count()>1);
+ await preview.locator('.bk-date-grid button:not(:disabled)').first().click();
+ await preview.locator('.bk-slot-list button').first().click();await fits();
+ assert.ok(await preview.locator('.bk-slot-list button').count()>1);
  await page.getByRole('button',{name:'Mobile preview',exact:true}).click();await fits();
- await page.locator('.bk-preview-calendar').getByRole('button',{name:'Continue',exact:true}).click();
- await page.locator('.bk-preview-calendar').getByRole('heading',{name:'Your details'}).waitFor();
+ await preview.getByRole('button',{name:'Continue',exact:true}).click();
+ await preview.getByRole('heading',{name:'Your details'}).waitFor();
  // Details content also fits, with no lost form controls.
  await page.waitForFunction(()=>{const v=document.querySelector('.bk-preview-scroll').getBoundingClientRect(),f=document.querySelector('.bk-preview-frame').getBoundingClientRect();return f.bottom<=v.bottom+1;});
- assert.equal(await page.locator('.bk-preview-calendar #question-name').count(),1);
- await page.locator('.bk-preview-calendar').getByRole('button',{name:'Change time',exact:true}).click();
+ assert.equal(await preview.locator('#question-name').count(),1);
+ await preview.getByRole('button',{name:'Change date or time',exact:true}).click();
  await page.setViewportSize({width:1100,height:620});await fits();
  await page.setViewportSize({width:390,height:844});await fits();
  const mobileFrame=await page.locator('.bk-preview-frame').boundingBox();assert.ok(mobileFrame.x>=0&&mobileFrame.x+mobileFrame.width<=390);assert.ok(mobileFrame.y+mobileFrame.height<=844);

@@ -14,7 +14,8 @@ import {
   X, 
   Loader2, 
   Layers, 
-  ExternalLink 
+  ExternalLink,
+  Pin 
 } from 'lucide-react';
 import type { RootState } from '../../store';
 import { useAdminUsers } from '../../backend/adminUsers';
@@ -24,6 +25,7 @@ import { translateText } from '../../i18n/display';
 import type { Invite } from '../../pages/onboarding/onboarding-store';
 
 const CACHE_KEY = 'admin_sub_accounts_cache';
+const PIN_KEY = 'gos_pinned_sub_accounts';
 
 const AVATAR_COLORS = [
   'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
@@ -55,7 +57,28 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [position, setPosition] = useState<{ top: number; left: number; width?: number }>({ top: 0, left: 0, width: 340 });
+  const [position, setPosition] = useState<{ top: number; left: number; width?: number }>({ top: 0, left: 0, width: 356 });
+
+  // Pinned sub-accounts persistent state
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem(PIN_KEY);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const togglePin = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPinnedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [id, ...prev];
+      try {
+        localStorage.setItem(PIN_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const role = useSelector((state: RootState) => state.auth.role);
@@ -94,7 +117,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
   const updatePosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const popoverWidth = 340;
+    const popoverWidth = 356;
     const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
 
     let left = isRtl ? (rect.right - popoverWidth) : rect.left;
@@ -160,16 +183,27 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // Filter accounts by search query
+  // Filter accounts by search query and sort pinned accounts to the top
   const filteredAccounts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return allSubAccounts;
-    return allSubAccounts.filter(acc => 
-      (acc.name && acc.name.toLowerCase().includes(q)) ||
-      (acc.email && acc.email.toLowerCase().includes(q)) ||
-      (acc.tenantId && acc.tenantId.toLowerCase().includes(q))
-    );
-  }, [allSubAccounts, searchQuery]);
+    const list = q
+      ? allSubAccounts.filter(acc => 
+          (acc.name && acc.name.toLowerCase().includes(q)) ||
+          (acc.email && acc.email.toLowerCase().includes(q)) ||
+          (acc.tenantId && acc.tenantId.toLowerCase().includes(q))
+        )
+      : allSubAccounts;
+
+    return [...list].sort((a, b) => {
+      const aPinned = pinnedIds.includes(a.id);
+      const bPinned = pinnedIds.includes(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+  }, [allSubAccounts, searchQuery, pinnedIds]);
+
+  const pinnedCount = useMemo(() => filteredAccounts.filter(acc => pinnedIds.includes(acc.id)).length, [filteredAccounts, pinnedIds]);
 
   // Admin Account Details
   const adminAccount = useMemo(() => {
@@ -424,23 +458,41 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
                   <div className="flex items-center gap-2 flex-shrink-0 ms-2">
                     {!isImpersonating ? (
-                      <span className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center shadow-xs">
                         <Check size={12} strokeWidth={3} />
                       </span>
                     ) : switchingId === 'main' ? (
-                      <Loader2 size={15} className="animate-spin text-[#7C3AED]" />
-                    ) : (
-                      <span className="text-[11px] font-semibold text-[#7C3AED] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        <ArrowRightLeft size={12} />
-                        {translateText('Switch')}
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] bg-purple-50 dark:bg-purple-950/40 border border-purple-200/50">
+                        <Loader2 size={11} className="animate-spin text-[#7C3AED]" />
+                        <span>{translateText('Switching…')}</span>
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSwitchToAdmin();
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50/90 dark:bg-purple-950/40 hover:bg-[#7C3AED] hover:text-white dark:hover:bg-[#7C3AED] dark:hover:text-white border border-purple-200/70 dark:border-purple-800/50 shadow-xs hover:shadow transition-all duration-150 cursor-pointer"
+                      >
+                        <ArrowRightLeft size={11} strokeWidth={2.2} />
+                        <span>{translateText('Switch')}</span>
+                      </button>
                     )}
                   </div>
                 </div>
 
                 {/* Sub-Accounts Header */}
-                <div className="px-3 pt-2 pb-1 flex items-center justify-between text-[10px] font-bold tracking-wider text-gray-400 uppercase">
-                  <span>{translateText('Sub-Accounts')}</span>
+                <div className="px-3 pt-2.5 pb-1 flex items-center justify-between text-[10px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
+                  <div className="flex items-center gap-1.5">
+                    <span>{translateText('Sub-Accounts')}</span>
+                    {pinnedCount > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded-md">
+                        <Pin size={9} className="fill-current -rotate-45" />
+                        <span>{pinnedCount}</span>
+                      </span>
+                    )}
+                  </div>
                   <span className="px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     {filteredAccounts.length}
                   </span>
@@ -455,6 +507,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                   filteredAccounts.map(account => {
                     const isActive = isImpersonating && currentUser?.id === account.id;
                     const isBusy = switchingId === account.id;
+                    const isPinned = pinnedIds.includes(account.id);
                     const initial = (account.name || account.email || 'U').charAt(0).toUpperCase();
                     const avatarClass = getAvatarColor(account.name || account.email);
 
@@ -462,28 +515,38 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                       <div
                         key={account.id}
                         onClick={() => handleSwitchTo(account)}
-                        className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
+                        className={`group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-150 ${
                           isActive
-                            ? 'bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-800/60 border border-transparent'
+                            ? 'bg-purple-50/70 dark:bg-purple-950/25 border border-purple-200/60 dark:border-purple-800/40 shadow-xs'
+                            : isPinned
+                            ? 'bg-purple-50/25 dark:bg-purple-950/15 border border-purple-100/70 dark:border-purple-900/30 hover:bg-purple-50/50 dark:hover:bg-purple-950/30'
+                            : 'hover:bg-gray-50/90 dark:hover:bg-gray-800/60 border border-transparent'
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1 me-2">
                           {/* Avatar badge */}
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${avatarClass}`}>
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs ${avatarClass}`}>
                             {initial}
                           </div>
 
                           {/* Account Name and Email */}
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
                               <span className="font-semibold text-xs text-gray-900 dark:text-gray-100 truncate">
                                 {account.name || translateText('Unnamed Account')}
                               </span>
                               {account.status && (
-                                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                                  account.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
-                                }`} />
+                                <span 
+                                  title={account.status === 'Active' ? translateText('Active') : account.status}
+                                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                    account.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+                                  }`} 
+                                />
+                              )}
+                              {isPinned && (
+                                <span className="inline-flex items-center text-[9px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-100/70 dark:bg-purple-900/40 p-0.5 rounded" title={translateText('Pinned')}>
+                                  <Pin size={8} className="fill-current -rotate-45" />
+                                </span>
                               )}
                             </div>
                             <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate block">
@@ -492,19 +555,46 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                           </div>
                         </div>
 
-                        {/* Right Indicator / Action */}
-                        <div className="flex items-center gap-2 flex-shrink-0 ms-2">
+                        {/* Right Actions: Pin Option & Switch Button */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {/* Pin Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => togglePin(account.id, e)}
+                            title={isPinned ? translateText('Unpin sub-account') : translateText('Pin to top')}
+                            aria-label={isPinned ? translateText('Unpin sub-account') : translateText('Pin to top')}
+                            className={`p-1.5 rounded-lg text-xs transition-all duration-150 cursor-pointer ${
+                              isPinned
+                                ? 'text-[#7C3AED] dark:text-[#A78BFA] bg-purple-100/80 dark:bg-purple-950/60 hover:bg-purple-200/80 dark:hover:bg-purple-900/60'
+                                : 'text-gray-400 dark:text-gray-500 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:bg-purple-50/70 dark:hover:bg-purple-950/30 opacity-70 group-hover:opacity-100'
+                            }`}
+                          >
+                            <Pin size={12} className={isPinned ? 'fill-current -rotate-45' : '-rotate-45'} />
+                          </button>
+
+                          {/* Switch Action / Active Status */}
                           {isActive ? (
-                            <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
-                              <Check size={12} strokeWidth={3} />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-[#7C3AED] shadow-xs">
+                              <Check size={11} strokeWidth={3} />
+                              <span>{translateText('Active')}</span>
                             </span>
                           ) : isBusy ? (
-                            <Loader2 size={15} className="animate-spin text-[#7C3AED]" />
-                          ) : (
-                            <span className="text-[11px] font-semibold text-[#7C3AED] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                              <ArrowRightLeft size={12} />
-                              {translateText('Switch')}
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] bg-purple-50 dark:bg-purple-950/40 border border-purple-200/50">
+                              <Loader2 size={11} className="animate-spin text-[#7C3AED]" />
+                              <span>{translateText('Switching…')}</span>
                             </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSwitchTo(account);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50/90 dark:bg-purple-950/40 hover:bg-[#7C3AED] hover:text-white dark:hover:bg-[#7C3AED] dark:hover:text-white border border-purple-200/70 dark:border-purple-800/50 shadow-xs hover:shadow transition-all duration-150 cursor-pointer group-hover:border-[#7C3AED]"
+                            >
+                              <ArrowRightLeft size={11} strokeWidth={2.2} />
+                              <span>{translateText('Switch')}</span>
+                            </button>
                           )}
                         </div>
                       </div>

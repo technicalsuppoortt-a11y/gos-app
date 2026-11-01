@@ -8,6 +8,7 @@ import type { RootState } from '../../store';
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/slices/uiSlice';
 import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+import { CurrencySelector } from '../ui/CurrencySelector';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useProducts } from '../../pages/commerce/repository';
@@ -23,13 +24,14 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
   '/admin/users': { title: 'Sub Accounts', description: 'Invite and manage your workspace sub-accounts.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
-  '/dashboard/plans': { title: 'Plans & Pricing', description: 'Your subscription, credits and available plans.' },
+  '/dashboard/settings/plans': { title: 'Plans & Pricing', description: 'Your subscription, credits and available plans.' },
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
   '/dashboard/booking': { title: 'Booking & Calendar', description: 'Create booking links, manage your availability and let clients book appointments with you.' },
   '/dashboard/funnels': { title: 'Funnel & Website', description: 'Build and manage the paths that turn visitors into customers.' },
   '/dashboard/integrations': { title: 'Integrations', description: 'Connect the tools that keep your business in sync.' },
   '/dashboard/inbox': { title: 'Inbox', description: 'Manage all your customer conversations in one place.' },
   '/dashboard/crm': { title: 'CRM & Leads', description: 'Build relationships and keep your pipeline moving.' },
+  '/dashboard/contacts': { title: 'Contacts', description: 'View and manage all your customer contacts and leads.' },
   '/dashboard/follow-up': { title: 'AI Follow-up', description: 'Thoughtful follow-ups that help every lead move forward.' },
   '/dashboard/products': { title: 'Products & Payments', description: 'Manage your offers, products and connected payments.' },
   '/dashboard/analytics': { title: 'Analytics', description: 'Understand performance across your business.' },
@@ -81,11 +83,12 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     { title: 'Funnel & Website', path: '/dashboard/funnels', category: 'Navigation' },
     { title: 'Inbox', path: '/dashboard/inbox', category: 'Navigation' },
     { title: 'CRM & Leads', path: '/dashboard/crm', category: 'Navigation' },
+    { title: 'Contacts', path: '/dashboard/contacts', category: 'Navigation' },
     { title: 'AI Follow-Up', path: '/dashboard/follow-up', category: 'Navigation' },
     { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
     { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
     { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
-    { title: 'Plans & Pricing', path: '/dashboard/plans', category: 'Navigation' },
+    { title: 'Plans & Pricing', path: '/dashboard/settings/plans', category: 'Settings' },
     { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
     { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
     { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
@@ -161,17 +164,17 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           <button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button>
           <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" title={translateText(productName)} aria-current="page">{localizeNode(productName)}</h1>
         </nav>
-      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb flex-shrink-0"><span>{translateText("Workspace")}</span><i>/</i><h1>{localizeNode(pageTitle)}</h1></div>)}
+      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb flex-shrink-0"><span>{translateText("Workspace")}</span><i>/</i><h1 className="whitespace-nowrap">{localizeNode(pageTitle)}</h1></div>)}
     </div>
     <div className="layout-header-actions">
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
         <div className="relative" ref={searchContainerRef}>
           <label className="layout-search">
-            <Search size={16}/>
+            <Search size={15}/>
             <input 
               ref={searchInputRef}
               aria-label={translateText("Search")} 
-              placeholder={translateText("Search anything...")}
+              placeholder={translateText("Search...")}
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
               onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); }}
@@ -222,9 +225,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         <Globe size={16} />
       </button>
       <GetAppButton/>
-      <div className="layout-preference-controls"><LanguageSwitcher/><ThemeToggle/></div>
+      <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><CreditBadge/>
-      <button type="button" onClick={() => navigate('/dashboard/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
+      <button type="button" onClick={() => navigate('/dashboard/settings/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>

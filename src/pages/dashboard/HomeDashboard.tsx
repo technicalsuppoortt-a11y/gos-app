@@ -367,7 +367,7 @@ const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
       label: "Add Contact",
       icon: IcUserPlus,
       tone: "sky",
-      to: "/dashboard/crm-leads/contacts?action=new",
+      to: "/dashboard/contacts?action=new",
     },
     {
       label: "Book Appointment",
@@ -670,7 +670,7 @@ const CREATE_ITEMS: {
     label: "Contact",
     icon: IcUsers,
     color: "#7C3AED",
-    to: "/dashboard/crm-leads/contacts?action=new",
+    to: "/dashboard/contacts?action=new",
   },
 ];
 

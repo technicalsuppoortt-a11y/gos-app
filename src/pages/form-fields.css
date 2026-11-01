@@ -29,6 +29,112 @@
 }
 
 /* Base custom form renderer (used in BuilderWorkspace and deployed sites) */
+.form-mode-selector { display: flex; gap: 4px; border-inline-end: 1px solid var(--form-border); padding-inline-end: 8px; }
+.form-mode-selector > button.form-studio-nav-tab { color: var(--form-text) !important; background: transparent !important; opacity: 1 !important; }
+.form-mode-selector > button.form-studio-nav-tab.active { background: var(--form-primary) !important; color: white !important; }
+.form-advanced-editor :is(.fb-editor-header,.fb-left-panel,.pf-sidebar-content,.pf-sidebar-heading,.pf-icon-rail,.fb-right-panel,.fb-inspector-scroll,.fb-canvas-controls) { background: var(--form-bg); color: var(--form-text); border-color: var(--form-border); }
+.form-advanced-editor :is(.fb-right-panel,.pf-sidebar-content) :is(h2,label,b,summary) { color: var(--form-text); }
+.form-advanced-editor {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto;
+  width: 100%;
+  height: clamp(560px, calc(100vh - 180px), 940px);
+  min-height: 520px;
+  border: 1px solid var(--form-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--form-shadow);
+  background: var(--form-bg);
+}
+
+.form-advanced-editor .funnel-builder-page {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 0% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.form-advanced-editor .fb-builder-grid {
+  height: calc(100% - 48px) !important;
+  min-height: 0 !important;
+  max-height: calc(100% - 48px) !important;
+  flex: 1 1 0% !important;
+  overflow: hidden !important;
+}
+
+.form-advanced-editor .fb-center-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.form-advanced-editor .fb-site-frame {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 20px 20px 84px !important;
+}
+
+.form-advanced-editor .fb-site-window {
+  min-height: min-content !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.form-advanced-editor :is(.fb-block-scroll, .fb-inspector-scroll, .pf-content-tree, .pf-app-panel, .pf-variant-panel) {
+  overflow-y: auto !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+.form-quick-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+.form-quick-dialog {
+  width: 100%;
+  max-width: 1440px;
+  min-height: min-content;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--form-surface, #ffffff);
+  color: var(--form-text, #0f172a);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: auto 0;
+}
+.form-quick-dialog .forms-workspace {
+  padding: 0;
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .form-quick-overlay { padding: 8px; }
+  .form-quick-dialog { padding: 12px; }
+}
+
 .fb-demo-form.fb-custom-form {
   width: 100%;
   max-width: 580px;
@@ -158,14 +264,21 @@
    FORMS WORKSPACE & HUB
    ========================================================================== */
 
+.aw-forms-workspace,
+.aw-workspace:has(.forms-workspace) {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
 .forms-workspace {
   display: flex;
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 16px 24px 48px;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px 0 48px;
   color: var(--form-text, #0f172a);
 }
 
@@ -441,7 +554,7 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  min-height: calc(100vh - 120px);
+  min-height: 0;
 }
 
 /* Top Studio Nav Bar */
@@ -450,18 +563,21 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 12px 16px;
+  padding: 12px 20px;
   border-radius: 14px;
   background: var(--form-bg, #ffffff);
   border: 1px solid var(--form-border, #e2e8f0);
   box-shadow: var(--form-shadow);
+  min-height: 58px;
 }
 
 .form-studio-nav-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .form-title-input {
@@ -474,6 +590,8 @@
   padding: 6px 10px;
   outline: none;
   transition: all 0.15s ease;
+  min-width: 120px;
+  max-width: 280px;
 }
 
 .form-title-input:hover {
@@ -489,11 +607,13 @@
 
 .form-studio-nav-tabs {
   display: flex;
+  align-items: center;
   gap: 4px;
   background: var(--form-surface, #f8fafc);
   padding: 4px;
   border-radius: 10px;
   border: 1px solid var(--form-border, #e2e8f0);
+  flex-shrink: 0;
 }
 
 .form-studio-nav-tab {
@@ -509,6 +629,7 @@
   color: var(--form-text-muted, #64748b);
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .form-studio-nav-tab.active {
@@ -521,6 +642,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  margin-inline-start: auto;
 }
 
 /* 3-Column Studio Grid */
@@ -552,6 +675,8 @@
   border-radius: 16px;
   box-shadow: var(--form-shadow);
   overflow: hidden;
+  max-height: calc(100vh - 170px);
+  min-height: 480px;
 }
 
 .form-panel-header {
@@ -561,6 +686,7 @@
   padding: 16px 18px;
   border-bottom: 1px solid var(--form-border, #e2e8f0);
   background: var(--form-surface, #f8fafc);
+  flex-shrink: 0;
 }
 
 .form-panel-header h3 {
@@ -580,6 +706,11 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Left Panel: Field Palette */

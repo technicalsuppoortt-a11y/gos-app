@@ -39,7 +39,7 @@ function Filter({ label, value, options, onChange }: { label: string; value: str
 }
 type DialogState = { kind: 'preview' | 'install' | 'edit'; template: Template };
 export type TemplateScope = 'funnels' | 'booking' | 'follow-up' | 'products' | 'copilot' | 'knowledge';
-const scopeCategories: Record<TemplateScope, Category[]> = { funnels: ['Funnels', 'Websites', 'Landing Pages'], booking: ['Booking Pages'], 'follow-up': ['Automations', 'Email/SMS/WhatsApp'], products: ['Products'], copilot: ['AI Assistants'], knowledge: ['AI Knowledge Packs'] };
+const scopeCategories: Record<TemplateScope, Category[]> = { funnels: ['Funnels', 'Websites', 'Forms', 'Landing Pages'], booking: ['Booking Pages'], 'follow-up': ['Automations', 'Email/SMS/WhatsApp'], products: ['Products'], copilot: ['AI Assistants'], knowledge: ['AI Knowledge Packs'] };
 export function TemplatesWorkspace({ scope = 'funnels', onInstall }: { scope?: TemplateScope; onInstall?: (template: Template) => void }) {
   useUILanguage();
  const nativeCategories = scopeCategories[scope];

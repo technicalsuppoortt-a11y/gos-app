@@ -1,10 +1,16 @@
 import { BookingSelect as DashboardSelect } from './booking/BookingSelect';
 import { resolveFormTheme } from './form-theme';
+import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { createPageAsset } from './page-templates';
 import type { Asset, Workspace } from './asset-model';
 import type { BuilderSection } from './BuilderWorkspace';
+import { BuilderWorkspace } from './BuilderWorkspace';
+import { findFormSection } from './form-sections';
+import { changeSection } from './funnel-tree';
+import { flushAssetWrites } from '../backend/workspace';
 import { CRMRouting } from './CRMRouting';
 import { publishWorkspaceAsset, unpublishWorkspaceAsset, deleteWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
@@ -53,6 +59,9 @@ interface FormsWorkspaceProps {
   workspace: Workspace;
   save: (update: (w: Workspace) => Workspace) => Promise<unknown>;
   go: (path: string) => void;
+  initialSelected?: string;
+  onComplete?: (asset: Asset) => void;
+  onCancel?: () => void;
 }
 
 const PRESET_OPTIONS: Record<string, string[]> = {
@@ -176,7 +185,7 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
   const isPublished = form.document?.funnel?.status === 'Published';
   let fieldCount = 0;
   try {
-    const raw = form.document?.pages?.[0]?.sections?.[0]?.content?.customFields;
+    const raw = findFormSection(form.document?.pages?.[0]?.sections ?? [])?.content.customFields;
     fieldCount = raw ? JSON.parse(raw).length : 0;
   } catch {
     fieldCount = 0;
@@ -257,17 +266,27 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
   );
 }
 
-export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
-  // Read query param if passed (e.g. ?selected=xxx)
-  const querySelected = useMemo(() => {
+export function FormsWorkspace({ workspace, save, go, initialSelected, onComplete, onCancel }: FormsWorkspaceProps) {
+  useUILanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = useMemo(() => {
     try {
-      return new URLSearchParams(window.location.search).get('selected') || '';
+      return new URLSearchParams(location.search);
     } catch {
-      return '';
+      return new URLSearchParams();
     }
-  }, []);
+  }, [location.search]);
 
-  const [selected, setSelected] = useState<string>(querySelected);
+  // Read query params for selection, action & builder return
+  const querySelected = useMemo(() => searchParams.get('selected') || '', [searchParams]);
+  const actionParam = useMemo(() => searchParams.get('action') || (location.state as any)?.action || '', [searchParams, location.state]);
+  const returnToBuilder = useMemo(() => searchParams.get('returnToBuilder') === 'true' || Boolean((location.state as any)?.returnToBuilder), [searchParams, location.state]);
+  const returnUrl = useMemo(() => searchParams.get('returnUrl') || (location.state as any)?.returnUrl || '', [searchParams, location.state]);
+  const currentFunnelId = useMemo(() => searchParams.get('currentFunnelId') || (location.state as any)?.currentFunnelId || '', [searchParams, location.state]);
+
+  const [selected, setSelected] = useState<string>(initialSelected ?? querySelected);
+  const [formMode, setFormMode] = useState<'fast' | 'advanced'>('fast');
   const [activeTab, setActiveTab] = useState<'builder' | 'preview'>('builder');
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   const [busy, setBusy] = useState(false);
@@ -321,7 +340,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
 
   const forms = useMemo(() => workspace.assets.filter(a => a.formAsset && !a.archived), [workspace.assets]);
   const asset = useMemo(() => forms.find(a => a.id === selected), [forms, selected]);
-  const block = asset?.document.pages[0]?.sections[0];
+  const block = findFormSection(asset?.document.pages[0]?.sections ?? []);
   const fields: FormField[] = useMemo(() => {
     try {
       return JSON.parse(block?.content.customFields || '[]');
@@ -357,9 +376,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
         pages: a.document.pages.map((p, i) =>
           i ? p : {
             ...p,
-            sections: p.sections.map((s, j) =>
-              j ? s : { ...s, content: { ...s.content, customFields: JSON.stringify(next) } }
-            )
+            sections: changeSection(p.sections, block?.id ?? '', s => [{ ...s, content: { ...s.content, customFields: JSON.stringify(next) } }])
           }
         )
       }
@@ -377,9 +394,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
           i ? p : {
             ...p,
             headline: key === 'title' ? value : p.headline,
-            sections: p.sections.map((s, j) =>
-              j ? s : { ...s, content: { ...s.content, [key]: value } }
-            )
+            sections: changeSection(p.sections, block?.id ?? '', s => [{ ...s, content: { ...s.content, [key]: value } }])
           }
         )
       }
@@ -518,6 +533,14 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
     }
   };
 
+  const autoCreatedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (actionParam === 'create' && !autoCreatedRef.current) {
+      autoCreatedRef.current = true;
+      void createBlank('New Lead Capture Form');
+    }
+  }, [actionParam]);
+
   // Template Instantiation
   const applyTemplate = async (templateId: string) => {
     const tmpl = pageTemplates.find(t => t.id === templateId && t.mode === 'form');
@@ -548,10 +571,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
             : {
                 ...p,
                 backgroundColor: preset.background,
-                sections: p.sections.map((s, j) =>
-                  j
-                    ? s
-                    : {
+                sections: changeSection(p.sections, block?.id ?? '', s => [{
                         ...s,
                         styles: { ...s.styles, backgroundColor: preset.cardBackground },
                         content: {
@@ -561,8 +581,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
                           themeCardBorder: preset.cardBorder,
                           themeTextColor: preset.textColor
                         }
-                      }
-                )
+                      }])
               }
         )
       }
@@ -631,15 +650,26 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
           <div className="form-studio-nav-left">
             <button
               className="aw-secondary"
-              onClick={() => setSelected('')}
+              onClick={() => {
+                if (onCancel) {
+                  onCancel();
+                } else if (returnUrl) {
+                  navigate(returnUrl);
+                } else if (currentFunnelId) {
+                  navigate(`/dashboard/funnels/${currentFunnelId}`);
+                } else {
+                  setSelected('');
+                }
+              }}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              <ArrowLeft size={15} /> All Forms
+              <ArrowLeft size={15} /> {(onCancel || returnToBuilder || returnUrl) ? translateText("Back to page builder") : translateText("All Forms")}
             </button>
             <input
               className="form-title-input"
               value={asset.name}
-              onChange={e => void updateAsset(a => ({ ...a, name: e.target.value }))}
+              disabled={formMode === 'advanced' && activeTab === 'builder'}
+              onChange={e => { const name = e.target.value; void updateAsset(a => ({ ...a, name, document: { ...a.document, funnel: { ...a.document.funnel, name } } })); }}
               placeholder="Form name..."
               title="Click to rename form"
             />
@@ -650,6 +680,10 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
           </div>
 
           <div className="form-studio-nav-tabs">
+            <div className="form-mode-selector" role="group" aria-label="Form editing mode">
+              <button className={`form-studio-nav-tab ${formMode === 'fast' ? 'active' : ''}`} aria-pressed={formMode === 'fast'} onClick={() => setFormMode('fast')}>Fast Form</button>
+              <button className={`form-studio-nav-tab ${formMode === 'advanced' ? 'active' : ''}`} aria-pressed={formMode === 'advanced'} onClick={async () => { await flushAssetWrites(); setFormMode('advanced'); }}>Advanced Form</button>
+            </div>
             <button
               className={`form-studio-nav-tab ${activeTab === 'builder' ? 'active' : ''}`}
               onClick={() => setActiveTab('builder')}
@@ -668,9 +702,43 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
           </div>
 
           <div className="form-studio-nav-right">
+            {(onComplete || returnToBuilder || returnUrl) && (
+              <button
+                className="aw-primary"
+                disabled={busy || !fields.length}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await flushAssetWrites();
+                    await publishWorkspaceAsset(asset.id);
+                    if (onComplete) {
+                      onComplete(asset);
+                    } else if (returnUrl) {
+                      const separator = returnUrl.includes('?') ? '&' : '?';
+                      const targetUrl = `${returnUrl}${separator}connectFormId=${asset.id}`;
+                      navigate(targetUrl, { state: { connectedFormId: asset.id } });
+                      showToast.success(`Form "${asset.name}" published & connected!`);
+                    } else if (currentFunnelId) {
+                      navigate(`/dashboard/funnels/${currentFunnelId}?connectFormId=${asset.id}`, { state: { connectedFormId: asset.id } });
+                      showToast.success(`Form "${asset.name}" published & connected!`);
+                    } else {
+                      showToast.success(`Form "${asset.name}" published!`);
+                    }
+                  } catch (error) {
+                    showToast.error(backendError(error));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Globe size={15} />}
+                {translateText("Publish & Select Form")}
+              </button>
+            )}
             <button
               className="aw-secondary"
-              onClick={() => setShowThemeModal(true)}
+              onClick={() => { setFormMode('fast'); setShowThemeModal(true); }}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               <Palette size={14} color="#7C3AED" />
@@ -696,39 +764,53 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
               </button>
             )}
 
-            <button
-              className="aw-secondary"
-              onClick={() => setFormToDelete(asset)}
-              title="Delete this form"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#EF4444' }}
-            >
-              <Trash2 size={14} /> Delete
-            </button>
+            {!onComplete && !returnToBuilder && !returnUrl && (
+              <button
+                className="aw-secondary"
+                onClick={() => setFormToDelete(asset)}
+                title="Delete this form"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#EF4444' }}
+              >
+                <Trash2 size={14} /> Delete
+              </button>
+            )}
 
-            <button
-              className="aw-primary"
-              disabled={busy || !fields.length}
-              onClick={async () => {
-                setBusy(true);
-                try {
-                  const res = await publishWorkspaceAsset(asset.id);
-                  showToast.success(`Form live at ${res.url}`);
-                } catch (e) {
-                  showToast.error(backendError(e));
-                } finally {
-                  setBusy(false);
-                }
-              }}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            >
-              {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Globe size={15} />}
-              {isPublished ? 'Republish Changes' : 'Publish Form'}
-            </button>
+            {!onComplete && !returnToBuilder && !returnUrl && (
+              <button
+                className="aw-primary"
+                disabled={busy || !fields.length}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    const res = await publishWorkspaceAsset(asset.id);
+                    showToast.success(`Form live at ${res.url}`);
+                  } catch (e) {
+                    showToast.error(backendError(e));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Globe size={15} />}
+                {isPublished ? 'Republish Changes' : 'Publish Form'}
+              </button>
+            )}
           </div>
         </header>
 
         {/* Studio Content */}
-        {activeTab === 'builder' ? (
+        {activeTab === 'builder' && formMode === 'advanced' ? (
+          <div className="aw-editor-host form-advanced-editor">
+            <BuilderWorkspace formEditor key={asset.id} mode="website" document={asset.document} selectedPageId={asset.document.pages[0].id}
+              initialColor={asset.settings.color} onBack={() => setFormMode('fast')}
+              onDocumentChange={document => updateAsset(a => ({ ...a, document: {
+                ...document,
+                pages: document.pages.map((page, index) => index || findFormSection(page.sections) ? page : { ...page, sections: [...page.sections, block] })
+              }, name: document.funnel.name, updated: new Date().toISOString() }))}
+              onPublish={() => publishWorkspaceAsset(asset.id)} />
+          </div>
+        ) : activeTab === 'builder' ? (
           <div className="form-studio-layout">
             {/* COLUMN 1: FIELD PALETTE */}
             <aside className="form-studio-panel">
@@ -1910,7 +1992,7 @@ export function FormsWorkspace({ workspace, save, go }: FormsWorkspaceProps) {
         <div className="forms-cards-grid">
           {filteredForms.map(item => {
             const isPub = item.document.funnel.status === 'Published';
-            const itemBlock = item.document.pages[0]?.sections[0];
+            const itemBlock = findFormSection(item.document.pages[0]?.sections ?? []);
             let itemFields: FormField[] = [];
             try {
               itemFields = JSON.parse(itemBlock?.content.customFields || '[]');

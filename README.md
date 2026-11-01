@@ -115,7 +115,13 @@
 
 - تصنفيات الواتس
 - develop support
-- add form in funnel
+- add form in funnel => done
+  - Create Form option => done
+- Add custome step in funnel  => done
 - when craete user => normal or admin or agency user
-- Default Funnels from joe acadmy
+- Booking in mobile => done
+- Pin in switch
+- Control of dashboard
+- Wallet
 - Move Launch brand in gos
+- Default Funnels from joe acadmy

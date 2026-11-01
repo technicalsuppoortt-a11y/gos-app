@@ -304,7 +304,7 @@
 
 .bk-editor-preview .bk-preview-scroll{position:relative;overflow:hidden;padding:0 4px 8px;min-height:0;flex:1}
 .bk-preview-fit{position:relative;width:100%;margin:0 auto}
-.bk-editor-preview .bk-preview-frame{position:absolute;top:0;left:50%;width:100%;max-width:800px;margin:0;transform-origin:top center;transition:none}
+.bk-editor-preview .bk-preview-frame{position:absolute;top:0;left:50%;width:100%;max-width:800px;margin:0;box-sizing:content-box;transform-origin:top center;transition:none}
 .bk-editor-preview .bk-preview-frame.mobile{width:355px;max-width:100%}
 .bk-editor-preview .bk-preview-profile{padding:15px 13px;gap:8px}
 .bk-editor-preview .bk-preview-profile h2{font-size:17px;line-height:1.35}
@@ -397,7 +397,7 @@
 
 
 /* Public route: keep the header and branding visible; scroll only widget panels. */
-html:has(main.bk-public),body:has(main.bk-public){height:100%;overflow:hidden;overscroll-behavior:none}
+html:has(main.bk-public),body:has(main.bk-public){height:100%;min-width:0;overflow:hidden;overscroll-behavior:none}
 .bk-public{width:100%;max-height:100dvh}
 .bk-public>.bk-public-brand{height:48px}
 .bk-public>.bk-public-scroll{display:flex;overflow:hidden;padding:12px 16px;min-width:0}
@@ -442,25 +442,31 @@ html:has(main.bk-public),body:has(main.bk-public){height:100%;overflow:hidden;ov
 .bk-public .bk-password-gate{overflow-y:auto;padding:20px;overscroll-behavior:contain}
 @media(max-width:760px){
   .bk-public>.bk-public-brand{height:42px}
-  .bk-public>.bk-public-scroll{padding:8px}
-  .bk-public .bk-public-shell>.bk-public-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,28%) minmax(0,1fr)}
-  .bk-public .bk-public-details{padding:12px;gap:6px}
+  .bk-public>.bk-public-scroll{display:block;padding:8px;overflow-y:auto;overscroll-behavior:contain}
+  .bk-public .bk-public-shell{height:auto;min-height:100%;overflow:visible}
+  .bk-public .bk-public-shell>.bk-public-grid{flex:none;overflow:visible;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto}
+  .bk-public .bk-public-details{padding:16px;gap:8px;overflow:visible;border-inline-end:0;border-bottom:1px solid var(--bk-line)}
+  .bk-public .bk-public-details>p{max-height:none;overflow:visible}
   .bk-public .bk-public-details h1{font-size:18px}
-  .bk-public .bk-public-wizard{padding:12px}
-  .bk-public .bk-slot-layout{grid-template-columns:minmax(0,1fr) 120px;gap:10px}
+  .bk-public .bk-public-wizard{padding:16px;overflow:visible}
+  .bk-public .bk-slot-layout{flex:none;grid-template-columns:minmax(0,1fr);gap:20px;overflow:visible}
+  .bk-public .bk-slot-layout>div:first-child{overflow:visible}
+  .bk-public .bk-slot-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none;overflow:visible;gap:8px;padding:16px 0 0;border-top:1px solid var(--bk-line)}
+  .bk-public .bk-slot-list>b,.bk-public .bk-slot-list>.bk-muted,.bk-public .bk-slot-list>.bk-empty{grid-column:1/-1}
+  .bk-public .bk-slot-list button{min-height:44px;min-width:0}
+  .bk-public .bk-public-wizard>.bk-form{overflow:visible;flex:none}
   .bk-public .bk-wizard-steps{gap:8px;font-size:9px;padding-bottom:7px}
   .bk-public .bk-public-wizard>h2{margin:8px 0;font-size:16px}
   .bk-public .bk-next{margin-top:8px}
   .bk-public .bk-date-grid{gap:4px}
-  .bk-public .bk-date-grid button{min-height:28px;border-radius:8px}
+  .bk-public .bk-date-grid button{min-height:40px;border-radius:8px}
   .bk-public .bk-public-success{padding:16px}
 }
 @media(max-width:430px){
-  .bk-public .bk-slot-layout{grid-template-columns:minmax(0,1fr) 105px;gap:8px}
   .bk-public .bk-month-nav{gap:3px}
   .bk-public .bk-month-nav b{font-size:11px}
   .bk-public .bk-date-grid{gap:3px}
-  .bk-public .bk-date-grid button{min-height:26px;font-size:10px}
+  .bk-public .bk-date-grid button{min-height:38px;font-size:11px}
 }
 @media(max-height:600px) and (min-width:761px){
   .bk-public>.bk-public-brand{height:40px}

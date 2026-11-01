@@ -441,7 +441,6 @@ const AssistantRobot = () => { useUILanguage(); return ((
 )); };
 const tabs: Tab[] = [
   "Overview",
-  "Conversations",
   "AI Assistants",
   "Knowledge",
   "Automations",
@@ -1921,6 +1920,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               <h2>{translateText("AI Assistants")}</h2>
               <p>{translateText("Business-specific assistants, configured for your workspace.")}</p>
             </div>
+            {/* Underlying assistant creation handler preserved */}
+            {/*
             <button
               className="af-button-primary"
               onClick={() => {
@@ -1931,6 +1932,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
               }}
             >
               <Plus size={14} />{translateText(" Create AI Assistant")}</button>
+            */}
           </div>
           <div className="af-assistant-wide">
             <div className="af-bot-avatar">
@@ -2016,6 +2018,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           <p>{translateText("Conversations, follow up with leads and turn them into customers")}</p>
         </div>
         <div className="module-header-actions"><a className="af-button-secondary" href="/dashboard/follow-up?tab=templates">{translateText("Automation templates")} <ArrowRight size={14}/></a>
+        {/* Underlying assistant creation handler preserved */}
+        {/*
         <button
           className="af-button-primary"
           onClick={() => {
@@ -2026,6 +2030,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           }}
         >
           <Plus size={15} />{translateText(" Create AI Assistant")}</button>
+        */}
         </div>
       </div>
       <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>

@@ -66,7 +66,8 @@ const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace')
 
 const crmChildren = [
   { index: true, element: <Suspended><DashboardPage page="crm"/></Suspended> },
-  ...['pipeline', 'contacts', 'activities', 'tasks', 'overview', 'templates'].map(path => ({ path, element: <Suspended><DashboardPage page="crm"/></Suspended> })),
+  ...['pipeline', 'activities', 'tasks', 'overview', 'templates'].map(path => ({ path, element: <Suspended><DashboardPage page="crm"/></Suspended> })),
+  { path: 'contacts', element: <Navigate to="/dashboard/contacts" replace/> },
   { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
   { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
 ];
@@ -111,16 +112,29 @@ export const router = createBrowserRouter([
   ...['funnels/*', 'websites/*', 'forms/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
   { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
   {
+    path: '/contacts',
+    element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
+    children: [
+      { index: true, element: <Suspended><DashboardPage page="contacts"/></Suspended> },
+      { path: ':id', element: <Suspended><CRMRecord/></Suspended> },
+      { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
+    ].map(controlToolRoute),
+  },
+  {
     path: '/dashboard',
     element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
       { path: 'support', element: <Suspended><UserSupportPage/></Suspended> },
-      { path: 'plans', element: <Suspended><UserPlansPage/></Suspended> },
+      { path: 'plans', element: <Navigate to="/dashboard/settings/plans" replace/> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
       ...['funnels/*', 'websites/*', 'forms/*', 'domains/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
       { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace/> },
       { path: 'crm', children: crmChildren },
+      { path: 'contacts', element: <Suspended><DashboardPage page="contacts"/></Suspended> },
+      { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
+      { path: 'contacts/opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
+      { path: 'crm-leads/contacts', element: <Navigate to="/dashboard/contacts" replace/> },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'ai-followup', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },

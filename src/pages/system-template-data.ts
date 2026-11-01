@@ -1,4 +1,4 @@
-export const categories = ['Funnels', 'Websites', 'Landing Pages', 'Booking Pages', 'CRM Pipelines', 'AI Assistants', 'AI Knowledge Packs', 'Automations', 'Products', 'Email/SMS/WhatsApp'] as const;
+export const categories = ['Funnels', 'Websites', 'Forms', 'Landing Pages', 'Booking Pages', 'CRM Pipelines', 'AI Assistants', 'AI Knowledge Packs', 'Automations', 'Products', 'Email/SMS/WhatsApp'] as const;
 export type Category = typeof categories[number];
 export const industries = ['E-commerce', 'Fitness/Coaching', 'Real Estate', 'SaaS/Agency', 'Healthcare/Clinic', 'Professional Services'];
 export const goals = ['Lead Generation', 'Direct Sale', 'Appointment Booking', 'Customer Onboarding', 'Automation Flow'];
@@ -43,5 +43,5 @@ export const MASTER_TEMPLATES: Template[] = seeds.map(([category, name, descript
  content: { headline: name, steps: category === 'CRM Pipelines' ? ['New lead', 'Qualified', 'Proposal', 'Won'] : category === 'Automations' ? ['Trigger received', 'Check conditions', 'Send message', 'Assign owner'] : ['Welcome', 'Explore offer', 'Take action'], settings: { enabled: false, language: 'en' } },
 }));
 
-export const systemCategory: Record<Category,string> = {Funnels:'Funnel',Websites:'Website','Landing Pages':'Landing Page','Booking Pages':'Booking Page','CRM Pipelines':'CRM Pipeline','AI Assistants':'AI Assistant','AI Knowledge Packs':'AI Knowledge Pack',Automations:'Automation',Products:'Product Layout','Email/SMS/WhatsApp':'Email'};
+export const systemCategory: Record<Category,string> = {Funnels:'Funnel',Websites:'Website',Forms:'Form','Landing Pages':'Landing Page','Booking Pages':'Booking Page','CRM Pipelines':'CRM Pipeline','AI Assistants':'AI Assistant','AI Knowledge Packs':'AI Knowledge Pack',Automations:'Automation',Products:'Product Layout','Email/SMS/WhatsApp':'Email'};
 export function systemAssetCategory(template:Template):string {return template.category==='Email/SMS/WhatsApp'?(template.tags.includes('SMS')?'SMS':template.tags.includes('WhatsApp')?'WhatsApp':'Email'):systemCategory[template.category];}

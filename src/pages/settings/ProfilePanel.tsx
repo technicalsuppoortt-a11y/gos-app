@@ -9,30 +9,88 @@ import { LinkedinLogo, YoutubeLogo } from '@phosphor-icons/react';
 import { InstagramIcon, FacebookIcon } from '../inbox/ChannelIcons';
 import { useTranslation } from 'react-i18next';
 import portrait from '../../assets/inbox/mohamed.jpg';
-import { toggleTheme, setLanguage } from '../../store/slices/uiSlice';
+import { toggleTheme, setLanguage, setCurrency } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
+import { storageSet } from '../../utils/browserStorage';
 import { Badge, Card, Field, Modal, Toggle } from './kit';
 import { Select } from '../../components/ui/Select';
 import { friendlyError, settingsApiEnabled, settingsRequest } from './data';
 import type { Profile, SettingsData } from './data';
 import { PanelHeading } from './kit';
 
+const CURRENCY_SELECT_OPTIONS = [
+  { value: 'USD', label: '$ · USD (US Dollar)' },
+  { value: 'EUR', label: '€ · EUR (Euro)' },
+  { value: 'EGP', label: 'E£ · EGP (Egyptian Pound)' },
+  { value: 'GBP', label: '£ · GBP (British Pound)' },
+  { value: 'AED', label: 'د.إ · AED (UAE Dirham)' },
+  { value: 'SAR', label: '﷼ · SAR (Saudi Riyal)' },
+];
+
 export function ProfilePanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
   useUILanguage();
   const [draft, setDraft] = useState<Profile>(data.profile), [busy, setBusy] = useState(false), [error, setError] = useState(''), [deleteOpen, setDeleteOpen] = useState(false), [confirmation, setConfirmation] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
   const file = useRef<HTMLInputElement>(null), dispatch = useDispatch(), navigate = useNavigate();
   const { i18n } = useTranslation();
   const theme = useSelector((s: RootState) => s.ui.theme);
+  const currentLang = useSelector((s: RootState) => s.ui.language);
+  const currentCurrency = useSelector((s: RootState) => s.ui.currency);
+
+  // Keep draft in sync with persisted profile data
+  useEffect(() => {
+    setDraft(data.profile);
+    setIsDirty(false);
+  }, [data.profile]);
+
+  // Synchronize language bidirectionally with global topbar without marking form as user-dirty
+  useEffect(() => {
+    const targetLang = currentLang === 'ar' ? 'Arabic' : 'English';
+    if (draft.language !== targetLang) {
+      setDraft(p => ({ ...p, language: targetLang }));
+    }
+  }, [currentLang]);
+
+  // Synchronize currency bidirectionally with global topbar without marking form as user-dirty
+  useEffect(() => {
+    if (currentCurrency && draft.currency !== currentCurrency) {
+      setDraft(p => ({ ...p, currency: currentCurrency }));
+    }
+  }, [currentCurrency]);
+
   const closeDelete = useCallback(() => setDeleteOpen(false), []);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(data.profile);
-  const blocker = useBlocker(dirty && !busy);
+  const blocker = useBlocker(isDirty && !busy);
   const closeLeave = useCallback(() => { if (blocker.state === 'blocked') blocker.reset(); }, [blocker]);
-  useEffect(() => { const handler = (e: BeforeUnloadEvent) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } }; window.addEventListener('beforeunload', handler); return () => window.removeEventListener('beforeunload', handler); }, [dirty]);
-  const update = (key: keyof Profile, value: string | boolean) => setDraft(p => ({ ...p, [key]: value }));
+  useEffect(() => { const handler = (e: BeforeUnloadEvent) => { if (isDirty) { e.preventDefault(); e.returnValue = ''; } }; window.addEventListener('beforeunload', handler); return () => window.removeEventListener('beforeunload', handler); }, [isDirty]);
+  const update = (key: keyof Profile, value: string | boolean) => {
+    setIsDirty(true);
+    setDraft(p => ({ ...p, [key]: value }));
+  };
   const avatar = draft.photo;
   const avatarView = (large = false) => avatar ? <img className={`st-avatar${large ? ' large' : ''}`} src={avatar} alt={translateText(draft.name)} onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = portrait; }}/>: <span className={`st-avatar st-initials${large ? ' large' : ''}`}>{localizeNode(draft.name.split(' ').map(x => x[0]).slice(0, 2).join(''))}</span>;
-  return <>{localizeNode(blocker.state === 'blocked' && <Modal title={translateText("Leave without saving?")} close={closeLeave}><p>{translateText("Your profile changes haven’t been saved.")}</p><div className="st-modal-actions"><button className="st-secondary" onClick={closeLeave}>{translateText("Keep editing")}</button><button className="st-danger" onClick={() => blocker.proceed()}>{translateText("Discard changes")}</button></div></Modal>)}<PanelHeading title={translateText("Profile Settings")} description="Manage your personal information and account preferences."/><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, profile: draft }); dispatch(setLanguage(draft.language === 'Arabic' ? 'ar' : 'en')); await i18n.changeLanguage(draft.language === 'Arabic' ? 'ar' : 'en'); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
+  return <>{localizeNode(blocker.state === 'blocked' && <Modal title={translateText("Leave without saving?")} close={closeLeave}><p>{translateText("Your profile changes haven’t been saved.")}</p><div className="st-modal-actions"><button className="st-secondary" onClick={closeLeave}>{translateText("Keep editing")}</button><button className="st-danger" onClick={() => { setIsDirty(false); blocker.proceed(); }}>{translateText("Discard changes")}</button></div></Modal>)}<PanelHeading title={translateText("Profile Settings")} description="Manage your personal information and account preferences."/><form onSubmit={async e => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const activeCurrency = draft.currency || currentCurrency || 'USD';
+      const updated = { ...draft, currency: activeCurrency };
+      await save({ ...data, profile: updated });
+      setIsDirty(false);
+      const langCode = updated.language === 'Arabic' ? 'ar' : 'en';
+      dispatch(setLanguage(langCode));
+      await i18n.changeLanguage(langCode);
+      storageSet('i18nextLng', langCode);
+      dispatch(setCurrency(activeCurrency));
+      storageSet('preferred_currency', activeCurrency);
+      window.dispatchEvent(new CustomEvent('gos-currency-changed', { detail: { currency: activeCurrency } }));
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally {
+      setBusy(false);
+    }
+  }}>
     <div className="st-profile-grid"><Card className="st-profile-form">
       <div className="st-section-title"><h3>{translateText("Profile Photo")}</h3><p>{translateText("This photo will be used across your account.")}</p></div>
       <div className="st-photo-row"><div className="st-avatar-wrap">{localizeNode(avatarView(true))}<button type="button" aria-label={translateText("Change profile photo")} className="st-camera" onClick={() => file.current?.click()}><Camera size={13}/></button></div><div><div className="st-photo-actions"><button type="button" className="st-secondary" onClick={() => file.current?.click()}>{translateText("Change Photo")}</button><button type="button" className="st-danger" onClick={() => update('photo', '')}>{translateText("Remove")}</button></div><small>{translateText("JPG, PNG or GIF. Max 5MB.")}</small></div><input ref={file} type="file" hidden accept="image/jpeg,image/png,image/gif" onChange={e => { const image = e.target.files?.[0]; e.target.value = ''; if (!image) return; if (!['image/jpeg', 'image/png', 'image/gif'].includes(image.type) || image.size > 5 * 1024 * 1024) { setError('Choose a JPG, PNG or GIF image smaller than 5MB.'); return; } const reader = new FileReader(); reader.onload = () => { update('photo', String(reader.result)); setError(''); }; reader.onerror = () => setError('This image could not be opened. Choose another file.'); reader.readAsDataURL(image); }}/></div>
@@ -41,8 +99,19 @@ export function ProfilePanel({ data, save }: { data: SettingsData; save: (data: 
         <Field label="Full Name"><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
         <Field label="Email Address"><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
         <Field label="Phone Number"><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
-        <Field label="Language"><Select value={draft.language} onChange={value => update('language', value)} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
-        <Field label="Currency"><Select value={draft.currency ?? data.business.currency} onChange={value => update('currency', value)} options={['USD', 'EUR', 'EGP', 'GBP', 'AED', 'SAR']} /></Field>
+        <Field label="Language"><Select value={draft.language} onChange={value => {
+          update('language', value);
+          const langCode = value === 'Arabic' ? 'ar' : 'en';
+          dispatch(setLanguage(langCode));
+          void i18n.changeLanguage(langCode);
+          storageSet('i18nextLng', langCode);
+        }} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
+        <Field label="Currency"><Select value={draft.currency ?? currentCurrency ?? data.business.currency ?? 'USD'} onChange={value => {
+          update('currency', value);
+          dispatch(setCurrency(value));
+          storageSet('preferred_currency', value);
+          window.dispatchEvent(new CustomEvent('gos-currency-changed', { detail: { currency: value } }));
+        }} options={CURRENCY_SELECT_OPTIONS} /></Field>
         <Field label="Timezone"><Select value={draft.timezone} onChange={value => update('timezone', value)} options={[{ value: 'Africa/Cairo', label: '(GMT+2) Cairo' }, { value: 'Europe/London', label: 'London' }, { value: 'America/New_York', label: 'New York' }, { value: 'Asia/Dubai', label: 'Dubai' }, { value: 'UTC', label: 'UTC' }]} /></Field>
         <Field label="Date Format"><Select value={draft.dateFormat} onChange={value => update('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>
       </div>
