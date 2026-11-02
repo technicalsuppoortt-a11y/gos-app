@@ -40,7 +40,9 @@ function SettingsWorkspaceView() {
   useUILanguage();
   const location = useLocation();
   const [data, setData] = useState<SettingsData>(readSettings), [loading, setLoading] = useState(settingsApiEnabled), [error, setError] = useState('');
-  const paymentMethodsTab = new URLSearchParams(location.search).get('tab') === 'payment-methods';
+  const currentTab = new URLSearchParams(location.search).get('tab');
+  const paymentMethodsTab = currentTab === 'payment-methods';
+  const isWalletTab = currentTab === 'wallet';
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
   const refresh = useCallback(async () => {
@@ -66,7 +68,7 @@ function SettingsWorkspaceView() {
           {active.slug === 'pixel' && <MarketingTracking/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'plans' && <UserPlansPage/>)}
-          {localizeNode(active.slug === 'billing' && <><BillingPanel data={data} refresh={refresh} saveLocal={save}/>{!paymentMethodsTab && <PaymentsPanel data={data} save={save}/>}</>)}
+          {localizeNode(active.slug === 'billing' && <BillingPanel data={data} refresh={refresh} saveLocal={save}/>)}
           {localizeNode(active.slug === 'integrations' && <IntegrationsPanel data={data} refresh={refresh}/>)}
           {localizeNode(active.slug === 'business' && <BusinessPanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'team' && <TeamPanel/>)}

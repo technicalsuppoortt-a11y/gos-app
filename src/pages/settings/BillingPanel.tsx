@@ -1,6 +1,6 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ArrowRight, CalendarDays, ChartNoAxesCombined, Check, CreditCard, Crown, FileText, Landmark, Mail, MessageCircle, MoreHorizontal, Plus, Receipt, RefreshCw, Search, Sparkles, Wallet } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChartNoAxesCombined, Check, Clock, CreditCard, Crown, FileText, Landmark, Mail, MessageCircle, MoreHorizontal, Plus, Receipt, RefreshCw, Search, Sparkles, Wallet } from 'lucide-react';
 import { Badge, Card, Field, Modal, Toggle } from './kit';
 import { Select } from '../../components/ui/Select';
 import { friendlyError, safeExternalUrl, settingsApiEnabled, settingsRequest } from './data';
@@ -9,7 +9,8 @@ import { useSearchParams } from 'react-router-dom';
 import { PaymentMethodsPanel } from './PaymentMethodsPanel';
 import { MySubscription } from '../billing/MySubscription';
 import { WalletTopupModal } from '../billing/WalletTopupModal';
-import { billing, isLive as subscriptionIsLive, useBillingIdentity, useCommunicationLedger, useCommunicationWallet, useSubscription, WALLET_CURRENCY, type BillingSubscription, type WalletLedgerRow } from '../../backend/billing';
+import { billing, isLive as subscriptionIsLive, useBillingIdentity, useCommunicationLedger, useCommunicationWallet, useRequests, useSubscription, WALLET_CURRENCY, type BillingSubscription, type WalletLedgerRow } from '../../backend/billing';
+import { auth } from '../../backend/firebase';
 import { localDemoEnabled } from '../../backend/localDemo';
 
 const CURRENCY_SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', EGP: 'E£', SAR: 'SAR ', AED: 'AED ' };
@@ -73,12 +74,16 @@ export function BillingPanel({ data, refresh, saveLocal }: { data: SettingsData;
   const idempotency = useRef<string | null>(null);
   const close = useCallback(() => { setDialog(null); setError(''); }, []);
   // Live mode: the Wallet tab is the Communication Wallet (external carrier costs), separate from plan credits.
-  const live = !localDemoEnabled;
   const identity = useBillingIdentity();
-  const uid = live ? identity.uid : null;
+  const uid = identity.uid || auth.currentUser?.uid || null;
+  const live = !!uid;
   const { data: wallet } = useCommunicationWallet(uid);
   const { data: ledger } = useCommunicationLedger(uid, wallet?.updatedAt);
   const { data: sub } = useSubscription(uid);
+  const { data: userRequests } = useRequests('requesterId', uid);
+  const pendingTopup = useMemo(() => {
+    return (userRequests || []).find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
+  }, [userRequests]);
   const [notice, setNotice] = useState('');
   const symbol = CURRENCY_SYMBOLS[wallet?.currency ?? WALLET_CURRENCY] ?? '€';
   const fmt = (value: number) => money(value, symbol);
@@ -111,14 +116,46 @@ export function BillingPanel({ data, refresh, saveLocal }: { data: SettingsData;
   }
   return <>
     <div className="st-billing-title"><span className="st-heading-icon"><Wallet size={24}/></span><div><h2>{translateText("Billing & Payments")}</h2><p>{translateText("Manage your subscription, wallet balance and usage for AI, communication and other services.")}</p></div></div>
-    <nav className="st-billing-tabs" aria-label={translateText("Billing navigation")}>{localizeNode(billingTabs.map(item => <button key={item.name} aria-current={tab === item.name ? 'page' : undefined} className={tab === item.name ? 'active' : ''} onClick={() => { setTab(item.name); setParams(p => { if (item.name === 'Payment Methods') p.set('tab', 'payment-methods'); else p.delete('tab'); return p; }, { replace: true }); }}><item.icon size={16}/>{localizeNode(item.name)}</button>))}</nav>
+    <nav className="st-billing-tabs" aria-label={translateText("Billing navigation")}>{localizeNode(billingTabs.map(item => <button key={item.name} aria-current={tab === item.name ? 'page' : undefined} className={tab === item.name ? 'active' : ''} onClick={() => setTab(item.name)}><item.icon size={16}/>{localizeNode(item.name)}</button>))}</nav>
     {localizeNode(!settingsApiEnabled && <p className="st-demo-note">{translateText("Preview data · Connect the billing service to enable payments and see your live balance.")}</p>)}
     {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
     {localizeNode(notice && !dialog && <p className="st-note" role="status">{localizeNode(notice)}</p>)}
-    {localizeNode(tab === 'Wallet' && <div className="st-wallet-top"><Card className="st-balance-card"><span className="st-wallet-orb"><Wallet size={31}/></span><div><small>{translateText("Wallet Balance")}</small><strong>{localizeNode(fmt(balance))}</strong><p>{translateText("Available credits to use across all services.")}</p></div><div className="st-balance-actions"><button className="st-primary" onClick={() => { idempotency.current = crypto.randomUUID(); setDialog('credits'); }}><Plus size={15}/>{translateText("Add Credits")}</button><div className="st-balance-recharge"><button className="st-link" onClick={() => rechargeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><RefreshCw size={13}/>{translateText("Auto Recharge")}</button><Toggle label="Auto Recharge" checked={recharge.enabled} onChange={enabled => setRecharge({ ...recharge, enabled })}/></div></div></Card><Card className="st-plan-card"><span className="st-crown"><Crown size={23}/></span><div><small>{translateText("Current Plan")}</small><h3>{localizeNode(planView.name)} {localizeNode(planView.active && <Badge>{translateText("Active")}</Badge>)}</h3><b>{localizeNode(money(planView.price, planSymbol).replace('.00', ''))} <span>{translateText("/ month")}</span></b><p>{translateText("Renews on ")}{localizeNode(planView.renewal)}</p></div><button className="st-secondary" disabled={busy} onClick={() => { if (live) setTab('Subscription'); else void subscription(); }}>{translateText("Manage Subscription ")}<ArrowRight size={14}/></button></Card></div>)}
+    {localizeNode(tab === 'Wallet' && pendingTopup && (
+      <div className="mb-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+            <Clock size={20} className="animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                {translateText('Top-Up Request Pending Review')}
+              </h4>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/80 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                {translateText('Awaiting Approval')}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {translateText('You requested a wallet top-up of')} <strong className="text-slate-900 dark:text-slate-100 font-bold">€{(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0).toFixed(2)}</strong> {translateText('via')} <span className="font-semibold text-slate-800 dark:text-slate-200">{pendingTopup.paymentMethod || 'Manual Transfer'}</span> {translateText('on')} {new Date(pendingTopup.createdAt).toLocaleDateString()}. {translateText('Your request is being reviewed by administration. You cannot send another top-up request until this request is approved or rejected.')}
+            </p>
+            {pendingTopup.transactionId && (
+              <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                {translateText('Reference:')} {pendingTopup.transactionId}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="shrink-0 flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100/90 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
+            <Clock size={13} />
+            <span>{translateText('In Review')}</span>
+          </span>
+        </div>
+      </div>
+    ))}
+    {localizeNode(tab === 'Wallet' && <div className="st-wallet-top"><Card className="st-balance-card"><span className="st-wallet-orb"><Wallet size={31}/></span><div><small>{translateText("Wallet Balance")}</small><strong>{localizeNode(fmt(balance))}</strong><p>{translateText("Available credits to use across all services.")}</p></div><div className="st-balance-actions"><button className="st-primary" disabled={!!pendingTopup} title={pendingTopup ? translateText('Top-up request awaiting approval') : undefined} onClick={() => { if (pendingTopup) return; idempotency.current = crypto.randomUUID(); setDialog('credits'); }}>{pendingTopup ? <><Clock size={14}/>{translateText("Top-Up In Review…")}</> : <><Plus size={15}/>{translateText("Add Credits")}</>}</button><div className="st-balance-recharge"><button className="st-link" onClick={() => rechargeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><RefreshCw size={13}/>{translateText("Auto Recharge")}</button><Toggle label="Auto Recharge" checked={recharge.enabled} onChange={enabled => setRecharge({ ...recharge, enabled })}/></div></div></Card><Card className="st-plan-card"><span className="st-crown"><Crown size={23}/></span><div><small>{translateText("Current Plan")}</small><h3>{localizeNode(planView.name)} {localizeNode(planView.active && <Badge>{translateText("Active")}</Badge>)}</h3><b>{localizeNode(money(planView.price, planSymbol).replace('.00', ''))} <span>{translateText("/ month")}</span></b><p>{translateText("Renews on ")}{localizeNode(planView.renewal)}</p></div><button className="st-secondary" disabled={busy} onClick={() => { if (live) setTab('Subscription'); else void subscription(); }}>{translateText("Manage Subscription ")}<ArrowRight size={14}/></button></Card></div>)}
     {localizeNode(tab === 'Wallet' && <div className="st-wallet-grid"><div className="st-wallet-main">{localizeNode(usage())}{localizeNode(table())}</div><aside className="st-wallet-side">
-      <section ref={creditsRef}><Card title={translateText("Add Credits")} description="Top up your wallet to continue using all services."><div className="st-credit-amounts">{localizeNode([10, 25, 50, 100].map(n => <button key={n} className={n === amount ? 'active' : ''} aria-pressed={n === amount} onClick={() => setAmount(n)}>€{localizeNode(n)}</button>))}</div><button className="st-primary st-full" onClick={() => { idempotency.current = crypto.randomUUID(); setDialog('credits'); }}>{translateText("Add €")}{localizeNode(amount)}{translateText(" Credits ")}<ArrowRight size={15}/></button></Card></section>
-      <Card title={translateText("Payment Methods")} description="Manage your payment methods for adding credits." action={<button className="st-secondary small" onClick={() => setDialog('method')}><Plus size={13}/>{translateText("Add Payment Method")}</button>}><div className="st-payment-methods">{localizeNode(data.paymentMethods.map(m => <div className="st-payment-method" key={m.id}><span className={`st-payment-logo ${m.kind}`}>{localizeNode(m.kind === 'card' ? <b>{translateText("VISA")}</b> : m.kind === 'paypal' ? <b>{translateText("P")}</b> : <Landmark size={19}/>)}</span><span><b>{localizeNode(m.name)}</b><small>{localizeNode(m.detail)}</small></span>{localizeNode(data.defaultMethod === m.id ? <Badge tone="purple">{translateText("Default")}</Badge> : <button className="st-secondary small" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await settingsRequest('/billing/payment-methods/default', { id: m.id }); await refresh(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>{translateText("Set as default")}</button>)}</div>))}</div>{localizeNode(!data.paymentMethods.length && <p className="st-note">{translateText("No payment methods added yet.")}</p>)}</Card>
+      <section ref={creditsRef}><Card title={translateText("Add Credits")} description="Top up your wallet to continue using all services."><div className="st-credit-amounts">{localizeNode([10, 25, 50, 100].map(n => <button key={n} className={n === amount ? 'active' : ''} aria-pressed={n === amount} disabled={!!pendingTopup} onClick={() => setAmount(n)}>€{localizeNode(n)}</button>))}</div><button className="st-primary st-full" disabled={!!pendingTopup} title={pendingTopup ? translateText('Top-up request awaiting approval') : undefined} onClick={() => { if (pendingTopup) return; idempotency.current = crypto.randomUUID(); setDialog('credits'); }}>{pendingTopup ? translateText('Awaiting Admin Approval') : `${translateText("Add €")}${amount}${translateText(" Credits ")}`}{!pendingTopup && <ArrowRight size={15}/>}</button></Card></section>
       <section ref={rechargeRef}><Card title={translateText("Auto Recharge")} description="Automatically add credits when your balance is low." action={<Toggle label="Enable Auto Recharge" checked={recharge.enabled} onChange={enabled => setRecharge({ ...recharge, enabled })}/>}><div className="st-recharge-fields"><Field label="When balance is below"><Select disabled={!recharge.enabled} value={String(recharge.below)} onChange={value => setRecharge({ ...recharge, below: value })} options={[5, 10, 20, 50].map(n => ({ value: String(n), label: `€${n}` }))} /></Field><Field label="Add this amount"><Select disabled={!recharge.enabled} value={String(recharge.amount)} onChange={value => setRecharge({ ...recharge, amount: value })} options={[10, 25, 50, 100].map(n => ({ value: String(n), label: `€${n}` }))} /></Field><Field label="Payment method"><Select disabled={!recharge.enabled} value={String(recharge.method)} onChange={value => setRecharge({ ...recharge, method: value })} options={data.paymentMethods.filter(m => m.kind !== 'bank').map(m => ({ value: String(m.id), label: `${m.name}${m.kind === 'card' ? ' •••• 4242' : ''}` }))} /></Field></div><button className="st-soft-button st-full" disabled={busy} onClick={async () => { setBusy(true); setError(''); setNotice(''); try { if (live) { const result = await billing<{ wallet?: { autoRecharge?: typeof recharge } }>('saveWalletSettings', { autoRecharge: recharge }); if (result.wallet?.autoRecharge) setRecharge(result.wallet.autoRecharge); setNotice('Wallet settings saved.'); } else if (settingsApiEnabled) { await settingsRequest('/billing/recharge', recharge, 'PATCH'); await refresh(); } else { await saveLocal({ ...data, recharge }); } } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>{localizeNode(busy ? 'Saving…' : 'Save Settings')}</button></Card></section>
     </aside></div>)}
     {tab === 'Payment Methods' && <PaymentMethodsPanel/>}

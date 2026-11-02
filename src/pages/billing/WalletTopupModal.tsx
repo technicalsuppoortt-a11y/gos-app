@@ -2,12 +2,13 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { 
   Wallet, Landmark, CreditCard, UploadCloud, CheckCircle2, ShieldCheck, 
   X, Copy, Check, Info, AlertCircle, Eye, Trash2, ZoomIn, 
-  Sparkles, Tag, ArrowRight, CheckCircle
+  Sparkles, Tag, ArrowRight, CheckCircle, Clock
 } from 'lucide-react';
 import { 
   billing, 
   WALLET_CURRENCY, 
   useBillingIdentity, 
+  useRequests,
   type BillingCoupon 
 } from '../../backend/billing';
 import { usePaymentMethods, type PaymentMethod } from '../../backend/paymentMethods';
@@ -60,6 +61,11 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   const { busy, run } = useAction();
   const identity = useBillingIdentity();
   const { methods: savedMethods, loading: methodsLoading } = usePaymentMethods();
+  const uid = identity.uid || auth.currentUser?.uid || null;
+  const { data: userRequests } = useRequests('requesterId', uid);
+  const pendingTopup = useMemo(() => {
+    return (userRequests || []).find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
+  }, [userRequests]);
 
   // Selected Amount & Custom Numeric Input
   const [selectedPreset, setSelectedPreset] = useState<number | null>(() => 
@@ -118,12 +124,12 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
         currency,
         context: 'wallet_topup',
       });
-      if (res?.valid && res.coupon) {
+      if ((res?.valid || res?.coupon) && res?.coupon) {
         setCouponState({
           status: 'valid',
           coupon: res.coupon,
           discount: res.discount ?? 0,
-          creditBonus: res.creditBonus ?? 0,
+          creditBonus: res.creditBonus ?? (res as any).bonus ?? 0,
         });
       } else {
         setCouponState({
@@ -284,6 +290,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   };
 
   const handleSubmit = async () => {
+    if (pendingTopup) return;
     if (!selectedMethod) return;
     if (!isAmountValid) {
       alert(c.t('Please enter a valid amount (minimum €5.00).', 'يرجى إدخال مبلغ صالح (الحد الأدنى 5.00 يورو).'));
@@ -408,13 +415,18 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
               <button
                 type="button"
                 className="bl-btn primary"
-                disabled={!isAmountValid || busy === 'topup'}
+                disabled={!isAmountValid || busy === 'topup' || !!pendingTopup}
                 onClick={handleSubmit}
               >
                 {busy === 'topup' ? (
                   <>
                     <Spinner size={14} />
                     <span>{c.t('Processing…', 'جاري المعالجة…')}</span>
+                  </>
+                ) : pendingTopup ? (
+                  <>
+                    <Clock size={15} />
+                    <span>{c.t('Awaiting Admin Approval', 'بانتظار موافقة الإدارة')}</span>
                   </>
                 ) : (
                   <>
@@ -456,7 +468,29 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="space-y-6">
+            {pendingTopup && (
+              <div className="p-4.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-start gap-3.5 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <Clock size={19} className="animate-pulse" />
+                </div>
+                <div className="text-xs leading-relaxed flex-1">
+                  <div className="font-bold text-sm text-amber-900 dark:text-amber-100 mb-1 flex items-center gap-2">
+                    <span>{c.t('Pending Top-Up Request Under Review', 'طلب شحن سابق قيد المراجعة')}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-300">
+                      {c.t('Awaiting Approval', 'بانتظار الموافقة')}
+                    </span>
+                  </div>
+                  <p className="text-slate-700 dark:text-slate-300">
+                    {c.t(
+                      `You already have a pending top-up request for €${(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0).toFixed(2)} submitted on ${new Date(pendingTopup.createdAt).toLocaleDateString()} via ${pendingTopup.paymentMethod || 'Manual Transfer'}. You cannot send another top-up request until your previous request is approved or rejected by an administrator.`,
+                      `لديك بالفعل طلب شحن بقيمة €${(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0).toFixed(2)} تم إرساله بتاريخ ${new Date(pendingTopup.createdAt).toLocaleDateString()} عبر ${pendingTopup.paymentMethod || 'التحويل اليدوي'}. لا يمكنك إرسال طلب شحن آخر حتى يتم اعتماد أو رفض طلبك السابق من قِبل الإدارة.`
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: Top-Up Configuration & Payment Method */}
             <div className="lg:col-span-7 space-y-6">
               {/* Amount Selection */}
@@ -888,6 +922,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                 </div>
               </div>
             </div>
+          </div>
           </div>
         )}
       </Modal>

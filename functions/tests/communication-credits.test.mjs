@@ -167,7 +167,7 @@ test('non-billable carrier status releases the hold', async () => {
 });
 
 // ── Wallet top-ups through the billing engine (plan credits stay untouched) ──
-test('wallet top-up is approved by the provider, debits the agency wallet and never touches plan credits', async () => {
+test('wallet top-up is approved by the provider, credits client wallet directly without debiting agency wallet, and never touches plan credits', async () => {
   const rows = new Map([
     ['users/agency', { role: 'ADMIN' }], ['users/client', { role: 'USER', supportParentId: 'agency' }],
     ['billingWallets/client', { id: 'client', balance: 2250, providerId: 'agency' }],
@@ -186,7 +186,7 @@ test('wallet top-up is approved by the provider, debits the agency wallet and ne
   assert.equal(dup.duplicate, true);
   await executeBilling('decideRequest', { requestId: request.id, decision: 'approve' }, agency, store, NOW);
   assert.equal(rows.get('communicationWallets/client').balance, 50);
-  assert.equal(rows.get('communicationWallets/agency').balance, 50);
+  assert.equal(rows.get('communicationWallets/agency').balance, 100);
   assert.equal(rows.get('billingWallets/client').balance, 2250);
   const { entries } = await executeBilling('walletLedger', {}, client, store, NOW);
   assert.equal(entries.length, 1);
@@ -261,7 +261,7 @@ test('instant gateway wallet top-up approves immediately and credits the wallet'
   assert.equal(request.status, 'approved');
   assert.equal(request.paymentType, 'gateway');
   assert.equal(rows.get('communicationWallets/client').balance, 75);
-  assert.equal(rows.get('communicationWallets/agency').balance, 125);
+  assert.equal(rows.get('communicationWallets/agency').balance, 200);
 });
 
 test('coupon lifecycle: creation, validation, percentage discount, and release on rejection', async () => {

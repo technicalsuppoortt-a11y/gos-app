@@ -1,4 +1,15 @@
 /* Keep breadcrumb text inside its share of the navbar without clipping menus. */
+.layout-header:not(.discount-flow-header){height:auto;max-height:none;flex-basis:auto!important}
+.layout-header .layout-header-title{flex:1 1 240px;min-width:min(220px,100%);overflow:visible}
+.layout-header .layout-header-title>button{flex-shrink:0}
+.layout-header .layout-header-breadcrumb{flex:1 1 0;min-width:0;overflow:hidden;flex-wrap:nowrap}
+.layout-header .layout-header-breadcrumb>h1{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.layout-header .layout-header-breadcrumb>span,.layout-header .layout-header-breadcrumb>i{flex-shrink:0}
+.layout-header .layout-header-actions{flex:0 1 auto;min-width:0;flex-wrap:wrap;row-gap:6px}
+.layout-balance-badges{display:flex;align-items:center;flex:0 0 auto;gap:6px;white-space:nowrap}
+@media(max-width:1200px){.layout-header .layout-search{width:clamp(90px,10vw,150px)}.layout-header .layout-header-user>span:nth-child(2),.layout-header .layout-header-user>svg{display:none}}
+@media(max-width:1000px){.layout-header .layout-header-breadcrumb>span,.layout-header .layout-header-breadcrumb>span+i{display:none}.layout-header .layout-search{display:none}.layout-header{gap:10px}}
+@media(max-width:1000px){.layout-header:not(.discount-flow-header){flex-wrap:wrap;height:auto;max-height:none;flex-basis:auto!important;gap:8px;padding-block:8px}.layout-header:not(.discount-flow-header) .layout-header-title{flex-basis:100%}.layout-header:not(.discount-flow-header) .layout-header-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}.layout-header .layout-balance-badges{margin-inline-end:auto}}
 .product-workspace-header .layout-header-title{flex:1;min-width:0;overflow:hidden}
 .product-workspace-header .layout-header-title>button{flex-shrink:0}
 .product-workspace-header .layout-header-breadcrumb{flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden}

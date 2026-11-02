@@ -330,12 +330,12 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
         currency: plan.currency,
         context: isAddon ? 'addon' : 'plan',
       });
-      if (res?.valid && res.coupon) {
+      if ((res?.valid || res?.coupon) && res?.coupon) {
         setCouponState({
           status: 'valid',
           coupon: res.coupon,
           discount: res.discount ?? 0,
-          creditBonus: res.creditBonus ?? 0,
+          creditBonus: res.creditBonus ?? (res as any).bonus ?? 0,
         });
       } else {
         setCouponState({

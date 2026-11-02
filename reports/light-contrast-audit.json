@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 135,
+  "utilityOccurrences": 203,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 199,
+      "line": 200,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 210,
+      "line": 211,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 258,
+      "line": 259,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 264,
+      "line": 265,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 266,
+      "line": 267,
       "utility": "text-gray-400"
     },
     {
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 126,
+      "line": 127,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 134,
+      "line": 135,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 137,
+      "line": 138,
       "utility": "text-slate-400"
     },
     {
@@ -285,6 +285,341 @@
       "file": "src/pages/auth/ResetPasswordPage.tsx",
       "line": 379,
       "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 356,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 379,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 389,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 397,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 407,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 415,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 429,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 436,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 446,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 463,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 475,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 509,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 526,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 552,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 574,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 602,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 617,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 695,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 714,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 752,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 792,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 812,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 854,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 860,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 883,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 901,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 939,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1037,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1195,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1265,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1284,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1305,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1381,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1384,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1406,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1426,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1433,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1559,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1574,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1575,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1579,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1588,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1589,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1595,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1602,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1603,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1616,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1617,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1623,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1662,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1701,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1711,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/AdminBillingHub.tsx",
+      "line": 1740,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 461,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 465,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 498,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 525,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 548,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 617,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 640,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 674,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 726,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 740,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 764,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 768,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 865,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 913,
+      "utility": "text-slate-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
@@ -644,6 +979,11 @@
     {
       "file": "src/pages/PrivacyPage.tsx",
       "line": 102,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/settings/BillingPanel.tsx",
+      "line": 142,
       "utility": "text-slate-500"
     },
     {

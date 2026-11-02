@@ -17,6 +17,9 @@ export interface SelectProps {
   className?: string;
   triggerClassName?: string;
   icon?: React.ElementType;
+  id?: string;
+  name?: string;
+  required?: boolean;
 }
 
 const emptyValue = '__gos_empty_option__';
@@ -30,7 +33,7 @@ export function Select({
   placeholder = 'Select an option',
   className = '',
   triggerClassName = '',
-  icon: Icon
+  icon: Icon, id, name, required
 }: SelectProps) {
   useUILanguage();
   const portal = useSelectPortal();
@@ -44,13 +47,16 @@ export function Select({
         value={value || (items.some(option => option.value === '') ? emptyValue : '')}
         onValueChange={next => onChange(next === emptyValue ? '' : next)}
         disabled={disabled}
+        name={name}
+        required={required}
         onOpenChange={portal.onOpenChange}
       >
         <RadixSelect.Trigger
           ref={portal.trigger}
+          id={id}
           aria-label={translateText(label || placeholder)}
           className={twMerge(
-            'flex items-center gap-2 w-full min-w-0 min-h-[40px]',
+            'ui-select-trigger flex items-center gap-2 w-full min-w-0 min-h-[40px]',
             'rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-600 dark:bg-[#192033]',
             'text-sm font-medium text-slate-900 dark:text-slate-100 text-start',
             'transition-all duration-200 ease-in-out',
@@ -66,7 +72,7 @@ export function Select({
           <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             <RadixSelect.Value placeholder={translateText(placeholder)}>{localizeNode(selected?.label)}</RadixSelect.Value>
           </span>
-          <RadixSelect.Icon className="flex-none text-slate-500 transition-transform duration-200 ease-in-out data-[state=open]:rotate-180">
+          <RadixSelect.Icon data-select-chevron className="flex-none text-slate-500 transition-transform duration-200 ease-in-out">
             <ChevronDown size={16} />
           </RadixSelect.Icon>
         </RadixSelect.Trigger>

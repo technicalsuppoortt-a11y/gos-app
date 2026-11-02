@@ -8,6 +8,7 @@ import { gosApi } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
 import { useAgentConfiguration } from '../backend/useAgentConfiguration';
 import { GosPlayground } from './GosPlayground';
+import { KnowledgeWorkflow } from './KnowledgeWorkflow';
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -1561,61 +1562,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     </section>
   );
   const renderKnowledgeTab = () => (
-    <section className="af-panel af-full-panel">
-      <div className="af-panel-heading">
-        <div>
-          <h2>{translateText("Knowledge Base")}{localizeNode(" ")}
-            <span className="af-count-badge">
-              {localizeNode(knowledgeItems.length)}{translateText(" sources")}</span>
-          </h2>
-          <p>{translateText("Sources available to the assistant; add a file, text snippet, or instructions.")}</p>
-        </div>
-        <button
-          className="af-button-primary"
-          onClick={() => {
-            setKnowledgeType("text");
-            setKnowledgeFile(null);
-            setKnowledgeName("");
-            setKnowledgeValue("");
-            setKnowledgeFileName("");
-            setModal("knowledge-source");
-          }}
-        >
-          <Plus size={14} />{translateText(" Add source")}</button>
-      </div>
-      <button className="af-button-secondary" disabled={api.loading} onClick={api.retry}>Refresh sources</button>
-      {api.loading && <div className="af-knowledge-loading" role="status" aria-label="Loading knowledge sources"><i/><i/><i/></div>}
-      {!api.loading && !api.error && !knowledgeItems.length && <p className="af-safety-note">Add your first source to train the assistant.</p>}
-      <div className="af-knowledge-grid">
-        {localizeNode(knowledgeItems.map((item) => {
-          const Icon = knowledgeIconFor(item.type);
-          return (
-            <div key={item.id}>
-              <span className="af-template-icon af-tone-violet">
-                <Icon size={16} />
-              </span>
-              <span>
-                <b>{localizeNode(item.name)}</b>{item.status && <small className={`af-source-status af-source-${item.status}`} role="status">{item.status}</small>}
-                <small>{localizeNode(item.detail)}</small>
-              </span>
-              <button
-                className="af-icon-button"
-                title={translateText("Remove source")}
-                disabled={api.loading || uploading}
-                onClick={async () => {
-                  setUploading(true);
-                  try { await gosApi.deleteSource(item.id); api.retry(); showToast.success(item.name + ' removed.'); }
-                  catch (e) { showToast.error((e as Error).message); }
-                  finally { setUploading(false); }
-                }}
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          );
-        }))}
-      </div>
-    </section>
+    <KnowledgeWorkflow
+      sources={api.sources} loading={api.loading} error={api.error}
+      refresh={api.retry} assistant={api.assistant} saving={api.saving}
+      updateAssistant={api.updateAssistant}
+      assistantName={assistantProfile.name} conversations={metrics.conversations}
+      onTest={() => setModal('test')}
+      onConnect={() => { setSelectedChannel('whatsapp'); setModal('channel'); }}
+    />
   );
   const renderTemplatesTab = () => (
     <section className="af-panel af-full-panel">
@@ -1970,7 +1924,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           </div>
         </section>
       );
-    if (tab === "Knowledge") return renderKnowledgeTab();
+    if (tab === "Knowledge") return null;
     if (tab === "Templates") return renderTemplatesTab();
     if (tab === "Automations") return renderAutomationTab();
     if (tab === "Settings") return renderSettingsTab();
@@ -2072,8 +2026,11 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         </div>
       </div>
       {localizeNode(renderKpis())}
+      <div hidden={tab !== 'Knowledge'} className="flex-1 min-h-0 w-full overflow-y-auto">
+        {renderKnowledgeTab()}
+      </div>
       <AnimatePresence mode="wait">
-        <motion.div
+        {tab !== 'Knowledge' && <motion.div
           className="flex-1 min-h-0 w-full h-full flex flex-col"
           key={tab}
           initial={{ opacity: 0, y: 10 }}
@@ -2086,7 +2043,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             : tab === "Conversations"
               ? renderConversationTab()
               : renderOtherTab())}
-        </motion.div>
+        </motion.div>}
       </AnimatePresence>
       {selectedLead && (
         <div

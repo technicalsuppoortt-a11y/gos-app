@@ -120,7 +120,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
 
   // View Coupon Details Modal State
   const [viewingCoupon, setViewingCoupon] = useState<BillingCoupon | null>(null);
-  const [copiedCouponCode, setCopiedCouponCode] = useState(false);
+  const [copiedCouponCode, setCopiedCouponCode] = useState<string | null>(null);
 
   // Compute coupon redemptions, unique users, and financial impact
   const viewingCouponRedemptions = useMemo(() => {
@@ -155,9 +155,9 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    setCopiedCouponCode(true);
+    setCopiedCouponCode(code);
     showToast.success(c.t('Coupon code copied to clipboard!', 'تم نسخ كود الخصم إلى الحافظة!'));
-    setTimeout(() => setCopiedCouponCode(false), 2000);
+    setTimeout(() => setCopiedCouponCode(null), 2000);
   };
 
   // Ledger Filter State
@@ -168,7 +168,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
   // Handle Approve Top-up
   const handleApproveTopup = async (req: BillingRequest) => {
     await run(`approve_${req.id}`, async () => {
-      await billing('decideRequest', { requestId: req.id, decision: 'approved' });
+      await billing('decideRequest', { requestId: req.id, decision: 'approve' });
       setAnalyticsRevision(r => r + 1);
     }, c.t('Top-up approved and credited to wallet.', 'تمت الموافقة على الشحن وإضافة الرصيد للمحفظة.'));
   };
@@ -179,7 +179,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
     await run(`reject_${rejectingRequest.id}`, async () => {
       await billing('decideRequest', { 
         requestId: rejectingRequest.id, 
-        decision: 'rejected',
+        decision: 'reject',
         reason: rejectReason.trim() || c.t('Payment verification failed', 'تعذر التحقق من الدفع') 
       });
       setRejectingRequest(null);
@@ -834,9 +834,19 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 <div key={cpn.id} className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 font-mono font-bold text-sm text-purple-700 dark:text-purple-300">
-                        {cpn.code}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCode(cpn.code)}
+                        className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 font-mono font-bold text-sm text-purple-700 dark:text-purple-300 transition-all flex items-center gap-1.5 group cursor-pointer"
+                        title={c.t('Click to copy coupon code', 'انقر لنسخ كود الخصم')}
+                      >
+                        <span>{cpn.code}</span>
+                        {copiedCouponCode === cpn.code ? (
+                          <Check size={13} className="text-emerald-500 animate-in zoom-in-50" />
+                        ) : (
+                          <Copy size={13} className="text-purple-400 group-hover:text-purple-600 dark:text-purple-400 transition-colors" />
+                        )}
+                      </button>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {cpn.type === 'percent' ? `${cpn.value}% OFF` : cpn.type === 'fixed' ? `€${cpn.value} OFF` : `+€${cpn.value} BONUS`}
                       </span>
@@ -875,6 +885,25 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCode(cpn.code)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+                      title={c.t('Copy coupon code', 'نسخ كود الخصم')}
+                    >
+                      {copiedCouponCode === cpn.code ? (
+                        <>
+                          <Check size={13} className="text-emerald-500" />
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">{c.t('Copied!', 'تم النسخ!')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={13} className="text-slate-500 dark:text-slate-400" />
+                          <span>{c.t('Copy', 'نسخ')}</span>
+                        </>
+                      )}
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => setViewingCoupon(cpn)}
@@ -1463,8 +1492,8 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   onClick={() => handleCopyCode(viewingCoupon.code)}
                   className="bl-btn"
                 >
-                  {copiedCouponCode ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                  <span>{copiedCouponCode ? c.t('Copied!', 'تم النسخ!') : c.t('Copy Code', 'نسخ الكود')}</span>
+                  {copiedCouponCode === viewingCoupon.code ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  <span>{copiedCouponCode === viewingCoupon.code ? c.t('Copied!', 'تم النسخ!') : c.t('Copy Code', 'نسخ الكود')}</span>
                 </button>
                 <button
                   type="button"
@@ -1492,7 +1521,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                     className="p-1.5 rounded-lg border border-purple-200 dark:border-purple-800 hover:bg-white dark:hover:bg-slate-800 text-purple-700 dark:text-purple-300 transition-colors"
                     title={c.t('Copy code', 'نسخ الكود')}
                   >
-                    {copiedCouponCode ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
+                    {copiedCouponCode === viewingCoupon.code ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
                   </button>
 
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${

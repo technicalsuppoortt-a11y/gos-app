@@ -440,7 +440,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   const store = buffered(base);
   const role = actor.role;
 
-  const providerOf = account => account.role === 'ADMIN' ? PLATFORM : account.role === 'USER' ? (account.supportParentId || fail('failed-precondition', 'Your account is not linked to a provider yet. Contact support.')) : fail('permission-denied', 'This account cannot hold a subscription.');
+  const providerOf = account => account.role === 'ADMIN' ? PLATFORM : account.role === 'USER' ? (account.supportParentId || PLATFORM) : PLATFORM;
   const ownerOf = () => role === 'SUPER_ADMIN' ? PLATFORM : role === 'ADMIN' ? actor.uid : fail('permission-denied', 'Only administrators can manage plans.');
   const canDecide = providerId => providerId === PLATFORM ? role === 'SUPER_ADMIN' : actor.uid === providerId || role === 'SUPER_ADMIN';
   const identifier = (value, label) => (typeof value === 'string' && value && !value.includes('/') && value.length <= 200) ? value : fail('invalid-argument', `Provide a valid ${label}.`);
@@ -467,18 +467,15 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       balance_after: wallet.balance, actor_id: actor.uid, created_at: now, updated_at: now, ...fields,
     });
   }
-  /** Credit a Communication Wallet. Admin-funded top-ups debit the Admin wallet (the platform supply is unlimited). */
+  /**
+   * Credit a Communication Wallet.
+   * Top-ups are funded with real money (bank transfer, e-wallets, or gateway payments)
+   * verified by the Admin. Once approved, the client wallet is credited directly without
+   * inspecting, requiring, or debiting the approving Admin's communication wallet balance.
+   */
   async function creditCommunicationWallet(account, providerId, value, currency, description, extra = {}) {
     const wallet = await commWallet(account.uid, account.role, providerId);
     if (wallet.currency !== currency) fail('failed-precondition', `This wallet uses ${wallet.currency}; the top-up was requested in ${currency}.`);
-    if (providerId !== PLATFORM) {
-      const pw = await commWallet(providerId, 'ADMIN', PLATFORM);
-      const available = round4(pw.balance - (pw.held ?? 0));
-      if (available < value) fail('failed-precondition', `Insufficient communication balance in the provider wallet: ${value} ${currency} required, ${available} available. Top up the agency wallet from the platform first.`);
-      pw.balance = round4(pw.balance - value);
-      commEntry(pw, { usage_type: 'transfer_out', amount: -value, balance_after: pw.balance, description: `${description} · client ${account.name || account.uid}`, counterparty_id: account.uid, ...extra });
-      saveCommWallet(pw);
-    }
     wallet.balance = round4(wallet.balance + value);
     wallet.lifetimeTopup = round4((wallet.lifetimeTopup ?? 0) + value);
     wallet.lowBalance = round4(wallet.balance - (wallet.held ?? 0)) < (wallet.lowBalanceThreshold ?? 0);
@@ -709,8 +706,21 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const code = normalizeCouponCode(rawCode);
     if (!code) return null;
     if (!COUPON_CODE.test(code)) fail('not-found', 'This coupon code is not valid.');
-    const coupon = await store.get(`billingCoupons/${couponDocId(providerId, code)}`);
-    if (!coupon || coupon.ownerId !== providerId || coupon.status !== 'active') fail('not-found', 'This coupon code is not valid.');
+    let coupon = await store.get(`billingCoupons/${couponDocId(providerId, code)}`);
+    if (!coupon && providerId !== PLATFORM) {
+      coupon = await store.get(`billingCoupons/${couponDocId(PLATFORM, code)}`);
+    }
+    if (!coupon && actor?.uid) {
+      coupon = await store.get(`billingCoupons/${couponDocId(actor.uid, code)}`);
+    }
+    if (!coupon) {
+      const candidates = await store.query('billingCoupons', 'code', code);
+      coupon = candidates.find(c => c && c.status === 'active' && (c.ownerId === providerId || c.ownerId === PLATFORM || c.ownerId === actor?.uid || c.createdBy === actor?.uid));
+      if (!coupon && candidates.length > 0) {
+        coupon = candidates.find(c => c && c.status === 'active');
+      }
+    }
+    if (!coupon || coupon.status !== 'active') fail('not-found', 'This coupon code is not valid.');
     if (coupon.active === false) fail('failed-precondition', 'This coupon is currently paused.');
     if (coupon.startsAt && coupon.startsAt > now) fail('failed-precondition', 'This coupon is not active yet.');
     if (coupon.expiresAt && coupon.expiresAt <= now) fail('failed-precondition', 'This coupon has expired.');
@@ -929,13 +939,16 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (!request) fail('not-found', 'Request not found.');
       if (!canDecide(request.providerId)) fail('permission-denied', 'You cannot decide on this request.');
       if (request.status !== 'pending') fail('failed-precondition', 'This request was already processed.');
-      if (data.decision === 'reject') {
+      const rawDecision = typeof data.decision === 'string' ? data.decision.toLowerCase().trim() : '';
+      const isReject = rawDecision === 'reject' || rawDecision === 'rejected';
+      const isApprove = rawDecision === 'approve' || rawDecision === 'approved';
+      if (isReject) {
         const reason = text(data.reason, 300, 'Rejection reason', true);
         await releaseCoupon(request);
         writeRequest(request.id, { ...request, status: 'rejected', reason, decidedAt: now, decidedBy: actor.uid });
         return { success: true };
       }
-      if (data.decision !== 'approve') fail('invalid-argument', 'Choose approve or reject.');
+      if (!isApprove) fail('invalid-argument', 'Choose approve or reject.');
       const reason = text(data.reason, 300, 'Reason', false);
       if (request.type === 'wallet_topup') {
         const target = await store.get(`users/${request.requesterId}`);
@@ -1051,10 +1064,22 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       const id = `topup_${actor.uid}_${key}`;
       const existing = await store.get(`billingRequests/${id}`);
       if (existing) return { request: existing, duplicate: true };
+      const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
+
+      // Prevent sending new top-up request until admin approves or rejects previous pending request
+      if (!isGatewayInstant) {
+        const pendingList = await store.query('billingRequests', 'requesterId', actor.uid);
+        let activePending = pendingList.find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
+        if (!activePending && actor.email) {
+          const emailList = await store.query('billingRequests', 'requesterEmail', actor.email);
+          activePending = emailList.find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
+        }
+        if (activePending) fail('failed-precondition', 'You already have a pending top-up request awaiting approval.');
+      }
+
       const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, 'wallet_topup', value, currency) : null;
       const payable = resolved ? resolved.payable : value;
       const creditAmount = round2(value + (resolved?.bonus ?? 0));
-      const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
       const paymentMethod = text(data.paymentMethod, 60, 'Payment method') || (isGatewayInstant ? 'gateway' : 'manual');
       const receiptUrl = cleanReceipt(data.receiptUrl || data.receipt || '');
       const receiptName = text(data.receiptName, 200, 'Receipt file name') || '';
@@ -1151,8 +1176,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (!resolved) fail('invalid-argument', 'Enter a coupon code.');
       const { coupon } = resolved;
       return {
+        valid: true,
         coupon: { code: coupon.code, type: coupon.type, value: coupon.value, currency: coupon.currency, description: coupon.description, expiresAt: coupon.expiresAt },
-        subtotal: resolved.subtotal, discount: resolved.discount, bonus: resolved.bonus, payable: resolved.payable, currency,
+        subtotal: resolved.subtotal, discount: resolved.discount, bonus: resolved.bonus, creditBonus: resolved.bonus, payable: resolved.payable, currency,
       };
     },
 

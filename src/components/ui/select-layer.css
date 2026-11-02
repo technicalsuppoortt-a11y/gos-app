@@ -18,3 +18,23 @@
 @keyframes select-layer-open { from { opacity: 0; } to { opacity: 1; } }
 @keyframes select-layer-close { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { :is(.bk-select-content,.aw-select-popup,.commerce-select-content,.adm-select-popup,.ui-select-panel) { animation: none !important; } }
+
+/* Shared dashboard select surfaces. Layout and controlled values stay with each field. */
+:root{--select-accent:var(--gp-primary,#7c3aed);--select-surface:var(--gp-surface,#fff);--select-ink:var(--gp-text,#1e293b);--select-border:var(--gp-border,#e2e8f0);--select-hover:#f5f3ff;--select-selected:#ede9fe;--select-muted:#64748b}
+:root.dark{--select-accent:var(--gp-primary,#c4b5fd);--select-surface:var(--gp-surface,#192033);--select-ink:var(--gp-text,#e2e8f0);--select-border:var(--gp-border,#334155);--select-hover:#302547;--select-selected:#3b2b59;--select-muted:#94a3b8}
+.bk-date-month-select{flex:1;min-width:0}.bk-date-year-select{flex:0 0 82px;min-width:0}.bk-date-month :is(.bk-date-month-select,.bk-date-year-select) .ui-select-trigger{padding:5px 7px;min-height:30px;border-radius:7px;font-size:11px}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.crm-custom-select-trigger,.gos-combo-trigger){
+  min-width:0;border:1px solid var(--select-border);border-radius:10px;background:var(--select-surface);color:var(--select-ink);box-shadow:0 1px 2px #0f172a06;
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.crm-custom-select-trigger,.gos-combo-trigger):hover:not(:disabled){border-color:var(--select-accent);box-shadow:0 2px 7px #7c3aed0c}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.crm-custom-select-trigger,.gos-combo-trigger):is([data-state=open],[aria-expanded=true],:focus-visible){border-color:var(--select-accent);outline:2px solid color-mix(in srgb,var(--select-accent) 22%,transparent);outline-offset:2px;box-shadow:0 0 0 3px #7c3aed09}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.crm-custom-select-trigger,.gos-combo-trigger):disabled{opacity:.5;cursor:not-allowed}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger) > :last-child{flex-shrink:0;margin-inline-start:auto;transition:transform .18s ease;color:var(--select-muted)}
+:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger)[data-state=open] > :last-child{transform:rotate(180deg)}
+:root :is(.ui-select-panel,.commerce-select-content,.bk-select-content,.aw-select-popup,.adm-select-popup,.af-select-popover,.crm-select-content,.crm-custom-select-popup,.gos-combo-panel){border:1px solid var(--select-border);border-radius:12px;background:var(--select-surface);color:var(--select-ink);box-shadow:0 14px 40px #0f172a1c,0 3px 10px #0f172a0b;transform-origin:var(--radix-select-content-transform-origin);padding:5px}
+:root :is(.ui-select-panel,.commerce-select-content,.bk-select-content,.aw-select-popup,.adm-select-popup,.af-select-popover,.crm-select-content,.crm-custom-select-popup,.gos-combo-panel) [role=option]{border-radius:7px;outline:0;transition:background-color .12s ease,color .12s ease}
+:root :is(.ui-select-panel,.commerce-select-content,.bk-select-content,.aw-select-popup,.adm-select-popup,.af-select-popover,.crm-select-content,.crm-custom-select-popup,.gos-combo-panel) [role=option]:is([data-highlighted],:focus-visible){background:var(--select-hover);color:var(--select-ink)}
+:root :is(.ui-select-panel,.commerce-select-content,.bk-select-content,.aw-select-popup,.adm-select-popup,.af-select-popover,.crm-select-content,.crm-custom-select-popup,.gos-combo-panel) [role=option]:is([data-state=checked],[aria-selected=true]){background:var(--select-selected);color:var(--select-accent);font-weight:600}
+:root :is(.ui-select-panel,.commerce-select-content,.bk-select-content,.aw-select-popup,.adm-select-popup,.crm-select-content) [data-radix-select-viewport]{padding:2px}
+@media(prefers-reduced-motion:reduce){:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.gos-combo-trigger),:root :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger)>:last-child{transition:none}}

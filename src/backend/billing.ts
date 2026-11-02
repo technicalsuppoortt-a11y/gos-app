@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
-import { backendError, callBackend, db } from './firebase';
+import { auth, backendError, callBackend, db } from './firebase';
 import { isDemoAccount } from './demoContext';
 import type { RootState } from '../store';
 import type { AddonItem, BillingCoupon, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, CommunicationWallet, CouponScope, CouponType, LedgerEntry, ProviderBillingSettings, WalletAnalyticsReport, WalletLedgerRow } from '../../functions/billing-engine.js';
@@ -51,10 +51,11 @@ function useCollection<T>(name: string, field: string, value: string | null | un
 /** Who am I in the billing hierarchy, and who provides my plans? */
 export function useBillingIdentity() {
   const { user, role } = useSelector((state: RootState) => state.auth);
-  const uid = user?.id ?? null;
+  const uid = user?.id || auth.currentUser?.uid || null;
+  const email = user?.email || auth.currentUser?.email || '';
   const profile = useDoc<{ supportParentId?: string }>(uid && role === 'USER' ? `users/${uid}` : null);
   const providerId = role === 'ADMIN' ? PLATFORM : role === 'USER' ? (profile.data?.supportParentId || (isDemoAccount ? 'demo-admin' : '')) : '';
-  return { uid, role, name: user?.name ?? '', providerId, loading: role === 'USER' && profile.loading };
+  return { uid, role, name: user?.name ?? '', email, providerId, loading: role === 'USER' && profile.loading };
 }
 
 export const useSubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null);
@@ -101,6 +102,20 @@ export function useRequests(field: 'requesterId' | 'providerId', value: string |
   const state = useCollection<BillingRequest>('billingRequests', field, value);
   const data = useMemo(() => [...state.data].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [state.data]);
   return { ...state, data };
+}
+
+/** Merged user requests by UID and Email to ensure full fidelity */
+export function useUserRequests(uid: string | null, email?: string | null) {
+  const byId = useCollection<BillingRequest>('billingRequests', 'requesterId', uid);
+  const byEmail = useCollection<BillingRequest>('billingRequests', 'requesterEmail', email && email !== uid ? email : null);
+  const data = useMemo(() => {
+    const map = new Map<string, BillingRequest>();
+    [...byId.data, ...byEmail.data].forEach(r => {
+      if (r && r.id) map.set(r.id, r);
+    });
+    return Array.from(map.values()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  }, [byId.data, byEmail.data]);
+  return { data, loading: byId.loading && byEmail.loading, error: byId.error || byEmail.error };
 }
 
 /** Lazily applies expiries and monthly credit cycles for the signed-in account. */

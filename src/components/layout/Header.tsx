@@ -165,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           <button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button>
           <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" title={translateText(productName)} aria-current="page">{localizeNode(productName)}</h1>
         </nav>
-      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb flex-shrink-0"><span>{translateText("Workspace")}</span><i>/</i><h1 className="whitespace-nowrap">{localizeNode(pageTitle)}</h1></div>)}
+      ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb min-w-0 flex-1"><span>{translateText("Workspace")}</span><i>/</i><h1 className="min-w-0 truncate" title={translateText(pageTitle)}>{localizeNode(pageTitle)}</h1></div>)}
     </div>
     <div className="layout-header-actions">
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
@@ -227,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       </button>
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
-      <DemoAccountControl/><CreditBadge/><WalletBadge/>
+      <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
       <button type="button" onClick={() => navigate('/dashboard/settings/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
       <NotificationCenter/>
       
