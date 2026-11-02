@@ -4,11 +4,11 @@ import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { backendError, callBackend, db } from './firebase';
 import { isDemoAccount } from './demoContext';
 import type { RootState } from '../store';
-import type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, LedgerEntry, ProviderBillingSettings } from '../../functions/billing-engine.js';
+import type { AddonItem, BillingCoupon, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, CommunicationWallet, CouponScope, CouponType, LedgerEntry, ProviderBillingSettings, WalletAnalyticsReport, WalletLedgerRow } from '../../functions/billing-engine.js';
 import { DEFAULT_BILLING_SETTINGS, PLATFORM } from '../../functions/billing-engine.js';
 
-export type { AddonItem, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, Currency, LedgerEntry, LocalizedText, ProviderBillingSettings } from '../../functions/billing-engine.js';
-export { DEFAULT_BILLING_SETTINGS, PLATFORM, TOOL_IDS, CHANNEL_IDS, BILLING_TYPES, CURRENCIES, DEFAULT_TRIAL, effectiveStatus, entitledTools, isLive } from '../../functions/billing-engine.js';
+export type { AddonItem, BillingCoupon, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, CommunicationWallet, CouponScope, CouponType, Currency, LedgerEntry, LocalizedText, ProviderBillingSettings, WalletAnalyticsReport, WalletLedgerRow } from '../../functions/billing-engine.js';
+export { DEFAULT_BILLING_SETTINGS, PLATFORM, TOOL_IDS, CHANNEL_IDS, COMMUNICATION_CHANNELS, WALLET_CURRENCY, BILLING_TYPES, CURRENCIES, DEFAULT_TRIAL, COUPON_TYPES, COUPON_SCOPES, normalizeCouponCode, effectiveStatus, entitledTools, isLive } from '../../functions/billing-engine.js';
 
 type Live<T> = { data: T; loading: boolean; error: string };
 
@@ -109,3 +109,65 @@ export function useBillingRefresh(enabled: boolean) {
     if (enabled) void billing('refresh').catch(() => undefined);
   }, [enabled]);
 }
+
+/** Communication Wallet (external carrier costs) — separate from plan credits shown in the header. */
+export const useCommunicationWallet = (uid: string | null) => useDoc<CommunicationWallet>(uid ? `communicationWallets/${uid}` : null);
+
+/** Sanitized Communication Wallet history; re-fetched whenever the wallet document changes. */
+export function useCommunicationLedger(uid: string | null, revision: string | undefined) {
+  const [state, setState] = useState<Live<WalletLedgerRow[]> & { key: string | null }>({ data: [], loading: true, error: '', key: null });
+  const key = uid ? `${uid}:${revision ?? ''}` : null;
+  useEffect(() => {
+    if (!uid) return;
+    let active = true;
+    billing<{ entries: WalletLedgerRow[] }>('walletLedger')
+      .then(result => { if (active) setState({ data: Array.isArray(result.entries) ? result.entries : [], loading: false, error: '', key }); })
+      .catch(error => { if (active) setState({ data: [], loading: false, error: (error as Error).message, key }); });
+    return () => { active = false; };
+  }, [uid, key]);
+  if (!uid) return { data: [] as WalletLedgerRow[], loading: false, error: '' };
+  return state.key === key ? state : { ...state, loading: true };
+}
+
+/** Provider coupons list (for Admin / Super Admin coupons management). */
+export function useProviderCoupons(ownerId: string | null) {
+  const { uid } = useBillingIdentity();
+  const primary = useCollection<BillingCoupon>('billingCoupons', 'ownerId', ownerId);
+  const secondary = useCollection<BillingCoupon>(
+    'billingCoupons',
+    'ownerId',
+    ownerId && uid && ownerId !== uid ? uid : null
+  );
+  const created = useCollection<BillingCoupon>(
+    'billingCoupons',
+    'createdBy',
+    uid ? uid : null
+  );
+
+  const data = useMemo(() => {
+    const map = new Map<string, BillingCoupon>();
+    [...primary.data, ...secondary.data, ...created.data].forEach(c => {
+      if (c && c.id && c.status === 'active') {
+        map.set(c.id, c);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  }, [primary.data, secondary.data, created.data]);
+
+  return { data, loading: primary.loading && secondary.loading && created.loading, error: primary.error || secondary.error || created.error };
+}
+
+/** Aggregated Communication Wallet analytics for the admin billing hub. */
+export function useWalletAnalytics(days = 30, revision?: string | number) {
+  const [state, setState] = useState<Live<WalletAnalyticsReport | null> & { key: string | null }>({ data: null, loading: true, error: '', key: null });
+  const key = `${days}:${revision ?? ''}`;
+  useEffect(() => {
+    let active = true;
+    billing<WalletAnalyticsReport>('walletAnalytics', { days })
+      .then(result => { if (active) setState({ data: result, loading: false, error: '', key }); })
+      .catch(error => { if (active) setState({ data: null, loading: false, error: (error as Error).message, key }); });
+    return () => { active = false; };
+  }, [days, key]);
+  return state.key === key ? state : { ...state, loading: true };
+}
+

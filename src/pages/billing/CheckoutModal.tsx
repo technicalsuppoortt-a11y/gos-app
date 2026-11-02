@@ -6,9 +6,9 @@ import {
   CreditCard, Landmark, UploadCloud, CheckCircle2, ShieldCheck, 
   Package, Gem, FileText, Lock, X, Copy, Check, Info, AlertCircle, Settings,
   Eye, Trash2, ZoomIn, Image as ImageIcon, Plus, Minus, PackagePlus, Sliders,
-  ChevronDown, ChevronUp, Sparkles, Coins
+  ChevronDown, ChevronUp, Sparkles, Coins, Tag
 } from 'lucide-react';
-import { billing, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, usePlans, type AddonItem, type BillingPlan } from '../../backend/billing';
+import { billing, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, usePlans, type AddonItem, type BillingPlan, type BillingCoupon } from '../../backend/billing';
 import { usePaymentMethods } from '../../backend/paymentMethods';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -309,6 +309,78 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
     ? (isDynamicStandalone ? dynamicStandaloneCredits : (plan?.credits || 0) * qty)
     : ((plan?.credits || 0) * qty) + attachedAddons.reduce((sum, item) => sum + (item.credits || 0), 0);
 
+  // Coupon state
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [couponState, setCouponState] = useState<{
+    status: 'idle' | 'checking' | 'valid' | 'invalid';
+    coupon?: BillingCoupon;
+    discount: number;
+    creditBonus: number;
+    error?: string;
+  }>({ status: 'idle', discount: 0, creditBonus: 0 });
+
+  const validateCouponCode = async () => {
+    const raw = couponCodeInput.trim().toUpperCase();
+    if (!raw) return;
+    setCouponState(prev => ({ ...prev, status: 'checking', error: undefined }));
+    try {
+      const res = await billing<{ valid: boolean; coupon?: BillingCoupon; discount?: number; creditBonus?: number; reason?: string }>('validateCoupon', {
+        code: raw,
+        amount: totalAmount,
+        currency: plan.currency,
+        context: isAddon ? 'addon' : 'plan',
+      });
+      if (res?.valid && res.coupon) {
+        setCouponState({
+          status: 'valid',
+          coupon: res.coupon,
+          discount: res.discount ?? 0,
+          creditBonus: res.creditBonus ?? 0,
+        });
+      } else {
+        setCouponState({
+          status: 'invalid',
+          discount: 0,
+          creditBonus: 0,
+          error: res?.reason || c.t('Coupon code is invalid or expired', 'كود الخصم غير صالح أو منتهي الصلاحية'),
+        });
+      }
+    } catch (err) {
+      setCouponState({
+        status: 'invalid',
+        discount: 0,
+        creditBonus: 0,
+        error: (err as Error).message || c.t('Failed to validate coupon', 'تعذر التحقق من كود الخصم'),
+      });
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCodeInput('');
+    setCouponState({ status: 'idle', discount: 0, creditBonus: 0 });
+  };
+
+  useEffect(() => {
+    if (couponState.status === 'valid' && couponState.coupon && totalAmount > 0) {
+      const coupon = couponState.coupon;
+      let disc = 0;
+      let bonus = 0;
+      if (coupon.type === 'percent') {
+        disc = Math.round(((totalAmount * coupon.value) / 100) * 100) / 100;
+      } else if (coupon.type === 'fixed') {
+        disc = Math.min(totalAmount, coupon.value);
+      } else if (coupon.type === 'credit_bonus') {
+        bonus = coupon.value;
+      }
+      setCouponState(prev => ({ ...prev, discount: disc, creditBonus: bonus }));
+    }
+  }, [totalAmount]);
+
+  const discount = couponState.status === 'valid' ? couponState.discount : 0;
+  const finalAmount = Math.max(0, Math.round((totalAmount - discount) * 100) / 100);
+  const creditBonus = couponState.status === 'valid' ? couponState.creditBonus : 0;
+  const finalCredits = totalCredits + creditBonus;
+
   const copyToClipboard = (text: string) => {
     if (!text) return;
     void navigator.clipboard.writeText(text);
@@ -433,11 +505,11 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           quantity: isDynamicStandalone ? standaloneDynamicUnits : qty,
           mainPlanPrice,
           addons: attachedAddons,
-          totalAmount,
+          totalAmount: finalAmount,
           note,
           isDynamic: isDynamicStandalone,
           credits: isDynamicStandalone ? dynamicStandaloneCredits : (plan.credits ? plan.credits * qty : undefined),
-          price: isDynamicStandalone ? dynamicStandaloneCost : totalAmount,
+          price: isDynamicStandalone ? dynamicStandaloneCost : finalAmount,
           currency: plan.currency,
           paymentMethod: selectedMethod.name,
           paymentType: 'manual',
@@ -448,6 +520,10 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           receiptName: receiptFile?.name || 'bank_transfer_receipt',
           fileName: receiptFile?.name || 'bank_transfer_receipt',
           transactionId: txId,
+          couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+          subtotal: totalAmount,
+          discount,
+          creditAmount: finalCredits,
         });
 
         // Cache receipt locally so it is immediately visible even if cloud function stripped it
@@ -496,16 +572,20 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           quantity: isDynamicStandalone ? standaloneDynamicUnits : qty,
           mainPlanPrice,
           addons: attachedAddons,
-          totalAmount,
+          totalAmount: finalAmount,
           note,
           isDynamic: isDynamicStandalone,
           credits: isDynamicStandalone ? dynamicStandaloneCredits : (plan.credits ? plan.credits * qty : undefined),
-          price: isDynamicStandalone ? dynamicStandaloneCost : totalAmount,
+          price: isDynamicStandalone ? dynamicStandaloneCost : finalAmount,
           currency: plan.currency,
           paymentMethod: selectedMethod.name,
           paymentType: 'gateway',
           gatewayPaid: true,
           transactionId: `gtw_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+          subtotal: totalAmount,
+          discount,
+          creditAmount: finalCredits,
         });
 
         setCompleted({
@@ -546,7 +626,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
               {busy ? <Spinner /> : <ShieldCheck size={16} />}
               {selectedMethod?.type === 'manual'
                 ? c.t('Submit Transfer & Receipt', 'تأكيد التحويل وإرسال الإيصال')
-                : c.t(`Pay ${c.money(totalAmount, plan.currency)} Now`, `دفع ${c.money(totalAmount, plan.currency)} الآن`)}
+                : c.t(`Pay ${c.money(finalAmount, plan.currency)} Now`, `دفع ${c.money(finalAmount, plan.currency)} الآن`)}
             </button>
           </div>
         )
@@ -566,7 +646,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', fontSize: 13, fontWeight: 600 }}>
             <span>{c.pick(plan.name)}</span>
             <span>·</span>
-            <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(totalAmount, plan.currency)}</span>
+            <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(finalAmount, plan.currency)}</span>
           </div>
         </div>
       ) : (
@@ -758,11 +838,20 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-muted)' }}>
                   <span>{c.t('Total credits granted', 'إجمالي الكريديت الممنوح')}</span>
-                  <b>{c.num(totalCredits)} {c.t('Credits', 'نقطة')}</b>
+                  <b>{c.num(finalCredits)} {c.t('Credits', 'نقطة')}{creditBonus > 0 ? ` (+${c.num(creditBonus)} bonus)` : ''}</b>
                 </div>
+                {discount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-success)', fontWeight: 600 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <Tag size={13} />
+                      {c.t('Coupon discount', 'خصم الكوبون')}
+                    </span>
+                    <span>-{c.money(discount, plan.currency)}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800, color: 'var(--bl-text)', paddingBlockStart: 6, borderBlockStart: '1px dashed var(--bl-border)' }}>
                   <span>{c.t('Total due', 'المبلغ الإجمالي')}</span>
-                  <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(totalAmount, plan.currency)}</span>
+                  <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(finalAmount, plan.currency)}</span>
                 </div>
               </div>
             </div>
@@ -968,6 +1057,75 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                 )}
               </div>
             )}
+
+            {/* Coupon / Promo Code Input Card */}
+            <div style={{ padding: 14, borderRadius: 12, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', display: 'grid', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+                  <Tag size={14} color="var(--bl-accent)" />
+                  {c.t('Coupon or Promo Code', 'كود الخصم أو الترويج')}
+                </label>
+                {couponState.status === 'valid' && (
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <X size={12} />
+                    {c.t('Remove', 'إزالة')}
+                  </button>
+                )}
+              </div>
+
+              {couponState.status === 'valid' && couponState.coupon ? (
+                <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--bl-success-soft)', border: '1px solid var(--bl-success)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <CheckCircle2 size={16} color="var(--bl-success)" />
+                    <div>
+                      <b style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--bl-success)' }}>{couponState.coupon.code}</b>
+                      <div style={{ fontSize: 11, color: 'var(--bl-muted)' }}>
+                        {couponState.coupon.type === 'percent'
+                          ? c.t(`${couponState.coupon.value}% discount applied`, `تم تطبيق خصم ${couponState.coupon.value}%`)
+                          : couponState.coupon.type === 'fixed'
+                          ? c.t(`${c.money(couponState.coupon.value, plan.currency)} discount applied`, `تم تطبيق خصم ${c.money(couponState.coupon.value, plan.currency)}`)
+                          : c.t(`+${couponState.coupon.value} bonus credits!`, `+${couponState.coupon.value} رصيد إضافي هدية!`)}
+                      </div>
+                    </div>
+                  </div>
+                  <strong style={{ fontSize: 12, color: 'var(--bl-success)' }}>
+                    {discount > 0 ? `-${c.money(discount, plan.currency)}` : `+${couponState.creditBonus} credits`}
+                  </strong>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="text"
+                      className="bl-input"
+                      placeholder={c.t('Enter coupon code…', 'أدخل كود الخصم…')}
+                      value={couponCodeInput}
+                      onChange={e => setCouponCodeInput(e.target.value.toUpperCase())}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void validateCouponCode(); } }}
+                      style={{ fontSize: 12.5, textTransform: 'uppercase', fontFamily: 'monospace' }}
+                    />
+                    <button
+                      type="button"
+                      className="bl-btn sm"
+                      disabled={!couponCodeInput.trim() || couponState.status === 'checking'}
+                      onClick={() => void validateCouponCode()}
+                    >
+                      {couponState.status === 'checking' ? <Spinner size={13} /> : c.t('Apply', 'تطبيق')}
+                    </button>
+                  </div>
+                  {couponState.status === 'invalid' && couponState.error && (
+                    <span style={{ fontSize: 11, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <AlertCircle size={12} />
+                      {couponState.error}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Dedicated Live Receipt Preview Section (When Manual Transfer is selected) */}
             {selectedMethod?.type === 'manual' && (

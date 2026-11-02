@@ -11,7 +11,7 @@ import { storage } from '../../backend/firebase';
 import { billing, effectiveStatus, useLedger, type BillingPlan, type BillingRequest, type BillingSubscription, type BillingWallet, type LedgerEntry } from '../../backend/billing';
 import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, downloadCsv, initials, useAction, useCopy, type Copy } from './ui';
 
-const typeLabel = (request: BillingRequest, c: Copy) => request.type === 'addon' ? c.t('Add-on', 'إضافة') : request.type === 'renewal' ? c.t('Renewal', 'تجديد') : c.t('New plan', 'باقة جديدة');
+const typeLabel = (request: BillingRequest, c: Copy) => request.type === 'wallet_topup' ? c.t('Wallet top-up', 'شحن المحفظة') : request.type === 'addon' ? c.t('Add-on', 'إضافة') : request.type === 'renewal' ? c.t('Renewal', 'تجديد') : c.t('New plan', 'باقة جديدة');
 
 export function getRawReceiptUrl(request?: Record<string, any> | null): string {
   if (!request) return '';

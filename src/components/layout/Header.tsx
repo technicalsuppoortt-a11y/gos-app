@@ -16,6 +16,7 @@ import { NotificationCenter } from './NotificationCenter';
 import './product-header.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
+import { WalletBadge } from './WalletBadge';
 import { DemoAccountControl } from './DemoAccountControl';
 import { isLive, useSubscription } from '../../backend/billing';
 
@@ -226,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       </button>
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
-      <DemoAccountControl/><CreditBadge/>
+      <DemoAccountControl/><CreditBadge/><WalletBadge/>
       <button type="button" onClick={() => navigate('/dashboard/settings/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
       <NotificationCenter/>
       

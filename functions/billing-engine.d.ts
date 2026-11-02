@@ -98,14 +98,109 @@ export interface LedgerEntry {
   counterpartyId?: string; refType?: string; refId?: string;
 }
 
+/** Pay-as-you-go wallet for external carrier costs. Independent from plan credits (`BillingWallet`). */
+export interface CommunicationWallet {
+  id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; currency: Currency;
+  balance: number; held: number; lifetimeTopup: number; lifetimeSpent: number;
+  lowBalanceThreshold: number; lowBalance: boolean;
+  autoRecharge: { enabled: boolean; below: string; amount: string; method: string };
+  createdAt: string; updatedAt: string;
+}
+
+/** Wallet history row as returned by the `walletLedger` operation (provider cost/margin only for administrators). */
+export interface WalletLedgerRow {
+  id: string; created_at: string; usage_type: string; channel: string | null; description: string;
+  status: 'pending' | 'confirmed' | 'failed' | 'reversed'; amount: number; balance_after: number | null;
+  currency: Currency; quantity: number; customer_charge: number; provider_cost?: number; margin?: number;
+}
+
+export type CouponType = 'percent' | 'fixed' | 'credit_bonus';
+export type CouponScope = 'wallet_topup' | 'plan' | 'addon';
+
+export interface BillingCoupon {
+  id: string;
+  ownerId: string;
+  code: string;
+  type: CouponType;
+  value: number;
+  currency: Currency | null;
+  appliesTo: CouponScope[];
+  description: string;
+  minAmount: number;
+  startsAt: string | null;
+  expiresAt: string | null;
+  maxRedemptions: number;
+  perUserLimit: number;
+  redemptions: number;
+  active: boolean;
+  status: 'active' | 'archived';
+  createdBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WalletAnalyticsReport {
+  scope: 'platform' | 'provider';
+  summary: {
+    period_days: number;
+    total_customer_charge: number;
+    total_provider_cost: number;
+    total_margin: number;
+    margin_percentage: number;
+    total_topups: number;
+    total_messages: number;
+    total_wallet_balance: number;
+    total_wallet_held: number;
+    active_accounts_count: number;
+    total_accounts_count: number;
+  };
+  by_channel: Array<{
+    channel: string;
+    count: number;
+    customer_charge: number;
+    provider_cost: number;
+    margin: number;
+    percentage: number;
+    margin_percentage: number;
+  }>;
+  daily_trend: Array<{
+    date: string;
+    customer_charge: number;
+    provider_cost: number;
+    margin: number;
+    count: number;
+    topups: number;
+  }>;
+  accounts: Array<{
+    id: string;
+    name?: string;
+    email?: string;
+    role?: string;
+    currency: Currency;
+    balance: number;
+    held: number;
+    total_spend: number;
+    provider_cost: number;
+    margin: number;
+    messages_count: number;
+    last_active: string | null;
+  }>;
+  entries: Array<WalletLedgerRow & { subscriber_id?: string; tenant_id?: string; account_name?: string }>;
+}
+
 export interface BillingRequest {
   id: string; requesterId: string; requesterRole: 'ADMIN' | 'USER'; requesterName: string; requesterEmail: string;
-  providerId: string; type: 'plan' | 'renewal' | 'addon'; planId: string; quantity: number;
+  providerId: string; type: 'plan' | 'renewal' | 'addon' | 'wallet_topup'; planId: string; quantity: number; currency?: Currency;
   plan: { name: LocalizedText; kind: PlanKind; price: number; currency: Currency; credits: number; billingType: BillingPlan['billingType']; addonType: AddonType | null };
   mainPlanPrice?: number;
   addons?: AddonItem[];
+  subtotal?: number;
+  discount?: number;
   totalAmount?: number;
-  total: number; note: string; status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  total: number;
+  creditAmount?: number;
+  coupon?: { id: string; code: string; type: CouponType; value: number; discount: number; bonus: number } | null;
+  note: string; status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   createdAt: string; decidedAt?: string; decidedBy?: string; reason?: string;
   paymentMethod?: string; paymentType?: 'manual' | 'gateway';
   receiptUrl?: string; receiptPath?: string; imageUrl?: string; fileUrl?: string;
@@ -116,6 +211,7 @@ export interface BillingActor { uid: string; role: string; name?: string; email?
 export interface BillingStore {
   get(path: string): Promise<any>;
   query(collection: string, field: string, value: unknown): Promise<any[]>;
+  list?(collection: string, options?: any): Promise<any[]>;
   id(): string;
   commit(writes: [string, any][]): void | Promise<void>;
 }
@@ -123,6 +219,18 @@ export interface BillingStore {
 export const PLATFORM: 'platform';
 export const DEFAULT_BILLING_SETTINGS: ProviderBillingSettings;
 export const CHANNEL_IDS: readonly ['ai', 'whatsapp', 'messenger', 'instagram', 'email', 'sms'];
+export const AI_CAPABILITIES: readonly ['ai'];
+export const COMMUNICATION_CHANNELS: readonly ['whatsapp', 'messenger', 'instagram', 'email', 'sms', 'webchat'];
+export const WALLET_CURRENCY: 'EUR';
+export const COUPON_TYPES: readonly ['percent', 'fixed', 'credit_bonus'];
+export const COUPON_SCOPES: readonly ['wallet_topup', 'plan', 'addon'];
+export function normalizeCouponCode(value: string): string;
+export function couponDocId(ownerId: string, code: string): string;
+export function normalizeCoupon(input: unknown, options: { ownerId: string; existing?: BillingCoupon | null; now: string }): BillingCoupon;
+export function couponEffect(coupon: BillingCoupon, subtotal: number, currency: Currency, context?: CouponScope): { subtotal: number; discount: number; bonus: number; payable: number };
+export function buildWalletAnalytics(rows: any[], wallets: any[], options?: { now?: string; days?: number }): any;
+export function round4(value: number): number;
+export function newCommunicationWallet(uid: string, role: 'ADMIN' | 'USER', providerId: string, now: string, currency?: Currency): CommunicationWallet;
 export const BILLING_TYPES: BillingType[];
 export const PLAN_KINDS: PlanKind[];
 export const ADDON_TYPES: AddonType[];

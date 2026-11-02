@@ -1,4 +1,9 @@
 // Credentials live in Secret Manager, never in readable integration documents.
+// Provider that carries each outbound channel (used for communication-credit charging).
+export const DELIVERY_PROVIDERS = Object.freeze({ email: 'resend', whatsapp: 'meta' });
+// Channels whose provider reports sent/delivered/failed via webhooks; others are confirmed on acknowledgement.
+export const STATUS_WEBHOOK_CHANNELS = Object.freeze(['whatsapp']);
+export const deliveryProvider = channel => DELIVERY_PROVIDERS[channel] ?? null;
 export async function deliverMessage(message, lead, config, credentials, fetcher = fetch) {
   let url, body, headers = { 'Content-Type': 'application/json' };
   if (message.channel === 'email') {

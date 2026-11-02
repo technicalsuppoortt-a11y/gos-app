@@ -82,6 +82,30 @@ service cloud.firestore {
     match /add_on_requests/{requestId} { allow read: if billingParty(resource.data.requesterId, resource.data.providerId); allow write: if false; }
     match /billingRequests/{requestId} { allow read: if billingParty(resource.data.requesterId, resource.data.providerId); allow write: if false; }
     match /billingSettings/{providerId} { allow read: if signedIn(); allow write: if false; }
+    match /billingCoupons/{couponId} {
+      allow read: if signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.ownerId == 'platform' ||
+        profile().role in ['ADMIN', 'SUPER_ADMIN']
+      );
+      allow write: if false;
+    }
+    match /couponRedemptions/{redemptionId} {
+      allow read: if signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.userId == request.auth.uid ||
+        profile().role in ['ADMIN', 'SUPER_ADMIN']
+      );
+      allow write: if false;
+    }
+    // Communication Wallet (external carrier costs) — separate from plan credits; server-owned.
+    match /communicationWallets/{walletId} { allow read: if signedIn() && request.auth.uid == walletId || billingParty(walletId, resource.data.providerId); allow write: if false; }
+    // Raw rows include provider_cost/margin: only the provider Admin and Super Admin read them directly.
+    // End customers receive a sanitized view through billingService `walletLedger`.
+    match /communicationLedger/{entryId} { allow read: if superAdmin() || signedIn() && (request.auth.uid == resource.data.tenant_id || request.auth.uid == resource.data.subscriber_id && profile().role == 'ADMIN'); allow write: if false; }
+    // Provider costs are never exposed to tenants.
+    match /communicationRates/{rateId} { allow read: if superAdmin(); allow write: if false; }
     match /settings/marketingTracking {
       allow read: if true;
       allow write: if signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN'] && validTracking();

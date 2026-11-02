@@ -528,3 +528,17 @@ export { publicBooking } from './public-booking.js';
 export { processScheduledActions } from './workers.js';
 export { billingSweep } from './billing-service.js';
 export { processCommerceDeliveries } from './commerce-delivery.js';
+
+// Communication delivery + Meta webhook. Enabled per project via functions/.env.<project>:
+//   ENABLE_OUTBOX=true        → requires secret MESSAGE_DELIVERY_CREDENTIALS
+//   ENABLE_META_WEBHOOK=true  → requires secrets META_APP_SECRET and META_VERIFY_TOKEN
+// Loaded lazily so their secrets are only declared when the feature is switched on.
+const outboxModule = process.env.ENABLE_OUTBOX === 'true' ? await import('./outbox.js') : null;
+export const dispatchOutbox = outboxModule?.dispatchOutbox;
+const metaWebhookEnabled = process.env.ENABLE_META_WEBHOOK === 'true';
+const metaAppSecret = metaWebhookEnabled ? defineSecret('META_APP_SECRET') : null;
+const metaVerifyToken = metaWebhookEnabled ? defineSecret('META_VERIFY_TOKEN') : null;
+const { createMetaWebhookHandler } = metaWebhookEnabled ? await import('./meta-webhook.js') : {};
+export const metaWebhook = metaWebhookEnabled
+  ? onRequest({ secrets: [metaAppSecret, metaVerifyToken], timeoutSeconds: 60 }, (req, res) => createMetaWebhookHandler({ db, appSecret: metaAppSecret.value(), verifyToken: metaVerifyToken.value() })(req, res))
+  : undefined;

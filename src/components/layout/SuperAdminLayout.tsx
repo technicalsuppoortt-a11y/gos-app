@@ -13,6 +13,7 @@ import '../../pages/admin/admin-workspace.css';
 import './super-admin.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
+import { WalletBadge } from './WalletBadge';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
@@ -140,7 +141,7 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           )}
         </div>
-        <GetAppButton/><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><CreditBadge/><NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink><button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate("/super-admin/logs")}><Bell size={17}/><i/></button><button className="sa-account" onClick={() => navigate("/super-admin/users")}><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button>
+        <GetAppButton/><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><CreditBadge/><WalletBadge/><NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink><button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate("/super-admin/logs")}><Bell size={17}/><i/></button><button className="sa-account" onClick={() => navigate("/super-admin/users")}><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button>
       </header>
       <div className="sa-content"><Outlet/></div>
     </main>
