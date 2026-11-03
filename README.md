@@ -125,3 +125,5 @@
 - Wallet
 - Move Launch brand in gos
 - Default Funnels from joe acadmy
+- Checkout payment methods for products and servics
+- make domain in settings

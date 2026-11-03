@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 83,
+  "scannedStylesheets": 88,
   "correctedDeclarations": 857,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 203,
+  "utilityOccurrences": 197,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -188,63 +188,33 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 252,
+      "line": 251,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 269,
+      "line": 268,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 273,
+      "line": 272,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 273,
+      "line": 272,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 295,
+      "line": 294,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 298,
-      "utility": "text-slate-300"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 302,
-      "utility": "text-slate-300"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 306,
-      "utility": "text-slate-300"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 313,
+      "line": 297,
       "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 316,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 319,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 322,
-      "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
@@ -883,12 +853,12 @@
     },
     {
       "file": "src/pages/GosPlayground.tsx",
-      "line": 100,
+      "line": 108,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/GosPlayground.tsx",
-      "line": 249,
+      "line": 262,
       "utility": "text-slate-400"
     },
     {
@@ -2959,7 +2929,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 170,
+      "line": 173,
       "selector": ".layout-brand-copy small",
       "before": "#85899a",
       "after": "#475569",
@@ -2967,7 +2937,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 289,
+      "line": 292,
       "selector": ".layout-nav-icon",
       "before": "#777b8e",
       "after": "#334155",
@@ -2975,7 +2945,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 430,
+      "line": 433,
       "selector": ".layout-profile-copy small",
       "before": "#9295a3",
       "after": "#475569",
@@ -2983,7 +2953,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 488,
+      "line": 491,
       "selector": ".layout-help-card small",
       "before": "#999baa",
       "after": "#475569",
@@ -2991,7 +2961,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 500,
+      "line": 503,
       "selector": ".layout-help-card>button",
       "before": "#9295a3",
       "after": "#334155",
@@ -2999,7 +2969,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 657,
+      "line": 660,
       "selector": ".layout-logout",
       "before": "#777b8b",
       "after": "#334155",
@@ -3007,7 +2977,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 787,
+      "line": 790,
       "selector": ".layout-header-title p",
       "before": "#7c8091",
       "after": "#334155",
@@ -3015,7 +2985,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 801,
+      "line": 804,
       "selector": ".layout-header-breadcrumb>span",
       "before": "#797d8f",
       "after": "#334155",
@@ -3023,7 +2993,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 806,
+      "line": 809,
       "selector": ".layout-header-breadcrumb>i",
       "before": "#b8bac5",
       "after": "#334155",
@@ -3031,7 +3001,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 976,
+      "line": 979,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -3039,7 +3009,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1036,
+      "line": 1039,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -3047,7 +3017,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1116,
+      "line": 1119,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -3055,7 +3025,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1410,
+      "line": 1413,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",

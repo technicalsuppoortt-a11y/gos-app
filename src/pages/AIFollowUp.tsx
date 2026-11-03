@@ -636,33 +636,56 @@ const Modal = ({
   children: React.ReactNode;
   close: () => void;
   width?: string;
-}) => { useUILanguage(); return ((
-  <div
-    className="af-modal-backdrop"
-    onMouseDown={(event) => {
-      if (event.target === event.currentTarget) close();
-    }}
-  >
+}) => {
+  useUILanguage();
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [close]);
+
+  return createPortal(
     <div
-      className="af-modal"
-      style={width ? { width, maxWidth: '95vw' } : undefined}
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(e) => e.stopPropagation()}
+      className="af-modal-backdrop"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        background: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'grid',
+        placeItems: 'center',
+        padding: '20px',
+      }}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
     >
-      <div className="af-modal-head">
-        <div>
-          <h3>{localizeNode(title)}</h3>
-          {subtitle && <p>{localizeNode(subtitle)}</p>}
+      <div
+        className="af-modal"
+        style={width ? { width, maxWidth: '95vw', position: 'relative', zIndex: 100000 } : { position: 'relative', zIndex: 100000 }}
+        role="dialog"
+        aria-modal="true"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="af-modal-head">
+          <div>
+            <h3>{localizeNode(title)}</h3>
+            {subtitle && <p>{localizeNode(subtitle)}</p>}
+          </div>
+          <button className="af-icon-button" onClick={close} aria-label={translateText("Close")}>
+            <X size={18} />
+          </button>
         </div>
-        <button className="af-icon-button" onClick={close} aria-label={translateText("Close")}>
-          <X size={18} />
-        </button>
+        {localizeNode(children)}
       </div>
-      {localizeNode(children)}
-    </div>
-  </div>
-)); };
+    </div>,
+    document.body
+  );
+};
 
 export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   useUILanguage();
@@ -1283,11 +1306,6 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             </div>
           </div>
           <div className="af-assistant-actions">
-            <button
-              className="af-button-primary"
-              onClick={() => setModal("test")}
-            >
-              <Sparkles size={13} />{translateText(" Test AI Assistant")}</button>
             <button
               className="af-button-secondary"
               onClick={() => {

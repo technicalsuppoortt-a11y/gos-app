@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import './sidebar-settings.css';
 import { usePhoenixBrand } from '../../backend/phoenixBrand';
+import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/workspacePreferences';
 import { settingsAliases } from '../../pages/settings/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -124,6 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
   const platformTenant = useSelector((state: RootState) => state.auth.tenant);
   const phoenixBrand = platformTenant?.id.startsWith('phoenix_') ? platformTenant : null;
   const savedBrand = usePhoenixBrand();
+  const { values: workspaceBrand } = useWorkspacePreferences();
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
@@ -182,11 +184,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           onClick={close}
           title={collapsed ? translateText("Upclick") : undefined}
         >
-          {savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
+          {workspaceBrand?.logoUrl && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <img src={workspaceBrand.logoUrl} alt={`${workspaceBrand.name} logo`} className="workspace-logo"/> : savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
             {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
           </span>}
-          {!(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
-            <span className="layout-brand-wordmark"><b>{phoenixBrand?.name || 'Upclick'}</b></span>
+          {(!workspaceBrand?.logoUrl || isDefaultBrandLogo(workspaceBrand.logoUrl)) && !(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
+            <span className="layout-brand-wordmark"><b>{workspaceBrand?.name || phoenixBrand?.name || 'Upclick'}</b></span>
             <small>{translateText("Ideas to impact")}</small>
           </div>}
         </NavLink>

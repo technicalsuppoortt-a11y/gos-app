@@ -3,6 +3,8 @@ html:has(.layout-dashboard-shell),
 body:has(.layout-dashboard-shell),
 html:has(.role-shell),
 body:has(.role-shell),
+html:has(.adm-shell),
+body:has(.adm-shell),
 html.layout-locked,
 body.layout-locked {
   height: 100% !important;
@@ -16,6 +18,7 @@ body.layout-locked {
 
 #root:has(.layout-dashboard-shell),
 #root:has(.role-shell),
+#root:has(.adm-shell),
 body.layout-locked #root {
   height: 100% !important;
   height: 100vh !important;

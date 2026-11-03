@@ -5,7 +5,7 @@ import { AdminNativeTemplateFields } from './AdminNativeTemplateFields';
 import { useRef, useState } from 'react';
 import { ArrowRight, Eye, Layers3, LayoutTemplate, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
 import { BuilderWorkspace, createBuilderDocument } from '../BuilderWorkspace';
-import { categories, industries, goals } from '../system-template-data';
+import { adminTemplateCategories as categories, industries, goals } from '../system-template-data';
 import { useUILanguage } from '../../i18n/display';
 import { AdminSelect } from './AdminSelect';
 import { LiveDialog } from './AdminLiveUI';

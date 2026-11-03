@@ -15,10 +15,11 @@ const server = initializeAdmin({ projectId }, 'rules-server');
 const db = adminFirestore(server), auth = adminAuth(server);
 const run = crypto.randomUUID().slice(0,8), clients = [];
 const denied = action => assert.rejects(action, error => error.code === 'permission-denied');
-async function client(role, tenantId, permissions = ['*']) {
+async function client(role, tenantId, permissions = ['*'], claims = {}) {
   const account = await auth.createUser({ email: `${role.toLowerCase()}-${crypto.randomUUID()}@example.com`, password: 'test-password-123' });
   await db.doc(`users/${account.uid}`).set({ id: account.uid, name: role, email: account.email, role, tenantId, status: 'Active' });
   await db.doc(`tenants/${tenantId}/members/${account.uid}`).set({ role: 'Member', active: true, permissions });
+  if (Object.keys(claims).length) await auth.setCustomUserClaims(account.uid, claims);
   const app = initializeApp({ apiKey: 'fake-api-key', projectId, authDomain: 'localhost' }, account.uid); clients.push(app);
   const session = getAuth(app); connectAuthEmulator(session, `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`, { disableWarnings: true });
   await signInWithEmailAndPassword(session, account.email, 'test-password-123');
@@ -29,6 +30,47 @@ async function client(role, tenantId, permissions = ['*']) {
 try {
   const tenantA = `rules-a-${run}`, tenantB = `rules-b-${run}`;
   const owner = await client('USER', tenantA), other = await client('USER', tenantB), admin = await client('ADMIN', tenantA), superAdmin = await client('SUPER_ADMIN', tenantA), limited = await client('USER', tenantA, ['inbox']);
+  const preferences = { values: { name: 'Tenant A', logoUrl: 'https://example.com/logo.png', theme: 'emerald', language: 'ar', currency: 'SAR', mode: 'system', timezone: 'Africa/Cairo', supportEmail: '' }, updatedBy: owner.account.uid, updatedAt: '2026-11-03' };
+  await setDoc(doc(owner.db, 'tenants', tenantA, 'preferences', 'general'), preferences);
+  await getDoc(doc(limited.db, 'tenants', tenantA, 'preferences', 'general'));
+  await denied(() => getDoc(doc(other.db, 'tenants', tenantA, 'preferences', 'general')));
+  await denied(() => setDoc(doc(limited.db, 'tenants', tenantA, 'preferences', 'general'), { ...preferences, updatedBy: limited.account.uid }));
+  await denied(() => setDoc(doc(owner.db, 'tenants', tenantA, 'preferences', 'general'), { ...preferences, values: { ...preferences.values, theme: 'arbitrary' } }));
+  await setDoc(doc(admin.db, 'dashboardBrands', admin.account.uid), { ...preferences, updatedBy: admin.account.uid });
+  await db.doc(`users/${owner.account.uid}`).update({ supportParentId: admin.account.uid });
+  await getDoc(doc(owner.db, 'dashboardBrands', admin.account.uid));
+  await denied(() => getDoc(doc(other.db, 'dashboardBrands', admin.account.uid)));
+  await denied(() => setDoc(doc(owner.db, 'dashboardBrands', owner.account.uid), preferences));
+  await setDoc(doc(owner.db, 'tenants', tenantA, 'businessAssets', 'kit'), { name: 'Media kit', category: 'Media kit', url: 'https://example.com/kit.pdf', createdBy: owner.account.uid });
+  await getDocs(collection(limited.db, 'tenants', tenantA, 'businessAssets'));
+  await denied(() => getDocs(collection(other.db, 'tenants', tenantA, 'businessAssets')));
+  await denied(() => setDoc(doc(limited.db, 'tenants', tenantA, 'businessAssets', 'kit'), { name: 'Other', category: 'Media kit', url: 'https://example.com', createdBy: limited.account.uid }));
+  await db.doc(`tenants/${tenantA}/aiUsage/response`).set({ model: 'test', totalTokens: 12 });
+  await getDocs(collection(admin.db, 'tenants', tenantA, 'aiUsage'));
+  await denied(() => setDoc(doc(owner.db, 'tenants', tenantA, 'aiUsage', 'fake'), { totalTokens: 0 }));
+  const noMembershipTenant = `unjoined-${run}`;
+  await db.doc(`tenants/${noMembershipTenant}`).set({ name: 'No Admin membership required' });
+  for (const resource of ['conversations', 'messages', 'handoffLogs', 'aiUsage', 'auditLogs', 'events', 'integrations', 'transactions']) {
+    // A missing collection is an empty successful query, never a permission fallback.
+    assert.equal((await getDocs(collection(admin.db, 'tenants', noMembershipTenant, resource))).size, 0);
+    await db.doc(`tenants/${noMembershipTenant}/${resource}/server-record`).set({ type: 'test', totalTokens: 10 });
+    assert.equal((await getDocs(collection(admin.db, 'tenants', noMembershipTenant, resource))).size, 1);
+    await getDocs(collection(superAdmin.db, 'tenants', noMembershipTenant, resource));
+    await denied(() => getDocs(collection(other.db, 'tenants', noMembershipTenant, resource)));
+  }
+  await getDocs(collection(admin.db, 'tenants'));
+  await getDocs(collection(limited.db, 'tenants', tenantA, 'handoffLogs'));
+  await denied(() => getDocs(collection(limited.db, 'tenants', tenantA, 'aiUsage')));
+  await denied(() => setDoc(doc(admin.db, 'tenants', tenantA, 'handoffLogs', 'client-write'), { status: 'Forged' }));
+  await db.doc(`users/${admin.account.uid}`).update({ status: 'Deactivated' });
+  await denied(() => getDocs(collection(admin.db, 'tenants', noMembershipTenant, 'aiUsage')));
+  await db.doc(`users/${admin.account.uid}`).update({ status: 'Active' });
+  const claimedAdmin = await client('USER', tenantA, [], {role:'ADMIN'});
+  await getDocs(collection(claimedAdmin.db, 'tenants', noMembershipTenant, 'aiUsage'));
+  await getDocs(query(collection(claimedAdmin.db, 'users'), where('role', '==', 'USER')));
+  await denied(() => getDocs(collection(claimedAdmin.db, 'users')));
+  await db.doc(`users/${claimedAdmin.account.uid}`).update({status:'Deactivated'});
+  await denied(() => getDocs(collection(claimedAdmin.db, 'tenants', noMembershipTenant, 'handoffLogs')));
   await setDoc(doc(owner.db, 'tenants', tenantA, 'products', 'product'), { name: 'Owned product' });
   const publicApp = initializeApp({ apiKey: 'fake-api-key', projectId }, `review-visitor-${run}`); clients.push(publicApp);
   const publicDb = getFirestore(publicApp), [reviewHost, reviewPort] = process.env.FIRESTORE_EMULATOR_HOST.split(':');

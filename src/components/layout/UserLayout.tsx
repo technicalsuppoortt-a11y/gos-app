@@ -15,12 +15,13 @@ import { useSubscription, isLive } from '../../backend/billing';
 import { isDemoAccount } from '../../backend/demoContext';
 import { isDemoSessionActive } from '../../demo/mode';
 import { SupportQuickChat } from '../../pages/support/SupportQuickChat';
+import { AgencyLandingSeed } from '../../backend/agencyLanding';
 // OnboardingProgress is temporarily disabled with the onboarding cycle.
 
 const userItems: SidebarItem[] = [
   { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'AI Copilot', href: '/copilot', icon: Sparkles },
-  { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/domains', '/dashboard/forms', '/funnels', '/websites', '/forms', '/domains'] },
+  { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/forms', '/funnels', '/websites', '/forms'] },
   { name: 'Inbox', href: '/inbox', icon: MessageCircle,  },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },
   { name: 'Contacts', href: '/contacts', icon: Contact, end: false, activePaths: ['/dashboard/contacts', '/contacts'] },
@@ -28,7 +29,7 @@ const userItems: SidebarItem[] = [
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations'] },
+  { name: 'Settings', href: '/settings', icon: Settings, end: false, dividerBefore: true, activePaths: ['/dashboard/integrations', '/dashboard/domains', '/domains'] },
   { name: 'Support', href: '/support', icon: MessageCircle },
 ];
 
@@ -118,7 +119,7 @@ export const UserLayout: React.FC = () => {
       {localizeNode(isBooking && <BookingTabs/>)}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         {/* Onboarding progress is temporarily disabled. */}
-        <WorkspaceData><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}><Lock size={26} /></div><h1>{isLocked ? translateText("Subscription Required") : translateText("Module access restricted")}</h1><p>{isLocked ? translateText("Your account does not have an active subscription. Please select a plan to unlock all platform tools.") : translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p>{isLocked && <button type="button" className="bl-btn primary" onClick={() => navigate('/dashboard/settings/plans')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: '#7C3AED', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', margin: '16px auto 0' }}>{translateText("View Plans & Pricing")}</button>}</section>)}</div></WorkspaceData>
+        <WorkspaceData><AgencyLandingSeed/><div key={location.pathname} className={`layout-route-content workspace-content-enter${isFullPage ? ' layout-route-content-inbox' : ''}`}>{localizeNode(permitted ? <Outlet/> : <section className="module-access-message"><div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}><Lock size={26} /></div><h1>{isLocked ? translateText("Subscription Required") : translateText("Module access restricted")}</h1><p>{isLocked ? translateText("Your account does not have an active subscription. Please select a plan to unlock all platform tools.") : translateText("Your team permissions do not include this module. Contact your workspace owner to request access.")}</p>{isLocked && <button type="button" className="bl-btn primary" onClick={() => navigate('/dashboard/settings/plans')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: '#7C3AED', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', margin: '16px auto 0' }}>{translateText("View Plans & Pricing")}</button>}</section>)}</div></WorkspaceData>
       </main>
       {localizeNode(!isFullPage && !isProductWorkspace && !isDashboard && <footer className="layout-footer"><span>{translateText("© 2025 Upclick Inc.")}</span><span className="layout-footer-status"><i/>{translateText(" All systems operational")}</span></footer>)}
     </div>

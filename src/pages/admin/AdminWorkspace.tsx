@@ -1,4 +1,6 @@
-import { AdminGeneral } from './AdminGeneral';
+import { AdminDashboard } from './AdminDashboard';
+import { WorkspaceBrandSettings } from './WorkspaceBrandSettings';
+import { AdminOperations } from './AdminOperations';
 import { AdminLiveManagement } from './AdminLiveManagement';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
@@ -12,7 +14,6 @@ import { modules, labels, templateHubTabs, type RecordRow, type Field } from './
 import { readRows, saveRows, downloadCSV } from './repository';
 import { AdminSelect } from './AdminSelect';
 import { LandingEditor } from './LandingEditor';
-import { useOnboarding } from '../onboarding/onboarding-store';
 import { PaymentMethodsPanel } from '../settings/PaymentMethodsPanel';
 import { AdminPlansPage } from '../billing/PlansPages';
 import { UserBillingSettingsPage } from '../billing/UserBillingSettingsPage';
@@ -22,7 +23,9 @@ export function AdminWorkspace() {
   const id = location.pathname.replace(/\/$/, '').split('/').at(-1) ?? 'dashboard';
   const [params] = useSearchParams();
   const module = modules.find(m => m.id === (id === 'funnels' ? 'funnels-websites' : id)) ?? modules[0];
-  if (id === 'settings') return <AdminGeneral/>;
+  if (id === 'dashboard') return <AdminDashboard/>;
+  if (id === 'settings') return <WorkspaceBrandSettings/>;
+  if (id === 'conversations' || id === 'analytics' || id === 'ai-usage') return <AdminOperations key={id} moduleId={id}/>;
   if (id === 'payments-gateways') return <PaymentMethodsPanel/>;
   if (id === 'plans') return <AdminPlansPage/>;
   if (id === 'user-billing-settings') return <UserBillingSettingsPage/>;
@@ -30,6 +33,7 @@ export function AdminWorkspace() {
     return <Navigate to="/admin/templates" replace />;
   }
   if (['funnels-websites', 'crm', 'booking', 'products', 'templates'].includes(module.id)) return <AdminLiveManagement key={module.id} moduleId={module.id}/>;
+  if (module.id === 'dashboard') return <AdminDashboard/>;
   return <Workspace key={`${module.id}-${params.get('tab') ?? '0'}`} module={module} />;
 }
 
@@ -153,7 +157,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
       {module.id === 'landing' ? (
         <LandingEditor />
       ) : module.id === 'dashboard' ? (
-        <DashboardOverview />
+        <AdminDashboard />
       ) : module.id === 'analytics' ? (
         <AnalyticsOverview />
       ) : (
@@ -508,131 +512,6 @@ function Metric({ label, value, icon, detail }: { label: string; value: string; 
       <strong>{value}</strong>
       <small>{detail ?? '—'}</small>
     </article>
-  );
-}
-
-function DashboardOverview() {
-  const onboarding = useOnboarding();
-  const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
-  const [refreshing, setRefreshing] = useState(false);
-  const [lastCheck, setLastCheck] = useState(() => new Date().toLocaleTimeString(ar ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' }));
-
-  const transactions = readRows('transactions', 0);
-  const subscriptions = readRows('plans', 1);
-  const totalRevenue = transactions.filter(r => r.status === 'Completed').reduce((n, r) => n + Number(r.amount), 0);
-  const activeTenants = subscriptions.filter(r => r.status === 'Active').length;
-  const activeUsers = onboarding.invites.filter(u => u.status === 'Active').length;
-  const money = new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-
-  const refreshStatus = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setLastCheck(new Date().toLocaleTimeString(ar ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' }));
-      setRefreshing(false);
-    }, 400);
-  };
-
-  const healthItems = [
-    { id: 'stripe', name: t('Stripe Payment Gateway', 'بوابة دفع سترايب'), type: t('Payment Gateway', 'بوابة دفع'), status: 'Connected', ping: '112ms', env: 'Sandbox' },
-    { id: 'paypal', name: t('PayPal Merchant Gateway', 'بوابة تجار باي بال'), type: t('Payment Gateway', 'بوابة دفع'), status: 'Connected', ping: '184ms', env: 'Sandbox' },
-    { id: 'postgres', name: t('Database Cluster', 'عنقود قاعدة البيانات'), type: t('Infrastructure', 'بنية تحتية'), status: 'Active', ping: '9ms', env: 'Primary PostgreSQL 16' },
-    { id: 'dns', name: t('Edge DNS & SSL Engine', 'محرك النطاقات وSSL'), type: t('Security & CDN', 'الأمان والشبكة'), status: 'Active', ping: '22ms', env: 'Cloudflare Edge' },
-    { id: 'ai-gateway', name: t('AI Inference Gateway', 'بوابة استدلال الذكاء'), type: t('AI Provider Router', 'موزع نماذج الذكاء'), status: 'Active', ping: '290ms', env: 'OpenAI / Claude' },
-    { id: 'webhooks', name: t('Webhook Event Dispatcher', 'مرسل أحداث Webhook'), type: t('Event Broker', 'وسيط الأحداث'), status: 'Active', ping: '41ms', env: '0 Queued / Live' },
-  ];
-
-  const shortcuts = [
-    { to: '/admin/tools', icon: Grid2X2, title: t('Platform Tools', 'أدوات المنصة'), desc: t('Feature flags, maintenance & utilities', 'أعلام المزايا والصيانة والأدوات') },
-    { to: '/admin/users', icon: Users, title: t('Sub Accounts', 'الحسابات الفرعية'), desc: t('Sub-accounts, roles & invites', 'حسابات الفريق والأدوار والدعوات') },
-    { to: '/admin/onboarding', icon: Rocket, title: t('Onboarding Pipeline', 'مسار التهيئة'), desc: t('Workspace setup & onboarding flow', 'إعداد مساحات العمل وخطوات التهيئة') },
-    { to: '/admin/payments-gateways', icon: CreditCard, title: t('Payment Gateways', 'طرق وبوابات الدفع'), desc: t('Stripe, PayPal & merchant payout settings', 'إعدادات سترايب وباي بال والتحويلات') },
-    { to: '/admin/domains', icon: Globe, title: t('Domains & SSL', 'النطاقات والشهادات'), desc: t('Custom domains & DNS verification', 'النطاقات المخصصة والتحقق من DNS') },
-    { to: '/admin/transactions', icon: Receipt, title: t('Transactions Ledger', 'دفتر المعاملات'), desc: t('Audited revenue records & refund control', 'سجل المدفوعات والتحكم بالاسترداد') },
-  ];
-
-  return (
-    <>
-      <div className="adm-overview-tools">
-        <div className="adm-status-strip">
-          <span className="adm-status-live-dot" />
-          <Badge value="Active" label={t('Operational Control Hub · Real-time', 'مركز التحكم التشغيلي · تحديث مباشر')} />
-          <span className="adm-status-time">{t('Updated', 'تم التحديث')}: {lastCheck}</span>
-        </div>
-        <button className="adm-btn-refresh" onClick={refreshStatus} title={t('Refresh system health', 'تحديث صحة النظام')}>
-          <RefreshCw size={13} className={refreshing ? 'adm-spin' : ''} />
-          {t('Check Status', 'فحص الحالة')}
-        </button>
-      </div>
-
-      <div className="adm-metrics">
-        <Metric label={t('Active Tenants', 'المستأجرون النشطون')} value={String(activeTenants)} icon={<Building2 size={19} />} detail={t('Across all client workspaces', 'عبر كافة مساحات عمل العملاء')} />
-        <Metric label={t('Total Revenue', 'إجمالي الإيرادات')} value={money.format(totalRevenue)} icon={<CreditCard size={19} />} detail={t('Completed ledger volume', 'حجم المدفوعات المكتملة في السجل')} />
-        <Metric label={t('Active Sub Accounts', 'الحسابات الفرعية النشطة')} value={String(activeUsers)} icon={<Users size={19} />} detail={t('From Sub Accounts', 'من الحسابات الفرعية')} />
-        <Metric label={t('System Status', 'حالة النظام')} value={t('100% Operational', '100% يعمل')} icon={<ShieldCheck size={19} />} detail={t('6 of 6 core services healthy', '6 من 6 خدمات أساسية تعمل')} />
-      </div>
-
-      <div className="adm-dashboard-grid">
-        <section className="adm-panel adm-dashboard-health">
-          <div className="adm-panel-heading">
-            <div>
-              <h2>{t('System & Gateway Health', 'صحة النظام وبوابات الدفع')}</h2>
-              <p>{t('Real-time connection states of payment processors and platform core', 'حالات اتصال بوابات الدفع والخدمات الأساسية في الوقت الفعلي')}</p>
-            </div>
-            <span className="adm-badge success"><Check size={12} />{t('All Operational', 'تعمل بالكامل')}</span>
-          </div>
-          <div className="adm-health-list">
-            {healthItems.map(item => (
-              <div key={item.id} className="adm-health-row">
-                <div className="adm-health-row-main">
-                  <span className="adm-health-dot" />
-                  <div>
-                    <strong>{item.name}</strong>
-                    <small>{item.type} · {item.env}</small>
-                  </div>
-                </div>
-                <div className="adm-health-row-meta">
-                  <span className="adm-health-ping">{item.ping}</span>
-                  <Badge value={item.status} label={ar ? (labels[item.status] ?? item.status) : item.status} />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="adm-widget-footer">
-            <Link className="adm-link" to="/admin/payments-gateways">
-              {t('Manage payment gateways', 'إدارة بوابات الدفع')}<ArrowUpRight size={14} />
-            </Link>
-            <Link className="adm-link" to="/admin/integrations">
-              {t('View integrations & webhooks', 'عرض التكاملات وWebhooks')}<ArrowUpRight size={14} />
-            </Link>
-          </div>
-        </section>
-
-        <section className="adm-panel adm-dashboard-shortcuts">
-          <div className="adm-panel-heading">
-            <div>
-              <h2>{t('Operations Shortcuts', 'اختصارات العمليات')}</h2>
-              <p>{t('Fast access to critical administrative controls & modules', 'وصول سريع لأدوات الإدارة والتحكم الأساسية')}</p>
-            </div>
-            <span className="adm-badge neutral">{shortcuts.length} {t('shortcuts', 'اختصارات')}</span>
-          </div>
-          <div className="adm-shortcuts-list">
-            {shortcuts.map(item => (
-              <Link key={item.to} className="adm-shortcut-card" to={item.to}>
-                <div className="adm-shortcut-icon">
-                  <item.icon size={18} />
-                </div>
-                <div className="adm-shortcut-text">
-                  <strong>{item.title}</strong>
-                  <p>{item.desc}</p>
-                </div>
-                <ArrowUpRight size={16} className="adm-shortcut-arrow" />
-              </Link>
-            ))}
-          </div>
-        </section>
-      </div>
-    </>
   );
 }
 

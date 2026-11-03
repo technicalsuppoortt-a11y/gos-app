@@ -23,6 +23,19 @@ function transactionStore(db, tx) {
   };
 }
 
+// Directly provisioned accounts (User Agency) skip invitation activation, so the
+// same initial-plan policy is applied at creation. Failure never blocks creation.
+export async function initializeProvisionedPlan(db, profile, at = new Date().toISOString()) {
+  try {
+    const actor = { uid: profile.uid, role: profile.role, name: profile.name, email: profile.email, supportParentId: profile.supportParentId };
+    const result = await db.runTransaction(tx => executeBilling('initializeAccountPlan', { subscriberId: profile.uid }, actor, transactionStore(db, tx), at));
+    return !!result?.assigned;
+  } catch (billingErr) {
+    console.warn('Free plan auto-assignment skipped on provisioning:', billingErr?.message);
+    return false;
+  }
+}
+
 // Only the authenticated invitee can complete activation. Password setup alone
 // does not activate an account: a successful password sign-in is required.
 export async function completeUserActivation(request, { db, auth }) {

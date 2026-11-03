@@ -41,7 +41,7 @@ export async function passwordDigest(password: string, salt: string) {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 export async function changeDemoPassword(state: SecurityState, current: string, next: string): Promise<SecurityState> {
-  if (next.length < 12) throw new Error('Use at least 12 characters.');
+  if (next.length < 8) throw new Error('Use at least 8 characters.');
   if (current === next) throw new Error('Choose a different new password.');
   const valid = state.passwordHash && state.salt ? await passwordDigest(current, state.salt) === state.passwordHash : current === 'DemoPassword123!';
   if (!valid) throw new Error('The current demo password is incorrect.');

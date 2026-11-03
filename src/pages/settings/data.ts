@@ -2,8 +2,8 @@ import { cloudStorage } from '../../backend/workspace';
 import { firebaseSettingsRequest } from '../../backend/settings';
 import { store } from '../../store';
 import { demoIntegrationRequest, localDemoEnabled, readDemo } from '../../backend/localDemo';
-import portrait from '../../assets/inbox/mohamed.jpg';
 import { getPhoenixBrand } from '../../backend/phoenixBrand';
+import { DEFAULT_BRAND_LOGO_URL, DEFAULT_BRAND_NAME, DEFAULT_SUPPORT_EMAIL } from '../../backend/workspacePreferences';
 
 export interface Profile {
   name: string; email: string; phone: string; language: string; timezone: string; dateFormat: string;
@@ -35,18 +35,60 @@ export function defaultSettings(): SettingsData {
   const { user, tenant } = store.getState().auth;
   const phoenix = getPhoenixBrand();
   return {
-    profile: { name: user?.name ?? '', email: user?.email ?? '', phone: '', language: 'English', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, dateFormat: 'DD / MM / YYYY', photo: user?.avatar ?? '', title: '', bio: '', emailNotifications: true, marketing: false, currency: 'USD' },
-    business: { name: phoenix?.brand.name || tenant?.name || '', type: phoenix?.brand.business || '', email: user?.email ?? '', phone: '', address: '', description: phoenix?.brand.description || '', color: phoenix?.brand.theme?.light.primary || '#7546f5', currency: 'USD', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, logo: phoenix?.logo || '' },
+    profile: {
+      name: user?.name || DEFAULT_BRAND_NAME,
+      email: user?.email || DEFAULT_SUPPORT_EMAIL,
+      phone: '',
+      language: 'English',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo',
+      dateFormat: 'DD / MM / YYYY',
+      photo: user?.avatar ?? '',
+      title: '',
+      bio: '',
+      emailNotifications: true,
+      marketing: false,
+      currency: 'USD',
+    },
+    business: {
+      name: phoenix?.brand.name || tenant?.name || DEFAULT_BRAND_NAME,
+      type: phoenix?.brand.business || 'Creative services',
+      email: user?.email || DEFAULT_SUPPORT_EMAIL,
+      phone: '',
+      address: '',
+      description: phoenix?.brand.description || 'All-in-one growth operating system for modern businesses.',
+      color: phoenix?.brand.theme?.light.primary || '#7546f5',
+      currency: 'USD',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo',
+      logo: phoenix?.logo || DEFAULT_BRAND_LOGO_URL,
+    },
     integrations: {}, balance: 0, transactions: [], recharge: { enabled: false, below: '', amount: '', method: '' }, defaultMethod: '', paymentMethods: [],
     plan: { name: 'No active plan', price: 0, active: false, renewal: '' }, usage: [], usagePeriod: '',
-    payment: { currency: 'USD', payout: '', receiptEmail: user?.email ?? '', invoices: true },
+    payment: { currency: 'USD', payout: '', receiptEmail: user?.email || DEFAULT_SUPPORT_EMAIL, invoices: true },
+  };
+}
+function mergeBusinessDefaults(defaults: SettingsData['business'], saved?: Partial<SettingsData['business']>): SettingsData['business'] {
+  const merged = { ...defaults, ...(saved ?? {}) };
+  return {
+    ...merged,
+    name: merged.name?.trim() || defaults.name || DEFAULT_BRAND_NAME,
+    type: merged.type?.trim() || defaults.type || 'Creative services',
+    email: merged.email?.trim() || defaults.email || DEFAULT_SUPPORT_EMAIL,
+    logo: merged.logo?.trim() || defaults.logo || DEFAULT_BRAND_LOGO_URL,
   };
 }
 export function readSettings(): SettingsData {
   const defaults = defaultSettings();
   try {
     const saved = JSON.parse(cloudStorage.getItem(settingsKey()) ?? 'null');
-    if (saved && typeof saved.profile?.name === 'string') return { ...defaults, profile: { ...defaults.profile, ...saved.profile }, business: { ...defaults.business, ...saved.business }, payment: { ...defaults.payment, ...saved.payment }, recharge: { ...defaults.recharge, ...saved.recharge } };
+    if (saved && typeof saved.profile?.name === 'string') {
+      return {
+        ...defaults,
+        profile: { ...defaults.profile, ...saved.profile, name: saved.profile.name?.trim() || defaults.profile.name },
+        business: mergeBusinessDefaults(defaults.business, saved.business),
+        payment: { ...defaults.payment, ...saved.payment },
+        recharge: { ...defaults.recharge, ...saved.recharge },
+      };
+    }
   } catch { /* Invalid or inaccessible browser storage uses safe defaults. */ }
   return defaults;
 }
@@ -57,7 +99,15 @@ export async function settingsRequest<T>(path: string, body?: unknown, method = 
   if (path === '/settings' && method === 'GET') {
     const defaults = defaultSettings();
     const saved = result as Partial<SettingsData>;
-    return { ...defaults, ...saved, profile: { ...defaults.profile, ...saved.profile }, business: { ...defaults.business, ...saved.business }, payment: { ...defaults.payment, ...saved.payment }, recharge: { ...defaults.recharge, ...saved.recharge }, integrations: { ...saved.integrations, ...(localDemoEnabled ? readDemo<Record<string, IntegrationState>>('integrations', {}) : {}) } } as T;
+    return {
+      ...defaults,
+      ...saved,
+      profile: { ...defaults.profile, ...saved.profile, name: saved.profile?.name?.trim() || defaults.profile.name },
+      business: mergeBusinessDefaults(defaults.business, saved.business),
+      payment: { ...defaults.payment, ...saved.payment },
+      recharge: { ...defaults.recharge, ...saved.recharge },
+      integrations: { ...saved.integrations, ...(localDemoEnabled ? readDemo<Record<string, IntegrationState>>('integrations', {}) : {}) },
+    } as T;
   }
   return result;
 }

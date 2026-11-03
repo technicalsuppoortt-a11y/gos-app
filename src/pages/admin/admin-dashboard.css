@@ -1,0 +1,10 @@
+.adm-live-dashboard .adm-metric strong{font-size:22px;overflow-wrap:anywhere}
+.adm-live-dashboard .adm-health-row{gap:14px;align-items:flex-start}
+.adm-live-dashboard .adm-health-row-main{min-width:0}
+.adm-live-dashboard .adm-health-row-main small{white-space:normal;overflow-wrap:anywhere;line-height:1.6}
+.adm-live-dashboard .adm-live-note{margin:12px 20px;color:var(--adm-muted);font-size:12px;line-height:1.7}
+.adm-live-dashboard .adm-live-monitors{display:flex;flex-wrap:wrap;gap:12px 28px;padding:0 20px 16px}
+.adm-live-dashboard .adm-widget-footer{flex-wrap:wrap}
+.adm-live-dashboard .adm-overview-tools{gap:12px;flex-wrap:wrap}
+.adm-live-dashboard .adm-health-row-meta{flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+@media(max-width:600px){.adm-live-dashboard .adm-health-row{flex-direction:column}.adm-live-dashboard .adm-health-row-meta{justify-content:flex-start}.adm-live-dashboard .adm-metric strong{font-size:19px}}

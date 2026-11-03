@@ -24,6 +24,7 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
+    setTheme: (state, action: PayloadAction<Theme>) => { state.theme = action.payload; storageSet('theme', action.payload); },
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
       storageSet('theme', state.theme);
@@ -60,6 +61,7 @@ const uiSlice = createSlice({
 });
 
 export const { 
+  setTheme,
   toggleTheme, 
   setLanguage, 
   setCurrency,

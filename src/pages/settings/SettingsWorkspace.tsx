@@ -20,6 +20,13 @@ import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
+import { WorkspaceBrandSettings } from '../admin/WorkspaceBrandSettings';
+import { BusinessAssetsPage } from '../admin/BusinessAssetsPage';
+import { DomainsSettingsPanel } from './DomainsSettingsPanel';
+import { BrandLogoUploader } from './BrandLogoUploader';
+import { uploadBrandFile } from '../../backend/workspacePreferences';
+import { TimezoneSelect } from '../../components/ui/TimezoneSelect';
+import './settings-controls.css';
 import './settings.css';
 
 const CURRENCY_SELECT_OPTIONS = [
@@ -43,6 +50,7 @@ function SettingsWorkspaceView() {
   const currentTab = new URLSearchParams(location.search).get('tab');
   const paymentMethodsTab = currentTab === 'payment-methods';
   const isWalletTab = currentTab === 'wallet';
+  void paymentMethodsTab; void isWalletTab;
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
   const refresh = useCallback(async () => {
@@ -50,7 +58,7 @@ function SettingsWorkspaceView() {
     setError('');
     try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { if (!['general', 'business-assets', 'domains'].includes(active.slug)) void refresh(); }, [refresh, active.slug]);
   async function save(next: SettingsData) {
     if (settingsApiEnabled) {
       const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', { profile: next.profile, business: next.business, payment: next.payment }, 'PATCH');
@@ -61,11 +69,16 @@ function SettingsWorkspaceView() {
     setData(next);
     showToast.success('Changes saved');
   }
+  if (active.slug === 'general') return <WorkspaceBrandSettings/>;
+  if (active.slug === 'business-assets') return <BusinessAssetsPage/>;
+  if (active.slug === 'domains') return <DomainsSettingsPanel/>;
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
         {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {active.slug === 'pixel' && <MarketingTracking/>}
+          {active.slug === 'general' && <WorkspaceBrandSettings/>}
+          {active.slug === 'domains' && <DomainsSettingsPanel/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'plans' && <UserPlansPage/>)}
           {localizeNode(active.slug === 'billing' && <BillingPanel data={data} refresh={refresh} saveLocal={save}/>)}
@@ -84,6 +97,7 @@ function SettingsWorkspaceView() {
 
 function BusinessPanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
   useUILanguage();
+  const tenantId = useSelector((s: RootState) => s.auth.tenant?.id);
   const [draft, setDraft] = useState(data.business), [busy, setBusy] = useState(false), [error, setError] = useState('');
   useEffect(() => {
     setDraft(data.business);
@@ -99,15 +113,29 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
           <Field label="Business email"><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
           <Field label="Phone number"><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
           <Field label="Business address"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
-          <Field label="Business logo URL"><input type="url" value={draft.logo} onChange={e => update('logo', e.target.value)} placeholder={translateText("https://…")}/></Field>
           <Field label="Brand color"><input type="color" value={draft.color} onChange={e => update('color', e.target.value)}/></Field>
+          <div className="full-span">
+            <BrandLogoUploader
+              logoUrl={draft.logo}
+              brandName={draft.name}
+              busy={busy}
+              onChangeUrl={nextUrl => update('logo', nextUrl)}
+              onUploadFile={tenantId ? async file => {
+                setBusy(true); setError('');
+                try {
+                  const uploaded = await uploadBrandFile(tenantId, file, true);
+                  update('logo', uploaded.url);
+                } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); }
+              } : undefined}
+            />
+          </div>
           <Field label="Public description" className="full-span"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
         </div>
       </Card>
       <Card title={translateText("Regional defaults")} description="Used for dates, payments and customer experiences." className="w-full">
         <div className="st-form-grid two">
           <Field label="Default currency"><Select value={draft.currency} onChange={value => update('currency', value)} options={CURRENCY_SELECT_OPTIONS} /></Field>
-          <Field label="Default timezone"><Select value={draft.timezone} onChange={value => update('timezone', value)} options={['Africa/Cairo', 'Europe/London', 'America/New_York', 'Asia/Dubai', 'UTC']} /></Field>
+          <Field label="Default timezone"><TimezoneSelect label="Default timezone" value={draft.timezone} onChange={value => update('timezone', value)}/></Field>
         </div>
       </Card>
       {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
@@ -118,7 +146,7 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
     </form>
   </div>;
 }
-function PaymentsPanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
+export function PaymentsPanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
   useUILanguage();
   const [draft, setDraft] = useState(data.payment), [busy, setBusy] = useState(false), [error, setError] = useState('');
   useEffect(() => {

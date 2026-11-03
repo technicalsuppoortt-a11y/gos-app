@@ -33,6 +33,8 @@ const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(m
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const BusinessAssetsPage = lazy(() => import('../pages/admin/BusinessAssetsPage').then(module => ({ default: module.BusinessAssetsPage })));
 const AdminTools = lazy(() => import('../pages/admin/AdminTools').then(module => ({ default: module.AdminTools })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
@@ -109,7 +111,8 @@ export const router = createBrowserRouter([
   { path: '/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
   { path: '/__/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
   { path: '/auth/*', element: <DefaultRedirect/> },
-  ...['funnels/*', 'websites/*', 'forms/*', 'domains/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
+  ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
+  { path: '/domains/*', element: <Navigate to="/dashboard/settings/domains" replace/> },
   { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
   {
     path: '/contacts',
@@ -128,7 +131,8 @@ export const router = createBrowserRouter([
       { path: 'support', element: <Suspended><UserSupportPage/></Suspended> },
       { path: 'plans', element: <Navigate to="/dashboard/settings/plans" replace/> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
-      ...['funnels/*', 'websites/*', 'forms/*', 'domains/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
+      ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
+      { path: 'domains/*', element: <Navigate to="/dashboard/settings/domains" replace/> },
       { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace/> },
       { path: 'crm', children: crmChildren },
       { path: 'contacts', element: <Suspended><DashboardPage page="contacts"/></Suspended> },
@@ -174,7 +178,9 @@ export const router = createBrowserRouter([
       { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
-      ...['dashboard','conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
+      { path: 'dashboard', element: <Suspended><AdminDashboard/></Suspended> },
+      { path: 'business-assets', element: <Suspended><BusinessAssetsPage/></Suspended> },
+      ...['conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
       { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },
     ],

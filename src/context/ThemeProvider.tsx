@@ -8,6 +8,9 @@ import { usePhoenixBrand } from '../backend/phoenixBrand';
 import './phoenix-brand.css';
 import { bindCapturedBrandColors } from '../branding/themeColors';
 import fontCatalog from '../branding/brandFontCatalog.json';
+import { WorkspaceCustomization } from './WorkspaceCustomization';
+import { useWorkspacePreferences } from '../backend/workspacePreferences';
+import { workspaceTheme } from '../branding/workspaceTheme';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -18,9 +21,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const theme = useSelector((state: RootState) => state.ui.theme);
   const language = useSelector((state: RootState) => state.ui.language);
   const configuration = usePhoenixBrand();
+  const { values: workspacePreferences } = useWorkspacePreferences();
   useLayoutEffect(() => {
     const root = document.documentElement;
-    const design = configuration?.brand.theme;
+    const design = workspacePreferences ? workspaceTheme(workspacePreferences.theme) : configuration?.brand.theme;
     if (!design) return;
     const set = (key: string, value: string) => root.style.setProperty(`--gp-${key}`, value);
     const isCustomBrand = design.paletteId !== 'dashboard-default';
@@ -83,7 +87,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       delete root.dataset.gpButtons;
       for (const key of Array.from(root.style)) if (key.startsWith('--gp-')) root.style.removeProperty(key);
     };
-  }, [configuration, theme, language]);
+  }, [configuration, workspacePreferences, theme, language]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -100,5 +104,5 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (i18n.language !== language) void i18n.changeLanguage(language);
   }, [language]);
 
-  return <>{localizeNode(children)}</>;
+  return <><WorkspaceCustomization/>{localizeNode(children)}</>;
 };

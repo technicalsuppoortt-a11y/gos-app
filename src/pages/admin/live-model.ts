@@ -1,6 +1,6 @@
 export type LiveRecord = { id: string; path: string; workspaceId: string; data: Record<string, any> };
 export type Directory = Record<string, Record<string, any>>;
-export const managementResources = ['assets', 'leads', 'pipelines', 'calendars', 'bookings', 'products', 'orders', 'transactions'] as const;
+export const managementResources = ['assets', 'leads', 'pipelines', 'calendars', 'bookings', 'products', 'orders', 'transactions', 'conversations', 'messages', 'handoffLogs', 'integrations', 'auditLogs', 'events', 'aiUsage', 'modelAllocations'] as const;
 export type ManagementResource = typeof managementResources[number];
 export function assetSubtype(data: Record<string, any>): 'Funnels' | 'Websites' | 'Forms' {
   if (data.formAsset || /^(form|forms)$/i.test(data.kind || data.type || '')) return 'Forms';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, setDoc, where, type Query, type QuerySnapshot, type FirestoreError } from 'firebase/firestore';
 import { primaryAuth, primaryDb, backendError } from './firebase';
 import { decodeFirestoreValue, encodeFirestoreValue } from './firestoreCodec';
 import type { RootState } from '../store';
@@ -9,14 +9,16 @@ import type { Directory, LiveRecord, ManagementResource } from '../pages/admin/l
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
+import { ensureAgencyLandingInFirestore } from './agencyLanding';
 
 // This hook never enters the tenant workspace store, changes backend context, or writes tenant documents.
-export function useAdminManagement(resources: readonly ManagementResource[], templates = false) {
+export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0) {
   const { role, user, impersonation } = useSelector((s: RootState) => s.auth);
-  const [state, setState] = useState<{ records: LiveRecord[]; tenants: Directory; users: Directory; templates: ManagedTemplate[]; loading: boolean; error: string }>({ records: [], tenants: {}, users: {}, templates: [], loading: true, error: '' });
   const key = resources.join(',');
+  const scope = `${user?.id ?? ''}:${role}:${!!impersonation}:${key}:${templates}:${serverOnly}:${reload}`;
+  const [state, setState] = useState<{ scope: string; records: LiveRecord[]; tenants: Directory; users: Directory; templates: ManagedTemplate[]; loading: boolean; error: string; sourceErrors: Record<string, string>; pendingSources: string[] }>({ scope, records: [], tenants: {}, users: {}, templates: [], loading: true, error: '', sourceErrors: {}, pendingSources: ['directory', 'users'] });
   useEffect(() => {
-    const empty = { records: [], tenants: {}, users: {}, templates: [], loading: true, error: '' };
+    const empty = { scope, records: [], tenants: {}, users: {}, templates: [], loading: true, error: '', sourceErrors: {}, pendingSources: templates ? ['templates'] : ['directory', 'users'] };
     setState(empty);
     if (!user || impersonation || !['ADMIN', 'SUPER_ADMIN'].includes(role ?? '')) {
       setState({ ...empty, loading: false, error: 'Administrator access is required.' }); return;
@@ -34,39 +36,58 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
       const tenants: Directory = {}, users: Directory = {};
       const listeners = new Map<string, () => void>();
       const rows = new Map<string, LiveRecord[]>();
-      let failed = false;
-      const publish = () => { if (valid()) setState(s => ({ ...s, records: [...rows.values()].flat(), tenants: { ...tenants }, users: { ...users }, loading: pending.size > 0 && !failed })); };
+      const failures: Record<string, string> = {};
+      let fatalError = '';
+      const publish = () => { if (valid()) setState(s => ({ ...s, records: [...rows.values()].flat(), tenants: { ...tenants }, users: { ...users }, loading: pending.size > 0 && !fatalError, error: fatalError || (serverOnly ? Object.values(failures).join(' ') : ''), sourceErrors: { ...failures }, pendingSources: [...pending] })); };
       const fail = (label: string, error: unknown) => {
-        failed = true;
-        if (valid()) setState(s => ({ ...s, loading: false, error: `${label}: ${backendError(error)}` }));
+        if (!valid()) return;
+        pending.delete(label);
+        if (label === 'directory' || label === 'templates') {
+          fatalError = backendError(error);
+          rows.clear();
+          Object.keys(tenants).forEach(id => delete tenants[id]);
+          listeners.forEach(unsubscribe => unsubscribe()); listeners.clear();
+          if (label === 'templates') setState(s => ({ ...s, templates: [] }));
+        }
+        else failures[label] = backendError(error);
+        if (label === 'users') Object.keys(users).forEach(id => delete users[id]);
+        publish();
       };
+      const watch = (target: Query, source: string, next: (snapshot: QuerySnapshot) => void, error: (error: FirestoreError) => void) => onSnapshot(target, { includeMetadataChanges: serverOnly }, snapshot => {
+        if (!valid()) return;
+        // The production dashboard never promotes an SDK cache snapshot to live data.
+        if (serverOnly && snapshot.metadata.fromCache) { pending.add(source); publish(); return; }
+        delete failures[source];
+        next(snapshot);
+      }, error);
       cleanups.push(() => { listeners.forEach(fn => fn()); listeners.clear(); });
-      if (!templates) cleanups.push(onSnapshot(query(collection(primaryDb, 'users'), where('role', '==', 'USER')), snapshot => {
+      if (!templates) cleanups.push(watch(query(collection(primaryDb, 'users'), where('role', '==', 'USER')), 'users', snapshot => {
         if (!valid()) return;
         Object.keys(users).forEach(id => delete users[id]);
         snapshot.docs.forEach(item => { users[item.id] = item.data(); });
         pending.delete('users'); publish();
-      }, error => fail('User attribution', error)));
-      if (templates) cleanups.push(onSnapshot(collection(primaryDb, 'templateCatalog'), snapshot => {
+      }, error => fail('users', error)));
+      if (templates) cleanups.push(watch(collection(primaryDb, 'templateCatalog'), 'templates', snapshot => {
         if (!valid()) return;
         setState(s => ({ ...s, templates: snapshot.docs.map(item => ({ ...decodeFirestoreValue(item.data()), id: item.id })) }));
         pending.delete('templates'); publish();
-      }, error => fail('Templates', error)));
+      }, error => fail('templates', error)));
       if (templates) return;
-      cleanups.push(onSnapshot(collection(primaryDb, 'tenants'), snapshot => {
+      cleanups.push(watch(collection(primaryDb, 'tenants'), 'directory', snapshot => {
         if (!valid()) return;
         const ids = new Set(snapshot.docs.map(item => item.id));
         for (const id of Object.keys(tenants)) if (!ids.has(id)) delete tenants[id];
         for (const [address, unsubscribe] of listeners) if (!ids.has(address.split('/')[0])) {
-          unsubscribe(); listeners.delete(address); rows.delete(address); pending.delete(address);
+          unsubscribe(); listeners.delete(address); rows.delete(address); pending.delete(address); delete failures[address];
         }
         snapshot.docs.forEach(item => {
           tenants[item.id] = item.data();
+          if (item.data()?.accountType === 'agency') void ensureAgencyLandingInFirestore(item.id);
           for (const resource of resources) {
             const address = `${item.id}/${resource}`;
             if (listeners.has(address)) continue;
             pending.add(address);
-            listeners.set(address, onSnapshot(collection(primaryDb, 'tenants', item.id, resource), records => {
+            listeners.set(address, watch(collection(primaryDb, 'tenants', item.id, resource), address, records => {
               if (!valid() || !tenants[item.id]) return;
               rows.set(address, records.docs.map(record => ({ id: record.id, path: record.ref.path, workspaceId: item.id, data: decodeFirestoreValue(record.data()) })));
               pending.delete(address); publish();
@@ -74,11 +95,11 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
           }
         });
         pending.delete('directory'); publish();
-      }, error => fail('Workspace directory', error)));
+      }, error => fail('directory', error)));
     });
     return () => { active = false; authStop(); stop(); };
-  }, [key, templates, role, user?.id, !!impersonation]);
-  return state;
+  }, [key, templates, role, user?.id, !!impersonation, serverOnly, reload]);
+  return state.scope === scope ? state : { records: [] as LiveRecord[], tenants: {} as Directory, users: {} as Directory, templates: [] as ManagedTemplate[], loading: true, error: '', sourceErrors: {} as Record<string, string>, pendingSources: ['directory', 'users'] };
 }
 
 export async function saveManagedTemplate(template: ManagedTemplate) {

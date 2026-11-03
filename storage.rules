@@ -1,6 +1,21 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    match /tenants/{tenantId}/branding/{fileId} {
+      function profile() { return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data; }
+      function member() { return firestore.get(/databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
+      function workspace() { return firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data; }
+      function manager() {
+        return request.auth != null && profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] && (profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN']
+          || workspace().get('ownerUid', '') == request.auth.uid || workspace().get('ownerId', '') == request.auth.uid
+          || member().get('active', false) && (member().get('role', '') == 'Owner' || member().get('permissions', []).hasAny(['*', 'settings'])));
+      }
+      allow read: if request.auth != null && profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] && (profile().get('tenantId', '') == tenantId || member().get('active', false) || manager());
+      allow create: if manager() && request.resource.size > 0 && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'application/pdf', 'text/plain'];
+      allow delete: if manager();
+      allow update: if false;
+    }
     match /supportAttachments/{roomId}/{authorId}/{fileName} {
       function participant() {
         return request.auth != null && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.status == 'Active' && request.auth.uid in firestore.get(/databases/(default)/documents/supportRooms/$(roomId)).data.participants;

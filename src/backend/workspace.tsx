@@ -84,12 +84,14 @@ const assetPersistence = createAssetPersistence({
   },
 });
 export const flushAssetWrites = () => assetPersistence.flush();
+/** True once the current tenant workspace has loaded every listed resource. */
+export function workspaceResourcesReady(resources: readonly string[]) { return !!tenantId && loaded && resources.every(resource => initializedResources.has(resource)); }
 export const cloudStorage = {
   getItem(key: string): string | null {
     if (key === 'gos.assets.workspace.v1') return JSON.stringify({ assets: JSON.parse(cache.get('entity:assets') ?? '[]'), domains: JSON.parse(cache.get('entity:domains') ?? '[]') });
     return cache.get(cacheKey(key)) ?? null;
   },
-  setItem(key: string, value: string): Promise<unknown> {
+  setItem(key: string, value: string, options?: { silent?: boolean }): Promise<unknown> {
     const required = key === 'gos.assets.workspace.v1' ? ['assets', 'domains'] : [entityFor(key) || 'workspaceState'];
     if (!tenantId || !loaded || required.some(resource => !initializedResources.has(resource))) {
       if (key === 'gos.assets.workspace.v1') return Promise.resolve();
@@ -141,7 +143,7 @@ export const cloudStorage = {
     batch.set(event, { type: 'workspace.updated', resource: key, actorId: store.getState().auth.user!.id, createdAt: at });
     cache.set(key, value); notify();
     const finishWrite = beginWrite();
-    const pending = batch.commit().then(() => { finishWrite(); showToast.success('Changes saved'); }).catch(error => {
+    const pending = batch.commit().then(() => { finishWrite(); if (!options?.silent) showToast.success('Changes saved'); }).catch(error => {
       finishWrite();
       if (tenantId === scope && revisions.get(key) === revision) {
         if (previous === undefined) cache.delete(key); else cache.set(key, previous);

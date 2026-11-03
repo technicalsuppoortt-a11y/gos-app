@@ -35,6 +35,8 @@ export type Invite = {
   activatedAt?: string;
   updatedAt?: string;
   credits?: number;
+  /** Set for directly provisioned User Agency accounts (role USER, no invitation). */
+  accountType?: 'agency';
 };
 
 export const INITIAL_MOCK_USERS: Invite[] = [];

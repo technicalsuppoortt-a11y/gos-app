@@ -36,5 +36,15 @@ html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"]
 .layout-brand .phoenix-logo-wordmark { width:200px; height:72px; max-width:100%; }
 .layout-brand .phoenix-logo-mark { width:52px; height:52px; }
 html[data-gp-brand="true"] :is(input,textarea,select) { accent-color: var(--gp-primary); }
+/* Match the generated surface guards so action foregrounds stay paired with their button token. */
+html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.layout-nav-item.is-active,.login-submit,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background:var(--gp-button-background) !important;
+  color:var(--gp-on-primary) !important;
+  border-color:var(--gp-button-background) !important;
+}
+html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,button[data-phoenix-action]):hover:not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background:color-mix(in srgb,var(--gp-button-background) 88%,#000) !important;
+}
+html[data-gp-brand] :is(.workspace-logo,.workspace-logo-preview) { background:#fff; border-radius:10px; padding:8px; }
 html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] { background: var(--gp-surface) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .gos-home-dashboard #dash-greeting { color: var(--gp-text); }

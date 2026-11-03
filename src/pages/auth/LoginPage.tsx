@@ -242,7 +242,6 @@ export const LoginPage: React.FC = () => {
         </div>
       </header>
 
-      <Link to="/" className="login-home-link"><ArrowUpRight size={15} aria-hidden="true"/><span>{currentLang === 'ar' ? 'زيارة موقع Upclick' : 'Visit Upclick website'}</span></Link>
 
       {/* Main Form Content with clean top spacing without dead space */}
       <motion.div className="login-form-content mx-auto mt-4 sm:mt-6 mb-auto w-full max-w-md py-1" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, ease: 'easeOut' }}>
@@ -292,40 +291,12 @@ export const LoginPage: React.FC = () => {
           <ArrowRight size={16}/>{translateText('Try Demo Account')}
         </button>
 
-        <div className="login-trust mt-6 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] text-slate-500 dark:text-slate-300">
-          <BadgeCheck size={15} className="text-emerald-500 dark:text-emerald-400"/>
-          <span>{translateText("Secure access to your workspace")}</span>
-          <span className="text-slate-300 dark:text-slate-600">•</span>
-          <Link to="/terms-of-service" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
-            {translateText("Terms of Service")}
-          </Link>
-          <span className="text-slate-300 dark:text-slate-600">•</span>
-          <Link to="/privacy" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
-            {translateText("Privacy Policy")}
-          </Link>
-          <span className="text-slate-300 dark:text-slate-600">•</span>
-          <Link to="/data-deletion" className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition hover:underline">
-            {translateText("Data Deletion")}
-          </Link>
-        </div>
+        <div className="login-trust mt-6 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-300"><BadgeCheck size={15} className="text-emerald-500"/><span>{translateText("Secure access to your workspace")}</span></div>
       </motion.div>
 
       <footer className="login-footer flex flex-wrap items-center justify-between gap-y-2 text-[11px] text-slate-400 dark:text-slate-400 mt-6">
         <span>{translateText("© 2026 Upclick Inc.")}</span>
-        <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
-          <Link to="/terms-of-service" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
-            {translateText("Terms of Service")}
-          </Link>
-          <Link to="/privacy" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
-            {translateText("Privacy Policy")}
-          </Link>
-          <Link to="/data-deletion" className="font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition underline-offset-2 hover:underline">
-            {translateText("Data Deletion")}
-          </Link>
-          <a className="transition hover:text-slate-700 dark:hover:text-white" href="#help">
-            {translateText("Help")}
-          </a>
-        </div>
+        <nav aria-label="Legal"><Link to="/terms-of-service">{translateText("Service")}</Link><span aria-hidden="true">•</span><Link to="/privacy">{translateText("Privacy Policy")}</Link><span aria-hidden="true">•</span><Link to="/data-deletion">{translateText("Data Deletion")}</Link></nav>
       </footer>
     </section>
 

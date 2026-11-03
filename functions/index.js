@@ -1,4 +1,6 @@
 import { checkPlatformTool } from './platform-tools.js';
+import { recordAIUsage } from './ai-usage.js';
+import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
@@ -17,7 +19,7 @@ import { mayManageUser, maySend, validateBooking } from './policy.js';
 import { createHash } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { completeUserActivation } from './onboarding.js';
+import { completeUserActivation, initializeProvisionedPlan } from './onboarding.js';
 import { createImpersonationSession } from './impersonation.js';
 import { userManagementRequest } from './user-management-request.js';
 import { buildActivationLink } from './activation-links.js';
@@ -38,6 +40,7 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 initializeApp();
 const db = getFirestore(), auth = getAuth();
 export const supportChat = createSupportCallable({ actor, db });
+export const adminDashboardStatus = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => adminDashboardStatusRequest(request, { actor, db, apiBase: gosApiBase.value() }));
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
@@ -164,21 +167,39 @@ export const activateUser = onCall(request => completeUserActivation(request, { 
 export const manageUser = onCall(async request => {
   const user = await actor(request);
   if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) throw new HttpsError('permission-denied', 'Administrator access is required.');
-  const { operation, id, email, name, role = 'USER', tenantId: requestedTenantId } = userManagementRequest(request.data);
+  const { operation, id, email, name, role = 'USER', tenantId: requestedTenantId, accountType, password } = userManagementRequest(request.data);
   if (operation === 'create') {
+    // User Agency: a fully provisioned USER account (no invitation) with its own isolated workspace.
+    const agency = accountType === 'agency';
+    if (accountType !== undefined && !agency) throw new HttpsError('invalid-argument', 'Unsupported account type.');
+    if (agency && role !== 'USER') throw new HttpsError('invalid-argument', 'A User Agency account must use the user role.');
+    if (agency && (typeof password !== 'string' || password.length < 8 || password.length > 128)) throw new HttpsError('invalid-argument', 'Enter a password between 8 and 128 characters.');
     if (role !== 'USER' && !(user.role === 'SUPER_ADMIN' && role === 'ADMIN')) throw new HttpsError('permission-denied', 'You cannot assign this role.');
     if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpsError('invalid-argument', 'Enter a valid email.');
-    const account = await auth.createUser({ email: email.trim().toLowerCase(), displayName: String(name || email.split('@')[0]).slice(0, 150) });
+    let account;
+    try {
+      account = await auth.createUser({ email: email.trim().toLowerCase(), displayName: String(name || email.split('@')[0]).slice(0, 150), ...(agency ? { password, emailVerified: true } : {}) });
+    } catch (error) {
+      if (agency && error?.code === 'auth/email-already-exists') throw new HttpsError('already-exists', 'This email already has an account.');
+      throw error;
+    }
     const tenantId = `workspace-${account.uid}`;
+    const createdAt = new Date().toISOString();
+    const status = agency ? 'Active' : 'Pending';
+    const supportParentId = role === 'ADMIN' || user.role === 'ADMIN' ? user.uid : '';
     try {
       await auth.setCustomUserClaims(account.uid, { role, tenantId });
       const batch = db.batch();
-      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId: role === 'ADMIN' || user.role === 'ADMIN' ? user.uid : '', status: 'Pending', created: new Date().toISOString(), mfa: false });
-      batch.create(db.doc(`tenants/${tenantId}`), { name: `${account.displayName}'s workspace`, ownerId: account.uid });
-      batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status: 'Pending', active: false, permissions: ['*'] });
-      batch.create(db.collection('userManagementAudit').doc(), { actorId: user.uid, type: 'user.created', userId: account.uid, createdAt: FieldValue.serverTimestamp() });
+      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId, status, created: createdAt, mfa: false, ...(agency ? { accountType: 'agency', activatedAt: createdAt, createdBy: user.uid } : {}) });
+      batch.create(db.doc(`tenants/${tenantId}`), { name: `${account.displayName}'s workspace`, ownerId: account.uid, ...(agency ? { accountType: 'agency' } : {}) });
+      batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status, active: agency, permissions: ['*'], ...(agency ? { activatedAt: createdAt } : {}) });
+      batch.create(db.collection('userManagementAudit').doc(), { actorId: user.uid, type: agency ? 'user.agency_created' : 'user.created', userId: account.uid, createdAt: FieldValue.serverTimestamp() });
       await batch.commit();
     } catch (error) { await auth.deleteUser(account.uid); throw error; }
+    if (agency) {
+      const planAssigned = await initializeProvisionedPlan(db, { uid: account.uid, role, name: account.displayName, email: account.email, supportParentId }, createdAt);
+      return { id: account.uid, status, tenantId, accountType: 'agency', ...(planAssigned ? { planAssigned: true } : {}) };
+    }
     const link = buildActivationLink(await auth.generatePasswordResetLink(account.email), appOrigin.value());
     return { id: account.uid, link, status: 'Pending', tenantId };
   }
@@ -307,6 +328,7 @@ export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeo
   });
   if (!response.ok) throw new HttpsError('unavailable', 'Message generation is temporarily unavailable.');
   const result = await response.json();
+  await recordAIUsage(root, result, 'follow-up');
   const text = result.output?.flatMap(item => item.content ?? []).filter(item => item.type === 'output_text').map(item => item.text).join('').trim();
   if (!text || text.length > 20000) throw new HttpsError('internal', 'The assistant returned an invalid draft.');
   return { text, citations: knowledge.citations };
@@ -337,6 +359,7 @@ export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds
   });
   if (!response.ok) throw new HttpsError('unavailable', 'The AI service is temporarily unavailable. Please try again.');
   const result = await response.json();
+  await recordAIUsage(root, result, 'copilot');
   const output = result.output?.flatMap(item => item.content ?? []).filter(item => item.type === 'output_text').map(item => item.text).join('');
   let answer;
   try { answer = JSON.parse(output); } catch { throw new HttpsError('internal', 'The assistant returned an incomplete response. Please try again.'); }
@@ -510,6 +533,14 @@ export const startWorkflow = onCall(async request => {
 
 export const pauseFollowUpOnConversationChange = onDocumentWritten('tenants/{tenantId}/conversations/{conversationId}', async event => {
   const after = event.data?.after.data(), before = event.data?.before.data();
+  if (after?.takenOver && !before?.takenOver) {
+    // Event ID makes trigger retries idempotent and preserves repeated handoffs.
+    await db.doc(`tenants/${event.params.tenantId}/handoffLogs/${event.id}`).set({
+      conversationId: event.params.conversationId, channel: after.channel ?? '',
+      actorId: after.assignedTo ?? after.assigneeId ?? '', status: 'Human handoff',
+      reason: after.handoffReason ?? 'Conversation taken over by a team member', createdAt: event.time,
+    });
+  }
   if (!after?.leadId) return;
   const inbound = after.lastInboundAt && after.lastInboundAt !== before?.lastInboundAt;
   const handoff = after.takenOver && !before?.takenOver;

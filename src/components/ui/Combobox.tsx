@@ -93,16 +93,21 @@ export function Combobox({
     const width = Math.min(Math.max(triggerWidth, 180), window.innerWidth - 24);
 
     const maxMenuHeight = 280;
+    const estimatedMenuHeight = Math.min(
+      maxMenuHeight,
+      Math.max(88, filtered.length * 42 + (searchable ? 52 : 16))
+    );
     const spaceBelow = window.innerHeight - r.bottom - 8;
     const spaceAbove = r.top - 8;
 
-    const placeAbove = spaceBelow < 180 && spaceAbove > spaceBelow;
+    const placeAbove = spaceBelow < Math.min(180, estimatedMenuHeight) && spaceAbove > spaceBelow;
     const availableSpace = placeAbove ? spaceAbove : spaceBelow;
     const maxHeight = Math.max(120, Math.min(maxMenuHeight, availableSpace));
+    const effectiveHeight = Math.min(estimatedMenuHeight, maxHeight);
 
     const top = placeAbove
-      ? Math.max(8, r.top - maxHeight - 4)
-      : Math.min(window.innerHeight - maxHeight - 8, r.bottom + 4);
+      ? Math.max(8, r.top - effectiveHeight - 4)
+      : r.bottom + 4;
 
     const left = dir === 'rtl'
       ? Math.max(12, Math.min(r.right - width, window.innerWidth - width - 12))
@@ -114,14 +119,14 @@ export function Combobox({
       width: Math.round(width),
       maxHeight: Math.round(maxHeight),
     });
-  }, [dir]);
+  }, [dir, filtered.length, searchable]);
 
   const openPanel = () => {
     const anchor = trigger.current;
     if (!anchor) return;
     const inDialog = Boolean(anchor.closest('dialog, [role="dialog"], .ob-dialog, .form-modal-dialog, .st-modal, .crm-dialog, .bk-dialog, .cw-dialog'));
     const inTable = Boolean(anchor.closest('table, tbody, tr, td, .ob-table-card'));
-    const shouldPortal = inDialog || (portal !== undefined ? portal : !inTable);
+    const shouldPortal = portal !== undefined ? portal : (inDialog || !inTable);
     setPortalContainer(anchor.closest('dialog') ?? document.body);
     setUsePortal(shouldPortal);
 

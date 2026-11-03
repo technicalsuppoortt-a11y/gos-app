@@ -38,6 +38,14 @@
 .login-footer>div{display:flex;gap:18px}
 .login-footer a{color:inherit;text-decoration:none}
 .login-footer a:hover{color:#7C3AED}
+.login-page .login-footer{gap:12px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;line-height:1.6;color:#64748b}
+.login-footer nav{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-weight:500}
+.login-footer nav a{padding:4px 0;transition:color .15s;text-underline-offset:4px}
+.login-footer nav a:hover{text-decoration:underline}
+.login-footer nav a:focus-visible{outline:2px solid #6d28d9;outline-offset:4px;border-radius:2px}
+.login-footer nav span{opacity:.45}
+.dark .login-page .login-footer{border-color:#334155;color:#cbd5e1}
+@media(max-width:640px){.login-page .login-footer{flex-direction:column-reverse;justify-content:center;gap:8px}.login-page .login-footer>span{font-size:10px}}
 .login-showcase{position:relative;box-sizing:border-box;display:none;min-width:0;min-height:100vh;flex-direction:column;justify-content:space-between;overflow:hidden;background:radial-gradient(ellipse at 72% 15%,#7C3AED 0,transparent 42%),radial-gradient(ellipse at 12% 88%,#304d70 0,transparent 38%),linear-gradient(145deg,#24213f,#211e3b 58%,#302751);padding:31px clamp(28px,4.4vw,70px);color:#fff}
 .login-showcase:before{position:absolute;top:-195px;inset-inline-end:-180px;height:560px;width:560px;border:1px solid #ffffff10;border-radius:50%;content:"";box-shadow:0 0 0 42px #ffffff06,0 0 0 95px #ffffff04;pointer-events:none}
 .login-showcase-header{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -225,5 +233,29 @@ html.dark .login-footer,
 .login-chart-labels {
   color: #cbd5e1 !important;
   opacity: 0.8 !important;
+}
+
+/* Reserve footer space within the dynamic viewport, including mobile browser chrome. */
+.login-page{height:100dvh;min-height:0;overflow:hidden}
+.login-page .login-form-side{height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;justify-content:stretch;gap:8px;padding-block:clamp(10px,2vh,20px)}
+.login-page .login-form-content{align-self:center;min-height:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;margin:0 auto;padding:10px 4px;scrollbar-width:thin}
+.login-page .login-top-bar{align-self:start}
+.login-page .login-footer{align-self:end;margin-top:0;flex-shrink:0;padding-top:12px}
+.login-page .login-fields>:not([hidden])~:not([hidden]){margin-top:0;margin-block-start:0}
+.login-page .login-showcase{height:100dvh;min-height:0;max-height:100dvh}
+@media(max-height:760px){
+ .login-page .login-heading{margin-bottom:16px}.login-page .login-heading h1{font-size:27px}.login-page .login-heading p{font-size:12px;line-height:1.4;margin-top:6px}
+ .login-page .login-tenant-pill{padding:4px 10px;margin-bottom:8px}.login-page .login-fields{gap:10px}.login-page .login-fields label>span{height:42px;margin-top:5px}
+ .login-page .login-submit,.login-page .login-form-content>button{height:42px;min-height:42px}.login-page .login-trust{margin-top:10px}
+}
+@media(max-height:640px){
+ .login-page .login-form-side{padding-block:8px;gap:6px}.login-page .login-form-content{padding-block:4px}.login-page .login-tenant-pill{display:none}
+ .login-page .login-heading{margin-bottom:12px}.login-page .login-heading h1{font-size:25px}.login-page .login-fields{gap:8px}.login-page .login-fields label>span{height:40px}
+ .login-page .login-submit,.login-page .login-form-content>button{height:40px;min-height:40px}.login-page .login-footer{padding-top:8px;gap:4px}
+}
+@media(max-height:560px){
+ .login-page .login-brand-mark{height:32px;width:32px}.login-page .login-heading{margin-bottom:8px}.login-page .login-heading h1{font-size:23px}
+ .login-page .login-fields{gap:6px}.login-page .login-fields label>span{height:36px;margin-top:4px}.login-page .login-submit,.login-page .login-form-content>button{height:36px;min-height:36px}
+ .login-page .login-trust{display:none}.login-page .login-form-content>button{margin-top:8px}
 }
 

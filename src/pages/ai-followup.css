@@ -1753,3 +1753,24 @@ html.dark .af-empty-bot-icon {
   background: rgba(99, 102, 241, 0.2) !important;
 }
 
+
+/* AI Test Assistant Modal Stacking Context & Backdrop Blur Fix */
+.af-modal-backdrop,
+.af-drawer-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 20px !important;
+  background: rgba(15, 23, 42, 0.68) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  animation: af-fade 0.18s ease !important;
+}
+
+.af-modal {
+  position: relative !important;
+  z-index: 100000 !important;
+  box-shadow: 0 25px 80px rgba(15, 23, 42, 0.45) !important;
+}

@@ -1,5 +1,7 @@
 export const categories = ['Funnels', 'Websites', 'Forms', 'Landing Pages', 'Booking Pages', 'CRM Pipelines', 'AI Assistants', 'AI Knowledge Packs', 'Automations', 'Products', 'Email/SMS/WhatsApp'] as const;
 export type Category = typeof categories[number];
+/** Admin template management is limited to the 7 core legacy sections. User-facing galleries still use `categories`. */
+export const adminTemplateCategories: Category[] = ['Funnels', 'Websites', 'Forms', 'Booking Pages', 'CRM Pipelines', 'Automations', 'Products'];
 export const industries = ['E-commerce', 'Fitness/Coaching', 'Real Estate', 'SaaS/Agency', 'Healthcare/Clinic', 'Professional Services'];
 export const goals = ['Lead Generation', 'Direct Sale', 'Appointment Booking', 'Customer Onboarding', 'Automation Flow'];
 export const destinations = ['Module template collection'];

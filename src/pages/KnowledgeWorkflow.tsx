@@ -190,7 +190,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const studioHeader = <header className="kw-heading">
     <div><span className="kw-eyebrow"><Sparkles size={13}/> {t('INTELLIGENCE STUDIO')}</span><h2>{t('Your knowledge. Your AI.')}</h2><p>{t('Turn business knowledge into answers your customers can trust.')}</p></div>
     <div className="kw-heading-actions">
-      <button type="button" className="kw-button primary kw-demo-toggle" aria-pressed={demo} disabled={busy || !!deleting || choice} onClick={() => setDemo(value => !value)}><Sparkles size={15}/>{t(demo ? 'Exit demo' : 'Cycle Demo Mode')}</button>
+      {!demo && <button type="button" className="kw-button secondary" disabled={loading || !!error} onClick={onTest}><Sparkles size={15}/>{t('Test AI Assistant')}</button>}<button type="button" className="kw-button primary kw-demo-toggle" aria-pressed={demo} disabled={busy || !!deleting || choice} onClick={() => setDemo(value => !value)}><Sparkles size={15}/>{t(demo ? 'Exit demo' : 'Cycle Demo Mode')}</button>
       {!demo && <span className="kw-pill"><span className="kw-dot"/>{sources.filter(s => s.status === 'ready').length} {t('sources ready')}</span>}
     </div>
   </header>;

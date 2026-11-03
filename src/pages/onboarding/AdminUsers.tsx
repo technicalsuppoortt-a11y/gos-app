@@ -37,6 +37,7 @@ import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import { safeDate } from '../../utils/safeDate';
 import { switchToUser } from '../../backend/impersonation';
+import { ensureAgencyLandingInFirestore } from '../../backend/agencyLanding';
 import { PLATFORM, useBillingIdentity, usePlans, useSubscription, useTrial, useWallet } from '../../backend/billing';
 import './onboarding.css';
 
@@ -358,7 +359,7 @@ function SubAccountDetailsModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <b style={{ fontSize: '15px', color: 'var(--ob-ink)' }}>{user.name || user.email.split('@')[0]}</b>
             <span className="ob-badge" style={{ fontSize: '10px' }}>
-              {user.role === 'ADMIN' ? t('Admin', 'مسؤول') : t('Team Member', 'عضو فريق')}
+              {user.accountType === 'agency' ? t('User Agency', 'وكالة مستخدم') : user.role === 'ADMIN' ? t('Admin', 'مسؤول') : t('Team Member', 'عضو فريق')}
             </span>
           </div>
           <div dir="ltr" style={{ fontSize: '12px', color: 'var(--ob-muted)', margin: '2px 0 4px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -547,7 +548,7 @@ function SubAccountDetailsModal({
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#7C3AED', marginTop: '4px', flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
-              <b style={{ color: 'var(--ob-ink)' }}>{t('Invitation Created', 'تم إنشاء الدعوة')}</b>
+              <b style={{ color: 'var(--ob-ink)' }}>{user.accountType === 'agency' ? t('Account Created', 'تم إنشاء الحساب') : t('Invitation Created', 'تم إنشاء الدعوة')}</b>
               <div style={{ color: 'var(--ob-muted)', fontSize: '10px' }}>
                 {createdDate
                   ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(createdDate)
@@ -736,6 +737,9 @@ export function AdminUsers() {
     { value: 'ADMIN', label: t('Admin', 'مسؤول') },
     { value: 'USER', label: t('Team member', 'عضو الفريق') },
   ];
+  // Creation-only option: a User Agency is a USER account provisioned directly (no invitation).
+  const createRoles = [...roles, { value: 'AGENCY', label: t('User Agency', 'وكالة مستخدم') }];
+  const isAgency = role === 'AGENCY';
 
   const handleToggleStatus = async (invite: Invite) => {
     if (busyUserId) return;
@@ -917,6 +921,11 @@ export function AdminUsers() {
                       </div>
                     </td>
                     <td>
+                      {i.accountType === 'agency' ? (
+                        <span className="ob-badge" title={t('Directly provisioned account with its own workspace', 'حساب مُنشأ مباشرة بمساحة عمل مستقلة')}>
+                          {t('User Agency', 'وكالة مستخدم')}
+                        </span>
+                      ) : (
                       <Combobox
                         label={`${t('Role for', 'دور')} ${i.name || i.email}`}
                         value={i.role === 'SUPER_ADMIN' ? 'ADMIN' : i.role}
@@ -932,6 +941,7 @@ export function AdminUsers() {
                           }
                         }}
                       />
+                      )}
                     </td>
                     <td>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -1402,8 +1412,21 @@ export function AdminUsers() {
               const name = String(data.get('name') || '').trim();
               const email = String(data.get('email') || '').trim().toLowerCase();
               if (invites.some(i => i.email === email)) {
-                setError(t('This email already has an invitation. Use its existing activation link.', 'توجد دعوة لهذا البريد. استخدم رابط التفعيل الحالي.'));
+                setError(isAgency
+                  ? t('This email already has an account.', 'هذا البريد مسجل بحساب بالفعل.')
+                  : t('This email already has an invitation. Use its existing activation link.', 'توجد دعوة لهذا البريد. استخدم رابط التفعيل الحالي.'));
                 return;
+              }
+              const password = String(data.get('password') || '');
+              if (isAgency) {
+                if (password.length < 8 || password.length > 128) {
+                  setError(t('Use a password between 8 and 128 characters.', 'استخدم كلمة مرور من 8 إلى 128 حرفاً.'));
+                  return;
+                }
+                if (password !== String(data.get('confirmPassword') || '')) {
+                  setError(t('The passwords do not match.', 'كلمتا المرور غير متطابقتين.'));
+                  return;
+                }
               }
               const invite: Invite = {
                 id: crypto.randomUUID(),
@@ -1416,6 +1439,17 @@ export function AdminUsers() {
               };
               setBusy(true);
               try {
+                if (isAgency) {
+                  // Provisioned active immediately: no invitation, no activation link.
+                  const agencyRes = await manageAccount('create', { email, name: invite.name, role: 'USER', accountType: 'agency', password });
+                  if (agencyRes?.tenantId) void ensureAgencyLandingInFirestore(agencyRes.tenantId);
+                  form.reset();
+                  setRole('USER');
+                  setError('');
+                  setOpen(false);
+                  showToast.success(t('User Agency account created and active. Sign in with it, or switch to it from the accounts list.', 'تم إنشاء حساب وكالة المستخدم وتفعيله. سجّل الدخول به أو بدّل إليه من قائمة الحسابات.'));
+                  return;
+                }
                 const result = await manageAccount('create', { email, name: invite.name, role });
                 const createdId = result?.id || invite.id;
                 setSent({ ...invite, id: createdId, status: result?.status || 'Pending', tenantId: result?.tenantId });
@@ -1437,8 +1471,10 @@ export function AdminUsers() {
             <span className="ob-orb">
               <Mail />
             </span>
-            <h2>{t('Invite Sub-Account', 'دعوة حساب فرعي')}</h2>
-            <p>{t('They’ll get a personal activation link and a guided workspace setup.', 'سيحصل المستخدم على رابط تفعيل شخصي وخطوات لإعداد المساحة.')}</p>
+            <h2>{isAgency ? t('Create User Agency', 'إنشاء وكالة مستخدم') : t('Invite Sub-Account', 'دعوة حساب فرعي')}</h2>
+            <p>{isAgency
+              ? t('A ready-to-use account to market your own business and try the user dashboard.', 'حساب جاهز للاستخدام لتسويق نشاطك وتجربة لوحة المستخدم.')
+              : t('They’ll get a personal activation link and a guided workspace setup.', 'سيحصل المستخدم على رابط تفعيل شخصي وخطوات لإعداد المساحة.')}</p>
 
             {/* Dynamic Plan Onboarding Information Box */}
             {isFreePlanEnabled ? (
@@ -1506,7 +1542,7 @@ export function AdminUsers() {
 
             <label className="ob-field">
               {t('Full name', 'الاسم الكامل')}
-              <input name="name" placeholder="Alex Morgan" maxLength={80} />
+              <input name="name" placeholder="Alex Morgan" maxLength={80} required={isAgency} />
             </label>
             <label className="ob-field">
               {t('Work email', 'بريد العمل')}
@@ -1518,19 +1554,36 @@ export function AdminUsers() {
                 name="role"
                 label={t('Initial role', 'الدور الأولي')}
                 value={role}
-                options={roles}
+                options={createRoles}
                 dir={dir}
-                onChange={setRole}
+                onChange={value => { setRole(value); setError(''); }}
                 portal={false}
               />
             </label>
+            {isAgency && (
+              <>
+                <label className="ob-field">
+                  {t('Password', 'كلمة المرور')}
+                  <input name="password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" placeholder={t('At least 8 characters', '8 أحرف على الأقل')} />
+                </label>
+                <label className="ob-field">
+                  {t('Confirm password', 'تأكيد كلمة المرور')}
+                  <input name="confirmPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" />
+                </label>
+              </>
+            )}
             <div className="ob-callout">
               <ShieldCheck size={18} />
               <span>
-                {t(
-                  'Account activation includes email confirmation, password setup, and optional MFA.',
-                  'يشمل التفعيل تأكيد البريد وإعداد كلمة المرور وخيار المصادقة متعددة العوامل.'
-                )}
+                {isAgency
+                  ? t(
+                      'The account is active immediately — no invitation or activation link. It gets its own isolated workspace with an editable copy of the landing page in My Websites.',
+                      'يُفعَّل الحساب فوراً بدون دعوة أو رابط تفعيل، ويحصل على مساحة عمل مستقلة بها نسخة قابلة للتعديل من صفحة الهبوط في My Websites.'
+                    )
+                  : t(
+                      'Account activation includes email confirmation, password setup, and optional MFA.',
+                      'يشمل التفعيل تأكيد البريد وإعداد كلمة المرور وخيار المصادقة متعددة العوامل.'
+                    )}
               </span>
             </div>
             {error && (
@@ -1539,8 +1592,8 @@ export function AdminUsers() {
               </p>
             )}
             <button className="ob-primary ob-full" type="submit" disabled={busy}>
-              <Mail size={16} />
-              {t('Send invite & activation link', 'إرسال دعوة ورابط التفعيل')}
+              {isAgency ? <UserCheck size={16} /> : <Mail size={16} />}
+              {isAgency ? t('Create User Agency account', 'إنشاء حساب وكالة المستخدم') : t('Send invite & activation link', 'إرسال دعوة ورابط التفعيل')}
             </button>
           </form>
         )}

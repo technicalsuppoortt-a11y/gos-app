@@ -1,8 +1,11 @@
-import { Radio, Blocks, Building2, Layers, Link2, ShieldAlert, ShieldCheck, UserRound, Users, Wallet } from 'lucide-react';
+import { Globe, Radio, Blocks, Building2, Layers, Link2, ShieldAlert, ShieldCheck, UserRound, Users, Wallet } from 'lucide-react';
 
 export const settingsTabs = [
   { slug: 'profile', name: 'Profile', icon: UserRound },
   { slug: 'business', name: 'Business', icon: Building2 },
+  { slug: 'general', name: 'Branding & Preferences', icon: Blocks },
+  { slug: 'domains', name: 'Domains', icon: Globe },
+  { slug: 'business-assets', name: 'Business Assets', icon: Building2 },
   { slug: 'plans', name: 'Plans & Pricing', icon: Layers },
   { slug: 'billing', name: 'Billing & Payments', icon: Wallet },
   { slug: 'integrations', name: 'Integrations', icon: Link2 },
@@ -24,4 +27,6 @@ export const settingsAliases: Record<string, string> = {
   'plans-pricing': 'plans',
   'plans-and-pricing': 'plans',
   pricing: 'plans',
+  domain: 'domains',
+  'custom-domains': 'domains',
 };

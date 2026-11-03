@@ -16,7 +16,6 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       if (!user.email) throw new Error('This account does not have a password sign-in.');
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, data.currentPassword));
       await updatePassword(user, data.newPassword);
-      showToast.success('Password updated');
       return { message: 'Your sign-in password was updated.' } as T;
     }
     if (path.startsWith('/security/')) throw new Error('This security feature requires additional Firebase Authentication configuration.');

@@ -7,15 +7,11 @@ service cloud.firestore {
     }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function signedIn() {
-      return request.auth != null && (
-        profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] ||
-        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'Owner'] ||
-        request.auth.token.get('status', '') in ['Active', 'active']
-      );
+      return request.auth != null && profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'];
     }
     function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
     function tenant(tenantId) {
-      return signedIn() && (
+      return featureAdmin() || signedIn() && (
         profile().get('tenantId', '') == tenantId ||
         request.auth.token.get('tenantId', '') == tenantId ||
         member(tenantId).get('active', false) == true ||
@@ -26,7 +22,7 @@ service cloud.firestore {
       );
     }
     function permit(tenantId, permission) {
-      return tenant(tenantId) && (
+      return featureAdmin() || tenant(tenantId) && (
         profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN'] ||
         member(tenantId).get('role', '') == 'Owner' ||
         get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid ||
@@ -36,7 +32,7 @@ service cloud.firestore {
       );
     }
     function canRead(tenantId, collectionName) {
-      return permit(tenantId, 'analytics') ||
+      return featureAdmin() || permit(tenantId, 'analytics') ||
         collectionName in ['products', 'discounts', 'transactions', 'orders'] && permit(tenantId, 'products') ||
         collectionName in ['calendars', 'bookings'] && permit(tenantId, 'booking') ||
         collectionName in ['leads', 'contacts', 'pipelines'] && permit(tenantId, 'crm') ||
@@ -53,6 +49,26 @@ service cloud.firestore {
       allow write: if featureAdmin() && request.resource.data.keys().hasOnly(['tools', 'revision', 'updatedAt', 'updatedBy']) && request.resource.data.tools is map && request.resource.data.tools.size() <= 12 && request.resource.data.revision is int && request.resource.data.updatedBy == request.auth.uid;
     }
     match /settings/adminGeneral { allow read, write: if featureAdmin(); }
+    function validDashboardBrand() {
+      let v = request.resource.data.values;
+      return request.resource.data.keys().hasOnly(['values', 'updatedBy', 'updatedAt'])
+        && request.resource.data.updatedBy == request.auth.uid
+        && v.keys().hasOnly(['name', 'logoUrl', 'theme', 'language', 'currency', 'mode', 'timezone', 'supportEmail'])
+        && v.name is string && v.name.size() <= 180
+        && v.logoUrl is string && v.logoUrl.size() <= 2000
+        && (v.logoUrl == '' || v.logoUrl.matches('https://.*') || v.logoUrl.matches('/[^/].*'))
+        && v.theme in ['violet', 'slate', 'midnight', 'emerald']
+        && v.language in ['en', 'ar'] && v.currency in ['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP']
+        && v.mode in ['light', 'dark', 'system']
+        && v.timezone is string && v.timezone.size() <= 100
+        && v.supportEmail is string && v.supportEmail.size() <= 320;
+    }
+    // Public-to-linked-clients preference projection; contains no account or SMTP data.
+    match /dashboardBrands/{providerId} {
+      allow read: if signedIn() && (request.auth.uid == providerId || profile().get('supportParentId', '') == providerId);
+      allow create, update: if featureAdmin() && request.auth.uid == providerId && validDashboardBrand();
+      allow delete: if featureAdmin() && request.auth.uid == providerId;
+    }
     match /supportRooms/{roomId} {
       allow read: if signedIn() && request.auth.uid in resource.data.participants;
       allow write: if false;
@@ -65,7 +81,7 @@ service cloud.firestore {
     // Credential values are accessible only through authenticated, admin-only callables.
     match /paymentGatewayConfigurations/{provider} { allow read, write: if false; }
     // Billing: plans, subscriptions, wallets, ledger and requests are server-owned (billingService callable).
-    function superAdmin() { return signedIn() && profile().role == 'SUPER_ADMIN'; }
+    function superAdmin() { return signedIn() && (profile().get('role', '') == 'SUPER_ADMIN' || request.auth.token.get('role', '') == 'SUPER_ADMIN'); }
     function billingParty(subscriberId, providerId) {
       return signedIn() && (request.auth.uid == subscriberId || request.auth.uid == providerId || profile().role == 'SUPER_ADMIN');
     }
@@ -110,7 +126,7 @@ service cloud.firestore {
       allow read: if true;
       allow write: if signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN'] && validTracking();
     }
-    function featureAdmin() { return signedIn() && profile().role in ['ADMIN', 'SUPER_ADMIN']; }
+    function featureAdmin() { return signedIn() && (profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN'] || request.auth.token.get('role', '') in ['ADMIN', 'SUPER_ADMIN']); }
     function trackingWorkspaceMember(tenantId) {
       return signedIn() && (profile().get('tenantId', '') == tenantId || request.auth.token.get('tenantId', '') == tenantId) && member(tenantId).active == true;
     }
@@ -176,8 +192,8 @@ service cloud.firestore {
       // An invited user may read (and mark consumed) the invitation addressed to their own email,
       // even if it was provisioned under a different document ID.
       function ownInvite() { return request.auth != null && request.auth.token.email != null && resource.data.email == request.auth.token.email; }
-      allow get: if request.auth != null && (request.auth.uid == userId || ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER'));
-      allow list: if ownInvite() || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN' && resource.data.role == 'USER');
+      allow get: if request.auth != null && (request.auth.uid == userId || ownInvite() || superAdmin() || featureAdmin() && resource.data.role == 'USER');
+      allow list: if ownInvite() || superAdmin() || featureAdmin() && resource.data.role == 'USER';
       // Roles, tenant ownership and account lifecycle are controlled by manageUser.
       allow create, delete: if false;
       allow update: if request.auth != null && request.auth.uid == userId
@@ -185,6 +201,31 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'activatedAt', 'tempAuthKey']);
     }
     match /tenants/{tenantId} {
+      // Admin reads do not depend on membership documents in each client workspace.
+      allow get, list: if featureAdmin();
+      match /{adminResource}/{adminRecord} {
+        allow read: if featureAdmin() && adminResource in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'userTemplates', 'files', 'handoffLogs', 'aiUsage', 'modelAllocations'];
+      }
+      match /preferences/general {
+        allow read: if tenant(tenantId);
+        allow create, update: if permit(tenantId, 'settings') && validDashboardBrand();
+        allow delete: if permit(tenantId, 'settings');
+      }
+      match /businessAssets/{assetId} {
+        allow read: if tenant(tenantId);
+        allow create, update: if permit(tenantId, 'settings')
+          && request.resource.data.keys().hasOnly(['name', 'category', 'url', 'path', 'createdAt', 'createdBy'])
+          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 180
+          && request.resource.data.category in ['Brand asset', 'Media kit', 'Knowledge resource']
+          && request.resource.data.url is string && request.resource.data.url.size() <= 2000 && request.resource.data.url.matches('https://.*')
+          && request.resource.data.createdBy == request.auth.uid
+          && (!('path' in request.resource.data) || request.resource.data.path.matches('tenants/' + tenantId + '/branding/[^/]+'));
+        allow delete: if permit(tenantId, 'settings');
+      }
+      match /{resource}/{recordId} {
+        allow read: if resource in ['handoffLogs', 'aiUsage', 'modelAllocations'] && (featureAdmin() || permit(tenantId, 'analytics') || permit(tenantId, 'settings') || resource == 'handoffLogs' && permit(tenantId, 'inbox'));
+        allow write: if false;
+      }
       match /preferences/marketingTracking {
         allow read: if featureAdmin() || trackingWorkspaceMember(tenantId);
         allow create, update: if trackingWorkspaceManager(tenantId) && validTracking();
