@@ -21,10 +21,15 @@ const threads: Conversation[] = (['whatsapp','instagram','messenger'] as const).
   messages:[{id:`question-${index}`,sender:'customer',text:'Can I book a consultation?',time:'10:44'},{id:`answer-${index}`,sender:'ai',text:'Yes. You can choose an available consultation time on our booking page.',time:'10:45'}],activity:[],
 }));
 gosApi.playground = async()=>({tests:[]});
-gosApi.ask = async question=>{calls.push({operation:'ask',name:question});return{test:{id:'test-1',question,answer:'Support is available Sunday through Thursday.',outcome:'answered',citations:['existing']}};};
+gosApi.ask = async (question, context)=>{calls.push({operation:'ask',name:question,type:context?.session_id});return{session_id:'session-1',test:{id:crypto.randomUUID(),question,answer:'Support is available Sunday through Thursday.',outcome:'answered',citations:['existing']}};};
 gosApi.grade = async(id,verdict)=>{calls.push({operation:'grade',name:verdict});return{test:{id,question:'When is support available?',answer:'Support is available Sunday through Thursday.',outcome:'answered',citations:['existing'],verdict}};};
 gosApi.me = async () => ({ user: { id: 'qa-user' } });
 gosApi.sources = async () => ({ sources: [...records] });
+gosApi.source = async id => ({ source: records.find(source => source.id === id)! });
+gosApi.training = async () => ({ embedding_percentage: records.every(source => source.status === 'ready') ? 100 : 0 });
+gosApi.channels = async () => ({ channels: configuration.channels });
+gosApi.updateChannel = async (channel, enabled) => { calls.push({operation:'channel',name:channel,type:String(enabled)}); configuration = { ...configuration, channels: { ...configuration.channels, [channel]: enabled } }; return {}; };
+gosApi.receiveMessage = async body => { calls.push({operation:'receive',name:body.body,type:body.channel}); return {outcome:'answered',conversation:{id:'live-test'},reply:{body:'Support is available Sunday through Thursday.'}}; };
 gosApi.assistant = async () => ({ assistant: configuration });
 gosApi.updateAssistant = async changes => {
   calls.push({ operation: 'assistant' });

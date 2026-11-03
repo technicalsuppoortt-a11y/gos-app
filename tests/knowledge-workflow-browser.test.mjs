@@ -59,6 +59,9 @@ try {
   await page.getByText('Support is available Sunday through Thursday.',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Accurate',exact:true}).click();
   assert.equal(await page.evaluate(()=>window.__knowledge.calls.some(c=>c.operation==='grade' && c.name==='correct')),true);
+  await page.getByPlaceholder('Ask a customer question to test how the assistant responds...').fill('And on Sunday?');
+  await page.getByRole('button',{name:'Test assistant',exact:true}).click();
+  await page.waitForFunction(()=>window.__knowledge.calls.some(c=>c.operation==='ask' && c.type==='session-1'));
   await page.screenshot({path:'artifacts/knowledge-workflow/test-production-dark.png',fullPage:true});
   await page.getByRole('button', { name: 'Open test playground' }).click();
   assert.equal(await page.evaluate(() => window.__knowledge.calls.some(c => c.operation === 'test')), true);
@@ -66,6 +69,7 @@ try {
   assert.equal(await page.locator('.kp-network-card').count(),4);
   await page.getByRole('button',{name:'Enable WhatsApp',exact:true}).click();
   await page.getByRole('button',{name:'Pause WhatsApp',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>window.__knowledge.calls.some(c=>c.operation==='channel' && c.name==='whatsapp' && c.type==='true')),true,'Channel uses the dedicated endpoint');
   assert.equal(await page.evaluate(()=>window.__knowledge.assistant().channels.webchat),true,'Updating one channel preserves the others');
   await page.screenshot({path:'artifacts/knowledge-workflow/connect-production-dark.png',fullPage:true});
   await page.getByRole('button', { name: 'Manage channels' }).click();
@@ -73,6 +77,9 @@ try {
   await page.getByRole('button', { name: '5 LIVE' }).click();
   await page.getByRole('button', { name: 'Go live' }).click();
   await page.getByRole('heading', { name: 'Your assistant is live' }).waitFor();
+  await page.getByLabel('Simulate a live customer',{exact:true}).fill('When is support available?');
+  await page.getByRole('button',{name:'Send customer message',exact:true}).click();
+  await page.waitForFunction(()=>window.__knowledge.calls.some(c=>c.operation==='receive' && c.name==='When is support available?'));
   assert.equal(await page.locator('.kp-stream').count(),3);
   await page.screenshot({path:'artifacts/knowledge-workflow/live-production-dark.png',fullPage:true});
   await page.evaluate(() => window.__knowledge.remount());
@@ -106,7 +113,7 @@ try {
   await page.getByLabel('Knowledge content', { exact: true }).fill('Answer support questions using our published policies.');
   await page.getByRole('button', { name: 'Add text source' }).click();
   await dialog.getByRole('button', { name: 'Start training' }).click();
-  await page.waitForFunction(() => window.__knowledge.records().some(s => s.name === 'Support instructions' && s.type === 'instructions'));
+  await page.waitForFunction(() => window.__knowledge.records().some(s => s.name === 'Support instructions' && s.type === 'text'));
   assert.equal(await page.evaluate(() => window.__knowledge.calls.filter(c => c.operation === 'delete').length), 0);
   await page.getByRole('combobox', {name:'Filter knowledge category'}).click();
   await page.getByRole('option', {name:'All categories',exact:true}).click();

@@ -1,0 +1,108 @@
+{
+  "tested_at": "2026-11-03T13:50:41.727Z",
+  "base": "https://gos-api.vercel.app/api/v1",
+  "authenticated": false,
+  "source_id_is_placeholder": true,
+  "session_id_is_placeholder": true,
+  "rows": [
+    {
+      "name": "Upload file",
+      "method": "POST",
+      "path": "/ai/sources",
+      "status": 401,
+      "elapsed_ms": 1722,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Upload text",
+      "method": "POST",
+      "path": "/ai/sources",
+      "status": 401,
+      "elapsed_ms": 338,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Crawl website",
+      "method": "POST",
+      "path": "/ai/sources",
+      "status": 401,
+      "elapsed_ms": 189,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Overall training progress",
+      "method": "GET",
+      "path": "/ai/training",
+      "status": 401,
+      "elapsed_ms": 196,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Individual source progress",
+      "method": "GET",
+      "path": "/ai/sources/1be4bd9d-1b0e-4a99-b1f9-354f1c2bda7e",
+      "status": 401,
+      "elapsed_ms": 204,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Start playground session",
+      "method": "POST",
+      "path": "/ai/playground",
+      "status": 401,
+      "elapsed_ms": 297,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Continue playground session",
+      "method": "POST",
+      "path": "/ai/playground",
+      "status": 401,
+      "elapsed_ms": 184,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Read connected channels",
+      "method": "GET",
+      "path": "/ai/channels",
+      "status": 401,
+      "elapsed_ms": 206,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Enable webchat channel",
+      "method": "PUT",
+      "path": "/ai/channels/webchat",
+      "status": 401,
+      "elapsed_ms": 215,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Enable live replies",
+      "method": "PUT",
+      "path": "/ai/assistant",
+      "status": 401,
+      "elapsed_ms": 225,
+      "success": false,
+      "message": "Authentication token is missing."
+    },
+    {
+      "name": "Ingest live customer message",
+      "method": "POST",
+      "path": "/inbox/messages",
+      "status": 401,
+      "elapsed_ms": 208,
+      "success": false,
+      "message": "Authentication token is missing."
+    }
+  ]
+}

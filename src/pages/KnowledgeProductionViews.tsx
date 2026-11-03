@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { WhatsappLogo, MessengerLogo, InstagramLogo, ChatDots, FacebookLogo, EnvelopeSimple } from '@phosphor-icons/react';
 import { ArrowRight, MessageSquare, Radio, ShieldCheck } from 'lucide-react';
-import type { GosAssistant } from '../backend/gosApi';
+import { gosApi, type GosAssistant } from '../backend/gosApi';
 import type { Conversation } from './inbox/inboxData';
 import { translateText as t } from '../i18n/display';
 
@@ -31,9 +31,9 @@ export function ProductionKnowledgeOrb({ progress = 0, active = false, label, ca
   </div>;
 }
 
-export function ProductionChannelNetwork({ assistant, assistantName, disabled, updateAssistant, onManage }: {
+export function ProductionChannelNetwork({ assistant, assistantName, disabled, updateChannel, onManage }: {
   assistant: GosAssistant; assistantName: string; disabled: boolean;
-  updateAssistant: (changes: Partial<GosAssistant>) => Promise<boolean>; onManage: () => void;
+  updateChannel: (channel: string, enabled: boolean) => Promise<void>; onManage: () => void;
 }) {
   const [pending, setPending] = useState(false);
   const mutation = useRef(false);
@@ -41,7 +41,7 @@ export function ProductionChannelNetwork({ assistant, assistantName, disabled, u
   async function toggle(id: string) {
     if (mutation.current || disabled) return;
     mutation.current = true; setPending(true);
-    try { await updateAssistant({ channels: { ...assistant.channels, [id]: !assistant.channels[id] } }); }
+    try { await updateChannel(id, !assistant.channels[id]); }
     finally { mutation.current = false; setPending(false); }
   }
   return <section className="kp-connect">
@@ -64,9 +64,41 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
   assistant: GosAssistant; conversations: readonly Conversation[]; readySources: number; disabled: boolean; onToggle: () => void;
 }) {
   const connected = Object.values(assistant.channels).filter(Boolean).length;
+  const [message, setMessage] = useState('');
+  const [channel, setChannel] = useState('');
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState('');
+  const [sendError, setSendError] = useState('');
+  const threadId = useRef(`knowledge-test-${crypto.randomUUID()}`);
+  const messageId = useRef<string | null>(null);
+  const sendingRef = useRef(false);
+  const enabledChannels = Object.keys(assistant.channels).filter(key => assistant.channels[key]);
+  const selectedChannel = enabledChannels.includes(channel) ? channel : enabledChannels[0] || '';
+  async function sendCustomerMessage(event: React.FormEvent) {
+    event.preventDefault();
+    if (sendingRef.current || !message.trim() || !assistant.live_enabled || !selectedChannel) return;
+    sendingRef.current = true; setSending(true); setSendError(''); setResult('');
+    // Retain the event ID after a network failure so retrying cannot duplicate ingestion.
+    messageId.current ??= crypto.randomUUID();
+    try {
+      const response = await gosApi.receiveMessage({ channel: selectedChannel, external_thread_id: threadId.current, external_message_id: messageId.current, customer_name: 'Knowledge studio test customer', body: message.trim() });
+      setResult(`${response.outcome}${typeof response.reply?.body === 'string' ? ` · ${response.reply.body}` : ''}`);
+      messageId.current = null; setMessage('');
+    } catch (e) { setSendError((e as Error).message); }
+    finally { sendingRef.current = false; setSending(false); }
+  }
   return <section className="kp-live">
     <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('LIVE MONITOR')}</span><h3>{t(assistant.live_enabled ? 'Your assistant is live' : 'Ready when you are')}</h3></div><button type="button" className="kw-button primary" disabled={disabled} onClick={onToggle}><Radio size={14}/>{t(assistant.live_enabled ? 'Pause assistant' : 'Go live')}</button></header>
     <div className={`kp-signal-bar ${assistant.live_enabled ? 'active' : ''}`}><span><i/>{t(assistant.live_enabled ? 'LIVE' : 'PAUSED')} · {conversations.length} {t('CONVERSATIONS')}</span><b>{connected} {t('CHANNELS ENABLED')}</b></div>
+    <form className="kp-customer-form" onSubmit={event => void sendCustomerMessage(event)}>
+      <label htmlFor="kp-live-channel">{t('Test customer channel')}</label>
+      <select id="kp-live-channel" value={selectedChannel} disabled={sending} onChange={event => { setChannel(event.target.value); messageId.current = null; }}>{enabledChannels.map(key => <option key={key} value={key}>{key}</option>)}</select>
+      <label htmlFor="kp-live-message">{t('Simulate a live customer')}</label>
+      <textarea id="kp-live-message" value={message} disabled={sending} onChange={event => { setMessage(event.target.value); messageId.current = null; }} required maxLength={10000} rows={3}/>
+      <small>{t('Sends a real customer message to your workspace inbox.')}</small>
+      <button type="submit" className="kw-button primary" disabled={disabled || sending || !assistant.live_enabled || !selectedChannel || !message.trim()}>{t(sending ? 'Sending…' : 'Send customer message')}</button>
+      {result && <p role="status">{result}</p>}{sendError && <p role="alert" className="kw-error-text">{sendError}</p>}
+    </form>
     <div className="kp-live-streams">
       {!conversations.length && <div className="kp-monitor-empty"><MessageSquare size={30}/><h4>{t('Your conversation monitor is ready')}</h4><p>{t('Customer conversations will appear here as they reach your workspace.')}</p></div>}
       {conversations.slice(0, 3).map(thread => {

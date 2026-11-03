@@ -1,0 +1,4536 @@
+{
+  "info": {
+    "_postman_id": "d8d4603d-d252-4d9b-845a-00b77564555b",
+    "name": "GOS API Copy 2",
+    "description": "Laravel API for health, Firebase auth, Firestore status, tenant CRM, and the workspace knowledge base.\n\nBefore either folder:\n1. From api/, run php artisan serve.\n2. Assign your Firebase user once: php artisan crm:bootstrap --firebase-uid=THE_FIREBASE_UID --email=person@example.com --tenant=tenant-brand --role=ADMIN\n3. Paste that user's Firebase ID token into the collection variable firebaseIdToken. Do not commit a real token.\n4. Do not send X-Tenant-ID or tenant_id. The API uses the Laravel user's tenant_id.\n\nCRM folder: leave pipelineId as main. Run \"CRM — run in order\" from top to bottom.\n\nAI folder: set OPENAI_API_KEY in api/.env, then run php artisan queue:work in a second terminal. Indexing stays queued until that worker runs. Run \"AI and inbox — run in order\" from top to bottom. Create text source saves sourceId. After the worker finishes, send Get source again until its test passes. Ask playground saves playgroundTestId. The answered inbox request saves conversationId and externalMessageId for the duplicate request.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "39741109"
+  },
+  "item": [
+    {
+      "name": "Health and auth",
+      "item": [
+        {
+          "name": "Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('health is public', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.success).to.eql(true);",
+                  "    pm.expect(body.data.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Public. No token."
+          },
+          "response": [
+            {
+              "name": "Health",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "health"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": ":status",
+                  "value": "200"
+                },
+                {
+                  "key": "age",
+                  "value": "0"
+                },
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "date",
+                  "value": "Sun, 01 Nov 2026 09:37:20 GMT"
+                },
+                {
+                  "key": "server",
+                  "value": "Vercel"
+                },
+                {
+                  "key": "strict-transport-security",
+                  "value": "max-age=63072000; includeSubDomains; preload"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "x-powered-by",
+                  "value": "PHP/8.4.27"
+                },
+                {
+                  "key": "x-ratelimit-limit",
+                  "value": "60"
+                },
+                {
+                  "key": "x-ratelimit-remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "x-vercel-cache",
+                  "value": "MISS"
+                },
+                {
+                  "key": "x-vercel-id",
+                  "value": "fra1::iad1::clvs9-1793525838667-d8cd29e48cf1"
+                },
+                {
+                  "key": "content-length",
+                  "value": "59"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"status\": \"ok\",\n    \"service\": \"gos-api\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"user@gmail.com\",\r\n  \"password\": \"123456789\",\r\n  \"returnSecureToken\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{google_api_key}}",
+              "protocol": "https",
+              "host": [
+                "identitytoolkit",
+                "googleapis",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "accounts:signInWithPassword"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{google_api_key}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "login Copy",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"email\": \"user@gmail.com\",\r\n  \"password\": \"123456789\",\r\n  \"returnSecureToken\": true\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{google_api_key}}",
+                  "protocol": "https",
+                  "host": [
+                    "identitytoolkit",
+                    "googleapis",
+                    "com"
+                  ],
+                  "path": [
+                    "v1",
+                    "accounts:signInWithPassword"
+                  ],
+                  "query": [
+                    {
+                      "key": "key",
+                      "value": "{{google_api_key}}"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": ":status",
+                  "value": "200"
+                },
+                {
+                  "key": "expires",
+                  "value": "Mon, 01 Jan 1990 00:00:00 GMT"
+                },
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "date",
+                  "value": "Sun, 01 Nov 2026 09:40:40 GMT"
+                },
+                {
+                  "key": "pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json; charset=UTF-8"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin, X-Origin, Referer"
+                },
+                {
+                  "key": "content-encoding",
+                  "value": "gzip"
+                },
+                {
+                  "key": "server",
+                  "value": "ESF"
+                },
+                {
+                  "key": "content-length",
+                  "value": "1022"
+                },
+                {
+                  "key": "x-xss-protection",
+                  "value": "0"
+                },
+                {
+                  "key": "x-frame-options",
+                  "value": "SAMEORIGIN"
+                },
+                {
+                  "key": "x-content-type-options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "alt-svc",
+                  "value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"kind\": \"identitytoolkit#VerifyPasswordResponse\",\n  \"localId\": \"KOZFxJVi6UgvOKbSrmEXePrsFFi1\",\n  \"email\": \"user@gmail.com\",\n  \"displayName\": \"\",\n  \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjkwNGIwZjkxYmU2ZWIwODY3ZGFiYmFhYjU4N2RmYzJlMzNmMDBhMjQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZ29zLWFwcC0zYzdmYiIsImF1ZCI6Imdvcy1hcHAtM2M3ZmIiLCJhdXRoX3RpbWUiOjE3OTM1MjYwNDAsInVzZXJfaWQiOiJLT1pGeEpWaTZVZ3ZPS2JTcm1FWGVQcnNGRmkxIiwic3ViIjoiS09aRnhKVmk2VWd2T0tiU3JtRVhlUHJzRkZpMSIsImlhdCI6MTc5MzUyNjA0MCwiZXhwIjoxNzkzNTI5NjQwLCJlbWFpbCI6InVzZXJAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInVzZXJAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.qTc8zzfwyjn3BSoDaq4swc7hAeH2R6lpwhHeDkWPCa1C4Slx0sIDim3KDQbs1-L44adzaw6tH1-Jw2cHpgCTioVdtfNnPIC8EOWfOU0MWtJsqZh8T8eDsZh01e2Wlda_iXQ53oLyqIkYJh55EokUB2rB70ryfkdXsS4xnqFBjvTK_FjuHOFNQlC99M8Kyezf7fMWST_gVYFpmLNrfBvjRxX9PPTmGwYIXPWcjgTjoCu_FVDS246M-p8aGaR-9AByslSd0z-5N9vIMQj2AfGLN1vHApyJz830HtlxYE8XOXlilUubPMYYaYQ1tliqIs_5hT07E0hFF90Ss1p5LmyyFg\",\n  \"registered\": true,\n  \"refreshToken\": \"AMf-vBzOOYdvR8XrmxtUU1y7Xspr2BQGRlfEC06QVjEhiqDYpLmt6p0o97_TGDicn-W0kfYXkdIJKeXGz0c-lXfwZU2Wl6LZ2M1KVBD7CobzjBypyBzKiqgUbPlXMPQpCgOkY46YlplhdausaVvuqUoHMzf3Ktc8pqbj5jwVe0Wh5-ipL6Y3hSnrKFWqiohs0vSrIL61Ge17\",\n  \"expiresIn\": \"3600\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Current user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('token maps to a workspace user', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const user = pm.response.json().data;",
+                  "    pm.expect(user.user_id).to.be.a('number');",
+                  "    pm.expect(user.tenant_id).to.be.a('string').and.not.empty;",
+                  "    pm.expect(['USER', 'ADMIN']).to.include(user.role);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Verified Firebase identity plus the Laravel role and tenant. CRM requires USER or ADMIN and a tenant_id."
+          },
+          "response": [
+            {
+              "name": "Current user",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "me"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": ":status",
+                  "value": "200"
+                },
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "date",
+                  "value": "Sun, 01 Nov 2026 09:40:26 GMT"
+                },
+                {
+                  "key": "server",
+                  "value": "Vercel"
+                },
+                {
+                  "key": "strict-transport-security",
+                  "value": "max-age=63072000; includeSubDomains; preload"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "x-powered-by",
+                  "value": "PHP/8.4.27"
+                },
+                {
+                  "key": "x-ratelimit-limit",
+                  "value": "60"
+                },
+                {
+                  "key": "x-ratelimit-remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "x-vercel-cache",
+                  "value": "BYPASS"
+                },
+                {
+                  "key": "x-vercel-id",
+                  "value": "fra1::iad1::qs5rs-1793526024480-b24cd45b1a55"
+                },
+                {
+                  "key": "content-length",
+                  "value": "185"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"uid\": \"KOZFxJVi6UgvOKbSrmEXePrsFFi1\",\n    \"email\": \"user@gmail.com\",\n    \"email_verified\": false,\n    \"user_id\": 1,\n    \"role\": \"ADMIN\",\n    \"tenant_id\": \"u0c39413ecec47646d0122b743e3b7f77\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('token is valid', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.valid).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Verify token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "verify"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": ":status",
+                  "value": "200"
+                },
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "date",
+                  "value": "Sun, 01 Nov 2026 09:40:54 GMT"
+                },
+                {
+                  "key": "server",
+                  "value": "Vercel"
+                },
+                {
+                  "key": "strict-transport-security",
+                  "value": "max-age=63072000; includeSubDomains; preload"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "x-powered-by",
+                  "value": "PHP/8.4.27"
+                },
+                {
+                  "key": "x-ratelimit-limit",
+                  "value": "60"
+                },
+                {
+                  "key": "x-ratelimit-remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "x-vercel-cache",
+                  "value": "MISS"
+                },
+                {
+                  "key": "x-vercel-id",
+                  "value": "fra1::iad1::hdwcd-1793526053692-b0471ca7f1eb"
+                },
+                {
+                  "key": "content-length",
+                  "value": "100"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"valid\": true,\n    \"uid\": \"KOZFxJVi6UgvOKbSrmEXePrsFFi1\",\n    \"email\": \"user@gmail.com\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Firestore status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('firestore is connected', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.connected).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/firestore/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "firestore",
+                "status"
+              ]
+            },
+            "description": "Connectivity only. The body does not include documents, collection names, or credentials."
+          },
+          "response": [
+            {
+              "name": "Firestore status",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/firestore/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "firestore",
+                    "status"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": ":status",
+                  "value": "200"
+                },
+                {
+                  "key": "cache-control",
+                  "value": "no-store, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "date",
+                  "value": "Sun, 01 Nov 2026 09:41:02 GMT"
+                },
+                {
+                  "key": "server",
+                  "value": "Vercel"
+                },
+                {
+                  "key": "strict-transport-security",
+                  "value": "max-age=63072000; includeSubDomains; preload"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "x-powered-by",
+                  "value": "PHP/8.4.27"
+                },
+                {
+                  "key": "x-ratelimit-limit",
+                  "value": "60"
+                },
+                {
+                  "key": "x-ratelimit-remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "x-vercel-cache",
+                  "value": "BYPASS"
+                },
+                {
+                  "key": "x-vercel-id",
+                  "value": "fra1::iad1::cg6wp-1793526062159-47597a5d1d77"
+                },
+                {
+                  "key": "content-length",
+                  "value": "65"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"connected\": true,\n    \"database\": \"(default)\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CRM — run in order",
+      "item": [
+        {
+          "name": "pipelines",
+          "item": [
+            {
+              "name": "List pipelines",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('workspace has the default pipeline', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const pipelines = pm.response.json().data.pipelines;",
+                      "    pm.expect(pipelines.some(pipeline => pipeline.id === 'main')).to.eql(true);",
+                      "    pm.collectionVariables.set('pipelineId', 'main');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/pipelines",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "pipelines"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "List pipelines",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/pipelines",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "pipelines"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:42:32 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "BYPASS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::7g5hv-1793526150307-7ff94425dc2b"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "472"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"pipelines\": [\n      {\n        \"id\": \"main\",\n        \"name\": \"Main Pipeline\",\n        \"stages\": [\n          {\n            \"id\": \"LEAD_CAPTURED\",\n            \"label\": \"New Lead\",\n            \"color\": \"#2396ef\"\n          },\n          {\n            \"id\": \"CONTACT_CREATED\",\n            \"label\": \"Contacted\",\n            \"color\": \"#7C5CFC\"\n          },\n          {\n            \"id\": \"QUALIFIED\",\n            \"label\": \"Qualified\",\n            \"color\": \"#10b981\"\n          },\n          {\n            \"id\": \"CONVERSATION\",\n            \"label\": \"Interested\",\n            \"color\": \"#f59e0b\"\n          },\n          {\n            \"id\": \"PAYMENT_COMPLETED\",\n            \"label\": \"Closed\",\n            \"color\": \"#22c55e\"\n          }\n        ],\n        \"created_at\": \"2026-10-17T09:38:13+00:00\",\n        \"updated_at\": \"2026-10-17T09:38:13+00:00\"\n      }\n    ]\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Show pipeline",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('pipeline returned', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    pm.expect(pm.response.json().data.pipeline.id).to.eql(pm.collectionVariables.get('pipelineId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/pipelines/{{pipelineId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "pipelines",
+                    "{{pipelineId}}"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Show pipeline",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/pipelines/{{pipelineId}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "pipelines",
+                        "{{pipelineId}}"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:42:53 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "BYPASS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::9c6q6-1793526173107-25a5866b6bb3"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "469"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"pipeline\": {\n      \"id\": \"main\",\n      \"name\": \"Main Pipeline\",\n      \"stages\": [\n        {\n          \"id\": \"LEAD_CAPTURED\",\n          \"label\": \"New Lead\",\n          \"color\": \"#2396ef\"\n        },\n        {\n          \"id\": \"CONTACT_CREATED\",\n          \"label\": \"Contacted\",\n          \"color\": \"#7C5CFC\"\n        },\n        {\n          \"id\": \"QUALIFIED\",\n          \"label\": \"Qualified\",\n          \"color\": \"#10b981\"\n        },\n        {\n          \"id\": \"CONVERSATION\",\n          \"label\": \"Interested\",\n          \"color\": \"#f59e0b\"\n        },\n        {\n          \"id\": \"PAYMENT_COMPLETED\",\n          \"label\": \"Closed\",\n          \"color\": \"#22c55e\"\n        }\n      ],\n      \"created_at\": \"2026-10-17T09:38:13+00:00\",\n      \"updated_at\": \"2026-10-17T09:38:13+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Create pipeline",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('pipeline created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    pm.collectionVariables.set('pipelineId', pm.response.json().data.pipeline.id);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Custom pipeline\",\n  \"stages\": [\n    { \"id\": \"LEAD_CAPTURED\", \"label\": \"New Lead\", \"color\": \"#2396ef\" },\n    { \"id\": \"QUALIFIED\", \"label\": \"Qualified\", \"color\": \"#10b981\" },\n    { \"id\": \"BOOKING\", \"label\": \"Booking\", \"color\": \"#f59e0b\" }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/pipelines",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "pipelines"
+                  ]
+                },
+                "description": "Do not send id. Stage ids must be from the ten canonical CRM stages."
+              },
+              "response": [
+                {
+                  "name": "Create pipeline",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Custom pipeline\",\n  \"stages\": [\n    { \"id\": \"LEAD_CAPTURED\", \"label\": \"New Lead\", \"color\": \"#2396ef\" },\n    { \"id\": \"QUALIFIED\", \"label\": \"Qualified\", \"color\": \"#10b981\" },\n    { \"id\": \"BOOKING\", \"label\": \"Booking\", \"color\": \"#f59e0b\" }\n  ]\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/pipelines",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "pipelines"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "201"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:44:56 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "MISS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::6kq42-1793526295744-4cf8598c5624"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "370"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"pipeline\": {\n      \"id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n      \"name\": \"Custom pipeline\",\n      \"stages\": [\n        {\n          \"id\": \"LEAD_CAPTURED\",\n          \"label\": \"New Lead\",\n          \"color\": \"#2396ef\"\n        },\n        {\n          \"id\": \"QUALIFIED\",\n          \"label\": \"Qualified\",\n          \"color\": \"#10b981\"\n        },\n        {\n          \"id\": \"BOOKING\",\n          \"label\": \"Booking\",\n          \"color\": \"#f59e0b\"\n        }\n      ],\n      \"created_at\": \"2026-11-01T09:44:56+00:00\",\n      \"updated_at\": \"2026-11-01T09:44:56+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update pipeline",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Custom pipeline\",\n  \"stages\": [\n    { \"id\": \"LEAD_CAPTURED\", \"label\": \"Captured\", \"color\": \"#2396ef\" },\n    { \"id\": \"QUALIFIED\", \"label\": \"Qualified\", \"color\": \"#10b981\" },\n    { \"id\": \"BOOKING\", \"label\": \"Booking\", \"color\": \"#f59e0b\" }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/pipelines/{{pipelineId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "pipelines",
+                    "{{pipelineId}}"
+                  ]
+                },
+                "description": "Renaming a label is allowed. Removing a stage that still has leads returns 409 stage_in_use."
+              },
+              "response": [
+                {
+                  "name": "Update pipeline",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Custom pipeline\",\n  \"stages\": [\n    { \"id\": \"LEAD_CAPTURED\", \"label\": \"Captured\", \"color\": \"#2396ef\" },\n    { \"id\": \"QUALIFIED\", \"label\": \"Qualified\", \"color\": \"#10b981\" },\n    { \"id\": \"BOOKING\", \"label\": \"Booking\", \"color\": \"#f59e0b\" }\n  ]\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/pipelines/{{pipelineId}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "pipelines",
+                        "{{pipelineId}}"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:45:09 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "MISS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::7m294-1793526308274-653cbf11c5c4"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "370"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"pipeline\": {\n      \"id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n      \"name\": \"Custom pipeline\",\n      \"stages\": [\n        {\n          \"id\": \"LEAD_CAPTURED\",\n          \"label\": \"Captured\",\n          \"color\": \"#2396ef\"\n        },\n        {\n          \"id\": \"QUALIFIED\",\n          \"label\": \"Qualified\",\n          \"color\": \"#10b981\"\n        },\n        {\n          \"id\": \"BOOKING\",\n          \"label\": \"Booking\",\n          \"color\": \"#f59e0b\"\n        }\n      ],\n      \"created_at\": \"2026-11-01T09:44:56+00:00\",\n      \"updated_at\": \"2026-11-01T09:45:08+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "leads",
+          "item": [
+            {
+              "name": "List leads",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('lead is in the pipeline', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const leads = pm.response.json().data.leads;",
+                      "    pm.expect(leads.some(lead => lead.id === pm.collectionVariables.get('leadId'))).to.eql(true);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/leads?pipeline_id={{pipelineId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "leads"
+                  ],
+                  "query": [
+                    {
+                      "key": "pipeline_id",
+                      "value": "{{pipelineId}}"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "List leads",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/leads?pipeline_id={{pipelineId}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "leads"
+                      ],
+                      "query": [
+                        {
+                          "key": "pipeline_id",
+                          "value": "{{pipelineId}}"
+                        }
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-encoding",
+                      "value": "gzip"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:47:09 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin, Accept-Encoding"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "BYPASS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::fdrcm-1793526428407-d552648c035d"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "579"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"leads\": [\n      {\n        \"id\": \"afc0eceb-40c9-4b13-aa50-dfbd5ee5efc9\",\n        \"name\": \"Sarah Chen\",\n        \"email\": \"sarah.1793526406@example.com\",\n        \"phone\": \"+1 555 0100\",\n        \"company\": \"Nova Studio\",\n        \"source\": \"Landing page\",\n        \"owner\": \"Alex Morgan\",\n        \"value\": 1200,\n        \"pipeline_id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n        \"lifecycle_stage\": \"LEAD_CAPTURED\",\n        \"stage\": \"LEAD_CAPTURED\",\n        \"tags\": [\n          \"Coaching\"\n        ],\n        \"archived\": false,\n        \"qualification_status\": \"Pending\",\n        \"booking_status\": \"Not Scheduled\",\n        \"follow_up_state\": \"NEW\",\n        \"has_whatsapp_consent\": false,\n        \"has_messaging_consent\": false,\n        \"has_email_consent\": false,\n        \"next_follow_up\": null,\n        \"next_follow_up_at\": null,\n        \"notes\": [],\n        \"tasks\": [],\n        \"activities\": [\n          {\n            \"id\": \"8e6c531c-265f-4298-9927-0a2c9629adb3\",\n            \"type\": \"capture\",\n            \"title\": \"Lead captured\",\n            \"detail\": \"Added to CRM\",\n            \"at\": \"2026-11-01T09:46:46+00:00\"\n          }\n        ],\n        \"interest\": \"\",\n        \"photo_url\": null,\n        \"avatar\": \"SC\",\n        \"color\": \"lilac\",\n        \"last_activity\": \"2026-11-01T09:46:46+00:00\",\n        \"created_at\": \"2026-11-01T09:46:46+00:00\",\n        \"updated_at\": \"2026-11-01T09:46:46+00:00\"\n      }\n    ]\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Show lead",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('lead returned', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    pm.expect(pm.response.json().data.lead.id).to.eql(pm.collectionVariables.get('leadId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "leads",
+                    "{{leadId}}"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Show lead",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "leads",
+                        "{{leadId}}"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-encoding",
+                      "value": "gzip"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:47:00 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin, Accept-Encoding"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "BYPASS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::hvg2z-1793526419735-383ca0722768"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "576"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"lead\": {\n      \"id\": \"afc0eceb-40c9-4b13-aa50-dfbd5ee5efc9\",\n      \"name\": \"Sarah Chen\",\n      \"email\": \"sarah.1793526406@example.com\",\n      \"phone\": \"+1 555 0100\",\n      \"company\": \"Nova Studio\",\n      \"source\": \"Landing page\",\n      \"owner\": \"Alex Morgan\",\n      \"value\": 1200,\n      \"pipeline_id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n      \"lifecycle_stage\": \"LEAD_CAPTURED\",\n      \"stage\": \"LEAD_CAPTURED\",\n      \"tags\": [\n        \"Coaching\"\n      ],\n      \"archived\": false,\n      \"qualification_status\": \"Pending\",\n      \"booking_status\": \"Not Scheduled\",\n      \"follow_up_state\": \"NEW\",\n      \"has_whatsapp_consent\": false,\n      \"has_messaging_consent\": false,\n      \"has_email_consent\": false,\n      \"next_follow_up\": null,\n      \"next_follow_up_at\": null,\n      \"notes\": [],\n      \"tasks\": [],\n      \"activities\": [\n        {\n          \"id\": \"8e6c531c-265f-4298-9927-0a2c9629adb3\",\n          \"type\": \"capture\",\n          \"title\": \"Lead captured\",\n          \"detail\": \"Added to CRM\",\n          \"at\": \"2026-11-01T09:46:46+00:00\"\n        }\n      ],\n      \"interest\": \"\",\n      \"photo_url\": null,\n      \"avatar\": \"SC\",\n      \"color\": \"lilac\",\n      \"last_activity\": \"2026-11-01T09:46:46+00:00\",\n      \"created_at\": \"2026-11-01T09:46:46+00:00\",\n      \"updated_at\": \"2026-11-01T09:46:46+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Create lead",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('lead created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const lead = pm.response.json().data.lead;",
+                      "    pm.expect(lead.id).to.be.a('string').and.not.empty;",
+                      "    pm.expect(lead.lifecycle_stage).to.eql('LEAD_CAPTURED');",
+                      "    pm.collectionVariables.set('leadId', lead.id);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Sarah Chen\",\n  \"email\": \"sarah.{{$timestamp}}@example.com\",\n  \"phone\": \"+1 555 0100\",\n  \"company\": \"Nova Studio\",\n  \"source\": \"Landing page\",\n  \"owner\": \"Alex Morgan\",\n  \"value\": 1200,\n  \"pipeline_id\": \"{{pipelineId}}\",\n  \"lifecycle_stage\": \"LEAD_CAPTURED\",\n  \"tags\": [\"Coaching\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/leads",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "leads"
+                  ]
+                },
+                "description": "The server assigns the lead id. Do not send id, tenant_id, or activities."
+              },
+              "response": [
+                {
+                  "name": "Create lead",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Sarah Chen\",\n  \"email\": \"sarah.{{$timestamp}}@example.com\",\n  \"phone\": \"+1 555 0100\",\n  \"company\": \"Nova Studio\",\n  \"source\": \"Landing page\",\n  \"owner\": \"Alex Morgan\",\n  \"value\": 1200,\n  \"pipeline_id\": \"{{pipelineId}}\",\n  \"lifecycle_stage\": \"LEAD_CAPTURED\",\n  \"tags\": [\"Coaching\"]\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/leads",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "leads"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "201"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-encoding",
+                      "value": "gzip"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:46:46 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin, Accept-Encoding"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "MISS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::rhqvh-1793526405932-3361a2fa74c5"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "576"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"lead\": {\n      \"id\": \"afc0eceb-40c9-4b13-aa50-dfbd5ee5efc9\",\n      \"name\": \"Sarah Chen\",\n      \"email\": \"sarah.1793526406@example.com\",\n      \"phone\": \"+1 555 0100\",\n      \"company\": \"Nova Studio\",\n      \"source\": \"Landing page\",\n      \"owner\": \"Alex Morgan\",\n      \"value\": 1200,\n      \"pipeline_id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n      \"lifecycle_stage\": \"LEAD_CAPTURED\",\n      \"stage\": \"LEAD_CAPTURED\",\n      \"tags\": [\n        \"Coaching\"\n      ],\n      \"archived\": false,\n      \"qualification_status\": \"Pending\",\n      \"booking_status\": \"Not Scheduled\",\n      \"follow_up_state\": \"NEW\",\n      \"has_whatsapp_consent\": false,\n      \"has_messaging_consent\": false,\n      \"has_email_consent\": false,\n      \"next_follow_up\": null,\n      \"next_follow_up_at\": null,\n      \"notes\": [],\n      \"tasks\": [],\n      \"activities\": [\n        {\n          \"id\": \"8e6c531c-265f-4298-9927-0a2c9629adb3\",\n          \"type\": \"capture\",\n          \"title\": \"Lead captured\",\n          \"detail\": \"Added to CRM\",\n          \"at\": \"2026-11-01T09:46:46+00:00\"\n        }\n      ],\n      \"interest\": \"\",\n      \"photo_url\": null,\n      \"avatar\": \"SC\",\n      \"color\": \"lilac\",\n      \"last_activity\": \"2026-11-01T09:46:46+00:00\",\n      \"created_at\": \"2026-11-01T09:46:46+00:00\",\n      \"updated_at\": \"2026-11-01T09:46:46+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update lead",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('lead updated', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    pm.expect(pm.response.json().data.lead.phone).to.eql('+1 555 0199');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+1 555 0199\",\n  \"owner\": \"Jamie Park\",\n  \"value\": 1500\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "crm",
+                    "leads",
+                    "{{leadId}}"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Update lead",
+                  "originalRequest": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"phone\": \"+1 555 0199\",\n  \"owner\": \"Jamie Park\",\n  \"value\": 1500\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "api",
+                        "v1",
+                        "crm",
+                        "leads",
+                        "{{leadId}}"
+                      ]
+                    }
+                  },
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": ":status",
+                      "value": "200"
+                    },
+                    {
+                      "key": "cache-control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "content-encoding",
+                      "value": "gzip"
+                    },
+                    {
+                      "key": "content-type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "date",
+                      "value": "Sun, 01 Nov 2026 09:50:14 GMT"
+                    },
+                    {
+                      "key": "server",
+                      "value": "Vercel"
+                    },
+                    {
+                      "key": "strict-transport-security",
+                      "value": "max-age=63072000; includeSubDomains; preload"
+                    },
+                    {
+                      "key": "vary",
+                      "value": "Origin, Accept-Encoding"
+                    },
+                    {
+                      "key": "x-powered-by",
+                      "value": "PHP/8.4.27"
+                    },
+                    {
+                      "key": "x-ratelimit-limit",
+                      "value": "60"
+                    },
+                    {
+                      "key": "x-ratelimit-remaining",
+                      "value": "59"
+                    },
+                    {
+                      "key": "x-vercel-cache",
+                      "value": "MISS"
+                    },
+                    {
+                      "key": "x-vercel-id",
+                      "value": "fra1::iad1::mvg8x-1793526613308-bbf899418802"
+                    },
+                    {
+                      "key": "content-length",
+                      "value": "585"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"success\": true,\n  \"data\": {\n    \"lead\": {\n      \"id\": \"afc0eceb-40c9-4b13-aa50-dfbd5ee5efc9\",\n      \"name\": \"Sarah Chen\",\n      \"email\": \"sarah.1793526406@example.com\",\n      \"phone\": \"+1 555 0199\",\n      \"company\": \"Nova Studio\",\n      \"source\": \"Landing page\",\n      \"owner\": \"Jamie Park\",\n      \"value\": 1500,\n      \"pipeline_id\": \"876e208f-603d-4e94-9836-c201a993cd22\",\n      \"lifecycle_stage\": \"LEAD_CAPTURED\",\n      \"stage\": \"LEAD_CAPTURED\",\n      \"tags\": [\n        \"Coaching\"\n      ],\n      \"archived\": false,\n      \"qualification_status\": \"Pending\",\n      \"booking_status\": \"Not Scheduled\",\n      \"follow_up_state\": \"NEW\",\n      \"has_whatsapp_consent\": false,\n      \"has_messaging_consent\": false,\n      \"has_email_consent\": false,\n      \"next_follow_up\": null,\n      \"next_follow_up_at\": null,\n      \"notes\": [],\n      \"tasks\": [],\n      \"activities\": [\n        {\n          \"id\": \"8e6c531c-265f-4298-9927-0a2c9629adb3\",\n          \"type\": \"capture\",\n          \"title\": \"Lead captured\",\n          \"detail\": \"Added to CRM\",\n          \"at\": \"2026-11-01T09:46:46+00:00\"\n        }\n      ],\n      \"interest\": \"\",\n      \"photo_url\": null,\n      \"avatar\": \"SC\",\n      \"color\": \"lilac\",\n      \"last_activity\": \"2026-11-01T09:50:13+00:00\",\n      \"created_at\": \"2026-11-01T09:46:46+00:00\",\n      \"updated_at\": \"2026-11-01T09:50:13+00:00\"\n    }\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "List presets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('five presets', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.presets).to.have.lengthOf(5);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/pipelines/presets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "pipelines",
+                "presets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Install preset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('preset installed', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.collectionVariables.set('presetPipelineId', pm.response.json().data.pipeline.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/pipelines/presets/follow-up",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "pipelines",
+                "presets",
+                "follow-up"
+              ]
+            },
+            "description": "Other keys: new-lead, service-business, consultation-booking, sales-high-ticket. The server assigns the id and the stages. Send an empty body."
+          },
+          "response": []
+        },
+        {
+          "name": "Move stage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('stage moved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.lead.lifecycle_stage).to.eql('CONTACT_CREATED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lifecycle_stage\": \"CONTACT_CREATED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}/stage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "{{leadId}}",
+                "stage"
+              ]
+            },
+            "description": "Use a stage id that belongs to pipeline main: LEAD_CAPTURED, CONTACT_CREATED, QUALIFIED, CONVERSATION, or PAYMENT_COMPLETED."
+          },
+          "response": []
+        },
+        {
+          "name": "Add note",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('note saved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const lead = pm.response.json().data.lead;",
+                  "    pm.expect(lead.notes[0]).to.eql('Called the studio');",
+                  "    pm.expect(lead.activities[0].type).to.eql('note');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called the studio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "{{leadId}}",
+                "notes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export leads",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('csv export', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "    pm.expect(pm.response.text()).to.include('name,email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/csv"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/export?pipeline_id={{pipelineId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "pipeline_id",
+                  "value": "{{pipelineId}}"
+                }
+              ]
+            },
+            "description": "CSV download for this tenant only. Formula-like cells are prefixed."
+          },
+          "response": []
+        },
+        {
+          "name": "Import leads",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('import added a row', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.import.added).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pipeline_id\": \"{{pipelineId}}\",\n  \"duplicates\": \"skip\",\n  \"mapping\": {\n    \"name\": 0,\n    \"email\": 1,\n    \"company\": 2,\n    \"value\": 3\n  },\n  \"csv\": \"name,email,company,value\\nOmar Ali,omar.{{$timestamp}}@example.com,Northstar,500\\n\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "import"
+              ]
+            },
+            "description": "duplicates is skip or update. New rows get server ids and enter the first stage of the pipeline. There is no id column."
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('tag applied', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.leads[0].tags).to.include('High Intent');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lead_ids\": [\"{{leadId}}\"],\n  \"action\": \"tag\",\n  \"value\": \"High Intent\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/bulk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "bulk"
+              ]
+            },
+            "description": "action is tag, owner, stage, or delete. delete does not take value. A missing id fails the whole batch."
+          },
+          "response": []
+        }
+      ],
+      "description": "Requires the bootstrap command and a Firebase token for that USER or ADMIN. Uses pipeline main."
+    },
+    {
+      "name": "CRM — more examples",
+      "item": [
+        {
+          "name": "Bulk assign owner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lead_ids\": [\"{{leadId}}\"],\n  \"action\": \"owner\",\n  \"value\": \"Taylor Reed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/bulk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "bulk"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk move stage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lead_ids\": [\"{{leadId}}\"],\n  \"action\": \"stage\",\n  \"value\": \"QUALIFIED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/bulk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "bulk"
+              ]
+            },
+            "description": "Every selected lead's pipeline must contain this stage. QUALIFIED is on pipeline main."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete lead",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crm/leads/{{leadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crm",
+                "leads",
+                "{{leadId}}"
+              ]
+            },
+            "description": "Releases the email so it can be used again in this workspace. This removes the lead saved by Create lead."
+          },
+          "response": []
+        }
+      ],
+      "description": "These are not part of the ordered run. Create pipeline saves pipelineId, which points later lead requests away from main until you set pipelineId back to main."
+    },
+    {
+      "name": "AI and inbox — run in order",
+      "item": [
+        {
+          "name": "Reject client tenant id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('client tenant id is rejected', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    pm.expect(pm.response.json().error.code).to.eql('validation_failed');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_id\": \"someone-else\",\n  \"name\": \"Ignored\",\n  \"type\": \"text\",\n  \"content\": \"This must not be stored.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "A tenant_id in the body is rejected. X-Tenant-ID is ignored even if you add it."
+          },
+          "response": []
+        },
+        {
+          "name": "Show assistant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('assistant settings load', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const assistant = pm.response.json().data.assistant;",
+                  "    pm.expect(assistant.live_enabled).to.be.a('boolean');",
+                  "    pm.expect(assistant.channels.whatsapp).to.be.a('boolean');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/assistant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "assistant"
+              ]
+            },
+            "description": "Live replies are off until a later request in this folder enables WhatsApp."
+          },
+          "response": []
+        },
+        {
+          "name": "Create text source",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('text source is accepted', function () {",
+                  "    pm.response.to.have.status(202);",
+                  "    const source = pm.response.json().data.source;",
+                  "    pm.expect(source.id).to.be.a('string').and.not.empty;",
+                  "    pm.expect(['queued', 'processing', 'ready']).to.include(source.status);",
+                  "    pm.collectionVariables.set('sourceId', source.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coaching notes\",\n  \"type\": \"text\",\n  \"content\": \"We offer online coaching for twelve weeks. Sessions are in Cairo. The program does not include bicycles.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Returns 202 while the source is queued. php artisan queue:work embeds it and marks it ready."
+          },
+          "response": []
+        },
+        {
+          "name": "Get source",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('source is ready', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const source = pm.response.json().data.source;",
+                  "    pm.expect(source.status, 'Run php artisan queue:work, then send Get source again.').to.eql('ready');",
+                  "    pm.expect(source.chunk_count).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources/{{sourceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources",
+                "{{sourceId}}"
+              ]
+            },
+            "description": "Send again after the queue worker finishes. The test passes only when status is ready."
+          },
+          "response": []
+        },
+        {
+          "name": "Create instructions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('instructions are accepted', function () {",
+                  "    pm.response.to.have.status(202);",
+                  "    pm.expect(pm.response.json().data.source.type).to.eql('instructions');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tone\",\n  \"type\": \"instructions\",\n  \"content\": \"Never invent a price. If the notes do not answer, say a teammate will follow up.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Instructions are stored for the prompt. They are not embedded and do not count as searchable knowledge."
+          },
+          "response": []
+        },
+        {
+          "name": "Ask playground",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('playground answers from the notes', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const test = pm.response.json().data.test;",
+                  "    pm.expect(test.outcome).to.eql('answered');",
+                  "    pm.expect(test.answer).to.be.a('string').and.not.empty;",
+                  "    pm.expect(test.citations.length).to.be.above(0);",
+                  "    pm.collectionVariables.set('playgroundTestId', test.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Do you have online coaching?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/playground",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "playground"
+              ]
+            },
+            "description": "Uses the same answer service as the inbox. Run this only after Get source is ready."
+          },
+          "response": []
+        },
+        {
+          "name": "Grade playground answer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('grade is stored', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.test.verdict).to.eql('correct');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verdict\": \"correct\",\n  \"note\": \"Matched the coaching notes.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/playground/{{playgroundTestId}}/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "playground",
+                "{{playgroundTestId}}",
+                "grade"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List playground tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('graded test is listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const tests = pm.response.json().data.tests;",
+                  "    pm.expect(tests.length).to.be.above(0);",
+                  "    pm.expect(tests.some(function (test) { return test.id === pm.collectionVariables.get('playgroundTestId') && test.verdict === 'correct'; })).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/playground",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "playground"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Turn live replies off",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('live replies are off', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.assistant.live_enabled).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"live_enabled\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/assistant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "assistant"
+              ]
+            },
+            "description": "Resets live replies so the next inbox request stays paused, including when this folder is run again."
+          },
+          "response": []
+        },
+        {
+          "name": "Inbox while live is off",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('live replies stay off', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.outcome).to.eql('paused');",
+                  "    pm.expect(data.reply).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"whatsapp\",\n  \"external_thread_id\": \"thread-paused-{{$timestamp}}\",\n  \"external_message_id\": \"wamid-paused-{{$timestamp}}\",\n  \"customer_name\": \"Omar\",\n  \"body\": \"Do you have online coaching?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "messages"
+              ]
+            },
+            "description": "The customer message is stored. No AI reply is sent while live replies are off."
+          },
+          "response": []
+        },
+        {
+          "name": "Enable WhatsApp replies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('whatsapp can reply', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const assistant = pm.response.json().data.assistant;",
+                  "    pm.expect(assistant.live_enabled).to.eql(true);",
+                  "    pm.expect(assistant.channels.whatsapp).to.eql(true);",
+                  "    pm.expect(assistant.channels.instagram).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"live_enabled\": true,\n  \"channels\": {\n    \"whatsapp\": true,\n    \"instagram\": false,\n    \"messenger\": false,\n    \"facebook\": false,\n    \"webchat\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/assistant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "assistant"
+              ]
+            },
+            "description": "Turns live replies on for WhatsApp only. Instagram stays paused."
+          },
+          "response": []
+        },
+        {
+          "name": "Inbox answer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('externalMessageId', 'wamid-answer-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('whatsapp receives an answer', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.outcome).to.eql('answered');",
+                  "    pm.expect(data.reply.body).to.be.a('string').and.not.empty;",
+                  "    pm.collectionVariables.set('conversationId', data.conversation.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"whatsapp\",\n  \"external_thread_id\": \"thread-coach\",\n  \"external_message_id\": \"{{externalMessageId}}\",\n  \"customer_name\": \"Omar\",\n  \"body\": \"Do you have online coaching?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Duplicate inbox message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('duplicate does not create another reply', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.outcome).to.eql('duplicate');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"whatsapp\",\n  \"external_thread_id\": \"thread-coach\",\n  \"external_message_id\": \"{{externalMessageId}}\",\n  \"customer_name\": \"Omar\",\n  \"body\": \"Do you have online coaching?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "messages"
+              ]
+            },
+            "description": "The same external_message_id must not call the model again."
+          },
+          "response": []
+        },
+        {
+          "name": "Inbox handoff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('missing evidence does not send a reply', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.outcome).to.eql('handoff');",
+                  "    pm.expect(data.reply).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"whatsapp\",\n  \"external_thread_id\": \"thread-handoff-{{$timestamp}}\",\n  \"external_message_id\": \"wamid-handoff-{{$timestamp}}\",\n  \"customer_name\": \"Omar\",\n  \"body\": \"What is your refund policy for gift cards?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "messages"
+              ]
+            },
+            "description": "The coaching notes do not mention gift cards, so the API stores the message and does not send an AI reply."
+          },
+          "response": []
+        },
+        {
+          "name": "List conversations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('conversations are listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.conversations.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "conversations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Show conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('thread contains the customer message and the reply', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const messages = pm.response.json().data.messages;",
+                  "    pm.expect(messages.length).to.be.above(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/conversations/{{conversationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "conversations",
+                "{{conversationId}}"
+              ]
+            },
+            "description": "Opens the WhatsApp thread saved by Inbox answer."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete text source",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('source is deleted', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.deleted).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources/{{sourceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources",
+                "{{sourceId}}"
+              ]
+            },
+            "description": "Removes the coaching source created above, including its chunks."
+          },
+          "response": []
+        }
+      ],
+      "description": "Needs a workspace user, OPENAI_API_KEY, and php artisan queue:work. Live replies start off. The folder turns WhatsApp on only after the playground request."
+    },
+    {
+      "name": "AI — optional file",
+      "item": [
+        {
+          "name": "Upload a knowledge file",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "GOS coaching",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "file",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "Select one .txt, .md, .csv, or .pdf file. Do not select a folder.",
+                  "src": [
+                    "/C:/Users/moham/Herd/ai-follow-up/http/gos-knowledge.md"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": []
+        },
+        {
+          "name": "List sources",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Not part of the ordered run. Attach a small .txt, .md, .csv, or .pdf before sending. The file stays on the private disk."
+    },
+    {
+      "name": "Training Cycle",
+      "item": [
+        {
+          "name": "Upload a knowledge file",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "GOS coaching",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "file",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "Select one .txt, .md, .csv, or .pdf file. Do not select a folder.",
+                  "src": [
+                    "/C:/Users/moham/Herd/ai-follow-up/http/gos-knowledge.md"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "Upload a knowledge file",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "GOS coaching",
+                      "type": "text"
+                    },
+                    {
+                      "key": "type",
+                      "value": "file",
+                      "type": "text"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "description": "Select one .txt, .md, .csv, or .pdf file. Do not select a folder.",
+                      "src": [
+                        "/C:/Users/moham/Herd/ai-follow-up/http/gos-knowledge.md"
+                      ]
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/sources",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "sources"
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 11:43:15 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"source\": {\n      \"id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n      \"name\": \"GOS coaching\",\n      \"type\": \"file\",\n      \"status\": \"queued\",\n      \"detail\": \"Queued\",\n      \"url\": null,\n      \"parent_id\": null,\n      \"progress_percent\": 0,\n      \"chunks_done\": 0,\n      \"chunks_total\": 0,\n      \"chunk_count\": 0,\n      \"item_count\": 0,\n      \"error\": null,\n      \"synced_at\": null,\n      \"created_at\": \"2026-11-02T11:43:03+00:00\",\n      \"updated_at\": \"2026-11-02T11:43:03+00:00\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload a knowledge text",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Calendar\",\r\n  \"type\": \"text\",\r\n  \"content\": \"Tuesday 4pm is open with Khalid. Delivery inside Riyadh is SAR 480. Setup fee is SAR 18000\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "Upload a knowledge text",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Calendar\",\r\n  \"type\": \"text\",\r\n  \"content\": \"Tuesday 4pm is open with Khalid. Delivery inside Riyadh is SAR 480. Setup fee is SAR 18000\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/sources",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "sources"
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 11:43:49 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"source\": {\n      \"id\": \"6c9db552-a25a-4bc4-9e1b-b7227cc5b940\",\n      \"name\": \"Calendar\",\n      \"type\": \"text\",\n      \"status\": \"queued\",\n      \"detail\": \"Queued\",\n      \"url\": null,\n      \"parent_id\": null,\n      \"progress_percent\": 0,\n      \"chunks_done\": 0,\n      \"chunks_total\": 0,\n      \"chunk_count\": 0,\n      \"item_count\": 0,\n      \"error\": null,\n      \"synced_at\": null,\n      \"created_at\": \"2026-11-02T11:43:46+00:00\",\n      \"updated_at\": \"2026-11-02T11:43:46+00:00\",\n      \"content\": \"Tuesday 4pm is open with Khalid. Delivery inside Riyadh is SAR 480. Setup fee is SAR 18000\",\n      \"faqs\": null\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload a knowledge as website",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "Upload a knowledge as website",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/sources",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "sources"
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 11:44:24 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"source\": {\n      \"id\": \"f9fb3d09-5e0c-4b17-a86a-9f3de5ba9f65\",\n      \"name\": \"Website\",\n      \"type\": \"url\",\n      \"status\": \"queued\",\n      \"detail\": \"Queued\",\n      \"url\": \"https://example.com\",\n      \"parent_id\": null,\n      \"progress_percent\": 0,\n      \"chunks_done\": 0,\n      \"chunks_total\": 0,\n      \"chunk_count\": 0,\n      \"item_count\": 0,\n      \"error\": null,\n      \"synced_at\": null,\n      \"created_at\": \"2026-11-02T11:44:20+00:00\",\n      \"updated_at\": \"2026-11-02T11:44:20+00:00\",\n      \"content\": null,\n      \"faqs\": null\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "progress of all knowledge bases",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/training",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "training"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "progress of all knowledge bases",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/training",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "training"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 11:45:35 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"files\": {\n      \"ready\": 1,\n      \"limit\": 10,\n      \"items\": [\n        {\n          \"id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n          \"name\": \"GOS coaching\",\n          \"status\": \"queued\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Queued\"\n        },\n        {\n          \"id\": \"0e2abc22-6e37-4933-a7a7-3e3407b784a7\",\n          \"name\": \"GOS coaching\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        },\n        {\n          \"id\": \"19eab719-5c94-4f70-b762-ab1ad32be3a3\",\n          \"name\": \"Hours\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        },\n        {\n          \"id\": \"2a710d65-bf8c-4b36-b003-54d00219acdd\",\n          \"name\": \"GOS coaching\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        },\n        {\n          \"id\": \"2db4aec4-dcf7-400f-b7e5-73cb6116e384\",\n          \"name\": \"GOS coaching\",\n          \"status\": \"queued\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Queued\"\n        },\n        {\n          \"id\": \"3f4fff3b-c1ea-4698-82ec-ffd7b590747d\",\n          \"name\": \"Hours\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        },\n        {\n          \"id\": \"7100d0bf-bd94-47f7-b3b4-56ddb83ca015\",\n          \"name\": \"Hours\",\n          \"status\": \"ready\",\n          \"progress_percent\": 100,\n          \"path\": null,\n          \"detail\": \"1 documents · Ready for answers\"\n        },\n        {\n          \"id\": \"a262cd5b-3ed5-4540-80a4-4381721e4257\",\n          \"name\": \"Hours\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        },\n        {\n          \"id\": \"ac4c3784-ca84-4b59-af47-150b12085bf6\",\n          \"name\": \"Hours\",\n          \"status\": \"failed\",\n          \"progress_percent\": 0,\n          \"path\": null,\n          \"detail\": \"Failed\"\n        }\n      ]\n    },\n    \"links\": {\n      \"ready\": 0,\n      \"limit\": 50,\n      \"items\": []\n    },\n    \"embedding_percent\": 0\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "get one source progress",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/sources/{{sourceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "sources",
+                "{{sourceId}}"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "get one source progress",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Website\",\r\n  \"type\": \"url\",\r\n  \"url\": \"example.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/playground",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "playground"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 22:39:02 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"source\": {\n      \"id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n      \"name\": \"GOS coaching\",\n      \"type\": \"file\",\n      \"status\": \"queued\",\n      \"detail\": \"Queued\",\n      \"url\": null,\n      \"parent_id\": null,\n      \"progress_percent\": 0,\n      \"chunks_done\": 0,\n      \"chunks_total\": 0,\n      \"chunk_count\": 0,\n      \"item_count\": 0,\n      \"error\": null,\n      \"synced_at\": null,\n      \"created_at\": \"2026-11-02T11:43:03+00:00\",\n      \"updated_at\": \"2026-11-02T11:43:03+00:00\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "testing the agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"question\": \"Can I book Tuesday 4pm with Khalid?\",\r\n  \"channel\": \"whatsapp\",\r\n  \"city\": \"Riyadh\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/playground",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "playground"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "testing the agent",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"question\": \"Can I book Tuesday 4pm with Khalid?\",\r\n  \"channel\": \"whatsapp\",\r\n  \"city\": \"Riyadh\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/playground",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "playground"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 22:45:30 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"test\": {\n      \"id\": \"9d48b5e6-8f26-4d94-93c0-fdd5ef98fa36\",\n      \"question\": \"Can I book Tuesday 4pm with Khalid?\",\n      \"answer\": \"A teammate will follow up with you regarding the availability of booking a session with Khalid on Tuesday at 4 PM.\",\n      \"outcome\": \"answered\",\n      \"citations\": [\n        {\n          \"source_id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n          \"source_name\": \"GOS coaching\",\n          \"excerpt\": \"sfer or card link. The program starts after the first payment clears. A session cancelled more than 24 hours ahead is rescheduled once at no charge. A late cancellation or a no-show uses that session.\\n\\n## Frequently asked questions\\n\\nQuestio\",\n          \"score\": 0.4336\n        },\n        {\n          \"source_id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n          \"source_name\": \"GOS coaching\",\n          \"excerpt\": \"# GOS Coaching — knowledge base\\n\\nGOS Coaching helps service businesses reply to new leads, book consultations, and follow up until the client pays. The studio is in Dubai Marina. Sessions are online on Zoom or in person at Office 1204, Mari\",\n          \"score\": 0.3895\n        },\n        {\n          \"source_id\": \"047a0313-ca51-4bc1-816c-2221f6e1568a\",\n          \"source_name\": \"Coaching notes\",\n          \"excerpt\": \"We offer online coaching for twelve weeks. Sessions are in Cairo. The program does not include bicycles.\",\n          \"score\": 0.3186\n        }\n      ],\n      \"verdict\": null,\n      \"note\": null,\n      \"context_consistent\": true,\n      \"channel\": \"whatsapp\",\n      \"city\": \"Riyadh\",\n      \"messages\": [\n        {\n          \"role\": \"user\",\n          \"content\": \"Can I book Tuesday 4pm with Khalid?\"\n        },\n        {\n          \"role\": \"assistant\",\n          \"content\": \"A teammate will follow up with you regarding the availability of booking a session with Khalid on Tuesday at 4 PM.\"\n        }\n      ],\n      \"created_at\": \"2026-11-02T22:45:28+00:00\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "continue on same testing chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"session_id\": \"9d48b5e6-8f26-4d94-93c0-fdd5ef98fa36\",\r\n  \"question\": \"What is the delivery fee?\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/playground",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "playground"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "continue on same testing chat",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"session_id\": \"9d48b5e6-8f26-4d94-93c0-fdd5ef98fa36\",\r\n  \"question\": \"What is the delivery fee?\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/playground",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "playground"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 22:49:39 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"test\": {\n      \"id\": \"9d48b5e6-8f26-4d94-93c0-fdd5ef98fa36\",\n      \"question\": \"What is the delivery fee?\",\n      \"answer\": \"The delivery fee inside Riyadh is SAR 480.\",\n      \"outcome\": \"answered\",\n      \"citations\": [\n        {\n          \"source_id\": \"6c9db552-a25a-4bc4-9e1b-b7227cc5b940\",\n          \"source_name\": \"Calendar\",\n          \"excerpt\": \"Tuesday 4pm is open with Khalid. Delivery inside Riyadh is SAR 480. Setup fee is SAR 18000\",\n          \"score\": 0.6178\n        },\n        {\n          \"source_id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n          \"source_name\": \"GOS coaching\",\n          \"excerpt\": \"sfer or card link. The program starts after the first payment clears. A session cancelled more than 24 hours ahead is rescheduled once at no charge. A late cancellation or a no-show uses that session.\\n\\n## Frequently asked questions\\n\\nQuestio\",\n          \"score\": 0.3425\n        },\n        {\n          \"source_id\": \"085cf478-a261-4318-b51c-68835b6d45d5\",\n          \"source_name\": \"GOS coaching\",\n          \"excerpt\": \"# GOS Coaching — knowledge base\\n\\nGOS Coaching helps service businesses reply to new leads, book consultations, and follow up until the client pays. The studio is in Dubai Marina. Sessions are online on Zoom or in person at Office 1204, Mari\",\n          \"score\": 0.3147\n        },\n        {\n          \"source_id\": \"047a0313-ca51-4bc1-816c-2221f6e1568a\",\n          \"source_name\": \"Coaching notes\",\n          \"excerpt\": \"We offer online coaching for twelve weeks. Sessions are in Cairo. The program does not include bicycles.\",\n          \"score\": 0.285\n        }\n      ],\n      \"verdict\": null,\n      \"note\": null,\n      \"context_consistent\": true,\n      \"channel\": \"whatsapp\",\n      \"city\": \"Riyadh\",\n      \"messages\": [\n        {\n          \"role\": \"user\",\n          \"content\": \"Can I book Tuesday 4pm with Khalid?\"\n        },\n        {\n          \"role\": \"assistant\",\n          \"content\": \"A teammate will follow up with you regarding the availability of booking a session with Khalid on Tuesday at 4 PM.\"\n        },\n        {\n          \"role\": \"user\",\n          \"content\": \"What is the delivery fee?\"\n        },\n        {\n          \"role\": \"assistant\",\n          \"content\": \"The delivery fee inside Riyadh is SAR 480.\"\n        }\n      ],\n      \"created_at\": \"2026-11-02T22:45:28+00:00\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "connect to the meta software",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"enabled\": true }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/channels/instagram",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "channels",
+                "instagram"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "connect to the meta software",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"enabled\": true }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/channels/webchat",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "channels",
+                    "webchat"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 23:01:24 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"channel\": {\n      \"channel\": \"webchat\",\n      \"status\": \"connected\",\n      \"enabled\": true,\n      \"external_id\": null\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "get connected channels",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"enabled\": true }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/channels",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "channels"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "get connected channels",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"enabled\": true }",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/channels",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "channels"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 23:03:33 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "60"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"channels\": [\n      {\n        \"channel\": \"whatsapp\",\n        \"status\": \"idle\",\n        \"enabled\": false,\n        \"external_id\": null\n      },\n      {\n        \"channel\": \"instagram\",\n        \"status\": \"idle\",\n        \"enabled\": false,\n        \"external_id\": null\n      },\n      {\n        \"channel\": \"messenger\",\n        \"status\": \"idle\",\n        \"enabled\": false,\n        \"external_id\": null\n      },\n      {\n        \"channel\": \"facebook\",\n        \"status\": \"idle\",\n        \"enabled\": false,\n        \"external_id\": null\n      },\n      {\n        \"channel\": \"webchat\",\n        \"status\": \"connected\",\n        \"enabled\": true,\n        \"external_id\": null\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "turn live replies on",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"live_enabled\": true,\r\n  \"channels\": { \"webchat\": true }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/assistant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "assistant"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "turn live replies on",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"live_enabled\": true,\r\n  \"channels\": { \"webchat\": true }\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ai/assistant",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ai",
+                    "assistant"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 23:06:12 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "58"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"assistant\": {\n      \"name\": \"GOS Assistant\",\n      \"role\": \"Helpful business assistant\",\n      \"language\": \"Auto-detect Arabic / English\",\n      \"tone\": \"Friendly and professional\",\n      \"goal\": \"Answer from the workspace knowledge base\",\n      \"live_enabled\": true,\n      \"channels\": {\n        \"whatsapp\": false,\n        \"instagram\": false,\n        \"messenger\": false,\n        \"facebook\": false,\n        \"webchat\": true\n      },\n      \"updated_at\": \"2026-11-02T23:06:09+00:00\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "go live",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"channel\": \"webchat\",\r\n  \"external_thread_id\": \"customer-1\",\r\n  \"external_message_id\": \"msg-1\",\r\n  \"customer_name\": \"Nora\",\r\n  \"phone\": \"966500000000\",\r\n  \"body\": \"Tuesday 4pm\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inbox/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inbox",
+                "messages"
+              ]
+            },
+            "description": "Do not set Content-Type yourself. Postman adds the multipart boundary. Then run the queue worker and open the new source from List sources."
+          },
+          "response": [
+            {
+              "name": "go live",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"channel\": \"webchat\",\r\n  \"external_thread_id\": \"customer-1\",\r\n  \"external_message_id\": \"msg-1\",\r\n  \"customer_name\": \"Nora\",\r\n  \"phone\": \"966500000000\",\r\n  \"body\": \"Tuesday 4pm\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/inbox/messages",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "inbox",
+                    "messages"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Host",
+                  "value": "127.0.0.1:8000"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "PHP/8.4.23"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Nov 2026 23:10:01 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-RateLimit-Limit",
+                  "value": "60"
+                },
+                {
+                  "key": "X-RateLimit-Remaining",
+                  "value": "59"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"conversation\": {\n      \"id\": \"49609351-8407-4898-a6e5-5bbac97bb50d\",\n      \"channel\": \"webchat\",\n      \"external_thread_id\": \"customer-1\",\n      \"customer_name\": \"Nora\",\n      \"last_message\": null,\n      \"ai_state\": \"paused\",\n      \"phone\": \"966500000000\",\n      \"last_action\": null,\n      \"created_at\": \"2026-11-02T23:07:05+00:00\",\n      \"updated_at\": \"2026-11-02T23:07:05+00:00\"\n    },\n    \"inbound\": {\n      \"id\": \"44558963-4cae-4032-a515-4403f31c777c\",\n      \"conversation_id\": \"49609351-8407-4898-a6e5-5bbac97bb50d\",\n      \"direction\": \"inbound\",\n      \"actor\": \"customer\",\n      \"body\": \"Tuesday 4pm\",\n      \"outcome\": null,\n      \"citations\": [],\n      \"delivered_at\": null,\n      \"created_at\": \"2026-11-02T23:07:05+00:00\"\n    },\n    \"reply\": null,\n    \"outcome\": \"duplicate\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{firebaseIdToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "firebaseIdToken",
+      "value": "PASTE_A_FIREBASE_ID_TOKEN"
+    },
+    {
+      "key": "pipelineId",
+      "value": "main"
+    },
+    {
+      "key": "leadId",
+      "value": ""
+    },
+    {
+      "key": "sourceId",
+      "value": ""
+    },
+    {
+      "key": "playgroundTestId",
+      "value": ""
+    },
+    {
+      "key": "conversationId",
+      "value": ""
+    },
+    {
+      "key": "externalMessageId",
+      "value": ""
+    },
+    {
+      "key": "google_api_key_0ngw",
+      "secret": true
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { gosApi, type PlaygroundTest } from '../backend/gosApi';
+import { useEffect, useRef, useState } from 'react';
+import { gosApi, type PlaygroundTest, type PlaygroundContext } from '../backend/gosApi';
 import { showToast } from '../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import { 
@@ -33,6 +33,10 @@ export function GosPlayground() {
   const [gradingId, setGradingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [channel, setChannel] = useState('webchat');
+  const [city, setCity] = useState('');
+  const [context, setContext] = useState<PlaygroundContext>({});
+  const asking = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -53,17 +57,21 @@ export function GosPlayground() {
   async function handleAsk(e?: React.FormEvent) {
     if (e) e.preventDefault();
     const query = question.trim();
-    if (busy || !query) return;
+    if (asking.current || !query) return;
+    asking.current = true;
     setBusy(true);
     setError('');
     try {
-      const result = await gosApi.ask(query);
+      const result = await gosApi.ask(query, { channel, city: city.trim(), ...context });
+      if (!result.test?.id) throw new Error('The API did not return a playground test.');
+      setContext({ session_id: result.session_id ?? result.test.session_id ?? context.session_id, source_id: result.source_id ?? result.test.source_id ?? context.source_id });
       setTests(previous => [result.test, ...previous.filter(t => t.id !== result.test.id)]);
       showToast.success(translateText("Response generated successfully"));
     } catch (e) {
       setError((e as Error).message || translateText("Failed to generate response"));
       showToast.error((e as Error).message || translateText("Failed to test question"));
     } finally {
+      asking.current = false;
       setBusy(false);
     }
   }
@@ -117,6 +125,11 @@ export function GosPlayground() {
 
       {/* Input Composer */}
       <form onSubmit={handleAsk} className="af-playground-composer">
+        <div className="kp-playground-context">
+          <label>Channel <select value={channel} disabled={busy} onChange={event => { setChannel(event.target.value); setContext({}); }}>{['webchat', 'whatsapp', 'instagram', 'messenger'].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label>City <input value={city} disabled={busy} onChange={event => { setCity(event.target.value); setContext({}); }} maxLength={120}/></label>
+          <button type="button" className="af-text-action" disabled={busy} onClick={() => { setContext({}); setTests([]); }}>{translateText('New session')}</button>
+        </div>
         <div className="af-composer-input-wrap">
           <textarea
             rows={2}

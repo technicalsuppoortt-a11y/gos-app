@@ -4,7 +4,7 @@ import { callBackend, backendError } from '../backend/firebase';
 import { cloudStorage } from '../backend/workspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
-import { gosApi } from '../backend/gosApi';
+import { gosApi, type GosSourceInput } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
 import { useAgentConfiguration } from '../backend/useAgentConfiguration';
 import { GosPlayground } from './GosPlayground';
@@ -906,14 +906,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     if (uploading) return;
     const name = knowledgeName.trim() || knowledgeFile?.name || 'Text snippet';
     if (knowledgeType === 'file' ? !knowledgeFile : !knowledgeValue.trim()) { showToast.error('Add source content before saving.'); return; }
-    if (knowledgeType === 'url') { showToast.error('Website indexing is not supported by this API. Paste the page content as text instead.'); return; }
     if (knowledgeFile && knowledgeType === 'file' && !/\.(txt|md|csv|pdf)$/i.test(knowledgeFile.name)) { showToast.error('Choose a TXT, MD, CSV or PDF file.'); return; }
     setUploading(true);
     try {
-      let body: FormData | { name: string; type: string; content: string };
+      let body: FormData | GosSourceInput;
       if (knowledgeType === 'file' && knowledgeFile) {
         body = new FormData(); body.append('name', name); body.append('type', 'file'); body.append('file', knowledgeFile);
-      } else body = { name, type: knowledgeType, content: knowledgeValue.trim() };
+      } else if (knowledgeType === 'url') body = { name, type: 'url', url: knowledgeValue.trim() };
+      else body = { name, type: knowledgeType === 'file' ? 'text' : knowledgeType, content: knowledgeValue.trim() };
       const result = await gosApi.createSource(body);
       showToast.success(name + ' · ' + result.source.status);
       setKnowledgeName(''); setKnowledgeValue(''); setKnowledgeFileName(''); setKnowledgeFile(null); setModal(''); api.retry();

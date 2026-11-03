@@ -9,7 +9,10 @@ export const gosRequest = createGosTransport(import.meta.env.VITE_GOS_API_BASE_U
 }, fetch, checkGosToolPolicy);
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; content?: string; chunk_count?: number; error?: string };
 export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
-export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: unknown[]; verdict?: string };
+export type GosSourceInput = { name: string; type: 'url'; url: string } | { name: string; type: Exclude<GosSource['type'], 'file' | 'url'>; content: string };
+export type GosTraining = { files?: GosSource[]; links?: GosSource[]; embedding_percentage?: number; progress?: number };
+export type PlaygroundContext = { channel?: string; city?: string; session_id?: string; source_id?: string };
+export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: unknown[]; verdict?: string; session_id?: string; source_id?: string };
 export type ApiRecord = Record<string, any>;
 const id = encodeURIComponent;
 export const gosApi = {
@@ -19,12 +22,15 @@ export const gosApi = {
   firestoreStatus: () => gosRequest('/firestore/status'),
   sources: (signal?: AbortSignal) => gosRequest<{ sources: GosSource[] }>('/ai/sources', { signal }),
   source: (sourceId: string, signal?: AbortSignal) => gosRequest<{ source: GosSource }>(`/ai/sources/${id(sourceId)}`, { signal }),
-  createSource: (body: { name: string; type: string; content: string } | FormData) => gosRequest<{ source: GosSource }>('/ai/sources', { method: 'POST', body }),
+  createSource: (body: GosSourceInput | FormData) => gosRequest<{ source: GosSource }>('/ai/sources', { method: 'POST', body }),
+  training: (signal?: AbortSignal) => gosRequest<GosTraining & { training?: GosTraining }>('/ai/training', { signal }),
+  channels: (signal?: AbortSignal) => gosRequest<{ channels: Record<string, boolean | { enabled: boolean }> | { channel: string; enabled: boolean }[] }>('/ai/channels', { signal }),
+  updateChannel: (channel: string, enabled: boolean) => gosRequest<unknown>(`/ai/channels/${id(channel)}`, { method: 'PUT', body: { enabled } }),
   deleteSource: (sourceId: string) => gosRequest(`/ai/sources/${id(sourceId)}`, { method: 'DELETE' }),
   assistant: (signal?: AbortSignal) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { signal }),
   updateAssistant: (body: Partial<GosAssistant>) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
   playground: (signal?: AbortSignal) => gosRequest<{ tests: PlaygroundTest[] }>('/ai/playground', { signal }),
-  ask: (question: string) => gosRequest<{ test: PlaygroundTest }>('/ai/playground', { method: 'POST', body: { question } }),
+  ask: (question: string, context: PlaygroundContext = {}) => gosRequest<{ test: PlaygroundTest; session_id?: string; source_id?: string }>('/ai/playground', { method: 'POST', body: { question, ...context } }),
   grade: (testId: string, verdict: string, note = '') => gosRequest<{ test: PlaygroundTest }>(`/ai/playground/${id(testId)}/grade`, { method: 'POST', body: { verdict, note } }),
   conversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/inbox/conversations', { signal }),
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),

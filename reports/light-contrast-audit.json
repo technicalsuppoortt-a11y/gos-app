@@ -1,6 +1,6 @@
 {
-  "scannedStylesheets": 80,
-  "correctedDeclarations": 854,
+  "scannedStylesheets": 83,
+  "correctedDeclarations": 857,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -108,22 +108,22 @@
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 65,
+      "line": 71,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 69,
+      "line": 75,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 87,
+      "line": 93,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 118,
+      "line": 124,
       "utility": "text-slate-500"
     },
     {
@@ -6676,6 +6676,30 @@
       "before": "#9896a7",
       "after": "#334155",
       "contrastOnWhite": 2.89
+    },
+    {
+      "file": "src/pages/knowledge-demo.css",
+      "line": 90,
+      "selector": ".kd-orb-core>small",
+      "before": "#e4d7ff",
+      "after": "#475569",
+      "contrastOnWhite": 1.36
+    },
+    {
+      "file": "src/pages/knowledge-demo.css",
+      "line": 90,
+      "selector": ".kd-orb-core>b",
+      "before": "#e4d7ff",
+      "after": "#334155",
+      "contrastOnWhite": 1.36
+    },
+    {
+      "file": "src/pages/knowledge-production.css",
+      "line": 28,
+      "selector": ".kw-production .kp-orb-core small",
+      "before": "#e4d7ff",
+      "after": "#475569",
+      "contrastOnWhite": 1.36
     },
     {
       "file": "src/pages/legal-pages.css",

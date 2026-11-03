@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowRight, BookOpen, Check, CheckCircle2, FileText, Globe2, Layers, Loader2, Plus, Radio, RefreshCw, Sparkles, Trash2, UploadCloud, X } from 'lucide-react';
-import { gosApi, type GosAssistant, type GosSource } from '../backend/gosApi';
+import { gosApi, type GosAssistant, type GosSource, type GosSourceInput } from '../backend/gosApi';
 import { translateText as t } from '../i18n/display';
 import { showToast } from '../utils/toast';
 import { Select } from '../components/ui/Select';
@@ -30,6 +30,10 @@ const isPending = (source: GosSource) => ['queued', 'processing'].includes(sourc
 export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant, saving, updateAssistant, onTest, onConnect, assistantName = 'Your AI', conversations = [] }: Props) {
   const [step, setStep] = useState(0);
   const [demo, setDemo] = useState(false);
+  const [reportedProgress, setReportedProgress] = useState<number | null>(null);
+  const [sourceDetails, setSourceDetails] = useState<Record<string, GosSource>>({});
+  const [channelFlags, setChannelFlags] = useState<Record<string, boolean> | null>(null);
+  const [cycleError, setCycleError] = useState('');
   const [pending, setPending] = useState<PendingSource[]>([]);
   const [url, setUrl] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -52,14 +56,54 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const mutation = useRef(false);
   const categories = Array.from(new Set(['General', ...sources.map(s => categoryOf(s.name))]));
   const liveBatch = batch.map(source => sources.find(s => s.id === source.id) || source);
-  const trainingSources = liveBatch.length ? liveBatch : sources;
+  const trainingSources = (liveBatch.length ? liveBatch : sources).map(source => sourceDetails[source.id] || source);
   const ready = trainingSources.filter(s => s.status === 'ready').length;
-  const progress = trainingSources.length ? Math.round(ready / trainingSources.length * 100) : 0;
+  const progress = reportedProgress ?? (trainingSources.length ? Math.round(ready / trainingSources.length * 100) : 0);
   const processing = trainingSources.some(isPending);
   const canTest = trainingSources.length > 0 && trainingSources.every(s => s.status === 'ready') && !busy;
   const hasReady = sources.some(s => s.status === 'ready');
-  const connected = Object.values(assistant.channels).some(Boolean);
+  const cycleAssistant = { ...assistant, channels: channelFlags ?? assistant.channels };
+  const connected = Object.values(cycleAssistant.channels).some(Boolean);
   const visible = sources.filter(s => (filter === 'All categories' || categoryOf(s.name) === filter) && s.name.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(() => {
+    if (demo || (step !== 1 && step !== 3 && step !== 4)) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function syncCycle() {
+      try {
+        if (step === 1) {
+          const result = await gosApi.training(controller.signal);
+          const training = result.training ?? result;
+          const percent = training.embedding_percentage ?? training.progress;
+          if (percent !== undefined && (typeof percent !== 'number' || !Number.isFinite(percent))) throw new Error('The API returned invalid training progress.');
+          const details = await Promise.all((batch.length ? batch : sources).map(source => gosApi.source(source.id, controller.signal)));
+          if (controller.signal.aborted) return;
+          setReportedProgress(percent === undefined ? null : Math.max(0, Math.min(100, percent)));
+          setSourceDetails(Object.fromEntries(details.map(({ source }) => [source.id, source])));
+        } else {
+          const { channels } = await gosApi.channels(controller.signal);
+          if (!channels || typeof channels !== 'object') throw new Error('The API returned invalid channel data.');
+          const entries = Array.isArray(channels) ? channels.map(row => [row.channel, row.enabled] as const) : Object.entries(channels).map(([key, value]) => [key, typeof value === 'boolean' ? value : value.enabled] as const);
+          if (entries.some(([key, value]) => !key || typeof value !== 'boolean')) throw new Error('The API returned invalid channel settings.');
+          if (!controller.signal.aborted) setChannelFlags(Object.fromEntries(entries));
+        }
+        if (!controller.signal.aborted) { setCycleError(''); timer = setTimeout(syncCycle, step === 1 ? 4000 : 15000); }
+      } catch (e) {
+        if (!controller.signal.aborted) { setCycleError((e as Error).message); timer = setTimeout(syncCycle, 15000); }
+      }
+    }
+    void syncCycle();
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [step, demo, batch, sources]);
+
+  async function updateChannel(channel: string, enabled: boolean) {
+    try {
+      await gosApi.updateChannel(channel, enabled);
+      setChannelFlags(previous => ({ ...(previous ?? assistant.channels), [channel]: enabled }));
+      setCycleError('');
+    } catch (e) { setCycleError((e as Error).message); }
+  }
 
   useEffect(() => {
     if (choice && dialog.current && !dialog.current.open) dialog.current.showModal();
@@ -107,10 +151,10 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
     for (const item of pending) {
       try {
         const name = selected === 'General' ? item.name : `[${selected}] ${item.name}`;
-        let body: FormData | { name: string; type: string; content: string };
+        let body: FormData | GosSourceInput;
         if (item.file) {
           body = new FormData(); body.append('name', name); body.append('type', 'file'); body.append('file', item.file);
-        } else body = { name, type: item.url ? 'url' : item.kind || 'text', content: item.url || item.content || '' };
+        } else body = item.url ? { name, type: 'url', url: item.url } : { name, type: 'text', content: item.content || '' };
         const result = await gosApi.createSource(body);
         if (!result.source?.id) throw new Error(t('The server did not confirm this source. Refresh sources before retrying.'));
         created.push(result.source);
@@ -157,6 +201,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
 
     <div className="kp-workspace"><div className="kp-main">
     {error && <div className="kw-error" role="alert">{error}<button type="button" className="kw-button secondary" onClick={refresh} disabled={loading}>{t('Retry connection')}</button></div>}
+    {cycleError && <div className="kw-error" role="alert">{cycleError}</div>}
     {step === 0 && <div className="kw-upload-panel">
       <div className={`kw-dropzone ${dragging ? 'dragging' : ''}`} onDragOver={e => { e.preventDefault(); if (!busy) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}>
         <span className="kw-upload-icon"><UploadCloud size={34} strokeWidth={1.4}/></span><h3>{t('Drop your knowledge')}</h3><p>{t('Drag files here, or browse your device')}</p>
@@ -200,14 +245,14 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
         </div>
         <div className="kw-training-copy">
           <h3>{t(canTest ? 'Ready for a test drive' : 'A smarter assistant starts here')}</h3>
-          <p>{ready} / {trainingSources.length} {t('sources indexed. Percentages reflect completed sources.')}</p>
+          <p>{ready} / {trainingSources.length} {t(reportedProgress === null ? 'sources indexed. Percentages reflect completed sources.' : 'sources indexed. Overall embedding progress is reported by the server.')}</p>
           <div className="kw-phases">
             {['Reading', 'Embedding', 'Tuning'].map((phase, index) => <span key={phase}>
               <i className={canTest && index < 2 ? 'done' : ''}/>{t(phase)}
               <small>{t(index === 2 ? 'Not reported' : canTest ? 'Complete' : processing ? 'In progress' : index === 0 && busy ? 'Uploading' : 'Waiting')}</small>
             </span>)}
           </div>
-          <p className="kw-helper">{t('Individual embedding and tuning percentages are not reported by the server.')}</p>
+          <p className="kw-helper">{t('Source status and overall training progress refresh automatically.')}</p>
           <button type="button" className="kw-button primary" disabled={!canTest || loading || !!error} onClick={() => setStep(2)}>{t('Continue to test')}<ArrowRight size={14}/></button>
         </div>
       </div>
@@ -218,8 +263,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
       <GosPlayground/>
       <button type="button" className="kw-text-button kp-continue" onClick={() => setStep(3)}>{t('Continue to connect')}<ArrowRight size={14}/></button>
     </section>}
-    {step === 3 && <><ProductionChannelNetwork assistant={assistant} assistantName={assistantName} disabled={loading || !!error || saving} updateAssistant={updateAssistant} onManage={onConnect}/><button type="button" className="kw-text-button kp-continue" onClick={() => setStep(4)}>{t('Continue to live')}<ArrowRight size={14}/></button></>}
-    {step === 4 && <ProductionLiveMonitor assistant={assistant} conversations={conversations} readySources={sources.filter(source => source.status === 'ready').length} disabled={loading || !!error || saving || (!assistant.live_enabled && (!hasReady || !connected))} onToggle={() => void updateAssistant({ live_enabled: !assistant.live_enabled })}/>}
+    {step === 3 && <><ProductionChannelNetwork assistant={cycleAssistant} assistantName={assistantName} disabled={loading || !!error || saving} updateChannel={updateChannel} onManage={onConnect}/><button type="button" className="kw-text-button kp-continue" onClick={() => setStep(4)}>{t('Continue to live')}<ArrowRight size={14}/></button></>}
+    {step === 4 && <ProductionLiveMonitor assistant={cycleAssistant} conversations={conversations} readySources={sources.filter(source => source.status === 'ready').length} disabled={loading || !!error || saving || (!assistant.live_enabled && (!hasReady || !connected))} onToggle={() => void updateAssistant({ live_enabled: !assistant.live_enabled, channels: cycleAssistant.channels })}/>}
 
 
     </div>
