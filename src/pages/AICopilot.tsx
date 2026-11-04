@@ -1,7 +1,8 @@
 import { readSettings } from './settings/data';
-import { callBackend, backendError } from '../backend/firebase';
+import { backendError } from '../backend/firebase';
+import { gosApi } from '../backend/gosApi';
+import { refreshGosCRM } from '../backend/gosCRM';
 import { useEntities } from '../backend/workspace';
-import { useProducts } from './commerce/repository';
 import { newProduct, defaultConfig, formatPrice } from './commerce/model';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
@@ -22,11 +23,6 @@ type Kind = 'landing' | 'leads' | 'campaign' | 'booking' | 'product' | 'analytic
 type MediaAttachment = { id: string; name: string; type: string; size: number; url: string; kind: 'image' | 'file' | 'audio'; };
 type Message = { id: string; role: 'user' | 'assistant'; text: string; kind?: Kind; leads?: CanonicalLead[]; draftId?: string; href?: string; hrefLabel?: string; media?: MediaAttachment; };
 type Draft = { id: string; kind: 'landing' | 'booking' | 'product' | 'campaign'; name: string; price: string; duration: string; channel: string; content: string; status: 'draft' | 'executing' | 'published' | 'failed'; };
-type ToolResult<T> = { status: 'success'; statusCode: 200; data: T } | { status: 'error'; statusCode: number; error: string };
-type ToolContext = { tenantId: string; userRole: string };
-
-// Responses are produced by the `copilot` Cloud Function using approved tenant records.
-
 
 const suggestions = [
   { title: 'Create a landing page', description: 'Build a high-converting page for your offer', icon: FileText, color: 'violet', prompt: 'Create a landing page for my offer' },
@@ -36,24 +32,6 @@ const suggestions = [
   { title: 'Create a course or product', description: 'Build and sell your content', icon: GraduationCap, color: 'pink', prompt: 'Create a course or product' },
   { title: 'Analyze my performance', description: 'Get insights and recommendations', icon: BarChart3, color: 'purple', prompt: 'Analyze my performance' },
 ];
-
-const starterHistory = [] as { id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }[];
-
-function classifyIntent(prompt: string): Kind {
-  const text = prompt.toLowerCase();
-  if (/lead|pipeline|follow.?up|crm/.test(text)) return 'leads';
-  if (/campaign|message|whatsapp|email|instagram/.test(text)) return 'campaign';
-  if (/book|booking|service|appointment|calendar/.test(text)) return 'booking';
-  if (/course|product|price|sell/.test(text)) return 'product';
-  if (/landing|funnel|page|website/.test(text)) return 'landing';
-  if (/performance|revenue|analytics|conversion|report/.test(text)) return 'analytics';
-  return 'question';
-}
-
-function makeDraft(kind: Draft['kind'], prompt: string): Draft {
-  const nameMatch = prompt.match(/(?:called|named|for)\s+["“]?([^"”.,]+)["”]?/i);
-  return { id: `draft-${Date.now()}`, kind, name: nameMatch?.[1]?.trim() || '', price: '', duration: '', channel: 'WhatsApp', content: '', status: 'draft' };
-}
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -68,11 +46,9 @@ function formatTime(seconds: number) {
 export const AICopilot: React.FC = () => {
   useUILanguage();
   const navigate = useNavigate(), location = useLocation();
-  const { role, tenant } = useSelector((state: RootState) => state.auth);
-  const leads = useSelector((state: RootState) => state.crm.leads);
-  const tenantId = tenant?.id ?? (role === 'SUPER_ADMIN' ? 'platform-demo' : '');
-  const context: ToolContext = { tenantId, userRole: role ?? 'USER' };
+  const { tenant } = useSelector((state: RootState) => state.auth);
   const starterHistory = useEntities<{ id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }>('copilotConversations');
+  const [apiHistory, setApiHistory] = useState<{ id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [prompt, setPrompt] = useState('');
@@ -101,12 +77,34 @@ export const AICopilot: React.FC = () => {
   const recordingTimerRef = useRef<number | null>(null);
   const recordingStartedAtRef = useRef(0);
   const objectUrlsRef = useRef<string[]>([]);
+  const pendingFileRef = useRef<File | null>(null);
+
+  const allHistory = useMemo(() => {
+    const map = new Map<string, typeof starterHistory[number]>();
+    for (const item of [...apiHistory, ...starterHistory]) {
+      if (item && typeof item.id === 'string' && typeof item.title === 'string') map.set(item.id, item);
+    }
+    return Array.from(map.values());
+  }, [apiHistory, starterHistory]);
+
   const visibleHistory = useMemo(() => {
-    const filtered = starterHistory.filter(item => item.title.toLowerCase().includes(historySearch.toLowerCase()) && (dateFilter === 'All dates' || item.group === dateFilter) && (categoryFilter === 'All categories' || item.category === categoryFilter));
+    const filtered = allHistory.filter(item => item.title.toLowerCase().includes(historySearch.toLowerCase()) && (dateFilter === 'All dates' || item.group === dateFilter) && (categoryFilter === 'All categories' || item.category === categoryFilter));
     if (sortOrder === 'Oldest') return [...filtered].reverse();
     if (sortOrder === 'Unread') return [...filtered].sort((a, b) => Number(b.id === 'hist-0') - Number(a.id === 'hist-0'));
     return filtered;
-  }, [starterHistory, historySearch, dateFilter, categoryFilter, sortOrder]);
+  }, [allHistory, historySearch, dateFilter, categoryFilter, sortOrder]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    gosApi.copilotConversations(controller.signal)
+      .then(res => { if (Array.isArray(res.conversations)) setApiHistory(res.conversations as any); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [messages, busy]);
 
   useEffect(() => () => {
     if (recordingTimerRef.current !== null) window.clearInterval(recordingTimerRef.current);
@@ -127,17 +125,56 @@ export const AICopilot: React.FC = () => {
   };
 
   async function runPrompt(rawPrompt: string) {
-    const text = rawPrompt.trim();
+    const attachedMedia = pendingMedia;
+    const attachedFile = pendingFileRef.current;
+    const text = rawPrompt.trim() || (attachedMedia ? `Analyze and index the attached file: ${attachedMedia.name}` : '');
     if (!text || busy) return;
-    if (pendingMedia) { showToast.info('Upload this file to Knowledge before asking the assistant to use it.'); return; }
     const conversationId = activeConversation || crypto.randomUUID();
-    setActiveConversation(conversationId); setPrompt(''); setShowWelcome(false); setBusy(true); setStatusText('Reviewing your workspace…');
-    pushMessage({ id: crypto.randomUUID(), role: 'user', text });
+    setActiveConversation(conversationId); setPrompt(''); setPendingMedia(null); pendingFileRef.current = null; setShowWelcome(false); setBusy(true); setStatusText('Reviewing your workspace…');
+    pushMessage({ id: crypto.randomUUID(), role: 'user', text, ...(attachedMedia ? { media: attachedMedia } : {}) });
     try {
-      const answer = await callBackend<{ text: string; draft?: Omit<Draft, 'id' | 'status'> }>('copilot', { text, conversationId });
+      if (attachedFile && /\.(pdf|docx|csv|md|txt|json)$/i.test(attachedFile.name)) {
+        setStatusText('Indexing attached file into Knowledge Base…');
+        const form = new FormData(); form.append('file', attachedFile);
+        await gosApi.createSource(form).catch(() => {});
+        setStatusText('Reviewing your workspace…');
+      }
+      const answer = await gosApi.copilot({ text, conversationId, webSearch, deepResearch });
       const draftId = answer.draft ? crypto.randomUUID() : undefined;
-      if (answer.draft && draftId) setDrafts(current => ({ ...current, [draftId]: { ...answer.draft!, id: draftId, status: 'draft' } }));
-      pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: answer.text, draftId });
+      if (answer.draft && draftId) {
+        const d = answer.draft;
+        const kind = (['landing', 'booking', 'product', 'campaign'].includes(String(d.kind)) ? d.kind : 'product') as Draft['kind'];
+        setDrafts(current => ({
+          ...current,
+          [draftId]: {
+            id: draftId,
+            kind,
+            name: String(d.name ?? ''),
+            price: String(d.price ?? (kind === 'booking' ? '0' : '99')),
+            duration: String(d.duration ?? '45'),
+            channel: String(d.channel ?? 'WhatsApp'),
+            content: String(d.content ?? d.description ?? ''),
+            status: 'draft',
+          },
+        }));
+      }
+      const assistantMsg: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        text: String(answer.text || ''),
+        draftId,
+        leads: Array.isArray(answer.leads) && answer.leads.length > 0 ? (answer.leads as CanonicalLead[]) : undefined,
+        href: typeof answer.href === 'string' && answer.href ? answer.href : undefined,
+        hrefLabel: typeof answer.hrefLabel === 'string' && answer.hrefLabel ? answer.hrefLabel : (answer.href ? 'Open in workspace' : undefined),
+      };
+      pushMessage(assistantMsg);
+      if (assistantMsg.leads || assistantMsg.href === '/dashboard/crm') {
+        void refreshGosCRM().catch(() => {});
+      }
+      if ((answer as any).conversation) {
+        const conv = (answer as any).conversation;
+        setApiHistory(prev => [conv, ...prev.filter(item => item.id !== conv.id)]);
+      }
       showToast.success('Assistant response received');
     } catch (error) { showToast.error(backendError(error)); pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: backendError(error) }); }
     finally { setBusy(false); setStatusText(''); }
@@ -151,18 +188,22 @@ export const AICopilot: React.FC = () => {
     try {
       let record: Record<string, unknown>;
       if (draft.kind === 'product' || draft.kind === 'booking') {
-        if (!draft.price?.trim() || !Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) throw new Error('Enter a valid numeric price.');
-        const product = newProduct(); product.name = draft.name; product.description = draft.content || ''; product.type = draft.kind === 'booking' ? 'Service' : 'Digital Product'; product.config = defaultConfig(product.type); product.config.amount = Number(draft.price); product.config.currency = readSettings().business.currency; if (product.config.experience) product.config.experience.visibility = 'Private'; if (draft.kind === 'booking') product.config.duration = Number(draft.duration); product.price = formatPrice(product.config); product.tag = product.type;
-        if (draft.kind === 'booking' && (!Number.isFinite(Number(draft.duration)) || Number(draft.duration) <= 0)) throw new Error('Enter the service duration in minutes.');
+        const priceStr = draft.price?.trim() || (draft.kind === 'booking' ? '0' : '');
+        const durationStr = draft.duration?.trim() || '45';
+        if (!priceStr || !Number.isFinite(Number(priceStr)) || Number(priceStr) < 0) throw new Error('Enter a valid numeric price.');
+        const product = newProduct(); product.name = draft.name; product.description = draft.content || ''; product.type = draft.kind === 'booking' ? 'Service' : 'Digital Product'; product.config = defaultConfig(product.type); product.config.amount = Number(priceStr); product.config.currency = readSettings().business.currency; if (product.config.experience) product.config.experience.visibility = 'Private'; if (draft.kind === 'booking') product.config.duration = Number(durationStr); product.price = formatPrice(product.config); product.tag = product.type;
+        if (draft.kind === 'booking' && (!Number.isFinite(Number(durationStr)) || Number(durationStr) <= 0)) throw new Error('Enter the service duration in minutes.');
         record = { ...product };
       } else if (draft.kind === 'landing') {
         const document = createBuilderDocument('funnel', draft.name, '', 1);
         document.funnel.status = 'Draft'; document.pages.forEach(page => { page.status = 'Draft'; });
         record = { id: draftId, name: draft.name, kind: 'funnel', domain: '', image: '', updated: new Date().toISOString(), document, description: draft.content || '', settings: { seo: draft.name, navigation: '', color: '#7C3AED' } };
       } else record = { name: draft.name, title: draft.name, description: draft.content || '', prompt: draft.content || '', iconKey: 'message', custom: true, category: 'Campaign', status: 'Draft' };
-      await callBackend('createCopilotDraft', { draft, record, requestId: draftId });
+      const res = await gosApi.createCopilotDraft({ draft, record, requestId: draftId });
       setDrafts(current => ({ ...current, [draftId]: { ...draft, status: 'published' } }));
-      pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: 'Your draft was saved. Open the workspace to review it before publishing.', href: draft.kind === 'landing' ? '/dashboard/funnels' : draft.kind === 'campaign' ? '/dashboard/ai-followup' : '/dashboard/products', hrefLabel: 'Review draft' });
+      const targetHref = res?.href || (draft.kind === 'landing' ? '/dashboard/funnels' : draft.kind === 'booking' ? '/dashboard/booking' : draft.kind === 'campaign' ? '/dashboard/follow-up' : '/dashboard/products');
+      const targetLabel = res?.hrefLabel || 'Review draft';
+      pushMessage({ id: crypto.randomUUID(), role: 'assistant', text: 'Your draft was saved. Open the workspace to review it before publishing.', href: targetHref, hrefLabel: targetLabel });
       showToast.success('Draft saved');
     } catch (error) { setDrafts(current => ({ ...current, [draftId]: { ...draft, status: 'failed' } })); showToast.error(backendError(error)); }
     finally { setBusy(false); setStatusText(''); }
@@ -180,12 +221,14 @@ export const AICopilot: React.FC = () => {
     const url = URL.createObjectURL(file);
     objectUrlsRef.current.push(url);
     const kind = file.type.startsWith('image/') ? 'image' : 'file';
+    pendingFileRef.current = file;
     setPendingMedia({ id: `media-${Date.now()}`, name: file.name, type: file.type || 'application/octet-stream', size: file.size, url, kind });
     if (fileRef.current) fileRef.current.value = '';
   };
 
   const removePendingMedia = () => {
     if (pendingMedia) URL.revokeObjectURL(pendingMedia.url);
+    pendingFileRef.current = null;
     setPendingMedia(null);
   };
 
@@ -219,6 +262,7 @@ export const AICopilot: React.FC = () => {
           objectUrlsRef.current.push(url);
           if (pendingMedia) URL.revokeObjectURL(pendingMedia.url);
           const elapsed = Math.max(1, Math.round((Date.now() - recordingStartedAtRef.current) / 1000));
+          pendingFileRef.current = null;
           setPendingMedia({ id: `voice-${Date.now()}`, name: `Voice note · ${formatTime(elapsed)}`, type: blob.type, size: blob.size, url, kind: 'audio' });
           flash('Voice note ready to send.');
         }
@@ -248,7 +292,7 @@ export const AICopilot: React.FC = () => {
           {messages.map(message => <div className={`ai-message ${message.role}`} key={message.id}>
             {localizeNode(message.role === 'assistant' && <span className="ai-message-avatar"><Sparkles size={14}/></span>)}
             <div className="ai-message-content"><p>{message.text}</p>{localizeNode(message.media && <MessageMedia media={message.media}/>)}
-              {localizeNode(message.leads && <div className="ai-lead-results">{localizeNode(message.leads.slice(0, 4).map(lead => <div key={lead.id}><span className="ai-lead-avatar">{localizeNode(lead.avatar)}</span><b>{localizeNode(lead.name)}</b><span>{localizeNode(lead.company)}</span><em>{localizeNode(stageLabel[lead.stage])}</em><small>{localizeNode(lead.lastActivity)}</small></div>))}</div>)}
+              {localizeNode(message.leads && <div className="ai-lead-results">{localizeNode(message.leads.slice(0, 4).map(lead => <div key={lead.id}><span className="ai-lead-avatar">{localizeNode(lead.avatar)}</span><b>{localizeNode(lead.name)}</b><span>{localizeNode(lead.company)}</span><em>{localizeNode(stageLabel[lead.stage] || lead.stage)}</em><small>{localizeNode(lead.lastActivity)}</small></div>))}</div>)}
               {localizeNode(message.draftId && drafts[message.draftId] && <DraftPreview draft={drafts[message.draftId]} update={(key, value) => updateDraft(message.draftId!, key, value)} confirm={() => void confirmDraft(message.draftId!)} busy={busy}/>)}
               {localizeNode(message.href && <button className="ai-result-link" onClick={() => navigate(message.href!)}>{localizeNode(message.hrefLabel)}<ArrowUpRight size={14}/></button>)}
               {localizeNode(message.role === 'assistant' && <div className="ai-source-note"><ShieldCheck size={12}/>{translateText(" Grounded in approved workspace records")}</div>)}
@@ -277,7 +321,7 @@ export const AICopilot: React.FC = () => {
         <div className="ai-history-list">{localizeNode(['Today', 'Yesterday', 'This week', 'This month'].map(group => { const items = visibleHistory.filter(item => item.group === group); return items.length ? <section key={group}><h3>{localizeNode(group)}</h3>{localizeNode(items.map(item => <button className={`ai-history-item ${activeConversation === item.id ? 'active' : ''}`} key={item.id} onClick={() => chooseHistory(item)}><MessageSquare size={14}/><span>{localizeNode(item.title)}</span><small>{localizeNode(item.time)}</small></button>))}</section> : null; }))}{localizeNode(visibleHistory.length === 0 && <div className="ai-history-empty">{translateText("No conversations match these filters.")}</div>)}</div>
         <button className="ai-history-all" onClick={() => setShowAllHistory(true)}>{translateText("View all conversations ")}<ArrowRight size={14}/></button><div className="ai-history-security"><ShieldCheck size={14}/><span>{translateText("Private to ")}<b>{localizeNode(tenant?.name ?? 'your workspace')}</b></span></div></>)}
     </aside>
-    <AnimatePresence>{localizeNode(showAllHistory && <motion.div className="ai-history-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowAllHistory(false); }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .2 }}><motion.section className="ai-history-modal" role="dialog" aria-modal="true" aria-labelledby="ai-history-modal-title" initial={{ opacity: 0, y: 12, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: .97 }} transition={{ type: 'spring', stiffness: 360, damping: 28 }}><header><div><span className="ai-history-mark"><History size={16}/></span><div><h2 id="ai-history-modal-title">{translateText("All conversations")}</h2><p>{localizeNode(starterHistory.length)}{translateText(" demo conversations · Private to your workspace")}</p></div></div><button onClick={() => setShowAllHistory(false)} aria-label={translateText("Close all conversations")}><X size={17}/></button></header><div className="ai-history-modal-list">{localizeNode(starterHistory.map(item => <button key={item.id} onClick={() => { chooseHistory(item); setShowAllHistory(false); }}><MessageSquare size={15}/><span><b>{localizeNode(item.title)}</b><small>{localizeNode(item.group)} · {localizeNode(item.category)}</small></span><time>{localizeNode(item.time)}</time><ChevronRight size={15}/></button>))}</div></motion.section></motion.div>)}</AnimatePresence>
+    <AnimatePresence>{localizeNode(showAllHistory && <motion.div className="ai-history-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowAllHistory(false); }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .2 }}><motion.section className="ai-history-modal" role="dialog" aria-modal="true" aria-labelledby="ai-history-modal-title" initial={{ opacity: 0, y: 12, scale: .96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: .97 }} transition={{ type: 'spring', stiffness: 360, damping: 28 }}><header><div><span className="ai-history-mark"><History size={16}/></span><div><h2 id="ai-history-modal-title">{translateText("All conversations")}</h2><p>{localizeNode(allHistory.length)}{translateText(" conversations · Private to your workspace")}</p></div></div><button onClick={() => setShowAllHistory(false)} aria-label={translateText("Close all conversations")}><X size={17}/></button></header><div className="ai-history-modal-list">{localizeNode(allHistory.map(item => <button key={item.id} onClick={() => { chooseHistory(item); setShowAllHistory(false); }}><MessageSquare size={15}/><span><b>{localizeNode(item.title)}</b><small>{localizeNode(item.group)} · {localizeNode(item.category)}</small></span><time>{localizeNode(item.time)}</time><ChevronRight size={15}/></button>))}</div></motion.section></motion.div>)}</AnimatePresence>
   </div>;
 };
 

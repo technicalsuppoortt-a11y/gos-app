@@ -15,7 +15,7 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
   return async function request<T>(path: string, options: { method?: string; body?: unknown; signal?: AbortSignal; public?: boolean; csv?: boolean; onResponse?: (status: number) => void } = {}): Promise<T> {
     const controller = new AbortController();
     const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
-    const timeout = setTimeout(() => controller.abort(), 45000);
+    const timeout = setTimeout(() => controller.abort(), 90000);
     try {
       if (!options.public) await beforeRequest?.(path, options.method ?? 'GET');
       for (let attempt = 0; attempt < 2; attempt++) {

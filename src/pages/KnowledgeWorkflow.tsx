@@ -21,6 +21,7 @@ type Props = {
 };
 type PendingSource = { id: string; name: string; file?: File; url?: string; content?: string; kind?: 'text' | 'instructions'; error?: string };
 const steps = ['UPLOAD', 'TRAIN', 'TEST', 'CONNECT', 'LIVE'];
+const CYCLE_POLL_MS = 15000;
 const categoryOf = (name: string) => /^\[([^\]]+)\] /.exec(name)?.[1] || 'General';
 const displayName = (name: string) => name.replace(/^\[[^\]]+\] /, '');
 const isPending = (source: GosSource) => ['queued', 'processing'].includes(source.status);
@@ -31,7 +32,10 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const [step, setStep] = useState(0);
   const [demo, setDemo] = useState(false);
   const [reportedProgress, setReportedProgress] = useState<number | null>(null);
+  const [smoothProgress, setSmoothProgress] = useState(0);
+  const [animateProgress, setAnimateProgress] = useState(false);
   const [sourceDetails, setSourceDetails] = useState<Record<string, GosSource>>({});
+  const [crawledLinks, setCrawledLinks] = useState<GosSource[]>([]);
   const [channelFlags, setChannelFlags] = useState<Record<string, boolean> | null>(null);
   const [cycleError, setCycleError] = useState('');
   const [pending, setPending] = useState<PendingSource[]>([]);
@@ -51,16 +55,29 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const [textContent, setTextContent] = useState('');
   const [textKind, setTextKind] = useState<'text' | 'instructions'>('text');
   const fileInput = useRef<HTMLInputElement>(null);
+  const sourceDetailsRef = useRef<Record<string, GosSource>>({});
   const dialog = useRef<HTMLDialogElement>(null);
   const choiceTrigger = useRef<HTMLButtonElement>(null);
   const mutation = useRef(false);
   const categories = Array.from(new Set(['General', ...sources.map(s => categoryOf(s.name))]));
+  const selectedCategory = mode === 'new' ? category.trim() || 'General' : target;
+  const optimisticSources: GosSource[] = busy ? pending.map(item => ({ id: item.id, name: selectedCategory === 'General' ? item.name : `[${selectedCategory}] ${item.name}`, type: item.url ? 'url' : item.file ? 'file' : (item.kind || 'text'), status: 'processing', progress_percent: Math.max(1, smoothProgress) })) : [];
   const liveBatch = batch.map(source => sources.find(s => s.id === source.id) || source);
-  const trainingSources = (liveBatch.length ? liveBatch : sources).map(source => sourceDetails[source.id] || source);
-  const ready = trainingSources.filter(s => s.status === 'ready').length;
-  const progress = reportedProgress ?? (trainingSources.length ? Math.round(ready / trainingSources.length * 100) : 0);
-  const processing = trainingSources.some(isPending);
-  const canTest = trainingSources.length > 0 && trainingSources.every(s => s.status === 'ready') && !busy;
+  const baseTrainingSources = liveBatch.length || busy ? [...liveBatch, ...optimisticSources] : sources;
+  const trainingSources = baseTrainingSources.map(source => ({ ...source, ...sourceDetails[source.id] }));
+  const serverReady = trainingSources.filter(s => s.status === 'ready').length;
+  const batchProgress = trainingSources.length ? Math.round(trainingSources.reduce((sum, s) => sum + (s.status === 'ready' ? 100 : Math.max(0, Math.min(99, s.progress_percent || 0))), 0) / trainingSources.length) : 0;
+  const serverProgress = trainingSources.length > 1 ? Math.max(batchProgress, Math.round(serverReady / trainingSources.length * 100)) : (reportedProgress ?? batchProgress);
+  const serverPending = trainingSources.some(isPending);
+  const settling = animateProgress && trainingSources.length > 0 && !busy && !serverPending && trainingSources.every(s => s.status === 'ready') && smoothProgress < 100;
+  const progress = animateProgress && trainingSources.length > 0 ? smoothProgress : serverProgress;
+  const processing = serverPending || settling;
+  const ready = settling ? Math.min(serverReady, Math.floor(smoothProgress / 100 * trainingSources.length)) : serverReady;
+  const canTest = trainingSources.length > 0 && trainingSources.every(s => s.status === 'ready') && !busy && !settling;
+
+
+
+
   const hasReady = sources.some(s => s.status === 'ready');
   const cycleAssistant = { ...assistant, channels: channelFlags ?? assistant.channels };
   const connected = Object.values(cycleAssistant.channels).some(Boolean);
@@ -73,14 +90,33 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
     async function syncCycle() {
       try {
         if (step === 1) {
-          const result = await gosApi.training(controller.signal);
+          if (busy) return;
+          const slowTimer = setTimeout(() => setAnimateProgress(true), 40);
+          const result = await gosApi.training(controller.signal).finally(() => clearTimeout(slowTimer));
           const training = result.training ?? result;
-          const percent = training.embedding_percentage ?? training.progress;
+          const percent = training.embedding_percent ?? training.embedding_percentage ?? training.progress;
+          const rawLinks = Array.isArray(training.links) ? training.links : Array.isArray(training.links?.items) ? training.links.items : [];
+          const rawFiles = Array.isArray(training.files) ? training.files : Array.isArray(training.files?.items) ? training.files.items : [];
           if (percent !== undefined && (typeof percent !== 'number' || !Number.isFinite(percent))) throw new Error('The API returned invalid training progress.');
-          const details = await Promise.all((batch.length ? batch : sources).map(source => gosApi.source(source.id, controller.signal)));
+          if (training.files !== undefined || training.embedding_percent !== undefined) setAnimateProgress(true);
+          const knownIds = new Set([...rawFiles, ...rawLinks].filter(Boolean).map(item => item.id));
+          const missing = (batch.length ? batch : sources).filter(source => {
+            if (knownIds.has(source.id)) return false;
+            const cached = sourceDetailsRef.current[source.id];
+            return cached === undefined || isPending(cached);
+          });
+          const details = missing.length ? await Promise.all(missing.map(source => gosApi.source(source.id, controller.signal))) : [];
           if (controller.signal.aborted) return;
           setReportedProgress(percent === undefined ? null : Math.max(0, Math.min(100, percent)));
-          setSourceDetails(Object.fromEntries(details.map(({ source }) => [source.id, source])));
+          const nextDetails = [...rawFiles, ...rawLinks, ...details.map(({ source }) => source)].filter(Boolean);
+          const nextMap = { ...sourceDetailsRef.current };
+          nextDetails.forEach(source => { if (source.id) nextMap[source.id] = source; });
+          sourceDetailsRef.current = nextMap;
+          setSourceDetails(nextMap);
+          setCrawledLinks(rawLinks.map(item => ({ ...item, type: 'url' as const })));
+          if (nextDetails.some(source => !isPending(source) && sources.some(s => s.id === source.id && isPending(s)))) refresh();
+          setCrawledLinks(rawLinks.map(item => ({ ...item, type: 'url' as const })));
+
         } else {
           const { channels } = await gosApi.channels(controller.signal);
           if (!channels || typeof channels !== 'object') throw new Error('The API returned invalid channel data.');
@@ -88,14 +124,35 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
           if (entries.some(([key, value]) => !key || typeof value !== 'boolean')) throw new Error('The API returned invalid channel settings.');
           if (!controller.signal.aborted) setChannelFlags(Object.fromEntries(entries));
         }
-        if (!controller.signal.aborted) { setCycleError(''); timer = setTimeout(syncCycle, step === 1 ? 4000 : 15000); }
+        if (!controller.signal.aborted) { setCycleError(''); timer = setTimeout(syncCycle, CYCLE_POLL_MS); }
       } catch (e) {
-        if (!controller.signal.aborted) { setCycleError((e as Error).message); timer = setTimeout(syncCycle, 15000); }
+        if (!controller.signal.aborted) { setCycleError((e as Error).message); timer = setTimeout(syncCycle, CYCLE_POLL_MS); }
       }
     }
     void syncCycle();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [step, demo, batch, sources]);
+  }, [step, demo, busy, batch, sources]);
+
+  useEffect(() => {
+    if (demo || step !== 1 || !animateProgress) return;
+    const timer = setInterval(() => {
+      setSmoothProgress(current => {
+        if (trainingSources.length > 0 && !busy && !serverPending && trainingSources.every(s => s.status === 'ready')) {
+          return current >= 100 ? 100 : Math.min(100, current + 6);
+        }
+        if (busy || serverPending) {
+          const totalCount = Math.max(1, trainingSources.length);
+          const sliceCeiling = Math.min(92, Math.round(((serverReady + 0.92) / totalCount) * 100));
+          const target = serverProgress > 0 && serverProgress < 99 ? Math.max(serverProgress, sliceCeiling) : sliceCeiling;
+          if (current >= target) return current;
+          const stepSize = serverProgress > current + 12 && serverProgress < 99 ? 4 : current < 55 ? 3 : current < 85 ? 2 : 1;
+          return Math.min(target, current + stepSize);
+        }
+        return current;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, [demo, step, animateProgress, busy, serverPending, serverProgress, trainingSources]);
 
   async function updateChannel(channel: string, enabled: boolean) {
     try {
@@ -114,7 +171,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
     if (busy) return;
     const accepted: PendingSource[] = [];
     for (const file of Array.from(files)) {
-      if (!/\.(pdf|docx|csv|md|txt)$/i.test(file.name)) { showToast.error(`${file.name}: ${t('Choose a PDF, DOCX, CSV, MD or TXT file.')}`); continue; }
+      if (!/\.(pdf|docx|csv|md|txt|json)$/i.test(file.name)) { showToast.error(`${file.name}: ${t('Choose a PDF, DOCX, CSV, MD, TXT or JSON file.')}`); continue; }
       if (!file.size || file.size > 20 * 1024 * 1024) { showToast.error(`${file.name}: ${t('Choose a non-empty file up to 20 MB.')}`); continue; }
       accepted.push({ id: crypto.randomUUID(), name: file.name, file });
     }
@@ -128,8 +185,9 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
     e.preventDefault();
     if (busy) return;
     try {
-      const parsed = new URL(url.trim());
-      if (!['https:', 'http:'].includes(parsed.protocol) || parsed.username || parsed.password) throw new Error();
+      const raw = url.trim();
+      const parsed = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`);
+      if (!['https:', 'http:'].includes(parsed.protocol) || parsed.username || parsed.password || (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')) throw new Error();
       parsed.hash = '';
       const value = parsed.href;
       setPending(previous => previous.some(p => p.url === value) ? previous : [...previous, { id: crypto.randomUUID(), name: value, url: value }]);
@@ -142,7 +200,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
     const selected = mode === 'new' ? category.trim() : target;
     if (!selected || /[\[\]\r\n]/.test(selected) || selected.length > 60) { showToast.error(t('Enter a category name of up to 60 characters without brackets.')); return; }
     if (mode === 'new' && categories.some(c => c.toLowerCase() === selected.toLowerCase())) { showToast.error(t('This category already exists. Choose append or use a new name.')); return; }
-    mutation.current = true; setBusy(true); setChoice(false); setStep(1);
+    mutation.current = true; setBusy(true); setChoice(false); setStep(1); setSmoothProgress(0);
     setBatch(previous => previous.filter(s => categoryOf(s.name) === selected));
     const failures: PendingSource[] = [];
     const created: GosSource[] = [];
@@ -155,7 +213,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
         if (item.file) {
           body = new FormData(); body.append('name', name); body.append('type', 'file'); body.append('file', item.file);
         } else body = item.url ? { name, type: 'url', url: item.url } : { name, type: 'text', content: item.content || '' };
-        const result = await gosApi.createSource(body);
+        const uploadSlow = setTimeout(() => setAnimateProgress(true), 40);
+        const result = await gosApi.createSource(body).finally(() => clearTimeout(uploadSlow));
         if (!result.source?.id) throw new Error(t('The server did not confirm this source. Refresh sources before retrying.'));
         created.push(result.source);
         setBatch(previous => [...previous.filter(s => s.id !== result.source.id), result.source]);
@@ -177,13 +236,27 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
 
   function progressPane(title: string, list: GosSource[], link = false) {
     return <section className="kw-progress-pane">
-      <div className="kw-pane-title"><span>{link ? <Globe2 size={15}/> : <FileText size={15}/>} {t(title)}</span><b>{list.filter(s => s.status === 'ready').length} / {list.length}</b></div>
+      <div className="kw-pane-title"><span>{link ? <Globe2 size={15}/> : <FileText size={15}/>} {t(title)}</span><b>{list.filter(s => s.status === 'ready' && (!settling || smoothProgress >= 100)).length} / {list.length}</b></div>
       {!list.length && <p className="kw-muted kw-empty">{t(link ? 'No websites in this training batch.' : 'No files in this training batch.')}</p>}
-      {list.map(source => <div className="kw-processing-row" key={source.id}>
-        <div><span title={source.name}>{displayName(source.name)}</span>{source.status === 'ready' ? <CheckCircle2 size={15} className="text-violet-600 dark:text-violet-300"/> : isPending(source) ? <Loader2 size={14} className="motion-safe:animate-spin"/> : null}</div>
-        <div className={`kw-source-track ${isPending(source) ? 'is-pending' : ''}`} role="progressbar" aria-label={source.name} aria-valuemin={0} aria-valuemax={100} aria-valuenow={isPending(source) ? undefined : source.status === 'ready' ? 100 : 0} aria-valuetext={source.status}><i style={{ width: source.status === 'ready' ? '100%' : undefined }}/></div>
-        <small className={source.status === 'failed' ? 'kw-error-text' : 'kw-muted'}>{source.error || t(source.status)}{source.status === 'ready' ? ' · 100%' : ''}</small>
-      </div>)}
+      {list.map((source, index) => {
+        const rawPct = source.status === 'ready' ? 100 : typeof source.progress_percent === 'number' ? Math.max(0, Math.min(99, source.progress_percent)) : 0;
+        const slicePct = list.length > 1 ? Math.round(((smoothProgress - (index / list.length) * 100) / (100 / list.length)) * 100) : smoothProgress;
+        const pct = source.status === 'failed' ? 0 : animateProgress ? (source.status === 'ready' && (!settling || smoothProgress >= 100) ? 100 : Math.max(rawPct, Math.min(99, slicePct > 0 ? slicePct : (source.status === 'processing' || list.length === 1 ? 1 : 0)))) : rawPct;
+        const done = source.status === 'ready' && pct >= 100;
+        const pendingRow = !done && source.status !== 'failed';
+        const phaseText = pct < 55 ? t('Reading') : pct < 90 ? t('Embedding') : t('Tuning');
+        const cleanDetail = (source.error || source.detail || t(source.status)).replace(/\s*·?\s*\d+%$/, '');
+        const statusText = source.status === 'failed' ? (source.error || source.detail || t(source.status)) : done ? `${cleanDetail} · 100%` : animateProgress && pct > 0 ? `${phaseText} · ${pct}%` : `${cleanDetail}${pct > 0 ? ` · ${pct}%` : ''}`;
+        return <div className="kw-processing-row" key={source.id}>
+          <div><span title={source.name}>{link && source.path ? `/${source.path.replace(/^\/+/, '')}` : displayName(source.name)}</span>{done ? <CheckCircle2 size={15} className="text-violet-600 dark:text-violet-300"/> : pendingRow ? <Loader2 size={14} className="motion-safe:animate-spin"/> : null}</div>
+          <div className={`kw-source-track ${pendingRow && pct === 0 ? 'is-pending' : ''}`} role="progressbar" aria-label={source.name} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pendingRow && pct === 0 ? undefined : pct} aria-valuetext={statusText}><i style={{ width: pct > 0 ? `${pct}%` : undefined }}/></div>
+          <small className={source.status === 'failed' ? 'kw-error-text' : 'kw-muted'}>{statusText}</small>
+        </div>;
+      })}
+
+
+
+
     </section>;
   }
 
@@ -206,10 +279,10 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
       <div className={`kw-dropzone ${dragging ? 'dragging' : ''}`} onDragOver={e => { e.preventDefault(); if (!busy) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}>
         <span className="kw-upload-icon"><UploadCloud size={34} strokeWidth={1.4}/></span><h3>{t('Drop your knowledge')}</h3><p>{t('Drag files here, or browse your device')}</p>
         <button type="button" className="kw-button primary" disabled={busy} onClick={() => fileInput.current?.click()}><Plus size={15}/>{t('Choose files')}</button>
-        <input ref={fileInput} type="file" aria-label={t('Upload knowledge files')} accept=".pdf,.docx,.csv,.md,.txt" multiple hidden onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}/>
-        <div className="kw-formats">{['PDF', 'DOCX', 'CSV', 'MD', 'TXT'].map(format => <span key={format}>{format}</span>)}<small>{t('Up to 20 MB per file')}</small></div>
+        <input ref={fileInput} type="file" aria-label={t('Upload knowledge files')} accept=".pdf,.docx,.csv,.md,.txt,.json" multiple hidden onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}/>
+        <div className="kw-formats">{['PDF', 'DOCX', 'CSV', 'MD', 'TXT', 'JSON'].map(format => <span key={format}>{format}</span>)}<small>{t('Up to 20 MB per file')}</small></div>
       </div>
-      <form className="kw-url-form" onSubmit={addUrl}><Globe2 size={18}/><label className="sr-only" htmlFor="kw-url">{t('Website URL')}</label><input id="kw-url" type="url" placeholder="https://your-website.com" value={url} onChange={e => setUrl(e.target.value)} disabled={busy} required/><button type="submit" className="kw-button secondary" disabled={busy || !url.trim()}><Plus size={14}/>{t('Add website')}</button></form>
+      <form className="kw-url-form" onSubmit={addUrl}><Globe2 size={18}/><label className="sr-only" htmlFor="kw-url">{t('Website URL')}</label><input id="kw-url" type="text" inputMode="url" placeholder="https://your-website.com" value={url} onChange={e => setUrl(e.target.value)} disabled={busy} required/><button type="submit" className="kw-button secondary" disabled={busy || !url.trim()}><Plus size={14}/>{t('Add website')}</button></form>
       <p className="kw-helper">{t('Website crawling and document extraction depend on server support. Unsupported sources show an error and can be retried.')}</p>
       <div className="kw-upload-footer"><span><Layers size={14}/>{t('Existing knowledge stays intact with every upload.')}</span><button className="kw-text-button" type="button" onClick={() => setTextOpen(value => !value)} aria-expanded={textOpen} aria-controls="kw-text-form">{t('Add text or instructions')}<ArrowRight size={13}/></button></div>
       {textOpen && <form id="kw-text-form" className="kw-text-form" onSubmit={e => {
@@ -237,7 +310,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
       </div>
       <div className="kw-training-panes">
         {progressPane('FILES & TEXT', trainingSources.filter(s => s.type !== 'url'))}
-        {progressPane('CRAWLING LINKS', trainingSources.filter(s => s.type === 'url'), true)}
+        {progressPane('CRAWLING LINKS', [...trainingSources.filter(s => s.type === 'url'), ...crawledLinks.filter(link => !trainingSources.some(s => s.id === link.id))], true)}
       </div>
       <div className="kw-training-bottom">
         <div className="kw-ring" role="progressbar" aria-label={t('Sources indexed')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
@@ -248,8 +321,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
           <p>{ready} / {trainingSources.length} {t(reportedProgress === null ? 'sources indexed. Percentages reflect completed sources.' : 'sources indexed. Overall embedding progress is reported by the server.')}</p>
           <div className="kw-phases">
             {['Reading', 'Embedding', 'Tuning'].map((phase, index) => <span key={phase}>
-              <i className={canTest && index < 2 ? 'done' : ''}/>{t(phase)}
-              <small>{t(index === 2 ? 'Not reported' : canTest ? 'Complete' : processing ? 'In progress' : index === 0 && busy ? 'Uploading' : 'Waiting')}</small>
+              <i className={canTest || (processing && ((index === 0 && progress >= 55) || (index === 1 && progress >= 90))) ? 'done' : ''}/>{t(phase)}
+              <small>{t(canTest || (processing && ((index === 0 && progress >= 55) || (index === 1 && progress >= 90))) ? 'Complete' : processing && ((index === 0 && progress < 55) || (index === 1 && progress >= 55 && progress < 90) || (index === 2 && progress >= 90)) ? 'In progress' : index === 0 && busy ? 'Uploading' : 'Waiting')}</small>
             </span>)}
           </div>
           <p className="kw-helper">{t('Source status and overall training progress refresh automatically.')}</p>
