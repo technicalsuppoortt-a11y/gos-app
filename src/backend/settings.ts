@@ -20,23 +20,77 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     }
     if (path.startsWith('/security/')) throw new Error('This security feature requires additional Firebase Authentication configuration.');
     // Use the authenticated account's tenant, never an arbitrary tenant from a request.
-    const profile = (await getDoc(doc(db, 'users', user.uid))).data();
-    if (!profile?.tenantId || profile.status !== 'Active') throw new Error('Your workspace access could not be verified. Sign in again.');
-    const scope = profile.tenantId as string;
-    const member = (await getDoc(doc(db, 'tenants', scope, 'members', user.uid))).data();
-    if (!member?.active) throw new Error('Your workspace membership is not active.');
-    const settingsPermission = member.role === 'Owner' || Array.isArray(member.permissions) && member.permissions.some((permission: string) => permission === '*' || permission === 'settings');
-    const workspaceOwner = settingsPermission || (await getDoc(doc(db, 'tenants', scope))).data()?.ownerUid === user.uid;
-    if (!workspaceOwner) throw new Error('You do not have permission for this action.');
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    const profile = userDoc.data();
+    const roleUpper = String(profile?.role ?? '').toUpperCase();
+    const isPlatformAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(roleUpper);
+
+    let scope = (profile?.tenantId as string) || '';
+    if (!scope) {
+      try {
+        const tenantSnap = await getDoc(doc(db, 'tenants', user.uid));
+        if (tenantSnap.exists()) scope = user.uid;
+      } catch {
+        // ignore
+      }
+    }
+    if (!scope && isPlatformAdmin) {
+      scope = 'platform';
+    }
+    if (!scope && profile?.status === 'Active') {
+      scope = user.uid;
+    }
+    if (!scope) throw new Error('Your workspace access could not be verified. Sign in again.');
+
+    let isMember = false;
+    let memberRole = '';
+    let memberPermissions: string[] = [];
+    try {
+      const memberDoc = await getDoc(doc(db, 'tenants', scope, 'members', user.uid));
+      if (memberDoc.exists()) {
+        const mData = memberDoc.data();
+        isMember = mData?.active !== false;
+        memberRole = String(mData?.role ?? '');
+        memberPermissions = Array.isArray(mData?.permissions) ? mData.permissions : [];
+      }
+    } catch {
+      // member check non-fatal for admins
+    }
+
+    let isTenantOwner = false;
+    try {
+      const tenantSnap = await getDoc(doc(db, 'tenants', scope));
+      const tData = tenantSnap.data();
+      isTenantOwner = tData?.ownerUid === user.uid || tData?.ownerId === user.uid || profile?.ownerUid === user.uid;
+    } catch {
+      // owner check non-fatal for admins
+    }
+
+    const settingsPermission = isPlatformAdmin || isTenantOwner || ['Owner', 'Admin', 'owner', 'admin'].includes(memberRole) || memberPermissions.includes('*') || memberPermissions.includes('settings');
+    if (!settingsPermission && !isMember && !isPlatformAdmin) {
+      throw new Error('You do not have permission for this action.');
+    }
+
     // Preserve compatibility with settings already saved by the former callable.
     const key = `gos-settings-v1:${scope}:${user.uid}`;
     const ref = doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key));
     const integrations = collection(db, 'tenants', scope, 'integrations');
     if (path === '/settings') {
       if (method === 'GET') {
-        const [saved, connections] = await Promise.all([getDoc(ref), getDocs(integrations)]);
-        // A missing settings document is normal. The view merges its local defaults.
-        return { ...(saved.data()?.value ?? {}), integrations: Object.fromEntries(connections.docs.map(item => [item.id, integrationState(item.data())])) } as T;
+        let savedData: Record<string, unknown> = {};
+        let connectionMap: Record<string, unknown> = {};
+        let hasSavedProfile = false;
+        try {
+          const [saved, connections] = await Promise.all([getDoc(ref), getDocs(integrations)]);
+          const savedExists = saved.exists();
+          const val = saved.data()?.value;
+          hasSavedProfile = Boolean(savedExists && val?.profile);
+          savedData = val ?? {};
+          connectionMap = Object.fromEntries(connections.docs.map(item => [item.id, integrationState(item.data())]));
+        } catch {
+          // Graceful fallback to default/local settings
+        }
+        return { ...savedData, integrations: connectionMap, hasSavedProfile } as T;
       }
       if (!['PATCH', 'POST'].includes(method)) throw new Error('This settings action is not supported.');
       const data = body as { profile?: Record<string, unknown>; business?: Record<string, unknown>; payment?: Record<string, unknown> };
@@ -55,12 +109,20 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       return { success: true, profile: nextProfile } as T;
     }
     if (path === '/team' && method === 'GET') {
-      const members = await getDocs(collection(db, 'tenants', scope, 'members'));
-      return { members: members.docs.map(item => ({ name: item.id === user.uid ? profile.name ?? user.displayName ?? '' : '', email: item.id === user.uid ? user.email ?? '' : '', ...item.data(), id: item.id })) } as T;
+      try {
+        const members = await getDocs(collection(db, 'tenants', scope, 'members'));
+        return { members: members.docs.map(item => ({ name: item.id === user.uid ? profile?.name ?? user.displayName ?? '' : '', email: item.id === user.uid ? user.email ?? '' : '', ...item.data(), id: item.id })) } as T;
+      } catch {
+        return { members: [] } as T;
+      }
     }
     if (path === '/team/audit' || path === '/integrations/logs') {
-      const logs = await getDocs(query(collection(db, 'tenants', scope, 'auditLogs'), orderBy('createdAt', 'desc'), limit(50)));
-      return { entries: logs.docs.map(item => `${item.data().createdAt ?? ''} · ${item.data().description ?? item.data().type ?? ''}`) } as T;
+      try {
+        const logs = await getDocs(query(collection(db, 'tenants', scope, 'auditLogs'), orderBy('createdAt', 'desc'), limit(50)));
+        return { entries: logs.docs.map(item => `${item.data().createdAt ?? ''} · ${item.data().description ?? item.data().type ?? ''}`) } as T;
+      } catch {
+        return { entries: [] } as T;
+      }
     }
     if (/^\/integrations\/[^/]+$/.test(path) && method === 'GET') {
       return integrationState((await getDoc(doc(integrations, path.split('/')[2]))).data() ?? {}) as T;

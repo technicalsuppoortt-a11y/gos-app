@@ -9,6 +9,8 @@ export interface Profile {
   name: string; email: string; phone: string; language: string; timezone: string; dateFormat: string;
   photo: string; title: string; bio: string; emailNotifications: boolean; marketing: boolean;
   memberSince?: string; currency?: string;
+  mode?: 'light' | 'dark' | 'system';
+  hasUserOverrides?: boolean;
 }
 export interface IntegrationState { status: 'Connected' | 'Not Connected' | 'Needs Attention'; account?: string; problem?: string; providerStatus?: string; sync?: boolean }
 export interface Transaction { id: string; date: string; type: string; description: string; service: string; amount: number; balance: number }
@@ -25,6 +27,7 @@ export interface SettingsData {
   usage: { service: string; amount: number; detail: string; percentage: number }[];
   usagePeriod: string;
   payment: { currency: string; payout: string; receiptEmail: string; invoices: boolean };
+  hasSavedProfile?: boolean;
 }
 export const settingsApiEnabled = true;
 export function settingsKey() {
@@ -79,7 +82,8 @@ function mergeBusinessDefaults(defaults: SettingsData['business'], saved?: Parti
 export function readSettings(): SettingsData {
   const defaults = defaultSettings();
   try {
-    const saved = JSON.parse(cloudStorage.getItem(settingsKey()) ?? 'null');
+    const raw = cloudStorage.getItem(settingsKey());
+    const saved = raw ? JSON.parse(raw) : null;
     if (saved && typeof saved.profile?.name === 'string') {
       return {
         ...defaults,
@@ -87,6 +91,7 @@ export function readSettings(): SettingsData {
         business: mergeBusinessDefaults(defaults.business, saved.business),
         payment: { ...defaults.payment, ...saved.payment },
         recharge: { ...defaults.recharge, ...saved.recharge },
+        hasSavedProfile: Boolean(saved.profile?.hasUserOverrides || saved.hasSavedProfile),
       };
     }
   } catch { /* Invalid or inaccessible browser storage uses safe defaults. */ }
@@ -107,6 +112,7 @@ export async function settingsRequest<T>(path: string, body?: unknown, method = 
       payment: { ...defaults.payment, ...saved.payment },
       recharge: { ...defaults.recharge, ...saved.recharge },
       integrations: { ...saved.integrations, ...(localDemoEnabled ? readDemo<Record<string, IntegrationState>>('integrations', {}) : {}) },
+      hasSavedProfile: saved.hasSavedProfile ?? Boolean(saved.profile?.hasUserOverrides),
     } as T;
   }
   return result;

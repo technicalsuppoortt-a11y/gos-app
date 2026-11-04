@@ -1,56 +1,493 @@
-html[data-workspace-theme] { --ws-accent:#6d28d9; --ws-hover:#5b21b6; --ws-soft:#ede9fe; }
-html[data-workspace-theme="violet"] { --ws-accent:#6d28d9; --ws-hover:#5b21b6; --ws-soft:#ede9fe; }
-html[data-workspace-theme="slate"] { --ws-accent:#334155; --ws-hover:#1e293b; --ws-soft:#e2e8f0; }
-html[data-workspace-theme="midnight"] { --ws-accent:#4338ca; --ws-hover:#3730a3; --ws-soft:#e0e7ff; }
-html[data-workspace-theme="emerald"] { --ws-accent:#047857; --ws-hover:#065f46; --ws-soft:#d1fae5; }
-html[data-workspace-theme="amber"] { --ws-accent:#d97706; --ws-hover:#b45309; --ws-soft:#fef3c7; }
-html[data-workspace-theme="ocean"] { --ws-accent:#0284c7; --ws-hover:#0369a1; --ws-soft:#e0f2fe; }
-html[data-workspace-theme="royal"] { --ws-accent:#7e22ce; --ws-hover:#6b21a8; --ws-soft:#f3e8ff; }
-html[data-workspace-theme="crimson"] { --ws-accent:#be123c; --ws-hover:#9f1239; --ws-soft:#ffe4e6; }
-html[data-workspace-theme="cyber"] { --ws-accent:#0d9488; --ws-hover:#0f766e; --ws-soft:#ccfbf1; }
-html[data-workspace-theme="minimalist"] { --ws-accent:#18181b; --ws-hover:#09090b; --ws-soft:#f4f4f5; }
+/* ==========================================================================
+   Workspace dual-mode accent themes
+   - Accents only: primary buttons, active nav, focus rings, landing page CTAs,
+     and platform accents adapt seamlessly across BOTH Light and Dark modes.
+   - Surfaces, card backgrounds, borders, and general body text are preserved.
+   ========================================================================== */
 
+/* --- Light Mode Palette Definitions --- */
+html[data-workspace-theme] { --ws-accent:#7C3AED; --ws-hover:#6D28D9; --ws-soft:#EDE9FE; --ws-border-subtle:#ddd6fe; --ws-glow:rgba(124,58,237,0.22); }
+html[data-workspace-theme="violet"] { --ws-accent:#7C3AED; --ws-hover:#6D28D9; --ws-soft:#EDE9FE; --ws-border-subtle:#ddd6fe; --ws-glow:rgba(124,58,237,0.22); }
+html[data-workspace-theme="slate"] { --ws-accent:#334155; --ws-hover:#1e293b; --ws-soft:#e2e8f0; --ws-border-subtle:#cbd5e1; --ws-glow:rgba(51,65,85,0.18); }
+html[data-workspace-theme="midnight"] { --ws-accent:#4338ca; --ws-hover:#3730a3; --ws-soft:#e0e7ff; --ws-border-subtle:#c7d2fe; --ws-glow:rgba(67,56,202,0.22); }
+html[data-workspace-theme="emerald"] { --ws-accent:#047857; --ws-hover:#065f46; --ws-soft:#d1fae5; --ws-border-subtle:#a7f3d0; --ws-glow:rgba(4,120,87,0.22); }
+html[data-workspace-theme="amber"] { --ws-accent:#d97706; --ws-hover:#b45309; --ws-soft:#fef3c7; --ws-border-subtle:#fde68a; --ws-glow:rgba(217,119,6,0.22); }
+html[data-workspace-theme="ocean"] { --ws-accent:#0284c7; --ws-hover:#0369a1; --ws-soft:#e0f2fe; --ws-border-subtle:#bae6fd; --ws-glow:rgba(2,132,199,0.22); }
+html[data-workspace-theme="royal"] { --ws-accent:#7e22ce; --ws-hover:#6b21a8; --ws-soft:#f3e8ff; --ws-border-subtle:#e9d5ff; --ws-glow:rgba(126,34,206,0.22); }
+html[data-workspace-theme="crimson"] { --ws-accent:#be123c; --ws-hover:#9f1239; --ws-soft:#ffe4e6; --ws-border-subtle:#fecdd3; --ws-glow:rgba(190,18,60,0.22); }
+html[data-workspace-theme="cyber"] { --ws-accent:#0d9488; --ws-hover:#0f766e; --ws-soft:#ccfbf1; --ws-border-subtle:#99f6e4; --ws-glow:rgba(13,148,136,0.22); }
+html[data-workspace-theme="minimalist"] { --ws-accent:#18181b; --ws-hover:#09090b; --ws-soft:#f4f4f5; --ws-border-subtle:#e4e4e7; --ws-glow:rgba(24,24,27,0.18); }
+
+/* --- Dark Mode Palette Definitions --- */
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme],
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="violet"] { --ws-accent:#A78BFA; --ws-hover:#8B5CF6; --ws-soft:rgba(167,139,250,0.16); --ws-border-subtle:rgba(167,139,250,0.25); --ws-glow:rgba(167,139,250,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="slate"] { --ws-accent:#94a3b8; --ws-hover:#cbd5e1; --ws-soft:rgba(148,163,184,0.16); --ws-border-subtle:rgba(148,163,184,0.25); --ws-glow:rgba(148,163,184,0.25); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="midnight"] { --ws-accent:#818cf8; --ws-hover:#6366f1; --ws-soft:rgba(129,140,248,0.18); --ws-border-subtle:rgba(129,140,248,0.28); --ws-glow:rgba(129,140,248,0.32); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="emerald"] { --ws-accent:#10b981; --ws-hover:#059669; --ws-soft:rgba(16,185,129,0.16); --ws-border-subtle:rgba(16,185,129,0.25); --ws-glow:rgba(16,185,129,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="amber"] { --ws-accent:#f59e0b; --ws-hover:#d97706; --ws-soft:rgba(245,158,11,0.16); --ws-border-subtle:rgba(245,158,11,0.25); --ws-glow:rgba(245,158,11,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="ocean"] { --ws-accent:#38bdf8; --ws-hover:#0284c7; --ws-soft:rgba(56,189,248,0.16); --ws-border-subtle:rgba(56,189,248,0.25); --ws-glow:rgba(56,189,248,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="royal"] { --ws-accent:#a855f7; --ws-hover:#9333ea; --ws-soft:rgba(168,85,247,0.16); --ws-border-subtle:rgba(168,85,247,0.25); --ws-glow:rgba(168,85,247,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="crimson"] { --ws-accent:#f43f5e; --ws-hover:#e11d48; --ws-soft:rgba(244,63,94,0.16); --ws-border-subtle:rgba(244,63,94,0.25); --ws-glow:rgba(244,63,94,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="cyber"] { --ws-accent:#14b8a6; --ws-hover:#0d9488; --ws-soft:rgba(20,184,166,0.16); --ws-border-subtle:rgba(20,184,166,0.25); --ws-glow:rgba(20,184,166,0.3); }
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] { --ws-accent:#f4f4f5; --ws-hover:#e4e4e7; --ws-soft:rgba(244,244,245,0.14); --ws-border-subtle:rgba(244,244,245,0.22); --ws-glow:rgba(244,244,245,0.22); }
+
+/* --- Universal Token Variables Mapping --- */
 html[data-workspace-theme] {
-  --bl-primary: var(--ws-accent) !important;
-  --bl-primary-hover: var(--ws-hover) !important;
-  --bl-primary-soft: var(--ws-soft) !important;
-  --gp-primary: var(--ws-accent) !important;
-  --gp-button-background: var(--ws-accent) !important;
-  --gp-soft: var(--ws-soft) !important;
+  --bl-primary: var(--ws-accent);
+  --bl-primary-hover: var(--ws-hover);
+  --bl-primary-soft: var(--ws-soft);
+  --theme-accent: var(--ws-accent);
+  --theme-accent-hover: var(--ws-hover);
+  --theme-accent-soft: var(--ws-soft);
+  --adm-accent: var(--ws-accent);
+  --adm-accent-soft: var(--ws-soft);
+  --app-indigo: var(--ws-accent);
+  --purple: var(--ws-accent);
+  --purple-dark: var(--ws-hover);
+  --ws-purple: var(--ws-accent);
+  --upclick-primary: var(--ws-accent);
+  --upclick-secondary: var(--ws-hover);
+  --upclick-tint: var(--ws-soft);
+  --upclick-gradient: linear-gradient(115deg, var(--ws-accent), var(--ws-hover));
+  --upclick-gradient-soft: linear-gradient(115deg, var(--ws-soft), var(--ws-hover));
+  --gp-primary: var(--ws-accent);
+  --gp-on-primary: #ffffff;
 }
 
-html[data-workspace-theme] .adm-shell {
-  --adm-accent: var(--ws-accent) !important;
-  --adm-accent-soft: var(--ws-soft) !important;
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] {
+  --bl-primary: var(--ws-accent);
+  --bl-primary-hover: var(--ws-hover);
+  --bl-primary-soft: var(--ws-soft);
+  --theme-accent: var(--ws-accent);
+  --theme-accent-hover: var(--ws-hover);
+  --theme-accent-soft: var(--ws-soft);
+  --adm-accent: var(--ws-accent);
+  --adm-accent-soft: var(--ws-soft);
+  --app-indigo: var(--ws-accent);
+  --purple: var(--ws-accent);
+  --purple-dark: var(--ws-hover);
+  --ws-purple: var(--ws-accent);
+  --upclick-primary: var(--ws-accent);
+  --upclick-secondary: var(--ws-hover);
+  --upclick-tint: var(--ws-soft);
+  --upclick-gradient: linear-gradient(115deg, var(--ws-accent), var(--ws-hover));
+  --upclick-gradient-soft: linear-gradient(115deg, var(--ws-soft), var(--ws-hover));
+  --gp-primary: var(--ws-accent);
+  --gp-on-primary: #ffffff;
 }
 
-html[data-workspace-theme] .adm-shell .adm-primary {
+/* ==========================================================================
+   Landing Page dual-mode theme propagation
+   ========================================================================== */
+html[data-workspace-theme] .lp {
+  --lp-primary: var(--ws-accent);
+  --lp-primary-600: var(--ws-hover);
+  --lp-primary-700: var(--ws-hover);
+  --lp-primary-50: var(--ws-soft);
+  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 18%, transparent);
+  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 28%, transparent);
+  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 16%, transparent);
+}
+
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp {
+  --lp-primary: var(--ws-accent);
+  --lp-primary-600: var(--ws-hover);
+  --lp-primary-700: var(--ws-hover);
+  --lp-primary-50: var(--ws-soft);
+  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 22%, transparent);
+  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 34%, transparent);
+  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 30%, transparent);
+}
+
+html[data-workspace-theme] .lp .lp-btn--primary {
   background: var(--ws-accent) !important;
+  color: #fff !important;
   border-color: var(--ws-accent) !important;
 }
-html[data-workspace-theme] .adm-shell .adm-primary:hover {
+html[data-workspace-theme] .lp .lp-btn--primary:hover {
   background: var(--ws-hover) !important;
   border-color: var(--ws-hover) !important;
 }
 
-html[data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.layout-nav-item.is-active,.login-submit) { background:var(--ws-accent)!important; color:#fff!important; border-color:var(--ws-accent)!important; }
-html[data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary):hover { background:var(--ws-hover)!important; }
-html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { outline:2px solid var(--ws-accent); outline-offset:3px; }
+html[data-workspace-theme] .lp .lp-badge i {
+  background: var(--ws-accent) !important;
+  color: #fff !important;
+}
+
+html[data-workspace-theme] .lp .lp-gradient-text {
+  background-image: linear-gradient(92deg, var(--ws-accent) 0%, color-mix(in srgb, var(--ws-accent) 70%, #9333ea) 50%, color-mix(in srgb, var(--ws-accent) 45%, #c084fc) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline !important;
+}
+
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-gradient-text {
+  background-image: linear-gradient(92deg, var(--ws-accent) 0%, color-mix(in srgb, var(--ws-accent) 60%, #fff) 60%, color-mix(in srgb, var(--ws-accent) 35%, #fff) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline !important;
+}
+
+html[data-workspace-theme="minimalist"] .lp .lp-gradient-text {
+  background-image: linear-gradient(92deg, #09090b 0%, #3f3f46 50%, #71717a 100%) !important;
+}
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] .lp .lp-gradient-text {
+  background-image: linear-gradient(92deg, #ffffff 0%, #d4d4d8 50%, #a1a1aa 100%) !important;
+}
+
+/* ==========================================================================
+   Universal UI & Components Theme Propagation (Buttons, Inputs, Badges, Tabs)
+   ========================================================================== */
+
+/* Active Navigation & Sidebar Elements */
+html[data-workspace-theme] .layout-nav-item.is-active,
+html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active {
+  background: var(--ws-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px var(--ws-glow) !important;
+}
+html[data-workspace-theme] .layout-nav-item.is-active svg,
+html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active svg {
+  color: #fff !important;
+}
+
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item.is-active,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active {
+  background: var(--ws-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px var(--ws-glow) !important;
+}
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item.is-active svg,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active svg {
+  color: #fff !important;
+}
+
+/* Sidebar Item Hover */
+html[data-workspace-theme] .layout-nav-item:hover {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item:hover {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+
+/* Brand Icon & Rocket */
+html[data-workspace-theme] .layout-brand-icon {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] .layout-brand-rocket {
+  color: var(--ws-accent) !important;
+}
+
+/* Plan CTA Button ("My Plan" in Topbar) */
+html[data-workspace-theme] .layout-plan-cta {
+  background: var(--ws-accent) !important;
+  border-color: var(--ws-accent) !important;
+  color: #fff !important;
+}
+html[data-workspace-theme] .layout-plan-cta:hover {
+  background: var(--ws-hover) !important;
+  border-color: var(--ws-hover) !important;
+}
+
+/* ALL Primary & CTA Buttons Across the Entire App */
+html[data-workspace-theme] :is(
+  .adm-primary,
+  .st-primary,
+  .st-button.primary,
+  .crm2-btn-primary,
+  .bl-btn.primary,
+  .bl-btn-primary,
+  .btn-primary,
+  .aw-primary,
+  .bk-primary,
+  .fb-primary,
+  .login-submit,
+  button[type="submit"]:not(.st-secondary):not(.btn-secondary):not(.aw-secondary),
+  .crm-stage-add
+) {
+  background: var(--ws-accent) !important;
+  color: #fff !important;
+  border-color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .adm-primary,
+  .st-primary,
+  .st-button.primary,
+  .crm2-btn-primary,
+  .bl-btn.primary,
+  .bl-btn-primary,
+  .btn-primary,
+  .aw-primary,
+  .bk-primary,
+  .fb-primary,
+  .login-submit,
+  button[type="submit"]:not(.st-secondary):not(.btn-secondary):not(.aw-secondary),
+  .crm-stage-add
+):hover:not(:disabled) {
+  background: var(--ws-hover) !important;
+  border-color: var(--ws-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* Interactive Tabs & Subnavigation Pills */
+html[data-workspace-theme] :is(
+  .layout-booking-tab.is-active,
+  .crm2-subnav-btn.active,
+  .st-tabs button.active,
+  .st-tabs a.active,
+  .adm-tabs button.active,
+  .adm-tabs a.active,
+  .crm-view-switch button.active,
+  .crm-deal-stages button.active
+) {
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(.crm2-subnav-btn.active)::after {
+  background: var(--ws-accent) !important;
+}
+
+/* Badges, Tags, Pills, and Indicators */
+html[data-workspace-theme] :is(
+  .crm-stage-pill,
+  .crm-source,
+  .lp-badge,
+  .st-badge.primary,
+  .badge-primary,
+  .ws-logo-status-pill,
+  .crm-tag-purple,
+  .tag-purple,
+  .crm-demo-label,
+  .crm-record-tags button
+) {
+  background-color: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
+
+html[data-workspace-theme] :is(.crm-source-symbol, .lp-badge i) {
+  background-color: var(--ws-accent) !important;
+  color: #ffffff !important;
+}
+
+/* Card Borders & Highlights on Active/Featured Elements */
+html[data-workspace-theme] :is(
+  .ws-theme-card.is-selected,
+  .lp-pricing-card.is-featured,
+  .crm-kanban-column.crm-drop-active,
+  .crm-pipeline-workspace .crm-lead-card:hover,
+  .crm-pipeline-workspace .crm-lead-card:focus-within
+) {
+  border-color: var(--ws-accent) !important;
+  box-shadow: 0 4px 14px var(--ws-glow) !important;
+}
+
+/* Form Inputs, Selects, and Textareas */
+html[data-workspace-theme] :is(input, select, textarea):focus {
+  border-color: var(--ws-accent) !important;
+  box-shadow: 0 0 0 3px var(--ws-glow) !important;
+  outline: none !important;
+}
+
+html[data-workspace-theme] :is(input, select, textarea, button):focus-visible {
+  outline: 2px solid var(--ws-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Checkboxes, Radios, and Switches */
+html[data-workspace-theme] :is(input[type="checkbox"], input[type="radio"]):checked {
+  accent-color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(.st-toggle.checked, .switch.is-checked) {
+  background-color: var(--ws-accent) !important;
+}
+
+/* Progress Bars & Metric Fill Indicators */
+html[data-workspace-theme] :is(.ob-progress-fill, [role="progressbar"] > div) {
+  background-color: var(--ws-accent) !important;
+}
+
+/* Notification Center & Header Accessories */
+html[data-workspace-theme] :is(
+  .nc-count,
+  .nc-unread-dot
+) {
+  background-color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .nc-tabs button[aria-selected="true"],
+  .nc-popover footer button,
+  .nc-heading h2 span
+) {
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .nc-icon:not(.leads):not(.bookings)
+) {
+  background-color: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .upclick-help-header small,
+  .upclick-help h3 svg,
+  .upclick-help details[open] summary,
+  .upclick-help article a,
+  .layout-landing-link:hover
+) {
+  color: var(--ws-accent) !important;
+}
+
+/* Floating Quick Chat & Support Launcher */
+html[data-workspace-theme] :is(.support-launcher) {
+  background: var(--ws-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px var(--ws-glow) !important;
+}
+html[data-workspace-theme] :is(.support-launcher:hover) {
+  background: var(--ws-hover) !important;
+  transform: scale(1.05);
+}
+html[data-workspace-theme] :is(
+  .support-new-chat,
+  .support-role-tabs button[aria-selected="true"],
+  .support-expand,
+  .support-role-badge,
+  .support-dialog-head button:hover
+) {
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] :is(.support-new-chat) {
+  background: var(--ws-accent) !important;
+  color: #ffffff !important;
+}
+html[data-workspace-theme] :is(.support-role-tabs button[aria-selected="true"]) {
+  border-color: var(--ws-accent) !important;
+  background: var(--ws-soft) !important;
+}
+
+/* Tables, Row Highlights, and Sort Headers */
+html[data-workspace-theme] :is(
+  .st-table th.is-active,
+  .adm-table th.is-active,
+  .sa-table-scroll th.is-active
+) {
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .st-table tr.is-selected,
+  .adm-table tr.is-selected,
+  .crm-table tr.is-selected
+) {
+  background-color: var(--ws-soft) !important;
+}
+
+html[data-workspace-theme] :is(
+  .table-link:hover,
+  .st-table a:hover,
+  .adm-table a:hover,
+  .crm-deal-title:hover
+) {
+  color: var(--ws-accent) !important;
+}
+
+/* Admin & User Dashboard Chips, Statuses, and Cards */
+html[data-workspace-theme] :is(
+  .adm-chip.is-active,
+  .adm-pill.active,
+  .adm-status.active,
+  .st-chip.is-active
+) {
+  background-color: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
+
+html[data-workspace-theme] :is(
+  .adm-card.is-active,
+  .st-card.is-active,
+  .adm-metric-card:hover,
+  .crm-card:hover
+) {
+  border-color: var(--ws-border-subtle) !important;
+}
+
+/* User & Admin Topbar Interactive Elements */
+html[data-workspace-theme] :is(
+  .layout-header-user:hover,
+  .adm-header-user:hover
+) {
+  border-color: var(--ws-border-subtle) !important;
+}
+
+/* Minimalist Dark Mode High-Contrast Font Correction */
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] :is(
+  .adm-primary,
+  .st-primary,
+  .st-button.primary,
+  .crm2-btn-primary,
+  .bl-btn.primary,
+  .bl-btn-primary,
+  .btn-primary,
+  .aw-primary,
+  .bk-primary,
+  .fb-primary,
+  .login-submit,
+  .layout-plan-cta,
+  .layout-nav-item.is-active,
+  .reference-user-sidebar .layout-nav-item.is-active,
+  .lp-btn--primary,
+  .crm-source-symbol,
+  .lp-badge i
+) {
+  color: #09090b !important;
+}
+
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] :is(
+  .layout-nav-item.is-active svg,
+  .reference-user-sidebar .layout-nav-item.is-active svg
+) {
+  color: #09090b !important;
+}
 
 .workspace-logo { display:block; width:auto; max-width:160px; height:48px; object-fit:contain; }
 .layout-sidebar-content.is-collapsed .workspace-logo { max-width:36px; height:36px; }
 .adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; }
 
+/* Settings panel uses the original admin palette (light + dark) with the active accent. */
 .workspace-customization-panel {
-  --adm-bg:var(--gp-background,#f8fafc);
-  --adm-surface:var(--gp-surface,#ffffff);
-  --adm-soft:var(--gp-soft,#f1f5f9);
-  --adm-text:var(--gp-text,#172033);
-  --adm-muted:var(--gp-muted-text,#475569);
-  --adm-border:var(--gp-border,#cbd5e1);
-  --adm-accent:var(--ws-accent,#6d28d9);
-  --adm-accent-soft:var(--ws-soft,#ede9fe);
+  --adm-bg:#f6f7fb;
+  --adm-surface:#ffffff;
+  --adm-soft:#f5f3fc;
+  --adm-text:#24243a;
+  --adm-muted:#64748b;
+  --adm-border:#e7e8f0;
+  --adm-accent:var(--ws-accent,#7C3AED);
+  --adm-accent-soft:var(--ws-soft,#EDE9FE);
   color:var(--adm-text);
+}
+html.dark .workspace-customization-panel {
+  --adm-bg:#11121c;
+  --adm-surface:#1b1d2b;
+  --adm-soft:#222435;
+  --adm-text:#eef0fb;
+  --adm-muted:#a4a8bf;
+  --adm-border:#303348;
+  --adm-accent:var(--ws-accent,#A78BFA);
+  --adm-accent-soft:var(--ws-soft,#302849);
 }
 
 .workspace-customization-panel .adm-form {
@@ -470,6 +907,25 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   box-shadow:0 0 0 3px color-mix(in srgb, var(--adm-accent,#6d28d9) 20%, transparent), 0 8px 20px -6px rgba(15, 23, 42, 0.1);
 }
 
+html.dark .ws-theme-card,
+.dark .ws-theme-card {
+  background:var(--adm-surface,#1b1d2b);
+  border-color:var(--adm-border,#303348);
+  color:var(--adm-text,#f1f5f9);
+}
+
+html.dark .ws-theme-card:hover,
+.dark .ws-theme-card:hover {
+  border-color:var(--ws-accent,#818cf8);
+  box-shadow:0 10px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .ws-theme-card.is-selected,
+.dark .ws-theme-card.is-selected {
+  border-color:var(--ws-accent,#818cf8);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--ws-accent,#818cf8) 25%, transparent), 0 8px 20px -6px rgba(0, 0, 0, 0.4);
+}
+
 .ws-theme-preview-banner {
   position:relative;
   padding:12px 12px 10px;
@@ -477,7 +933,14 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  border-bottom:1px solid rgba(15, 23, 42, 0.06);
+  background:linear-gradient(135deg, var(--theme-soft, #ede9fe), rgba(255, 255, 255, 0.8));
+  border-bottom:1px solid rgba(15, 23, 42, 0.08);
+}
+
+html.dark .ws-theme-preview-banner,
+.dark .ws-theme-preview-banner {
+  background:linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #6366f1) 22%, #0f172a), #0f172a);
+  border-bottom:1px solid rgba(255, 255, 255, 0.08);
 }
 
 .ws-theme-mini-ui {
@@ -487,8 +950,15 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   border-radius:8px;
   overflow:hidden;
   background:#ffffff;
-  border:1px solid rgba(15, 23, 42, 0.1);
+  border:1px solid rgba(15, 23, 42, 0.12);
   box-shadow:0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+html.dark .ws-theme-mini-ui,
+.dark .ws-theme-mini-ui {
+  background:#111827;
+  border:1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .ws-theme-mini-sidebar {
@@ -497,6 +967,7 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   display:flex;
   flex-direction:column;
   gap:5px;
+  background:var(--theme-dark, #111827);
 }
 
 .ws-theme-mini-sidebar i {
@@ -512,6 +983,11 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   flex-direction:column;
   justify-content:space-between;
   background:#f8fafc;
+}
+
+html.dark .ws-theme-mini-canvas,
+.dark .ws-theme-mini-canvas {
+  background:#1e293b;
 }
 
 .ws-theme-mini-topbar {
@@ -548,6 +1024,12 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   text-decoration:none;
 }
 
+html.dark .ws-theme-mini-cards u,
+.dark .ws-theme-mini-cards u {
+  background:#0f172a;
+  border:1px solid rgba(255, 255, 255, 0.14);
+}
+
 .ws-theme-swatches {
   display:flex;
   align-items:center;
@@ -559,7 +1041,13 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   height:18px;
   border-radius:999px;
   border:2px solid #ffffff;
-  box-shadow:0 1px 3px rgba(15, 23, 42, 0.2);
+  box-shadow:0 1px 3px rgba(15, 23, 42, 0.25);
+}
+
+html.dark .ws-theme-swatches span,
+.dark .ws-theme-swatches span {
+  border:2px solid rgba(255, 255, 255, 0.4);
+  box-shadow:0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .ws-theme-card-body {
@@ -568,6 +1056,11 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   flex-direction:column;
   gap:4px;
   background:var(--adm-surface,#ffffff);
+}
+
+html.dark .ws-theme-card-body,
+.dark .ws-theme-card-body {
+  background:var(--adm-surface,#1b1d2b);
 }
 
 .ws-theme-card-title-row {
@@ -581,6 +1074,11 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   font-size:13px;
   font-weight:700;
   color:var(--adm-text,#0f172a);
+}
+
+html.dark .ws-theme-card-title-row b,
+.dark .ws-theme-card-title-row b {
+  color:var(--adm-text,#f1f5f9);
 }
 
 .ws-theme-active-badge {
@@ -602,10 +1100,65 @@ html[data-workspace-theme] :is(input,select,textarea,button):focus-visible { out
   color:var(--adm-muted,#475569);
 }
 
+html.dark .ws-theme-tag,
+.dark .ws-theme-tag {
+  background:rgba(255, 255, 255, 0.08);
+  color:#cbd5e1;
+}
+
 .ws-theme-card-body small {
   font-size:11.5px;
   color:var(--adm-muted,#64748b);
   line-height:1.4;
+}
+
+html.dark .ws-theme-card-body small,
+.dark .ws-theme-card-body small {
+  color:#94a3b8;
+}
+
+/* Dedicated Reset to Default Action Button */
+.ws-reset-defaults-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 14px;
+  border-radius:9px;
+  font-size:12.5px;
+  font-weight:600;
+  border:1.5px solid var(--adm-border,#cbd5e1);
+  background:var(--adm-surface,#ffffff);
+  color:var(--adm-text,#1e293b);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .18s ease;
+  box-shadow:0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.ws-reset-defaults-btn:hover:not(:disabled) {
+  border-color:var(--adm-accent,#6d28d9);
+  color:var(--adm-accent,#6d28d9);
+  background:color-mix(in srgb, var(--adm-accent,#6d28d9) 6%, var(--adm-surface,#ffffff));
+  transform:translateY(-1px);
+}
+
+.ws-reset-defaults-btn:disabled {
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+html.dark .ws-reset-defaults-btn,
+.dark .ws-reset-defaults-btn {
+  background:#1e293b;
+  border-color:#334155;
+  color:#f1f5f9;
+}
+
+html.dark .ws-reset-defaults-btn:hover:not(:disabled),
+.dark .ws-reset-defaults-btn:hover:not(:disabled) {
+  border-color:var(--ws-accent,#818cf8);
+  color:var(--ws-accent,#818cf8);
+  background:color-mix(in srgb, var(--ws-accent,#818cf8) 12%, #1e293b);
 }
 
 /* Change Password Card Controls */
@@ -709,4 +1262,15 @@ html.dark .ws-settings-stack .st-card,
 .dark .ws-settings-stack .st-card {
   background:var(--adm-surface,#1b1d2b);
   border-color:var(--adm-border,#303348);
+}
+
+/* Professional Spinner Animation */
+@keyframes ws-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ws-spinner {
+  animation: ws-spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
 }

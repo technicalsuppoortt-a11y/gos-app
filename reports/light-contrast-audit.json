@@ -3925,7 +3925,7 @@
     },
     {
       "file": "src/pages/ai-followup.css",
-      "line": 1406,
+      "line": 1419,
       "selector": ".af-composer-hint",
       "before": "#94a3b8",
       "after": "#475569",
@@ -6733,7 +6733,7 @@
     },
     {
       "file": "src/pages/knowledge-production.css",
-      "line": 28,
+      "line": 30,
       "selector": ".kw-production .kp-orb-core small",
       "before": "#e4d7ff",
       "after": "#475569",

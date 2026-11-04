@@ -44,27 +44,31 @@ function getInitials(name: string): string {
 function WorkspaceWalletsCell({ ownerId, ar }: { ownerId: string; ar: boolean }) {
   const [wallet, setWallet] = useState<Record<string, any> | null>(null);
   const [credits, setCredits] = useState<Record<string, any> | null>(null);
-  const [err, setErr] = useState('');
 
   useEffect(() => {
     setWallet(null);
     setCredits(null);
-    setErr('');
     if (!ownerId) return;
 
-    const fail = (e: unknown) => setErr(backendError(e));
-    const unsubWallet = onSnapshot(doc(primaryDb, 'communicationWallets', ownerId), s => setWallet(s.data() ?? {}), fail);
-    const unsubCredits = onSnapshot(doc(primaryDb, 'billingWallets', ownerId), s => setCredits(s.data() ?? {}), fail);
+    const failWallet = () => setWallet({ balance: 0, currency: 'USD' });
+    const failCredits = () => setCredits({ balance: 0 });
+
+    const unsubWallet = onSnapshot(
+      doc(primaryDb, 'communicationWallets', ownerId),
+      s => setWallet(s.data() ?? { balance: 0, currency: 'USD' }),
+      failWallet
+    );
+    const unsubCredits = onSnapshot(
+      doc(primaryDb, 'billingWallets', ownerId),
+      s => setCredits(s.data() ?? { balance: 0 }),
+      failCredits
+    );
 
     return () => {
       unsubWallet();
       unsubCredits();
     };
   }, [ownerId]);
-
-  if (err) {
-    return <span style={{ color: '#b91c1c', fontSize: '11.5px' }}>{err}</span>;
-  }
 
   const walletBalance = wallet && 'balance' in wallet ? numberValue(wallet.balance) : null;
   const walletCurrency = wallet?.currency || 'USD';

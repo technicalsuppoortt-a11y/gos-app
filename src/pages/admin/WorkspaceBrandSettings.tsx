@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { Check, Globe, Info, Palette, Sparkles } from 'lucide-react';
+import { Check, Globe, Info, Loader2, Palette, RotateCcw, Sparkles } from 'lucide-react';
 import { auth, db, backendError } from '../../backend/firebase';
+import { showToast } from '../../utils/toast';
 import {
   DEFAULT_BRAND_LOGO_URL,
   DEFAULT_BRAND_NAME,
@@ -15,8 +16,11 @@ import {
 import { themePaletteDetails } from '../../branding/workspaceTheme';
 import { useUILanguage } from '../../i18n/display';
 import { AdminGeneral } from './AdminGeneral';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { setLanguage, setCurrency, setTheme, type Language, type Theme } from '../../store/slices/uiSlice';
+import { storageSet } from '../../utils/browserStorage';
+import i18n from '../../i18n/i18n';
 import './admin-workspace.css';
 import '../settings/settings-controls.css';
 import '../settings/settings.css';
@@ -45,9 +49,15 @@ export function WorkspaceBrandSettings() {
   const userEmail = useSelector((s: RootState) => s.auth.user?.email);
   const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(role ?? '');
 
+  const dispatch = useDispatch();
+  const topbarLanguage = useSelector((s: RootState) => s.ui.language);
+  const topbarCurrency = useSelector((s: RootState) => s.ui.currency);
+  const topbarTheme = useSelector((s: RootState) => s.ui.theme);
+
   const [draft, setDraft] = useState<WorkspacePreferences>(() => withBrandFallbacks(values, userEmail));
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<'general' | 'domains' | 'email'>('general');
@@ -60,12 +70,144 @@ export function WorkspaceBrandSettings() {
     }
   }, [values, ownValues, dirty, userEmail]);
 
+  // Two-way state sync: reflect changes made in the Topbar immediately in Settings controls
+  useEffect(() => {
+    if (topbarLanguage && topbarLanguage !== draft.language) {
+      setDraft(p => ({ ...p, language: topbarLanguage }));
+    }
+  }, [topbarLanguage]);
+
+  useEffect(() => {
+    if (topbarCurrency && topbarCurrency !== draft.currency) {
+      setDraft(p => ({ ...p, currency: topbarCurrency }));
+    }
+  }, [topbarCurrency]);
+
+  useEffect(() => {
+    if (topbarTheme && draft.mode !== topbarTheme && draft.mode !== 'system') {
+      setDraft(p => ({ ...p, mode: topbarTheme }));
+    }
+  }, [topbarTheme]);
+
   const update = <K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) => {
     setDraft(p => ({ ...p, [key]: value }));
     setDirty(true);
     setSaved(false);
     if (key === 'theme') {
       document.documentElement.dataset.workspaceTheme = String(value);
+      storageSet('workspace_theme', String(value));
+      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: value } }));
+    } else if (key === 'language') {
+      const lang = String(value) as Language;
+      void i18n.changeLanguage(lang);
+      dispatch(setLanguage(lang));
+      storageSet('i18nextLng', lang);
+    } else if (key === 'currency') {
+      const curr = String(value);
+      dispatch(setCurrency(curr));
+      storageSet('preferred_currency', curr);
+    } else if (key === 'mode') {
+      const mode = String(value);
+      if (mode === 'light' || mode === 'dark') {
+        dispatch(setTheme(mode));
+        storageSet('theme', mode);
+        if (mode === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else if (mode === 'system') {
+        const isSystemDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const targetTheme: Theme = isSystemDark ? 'dark' : 'light';
+        dispatch(setTheme(targetTheme));
+        storageSet('theme', targetTheme);
+        if (isSystemDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    }
+  };
+
+  const resetToDefaults = async () => {
+    if (!tenantId) return;
+    setResetting(true);
+    setError('');
+    try {
+      const defaults: WorkspacePreferences = {
+        name: DEFAULT_BRAND_NAME,
+        logoUrl: DEFAULT_BRAND_LOGO_URL,
+        theme: 'violet',
+        language: 'en',
+        currency: 'USD',
+        mode: 'system',
+        timezone: 'UTC',
+        supportEmail: userEmail || DEFAULT_SUPPORT_EMAIL,
+      };
+
+      // 1. Authoritative write to Firestore tenant document
+      const target = doc(db, 'tenants', tenantId, 'preferences', 'general');
+      await setDoc(
+        target,
+        {
+          values: defaults,
+          updatedBy: auth.currentUser?.uid || 'admin',
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      // 2. Also reset user's dashboardBrands projection
+      if (auth.currentUser) {
+        try {
+          await setDoc(
+            doc(db, 'dashboardBrands', auth.currentUser.uid),
+            {
+              values: defaults,
+              updatedBy: auth.currentUser.uid,
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+        } catch {
+          // secondary projection optional
+        }
+      }
+
+      setDraft(defaults);
+      setDirty(false);
+      setSaved(true);
+
+      // 3. Reset document attributes & Redux
+      document.documentElement.dataset.workspaceTheme = 'violet';
+      storageSet('workspace_theme', 'violet');
+      void i18n.changeLanguage('en');
+      dispatch(setLanguage('en'));
+      storageSet('i18nextLng', 'en');
+      dispatch(setCurrency('USD'));
+      storageSet('preferred_currency', 'USD');
+
+      const isDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const sysTheme: Theme = isDark ? 'dark' : 'light';
+      dispatch(setTheme(sysTheme));
+      storageSet('theme', sysTheme);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: 'violet' } }));
+      window.dispatchEvent(new Event('gos-settings-changed'));
+
+      showToast.success(ar ? 'تمت استعادة إعدادات الهوية والسمة الافتراضية بنجاح' : 'Brand identity & theme restored to system defaults.');
+    } catch (e) {
+      const msg = backendError(e);
+      setError(msg);
+      showToast.error(msg);
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -118,14 +260,18 @@ export function WorkspaceBrandSettings() {
 
       // Propagate globally to both Admin Dashboard and User Dashboard immediately
       document.documentElement.dataset.workspaceTheme = normalizedDraft.theme;
+      storageSet('workspace_theme', normalizedDraft.theme);
       window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: normalizedDraft.theme } }));
       window.dispatchEvent(new Event('gos-settings-changed'));
 
       setDraft(normalizedDraft);
       setDirty(false);
       setSaved(true);
+      showToast.success(ar ? 'تم حفظ التغييرات بنجاح' : 'Settings saved successfully');
     } catch (e) {
-      setError(backendError(e));
+      const msg = backendError(e);
+      setError(msg);
+      showToast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -180,7 +326,7 @@ export function WorkspaceBrandSettings() {
               void save();
             }}
           >
-            <fieldset disabled={loading || busy || !!loadError} className="ws-brand-fieldset">
+            <fieldset disabled={loading || busy || resetting || !!loadError} className="ws-brand-fieldset">
               {/* Section 1: Brand Identity & Logo Upload with Live Preview */}
               <div className="ws-section-block">
                 <div className="ws-section-head">
@@ -192,6 +338,16 @@ export function WorkspaceBrandSettings() {
                         : 'Your project name and logo appear across dashboards and customer-facing pages.'}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    className="ws-reset-defaults-btn"
+                    onClick={() => void resetToDefaults()}
+                    disabled={loading || busy || resetting}
+                    title={ar ? 'استعادة إعدادات الهوية والسمة الافتراضية' : 'Restore system default identity & theme'}
+                  >
+                    {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'استعادة الافتراضي' : 'Reset to Default'}</span>
+                  </button>
                 </div>
 
                 <div className="adm-form adm-cms-fields" style={{ marginBottom: 18 }}>
@@ -255,10 +411,20 @@ export function WorkspaceBrandSettings() {
                     </h2>
                     <p>
                       {ar
-                        ? 'اختر لوحة الألوان المفضلة لمساحة عملك مع معاينة فورية متوازنة.'
-                        : 'Choose a curated color palette for your workspace with instant live preview.'}
+                        ? 'اختر لوحة الألوان المفضلة لمساحة عملك مع معاينة فورية متوازنة في الوضعين الفاتح والداكن.'
+                        : 'Choose a curated color palette with instant dual-mode light & dark live preview.'}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    className="ws-reset-defaults-btn"
+                    onClick={() => void resetToDefaults()}
+                    disabled={loading || busy || resetting}
+                    title={ar ? 'استعادة السمة الافتراضية للمنصة' : 'Reset to default theme'}
+                  >
+                    {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'السمة الافتراضية' : 'Reset to Default'}</span>
+                  </button>
                 </div>
 
                 <div
@@ -278,12 +444,18 @@ export function WorkspaceBrandSettings() {
                           aria-checked={isSelected}
                           className={`ws-theme-card${isSelected ? ' is-selected' : ''}`}
                           onClick={() => update('theme', themeKey)}
+                          style={{
+                            '--theme-primary': palette.primary,
+                            '--theme-accent': palette.accent,
+                            '--theme-soft': palette.soft,
+                            '--theme-dark': palette.darkBg,
+                          } as React.CSSProperties}
                         >
-                          <div className="ws-theme-preview-banner" style={{ background: palette.soft }}>
+                          <div className="ws-theme-preview-banner">
                             <div className="ws-theme-mini-ui">
                               <span className="ws-theme-mini-sidebar" style={{ background: palette.darkBg }}>
                                 <i style={{ background: palette.primary }} />
-                                <i style={{ background: palette.accent, opacity: 0.65 }} />
+                                <i style={{ background: palette.accent, opacity: 0.75 }} />
                               </span>
                               <span className="ws-theme-mini-canvas">
                                 <span className="ws-theme-mini-topbar">
@@ -297,9 +469,9 @@ export function WorkspaceBrandSettings() {
                               </span>
                             </div>
                             <div className="ws-theme-swatches" aria-hidden="true">
-                              <span style={{ background: palette.primary }} title="Primary" />
-                              <span style={{ background: palette.accent }} title="Accent" />
-                              <span style={{ background: palette.darkBg }} title="Surface Dark" />
+                              <span style={{ background: palette.primary }} title={ar ? 'اللون الأساسي' : 'Primary'} />
+                              <span style={{ background: palette.accent }} title={ar ? 'اللون الثانوي' : 'Accent'} />
+                              <span style={{ background: palette.darkBg }} title={ar ? 'السطح الداكن' : 'Surface Dark'} />
                             </div>
                           </div>
 
@@ -408,8 +580,30 @@ export function WorkspaceBrandSettings() {
                       {ar ? 'تم الحفظ بنجاح' : 'Settings saved'}
                     </p>
                   )}
-                  <button className="adm-primary" disabled={!dirty || busy}>
-                    {busy ? 'Saving…' : ar ? 'حفظ التغييرات' : 'Save changes'}
+                  <button
+                    type="button"
+                    className="ws-reset-defaults-btn"
+                    onClick={() => void resetToDefaults()}
+                    disabled={loading || busy || resetting}
+                    title={ar ? 'استعادة جميع الإعدادات الافتراضية' : 'Restore system defaults'}
+                  >
+                    {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'استعادة الافتراضي' : 'Reset to Default'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void save()}
+                    className="adm-primary ws-save-btn"
+                    disabled={!dirty || busy || resetting}
+                  >
+                    {busy ? (
+                      <>
+                        <Loader2 size={14} className="ws-spinner" />
+                        <span>{ar ? 'جارِ الحفظ…' : 'Saving…'}</span>
+                      </>
+                    ) : (
+                      <span>{ar ? 'حفظ التغييرات' : 'Save changes'}</span>
+                    )}
                   </button>
                 </div>
               </div>

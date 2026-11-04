@@ -31,6 +31,7 @@ export type WorkspacePreferences = {
   mode: 'light' | 'dark' | 'system';
   timezone: string;
   supportEmail: string;
+  dateFormat?: string;
 };
 
 export const preferenceDefaults: WorkspacePreferences = {
@@ -42,6 +43,7 @@ export const preferenceDefaults: WorkspacePreferences = {
   mode: 'system',
   timezone: 'Africa/Cairo',
   supportEmail: DEFAULT_SUPPORT_EMAIL,
+  dateFormat: 'DD / MM / YYYY',
 };
 
 export function isDefaultBrandLogo(url?: string | null): boolean {
