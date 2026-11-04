@@ -67,6 +67,42 @@ export const themePaletteDetails: Record<
     badge: ['Modern SaaS', 'تقني حديث'],
     desc: ['Clear ocean cyan for modern cloud teams', 'أزرق محيطي صافٍ للفرق التقنية'],
   },
+  royal: {
+    primary: '#7e22ce',
+    accent: '#d8b4fe',
+    soft: '#f3e8ff',
+    hover: '#6b21a8',
+    darkBg: '#13091f',
+    badge: ['Royal Luxury', 'ملكي فاخر'],
+    desc: ['Vibrant royal purple with noble highlights', 'أرجواني ملكي فاخر للمشاريع الرائدة'],
+  },
+  crimson: {
+    primary: '#be123c',
+    accent: '#fda4af',
+    soft: '#ffe4e6',
+    hover: '#9f1239',
+    darkBg: '#1c0a10',
+    badge: ['Executive', 'تنفيذي قيادي'],
+    desc: ['Bold crimson red for high-impact leadership', 'قرمزي جريء للعلامات التجارية القيادية'],
+  },
+  cyber: {
+    primary: '#0d9488',
+    accent: '#5eead4',
+    soft: '#ccfbf1',
+    hover: '#0f766e',
+    darkBg: '#041716',
+    badge: ['Tech Futuristic', 'تقني مستقبلي'],
+    desc: ['High-tech cyber teal with luminous accents', 'تيل سيبراني تقني بلمسات متوهجة'],
+  },
+  minimalist: {
+    primary: '#18181b',
+    accent: '#a1a1aa',
+    soft: '#f4f4f5',
+    hover: '#09090b',
+    darkBg: '#09090b',
+    badge: ['Monochrome', 'أحادي نقي'],
+    desc: ['Pure black & white aesthetic for design purists', 'تصميم أحادي نقي لمحبي البساطة المطلقة'],
+  },
 };
 
 export function workspaceTheme(id: WorkspacePreferences['theme']): NonNullable<PhoenixBrand['theme']> {

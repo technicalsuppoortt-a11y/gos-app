@@ -1,9 +1,37 @@
 html[data-workspace-theme] { --ws-accent:#6d28d9; --ws-hover:#5b21b6; --ws-soft:#ede9fe; }
+html[data-workspace-theme="violet"] { --ws-accent:#6d28d9; --ws-hover:#5b21b6; --ws-soft:#ede9fe; }
 html[data-workspace-theme="slate"] { --ws-accent:#334155; --ws-hover:#1e293b; --ws-soft:#e2e8f0; }
 html[data-workspace-theme="midnight"] { --ws-accent:#4338ca; --ws-hover:#3730a3; --ws-soft:#e0e7ff; }
 html[data-workspace-theme="emerald"] { --ws-accent:#047857; --ws-hover:#065f46; --ws-soft:#d1fae5; }
 html[data-workspace-theme="amber"] { --ws-accent:#d97706; --ws-hover:#b45309; --ws-soft:#fef3c7; }
 html[data-workspace-theme="ocean"] { --ws-accent:#0284c7; --ws-hover:#0369a1; --ws-soft:#e0f2fe; }
+html[data-workspace-theme="royal"] { --ws-accent:#7e22ce; --ws-hover:#6b21a8; --ws-soft:#f3e8ff; }
+html[data-workspace-theme="crimson"] { --ws-accent:#be123c; --ws-hover:#9f1239; --ws-soft:#ffe4e6; }
+html[data-workspace-theme="cyber"] { --ws-accent:#0d9488; --ws-hover:#0f766e; --ws-soft:#ccfbf1; }
+html[data-workspace-theme="minimalist"] { --ws-accent:#18181b; --ws-hover:#09090b; --ws-soft:#f4f4f5; }
+
+html[data-workspace-theme] {
+  --bl-primary: var(--ws-accent) !important;
+  --bl-primary-hover: var(--ws-hover) !important;
+  --bl-primary-soft: var(--ws-soft) !important;
+  --gp-primary: var(--ws-accent) !important;
+  --gp-button-background: var(--ws-accent) !important;
+  --gp-soft: var(--ws-soft) !important;
+}
+
+html[data-workspace-theme] .adm-shell {
+  --adm-accent: var(--ws-accent) !important;
+  --adm-accent-soft: var(--ws-soft) !important;
+}
+
+html[data-workspace-theme] .adm-shell .adm-primary {
+  background: var(--ws-accent) !important;
+  border-color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] .adm-shell .adm-primary:hover {
+  background: var(--ws-hover) !important;
+  border-color: var(--ws-hover) !important;
+}
 
 html[data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.layout-nav-item.is-active,.login-submit) { background:var(--ws-accent)!important; color:#fff!important; border-color:var(--ws-accent)!important; }
 html[data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary):hover { background:var(--ws-hover)!important; }

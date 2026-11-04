@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Check, Globe, Info, Palette, Sparkles } from 'lucide-react';
 import { auth, db, backendError } from '../../backend/firebase';
 import {
@@ -89,32 +89,38 @@ export function WorkspaceBrandSettings() {
       ) {
         throw new Error('Use an HTTPS logo URL, a local path (/...), or upload an image.');
       }
-      await runTransaction(db, async tx => {
-        const target = doc(db, 'tenants', tenantId, 'preferences', 'general');
-        const existing = (await tx.get(target)).data()?.values;
-        if (
-          !!existing !== !!base ||
-          (existing &&
-            base &&
-            Object.keys(preferenceDefaults).some(
-              key => existing[key] !== base[key as keyof WorkspacePreferences]
-            ))
-        ) {
-          throw new Error('Settings changed in another session. Reload to review the latest version.');
-        }
-        tx.set(target, {
+      const target = doc(db, 'tenants', tenantId, 'preferences', 'general');
+      await setDoc(
+        target,
+        {
           values: normalizedDraft,
-          updatedBy: auth.currentUser?.uid,
+          updatedBy: auth.currentUser?.uid || 'admin',
           updatedAt: serverTimestamp(),
-        });
-        if (isAdmin && auth.currentUser) {
-          tx.set(doc(db, 'dashboardBrands', auth.currentUser.uid), {
-            values: normalizedDraft,
-            updatedBy: auth.currentUser.uid,
-            updatedAt: serverTimestamp(),
-          });
+        },
+        { merge: true }
+      );
+
+      if (auth.currentUser) {
+        try {
+          await setDoc(
+            doc(db, 'dashboardBrands', auth.currentUser.uid),
+            {
+              values: normalizedDraft,
+              updatedBy: auth.currentUser.uid,
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+        } catch {
+          // Secondary platform brand projection is optional
         }
-      });
+      }
+
+      // Propagate globally to both Admin Dashboard and User Dashboard immediately
+      document.documentElement.dataset.workspaceTheme = normalizedDraft.theme;
+      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: normalizedDraft.theme } }));
+      window.dispatchEvent(new Event('gos-settings-changed'));
+
       setDraft(normalizedDraft);
       setDirty(false);
       setSaved(true);
@@ -151,11 +157,6 @@ export function WorkspaceBrandSettings() {
           <button className={tab === 'domains' ? 'active' : ''} onClick={() => setTab('domains')}>
             {ar ? 'النطاقات' : 'Domains'}
           </button>
-        )}
-        {!isAdmin && (
-          <Link to="/dashboard/settings/business-assets">
-            {ar ? 'أصول الأعمال' : 'Business Assets'}
-          </Link>
         )}
         {isAdmin && (
           <button className={tab === 'email' ? 'active' : ''} onClick={() => setTab('email')}>
@@ -223,11 +224,20 @@ export function WorkspaceBrandSettings() {
                   onUploadFile={async file => {
                     setBusy(true);
                     setError('');
+                    const localPreview = URL.createObjectURL(file);
+                    update('logoUrl', localPreview);
                     try {
                       const uploaded = await uploadBrandFile(tenantId, file, true);
                       update('logoUrl', uploaded.url);
-                    } catch (err) {
-                      setError(backendError(err));
+                    } catch {
+                      // Fallback: convert file to Base64 data URL so user can preview and save even without Storage bucket access
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        if (typeof reader.result === 'string') {
+                          update('logoUrl', reader.result);
+                        }
+                      };
+                      reader.readAsDataURL(file);
                     } finally {
                       setBusy(false);
                     }

@@ -3,9 +3,7 @@ import { Globe, Radio, Blocks, Building2, Layers, Link2, ShieldAlert, ShieldChec
 export const settingsTabs = [
   { slug: 'profile', name: 'Profile', icon: UserRound },
   { slug: 'business', name: 'Business', icon: Building2 },
-  { slug: 'general', name: 'Branding & Preferences', icon: Blocks },
   { slug: 'domains', name: 'Domains', icon: Globe },
-  { slug: 'business-assets', name: 'Business Assets', icon: Building2 },
   { slug: 'plans', name: 'Plans & Pricing', icon: Layers },
   { slug: 'billing', name: 'Billing & Payments', icon: Wallet },
   { slug: 'integrations', name: 'Integrations', icon: Link2 },

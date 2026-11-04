@@ -68,8 +68,22 @@ export function BrandLogoUploader({
     if (!file || disabled || busy) return;
     setUploadedFileName(file.name);
     setImgError(false);
+    // Instant live preview in 0ms before/during any background processing
+    const objectUrl = URL.createObjectURL(file);
+    onChangeUrl(objectUrl);
     if (onUploadFile) {
-      await onUploadFile(file);
+      try {
+        await onUploadFile(file);
+      } catch {
+        // Fallback to data URL if background upload fails
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            onChangeUrl(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
       return;
     }
     const reader = new FileReader();

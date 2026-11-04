@@ -60,7 +60,7 @@ export function WalletBadge() {
       <span aria-live="polite" className="font-mono font-bold tracking-tight">
         {loading ? '—' : `${symbol}${formattedAmount}`}
       </span>
-      <span className="hidden xl:inline text-[11px] font-medium text-emerald-600/80 dark:text-emerald-400/80">
+      <span className="hidden 2xl:inline text-[11px] font-medium text-emerald-600/80 dark:text-emerald-400/80">
         {t('Wallet')}
       </span>
     </button>

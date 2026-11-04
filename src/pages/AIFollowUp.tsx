@@ -1980,7 +1980,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   };
 
   return (
-    <main className="af-page flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+    <main className={`af-page flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
       {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>Retry</button></div>}
       {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>Retry assistant settings</button></div>}
       <div className="af-page-title">
@@ -2044,7 +2044,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         </div>
       </div>
       {localizeNode(renderKpis())}
-      <div hidden={tab !== 'Knowledge'} className="flex-1 min-h-0 w-full overflow-y-auto">
+      <div hidden={tab !== 'Knowledge'} className={`w-full ${tab === 'Knowledge' ? 'af-knowledge-tab-wrap min-h-0' : 'flex-1 min-h-0 overflow-y-auto'}`}>
         {renderKnowledgeTab()}
       </div>
       <AnimatePresence mode="wait">

@@ -117,7 +117,7 @@
 - develop support
 - add form in funnel => done
   - Create Form option => done
-- Add custome step in funnel  => done
+- Add custome step in funnel => done
 - when craete user => normal or admin or agency user
 - Booking in mobile => done
 - Pin in switch
@@ -127,3 +127,11 @@
 - Default Funnels from joe acadmy
 - Checkout payment methods for products and servics
 - make domain in settings
+- logic of setting in user dashboard
+  - profile
+  - Bussiness
+  - Integrations
+  - Tools
+  - Team & roles
+  - Pixel
+  - Security

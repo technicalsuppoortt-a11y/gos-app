@@ -2,7 +2,7 @@ import { MarketingTracking } from '../MarketingTracking';
 import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Check, ChevronRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -20,8 +20,6 @@ import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
-import { WorkspaceBrandSettings } from '../admin/WorkspaceBrandSettings';
-import { BusinessAssetsPage } from '../admin/BusinessAssetsPage';
 import { DomainsSettingsPanel } from './DomainsSettingsPanel';
 import { BrandLogoUploader } from './BrandLogoUploader';
 import { uploadBrandFile } from '../../backend/workspacePreferences';
@@ -52,13 +50,16 @@ function SettingsWorkspaceView() {
   const isWalletTab = currentTab === 'wallet';
   void paymentMethodsTab; void isWalletTab;
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
+  if (segment === 'general' || segment === 'business-assets') {
+    return <Navigate to="/dashboard/settings/profile" replace />;
+  }
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
   const refresh = useCallback(async () => {
     if (!settingsApiEnabled) { setData(readSettings()); return; }
     setError('');
     try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
-  useEffect(() => { if (!['general', 'business-assets', 'domains'].includes(active.slug)) void refresh(); }, [refresh, active.slug]);
+  useEffect(() => { if (active.slug !== 'domains') void refresh(); }, [refresh, active.slug]);
   async function save(next: SettingsData) {
     if (settingsApiEnabled) {
       const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', { profile: next.profile, business: next.business, payment: next.payment }, 'PATCH');
@@ -69,15 +70,12 @@ function SettingsWorkspaceView() {
     setData(next);
     showToast.success('Changes saved');
   }
-  if (active.slug === 'general') return <WorkspaceBrandSettings/>;
-  if (active.slug === 'business-assets') return <BusinessAssetsPage/>;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
         {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {active.slug === 'pixel' && <MarketingTracking/>}
-          {active.slug === 'general' && <WorkspaceBrandSettings/>}
           {active.slug === 'domains' && <DomainsSettingsPanel/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'plans' && <UserPlansPage/>)}

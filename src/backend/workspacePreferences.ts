@@ -10,13 +10,17 @@ export const DEFAULT_BRAND_LOGO_URL = '/upclick-logo.svg';
 export const DEFAULT_SUPPORT_EMAIL = 'support@upclick.app';
 
 export const workspaceThemes = {
-  violet: 'Violet / Indigo',
+  violet: 'Violet Indigo',
   slate: 'Slate Clean',
   midnight: 'Midnight Neon',
   emerald: 'Emerald Enterprise',
   amber: 'Sunset Amber',
   ocean: 'Ocean Cyan',
-};
+  royal: 'Royal Purple',
+  crimson: 'Crimson Executive',
+  cyber: 'Cyber Matrix',
+  minimalist: 'Minimalist Monotone',
+} as const;
 
 export type WorkspacePreferences = {
   name: string;

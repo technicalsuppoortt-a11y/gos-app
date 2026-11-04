@@ -314,13 +314,26 @@ font-family:Inter,"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;color:#
 
 /* Layout & Density Adjustments (100vh Desktop Constraints) */
 @media(min-width: 1024px) {
-  .af-page {
+  .af-page:not(.af-page-knowledge) {
     height: 100%;
     max-height: 100%;
     min-height: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+  .af-page.af-page-knowledge {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+  }
+  .af-knowledge-tab-wrap {
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
   }
   
   .af-page-title {
@@ -1443,21 +1456,34 @@ html.dark .af-workflow-list::-webkit-scrollbar-thumb,
 .af-feed-list-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 380px;
+  gap: 16px;
+  max-height: 480px;
+  min-height: 120px;
   overflow-y: auto;
-  padding-inline-end: 4px;
+  overflow-x: hidden !important;
+  padding-inline-end: 6px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  scrollbar-width: thin;
 }
 
 .af-test-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 14px 16px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   transition: border-color 0.15s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0 !important;
+  min-height: fit-content !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 .af-test-card:hover {
@@ -1541,7 +1567,10 @@ html.dark .af-workflow-list::-webkit-scrollbar-thumb,
 .af-meta-tags {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .af-outcome-badge {
@@ -1574,6 +1603,10 @@ html.dark .af-workflow-list::-webkit-scrollbar-thumb,
   font-size: 10px;
   background: #f1f5f9;
   color: #475569;
+  max-width: min(260px, 100%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .af-verdict-actions {

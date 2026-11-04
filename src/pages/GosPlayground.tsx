@@ -15,8 +15,11 @@ import {
   ThumbsUp, 
   User, 
   X,
-  BookOpen
+  BookOpen,
+  RotateCcw
 } from 'lucide-react';
+import { ChannelSelect } from '../components/ui/ChannelSelect';
+import { CitySelect } from '../components/ui/CitySelect';
 
 const STARTER_PROMPTS = [
   "What are your program prices and refund terms?",
@@ -126,9 +129,33 @@ export function GosPlayground() {
       {/* Input Composer */}
       <form onSubmit={handleAsk} className="af-playground-composer">
         <div className="kp-playground-context">
-          <label>Channel <select value={channel} disabled={busy} onChange={event => { setChannel(event.target.value); setContext({}); }}>{['webchat', 'whatsapp', 'instagram', 'messenger'].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-          <label>City <input value={city} disabled={busy} onChange={event => { setCity(event.target.value); setContext({}); }} maxLength={120}/></label>
-          <button type="button" className="af-text-action" disabled={busy} onClick={() => { setContext({}); setTests([]); }}>{translateText('New session')}</button>
+          <div className="kp-context-field">
+            <span className="kp-field-title">{translateText("Channel")}</span>
+            <ChannelSelect
+              value={channel}
+              disabled={busy}
+              onChange={selected => { setChannel(selected); setContext({}); }}
+            />
+          </div>
+          <div className="kp-context-field">
+            <span className="kp-field-title">{translateText("City")}</span>
+            <CitySelect
+              value={city}
+              disabled={busy}
+              onChange={selected => { setCity(selected); setContext({}); }}
+              placeholder={translateText("All cities (World)…")}
+            />
+          </div>
+          <button
+            type="button"
+            className="af-text-action kp-reset-btn"
+            disabled={busy}
+            onClick={() => { setContext({}); setTests([]); }}
+            title={translateText("Reset current test session and context")}
+          >
+            <RotateCcw size={12} />
+            <span>{translateText("New session")}</span>
+          </button>
         </div>
         <div className="af-composer-input-wrap">
           <textarea
@@ -256,19 +283,29 @@ export function GosPlayground() {
                     <div className="af-test-meta-footer">
                       <div className="af-meta-tags">
                         <span className={`af-outcome-badge af-outcome-${test.outcome || 'answered'}`}>
-                          <CheckCircle2 size={11} />
-                          {test.outcome || 'answered'}
+                          <CheckCircle2 size={11} className="shrink-0" />
+                          <span>{test.outcome || 'answered'}</span>
                         </span>
-                        {Array.from(new Set((test.citations ?? []).map(item => typeof item === 'object' && item && 'source_name' in item ? String((item as { source_name?: string }).source_name || '') : '').filter(Boolean))).map(sourceName => <span key={sourceName} className="af-citation-badge" title={sourceName}><Sparkles size={11} />{translateText("KNOWLEDGE RETRIEVED:")} {sourceName}</span>)}
-                        {test.context_consistent && <span className="af-outcome-badge af-outcome-answered"><ShieldCheck size={11} />{translateText("CONTEXT CONSISTENT")}</span>}
-                        <span className="af-citation-badge">
-                          <BookOpen size={11} />
-                          {test.citations?.length ?? 0} {translateText("citations")}
+                        {Array.from(new Set((test.citations ?? []).map(item => typeof item === 'object' && item && 'source_name' in item ? String((item as { source_name?: string }).source_name || '') : '').filter(Boolean))).map(sourceName => (
+                          <span key={sourceName} className="af-citation-badge" title={sourceName}>
+                            <Sparkles size={11} className="shrink-0 text-amber-500" />
+                            <span className="truncate max-w-[180px] inline-block">{translateText("KNOWLEDGE:")} {sourceName}</span>
+                          </span>
+                        ))}
+                        {test.context_consistent && (
+                          <span className="af-outcome-badge af-outcome-answered">
+                            <ShieldCheck size={11} className="shrink-0" />
+                            <span>{translateText("CONTEXT CONSISTENT")}</span>
+                          </span>
+                        )}
+                        <span className="af-citation-badge shrink-0">
+                          <BookOpen size={11} className="shrink-0" />
+                          <span>{test.citations?.length ?? 0} {translateText("citations")}</span>
                         </span>
                       </div>
 
                       <div className="af-verdict-actions">
-                        <span className="text-[11px] text-slate-400 mr-1">{translateText("Grounding:")}</span>
+                        <span className="text-[11px] text-slate-400 mr-1 shrink-0">{translateText("Grounding:")}</span>
                         <button
                           type="button"
                           disabled={busy || gradingId === test.id}

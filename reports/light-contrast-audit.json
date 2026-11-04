@@ -1,10 +1,10 @@
 {
   "scannedStylesheets": 88,
-  "correctedDeclarations": 857,
+  "correctedDeclarations": 858,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 197,
+  "utilityOccurrences": 209,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -99,6 +99,66 @@
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
       "line": 138,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/ChannelSelect.tsx",
+      "line": 168,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/ChannelSelect.tsx",
+      "line": 184,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/ChannelSelect.tsx",
+      "line": 206,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 171,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 177,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 188,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 196,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 216,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 232,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 256,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 283,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/ui/CitySelect.tsx",
+      "line": 293,
       "utility": "text-slate-400"
     },
     {
@@ -853,12 +913,12 @@
     },
     {
       "file": "src/pages/GosPlayground.tsx",
-      "line": 108,
+      "line": 111,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/GosPlayground.tsx",
-      "line": 271,
+      "line": 308,
       "utility": "text-slate-400"
     },
     {
@@ -1158,6 +1218,14 @@
       "before": "#818ba0",
       "after": "#334155",
       "contrastOnWhite": 3.42
+    },
+    {
+      "file": "src/components/layout/product-header.css",
+      "line": 171,
+      "selector": ".layout-header .layout-header-user small",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
     },
     {
       "file": "src/components/layout/sidebar-settings.css",
@@ -4674,7 +4742,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
