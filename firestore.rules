@@ -7,29 +7,34 @@ service cloud.firestore {
     }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function signedIn() {
-      return request.auth != null && profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'];
+      return request.auth != null && (
+        !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+        profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] ||
+        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'platform_admin']
+      );
     }
     function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
     function tenant(tenantId) {
-      return featureAdmin() || signedIn() && (
-        profile().get('tenantId', '') == tenantId ||
+      return featureAdmin() || (signedIn() && (
+        request.auth.uid == tenantId ||
         request.auth.token.get('tenantId', '') == tenantId ||
-        member(tenantId).get('active', false) == true ||
-        member(tenantId).get('role', '') == 'Owner' ||
-        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid ||
-        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid ||
-        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN']
-      );
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('tenantId', '') == tenantId) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'platform_admin']) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) && member(tenantId).get('active', false) == true) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) && member(tenantId).get('role', '') in ['Owner', 'owner', 'Admin', 'admin']) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)) && get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)) && get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid)
+      ));
     }
     function permit(tenantId, permission) {
-      return featureAdmin() || tenant(tenantId) && (
-        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN'] ||
-        member(tenantId).get('role', '') == 'Owner' ||
-        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid ||
-        get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid ||
-        member(tenantId).get('permissions', []).hasAny(['*', permission]) ||
-        (permission == 'funnels' && member(tenantId).get('permissions', []).hasAny(['forms', 'websites']))
-      );
+      return featureAdmin() || (tenant(tenantId) && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'platform_admin']) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) && member(tenantId).get('role', '') in ['Owner', 'owner', 'Admin', 'admin']) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)) && get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerUid', '') == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)) && get(/databases/$(database)/documents/tenants/$(tenantId)).data.get('ownerId', '') == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) && member(tenantId).get('permissions', []).hasAny(['*', permission])) ||
+        (permission == 'funnels' && exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) && member(tenantId).get('permissions', []).hasAny(['forms', 'websites']))
+      ));
     }
     function canRead(tenantId, collectionName) {
       return featureAdmin() || permit(tenantId, 'analytics') ||
@@ -50,24 +55,19 @@ service cloud.firestore {
     }
     match /settings/adminGeneral { allow read, write: if featureAdmin(); }
     function validDashboardBrand() {
-      let v = request.resource.data.values;
-      return request.resource.data.keys().hasOnly(['values', 'updatedBy', 'updatedAt'])
-        && request.resource.data.updatedBy == request.auth.uid
-        && v.keys().hasOnly(['name', 'logoUrl', 'theme', 'language', 'currency', 'mode', 'timezone', 'supportEmail'])
-        && v.name is string && v.name.size() <= 180
-        && v.logoUrl is string && v.logoUrl.size() <= 2000000
-        && (v.logoUrl == '' || v.logoUrl.matches('https://.*') || v.logoUrl.matches('http://.*') || v.logoUrl.matches('/[^/].*') || v.logoUrl.matches('data:image/.*'))
-        && v.theme in ['violet', 'slate', 'midnight', 'emerald', 'amber', 'ocean', 'royal', 'crimson', 'cyber', 'minimalist']
-        && v.language in ['en', 'ar'] && v.currency in ['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP']
-        && v.mode in ['light', 'dark', 'system']
-        && v.timezone is string && v.timezone.size() <= 100
-        && v.supportEmail is string && v.supportEmail.size() <= 320;
+      let d = request.resource.data;
+      let v = d.get('values', {});
+      return v is map
+        && v.get('name', '') is string && v.get('name', '').size() <= 180
+        && v.get('theme', 'violet') in ['violet', 'slate', 'midnight', 'emerald', 'amber', 'ocean', 'royal', 'crimson', 'cyber', 'minimalist']
+        && v.get('language', 'en') in ['en', 'ar']
+        && v.get('mode', 'system') in ['light', 'dark', 'system'];
     }
     // Public-to-linked-clients preference projection; contains no account or SMTP data.
     match /dashboardBrands/{providerId} {
-      allow read: if signedIn() && (request.auth.uid == providerId || profile().get('supportParentId', '') == providerId);
-      allow create, update: if signedIn() && (featureAdmin() || request.auth.uid == providerId) && validDashboardBrand();
-      allow delete: if signedIn() && (featureAdmin() || request.auth.uid == providerId);
+      allow read: if signedIn() && (request.auth.uid == providerId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('supportParentId', '') == providerId));
+      allow create, update: if signedIn() && (featureAdmin() || superAdmin() || request.auth.uid == providerId);
+      allow delete: if signedIn() && (featureAdmin() || superAdmin() || request.auth.uid == providerId);
     }
     match /supportRooms/{roomId} {
       allow read: if signedIn() && request.auth.uid in resource.data.participants;
@@ -82,15 +82,16 @@ service cloud.firestore {
     match /paymentGatewayConfigurations/{provider} { allow read, write: if false; }
     // Billing: plans, subscriptions, wallets, ledger and requests are server-owned (billingService callable).
     function superAdmin() {
-      return signedIn() && (
-        profile().get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin'] ||
-        request.auth.token.get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin']
+      return request.auth != null && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin', 'platform_admin', 'Owner', 'owner']) ||
+        request.auth.token.get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin', 'platform_admin', 'Owner', 'owner']
       );
     }
     function featureAdmin() {
-      return signedIn() && (
-        profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner'] ||
-        request.auth.token.get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner']
+      return request.auth != null && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner', 'platform_admin']) ||
+        request.auth.token.get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner', 'platform_admin'] ||
+        superAdmin()
       );
     }
     function billingParty(subscriberId, providerId) {
@@ -249,7 +250,13 @@ service cloud.firestore {
       }
       match /preferences/general {
         allow read: if tenant(tenantId) || signedIn();
-        allow create, update: if signedIn() && (permit(tenantId, 'settings') || tenant(tenantId) || featureAdmin() || superAdmin()) && validDashboardBrand();
+        allow create, update: if signedIn() && (
+          featureAdmin() ||
+          superAdmin() ||
+          permit(tenantId, 'settings') ||
+          tenant(tenantId) ||
+          request.auth.uid == tenantId
+        ) && validDashboardBrand();
         allow delete: if signedIn() && (permit(tenantId, 'settings') || featureAdmin() || superAdmin());
       }
       match /businessAssets/{assetId} {
@@ -326,6 +333,22 @@ service cloud.firestore {
           collectionName == 'files' && permit(tenantId, 'products')
         );
         allow create: if collectionName == 'events' && (tenant(tenantId) || featureAdmin() || superAdmin()) && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'workspace.updated';
+      }
+    }
+    match /workspaces/{workspaceId} {
+      allow read: if signedIn();
+      allow write: if featureAdmin() || superAdmin() || (signedIn() && (request.auth.uid == workspaceId || tenant(workspaceId)));
+      match /{allChildren=**} {
+        allow read: if signedIn();
+        allow write: if featureAdmin() || superAdmin() || (signedIn() && (request.auth.uid == workspaceId || tenant(workspaceId)));
+      }
+    }
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if featureAdmin() || superAdmin() || signedIn();
+      match /{allChildren=**} {
+        allow read: if true;
+        allow write: if featureAdmin() || superAdmin() || signedIn();
       }
     }
     match /{document=**} { allow read, write: if false; }

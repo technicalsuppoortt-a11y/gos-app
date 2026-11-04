@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { db, storage, backendError } from './firebase';
+import { auth, db, storage, backendError } from './firebase';
 import type { RootState } from '../store';
 
 export const DEFAULT_BRAND_NAME = 'Upclick';
@@ -53,8 +53,8 @@ export function isDefaultBrandLogo(url?: string | null): boolean {
 }
 
 export function useWorkspacePreferences() {
-  const tenantId = useSelector((s: RootState) => s.auth.tenant?.id);
-  const uid = useSelector((s: RootState) => s.auth.user?.id);
+  const tenantId = useSelector((s: RootState) => s.auth.tenant?.id || s.auth.user?.id || auth.currentUser?.uid || 'main');
+  const uid = useSelector((s: RootState) => s.auth.user?.id || auth.currentUser?.uid || '');
   const scope = `${tenantId ?? ''}:${uid ?? ''}`;
   const [state, setState] = useState<{ scope: string; values: WorkspacePreferences | null; ownValues: WorkspacePreferences | null; loading: boolean; error: string }>({ scope, values: null, ownValues: null, loading: true, error: '' });
   useEffect(() => {

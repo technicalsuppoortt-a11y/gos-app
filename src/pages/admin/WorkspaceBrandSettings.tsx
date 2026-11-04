@@ -212,16 +212,22 @@ export function WorkspaceBrandSettings() {
   };
 
   async function save() {
-    if (!tenantId) return;
+    const targetTenantId = tenantId || auth.currentUser?.uid || 'main';
     setBusy(true);
     setError('');
     try {
       Intl.DateTimeFormat('en', { timeZone: draft.timezone });
+      const currentUid = auth.currentUser?.uid;
       const normalizedDraft: WorkspacePreferences = {
-        ...draft,
         name: draft.name.trim() || DEFAULT_BRAND_NAME,
         logoUrl: draft.logoUrl.trim() || DEFAULT_BRAND_LOGO_URL,
+        theme: draft.theme in workspaceThemes ? draft.theme : 'violet',
+        language: draft.language === 'ar' ? 'ar' : 'en',
+        currency: draft.currency || 'USD',
+        mode: draft.mode || 'system',
+        timezone: draft.timezone || 'UTC',
         supportEmail: draft.supportEmail.trim() || userEmail || DEFAULT_SUPPORT_EMAIL,
+        dateFormat: draft.dateFormat || 'DD / MM / YYYY',
       };
       if (
         normalizedDraft.logoUrl &&
@@ -231,24 +237,23 @@ export function WorkspaceBrandSettings() {
       ) {
         throw new Error('Use an HTTPS logo URL, a local path (/...), or upload an image.');
       }
-      const target = doc(db, 'tenants', tenantId, 'preferences', 'general');
-      await setDoc(
-        target,
-        {
-          values: normalizedDraft,
-          updatedBy: auth.currentUser?.uid || 'admin',
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const target = doc(db, 'tenants', targetTenantId, 'preferences', 'general');
+      const payload: Record<string, unknown> = {
+        values: normalizedDraft,
+        updatedAt: serverTimestamp(),
+      };
+      if (currentUid) {
+        payload.updatedBy = currentUid;
+      }
+      await setDoc(target, payload, { merge: true });
 
-      if (auth.currentUser) {
+      if (currentUid) {
         try {
           await setDoc(
-            doc(db, 'dashboardBrands', auth.currentUser.uid),
+            doc(db, 'dashboardBrands', currentUid),
             {
               values: normalizedDraft,
-              updatedBy: auth.currentUser.uid,
+              updatedBy: currentUid,
               updatedAt: serverTimestamp(),
             },
             { merge: true }
