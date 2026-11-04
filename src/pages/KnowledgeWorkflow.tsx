@@ -21,6 +21,7 @@ type Props = {
 };
 type PendingSource = { id: string; name: string; file?: File; url?: string; content?: string; kind?: 'text' | 'instructions'; error?: string };
 const steps = ['UPLOAD', 'TRAIN', 'TEST', 'CONNECT', 'LIVE'];
+const CYCLE_POLL_MS = 15000;
 const categoryOf = (name: string) => /^\[([^\]]+)\] /.exec(name)?.[1] || 'General';
 const displayName = (name: string) => name.replace(/^\[[^\]]+\] /, '');
 const isPending = (source: GosSource) => ['queued', 'processing'].includes(source.status);
@@ -54,6 +55,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const [textContent, setTextContent] = useState('');
   const [textKind, setTextKind] = useState<'text' | 'instructions'>('text');
   const fileInput = useRef<HTMLInputElement>(null);
+  const sourceDetailsRef = useRef<Record<string, GosSource>>({});
   const dialog = useRef<HTMLDialogElement>(null);
   const choiceTrigger = useRef<HTMLButtonElement>(null);
   const mutation = useRef(false);
@@ -98,12 +100,19 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
           if (percent !== undefined && (typeof percent !== 'number' || !Number.isFinite(percent))) throw new Error('The API returned invalid training progress.');
           if (training.files !== undefined || training.embedding_percent !== undefined) setAnimateProgress(true);
           const knownIds = new Set([...rawFiles, ...rawLinks].filter(Boolean).map(item => item.id));
-          const missing = (batch.length ? batch : sources).filter(source => !knownIds.has(source.id));
-          const details = await Promise.all(missing.map(source => gosApi.source(source.id, controller.signal)));
+          const missing = (batch.length ? batch : sources).filter(source => {
+            if (knownIds.has(source.id)) return false;
+            const cached = sourceDetailsRef.current[source.id];
+            return cached === undefined || isPending(cached);
+          });
+          const details = missing.length ? await Promise.all(missing.map(source => gosApi.source(source.id, controller.signal))) : [];
           if (controller.signal.aborted) return;
           setReportedProgress(percent === undefined ? null : Math.max(0, Math.min(100, percent)));
           const nextDetails = [...rawFiles, ...rawLinks, ...details.map(({ source }) => source)].filter(Boolean);
-          setSourceDetails(Object.fromEntries(nextDetails.map(source => [source.id, source])));
+          const nextMap = { ...sourceDetailsRef.current };
+          nextDetails.forEach(source => { if (source.id) nextMap[source.id] = source; });
+          sourceDetailsRef.current = nextMap;
+          setSourceDetails(nextMap);
           setCrawledLinks(rawLinks.map(item => ({ ...item, type: 'url' as const })));
           if (nextDetails.some(source => !isPending(source) && sources.some(s => s.id === source.id && isPending(s)))) refresh();
           setCrawledLinks(rawLinks.map(item => ({ ...item, type: 'url' as const })));
@@ -115,9 +124,9 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
           if (entries.some(([key, value]) => !key || typeof value !== 'boolean')) throw new Error('The API returned invalid channel settings.');
           if (!controller.signal.aborted) setChannelFlags(Object.fromEntries(entries));
         }
-        if (!controller.signal.aborted) { setCycleError(''); timer = setTimeout(syncCycle, step === 1 ? 1500 : 15000); }
+        if (!controller.signal.aborted) { setCycleError(''); timer = setTimeout(syncCycle, CYCLE_POLL_MS); }
       } catch (e) {
-        if (!controller.signal.aborted) { setCycleError((e as Error).message); timer = setTimeout(syncCycle, 15000); }
+        if (!controller.signal.aborted) { setCycleError((e as Error).message); timer = setTimeout(syncCycle, CYCLE_POLL_MS); }
       }
     }
     void syncCycle();
