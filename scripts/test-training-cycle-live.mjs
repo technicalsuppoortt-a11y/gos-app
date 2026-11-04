@@ -34,7 +34,7 @@ await check('Crawl website', 'POST', '/ai/sources', { name: `Training cycle QA U
 await check('Overall training progress', 'GET', '/ai/training');
 await check('Individual source progress', 'GET', `/ai/sources/${encodeURIComponent(sourceId)}`);
 const test = await check('Start playground session', 'POST', '/ai/playground', { question: 'What are the support hours?', channel: 'webchat', city: 'Cairo' });
-sessionId = test?.session_id ?? test?.test?.session_id ?? sessionId;
+sessionId = test?.session_id ?? test?.test?.session_id ?? test?.test?.id ?? sessionId;
 await check('Continue playground session', 'POST', '/ai/playground', { session_id: sessionId, source_id: sourceId, question: 'Is support available on Sunday?' });
 await check('Read connected channels', 'GET', '/ai/channels');
 const original = token ? await check('Read assistant before live test', 'GET', '/ai/assistant') : undefined;

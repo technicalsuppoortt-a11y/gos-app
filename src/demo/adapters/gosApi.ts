@@ -10,6 +10,8 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
   const parts = url.pathname.split('/').filter(Boolean), method = options.method ?? 'GET', body = options.body ?? {};
   if (['/health', '/auth/me', '/auth/verify', '/firestore/status'].includes(url.pathname)) return { ok: true, user: { id: 'demo-account-user' }, connected: true } as T;
   if (parts[0] === 'ai') {
+    if (parts[1] === 'training') return { embedding_percent: 100 } as T;
+    if (parts[1] === 'channels') { const current = read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }); if (method === 'PUT' && parts[2]) write('assistant', { ...current, channels: { ...current.channels, [parts[2]]: !!body.enabled } }); return { channels: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }).channels } as T; }
     if (parts[1] === 'assistant') { if (method !== 'GET') write('assistant', { ...read('assistant', { live_enabled: false, channels: {} }), ...body }); return { assistant: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true } }) } as T; }
     if (parts[1] === 'sources') {
       if (method === 'POST') { const values = body instanceof FormData ? Object.fromEntries(body.entries()) : body; const source = { ...created(values), status: 'ready', chunk_count: 3, content: values.content ?? 'Demo file content' }; entityMutation('knowledge', source.id, source); return { source } as T; }
@@ -22,6 +24,23 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
       spendCredits();
       const test = { ...created(body), answer: 'Demo response: Thanks for reaching out! We can help you capture leads, automate follow-ups and book a discovery call. What would you like to explore?', outcome: 'answered', citations: [] };
       entityMutation('playground', test.id, test); return { test } as T;
+    }
+    if (parts[1] === 'copilot') {
+      if (parts[2] === 'conversations') return { conversations: rows('copilotConversations') } as T;
+      if (parts[2] === 'draft') {
+        const resource = body.draft?.kind === 'landing' ? 'assets' : body.draft?.kind === 'campaign' ? 'templates' : body.draft?.kind === 'booking' ? 'calendars' : 'products';
+        const id = body.requestId || crypto.randomUUID();
+        entityMutation(resource, id, { ...(body.record ?? {}), id });
+        if (resource === 'assets') write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
+        return { success: true, id, resource } as T;
+      }
+      spendCredits();
+      const text = 'Demo response: I can help you build a follow-up plan, draft a product, or create a landing page. Start with a clear offer, invite interested leads to a discovery call, and send a friendly reminder after 24 hours. All actions here stay in your demo workspace.';
+      const before = rows('copilotConversations').find(row => row.id === body.conversationId);
+      const convId = body.conversationId || crypto.randomUUID();
+      entityMutation('copilotConversations', convId, { title: before?.title ?? String(body.text ?? '').slice(0, 60), group: 'Today', category: 'Business', time: 'Just now', prompt: body.text, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), { id: crypto.randomUUID(), role: 'user', text: body.text }, { id: crypto.randomUUID(), role: 'assistant', text }] });
+      const kind = /landing|funnel|website/i.test(body.text) ? 'landing' : /course|product/i.test(body.text) ? 'product' : /booking|appointment/i.test(body.text) ? 'booking' : /campaign/i.test(body.text) ? 'campaign' : undefined;
+      return { text, conversationId: convId, ...(kind ? { draft: { kind, name: 'Demo Growth Offer', price: '99', currency: 'USD', channel: 'WhatsApp', content: 'A personalized demo offer to help customers reach their next milestone.', description: 'Sample demo draft', duration: '30' } } : {}) } as T;
     }
   }
   if (parts[0] === 'inbox') {
@@ -75,8 +94,10 @@ const request = (path: string, method = 'GET', body?: any) => gosRequest<any>(pa
 export const gosApi = {
   health: () => request('/health'), me: () => request('/auth/me'), verify: () => request('/auth/verify'), firestoreStatus: () => request('/firestore/status'),
   sources: () => request('/ai/sources'), source: (id: string) => request('/ai/sources/' + id), createSource: (body: any) => request('/ai/sources', 'POST', body), deleteSource: (id: string) => request('/ai/sources/' + id, 'DELETE'),
+  training: () => request('/ai/training'), channels: () => request('/ai/channels'), updateChannel: (channel: string, enabled: boolean, credentials?: any) => request('/ai/channels/' + channel, 'PUT', { enabled, ...credentials }),
   assistant: () => request('/ai/assistant'), updateAssistant: (body: any) => request('/ai/assistant', 'PUT', body), playground: () => request('/ai/playground'), ask: (question: string) => request('/ai/playground', 'POST', { question }), grade: (id: string, verdict: string, note: string) => request('/ai/playground/' + id + '/grade', 'POST', { verdict, note }),
-  conversations: () => request('/inbox/conversations'), conversation: (id: string) => request('/inbox/conversations/' + id), receiveMessage: (body: any) => request('/inbox/messages', 'POST', body),
+  copilotConversations: () => request('/ai/copilot/conversations'), copilot: (body: any) => request('/ai/copilot', 'POST', body), createCopilotDraft: (body: any) => request('/ai/copilot/draft', 'POST', body),
+  conversations: () => request('/inbox/conversations'), conversation: (id: string) => request('/inbox/conversations/' + id), inboxSummary: () => request('/inbox/conversations'), receiveMessage: (body: any) => request('/inbox/messages', 'POST', body),
   pipelines: () => request('/crm/pipelines'), pipeline: (id: string) => request('/crm/pipelines/' + id), presets: () => request('/crm/pipelines/presets'), installPreset: () => request('/crm/pipelines', 'POST', { ...mainPipeline, id: crypto.randomUUID() }), createPipeline: (body: any) => request('/crm/pipelines', 'POST', body), updatePipeline: (id: string, body: any) => request('/crm/pipelines/' + id, 'PUT', body),
   leads: () => request('/crm/leads'), lead: (id: string) => request('/crm/leads/' + id), createLead: (body: any) => request('/crm/leads', 'POST', body), updateLead: (id: string, body: any) => request('/crm/leads/' + id, 'PATCH', body), moveLead: (id: string, lifecycle_stage: string) => request('/crm/leads/' + id + '/stage', 'POST', { lifecycle_stage }), addNote: (id: string, note: string) => request('/crm/leads/' + id + '/notes', 'POST', { note }), deleteLead: (id: string) => request('/crm/leads/' + id, 'DELETE'), bulkLeads: (lead_ids: string[], action: string, value?: string) => request('/crm/leads/bulk', 'POST', { lead_ids, action, value }), importLeads: (body: any) => request('/crm/leads/import', 'POST', body), exportLeads: (id: string) => request('/crm/leads/export?pipeline_id=' + id),
 };

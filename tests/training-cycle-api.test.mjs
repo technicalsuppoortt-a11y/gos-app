@@ -34,12 +34,14 @@ test('Training Cycle API methods preserve auth, payloads, multipart boundaries a
   await gosApi.updateChannel('webchat', true);
   await gosApi.updateAssistant({ live_enabled: true, channels: { webchat: true } });
   await gosApi.receiveMessage({ channel: 'webchat', external_thread_id: 'thread-1', external_message_id: 'event-1', customer_name: 'QA', body: 'Hello' });
-  assert.equal(requests.length, 11);
+  await gosApi.updateChannel('whatsapp', true, { external_id: 'phone-1', access_token: 'token-1' });
+  await gosApi.inboxSummary();
+  assert.equal(requests.length, 13);
   for (const request of requests) {
     assert.equal(request.headers.get('Authorization'), 'Bearer qa-token');
     assert.ok(request.url.startsWith('https://gos-api.vercel.app/api/v1/'));
   }
-  assert.equal(tokens.length, 11);
+  assert.equal(tokens.length, 13);
   assert.equal(requests[0].headers.get('Content-Type'), null);
   assert.equal(requests[0].body, form);
   assert.deepEqual(JSON.parse(requests[2].body), { name: 'Website', type: 'url', url: 'https://example.com' });
@@ -52,4 +54,7 @@ test('Training Cycle API methods preserve auth, payloads, multipart boundaries a
   assert.deepEqual(JSON.parse(requests[8].body), { enabled: true });
   assert.deepEqual(JSON.parse(requests[9].body), { live_enabled: true, channels: { webchat: true } });
   assert.ok(requests[10].url.endsWith('/inbox/messages'));
+  assert.ok(requests[11].url.endsWith('/ai/channels/whatsapp'));
+  assert.deepEqual(JSON.parse(requests[11].body), { enabled: true, external_id: 'phone-1', access_token: 'token-1' });
+  assert.ok(requests[12].url.endsWith('/inbox/summary'));
 });

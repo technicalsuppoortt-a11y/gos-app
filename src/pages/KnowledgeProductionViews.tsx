@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { WhatsappLogo, MessengerLogo, InstagramLogo, ChatDots, FacebookLogo, EnvelopeSimple } from '@phosphor-icons/react';
 import { ArrowRight, MessageSquare, Radio, ShieldCheck } from 'lucide-react';
 import { gosApi, type GosAssistant } from '../backend/gosApi';
@@ -69,11 +69,33 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState('');
   const [sendError, setSendError] = useState('');
+  const [liveThreads, setLiveThreads] = useState<Conversation[]>([]);
+  const [summaryCounts, setSummaryCounts] = useState<{ today: number; needed: number } | null>(null);
+  const activeConversations = conversations.length ? conversations : liveThreads;
   const threadId = useRef(`knowledge-test-${crypto.randomUUID()}`);
   const messageId = useRef<string | null>(null);
   const sendingRef = useRef(false);
   const enabledChannels = Object.keys(assistant.channels).filter(key => assistant.channels[key]);
   const selectedChannel = enabledChannels.includes(channel) ? channel : enabledChannels[0] || '';
+  useEffect(() => {
+    if (conversations.length || typeof gosApi.inboxSummary !== 'function') return;
+    const controller = new AbortController();
+    gosApi.inboxSummary(controller.signal).then(async summary => {
+      if (controller.signal.aborted || !Array.isArray(summary?.conversations)) return;
+      setSummaryCounts({ today: Number(summary.conversations_today || 0), needed: Number(summary.needed_team || 0) });
+      const top = summary.conversations.slice(0, 3);
+      const details = await Promise.all(top.map(item => typeof gosApi.conversation === 'function' && item?.id ? gosApi.conversation(String(item.id), controller.signal).catch(() => ({ conversation: item, messages: [] })) : Promise.resolve({ conversation: item, messages: [] })));
+      if (controller.signal.aborted) return;
+      setLiveThreads(details.map(({ conversation: conv, messages: msgs }) => ({
+        id: String(conv?.id || crypto.randomUUID()), name: String(conv?.customer_name || 'Customer'), initials: String(conv?.customer_name || 'CU').slice(0, 2).toUpperCase(),
+        channel: (conv?.channel || 'whatsapp') as Conversation['channel'], preview: String(conv?.last_message || ''), time: conv?.updated_at ? new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        unread: 0, tags: [], stage: String(conv?.last_action?.label || (conv?.ai_state === 'handoff' ? 'NEEDED YOUR TEAM' : conv?.ai_state === 'answered' ? 'AI ANSWERED' : String(conv?.ai_state || 'LIVE').toUpperCase())),
+        source: 'Inbox', phone: String(conv?.phone || ''), email: '', location: '', assignee: '', aiAutoReply: conv?.ai_state === 'answered', takenOver: conv?.ai_state === 'handoff', followUp: false, followUpRules: [], starred: false,
+        messages: Array.isArray(msgs) ? msgs.map((m, idx) => ({ id: String(m?.id || idx), sender: (m?.actor === 'assistant' ? 'ai' : 'customer') as 'ai' | 'customer', text: String(m?.body || ''), time: '' })) : [], activity: [],
+      })));
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [conversations.length]);
   async function sendCustomerMessage(event: React.FormEvent) {
     event.preventDefault();
     if (sendingRef.current || !message.trim() || !assistant.live_enabled || !selectedChannel) return;
@@ -82,14 +104,27 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
     messageId.current ??= crypto.randomUUID();
     try {
       const response = await gosApi.receiveMessage({ channel: selectedChannel, external_thread_id: threadId.current, external_message_id: messageId.current, customer_name: 'Knowledge studio test customer', body: message.trim() });
-      setResult(`${response.outcome}${typeof response.reply?.body === 'string' ? ` · ${response.reply.body}` : ''}`);
+      const sentText = message.trim();
+      const actionLabel = response.action?.label || response.conversation?.last_action?.label;
+      setResult(`${actionLabel ? `${actionLabel} · ` : ''}${response.outcome}${typeof response.reply?.body === 'string' ? ` · ${response.reply.body}` : ''}`);
+      if (!conversations.length) {
+        const convId = String(response.conversation?.id || threadId.current);
+        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const stageLabel = String(actionLabel || (response.outcome === 'handoff' ? 'NEEDED YOUR TEAM' : response.outcome === 'answered' ? 'AI ANSWERED' : response.outcome.toUpperCase()));
+        setLiveThreads(prev => {
+          const existing = prev.find(item => item.id === convId);
+          const nextMsgs = [...(existing?.messages || []), { id: String(response.inbound?.id || crypto.randomUUID()), sender: 'customer' as const, text: sentText, time: nowTime }, ...(typeof response.reply?.body === 'string' ? [{ id: String(response.reply.id || crypto.randomUUID()), sender: 'ai' as const, text: response.reply.body, time: nowTime }] : [])];
+          const updated: Conversation = { id: convId, name: String(response.conversation?.customer_name || 'Knowledge studio test customer'), initials: 'KS', channel: selectedChannel as Conversation['channel'], preview: typeof response.reply?.body === 'string' ? response.reply.body : sentText, time: nowTime, unread: 0, tags: [], stage: stageLabel, source: 'Inbox', phone: String(response.conversation?.phone || ''), email: '', location: '', assignee: '', aiAutoReply: response.outcome === 'answered', takenOver: response.outcome === 'handoff', followUp: false, followUpRules: [], starred: false, messages: nextMsgs, activity: [] };
+          return [updated, ...prev.filter(item => item.id !== convId)];
+        });
+      }
       messageId.current = null; setMessage('');
     } catch (e) { setSendError((e as Error).message); }
     finally { sendingRef.current = false; setSending(false); }
   }
   return <section className="kp-live">
     <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('LIVE MONITOR')}</span><h3>{t(assistant.live_enabled ? 'Your assistant is live' : 'Ready when you are')}</h3></div><button type="button" className="kw-button primary" disabled={disabled} onClick={onToggle}><Radio size={14}/>{t(assistant.live_enabled ? 'Pause assistant' : 'Go live')}</button></header>
-    <div className={`kp-signal-bar ${assistant.live_enabled ? 'active' : ''}`}><span><i/>{t(assistant.live_enabled ? 'LIVE' : 'PAUSED')} · {conversations.length} {t('CONVERSATIONS')}</span><b>{connected} {t('CHANNELS ENABLED')}</b></div>
+    <div className={`kp-signal-bar ${assistant.live_enabled ? 'active' : ''}`}><span><i/>{t(assistant.live_enabled ? 'LIVE' : 'PAUSED')} · {activeConversations.length} {t('CONVERSATIONS')}</span><b>{connected} {t('CHANNELS ENABLED')}</b></div>
     <form className="kp-customer-form" onSubmit={event => void sendCustomerMessage(event)}>
       <label htmlFor="kp-live-channel">{t('Test customer channel')}</label>
       <select id="kp-live-channel" value={selectedChannel} disabled={sending} onChange={event => { setChannel(event.target.value); messageId.current = null; }}>{enabledChannels.map(key => <option key={key} value={key}>{key}</option>)}</select>
@@ -100,8 +135,8 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
       {result && <p role="status">{result}</p>}{sendError && <p role="alert" className="kw-error-text">{sendError}</p>}
     </form>
     <div className="kp-live-streams">
-      {!conversations.length && <div className="kp-monitor-empty"><MessageSquare size={30}/><h4>{t('Your conversation monitor is ready')}</h4><p>{t('Customer conversations will appear here as they reach your workspace.')}</p></div>}
-      {conversations.slice(0, 3).map(thread => {
+      {!activeConversations.length && <div className="kp-monitor-empty"><MessageSquare size={30}/><h4>{t('Your conversation monitor is ready')}</h4><p>{t('Customer conversations will appear here as they reach your workspace.')}</p></div>}
+      {activeConversations.slice(0, 3).map(thread => {
         const messages = (thread.messages || []).filter(message => message.text && message.sender !== 'note').slice(-3);
         return <article className="kp-stream" key={thread.id}>
           <ProductionChannelMark channel={thread.channel}/><div className="kp-stream-content"><header><b>{thread.name}</b><time>{thread.time}</time></header>
@@ -111,7 +146,7 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
         </article>;
       })}
     </div>
-    <div className="kp-live-stats"><span><b>{conversations.length}</b>{t('CONVERSATIONS')}</span><span><b>{conversations.filter(thread => thread.takenOver).length}</b>{t('NEEDED YOUR TEAM')}</span><span><b>{readySources}</b>{t('SOURCES READY')}</span></div>
+    <div className="kp-live-stats"><span><b>{summaryCounts && !conversations.length ? Math.max(summaryCounts.today, activeConversations.length) : activeConversations.length}</b>{t('CONVERSATIONS')}</span><span><b>{summaryCounts && !conversations.length ? Math.max(summaryCounts.needed, activeConversations.filter(thread => thread.takenOver).length) : activeConversations.filter(thread => thread.takenOver).length}</b>{t('NEEDED YOUR TEAM')}</span><span><b>{readySources}</b>{t('SOURCES READY')}</span></div>
     {!connected && <p className="kp-connection-note">{t('Connect and enable at least one channel before going live.')}</p>}
   </section>;
 }

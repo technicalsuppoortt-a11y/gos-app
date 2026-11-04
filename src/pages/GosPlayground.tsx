@@ -64,7 +64,7 @@ export function GosPlayground() {
     try {
       const result = await gosApi.ask(query, { channel, city: city.trim(), ...context });
       if (!result.test?.id) throw new Error('The API did not return a playground test.');
-      setContext({ session_id: result.session_id ?? result.test.session_id ?? context.session_id, source_id: result.source_id ?? result.test.source_id ?? context.source_id });
+      setContext({ session_id: result.session_id ?? result.test.session_id ?? result.test.id ?? context.session_id, source_id: result.source_id ?? result.test.source_id ?? context.source_id });
       setTests(previous => [result.test, ...previous.filter(t => t.id !== result.test.id)]);
       showToast.success(translateText("Response generated successfully"));
     } catch (e) {
@@ -225,6 +225,13 @@ export function GosPlayground() {
           <div className="af-feed-list-wrap">
             {tests.slice(0, 6).map(test => (
               <article className="af-test-card" key={test.id}>
+                {/* Previous turns in the same testing session */}
+                {Array.isArray(test.messages) && test.messages.length > 2 && test.messages.slice(0, -2).map((turn, idx) => (
+                  <div key={`${test.id}-turn-${idx}`} className={turn.role === 'user' ? 'af-test-user-row' : 'af-test-ai-row'}>
+                    <div className={turn.role === 'user' ? 'af-user-badge' : 'af-ai-badge'}>{turn.role === 'user' ? <User size={13} /> : <Bot size={14} />}</div>
+                    <div className={turn.role === 'user' ? 'af-test-query-text' : 'af-test-answer-content'}><p className={turn.role === 'user' ? undefined : 'af-test-answer-text'}>{localizeNode(turn.content)}</p></div>
+                  </div>
+                ))}
                 {/* User Query */}
                 <div className="af-test-user-row">
                   <div className="af-user-badge">
@@ -252,6 +259,8 @@ export function GosPlayground() {
                           <CheckCircle2 size={11} />
                           {test.outcome || 'answered'}
                         </span>
+                        {Array.from(new Set((test.citations ?? []).map(item => typeof item === 'object' && item && 'source_name' in item ? String((item as { source_name?: string }).source_name || '') : '').filter(Boolean))).map(sourceName => <span key={sourceName} className="af-citation-badge" title={sourceName}><Sparkles size={11} />{translateText("KNOWLEDGE RETRIEVED:")} {sourceName}</span>)}
+                        {test.context_consistent && <span className="af-outcome-badge af-outcome-answered"><ShieldCheck size={11} />{translateText("CONTEXT CONSISTENT")}</span>}
                         <span className="af-citation-badge">
                           <BookOpen size={11} />
                           {test.citations?.length ?? 0} {translateText("citations")}
