@@ -71,7 +71,8 @@ export const UserLayout: React.FC = () => {
   const role = useSelector((s: RootState) => s.auth.role);
   const { data: sub, loading: subLoading } = useSubscription(user?.id ?? null);
   const live = isLive(sub);
-  const isLocked = !(isDemoAccount || isDemoSessionActive()) && role === 'USER' && !subLoading && !live;
+  const impersonation = useSelector((s: RootState) => s.auth.impersonation);
+  const isLocked = !impersonation && !(isDemoAccount || isDemoSessionActive()) && role === 'USER' && !subLoading && !live;
 
   useEffect(() => {
     if (isLocked) {

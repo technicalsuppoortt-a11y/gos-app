@@ -6,7 +6,7 @@ import { store, type RootState } from '../store';
 import { beginActivation, endActivation } from './session';
 import type { Role, Tenant } from '../types/auth';
 import type { Invite } from '../pages/onboarding/onboarding-store';
-import { auth, backendError, callBackend, db, sendOfficialPasswordResetEmail } from './firebase';
+import { auth, backendError, callBackend, db, primaryDb, sendOfficialPasswordResetEmail } from './firebase';
 import { showToast } from '../utils/toast';
 
 const links = new Map<string, string>();
@@ -143,11 +143,17 @@ export async function manageAccount(operation: string, data: Record<string, unkn
 
 export function useAdminUsers() {
   const role = useSelector((state: RootState) => state.auth.role);
+  const impersonation = useSelector((state: RootState) => state.auth.impersonation);
+  const effectiveRole = impersonation?.role ?? role;
   const [state, setState] = useState<{ invites: Invite[]; loading: boolean; error: string }>({ invites: [], loading: true, error: '' });
 
   useEffect(() => {
-    const users = collection(db, 'users');
-    const q = role === 'SUPER_ADMIN' ? users : query(users, where('role', '==', 'USER'));
+    if (effectiveRole !== 'ADMIN' && effectiveRole !== 'SUPER_ADMIN') {
+      setState({ invites: [], loading: false, error: '' });
+      return;
+    }
+    const users = collection(primaryDb, 'users');
+    const q = effectiveRole === 'SUPER_ADMIN' ? users : query(users, where('role', '==', 'USER'));
 
     const unsubscribe = onSnapshot(
       q,
@@ -158,8 +164,7 @@ export function useAdminUsers() {
       },
       error => {
         const message = backendError(error);
-        setState({ invites: [], loading: false, error: message });
-        showToast.error(message);
+        setState(prev => ({ ...prev, loading: false, error: message }));
       }
     );
 
@@ -167,7 +172,7 @@ export function useAdminUsers() {
       unsubscribe();
 
     };
-  }, [role]);
+  }, [effectiveRole]);
 
   return state;
 }

@@ -270,15 +270,15 @@ body.layout-locked #root {
 }
 
 .layout-nav-item:hover {
-  background: #f0effe;
-  color: #7C3AED;
+  background: var(--ws-soft, #f0effe);
+  color: var(--ws-accent, #7C3AED);
 }
 
 .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%) !important;
+  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%) !important;
   color: #fff !important;
   font-weight: 650;
-  box-shadow: 0 4px 12px rgba(110, 84, 228, 0.22);
+  box-shadow: 0 4px 12px var(--ws-glow, rgba(110, 84, 228, 0.22));
 }
 
 .layout-nav-item.is-active svg {
@@ -993,15 +993,15 @@ body.layout-locked #root {
   flex: none;
   border: 0;
   border-radius: 8px;
-  background: #f4f3ff;
-  color: #7C3AED;
+  background: var(--ws-soft, #f4f3ff);
+  color: var(--ws-accent, #7C3AED);
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
 .layout-menu-button:hover {
-  background: #ebe8ff;
-  color: #7C3AED;
+  background: var(--ws-border-subtle, #ebe8ff);
+  color: var(--ws-accent, #7C3AED);
   transform: translateY(-1px);
 }
 
@@ -1140,9 +1140,9 @@ body.layout-locked #root {
 }
 
 .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%);
+  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%);
   color: #fff;
-  box-shadow: 0 4px 11px rgba(110, 84, 228, 0.17);
+  box-shadow: 0 4px 11px var(--ws-glow, rgba(110, 84, 228, 0.17));
 }
 
 .reference-user-sidebar .layout-nav-item.is-active>svg {
@@ -1161,8 +1161,8 @@ html.dark .reference-user-sidebar {
 }
 
 html.dark .layout-brand-icon {
-  background: #1e1b38;
-  color: #A78BFA;
+  background: var(--ws-soft, #1e1b38);
+  color: var(--ws-accent, #A78BFA);
 }
 
 html.dark .layout-brand-wordmark b {
@@ -1194,13 +1194,13 @@ html.dark .layout-nav-item>svg {
 }
 
 html.dark .layout-nav-item:hover {
-  background: #1b2030;
+  background: var(--ws-soft, #1b2030);
   color: #fff;
 }
 
 html.dark .layout-nav-item.is-active,
 html.dark .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%) !important;
+  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%) !important;
   color: #fff !important;
 }
 
@@ -1243,13 +1243,13 @@ html.dark .layout-logout:hover {
 }
 
 html.dark .layout-menu-button {
-  background: #1e2436;
-  color: #A78BFA;
+  background: var(--ws-soft, #1e2436);
+  color: var(--ws-accent, #A78BFA);
 }
 
 html.dark .layout-menu-button:hover {
-  background: #2a3147;
-  color: #A78BFA;
+  background: var(--ws-border-subtle, #2a3147);
+  color: var(--ws-accent, #A78BFA);
 }
 
 html.dark .layout-header {

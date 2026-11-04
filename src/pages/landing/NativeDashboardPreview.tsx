@@ -6,7 +6,31 @@ import { retryImport } from '../../router/chunkRecovery';
 type Snapshots = typeof import('./preview/static-snapshots.json');
 import './native-dashboard-preview.css';
 
-
+const SHADOW_THEME_OVERRIDES = `
+.lp-static-document {
+  --upclick-primary: var(--ws-accent, #7C3AED) !important;
+  --upclick-secondary: var(--ws-hover, #6D28D9) !important;
+  --upclick-tint: var(--ws-soft, #EDE9FE) !important;
+  --purple: var(--ws-accent, #7C3AED) !important;
+  --app-indigo: var(--ws-accent, #7C3AED) !important;
+}
+.lp-static-document :is(.text-\\[\\#7C3AED\\], .dark\\:text-purple-300, .text-indigo-600) {
+  color: var(--ws-accent, #7C3AED) !important;
+}
+.lp-static-document :is(.bg-\\[\\#efeaff\\], .bg-\\[\\#f5f2ff\\], .dark\\:bg-purple-500\\/20, .dark\\:bg-purple-500\\/15) {
+  background-color: var(--ws-soft, #EDE9FE) !important;
+  color: var(--ws-accent, #7C3AED) !important;
+}
+.lp-static-document :is(.bg-\\[\\#7C3AED\\], .from-\\[\\#7C3AED\\], .from-\\[\\#4F6BFF\\]) {
+  background: var(--ws-accent, #7C3AED) !important;
+}
+.lp-static-document svg :is([stroke="#7C3AED"], [stroke="#6D28D9"]) {
+  stroke: var(--ws-accent, #7C3AED) !important;
+}
+.lp-static-document svg stop[stop-color="#7C3AED"] {
+  stop-color: var(--ws-accent, #7C3AED) !important;
+}
+`;
 
 /** Original native markup, captured ahead of time. No dashboard app boots here. */
 export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: boolean; title: string }) {
@@ -32,7 +56,9 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     // Shadow DOM keeps the original dashboard styles completely out of the landing page.
     const shadow = host.current.shadowRoot ?? host.current.attachShadow({ mode: 'open' });
     if (!shadow.firstChild) {
-      const sheet = document.createElement('style'); sheet.textContent = styles; shadow.append(sheet);
+      const sheet = document.createElement('style');
+      sheet.textContent = styles + '\n' + SHADOW_THEME_OVERRIDES;
+      shadow.append(sheet);
     }
     let canvas = shadow.querySelector<HTMLDivElement>('.lp-static-document');
     if (!canvas) { canvas = document.createElement('div'); shadow.append(canvas); }
@@ -56,4 +82,3 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     <div ref={host} className="lp-native-static"/>
   </div>;
 }
-

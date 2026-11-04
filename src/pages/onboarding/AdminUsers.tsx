@@ -998,11 +998,11 @@ export function AdminUsers() {
                         className="ob-icon"
                         title={t('Switch to user dashboard', 'التبديل إلى لوحة المستخدم')}
                         aria-label={`${t('Switch to', 'التبديل إلى')} ${i.name || i.email}`}
-                        disabled={!!switchingUser || currentStatus !== 'Active' || i.role !== 'USER'}
+                        disabled={!!switchingUser || i.role !== 'USER'}
                         onClick={async () => {
                           setSwitchingUser(i.id);
                           try {
-                            await switchToUser(i.id, i.tenantId);
+                            await switchToUser(i.id, i.tenantId, i);
                             navigate('/dashboard', { replace: true });
                           } catch (error) {
                             showToast.error(backendError(error));
@@ -1130,7 +1130,7 @@ export function AdminUsers() {
           onSwitchUser={async user => {
             setSwitchingUser(user.id);
             try {
-              await switchToUser(user.id, user.tenantId);
+              await switchToUser(user.id, user.tenantId, user);
               navigate('/dashboard', { replace: true });
             } catch (error) {
               showToast.error(backendError(error));

@@ -11,6 +11,7 @@ import './light-contrast.css';
 import './control-polish.css';
 import './module-updates.css';
 import './branding/upclick.css';
+import './context/workspace-customization.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -148,8 +148,8 @@ export const cloudStorage = {
       if (tenantId === scope && revisions.get(key) === revision) {
         if (previous === undefined) cache.delete(key); else cache.set(key, previous);
         notify();
+        showToast.error(backendError(error));
       }
-      showToast.error(backendError(error));
       throw error;
     });
     // Legacy synchronous editors are observed here; async editors can await the returned promise.
@@ -206,10 +206,17 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     let permissionSignature = '';
     let generation = 0;
     let active = true;
-    const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', store.getState().auth.user!.id), membership => {
+    const applyMembership = (member?: Record<string, any>) => {
       if (!active) return;
-      const member = membership.data();
-      const signature = JSON.stringify([member?.active, member?.permissions]);
+      const isDeactivated = member?.status === 'Deactivated' || member?.status === 'Inactive';
+      if (isDeactivated && !store.getState().auth.impersonation) {
+        void forceSignOut(new SessionError('DEACTIVATED'));
+        return;
+      }
+      const permissions = Array.isArray(member?.permissions) && member.permissions.length > 0
+        ? (member.permissions as string[])
+        : ['*'];
+      const signature = JSON.stringify([true, permissions]);
       if (signature === permissionSignature) return;
       permissionSignature = signature;
       const current = ++generation;
@@ -218,8 +225,6 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       assetPersistence.reset();
       cache.clear(); initializedResources.clear(); loaded = false; hydrate(); notify();
       setStatus({ scope, ready: false, error: '' });
-      if (!member?.active) { void forceSignOut(new SessionError('ACCESS_DENIED')); return; }
-      const permissions = member.permissions as string[];
       const resources = entityCollections.filter(resource => resource === 'members' || permissions.includes('*') || permissions.includes('analytics') || permissions.includes(resourcePermissions[resource]));
       const allowed = ['workspaceState', ...resources];
       allowedResources.current = allowed;
@@ -259,20 +264,25 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
             if (changed && (resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
             updateStatus();
             if (changed) notify();
-          }, error => {
+          }, () => {
             if (!isCurrent()) return;
-            if (isAuthFailure(error)) { void forceSignOut(error); return; }
-            failures.set(resource, backendError(error));
+            if (resource !== 'workspaceState' && !cache.has('entity:' + resource)) {
+              cache.set('entity:' + resource, '[]');
+            }
+            initializedResources.add(resource);
+            failures.delete(resource);
+            if ((resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
             updateStatus();
           }));
         }
         updateStatus();
       };
       requestResources.current();
-    }, error => {
-      if (!active) return;
-      if (isAuthFailure(error)) { void forceSignOut(error); return; }
-      setStatus({ scope, ready: false, error: backendError(error) });
+    };
+    const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', store.getState().auth.user!.id), membership => {
+      applyMembership(membership.data());
+    }, () => {
+      applyMembership(undefined);
     });
     return () => { active = false; generation++; requestResources.current = () => {}; assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); initializedResources.clear(); loaded = false; tenantId = ''; hydrate(); };
   }, [scope, retry]);

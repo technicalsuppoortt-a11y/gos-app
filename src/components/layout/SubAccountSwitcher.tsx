@@ -237,10 +237,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
     setSwitchingId(account.id);
     try {
-      if (isImpersonating) {
-        await returnToAdmin();
-      }
-      await switchToUser(account.id, account.tenantId);
+      await switchToUser(account.id, account.tenantId, account);
       localStorage.setItem('activeSubAccountId', account.id);
       showToast.success(translateText(`Switched to ${account.name || account.email}`));
       setIsOpen(false);
@@ -284,6 +281,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
     <div className={`relative w-full ${className}`}>
       {/* Full-width Sidebar Trigger Button */}
       <button
+        id="workspace-switcher-trigger"
         ref={triggerRef}
         type="button"
         onClick={() => {
@@ -294,44 +292,51 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
         aria-expanded={isOpen}
         title={isCollapsed ? activeLabel : undefined}
         aria-label={translateText('Switch Sub-Account / Workspace')}
-        className={`group w-full flex items-center ${
-          isCollapsed ? 'justify-center p-2' : 'justify-between px-2.5 py-2'
+        className={`ws-switcher-trigger group w-full flex items-center ${
+          isCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
         } rounded-xl text-xs font-semibold transition-all duration-200 border ${
-          isImpersonating
-            ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/60 text-amber-900 dark:text-amber-200'
-            : isOpen
-            ? 'bg-[#7C3AED]/10 border-[#7C3AED] text-[#7C3AED] dark:bg-[#7C3AED]/20 dark:text-[#A78BFA]'
-            : 'bg-white/80 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700/80 hover:border-[#7C3AED]/60 dark:hover:border-[#7C3AED]/60 text-gray-800 dark:text-gray-200 shadow-sm'
+          isOpen
+            ? 'bg-slate-100 dark:bg-slate-800 border-[var(--primary,var(--ws-accent,#7C3AED))] shadow-sm'
+            : 'bg-slate-100/80 dark:bg-slate-800/70 border-slate-200/90 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-[var(--primary,var(--ws-accent,#7C3AED))] dark:hover:border-[var(--primary,var(--ws-accent,#A78BFA))] shadow-xs'
         }`}
-        style={{ minHeight: '44px' }}
+        style={{
+          minHeight: '46px',
+          display: 'flex',
+          width: '100%',
+          justifyContent: isCollapsed ? 'center' : 'space-between',
+        }}
       >
-        {/* Left Side: Avatar Badge + Account Copy */}
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-            isImpersonating
-              ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30'
-              : 'bg-gradient-to-tr from-[#7C3AED] to-[#A78BFA] text-white shadow-sm shadow-purple-500/30'
-          }`}>
+        {/* Left Side: Avatar Badge + Account Copy (strictly transparent background) */}
+        <div
+          className="ws-switcher-left flex items-center gap-2.5 min-w-0 flex-1 bg-transparent"
+          style={{ background: 'transparent' }}
+        >
+          <div
+            className="ws-switcher-avatar w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 text-white shadow-xs transition-transform duration-200 group-hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, var(--ws-accent, #7C3AED), var(--ws-hover, #6D28D9))',
+              boxShadow: '0 2px 8px var(--ws-glow, rgba(124, 58, 237, 0.22))',
+            }}
+          >
             {isImpersonating ? (
-              <Users size={14} strokeWidth={2.5} />
+              <Users size={14} strokeWidth={2.4} />
             ) : (
-              <Building2 size={14} strokeWidth={2.5} />
+              <Building2 size={14} strokeWidth={2.4} />
             )}
           </div>
 
           {!isCollapsed && (
-            <div className="flex flex-col min-w-0 text-start leading-tight">
-              <span className="truncate font-bold text-xs text-gray-900 dark:text-gray-100">
+            <div
+              className="ws-switcher-copy flex flex-col min-w-0 flex-1 text-start leading-tight bg-transparent"
+              style={{ background: 'transparent' }}
+            >
+              <span className="ws-switcher-title truncate font-bold text-xs text-slate-900 dark:text-white">
                 {activeLabel}
               </span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1 mt-0.5">
-                {isImpersonating ? (
-                  <span className="text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">
-                    {translateText('Sub-Account')}
-                  </span>
-                ) : (
-                  <span>{translateText('Main Workspace')}</span>
-                )}
+              <span className="ws-switcher-subtitle text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+                {isImpersonating
+                  ? translateText('SUB-ACCOUNT')
+                  : translateText('Main Workspace')}
               </span>
             </div>
           )}
@@ -341,8 +346,10 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
         {!isCollapsed && (
           <ChevronsUpDown 
             size={14} 
-            className={`text-gray-400 transition-colors flex-shrink-0 ms-1.5 ${
-              isOpen ? 'text-[#7C3AED]' : 'group-hover:text-gray-600 dark:group-hover:text-gray-200'
+            className={`transition-colors flex-shrink-0 ms-1.5 ${
+              isOpen
+                ? 'text-[var(--primary,var(--ws-accent,#7C3AED))]'
+                : 'text-slate-400 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
             }`} 
           />
         )}
@@ -353,6 +360,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
         <AnimatePresence>
           {isOpen && (
             <motion.div
+              id="workspace-switcher-popover"
               ref={popoverRef}
               initial={{ opacity: 0, y: 8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -365,7 +373,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                 width: position.width,
                 zIndex: 99999,
               }}
-              className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.18),0_0_0_1px_rgba(124,58,237,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] overflow-hidden"
+              className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.18)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] overflow-hidden"
               role="dialog"
               aria-label={translateText('Account Switcher Menu')}
             >
@@ -379,7 +387,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder={translateText('Search sub-accounts...')}
-                    className="w-full ps-9 pe-8 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl placeholder:text-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/15 transition-all"
+                    className="w-full ps-9 pe-8 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl placeholder:text-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[var(--ws-accent,#7C3AED)] transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -410,7 +418,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                       type="button"
                       onClick={handleSwitchToAdmin}
                       disabled={switchingId === 'main'}
-                      className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] shadow-sm shadow-purple-500/20 transition-all disabled:opacity-50"
+                      className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-white bg-[var(--ws-accent,#7C3AED)] hover:bg-[var(--ws-hover,#6D28D9)] shadow-sm transition-all disabled:opacity-50"
                     >
                       {switchingId === 'main' ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -433,12 +441,17 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                   }}
                   className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-colors ${
                     !isImpersonating
-                      ? 'bg-purple-50/70 dark:bg-purple-950/25 border border-purple-200/60 dark:border-purple-800/40'
+                      ? 'bg-[var(--ws-soft,#EDE9FE)] border border-[var(--ws-border-subtle,#ddd6fe)]'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800/60 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[#7C3AED] to-[#A78BFA] text-white flex-shrink-0 shadow-sm shadow-purple-500/20">
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm"
+                      style={{
+                        background: 'linear-gradient(135deg, var(--ws-accent, #7C3AED), var(--ws-hover, #6D28D9))',
+                      }}
+                    >
                       <ShieldCheck size={16} />
                     </div>
                     <div className="min-w-0">
@@ -446,7 +459,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                         <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
                           {adminAccount.name}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-900/40 text-[#7C3AED] dark:text-[#A78BFA]">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[var(--ws-soft,#EDE9FE)] text-[var(--ws-accent,#7C3AED)]">
                           {translateText('Admin')}
                         </span>
                       </div>
@@ -458,12 +471,12 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
                   <div className="flex items-center gap-2 flex-shrink-0 ms-2">
                     {!isImpersonating ? (
-                      <span className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center shadow-xs">
+                      <span className="w-5 h-5 rounded-full bg-[var(--ws-accent,#7C3AED)] text-white flex items-center justify-center shadow-xs">
                         <Check size={12} strokeWidth={3} />
                       </span>
                     ) : switchingId === 'main' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] bg-purple-50 dark:bg-purple-950/40 border border-purple-200/50">
-                        <Loader2 size={11} className="animate-spin text-[#7C3AED]" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] border border-[var(--ws-border-subtle,#ddd6fe)]">
+                        <Loader2 size={11} className="animate-spin text-[var(--ws-accent,#7C3AED)]" />
                         <span>{translateText('Switching…')}</span>
                       </span>
                     ) : (
@@ -473,7 +486,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                           e.stopPropagation();
                           handleSwitchToAdmin();
                         }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50/90 dark:bg-purple-950/40 hover:bg-[#7C3AED] hover:text-white dark:hover:bg-[#7C3AED] dark:hover:text-white border border-purple-200/70 dark:border-purple-800/50 shadow-xs hover:shadow transition-all duration-150 cursor-pointer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] hover:bg-[var(--ws-accent,#7C3AED)] hover:text-white border border-[var(--ws-border-subtle,#ddd6fe)] shadow-xs hover:shadow transition-all duration-150 cursor-pointer"
                       >
                         <ArrowRightLeft size={11} strokeWidth={2.2} />
                         <span>{translateText('Switch')}</span>
@@ -487,7 +500,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                   <div className="flex items-center gap-1.5">
                     <span>{translateText('Sub-Accounts')}</span>
                     {pinnedCount > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded-md">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] px-1.5 py-0.5 rounded-md">
                         <Pin size={9} className="fill-current -rotate-45" />
                         <span>{pinnedCount}</span>
                       </span>
@@ -517,9 +530,9 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                         onClick={() => handleSwitchTo(account)}
                         className={`group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-150 ${
                           isActive
-                            ? 'bg-purple-50/70 dark:bg-purple-950/25 border border-purple-200/60 dark:border-purple-800/40 shadow-xs'
+                            ? 'bg-[var(--ws-soft,#EDE9FE)] border border-[var(--ws-border-subtle,#ddd6fe)] shadow-xs'
                             : isPinned
-                            ? 'bg-purple-50/25 dark:bg-purple-950/15 border border-purple-100/70 dark:border-purple-900/30 hover:bg-purple-50/50 dark:hover:bg-purple-950/30'
+                            ? 'bg-[var(--ws-soft,#EDE9FE)]/40 border border-[var(--ws-border-subtle,#ddd6fe)]/60 hover:bg-[var(--ws-soft,#EDE9FE)]/70'
                             : 'hover:bg-gray-50/90 dark:hover:bg-gray-800/60 border border-transparent'
                         }`}
                       >
@@ -544,7 +557,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                                 />
                               )}
                               {isPinned && (
-                                <span className="inline-flex items-center text-[9px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-100/70 dark:bg-purple-900/40 p-0.5 rounded" title={translateText('Pinned')}>
+                                <span className="inline-flex items-center text-[9px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] p-0.5 rounded" title={translateText('Pinned')}>
                                   <Pin size={8} className="fill-current -rotate-45" />
                                 </span>
                               )}
@@ -565,8 +578,8 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                             aria-label={isPinned ? translateText('Unpin sub-account') : translateText('Pin to top')}
                             className={`p-1.5 rounded-lg text-xs transition-all duration-150 cursor-pointer ${
                               isPinned
-                                ? 'text-[#7C3AED] dark:text-[#A78BFA] bg-purple-100/80 dark:bg-purple-950/60 hover:bg-purple-200/80 dark:hover:bg-purple-900/60'
-                                : 'text-gray-400 dark:text-gray-500 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:bg-purple-50/70 dark:hover:bg-purple-950/30 opacity-70 group-hover:opacity-100'
+                                ? 'text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] hover:opacity-90'
+                                : 'text-gray-400 dark:text-gray-500 hover:text-[var(--ws-accent,#7C3AED)] hover:bg-[var(--ws-soft,#EDE9FE)] opacity-70 group-hover:opacity-100'
                             }`}
                           >
                             <Pin size={12} className={isPinned ? 'fill-current -rotate-45' : '-rotate-45'} />
@@ -574,13 +587,13 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
                           {/* Switch Action / Active Status */}
                           {isActive ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-[#7C3AED] shadow-xs">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-[var(--ws-accent,#7C3AED)] shadow-xs">
                               <Check size={11} strokeWidth={3} />
                               <span>{translateText('Active')}</span>
                             </span>
                           ) : isBusy ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] bg-purple-50 dark:bg-purple-950/40 border border-purple-200/50">
-                              <Loader2 size={11} className="animate-spin text-[#7C3AED]" />
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] border border-[var(--ws-border-subtle,#ddd6fe)]">
+                              <Loader2 size={11} className="animate-spin text-[var(--ws-accent,#7C3AED)]" />
                               <span>{translateText('Switching…')}</span>
                             </span>
                           ) : (
@@ -590,7 +603,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                                 e.stopPropagation();
                                 handleSwitchTo(account);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#7C3AED] dark:text-[#A78BFA] bg-purple-50/90 dark:bg-purple-950/40 hover:bg-[#7C3AED] hover:text-white dark:hover:bg-[#7C3AED] dark:hover:text-white border border-purple-200/70 dark:border-purple-800/50 shadow-xs hover:shadow transition-all duration-150 cursor-pointer group-hover:border-[#7C3AED]"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] hover:bg-[var(--ws-accent,#7C3AED)] hover:text-white border border-[var(--ws-border-subtle,#ddd6fe)] shadow-xs hover:shadow transition-all duration-150 cursor-pointer group-hover:border-[var(--ws-accent,#7C3AED)]"
                             >
                               <ArrowRightLeft size={11} strokeWidth={2.2} />
                               <span>{translateText('Switch')}</span>
@@ -611,7 +624,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                     setIsOpen(false);
                     navigate('/admin/users');
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-[var(--ws-accent,#7C3AED)] hover:bg-white dark:hover:bg-gray-800 transition-colors"
                 >
                   <Layers size={14} />
                   <span>{translateText('Manage All Sub Accounts')}</span>

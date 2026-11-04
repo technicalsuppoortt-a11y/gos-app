@@ -43,7 +43,7 @@ const TONES: Record<
   purple: {
     soft: "bg-[#efeaff] dark:bg-purple-500/20",
     text: "text-[#7C3AED] dark:text-purple-300",
-    stroke: "#7C3AED",
+    stroke: "var(--ws-accent, #7C3AED)",
     tile: "bg-[#f5f2ff] border-[#EDE9FE] hover:border-[#A78BFA] dark:bg-purple-500/10 dark:border-purple-500/25",
   },
   green: {
@@ -73,7 +73,7 @@ const TONES: Record<
   indigo: {
     soft: "bg-indigo-100/80 dark:bg-indigo-500/20",
     text: "text-indigo-600 dark:text-indigo-300",
-    stroke: "#7C3AED",
+    stroke: "var(--ws-accent, #7C3AED)",
     tile: "bg-indigo-50 border-indigo-100 hover:border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/25",
   },
   slate: {
@@ -602,7 +602,7 @@ function ProgressRing({ value }: { value: number }) {
           cy="12"
           r={r}
           fill="none"
-          stroke="#7C3AED"
+          stroke="var(--ws-accent, #7C3AED)"
           strokeWidth="2.4"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -1151,7 +1151,7 @@ function RevenueOverview() {
               <polyline
                 points={linePts}
                 fill="none"
-                stroke="#7C3AED"
+                stroke="var(--ws-accent, #7C3AED)"
                 strokeOpacity="0.35"
                 strokeWidth="1.5"
                 strokeLinejoin="round"

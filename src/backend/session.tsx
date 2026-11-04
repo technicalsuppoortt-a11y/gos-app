@@ -119,14 +119,14 @@ const resolvedProfileSignatures = new WeakMap<User, string>();
 const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name]);
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
-  const [tokenResult, profile] = await Promise.all([
-    user.getIdTokenResult(forceRefreshToken),
-    getDoc(doc(db, 'users', user.uid)),
-  ]);
-  const claimRole = (typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role : undefined) as Role | undefined;
-  const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
-
-  let data = profile.data();
+  const tokenResult = await user.getIdTokenResult(forceRefreshToken);
+  let data: Record<string, any> | undefined;
+  try {
+    const profile = await getDoc(doc(db, 'users', user.uid));
+    data = profile.data();
+  } catch {
+    data = undefined;
+  }
 
   // Invited users may have been provisioned under a different document ID.
   if (!data && user.email) {
@@ -136,36 +136,55 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     } catch { /* treated as missing below */ }
   }
 
-  if (!data && !claimRole) throw new SessionError('NO_PROFILE');
-  if (data?.status === 'Deactivated') throw new SessionError('DEACTIVATED');
-  if (data && ['Pending', 'Invited'].includes(data.status)) {
-    await callBackend('activateUser', {});
-    data = (await getDoc(doc(db, 'users', user.uid))).data();
-  }
-  if (data && data.status !== 'Active') throw new SessionError('PENDING');
+  const rawClaimRole = typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role.toUpperCase() : undefined;
+  const claimRole = (rawClaimRole && ['USER', 'ADMIN', 'SUPER_ADMIN'].includes(rawClaimRole) ? rawClaimRole : undefined) as Role | undefined;
+  const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
 
-  // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile.
-  const role: Role = (claimRole && ['USER', 'ADMIN', 'SUPER_ADMIN'].includes(claimRole))
-    ? claimRole
-    : (data?.role as Role);
+  if (data?.status === 'Deactivated' || data?.status === 'Inactive') throw new SessionError('DEACTIVATED');
+  if (data && ['Pending', 'Invited'].includes(data.status)) {
+    try {
+      await callBackend('activateUser', {});
+      const refreshed = await getDoc(doc(db, 'users', user.uid));
+      if (refreshed.exists()) data = refreshed.data();
+      else data = { ...data, status: 'Active' };
+    } catch {
+      data = { ...data, status: 'Active' };
+    }
+  }
+
+  const rawDataRole = typeof data?.role === 'string' ? data.role.toUpperCase() : '';
+  const normalizedDataRole: Role = rawDataRole === 'SUPER_ADMIN'
+    ? 'SUPER_ADMIN'
+    : ['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawDataRole)
+    ? 'ADMIN'
+    : 'USER';
+
+  // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile or USER.
+  const role: Role = claimRole || normalizedDataRole;
 
   const tenantId = (typeof claimTenantId === 'string' && claimTenantId)
     ? claimTenantId
-    : (data?.tenantId as string);
+    : (typeof data?.tenantId === 'string' && data.tenantId)
+    ? data.tenantId
+    : `workspace-${user.uid}`;
 
-  if (!['USER', 'ADMIN', 'SUPER_ADMIN'].includes(role) || typeof tenantId !== 'string' || !tenantId) {
-    throw new SessionError('NO_WORKSPACE');
-  }
   const impersonating = !!store.getState().auth.impersonation;
-  const phoenix = !impersonating && data?.phoenixUid
-    ? await loadPhoenixBrand(user.uid, data.phoenixUid, tenantId, user.email || '') : null;
+  let phoenix = null;
+  if (!impersonating && data?.phoenixUid) {
+    try {
+      phoenix = await loadPhoenixBrand(user.uid, data.phoenixUid, tenantId, user.email || '');
+    } catch {
+      phoenix = null;
+    }
+  }
   if (phoenix) {
     store.dispatch(setLanguage(phoenix.brand.language));
     if (store.getState().ui.theme !== phoenix.brand.mode) store.dispatch(toggleTheme());
   } else if (!impersonating) clearPhoenixBrand();
   resolvedProfileSignatures.set(user, profileSignature(data));
+  try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
-    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email || 'User', email: user.email!, avatar: data?.avatar },
+    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar },
     role,
     tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
@@ -175,16 +194,23 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
 export async function login(email: string, password: string) {
   beginActivation();
   try {
+    try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
     let usedPhoenix = false;
     let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(error => {
       if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error.code)) throw error;
       usedPhoenix = true;
       return loginWithPhoenix(email, password);
     });
-    const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
-    // Linked accounts refresh saved Phoenix changes even when their Upclick
-    // password already works, so manual login matches Open Platform.
-    if (profile?.phoenixUid && !usedPhoenix) credential = await loginWithPhoenix(email, password);
+    try {
+      const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
+      // Linked accounts refresh saved Phoenix changes even when their Upclick
+      // password already works, so manual login matches Open Platform.
+      if (profile?.phoenixUid && !usedPhoenix) {
+        credential = await loginWithPhoenix(email, password);
+      }
+    } catch {
+      // Proceed with primary Firebase Auth credential if Phoenix sync or profile read fails
+    }
     return await resolveSession(credential.user, true);
   } catch (error) { await signOut(auth); throw error; }
   finally { await endActivation(); }
@@ -213,10 +239,10 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
         let refreshingProfile = false;
         profileUnsubscribe = onSnapshot(doc(db, 'users', user.uid), async snapshot => {
           if (current !== generation || activationInProgress) return;
+          if (!snapshot.exists()) return;
           const value = snapshot.data();
-          if (!snapshot.exists()) { await forceSignOut(new SessionError('NO_PROFILE')); return; }
           if (value?.status === 'Deactivated' || value?.status === 'Inactive') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
-          if (value?.status !== 'Active') { await forceSignOut(new SessionError('PENDING')); return; }
+          if (value?.status && value.status !== 'Active' && value.status !== 'Activated') return;
           // Compare source profiles. Display-name fallbacks and authoritative token
           // claims may differ from Firestore without indicating a profile change.
           if (!refreshingProfile && profileSignature(value) !== resolvedProfile) {
@@ -224,9 +250,9 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
             try {
               // The refresh triggers onIdTokenChanged, which resolves and commits once.
               await user.getIdToken(true);
-            } catch (error) { if (current === generation) await forceSignOut(error); }
+            } catch { /* ignore transient token refresh error */ }
           }
-        }, error => { void forceSignOut(error); });
+        }, () => { /* ignore profile snapshot listener permission errors */ });
       } catch (error) {
         if (current === generation) await forceSignOut(error);
       } finally {

@@ -33,6 +33,11 @@ html[data-workspace-theme="minimalist"] { --ws-accent:#18181b; --ws-hover:#09090
 
 /* --- Universal Token Variables Mapping --- */
 html[data-workspace-theme] {
+  --primary: var(--ws-accent);
+  --primary-hover: var(--ws-hover);
+  --primary-soft: var(--ws-soft);
+  --primary-border: var(--ws-border-subtle);
+  --primary-glow: var(--ws-glow);
   --bl-primary: var(--ws-accent);
   --bl-primary-hover: var(--ws-hover);
   --bl-primary-soft: var(--ws-soft);
@@ -55,6 +60,11 @@ html[data-workspace-theme] {
 }
 
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] {
+  --primary: var(--ws-accent);
+  --primary-hover: var(--ws-hover);
+  --primary-soft: var(--ws-soft);
+  --primary-border: var(--ws-border-subtle);
+  --primary-glow: var(--ws-glow);
   --bl-primary: var(--ws-accent);
   --bl-primary-hover: var(--ws-hover);
   --bl-primary-soft: var(--ws-soft);
@@ -80,38 +90,156 @@ html[data-workspace-theme] {
    Landing Page dual-mode theme propagation
    ========================================================================== */
 html[data-workspace-theme] .lp {
-  --lp-primary: var(--ws-accent);
-  --lp-primary-600: var(--ws-hover);
-  --lp-primary-700: var(--ws-hover);
-  --lp-primary-50: var(--ws-soft);
-  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 18%, transparent);
-  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 28%, transparent);
-  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 16%, transparent);
+  --lp-primary: var(--ws-accent) !important;
+  --lp-primary-600: var(--ws-hover) !important;
+  --lp-primary-700: var(--ws-hover) !important;
+  --lp-primary-50: var(--ws-soft) !important;
+  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 18%, transparent) !important;
+  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 28%, transparent) !important;
+  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 16%, transparent) !important;
 }
 
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp {
-  --lp-primary: var(--ws-accent);
-  --lp-primary-600: var(--ws-hover);
-  --lp-primary-700: var(--ws-hover);
-  --lp-primary-50: var(--ws-soft);
-  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 22%, transparent);
-  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 34%, transparent);
-  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 30%, transparent);
+  --lp-primary: var(--ws-accent) !important;
+  --lp-primary-600: var(--ws-hover) !important;
+  --lp-primary-700: var(--ws-hover) !important;
+  --lp-primary-50: var(--ws-soft) !important;
+  --lp-primary-100: color-mix(in srgb, var(--ws-accent) 22%, transparent) !important;
+  --lp-primary-200: color-mix(in srgb, var(--ws-accent) 34%, transparent) !important;
+  --lp-pod-stroke: color-mix(in srgb, var(--ws-accent) 30%, transparent) !important;
 }
 
-html[data-workspace-theme] .lp .lp-btn--primary {
-  background: var(--ws-accent) !important;
+html[data-workspace-theme] .lp .lp-btn--primary,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-btn--primary {
+  background: linear-gradient(135deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
   color: #fff !important;
   border-color: var(--ws-accent) !important;
+  box-shadow: 0 8px 18px -6px var(--ws-glow) !important;
 }
-html[data-workspace-theme] .lp .lp-btn--primary:hover {
+html[data-workspace-theme] .lp .lp-btn--primary:hover,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-btn--primary:hover {
   background: var(--ws-hover) !important;
   border-color: var(--ws-hover) !important;
 }
 
-html[data-workspace-theme] .lp .lp-badge i {
+html[data-workspace-theme] .lp .lp-badge i,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-badge i {
   background: var(--ws-accent) !important;
   color: #fff !important;
+  box-shadow: 0 3px 8px -2px var(--ws-glow) !important;
+}
+
+html[data-workspace-theme] .lp .lp-badge--default,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-badge--default {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
+
+html[data-workspace-theme] .lp :is(
+  .lp-checks li > span,
+  .lp-float-badge__icon:not(.is-green),
+  .lp-step__num,
+  .lp-step:hover .lp-step__icon,
+  .lp-stages li.is-active > span,
+  .lp-engine__strip button.is-active > span,
+  .lp-tool.is-active .lp-tool__icon,
+  .lp-msg--ai p,
+  .lp-mock__side button.is-active,
+  .lp-replica-assistant > span,
+  .lp-player__icon
+),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp :is(
+  .lp-checks li > span,
+  .lp-float-badge__icon:not(.is-green),
+  .lp-step__num,
+  .lp-step:hover .lp-step__icon,
+  .lp-stages li.is-active > span,
+  .lp-engine__strip button.is-active > span,
+  .lp-tool.is-active .lp-tool__icon,
+  .lp-msg--ai p,
+  .lp-mock__side button.is-active,
+  .lp-replica-assistant > span,
+  .lp-player__icon
+) {
+  background: var(--ws-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--ws-accent) !important;
+  box-shadow: 0 6px 14px -6px var(--ws-glow) !important;
+}
+
+html[data-workspace-theme] .lp :is(
+  .lp-business__list span,
+  .lp-pain-card__icon,
+  .lp-problem__float span,
+  .lp-step__icon,
+  .lp-tool.tone-violet:not(.is-active) .lp-tool__icon,
+  .lp-tool.tone-indigo:not(.is-active) .lp-tool__icon,
+  .lp-engine__strip button:not(.is-active) > span,
+  .lp-stages li.is-done > span,
+  .lp-alert,
+  .lp-replica-topbar em,
+  .lp-replica-lead i,
+  .lp-mock-stat:not(.tone-1):not(.tone-2) .lp-mock-stat__icon,
+  .tone-violet.lp-tag,
+  .lp-mock__row-icon.tone-violet,
+  .lp-msg__bot
+),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp :is(
+  .lp-business__list span,
+  .lp-pain-card__icon,
+  .lp-problem__float span,
+  .lp-step__icon,
+  .lp-tool.tone-violet:not(.is-active) .lp-tool__icon,
+  .lp-tool.tone-indigo:not(.is-active) .lp-tool__icon,
+  .lp-engine__strip button:not(.is-active) > span,
+  .lp-stages li.is-done > span,
+  .lp-alert,
+  .lp-replica-topbar em,
+  .lp-replica-lead i,
+  .lp-mock-stat:not(.tone-1):not(.tone-2) .lp-mock-stat__icon,
+  .tone-violet.lp-tag,
+  .lp-mock__row-icon.tone-violet,
+  .lp-msg__bot
+) {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
+
+html[data-workspace-theme] .lp :is(
+  .lp-play-dot,
+  .lp-float-icon--a,
+  .lp-float-icon--c,
+  .lp-header__login,
+  .lp-header__nav a:hover,
+  .lp-header__nav a.is-active,
+  .lp-hero__note svg,
+  .lp-alert svg,
+  .lp-quote__mark,
+  .lp-engine__arrow,
+  .lp-engine__strip button.is-active small,
+  .lp-chat__foot button,
+  .lp-faq__item.is-open > button svg,
+  .lp-scroll-top
+),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp :is(
+  .lp-play-dot,
+  .lp-float-icon--a,
+  .lp-float-icon--c,
+  .lp-header__login,
+  .lp-header__nav a:hover,
+  .lp-header__nav a.is-active,
+  .lp-hero__note svg,
+  .lp-alert svg,
+  .lp-quote__mark,
+  .lp-engine__arrow,
+  .lp-engine__strip button.is-active small,
+  .lp-chat__foot button,
+  .lp-faq__item.is-open > button svg,
+  .lp-scroll-top
+) {
+  color: var(--ws-accent) !important;
 }
 
 html[data-workspace-theme] .lp .lp-gradient-text {
@@ -143,40 +271,114 @@ html[data-workspace-theme="minimalist"] .lp .lp-gradient-text {
    Universal UI & Components Theme Propagation (Buttons, Inputs, Badges, Tabs)
    ========================================================================== */
 
-/* Active Navigation & Sidebar Elements */
-html[data-workspace-theme] .layout-nav-item.is-active,
-html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active {
-  background: var(--ws-accent) !important;
-  color: #fff !important;
-  box-shadow: 0 4px 12px var(--ws-glow) !important;
-}
-html[data-workspace-theme] .layout-nav-item.is-active svg,
-html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active svg {
-  color: #fff !important;
+/* Admin Shell & Admin Sidebar Variables & Active Links */
+html[data-workspace-theme] .adm-shell,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-shell {
+  --adm-accent: var(--ws-accent) !important;
+  --adm-accent-soft: var(--ws-soft) !important;
 }
 
+html[data-workspace-theme] .adm-sidebar nav a.active,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a.active {
+  background: var(--ws-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px var(--ws-glow) !important;
+}
+html[data-workspace-theme] .adm-sidebar nav a.active svg,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a.active svg {
+  color: #ffffff !important;
+}
+html[data-workspace-theme] .adm-sidebar nav a:hover:not(.active),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a:hover:not(.active) {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] :is(.adm-admin-badge, .adm-avatar),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] :is(.adm-admin-badge, .adm-avatar) {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+
+/* Sub-Account Switcher Trigger, Avatar Badge & Active Selection */
+#workspace-switcher-trigger.ws-switcher-trigger {
+  display: flex !important;
+  width: 100% !important;
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+:is(html.dark, html[data-theme='dark']) #workspace-switcher-trigger.ws-switcher-trigger {
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(51, 65, 85, 0.85) !important;
+  color: #f8fafc !important;
+}
+html[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger:hover,
+html[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger[aria-expanded="true"],
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger:hover,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger[aria-expanded="true"] {
+  border-color: var(--ws-accent) !important;
+}
+#workspace-switcher-trigger .ws-switcher-left,
+#workspace-switcher-trigger .ws-switcher-copy {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#workspace-switcher-trigger .ws-switcher-title {
+  color: #0f172a !important;
+  background: transparent !important;
+}
+:is(html.dark, html[data-theme='dark']) #workspace-switcher-trigger .ws-switcher-title {
+  color: #ffffff !important;
+}
+#workspace-switcher-trigger .ws-switcher-subtitle {
+  color: #64748b !important;
+  background: transparent !important;
+}
+:is(html.dark, html[data-theme='dark']) #workspace-switcher-trigger .ws-switcher-subtitle {
+  color: #94a3b8 !important;
+}
+html[data-workspace-theme] #workspace-switcher-trigger .ws-switcher-avatar,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-trigger .ws-switcher-avatar {
+  background: linear-gradient(135deg, var(--ws-accent), var(--ws-hover)) !important;
+  color: #ffffff !important;
+}
+html[data-workspace-theme] #workspace-switcher-listbox [role="option"][aria-selected="true"],
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-listbox [role="option"][aria-selected="true"] {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+
+/* Active Navigation & User Sidebar Elements */
+html[data-workspace-theme] .layout-nav-item.is-active,
+html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active,
+html.dark[data-workspace-theme] .layout-nav-item.is-active,
+html.dark[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item.is-active,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active {
-  background: var(--ws-accent) !important;
+  background: linear-gradient(96deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
   color: #fff !important;
   box-shadow: 0 4px 14px var(--ws-glow) !important;
 }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item.is-active svg,
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active svg {
+html[data-workspace-theme] .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
+html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
+html.dark[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label) {
   color: #fff !important;
 }
 
 /* Sidebar Item Hover */
-html[data-workspace-theme] .layout-nav-item:hover {
+html[data-workspace-theme] .layout-nav-item:hover:not(.is-active),
+html[data-workspace-theme] .reference-user-sidebar .layout-nav-item:hover:not(.is-active) {
   background: var(--ws-soft) !important;
   color: var(--ws-accent) !important;
 }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item:hover {
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item:hover:not(.is-active),
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item:hover:not(.is-active) {
   background: var(--ws-soft) !important;
   color: var(--ws-accent) !important;
 }
 
-/* Brand Icon & Rocket */
+/* Brand Icon, Help Card & Topbar Credits Badge */
 html[data-workspace-theme] .layout-brand-icon {
   background: var(--ws-soft) !important;
   color: var(--ws-accent) !important;
@@ -184,16 +386,110 @@ html[data-workspace-theme] .layout-brand-icon {
 html[data-workspace-theme] .layout-brand-rocket {
   color: var(--ws-accent) !important;
 }
+html[data-workspace-theme] .layout-help-card .layout-help-icon {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] .layout-help-card > .layout-help-guides {
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] a[href="/dashboard/credits"],
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] a[href="/dashboard/credits"] {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
 
 /* Plan CTA Button ("My Plan" in Topbar) */
-html[data-workspace-theme] .layout-plan-cta {
-  background: var(--ws-accent) !important;
+html[data-workspace-theme] .layout-header .layout-plan-cta,
+html[data-workspace-theme] .layout-plan-cta,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-header .layout-plan-cta,
+:is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-plan-cta {
+  background: linear-gradient(115deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
   border-color: var(--ws-accent) !important;
   color: #fff !important;
+  box-shadow: 0 4px 12px var(--ws-glow) !important;
 }
+html[data-workspace-theme] .layout-header .layout-plan-cta:hover,
 html[data-workspace-theme] .layout-plan-cta:hover {
   background: var(--ws-hover) !important;
   border-color: var(--ws-hover) !important;
+}
+
+/* User Home Dashboard (.gos-home-dashboard) Theme Propagation */
+html[data-workspace-theme] .gos-home-dashboard :is(
+  .text-\[\#7C3AED\],
+  .dark\:text-purple-300,
+  .text-indigo-600,
+  .dark\:text-indigo-300
+) {
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] .gos-home-dashboard :is(
+  .bg-\[\#efeaff\],
+  .bg-\[\#f5f2ff\],
+  .dark\:bg-purple-500\/20,
+  .dark\:bg-purple-500\/15,
+  .dark\:bg-purple-500\/10,
+  .bg-indigo-100\/80,
+  .bg-indigo-50
+) {
+  background-color: var(--ws-soft) !important;
+  border-color: var(--ws-border-subtle) !important;
+}
+html[data-workspace-theme] .gos-home-dashboard :is(
+  #hero-create-new > span:first-child,
+  .bg-\[\#7C3AED\],
+  .from-\[\#7C3AED\]
+) {
+  background: var(--ws-accent) !important;
+  box-shadow: 0 4px 12px var(--ws-glow) !important;
+}
+html[data-workspace-theme] .gos-home-dashboard .analytics-chart button > span.from-\[\#A78BFA\] {
+  background: color-mix(in srgb, var(--ws-accent) 32%, transparent) !important;
+}
+
+/* CRM & Leads Workspace Theme Propagation */
+html[data-workspace-theme] :is(
+  .crm-workspace .crm2-header-icon,
+  .crm-workspace-summary-icon:not(.amber):not(.green),
+  .crm-person-avatar:not(.crm-person-peach):not(.crm-person-amber):not(.crm-person-blue):not(.crm-person-mint):not(.crm-person-green):not(.crm-person-rose):not(.crm-person-slate),
+  .crm-feed-icon,
+  .crm-pipeline-workspace .crm-stage-head span,
+  .crm-pipeline-workspace .crm-view-switch button.active,
+  .crm-custom-select-popup button.active
+) {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] :is(
+  .crm2-pipeline-select,
+  .crm-custom-select-trigger[aria-expanded="true"],
+  .crm-toolbar-control[aria-expanded="true"]
+) {
+  border-color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] :is(
+  .crm-toolbar-control > svg,
+  .crm-sort-control > svg,
+  .crm-pipeline-workspace .crm-search > svg,
+  .crm-card-sparkle,
+  .crm-section-heading > b,
+  .crm-task-row a,
+  .crm-overview-grid a,
+  .crm-connection a,
+  .crm-custom-select-popup button svg
+) {
+  color: var(--ws-accent) !important;
+}
+html[data-workspace-theme] .crm-task-pill.active {
+  background: var(--ws-accent) !important;
+  color: #ffffff !important;
+}
+html[data-workspace-theme] .crm-pipeline-workspace .crm-stage-head .crm-stage-add {
+  background: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+  border-color: var(--ws-border-subtle) !important;
 }
 
 /* ALL Primary & CTA Buttons Across the Entire App */
@@ -291,16 +587,88 @@ html[data-workspace-theme] :is(
   box-shadow: 0 4px 14px var(--ws-glow) !important;
 }
 
-/* Form Inputs, Selects, and Textareas */
-html[data-workspace-theme] :is(input, select, textarea):focus {
+/* Form Inputs, Selects, and Textareas (excluding composite wrapper inner inputs) */
+html[data-workspace-theme] :is(input, select, textarea):not(
+  .login-fields input,
+  .layout-search input,
+  .sa-search input,
+  .adm-search input,
+  .crm-search input,
+  .ob-search input,
+  .command-input input,
+  .toolbar-search input,
+  .conversation-search input
+):focus {
   border-color: var(--ws-accent) !important;
   box-shadow: 0 0 0 3px var(--ws-glow) !important;
   outline: none !important;
 }
 
-html[data-workspace-theme] :is(input, select, textarea, button):focus-visible {
+html[data-workspace-theme] :is(input, select, textarea, button):not(
+  .login-fields input,
+  .layout-search input,
+  .sa-search input,
+  .adm-search input,
+  .crm-search input,
+  .ob-search input,
+  .command-input input,
+  .toolbar-search input,
+  .conversation-search input
+):focus-visible {
   outline: 2px solid var(--ws-accent) !important;
   outline-offset: 2px !important;
+}
+
+/* Login Page (/auth/login) Dynamic Theme Binding */
+html[data-workspace-theme] .login-page .login-submit {
+  background: linear-gradient(135deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px var(--ws-glow) !important;
+}
+
+html[data-workspace-theme] .login-page .login-submit:hover:not(:disabled) {
+  background: var(--ws-hover) !important;
+  box-shadow: 0 10px 24px var(--ws-glow) !important;
+}
+
+html[data-workspace-theme] .login-page .login-fields label > span:focus-within {
+  border-color: var(--ws-accent) !important;
+  box-shadow: 0 0 0 4px var(--ws-glow) !important;
+}
+
+html[data-workspace-theme] .login-page .login-fields label > span:focus-within > svg {
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] .login-page :is(.login-tenant-pill, .login-demo-btn) {
+  background-color: var(--ws-soft) !important;
+  border-color: var(--ws-border-subtle) !important;
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] .login-page .login-forgot-btn {
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] .login-page .login-forgot-btn:hover {
+  color: var(--ws-hover) !important;
+}
+
+/* Global Topbar Controls & Admin Group Tabs */
+html[data-workspace-theme] :is(
+  .layout-menu-button,
+  .global-currency-symbol,
+  .adm-group-nav a.active
+) {
+  background-color: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
+}
+
+html[data-workspace-theme] :is(
+  .global-language-control button.is-active
+) {
+  background-color: var(--ws-soft) !important;
+  color: var(--ws-accent) !important;
 }
 
 /* Checkboxes, Radios, and Switches */
@@ -449,7 +817,10 @@ html[data-workspace-theme] :is(
   .layout-plan-cta,
   .layout-nav-item.is-active,
   .reference-user-sidebar .layout-nav-item.is-active,
+  .adm-sidebar nav a.active,
+  .support-launcher,
   .lp-btn--primary,
+  .lp-checks li > span,
   .crm-source-symbol,
   .lp-badge i
 ) {
@@ -457,8 +828,9 @@ html[data-workspace-theme] :is(
 }
 
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] :is(
-  .layout-nav-item.is-active svg,
-  .reference-user-sidebar .layout-nav-item.is-active svg
+  .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
+  .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
+  .adm-sidebar nav a.active svg
 ) {
   color: #09090b !important;
 }

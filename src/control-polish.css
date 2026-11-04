@@ -1,31 +1,31 @@
 /* Shared app controls. Visitor-authored content keeps its own theme. */
-:root { --control-primary: #7C3AED; --control-secondary: #A78BFA; --control-panel: rgb(255 255 255 / .94); --control-ink: #334155; --control-line: #ddd6fe; --control-active: #f3e8ff; }
-html.dark { --control-panel: rgb(25 32 51 / .95); --control-ink: #f1f5f9; --control-line: #514367; --control-active: #35264f; }
+:root { --control-primary: var(--ws-accent, #7C3AED); --control-secondary: var(--ws-hover, #A78BFA); --control-panel: rgb(255 255 255 / .94); --control-ink: #334155; --control-line: var(--ws-border-subtle, #ddd6fe); --control-active: var(--ws-soft, #f3e8ff); }
+html.dark { --control-panel: rgb(25 32 51 / .95); --control-ink: #f1f5f9; --control-line: var(--ws-border-subtle, #514367); --control-active: var(--ws-soft, #35264f); }
 :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown,.adm-tools-cat-popup,.ai-history-filter-menu) {
   background: var(--control-panel) !important; color: var(--control-ink) !important;
   border-color: var(--control-line) !important; border-radius: 12px;
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 16px 45px #17102e26; scrollbar-width: thin; scrollbar-color: #A78BFA transparent;
+  box-shadow: 0 16px 45px #17102e26; scrollbar-width: thin; scrollbar-color: var(--ws-accent, #A78BFA) transparent;
 }
 :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button { color: var(--control-ink); }
-:is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { background: var(--control-active) !important; color: #7C3AED !important; }
-html.dark :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { color: #A78BFA !important; }
+:is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { background: var(--control-active) !important; color: var(--ws-accent, #7C3AED) !important; }
+html.dark :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown) button:is(:hover,:focus-visible,.active,.selected) { color: var(--ws-accent, #A78BFA) !important; }
 :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel,[role=menu]) {
   background: var(--control-panel) !important; color: var(--control-ink) !important;
   border: 1px solid var(--control-line) !important; border-radius: 12px;
   box-shadow: 0 16px 45px #17102e26; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   transform-origin: var(--radix-select-content-transform-origin, top center);
   animation: control-open .16s ease-out;
-  scrollbar-width: thin; scrollbar-color: #A78BFA transparent;
+  scrollbar-width: thin; scrollbar-color: var(--ws-accent, #A78BFA) transparent;
 }
 :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option] { color: var(--control-ink); border-radius: 7px; min-height: 34px; }
-:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { background: var(--control-active) !important; color: #7C3AED !important; }
-html.dark :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { color: #A78BFA !important; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { background: var(--control-active) !important; color: var(--ws-accent, #7C3AED) !important; }
+html.dark :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [role=option]:is([data-highlighted],[data-state=checked]) { color: var(--ws-accent, #A78BFA) !important; }
 :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel)[data-state=closed] { animation: control-close .12s ease-in; }
-:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [data-radix-select-viewport] { max-height: min(320px, var(--radix-select-content-available-height)); scrollbar-width: thin; scrollbar-color: #A78BFA transparent; }
-:is(.layout-dashboard-shell,.role-shell,[role=dialog]) :is([role=combobox],input[type=search],input[placeholder*="Search"],input[placeholder*="search"]):focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
+:is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel) [data-radix-select-viewport] { max-height: min(320px, var(--radix-select-content-available-height)); scrollbar-width: thin; scrollbar-color: var(--ws-accent, #A78BFA) transparent; }
+:is(.layout-dashboard-shell,.role-shell,[role=dialog]) :is([role=combobox],input[type=search],input[placeholder*="Search"],input[placeholder*="search"]):focus-visible { outline: 2px solid var(--ws-accent, #7C3AED); outline-offset: 2px; }
 :is(.layout-dashboard-shell,.role-shell) :is([role=combobox],input[type=search]) { transition: border-color .18s, box-shadow .18s; }
-:is(.layout-dashboard-shell,.role-shell) [role=combobox][data-state=open] { border-color: #7C3AED; box-shadow: 0 0 0 3px #7c3aed1f; }
+:is(.layout-dashboard-shell,.role-shell) [role=combobox][data-state=open] { border-color: var(--ws-accent, #7C3AED); box-shadow: 0 0 0 3px var(--ws-glow, #7c3aed1f); }
 /* The native-compatible adapter is also used by settings, CRM and form editors. */
 .bk-select { display: inline-flex; min-width: 0; vertical-align: middle; }
 .bk-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 36px; padding: 7px 11px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--control-panel); color: var(--control-ink); font: inherit; cursor: pointer; }

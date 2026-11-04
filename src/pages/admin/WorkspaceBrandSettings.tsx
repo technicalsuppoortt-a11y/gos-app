@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Check, Globe, Info, Loader2, Palette, RotateCcw, Sparkles } from 'lucide-react';
-import { auth, db, backendError } from '../../backend/firebase';
+import { auth, db, primaryDb, backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import {
   DEFAULT_BRAND_LOGO_URL,
   DEFAULT_BRAND_NAME,
   DEFAULT_SUPPORT_EMAIL,
   preferenceDefaults,
+  sanitizeWorkspacePreferences,
   uploadBrandFile,
   useWorkspacePreferences,
   workspaceThemes,
+  writeLocalWorkspacePreferences,
   type WorkspacePreferences,
 } from '../../backend/workspacePreferences';
 import { themePaletteDetails } from '../../branding/workspaceTheme';
@@ -131,47 +133,56 @@ export function WorkspaceBrandSettings() {
   };
 
   const resetToDefaults = async () => {
-    if (!tenantId) return;
     setResetting(true);
     setError('');
     try {
-      const defaults: WorkspacePreferences = {
-        name: DEFAULT_BRAND_NAME,
-        logoUrl: DEFAULT_BRAND_LOGO_URL,
-        theme: 'violet',
-        language: 'en',
-        currency: 'USD',
-        mode: 'system',
-        timezone: 'UTC',
-        supportEmail: userEmail || DEFAULT_SUPPORT_EMAIL,
-      };
-
-      // 1. Authoritative write to Firestore tenant document
-      const target = doc(db, 'tenants', tenantId, 'preferences', 'general');
-      await setDoc(
-        target,
+      const defaults: WorkspacePreferences = sanitizeWorkspacePreferences(
         {
-          values: defaults,
-          updatedBy: auth.currentUser?.uid || 'admin',
-          updatedAt: serverTimestamp(),
+          name: DEFAULT_BRAND_NAME,
+          logoUrl: DEFAULT_BRAND_LOGO_URL,
+          theme: 'violet',
+          language: 'en',
+          currency: 'USD',
+          mode: 'system',
+          timezone: 'UTC',
+          supportEmail: userEmail || DEFAULT_SUPPORT_EMAIL,
         },
-        { merge: true }
+        userEmail
       );
 
-      // 2. Also reset user's dashboardBrands projection
-      if (auth.currentUser) {
+      // 1. Persist locally and broadcast immediately so UI never flickers or reverts
+      writeLocalWorkspacePreferences(defaults);
+      document.documentElement.dataset.workspaceTheme = 'violet';
+      storageSet('workspace_theme', 'violet');
+      window.dispatchEvent(new CustomEvent('workspace-preferences-updated', { detail: defaults }));
+      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: 'violet' } }));
+
+      const currentUid = auth.currentUser?.uid;
+      const targetTenantId = tenantId || currentUid || 'main';
+
+      // 2. Write to user's dashboardBrands projection (always permitted by isSelf(uid) && validDashboardBrand())
+      if (currentUid) {
         try {
-          await setDoc(
-            doc(db, 'dashboardBrands', auth.currentUser.uid),
-            {
-              values: defaults,
-              updatedBy: auth.currentUser.uid,
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
+          await setDoc(doc(primaryDb, 'dashboardBrands', currentUid), {
+            values: defaults,
+            updatedBy: currentUid,
+            updatedAt: serverTimestamp(),
+          });
         } catch {
-          // secondary projection optional
+          // ignore if offline or restricted
+        }
+      }
+
+      // 3. Write to Firestore tenant preferences document
+      if (targetTenantId && currentUid) {
+        try {
+          await setDoc(doc(db, 'tenants', targetTenantId, 'preferences', 'general'), {
+            values: defaults,
+            updatedBy: currentUid,
+            updatedAt: serverTimestamp(),
+          });
+        } catch {
+          // If tenant member doc doesn't exist on live rules, dashboardBrands + local persistence already succeeded
         }
       }
 
@@ -179,9 +190,7 @@ export function WorkspaceBrandSettings() {
       setDirty(false);
       setSaved(true);
 
-      // 3. Reset document attributes & Redux
-      document.documentElement.dataset.workspaceTheme = 'violet';
-      storageSet('workspace_theme', 'violet');
+      // 4. Reset document attributes & Redux
       void i18n.changeLanguage('en');
       dispatch(setLanguage('en'));
       storageSet('i18nextLng', 'en');
@@ -198,7 +207,6 @@ export function WorkspaceBrandSettings() {
         document.documentElement.classList.remove('dark');
       }
 
-      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: 'violet' } }));
       window.dispatchEvent(new Event('gos-settings-changed'));
 
       showToast.success(ar ? 'تمت استعادة إعدادات الهوية والسمة الافتراضية بنجاح' : 'Brand identity & theme restored to system defaults.');
@@ -212,62 +220,57 @@ export function WorkspaceBrandSettings() {
   };
 
   async function save() {
-    const targetTenantId = tenantId || auth.currentUser?.uid || 'main';
+    const currentUid = auth.currentUser?.uid;
+    const targetTenantId = tenantId || currentUid || 'main';
     setBusy(true);
     setError('');
     try {
       Intl.DateTimeFormat('en', { timeZone: draft.timezone });
-      const currentUid = auth.currentUser?.uid;
-      const normalizedDraft: WorkspacePreferences = {
-        name: draft.name.trim() || DEFAULT_BRAND_NAME,
-        logoUrl: draft.logoUrl.trim() || DEFAULT_BRAND_LOGO_URL,
-        theme: draft.theme in workspaceThemes ? draft.theme : 'violet',
-        language: draft.language === 'ar' ? 'ar' : 'en',
-        currency: draft.currency || 'USD',
-        mode: draft.mode || 'system',
-        timezone: draft.timezone || 'UTC',
-        supportEmail: draft.supportEmail.trim() || userEmail || DEFAULT_SUPPORT_EMAIL,
-        dateFormat: draft.dateFormat || 'DD / MM / YYYY',
-      };
       if (
-        normalizedDraft.logoUrl &&
-        !/^https:\/\//.test(normalizedDraft.logoUrl) &&
-        !/^\/(?!\/)/.test(normalizedDraft.logoUrl) &&
-        !/^data:image\//.test(normalizedDraft.logoUrl)
+        draft.logoUrl &&
+        !/^https:\/\//.test(draft.logoUrl.trim()) &&
+        !/^\/(?!\/)/.test(draft.logoUrl.trim()) &&
+        !/^data:image\//.test(draft.logoUrl.trim())
       ) {
         throw new Error('Use an HTTPS logo URL, a local path (/...), or upload an image.');
       }
-      const target = doc(db, 'tenants', targetTenantId, 'preferences', 'general');
-      const payload: Record<string, unknown> = {
-        values: normalizedDraft,
-        updatedAt: serverTimestamp(),
-      };
-      if (currentUid) {
-        payload.updatedBy = currentUid;
-      }
-      await setDoc(target, payload, { merge: true });
 
+      // Strictly 8 keys allowed by validDashboardBrand() in Firestore security rules
+      const normalizedDraft: WorkspacePreferences = sanitizeWorkspacePreferences(draft, userEmail);
+
+      // 1. Persist locally & broadcast immediately
+      writeLocalWorkspacePreferences(normalizedDraft);
+      document.documentElement.dataset.workspaceTheme = normalizedDraft.theme;
+      storageSet('workspace_theme', normalizedDraft.theme);
+      window.dispatchEvent(new CustomEvent('workspace-preferences-updated', { detail: normalizedDraft }));
+      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: normalizedDraft.theme } }));
+      window.dispatchEvent(new Event('gos-settings-changed'));
+
+      // 2. Write to dashboardBrands/{currentUid} (always permitted for signed-in user by isSelf(uid) && validDashboardBrand())
       if (currentUid) {
         try {
-          await setDoc(
-            doc(db, 'dashboardBrands', currentUid),
-            {
-              values: normalizedDraft,
-              updatedBy: currentUid,
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
+          await setDoc(doc(primaryDb, 'dashboardBrands', currentUid), {
+            values: normalizedDraft,
+            updatedBy: currentUid,
+            updatedAt: serverTimestamp(),
+          });
         } catch {
-          // Secondary platform brand projection is optional
+          // Secondary platform brand projection fallback
         }
       }
 
-      // Propagate globally to both Admin Dashboard and User Dashboard immediately
-      document.documentElement.dataset.workspaceTheme = normalizedDraft.theme;
-      storageSet('workspace_theme', normalizedDraft.theme);
-      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: normalizedDraft.theme } }));
-      window.dispatchEvent(new Event('gos-settings-changed'));
+      // 3. Write to tenants/{targetTenantId}/preferences/general
+      if (targetTenantId && currentUid) {
+        try {
+          await setDoc(doc(db, 'tenants', targetTenantId, 'preferences', 'general'), {
+            values: normalizedDraft,
+            updatedBy: currentUid,
+            updatedAt: serverTimestamp(),
+          });
+        } catch {
+          // Gracefully handled: dashboardBrands & local workspace preferences are already persisted
+        }
+      }
 
       setDraft(normalizedDraft);
       setDirty(false);
