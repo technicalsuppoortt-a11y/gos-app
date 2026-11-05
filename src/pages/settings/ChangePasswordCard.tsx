@@ -1,18 +1,13 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, KeyRound, ShieldCheck } from 'lucide-react';
 import { logoutFirebase } from '../../backend/session';
-import { logout } from '../../store/slices/authSlice';
-import { showToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import { friendlyError, settingsApiEnabled, settingsRequest } from './data';
-import { changeDemoPassword, readSecurity, saveLocal } from './localState';
+import { friendlyError, settingsRequest } from './data';
 import { Card, Field } from './kit';
 
 export function ChangePasswordCard({ className = '' }: { className?: string }) {
   const ar = useUILanguage().startsWith('ar');
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -48,35 +43,12 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
 
     setBusy(true);
     try {
-      if (settingsApiEnabled) {
-        await settingsRequest('/security/password', {
-          currentPassword,
-          newPassword,
-        });
-      } else {
-        const currentSec = readSecurity();
-        const updatedSec = await changeDemoPassword(currentSec, currentPassword, newPassword);
-        saveLocal('security', updatedSec);
-      }
-
+      await settingsRequest('/security/password', { currentPassword, newPassword });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-
-      showToast.success(
-        ar
-          ? 'تم تحديث كلمة المرور بنجاح. يرجى تسجيل الدخول بكلمة المرور الجديدة.'
-          : 'Password updated successfully. Please sign in with your new password.'
-      );
-
-      // Tear down session and redirect to /auth/login
-      try {
-        await logoutFirebase();
-      } catch {
-        // Ensure local Redux state still clears even if network sign-out fails
-      }
-      dispatch(logout());
-      navigate('/auth/login', { replace: true });
+      await logoutFirebase();
+      navigate('/auth/login', { replace: true, state: { passwordUpdated: true } });
     } catch (err) {
       setError(friendlyError(err));
     } finally {

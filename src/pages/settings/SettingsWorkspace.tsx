@@ -1,5 +1,4 @@
 import { MarketingTracking } from '../MarketingTracking';
-import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
@@ -11,7 +10,7 @@ import { ToolsSettingsPanel } from './ToolsPanel';
 import { showToast } from '../../utils/toast';
 import { Card, Field, PanelHeading, Toggle } from './kit';
 import { Select } from '../../components/ui/Select';
-import { friendlyError, readSettings, settingsApiEnabled, settingsKey, settingsRequest } from './data';
+import { defaultSettings, friendlyError, settingsRequest } from './data';
 import type { SettingsData } from './data';
 import { ProfilePanel } from './ProfilePanel';
 import { BillingPanel } from './BillingPanel';
@@ -22,7 +21,7 @@ import { KnowledgePanel } from './KnowledgePanel';
 import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
 import { DomainsSettingsPanel } from './DomainsSettingsPanel';
 import { BrandLogoUploader } from './BrandLogoUploader';
-import { uploadBrandFile } from '../../backend/workspacePreferences';
+import { uploadBrandFile, type PersonalPreferences } from '../../backend/workspacePreferences';
 import { TimezoneSelect } from '../../components/ui/TimezoneSelect';
 import './settings-controls.css';
 import './settings.css';
@@ -37,6 +36,12 @@ const CURRENCY_SELECT_OPTIONS = [
 ];
 
 export function SettingsWorkspace() {
+  const uid = useSelector((state: RootState) => state.auth.user?.id);
+  const tenantId = useSelector((state: RootState) => state.auth.tenant?.id);
+  return <ScopedSettings key={JSON.stringify([uid, tenantId])}/>;
+}
+
+function ScopedSettings() {
   useUILanguage();
   const auth = useSelector((s: RootState) => s.auth);
   return <SettingsWorkspaceView key={`${auth.tenant?.id ?? 'demo'}:${auth.user?.id ?? 'demo'}`}/>;
@@ -44,32 +49,26 @@ export function SettingsWorkspace() {
 function SettingsWorkspaceView() {
   useUILanguage();
   const location = useLocation();
-  const [data, setData] = useState<SettingsData>(readSettings), [loading, setLoading] = useState(settingsApiEnabled), [error, setError] = useState('');
+  const [data, setData] = useState<SettingsData>(defaultSettings), [loading, setLoading] = useState(true), [error, setError] = useState('');
   const currentTab = new URLSearchParams(location.search).get('tab');
   const paymentMethodsTab = currentTab === 'payment-methods';
   const isWalletTab = currentTab === 'wallet';
   void paymentMethodsTab; void isWalletTab;
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
-  if (segment === 'general' || segment === 'business-assets') {
-    return <Navigate to="/dashboard/settings/profile" replace />;
-  }
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
   const refresh = useCallback(async () => {
-    if (!settingsApiEnabled) { setData(readSettings()); return; }
     setError('');
     try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
   useEffect(() => { if (active.slug !== 'domains') void refresh(); }, [refresh, active.slug]);
-  async function save(next: SettingsData) {
-    if (settingsApiEnabled) {
-      const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', { profile: next.profile, business: next.business, payment: next.payment }, 'PATCH');
-      next = { ...next, profile: { ...next.profile, ...result.profile } };
-    } else {
-      try { await cloudStorage.setItem(settingsKey(), JSON.stringify({ profile: next.profile, business: next.business, payment: next.payment, recharge: next.recharge })); } catch { throw new Error('Your changes could not be saved. Browser storage is full or unavailable.'); }
-    }
-    setData(next);
+  async function save(next: SettingsData, personalPreferences?: PersonalPreferences) {
+    const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', {
+      profile: next.profile, business: next.business, payment: next.payment, personalPreferences,
+    }, 'PATCH');
+    setData({ ...next, profile: { ...next.profile, ...result.profile } });
     showToast.success('Changes saved');
   }
+  if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">

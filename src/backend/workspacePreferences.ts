@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, primaryDb, storage, backendError } from './firebase';
-import { storageGet, storageSet } from '../utils/browserStorage';
 import type { RootState } from '../store';
 
 export const DEFAULT_BRAND_NAME = 'Upclick';
 export const DEFAULT_BRAND_LOGO_URL = '/upclick-logo.svg';
 export const DEFAULT_SUPPORT_EMAIL = 'support@upclick.app';
-const LOCAL_PREFS_KEY = 'workspace_preferences_local';
 
 export const workspaceThemes = {
   violet: 'Violet Indigo',
@@ -43,7 +41,7 @@ export const preferenceDefaults: WorkspacePreferences = {
   language: 'en',
   currency: 'USD',
   mode: 'system',
-  timezone: 'Africa/Cairo',
+  timezone: 'UTC',
   supportEmail: DEFAULT_SUPPORT_EMAIL,
 };
 
@@ -62,7 +60,7 @@ export function sanitizeWorkspacePreferences(
     rawLogo && (/^https:\/\//.test(rawLogo) || /^\/(?!\/)/.test(rawLogo) || /^data:image\//.test(rawLogo))
       ? rawLogo
       : DEFAULT_BRAND_LOGO_URL;
-  const rawTheme = typeof obj.theme === 'string' && obj.theme in workspaceThemes
+  const rawTheme = typeof obj.theme === 'string' && Object.hasOwn(workspaceThemes, obj.theme)
     ? (obj.theme as WorkspacePreferences['theme'])
     : 'violet';
   const rawLang: 'en' | 'ar' = obj.language === 'ar' ? 'ar' : 'en';
@@ -72,9 +70,8 @@ export function sanitizeWorkspacePreferences(
     typeof obj.currency === 'string' && ['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP'].includes(obj.currency)
       ? obj.currency
       : 'USD';
-  const rawTz = typeof obj.timezone === 'string' && obj.timezone.trim() ? obj.timezone.trim() : 'Africa/Cairo';
+  const rawTz = validTimezone(obj.timezone) ? obj.timezone : preferenceDefaults.timezone;
 
-  // Strictly return ONLY the 8 keys permitted by Firestore validDashboardBrand() security rule
   return {
     name: rawName,
     logoUrl: validLogo,
@@ -84,33 +81,8 @@ export function sanitizeWorkspacePreferences(
     mode: rawMode,
     timezone: rawTz,
     supportEmail: rawEmail,
+    ...(typeof obj.dateFormat === 'string' && { dateFormat: obj.dateFormat }),
   };
-}
-
-export function readLocalWorkspacePreferences(): WorkspacePreferences | null {
-  try {
-    const raw = storageGet(LOCAL_PREFS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        return sanitizeWorkspacePreferences(parsed);
-      }
-    }
-    const cachedTheme = storageGet('workspace_theme');
-    if (cachedTheme && cachedTheme in workspaceThemes) {
-      return sanitizeWorkspacePreferences({ ...preferenceDefaults, theme: cachedTheme });
-    }
-  } catch {}
-  return null;
-}
-
-export function writeLocalWorkspacePreferences(prefs: WorkspacePreferences): WorkspacePreferences {
-  const clean = sanitizeWorkspacePreferences(prefs);
-  try {
-    storageSet(LOCAL_PREFS_KEY, JSON.stringify(clean));
-    storageSet('workspace_theme', clean.theme);
-  } catch {}
-  return clean;
 }
 
 export function isDefaultBrandLogo(url?: string | null): boolean {
@@ -119,189 +91,189 @@ export function isDefaultBrandLogo(url?: string | null): boolean {
   return !trimmed || trimmed === '/upclick-logo.svg' || trimmed === '/upclick-mark.svg' || trimmed.endsWith('/upclick-logo.svg') || trimmed.endsWith('/upclick-mark.svg');
 }
 
-export function useWorkspacePreferences() {
-  const tenantId = useSelector((s: RootState) => s.auth.tenant?.id || s.auth.user?.id || auth.currentUser?.uid || 'main');
-  const uid = useSelector((s: RootState) => s.auth.user?.id || auth.currentUser?.uid || '');
-  const adminUid = useSelector((s: RootState) => s.auth.impersonation?.user?.id || '');
-  const scope = `${tenantId ?? ''}:${uid ?? ''}:${adminUid ?? ''}`;
-  const [state, setState] = useState<{
-    scope: string;
-    values: WorkspacePreferences | null;
-    ownValues: WorkspacePreferences | null;
-    loading: boolean;
-    error: string;
-  }>(() => {
-    const local = readLocalWorkspacePreferences();
-    return { scope, values: local, ownValues: local, loading: !!uid, error: '' };
-  });
+export type PersonalPreferences = {
+  [K in 'language' | 'currency' | 'timezone' | 'mode' | 'dateFormat']?: NonNullable<WorkspacePreferences[K]> | null;
+};
 
-  useEffect(() => {
-    const localInitial = readLocalWorkspacePreferences();
-    if (!tenantId || !uid) {
-      setState({ scope, values: localInitial, ownValues: localInitial, loading: false, error: '' });
-    } else {
-      setState(prev => ({
-        scope,
-        values: prev.values ?? localInitial,
-        ownValues: prev.ownValues ?? localInitial,
-        loading: true,
-        error: '',
-      }));
-    }
+export const inheritWorkspacePreferences = {
+  language: null, currency: null, timezone: null, mode: null, dateFormat: null,
+} satisfies PersonalPreferences;
 
-    let own: WorkspacePreferences | null = null;
-    let selfBrand: WorkspacePreferences | null = null;
-    let adminBrand: WorkspacePreferences | null = null;
-    let parent: WorkspacePreferences | null = null;
-    let localOverride: WorkspacePreferences | null = localInitial;
-    let ownReady = !tenantId || !uid;
-    let selfReady = !uid;
-    let adminReady = !adminUid || adminUid === uid;
-    let parentReady = !uid;
-    let stopParent = () => {};
-    let stopAdmin = () => {};
+function validTimezone(value: unknown): value is string {
+  if (typeof value !== 'string' || !value) return false;
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-    const parse = (data: unknown): WorkspacePreferences | null => {
-      if (!data || typeof data !== 'object') return null;
-      return sanitizeWorkspacePreferences(data);
-    };
-
-    const publish = () => {
-      const resolved = own ?? selfBrand ?? adminBrand ?? parent ?? localOverride;
-      if (own || selfBrand || adminBrand || parent) {
-        const authoritative = (own ?? selfBrand ?? adminBrand ?? parent)!;
-        writeLocalWorkspacePreferences(authoritative);
-      }
-      setState({
-        scope,
-        values: resolved,
-        ownValues: own ?? selfBrand ?? localOverride,
-        loading: !ownReady || !selfReady || !adminReady || !parentReady,
-        error: '',
-      });
-    };
-
-    const handleLocalEvent = (evt: Event) => {
-      const detail = (evt as CustomEvent<WorkspacePreferences>).detail;
-      if (detail && typeof detail === 'object') {
-        const clean = sanitizeWorkspacePreferences(detail);
-        localOverride = clean;
-        own = clean;
-        selfBrand = clean;
-        publish();
-      } else {
-        const latestLocal = readLocalWorkspacePreferences();
-        if (latestLocal) {
-          localOverride = latestLocal;
-          publish();
-        }
-      }
-    };
-
-    window.addEventListener('workspace-preferences-updated', handleLocalEvent);
-
-    if (!tenantId || !uid) {
-      return () => {
-        window.removeEventListener('workspace-preferences-updated', handleLocalEvent);
-      };
-    }
-
-    const stopOwn = onSnapshot(
-      doc(db, 'tenants', tenantId, 'preferences', 'general'),
-      snapshot => {
-        own = parse(snapshot.data()?.values);
-        ownReady = true;
-        publish();
-      },
-      () => {
-        ownReady = true;
-        publish();
-      }
-    );
-
-    const stopSelfBrand = onSnapshot(
-      doc(primaryDb, 'dashboardBrands', uid),
-      snapshot => {
-        selfBrand = parse(snapshot.data()?.values);
-        selfReady = true;
-        publish();
-      },
-      () => {
-        selfReady = true;
-        publish();
-      }
-    );
-
-    if (adminUid && adminUid !== uid) {
-      stopAdmin = onSnapshot(
-        doc(primaryDb, 'dashboardBrands', adminUid),
-        snapshot => {
-          adminBrand = parse(snapshot.data()?.values);
-          adminReady = true;
-          publish();
-        },
-        () => {
-          adminReady = true;
-          publish();
-        }
-      );
-    }
-
-    // Agency clients inherit their provider's dashboard brand until they save a tenant override.
-    const stopProfile = onSnapshot(
-      doc(primaryDb, 'users', uid),
-      profile => {
-        stopParent();
-        parent = null;
-        const parentId = profile.data()?.supportParentId;
-        if (!parentId || typeof parentId !== 'string' || parentId === uid) {
-          parentReady = true;
-          publish();
-          return;
-        }
-        parentReady = false;
-        publish();
-        stopParent = onSnapshot(
-          doc(primaryDb, 'dashboardBrands', parentId),
-          snapshot => {
-            parent = parse(snapshot.data()?.values);
-            parentReady = true;
-            publish();
-          },
-          () => {
-            parentReady = true;
-            publish();
-          }
-        );
-      },
-      () => {
-        parentReady = true;
-        publish();
-      }
-    );
-
-    return () => {
-      window.removeEventListener('workspace-preferences-updated', handleLocalEvent);
-      stopOwn();
-      stopSelfBrand();
-      stopAdmin();
-      stopProfile();
-      stopParent();
-    };
-  }, [tenantId, uid, adminUid, scope]);
-
+function readPersonal(data?: Record<string, unknown>): PersonalPreferences {
+  if (!data) return {};
+  const { language, currency, mode, timezone, dateFormat } = data;
   return {
-    ...(state.scope === scope
-      ? state
-      : {
-          values: readLocalWorkspacePreferences(),
-          ownValues: readLocalWorkspacePreferences(),
-          loading: !!uid,
-          error: '',
-        }),
-    tenantId,
+    ...(language === 'ar' || language === 'en' || language === null ? { language } : {}),
+    ...((typeof currency === 'string' && /^[A-Z]{3}$/.test(currency)) || currency === null ? { currency } : {}),
+    ...(mode === 'system' || mode === 'dark' || mode === 'light' || mode === null ? { mode } : {}),
+    ...(validTimezone(timezone) || timezone === null ? { timezone } : {}),
+    ...(typeof dateFormat === 'string' || dateFormat === null ? { dateFormat } : {}),
   };
 }
+
+export function personalPreferencesRef(uid: string) {
+  return doc(db, 'users', uid, 'preferences', 'dashboard');
+}
+
+export function profileSettingsRef(tenantId: string, uid: string) {
+  return doc(db, 'tenants', tenantId, 'workspaceState', encodeURIComponent(['gos-settings-v1', tenantId, uid].join(':')));
+}
+
+export async function savePersonalPreferences(uid: string, patch: PersonalPreferences) {
+  if (auth.currentUser?.uid !== uid) throw new Error('Sign in to change your preferences.');
+  await setDoc(personalPreferencesRef(uid), patch, { merge: true });
+}
+
+export async function saveWorkspacePreferences(tenantId: string, values: WorkspacePreferences, publishPlatform: boolean, personalPatch: PersonalPreferences) {
+  const uid = auth.currentUser?.uid;
+  if (!uid || !tenantId) throw new Error('Sign in to change workspace settings.');
+  const batch = writeBatch(db);
+  const record = { values, updatedAt: serverTimestamp(), updatedBy: uid };
+  batch.set(doc(db, 'tenants', tenantId, 'preferences', 'general'), record);
+  if (publishPlatform) {
+    // Preserve the existing projection for linked client workspaces.
+    batch.set(doc(db, 'dashboardBrands', uid), record);
+    const { name, logoUrl, theme, language, currency, mode, timezone } = values;
+    batch.set(doc(db, 'settings', 'publicAppearance'), {
+      values: { name, logoUrl, theme, language, currency, mode, timezone },
+    });
+  }
+  if (Object.keys(personalPatch).length) {
+    batch.set(personalPreferencesRef(uid), personalPatch, { merge: true });
+  }
+  await batch.commit();
+}
+
+export function useWorkspacePreferenceState() {
+  const { tenant, user, impersonation, role } = useSelector((s: RootState) => s.auth);
+  const tenantId = tenant?.id ?? '';
+  const uid = user?.id ?? '';
+  const adminUid = impersonation?.user.id ?? '';
+  const scope = JSON.stringify([tenantId, uid, adminUid]);
+  const [publicValues, setPublicValues] = useState<WorkspacePreferences | null>(null);
+  const [account, setAccount] = useState({
+    scope: '', workspace: null as WorkspacePreferences | null, personal: {} as PersonalPreferences,
+    loading: true, error: '',
+  });
+
+  useEffect(() => onSnapshot(doc(primaryDb, 'settings', 'publicAppearance'), snapshot => {
+    const values = snapshot.data()?.values;
+    setPublicValues(values ? sanitizeWorkspacePreferences(values) : null);
+  }, error => console.warn('Public appearance could not be loaded', backendError(error))), []);
+
+  useEffect(() => {
+    if (!uid || !tenantId) return;
+    let tenantValues: WorkspacePreferences | null = null;
+    let ownBrand: WorkspacePreferences | null = null;
+    let parentBrand: WorkspacePreferences | null = null;
+    let legacy: PersonalPreferences = {};
+    let personal: PersonalPreferences = {};
+    let error = '';
+    const pending = new Set(['tenant', 'self', 'profile', 'personal']);
+    let parentId: string | undefined;
+    let legacyTenant: string | undefined;
+    let stopParent = () => {};
+    let stopLegacy = () => {};
+
+    const publish = (source: string) => {
+      pending.delete(source);
+      setAccount({ scope, workspace: tenantValues ?? parentBrand ?? ownBrand,
+        personal: { ...legacy, ...personal }, loading: pending.size > 0, error });
+    };
+    const failed = (source: string, cause: unknown) => {
+      if (source === 'tenant' || (source === 'personal' && auth.currentUser?.uid === uid)) error = backendError(cause);
+      publish(source);
+    };
+    const brand = (value: unknown) => value && typeof value === 'object' ? sanitizeWorkspacePreferences(value) : null;
+
+    const stopTenant = onSnapshot(doc(db, 'tenants', tenantId, 'preferences', 'general'), snapshot => {
+      tenantValues = brand(snapshot.data()?.values);
+      publish('tenant');
+    }, cause => failed('tenant', cause));
+    const stopSelf = onSnapshot(doc(db, 'dashboardBrands', uid), snapshot => {
+      ownBrand = brand(snapshot.data()?.values);
+      publish('self');
+    }, cause => failed('self', cause));
+    const stopPersonal = onSnapshot(personalPreferencesRef(uid), snapshot => {
+      personal = readPersonal(snapshot.data());
+      publish('personal');
+    }, cause => failed('personal', cause));
+
+    const stopProfile = onSnapshot(doc(db, 'users', uid), snapshot => {
+      const profile = snapshot.data();
+      const linkedAdmin = profile?.supportParentId || adminUid;
+      if (linkedAdmin !== parentId) {
+        stopParent();
+        parentId = linkedAdmin;
+        parentBrand = null;
+        pending.delete('parent');
+        if (typeof linkedAdmin === 'string' && linkedAdmin && linkedAdmin !== uid) {
+          pending.add('parent');
+          stopParent = onSnapshot(doc(db, 'dashboardBrands', linkedAdmin), brandSnapshot => {
+            parentBrand = brand(brandSnapshot.data()?.values);
+            publish('parent');
+          }, cause => failed('parent', cause));
+        }
+      }
+      // Older versions persisted overrides alongside the profile.
+      const profileTenant = typeof profile?.tenantId === 'string' && profile.tenantId
+        ? profile.tenantId
+        : profile?.status === 'Active' && role === 'USER' ? uid : tenantId;
+      if (profileTenant !== legacyTenant) {
+        stopLegacy();
+        legacyTenant = profileTenant;
+        legacy = {};
+        pending.add('legacy');
+        stopLegacy = onSnapshot(profileSettingsRef(profileTenant, uid), settings => {
+          const saved = settings.data()?.value?.profile;
+          legacy = saved?.hasUserOverrides === true ? readPersonal({
+            ...saved,
+            language: saved.language === 'Arabic' ? 'ar' : saved.language === 'English' ? 'en' : undefined,
+          }) : {};
+          publish('legacy');
+        }, cause => failed('legacy', cause));
+      }
+      publish('profile');
+    }, cause => failed('profile', cause));
+
+    return () => { stopTenant(); stopSelf(); stopPersonal(); stopProfile(); stopParent(); stopLegacy(); };
+  }, [uid, tenantId, adminUid, role, scope]);
+
+  const current = uid && scope === account.scope ? account : null;
+  return {
+    scope, uid, tenantId,
+    canPublish: !impersonation && (role === 'ADMIN' || role === 'SUPER_ADMIN'),
+    values: current?.workspace ?? publicValues,
+    hasAccountWorkspace: !!current?.workspace,
+    personal: current?.personal ?? inheritWorkspacePreferences,
+    loading: Boolean(uid && (!current || current.loading)),
+    error: current?.error ?? '',
+  };
+}
+
+type WorkspaceContext = ReturnType<typeof useWorkspacePreferenceState> & {
+  effective: WorkspacePreferences;
+  hasWorkspaceTheme: boolean;
+  preview: (patch: Partial<WorkspacePreferences> | null) => void;
+  setPreference?: (patch: PersonalPreferences) => void;
+};
+
+export const WorkspacePreferencesContext = createContext<WorkspaceContext>({
+  scope: '', uid: '', tenantId: '', canPublish: false, values: null, hasAccountWorkspace: false,
+  hasWorkspaceTheme: false, personal: inheritWorkspacePreferences, effective: preferenceDefaults, loading: false, error: '',
+  preview: () => {},
+});
+export const useWorkspacePreferences = () => useContext(WorkspacePreferencesContext);
 
 export async function uploadBrandFile(tenantId: string, file: File, logo = false) {
   const allowed = logo ? ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'] : ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'application/pdf', 'text/plain'];
@@ -309,4 +281,14 @@ export async function uploadBrandFile(tenantId: string, file: File, logo = false
   const target = ref(storage, `tenants/${tenantId}/branding/${crypto.randomUUID()}`);
   await uploadBytes(target, file, { contentType: file.type });
   return { url: await getDownloadURL(target), path: target.fullPath };
+}
+
+export async function uploadProfilePhoto(uid: string, file: File) {
+  if (auth.currentUser?.uid !== uid) throw new Error('Sign in to change your profile photo.');
+  if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type) || !file.size || file.size > 5 * 1024 * 1024) {
+    throw new Error('Choose a JPG, PNG or GIF image up to 5 MB.');
+  }
+  const target = ref(storage, 'profilePhotos/' + uid + '/' + crypto.randomUUID());
+  await uploadBytes(target, file, { contentType: file.type });
+  return getDownloadURL(target);
 }

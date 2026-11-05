@@ -8,23 +8,30 @@ import { usePhoenixBrand } from '../backend/phoenixBrand';
 import './phoenix-brand.css';
 import { bindCapturedBrandColors } from '../branding/themeColors';
 import fontCatalog from '../branding/brandFontCatalog.json';
+import { useWorkspacePreferences } from '../backend/workspacePreferences';
+import { workspaceTheme } from '../branding/workspaceTheme';
 import { WorkspaceCustomization } from './WorkspaceCustomization';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => (
+  <WorkspaceCustomization><ThemeRuntime>{children}</ThemeRuntime></WorkspaceCustomization>
+);
+
+const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
   useUILanguage();
   const theme = useSelector((state: RootState) => state.ui.theme);
   const language = useSelector((state: RootState) => state.ui.language);
-  const configuration = usePhoenixBrand();
+  const phoenixTheme = usePhoenixBrand()?.brand.theme;
+  const { effective, hasWorkspaceTheme } = useWorkspacePreferences();
+  const palette = effective.theme;
   useLayoutEffect(() => {
     const root = document.documentElement;
-    const design = configuration?.brand.theme;
-    if (!design) return;
+    const design = !hasWorkspaceTheme && phoenixTheme ? phoenixTheme : workspaceTheme(palette);
     const set = (key: string, value: string) => root.style.setProperty(`--gp-${key}`, value);
-    const isCustomBrand = design.paletteId !== 'dashboard-default';
+    const isCustomBrand = (hasWorkspaceTheme || !!phoenixTheme) && design.paletteId !== 'dashboard-default';
     root.dataset.gpBrand = String(isCustomBrand);
     if (isCustomBrand) {
       void import('./phoenix-brand-generated.css');
@@ -69,13 +76,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Inline chart fills/strokes are React-owned and arrive after lazy routes.
     // Reapply only when values change, preserving customer website artwork.
     const observer = new MutationObserver(records => {
-      if (design.paletteId === 'dashboard-default') return;
+      if (!isCustomBrand) return;
       for (const record of records) {
         if (record.type === 'attributes' && record.target instanceof Element) bind(record.target);
         for (const node of record.addedNodes) if (node instanceof Element) bind(node);
       }
     });
-    if (design.paletteId !== 'dashboard-default') bind(document.body);
+    if (isCustomBrand) bind(document.body);
     observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style','fill','stroke','stop-color'] });
     return () => {
       observer.disconnect();
@@ -84,9 +91,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       delete root.dataset.gpButtons;
       for (const key of Array.from(root.style)) if (key.startsWith('--gp-')) root.style.removeProperty(key);
     };
-  }, [configuration, theme, language]);
+  }, [hasWorkspaceTheme, palette, phoenixTheme, theme, language]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
@@ -101,5 +108,5 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (i18n.language !== language) void i18n.changeLanguage(language);
   }, [language]);
 
-  return <><WorkspaceCustomization/>{localizeNode(children)}</>;
+  return localizeNode(children);
 };

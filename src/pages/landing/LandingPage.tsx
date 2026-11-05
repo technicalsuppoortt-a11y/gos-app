@@ -14,6 +14,7 @@ import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
 import { type LandingCopy } from './landing-content';
 import { cmsEvent, readCMS } from './cms';
+import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/workspacePreferences';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
 import { NativeDashboardPreview } from './NativeDashboardPreview';
@@ -34,10 +35,12 @@ const prefersReducedMotion = () => typeof window !== 'undefined' && window.match
 /* ---------- Small shared pieces ---------- */
 
 function Logo({ inverted = false }: { inverted?: boolean }) {
+  const { effective: { name, logoUrl } } = useWorkspacePreferences();
+  if (!isDefaultBrandLogo(logoUrl)) return <img className="lp-logo-image" src={logoUrl} alt={name}/>;
   return (
-    <span className={`lp-logo${inverted ? ' is-inverted' : ''}`} aria-label="Upclick">
+    <span className={`lp-logo${inverted ? ' is-inverted' : ''}`} aria-label={name}>
       <img src="/upclick-mark.svg" alt="" width="36" height="38"/>
-      <span className="lp-logo__wordmark">Upclick</span>
+      <span className="lp-logo__wordmark">{name}</span>
     </span>
   );
 }
@@ -840,6 +843,7 @@ function VideoModal({ copy, onClose }: { copy: LandingCopy; onClose: () => void 
 
 export const LandingPage: React.FC = () => {
   const dispatch = useDispatch();
+  const { setPreference } = useWorkspacePreferences();
   const language = useSelector((state: RootState) => state.ui.language);
   const preview = new URLSearchParams(window.location.search).get('cms-preview') === '1';
   const [cms, setCMS] = useState(() => readCMS(preview));
@@ -856,10 +860,11 @@ export const LandingPage: React.FC = () => {
 
   const toggleLanguage = useCallback(() => {
     const next: Language = language === 'ar' ? 'en' : 'ar';
+    if (setPreference) { setPreference({ language: next }); return; }
     void i18n.changeLanguage(next);
     dispatch(setLanguage(next));
     try { localStorage.setItem('i18nextLng', next); } catch { /* Redux keeps the choice for this session. */ }
-  }, [dispatch, language]);
+  }, [dispatch, language, setPreference]);
 
   useEffect(() => {
     document.title = copy.meta.title;

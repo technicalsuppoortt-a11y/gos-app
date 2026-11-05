@@ -14,10 +14,10 @@ export const themePaletteDetails: Record<
   }
 > = {
   violet: {
-    primary: '#6d28d9',
-    accent: '#c4b5fd',
+    primary: '#7c3aed',
+    accent: '#a78bfa',
     soft: '#ede9fe',
-    hover: '#5b21b6',
+    hover: '#6d28d9',
     darkBg: '#111827',
     badge: ['Default Brand', 'السمة الافتراضية'],
     desc: ['Signature royal violet & indigo contrast', 'بنفسجي ملكي متوازن وعصري'],
@@ -107,10 +107,12 @@ export const themePaletteDetails: Record<
 
 export function workspaceTheme(id: WorkspacePreferences['theme']): NonNullable<PhoenixBrand['theme']> {
   const p = themePaletteDetails[id] ?? themePaletteDetails.violet;
+  const darkSurface = 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
   return {
     paletteId: `workspace-${id}`,
     light: {
       primary: p.primary,
+      hover: p.hover,
       buttonBackground: p.primary,
       background: '#f8fafc',
       surface: '#ffffff',
@@ -124,16 +126,17 @@ export function workspaceTheme(id: WorkspacePreferences['theme']): NonNullable<P
     },
     dark: {
       primary: p.accent,
+      hover: p.primary,
       buttonBackground: p.primary,
       background: p.darkBg,
-      surface: '#1e293b',
+      surface: darkSurface,
       text: '#f1f5f9',
       mutedText: '#cbd5e1',
-      border: '#475569',
-      soft: '#273449',
+      border: 'color-mix(in srgb, ' + darkSurface + ', white 18%)',
+      soft: 'color-mix(in srgb, ' + darkSurface + ', ' + p.accent + ' 14%)',
       success: '#6ee7b7',
-      headerBackground: '#1e293b',
-      footerBackground: '#1e293b',
+      headerBackground: darkSurface,
+      footerBackground: darkSurface,
     },
     typography: { heading: 'Inter', body: 'Inter', arabic: 'Cairo' },
     buttons: { shape: 'rounded', variant: 'solid' },

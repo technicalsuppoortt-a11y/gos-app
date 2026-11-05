@@ -3,7 +3,9 @@ import { initializeTemplateAsset } from '../system-template-assets';
 import { validateSystemTemplate } from '../system-template-validation';
 import { AdminNativeTemplateFields } from './AdminNativeTemplateFields';
 import { useRef, useState } from 'react';
-import { ArrowRight, Eye, Layers3, LayoutTemplate, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowRight, Eye, ImagePlus, Layers3, LayoutTemplate, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
+import { uploadTemplateThumbnail } from '../../backend/adminManagement';
+import { backendError } from '../../backend/firebase';
 import { BuilderWorkspace, createBuilderDocument } from '../BuilderWorkspace';
 import { adminTemplateCategories as categories, industries, goals } from '../system-template-data';
 import { useUILanguage } from '../../i18n/display';
@@ -17,9 +19,9 @@ export function newManagedTemplate(category: ManagedTemplate['category'] = 'Funn
   return { id: crypto.randomUUID(), name: '', description: '', category, industry: industries[0], goal: goals[0], source: 'official', tags: [], updated: '', popularity: 0, color: '#7C3AED', active: false, status: 'Draft', content: { headline: '', steps: ['Welcome'], settings: { enabled: false, language: 'en' } } };
 }
 
-export function AdminTemplateEditor({ template, save, close, busy, preview, presets = [] }: {
+export function AdminTemplateEditor({ template, save, close, busy, preview, presets = [], ownerUid = '' }: {
   template: ManagedTemplate; save: (template: ManagedTemplate) => Promise<string | null>; close: () => void;
-  busy: boolean; preview: (value: SitePreview) => void; presets?: ManagedTemplate[];
+  busy: boolean; preview: (value: SitePreview) => void; presets?: ManagedTemplate[]; ownerUid?: string;
 }) {
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
   const [draft, setDraft] = useState(() => initializeTemplateAsset(template));
@@ -27,6 +29,8 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   const [presetId, setPresetId] = useState('');
   const [error, setError] = useState('');
   const [showContentPreview, setShowContentPreview] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
   const documentRef = useRef(draft.builderDocument);
   const web = ['Funnels', 'Websites', 'Forms', 'Landing Pages'].includes(draft.category);
   const mode = draft.category === 'Funnels' ? 'funnel' : 'website';
@@ -50,6 +54,19 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     const failure = await save(value);
     if (failure) setError(failure);
   }
+  async function chooseThumbnail(file: File | undefined) {
+    if (!file || uploading) return;
+    setUploading(true); setError('');
+    try {
+      const thumbnail = await uploadTemplateThumbnail(draft.id, file, ownerUid);
+      // The template image is also the page builder's featured image (funnel, website and form pages).
+      const current = documentRef.current;
+      if (current?.pages?.length) documentRef.current = { ...current, pages: current.pages.map((page, index) => index === 0 || page.featuredImage ? { ...page, featuredImage: thumbnail } : page) };
+      setDraft(d => ({ ...d, thumbnail, builderDocument: documentRef.current, pageTemplate: d.pageTemplate ? { ...d.pageTemplate, image: thumbnail } : d.pageTemplate }));
+    }
+    catch (cause) { setError(backendError(cause)); }
+    finally { setUploading(false); if (imageInput.current) imageInput.current.value = ''; }
+  }
   const openPreview = () => documentRef.current ? preview({ document: documentRef.current, name: draft.name || t('Template preview', 'معاينة القالب'), kind: mode }) : setShowContentPreview(true);
   return <><LiveDialog wide={builder} title={builder ? t('Design your template', 'صمم القالب') : t('Template editor', 'محرر القالب')}
     subtitle={builder ? t('The same visual builder used by workspace owners.', 'نفس المحرر المرئي المستخدم في مساحات العمل.') : t('Create a reusable experience for every workspace.', 'أنشئ تجربة قابلة لإعادة الاستخدام لكل مساحة عمل.')} close={() => !busy && close()}
@@ -65,6 +82,11 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
         <div className="alm-form-grid"><label>{t('Language', 'اللغة')}<AdminSelect label={t('Language', 'اللغة')} value={draft.content.settings.language} options={[...new Set(['en', 'ar', draft.content.settings.language])].map(value => ({ value, label: value === 'en' ? 'English' : value === 'ar' ? 'العربية' : value }))} onChange={language => updateContent({ settings: { ...draft.content.settings, language } })}/></label><label className="alm-checkbox"><input type="checkbox" checked={draft.content.settings.enabled} onChange={e => updateContent({ settings: { ...draft.content.settings, enabled: e.target.checked } })}/><span>{t('Enable configuration by default', 'تفعيل الإعدادات افتراضياً')}</span></label></div>
       </section>}
       <AdminNativeTemplateFields key={draft.category} value={draft} change={setDraft}/>
+      {web && <section className="alm-editor-section alm-thumbnail-editor"><header><div><h3>{t('Template image', 'صورة القالب')}</h3><p>{t('Shown on this template card in the user template gallery.', 'تظهر على بطاقة هذا القالب في مكتبة قوالب المستخدمين.')}</p></div><ImagePlus size={20}/></header>
+        <div className="alm-thumbnail-row">{draft.thumbnail ? <img className="alm-thumbnail-preview" src={draft.thumbnail} alt={t('Template image preview', 'معاينة صورة القالب')}/> : <div className="alm-thumbnail-preview alm-thumbnail-empty">{t('No image yet · the default card art is used.', 'لا توجد صورة بعد · يتم استخدام شكل البطاقة الافتراضي.')}</div>}
+          <div className="alm-inline-actions"><input ref={imageInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => void chooseThumbnail(e.target.files?.[0])}/><button type="button" className="alm-button" disabled={busy || uploading} onClick={() => imageInput.current?.click()}><ImagePlus size={15}/>{uploading ? t('Uploading…', 'جار الرفع…') : draft.thumbnail ? t('Change image', 'تغيير الصورة') : t('Upload image', 'رفع صورة')}</button>{draft.thumbnail && <button type="button" className="alm-button subtle" disabled={busy || uploading} onClick={() => setDraft(d => ({ ...d, thumbnail: '' }))}><Trash2 size={15}/>{t('Remove', 'إزالة')}</button>}</div></div>
+        <small className="alm-muted">{t('PNG, JPG or WebP up to 5 MB · landscape 16:9 works best. Uploading also sets the featured image in the page builder. Save the template to apply.', 'PNG أو JPG أو WebP حتى 5 ميجابايت · الأفضل صورة عرضية 16:9. رفع الصورة يغير أيضاً الصورة الرئيسية في محرر الصفحات. احفظ القالب للتطبيق.')}</small>
+      </section>}
       {web && <section className="alm-builder-entry"><LayoutTemplate size={26}/><div><h3>{t('Visual page design', 'التصميم المرئي للصفحة')}</h3><p>{documentRef.current ? t('Continue editing the saved page layout.', 'تابع تعديل تخطيط الصفحة المحفوظ.') : t('Design pages, sections, typography and responsive layouts.', 'صمم الصفحات والأقسام والخطوط والتخطيطات المتجاوبة.')}</p></div><button type="button" className="alm-button" onClick={() => { documentRef.current ??= createPageAsset(draft.category === 'Forms' ? 'form' : mode, draft.name || 'System template').document; documentRef.current.funnel.name = draft.name || 'System template'; setBuilder(true); }}>{t('Open page builder', 'فتح محرر الصفحات')}<ArrowRight size={15}/></button></section>}
       <label className="alm-visibility"><span><strong>{t('Publish to workspaces', 'النشر في مساحات العمل')}</strong><small>{t('Active templates appear in the existing user template galleries.', 'تظهر القوالب النشطة في مكتبات قوالب المستخدمين الحالية.')}</small></span><input role="switch" aria-label={t('Active / Published', 'نشط / منشور')} type="checkbox" checked={templateIsActive(draft)} onChange={e => setDraft({ ...draft, active: e.target.checked, status: e.target.checked ? 'Published' : 'Draft' })}/></label>
       {error && <div className="alm-error-inline" role="alert">{error}</div>}

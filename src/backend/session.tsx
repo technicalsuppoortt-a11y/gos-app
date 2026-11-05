@@ -9,7 +9,6 @@ import { loginSuccess, logout } from '../store/slices/authSlice';
 import { SessionReadyContext } from './sessionState';
 import type { StoredAuth, Role } from '../types/auth';
 import { clearPhoenixBrand, loadPhoenixBrand } from './phoenixBrand';
-import { setLanguage, toggleTheme } from '../store/slices/uiSlice';
 import { loginWithPhoenix } from './phoenixLogin';
 
 /* ------------------------------------------------------------------ */
@@ -177,10 +176,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
       phoenix = null;
     }
   }
-  if (phoenix) {
-    store.dispatch(setLanguage(phoenix.brand.language));
-    if (store.getState().ui.theme !== phoenix.brand.mode) store.dispatch(toggleTheme());
-  } else if (!impersonating) clearPhoenixBrand();
+  if (!phoenix && !impersonating) clearPhoenixBrand();
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
@@ -205,7 +201,8 @@ export async function login(email: string, password: string) {
       const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
       // Linked accounts refresh saved Phoenix changes even when their Upclick
       // password already works, so manual login matches Open Platform.
-      if (profile?.phoenixUid && !usedPhoenix) {
+      if (profile?.phoenixUid && !usedPhoenix
+          && !(await getDoc(doc(db, 'users', credential.user.uid, 'preferences', 'passwordPolicy'))).data()?.localPassword) {
         credential = await loginWithPhoenix(email, password);
       }
     } catch {

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, setDoc, where, type Query, type QuerySnapshot, type FirestoreError } from 'firebase/firestore';
-import { primaryAuth, primaryDb, backendError } from './firebase';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { firebaseApp, primaryAuth, primaryDb, backendError } from './firebase';
 import { decodeFirestoreValue, encodeFirestoreValue } from './firestoreCodec';
 import type { RootState } from '../store';
 import type { Directory, LiveRecord, ManagementResource } from '../pages/admin/live-model';
@@ -114,6 +115,16 @@ export async function saveManagedTemplate(template: ManagedTemplate) {
     status: template.active !== false && (!template.status || template.status === 'Published') ? 'Published' : 'Draft',
     updatedAt: serverTimestamp(), updatedBy: primaryAuth.currentUser.uid,
   });
+}
+/** Uploads a gallery image for a system template (or an admin's own template when ownerUid is set) and returns its URL. */
+export async function uploadTemplateThumbnail(templateId: string, file: File, ownerUid = '') {
+  if (!primaryAuth.currentUser) throw new Error('Sign in to manage templates.');
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new Error('Choose a PNG, JPG or WebP image.');
+  if (!file.size || file.size > 5 * 1024 * 1024) throw new Error('Choose an image up to 5 MB.');
+  const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const target = ref(getStorage(firebaseApp), ownerUid ? `templateThumbnails/admins/${ownerUid}/${templateId}/${Date.now()}.${extension}` : `templateThumbnails/${templateId}/${Date.now()}.${extension}`);
+  await uploadBytes(target, file, { contentType: file.type });
+  return getDownloadURL(target);
 }
 export async function deleteManagedTemplate(id: string) {
   await deleteDoc(doc(primaryDb, 'templateCatalog', id));

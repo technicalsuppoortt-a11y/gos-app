@@ -163,7 +163,11 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
     const account = await getAuth(gos).getUser(link.gosUid);
     if (account.disabled) throw new Error('Your Gose account is disabled.');
     await getAuth(gos).setCustomUserClaims(link.gosUid, { ...account.customClaims, phoenixUid: uid, tenantId: link.tenantId });
-    if (action === 'login') await getAuth(gos).updateUser(link.gosUid, { password: req.body.password });
+    if (action === 'login') {
+      const policy = (await db.doc('users/' + link.gosUid + '/preferences/passwordPolicy').get()).data();
+      if (policy?.localPassword) throw new Error('Sign in using your Upclick password.');
+      await getAuth(gos).updateUser(link.gosUid, { password: req.body.password });
+    }
     const customToken = await getAuth(gos).createCustomToken(link.gosUid, { phoenixUid: identity.uid, tenantId: link.tenantId });
     res.json({ customToken });
   } catch (error) {

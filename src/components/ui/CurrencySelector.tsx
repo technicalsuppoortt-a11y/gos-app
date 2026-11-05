@@ -1,11 +1,10 @@
+import { useWorkspacePreferences } from '../../backend/workspacePreferences';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Check, ChevronDown } from 'lucide-react';
 import type { RootState } from '../../store';
 import { setCurrency } from '../../store/slices/uiSlice';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import { cloudStorage } from '../../backend/workspace';
-import { readSettings, settingsKey } from '../../pages/settings/data';
 
 export interface CurrencyItem {
   code: string;
@@ -34,6 +33,7 @@ export const CurrencySelector: React.FC<{
 }> = ({ value, onChange, className = '', compact = true }) => {
   useUILanguage();
   const dispatch = useDispatch();
+  const { setPreference } = useWorkspacePreferences();
   const reduxCurrency = useSelector((state: RootState) => state.ui.currency || 'USD');
   const activeCode = value || reduxCurrency;
   const [open, setOpen] = useState(false);
@@ -52,26 +52,11 @@ export const CurrencySelector: React.FC<{
   }, []);
 
   const handleSelect = (code: string) => {
-    dispatch(setCurrency(code));
+    if (setPreference) setPreference({ currency: code });
+    else dispatch(setCurrency(code));
     onChange?.(code);
     setOpen(false);
-
-    // Sync to settings data in local storage
-    try {
-      const current = readSettings();
-      const updated = {
-        ...current,
-        profile: { ...current.profile, currency: code },
-        business: { ...current.business, currency: code },
-        payment: { ...current.payment, currency: code },
-      };
-      void cloudStorage.setItem(settingsKey(), JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('app:currency-change', { detail: { currency: code } }));
-    } catch {
-      // storage unavailable
-    }
   };
-
   return (
     <div className={`global-currency-control ${className}`} ref={containerRef}>
       <button
@@ -107,7 +92,7 @@ export const CurrencySelector: React.FC<{
                 <span className="font-semibold">{item.code}</span>
                 <span className="text-[10px] opacity-75 font-normal">· {translateText(item.name)}</span>
               </div>
-              {item.code === activeCode && <Check size={14} className="text-[#7C3AED] dark:text-[#A78BFA] shrink-0" />}
+              {item.code === activeCode && <Check size={14} className="text-[var(--ws-accent)] shrink-0" />}
             </button>
           ))}
         </div>

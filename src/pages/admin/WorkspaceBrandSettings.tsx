@@ -1,28 +1,24 @@
 import { useEffect, useState } from 'react';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Check, Globe, Info, Loader2, Palette, RotateCcw, Sparkles } from 'lucide-react';
-import { auth, db, primaryDb, backendError } from '../../backend/firebase';
+import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import {
-  DEFAULT_BRAND_LOGO_URL,
-  DEFAULT_BRAND_NAME,
   DEFAULT_SUPPORT_EMAIL,
   preferenceDefaults,
   sanitizeWorkspacePreferences,
   uploadBrandFile,
   useWorkspacePreferences,
   workspaceThemes,
-  writeLocalWorkspacePreferences,
+  inheritWorkspacePreferences,
+  saveWorkspacePreferences,
+  type PersonalPreferences,
   type WorkspacePreferences,
 } from '../../backend/workspacePreferences';
 import { themePaletteDetails } from '../../branding/workspaceTheme';
 import { useUILanguage } from '../../i18n/display';
 import { AdminGeneral } from './AdminGeneral';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { setLanguage, setCurrency, setTheme, type Language, type Theme } from '../../store/slices/uiSlice';
-import { storageSet } from '../../utils/browserStorage';
-import i18n from '../../i18n/i18n';
 import './admin-workspace.css';
 import '../settings/settings-controls.css';
 import '../settings/settings.css';
@@ -33,255 +29,73 @@ import { BrandLogoUploader } from '../settings/BrandLogoUploader';
 import { ChangePasswordCard } from '../settings/ChangePasswordCard';
 import { DomainsSettingsPanel } from '../settings/DomainsSettingsPanel';
 
-function withBrandFallbacks(prefs: WorkspacePreferences | null | undefined, userEmail?: string): WorkspacePreferences {
-  const merged = { ...preferenceDefaults, ...(prefs ?? {}) };
-  return {
-    ...merged,
-    name: merged.name?.trim() || DEFAULT_BRAND_NAME,
-    logoUrl: merged.logoUrl?.trim() || DEFAULT_BRAND_LOGO_URL,
-    supportEmail: merged.supportEmail?.trim() || userEmail || DEFAULT_SUPPORT_EMAIL,
-    theme: merged.theme in workspaceThemes ? merged.theme : 'violet',
-  };
-}
-
 export function WorkspaceBrandSettings() {
-  const { values, ownValues, tenantId, loading, error: loadError } = useWorkspacePreferences();
+  const { values, tenantId, loading, error: loadError, canPublish, preview } = useWorkspacePreferences();
   const ar = useUILanguage().startsWith('ar');
   const role = useSelector((s: RootState) => s.auth.role);
-  const userEmail = useSelector((s: RootState) => s.auth.user?.email);
   const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(role ?? '');
 
-  const dispatch = useDispatch();
-  const topbarLanguage = useSelector((s: RootState) => s.ui.language);
-  const topbarCurrency = useSelector((s: RootState) => s.ui.currency);
-  const topbarTheme = useSelector((s: RootState) => s.ui.theme);
-
-  const [draft, setDraft] = useState<WorkspacePreferences>(() => withBrandFallbacks(values, userEmail));
-  const [dirty, setDirty] = useState(false);
+  const [edits, setEdits] = useState<Partial<WorkspacePreferences>>({});
   const [busy, setBusy] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<'general' | 'domains' | 'email'>('general');
-  const [base, setBase] = useState<WorkspacePreferences | null>(null);
+  const draft = resetting ? preferenceDefaults : { ...(values ?? preferenceDefaults), ...edits };
+  const dirty = Object.keys(edits).length > 0;
 
   useEffect(() => {
-    if (!dirty) {
-      setDraft(withBrandFallbacks(values, userEmail));
-      setBase(ownValues);
-    }
-  }, [values, ownValues, dirty, userEmail]);
+    const { theme, mode, language, currency } = edits;
+    preview(resetting ? preferenceDefaults : dirty && tab === 'general' ? {
+      ...(theme && { theme }),
+      ...(mode && { mode }),
+      ...(language && { language }),
+      ...(currency && { currency }),
+    } : null);
+    return () => preview(null);
+  }, [dirty, edits, preview, resetting, tab]);
 
-  // Two-way state sync: reflect changes made in the Topbar immediately in Settings controls
-  useEffect(() => {
-    if (topbarLanguage && topbarLanguage !== draft.language) {
-      setDraft(p => ({ ...p, language: topbarLanguage }));
-    }
-  }, [topbarLanguage]);
-
-  useEffect(() => {
-    if (topbarCurrency && topbarCurrency !== draft.currency) {
-      setDraft(p => ({ ...p, currency: topbarCurrency }));
-    }
-  }, [topbarCurrency]);
-
-  useEffect(() => {
-    if (topbarTheme && draft.mode !== topbarTheme && draft.mode !== 'system') {
-      setDraft(p => ({ ...p, mode: topbarTheme }));
-    }
-  }, [topbarTheme]);
-
-  const update = <K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) => {
-    setDraft(p => ({ ...p, [key]: value }));
-    setDirty(true);
+  function update<K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) {
+    setEdits(current => ({ ...current, [key]: value }));
     setSaved(false);
-    if (key === 'theme') {
-      document.documentElement.dataset.workspaceTheme = String(value);
-      storageSet('workspace_theme', String(value));
-      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: value } }));
-    } else if (key === 'language') {
-      const lang = String(value) as Language;
-      void i18n.changeLanguage(lang);
-      dispatch(setLanguage(lang));
-      storageSet('i18nextLng', lang);
-    } else if (key === 'currency') {
-      const curr = String(value);
-      dispatch(setCurrency(curr));
-      storageSet('preferred_currency', curr);
-    } else if (key === 'mode') {
-      const mode = String(value);
-      if (mode === 'light' || mode === 'dark') {
-        dispatch(setTheme(mode));
-        storageSet('theme', mode);
-        if (mode === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      } else if (mode === 'system') {
-        const isSystemDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const targetTheme: Theme = isSystemDark ? 'dark' : 'light';
-        dispatch(setTheme(targetTheme));
-        storageSet('theme', targetTheme);
-        if (isSystemDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
+  }
+
+  async function save(reset = false) {
+    if (loading || busy || resetting) return;
+    if (reset) {
+      setResetting(true);
+      preview(preferenceDefaults);
+    } else {
+      setBusy(true);
     }
-  };
-
-  const resetToDefaults = async () => {
-    setResetting(true);
     setError('');
+    setSaved(false);
     try {
-      const defaults: WorkspacePreferences = sanitizeWorkspacePreferences(
-        {
-          name: DEFAULT_BRAND_NAME,
-          logoUrl: DEFAULT_BRAND_LOGO_URL,
-          theme: 'violet',
-          language: 'en',
-          currency: 'USD',
-          mode: 'system',
-          timezone: 'UTC',
-          supportEmail: userEmail || DEFAULT_SUPPORT_EMAIL,
-        },
-        userEmail
-      );
-
-      // 1. Persist locally and broadcast immediately so UI never flickers or reverts
-      writeLocalWorkspacePreferences(defaults);
-      document.documentElement.dataset.workspaceTheme = 'violet';
-      storageSet('workspace_theme', 'violet');
-      window.dispatchEvent(new CustomEvent('workspace-preferences-updated', { detail: defaults }));
-      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: 'violet' } }));
-
-      const currentUid = auth.currentUser?.uid;
-      const targetTenantId = tenantId || currentUid || 'main';
-
-      // 2. Write to user's dashboardBrands projection (always permitted by isSelf(uid) && validDashboardBrand())
-      if (currentUid) {
-        try {
-          await setDoc(doc(primaryDb, 'dashboardBrands', currentUid), {
-            values: defaults,
-            updatedBy: currentUid,
-            updatedAt: serverTimestamp(),
-          });
-        } catch {
-          // ignore if offline or restricted
-        }
-      }
-
-      // 3. Write to Firestore tenant preferences document
-      if (targetTenantId && currentUid) {
-        try {
-          await setDoc(doc(db, 'tenants', targetTenantId, 'preferences', 'general'), {
-            values: defaults,
-            updatedBy: currentUid,
-            updatedAt: serverTimestamp(),
-          });
-        } catch {
-          // If tenant member doc doesn't exist on live rules, dashboardBrands + local persistence already succeeded
-        }
-      }
-
-      setDraft(defaults);
-      setDirty(false);
-      setSaved(true);
-
-      // 4. Reset document attributes & Redux
-      void i18n.changeLanguage('en');
-      dispatch(setLanguage('en'));
-      storageSet('i18nextLng', 'en');
-      dispatch(setCurrency('USD'));
-      storageSet('preferred_currency', 'USD');
-
-      const isDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const sysTheme: Theme = isDark ? 'dark' : 'light';
-      dispatch(setTheme(sysTheme));
-      storageSet('theme', sysTheme);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-
-      window.dispatchEvent(new Event('gos-settings-changed'));
-
-      showToast.success(ar ? 'تمت استعادة إعدادات الهوية والسمة الافتراضية بنجاح' : 'Brand identity & theme restored to system defaults.');
-    } catch (e) {
-      const msg = backendError(e);
-      setError(msg);
-      showToast.error(msg);
-    } finally {
-      setResetting(false);
-    }
-  };
-
-  async function save() {
-    const currentUid = auth.currentUser?.uid;
-    const targetTenantId = tenantId || currentUid || 'main';
-    setBusy(true);
-    setError('');
-    try {
-      Intl.DateTimeFormat('en', { timeZone: draft.timezone });
-      if (
-        draft.logoUrl &&
-        !/^https:\/\//.test(draft.logoUrl.trim()) &&
-        !/^\/(?!\/)/.test(draft.logoUrl.trim()) &&
-        !/^data:image\//.test(draft.logoUrl.trim())
-      ) {
+      const next = reset ? preferenceDefaults : draft;
+      Intl.DateTimeFormat('en', { timeZone: next.timezone });
+      if (next.logoUrl && !/^(https:\/\/|\/(?!\/)|data:image\/)/.test(next.logoUrl.trim())) {
         throw new Error('Use an HTTPS logo URL, a local path (/...), or upload an image.');
       }
-
-      // Strictly 8 keys allowed by validDashboardBrand() in Firestore security rules
-      const normalizedDraft: WorkspacePreferences = sanitizeWorkspacePreferences(draft, userEmail);
-
-      // 1. Persist locally & broadcast immediately
-      writeLocalWorkspacePreferences(normalizedDraft);
-      document.documentElement.dataset.workspaceTheme = normalizedDraft.theme;
-      storageSet('workspace_theme', normalizedDraft.theme);
-      window.dispatchEvent(new CustomEvent('workspace-preferences-updated', { detail: normalizedDraft }));
-      window.dispatchEvent(new CustomEvent('workspace-theme-changed', { detail: { theme: normalizedDraft.theme } }));
-      window.dispatchEvent(new Event('gos-settings-changed'));
-
-      // 2. Write to dashboardBrands/{currentUid} (always permitted for signed-in user by isSelf(uid) && validDashboardBrand())
-      if (currentUid) {
-        try {
-          await setDoc(doc(primaryDb, 'dashboardBrands', currentUid), {
-            values: normalizedDraft,
-            updatedBy: currentUid,
-            updatedAt: serverTimestamp(),
-          });
-        } catch {
-          // Secondary platform brand projection fallback
-        }
+      const personalPatch: PersonalPreferences = reset ? inheritWorkspacePreferences : {};
+      if (!reset) {
+        if (edits.language) personalPatch.language = null;
+        if (edits.currency) personalPatch.currency = null;
+        if (edits.mode) personalPatch.mode = null;
+        if (edits.timezone) personalPatch.timezone = null;
       }
-
-      // 3. Write to tenants/{targetTenantId}/preferences/general
-      if (targetTenantId && currentUid) {
-        try {
-          await setDoc(doc(db, 'tenants', targetTenantId, 'preferences', 'general'), {
-            values: normalizedDraft,
-            updatedBy: currentUid,
-            updatedAt: serverTimestamp(),
-          });
-        } catch {
-          // Gracefully handled: dashboardBrands & local workspace preferences are already persisted
-        }
-      }
-
-      setDraft(normalizedDraft);
-      setDirty(false);
+      await saveWorkspacePreferences(tenantId, sanitizeWorkspacePreferences(next), canPublish, personalPatch);
+      setEdits({});
       setSaved(true);
-      showToast.success(ar ? 'تم حفظ التغييرات بنجاح' : 'Settings saved successfully');
-    } catch (e) {
-      const msg = backendError(e);
-      setError(msg);
-      showToast.error(msg);
+      showToast.success(reset
+        ? (ar ? 'تمت استعادة الإعدادات الافتراضية' : 'Workspace defaults restored.')
+        : (ar ? 'تم حفظ التغييرات بنجاح' : 'Settings saved successfully'));
+    } catch (cause) {
+      const message = backendError(cause);
+      setError(message);
+      showToast.error(message);
     } finally {
       setBusy(false);
+      setResetting(false);
     }
   }
 
@@ -349,7 +163,7 @@ export function WorkspaceBrandSettings() {
                   <button
                     type="button"
                     className="ws-reset-defaults-btn"
-                    onClick={() => void resetToDefaults()}
+                    onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
                     title={ar ? 'استعادة إعدادات الهوية والسمة الافتراضية' : 'Restore system default identity & theme'}
                   >
@@ -364,7 +178,7 @@ export function WorkspaceBrandSettings() {
                     <input
                       required
                       value={draft.name}
-                      placeholder={DEFAULT_BRAND_NAME}
+                      placeholder={preferenceDefaults.name}
                       onChange={e => update('name', e.target.value)}
                     />
                   </label>
@@ -388,20 +202,11 @@ export function WorkspaceBrandSettings() {
                   onUploadFile={async file => {
                     setBusy(true);
                     setError('');
-                    const localPreview = URL.createObjectURL(file);
-                    update('logoUrl', localPreview);
                     try {
                       const uploaded = await uploadBrandFile(tenantId, file, true);
                       update('logoUrl', uploaded.url);
-                    } catch {
-                      // Fallback: convert file to Base64 data URL so user can preview and save even without Storage bucket access
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        if (typeof reader.result === 'string') {
-                          update('logoUrl', reader.result);
-                        }
-                      };
-                      reader.readAsDataURL(file);
+                    } catch (cause) {
+                      setError(backendError(cause));
                     } finally {
                       setBusy(false);
                     }
@@ -426,7 +231,7 @@ export function WorkspaceBrandSettings() {
                   <button
                     type="button"
                     className="ws-reset-defaults-btn"
-                    onClick={() => void resetToDefaults()}
+                    onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
                     title={ar ? 'استعادة السمة الافتراضية للمنصة' : 'Reset to default theme'}
                   >
@@ -591,7 +396,7 @@ export function WorkspaceBrandSettings() {
                   <button
                     type="button"
                     className="ws-reset-defaults-btn"
-                    onClick={() => void resetToDefaults()}
+                    onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
                     title={ar ? 'استعادة جميع الإعدادات الافتراضية' : 'Restore system defaults'}
                   >

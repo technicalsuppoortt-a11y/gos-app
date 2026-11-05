@@ -11,6 +11,15 @@ import '../asset-workspace.css';
 export type SitePreview = { document: BuilderDocument; name: string; kind?: 'funnel' | 'website'; domain?: string; image?: string; settings?: Asset['settings'] };
 export function AdminSitePreview({ value, close }: { value: SitePreview; close: () => void }) {
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  return <LiveDialog wide title={value.name} subtitle={t('Visual preview of the saved design', 'معاينة مرئية للتصميم المحفوظ')} close={close} footer={<AdminSitePreviewNote/>}><AdminSitePreviewCanvas value={value}/></LiveDialog>;
+}
+export function AdminSitePreviewNote() {
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  return <span className="alm-preview-note"><ShieldCheck size={14}/>{t('Supervisory preview · Forms, payments and booking actions are disabled.', 'معاينة إشرافية · إجراءات النماذج والدفع والحجز معطلة.')}</span>;
+}
+/** Page selector, device switch and scaled canvas, shared by the dialog and the full-page preview. */
+export function AdminSitePreviewCanvas({ value }: { value: SitePreview }) {
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
   const [pageId, setPageId] = useState(value.document.pages[0]?.id);
   const [device, setDevice] = useState<'Desktop' | 'Tablet' | 'Mobile'>('Desktop');
   const viewport = useRef<HTMLDivElement>(null), canvas = useRef<HTMLDivElement>(null);
@@ -29,8 +38,8 @@ export function AdminSitePreview({ value, close }: { value: SitePreview; close: 
     return () => observer.disconnect();
   }, [width, pageId]);
   const asset = { ...value, id: 'admin-supervisory-preview', kind: value.kind || (value.document.steps?.length ? 'funnel' : 'website'), domain: value.domain || '', image: value.image || '/dashboard/hero-landscape.png', description: '', updated: '', settings: value.settings || { color: value.document.theme?.color || '#7C3AED', navigation: value.document.pages.map(p => p.name).join(', '), seo: value.name } } as Asset;
-  return <LiveDialog wide title={value.name} subtitle={t('Visual preview of the saved design', 'معاينة مرئية للتصميم المحفوظ')} close={close} footer={<span className="alm-preview-note"><ShieldCheck size={14}/>{t('Supervisory preview · Forms, payments and booking actions are disabled.', 'معاينة إشرافية · إجراءات النماذج والدفع والحجز معطلة.')}</span>}>
+  return <>
     {page ? <><div className="alm-preview-toolbar"><AdminSelect label={t('Preview page', 'صفحة المعاينة')} value={page.id} onChange={setPageId} options={value.document.pages.map(p => ({ value: p.id, label: p.name }))}/><div className="alm-device-switch" role="group" aria-label={t('Preview viewport', 'حجم المعاينة')}>{([{ name: 'Desktop', Icon: Monitor }, { name: 'Tablet', Icon: Tablet }, { name: 'Mobile', Icon: Smartphone }] as const).map(({ name, Icon }) => <button type="button" aria-label={`${name} preview`} aria-pressed={device === name} key={name} onClick={() => setDevice(name)}><Icon size={16}/><span>{name}</span></button>)}</div><span className="alm-preview-width">{width}px</span></div>
       <div className="alm-preview-viewport" ref={viewport}><div className="alm-preview-measure" style={{ width: width * size.scale, height: size.height }}><div ref={canvas} className="alm-preview-canvas" style={{ width, transform: `scale(${size.scale})` }} inert><PagePreview asset={asset} page={page} device={device} onNavigate={() => {}} isDark={false}/></div></div></div></> : <p className="alm-empty-copy">{t('This record has no saved pages to preview.', 'لا يحتوي هذا السجل على صفحات محفوظة للمعاينة.')}</p>}
-  </LiveDialog>;
+  </>;
 }

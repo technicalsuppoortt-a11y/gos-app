@@ -1,38 +1,10 @@
-/* ==========================================================================
-   Workspace dual-mode accent themes
-   - Accents only: primary buttons, active nav, focus rings, landing page CTAs,
-     and platform accents adapt seamlessly across BOTH Light and Dark modes.
-   - Surfaces, card backgrounds, borders, and general body text are preserved.
-   ========================================================================== */
-
-/* --- Light Mode Palette Definitions --- */
-html[data-workspace-theme] { --ws-accent:#7C3AED; --ws-hover:#6D28D9; --ws-soft:#EDE9FE; --ws-border-subtle:#ddd6fe; --ws-glow:rgba(124,58,237,0.22); }
-html[data-workspace-theme="violet"] { --ws-accent:#7C3AED; --ws-hover:#6D28D9; --ws-soft:#EDE9FE; --ws-border-subtle:#ddd6fe; --ws-glow:rgba(124,58,237,0.22); }
-html[data-workspace-theme="slate"] { --ws-accent:#334155; --ws-hover:#1e293b; --ws-soft:#e2e8f0; --ws-border-subtle:#cbd5e1; --ws-glow:rgba(51,65,85,0.18); }
-html[data-workspace-theme="midnight"] { --ws-accent:#4338ca; --ws-hover:#3730a3; --ws-soft:#e0e7ff; --ws-border-subtle:#c7d2fe; --ws-glow:rgba(67,56,202,0.22); }
-html[data-workspace-theme="emerald"] { --ws-accent:#047857; --ws-hover:#065f46; --ws-soft:#d1fae5; --ws-border-subtle:#a7f3d0; --ws-glow:rgba(4,120,87,0.22); }
-html[data-workspace-theme="amber"] { --ws-accent:#d97706; --ws-hover:#b45309; --ws-soft:#fef3c7; --ws-border-subtle:#fde68a; --ws-glow:rgba(217,119,6,0.22); }
-html[data-workspace-theme="ocean"] { --ws-accent:#0284c7; --ws-hover:#0369a1; --ws-soft:#e0f2fe; --ws-border-subtle:#bae6fd; --ws-glow:rgba(2,132,199,0.22); }
-html[data-workspace-theme="royal"] { --ws-accent:#7e22ce; --ws-hover:#6b21a8; --ws-soft:#f3e8ff; --ws-border-subtle:#e9d5ff; --ws-glow:rgba(126,34,206,0.22); }
-html[data-workspace-theme="crimson"] { --ws-accent:#be123c; --ws-hover:#9f1239; --ws-soft:#ffe4e6; --ws-border-subtle:#fecdd3; --ws-glow:rgba(190,18,60,0.22); }
-html[data-workspace-theme="cyber"] { --ws-accent:#0d9488; --ws-hover:#0f766e; --ws-soft:#ccfbf1; --ws-border-subtle:#99f6e4; --ws-glow:rgba(13,148,136,0.22); }
-html[data-workspace-theme="minimalist"] { --ws-accent:#18181b; --ws-hover:#09090b; --ws-soft:#f4f4f5; --ws-border-subtle:#e4e4e7; --ws-glow:rgba(24,24,27,0.18); }
-
-/* --- Dark Mode Palette Definitions --- */
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme],
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="violet"] { --ws-accent:#A78BFA; --ws-hover:#8B5CF6; --ws-soft:rgba(167,139,250,0.16); --ws-border-subtle:rgba(167,139,250,0.25); --ws-glow:rgba(167,139,250,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="slate"] { --ws-accent:#94a3b8; --ws-hover:#cbd5e1; --ws-soft:rgba(148,163,184,0.16); --ws-border-subtle:rgba(148,163,184,0.25); --ws-glow:rgba(148,163,184,0.25); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="midnight"] { --ws-accent:#818cf8; --ws-hover:#6366f1; --ws-soft:rgba(129,140,248,0.18); --ws-border-subtle:rgba(129,140,248,0.28); --ws-glow:rgba(129,140,248,0.32); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="emerald"] { --ws-accent:#10b981; --ws-hover:#059669; --ws-soft:rgba(16,185,129,0.16); --ws-border-subtle:rgba(16,185,129,0.25); --ws-glow:rgba(16,185,129,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="amber"] { --ws-accent:#f59e0b; --ws-hover:#d97706; --ws-soft:rgba(245,158,11,0.16); --ws-border-subtle:rgba(245,158,11,0.25); --ws-glow:rgba(245,158,11,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="ocean"] { --ws-accent:#38bdf8; --ws-hover:#0284c7; --ws-soft:rgba(56,189,248,0.16); --ws-border-subtle:rgba(56,189,248,0.25); --ws-glow:rgba(56,189,248,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="royal"] { --ws-accent:#a855f7; --ws-hover:#9333ea; --ws-soft:rgba(168,85,247,0.16); --ws-border-subtle:rgba(168,85,247,0.25); --ws-glow:rgba(168,85,247,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="crimson"] { --ws-accent:#f43f5e; --ws-hover:#e11d48; --ws-soft:rgba(244,63,94,0.16); --ws-border-subtle:rgba(244,63,94,0.25); --ws-glow:rgba(244,63,94,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="cyber"] { --ws-accent:#14b8a6; --ws-hover:#0d9488; --ws-soft:rgba(20,184,166,0.16); --ws-border-subtle:rgba(20,184,166,0.25); --ws-glow:rgba(20,184,166,0.3); }
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] { --ws-accent:#f4f4f5; --ws-hover:#e4e4e7; --ws-soft:rgba(244,244,245,0.14); --ws-border-subtle:rgba(244,244,245,0.22); --ws-glow:rgba(244,244,245,0.22); }
-
-/* --- Universal Token Variables Mapping --- */
+/* Workspace colors are shared with the Phoenix color roles and the public shell. */
 html[data-workspace-theme] {
+  --ws-accent: var(--gp-primary, #7c3aed);
+  --ws-hover: var(--gp-hover, var(--gp-primary, #6d28d9));
+  --ws-soft: var(--gp-soft, #ede9fe);
+  --ws-border-subtle: color-mix(in srgb, var(--ws-accent) 27%, var(--gp-surface));
+  --ws-glow: color-mix(in srgb, var(--ws-accent) 26%, transparent);
   --primary: var(--ws-accent);
   --primary-hover: var(--ws-hover);
   --primary-soft: var(--ws-soft);
@@ -55,41 +27,22 @@ html[data-workspace-theme] {
   --upclick-tint: var(--ws-soft);
   --upclick-gradient: linear-gradient(115deg, var(--ws-accent), var(--ws-hover));
   --upclick-gradient-soft: linear-gradient(115deg, var(--ws-soft), var(--ws-hover));
-  --gp-primary: var(--ws-accent);
-  --gp-on-primary: #ffffff;
-}
-
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme] {
-  --primary: var(--ws-accent);
-  --primary-hover: var(--ws-hover);
-  --primary-soft: var(--ws-soft);
-  --primary-border: var(--ws-border-subtle);
-  --primary-glow: var(--ws-glow);
-  --bl-primary: var(--ws-accent);
-  --bl-primary-hover: var(--ws-hover);
-  --bl-primary-soft: var(--ws-soft);
-  --theme-accent: var(--ws-accent);
-  --theme-accent-hover: var(--ws-hover);
-  --theme-accent-soft: var(--ws-soft);
-  --adm-accent: var(--ws-accent);
-  --adm-accent-soft: var(--ws-soft);
-  --app-indigo: var(--ws-accent);
-  --purple: var(--ws-accent);
-  --purple-dark: var(--ws-hover);
-  --ws-purple: var(--ws-accent);
-  --upclick-primary: var(--ws-accent);
-  --upclick-secondary: var(--ws-hover);
-  --upclick-tint: var(--ws-soft);
-  --upclick-gradient: linear-gradient(115deg, var(--ws-accent), var(--ws-hover));
-  --upclick-gradient-soft: linear-gradient(115deg, var(--ws-soft), var(--ws-hover));
-  --gp-primary: var(--ws-accent);
-  --gp-on-primary: #ffffff;
 }
 
 /* ==========================================================================
    Landing Page dual-mode theme propagation
    ========================================================================== */
 html[data-workspace-theme] .lp {
+  --lp-surface: var(--gp-surface) !important;
+  --lp-bg: var(--gp-background) !important;
+  --lp-ink: var(--gp-text) !important;
+  --lp-text: var(--gp-text) !important;
+  --lp-muted: var(--gp-muted-text) !important;
+  --lp-faint: var(--gp-muted-text) !important;
+  --lp-border: var(--gp-border) !important;
+  --lp-soft: var(--gp-background) !important;
+  --lp-pod-stop-1: var(--ws-soft) !important;
+  --lp-pod-stop-2: var(--gp-surface) !important;
   --lp-primary: var(--ws-accent) !important;
   --lp-primary-600: var(--ws-hover) !important;
   --lp-primary-700: var(--ws-hover) !important;
@@ -112,7 +65,7 @@ html[data-workspace-theme] .lp {
 html[data-workspace-theme] .lp .lp-btn--primary,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-btn--primary {
   background: linear-gradient(135deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
   border-color: var(--ws-accent) !important;
   box-shadow: 0 8px 18px -6px var(--ws-glow) !important;
 }
@@ -125,7 +78,7 @@ html[data-workspace-theme] .lp .lp-btn--primary:hover,
 html[data-workspace-theme] .lp .lp-badge i,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .lp .lp-badge i {
   background: var(--ws-accent) !important;
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 3px 8px -2px var(--ws-glow) !important;
 }
 
@@ -163,7 +116,7 @@ html[data-workspace-theme] .lp :is(
   .lp-player__icon
 ) {
   background: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
   border-color: var(--ws-accent) !important;
   box-shadow: 0 6px 14px -6px var(--ws-glow) !important;
 }
@@ -281,12 +234,12 @@ html[data-workspace-theme] .adm-shell,
 html[data-workspace-theme] .adm-sidebar nav a.active,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a.active {
   background: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 4px 12px var(--ws-glow) !important;
 }
 html[data-workspace-theme] .adm-sidebar nav a.active svg,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a.active svg {
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 html[data-workspace-theme] .adm-sidebar nav a:hover:not(.active),
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .adm-sidebar nav a:hover:not(.active) {
@@ -303,7 +256,7 @@ html[data-workspace-theme] :is(.adm-admin-badge, .adm-avatar),
 #workspace-switcher-trigger.ws-switcher-trigger {
   display: flex !important;
   width: 100% !important;
-  background-color: #f1f5f9 !important;
+  background-color: var(--gp-surface) !important;
   border-color: #e2e8f0 !important;
   color: #0f172a !important;
 }
@@ -328,7 +281,7 @@ html[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger[aria-
   background: transparent !important;
 }
 :is(html.dark, html[data-theme='dark']) #workspace-switcher-trigger .ws-switcher-title {
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 #workspace-switcher-trigger .ws-switcher-subtitle {
   color: #64748b !important;
@@ -340,7 +293,7 @@ html[data-workspace-theme] #workspace-switcher-trigger.ws-switcher-trigger[aria-
 html[data-workspace-theme] #workspace-switcher-trigger .ws-switcher-avatar,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-trigger .ws-switcher-avatar {
   background: linear-gradient(135deg, var(--ws-accent), var(--ws-hover)) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 html[data-workspace-theme] #workspace-switcher-listbox [role="option"][aria-selected="true"],
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] #workspace-switcher-listbox [role="option"][aria-selected="true"] {
@@ -356,14 +309,14 @@ html.dark[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-acti
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-nav-item.is-active,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active {
   background: linear-gradient(96deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 4px 14px var(--ws-glow) !important;
 }
 html[data-workspace-theme] .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
 html[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
 html.dark[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label) {
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 
 /* Sidebar Item Hover */
@@ -407,7 +360,7 @@ html[data-workspace-theme] .layout-plan-cta,
 :is(html.dark, html[data-theme='dark'])[data-workspace-theme] .layout-plan-cta {
   background: linear-gradient(115deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
   border-color: var(--ws-accent) !important;
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 4px 12px var(--ws-glow) !important;
 }
 html[data-workspace-theme] .layout-header .layout-plan-cta:hover,
@@ -484,7 +437,7 @@ html[data-workspace-theme] :is(
 }
 html[data-workspace-theme] .crm-task-pill.active {
   background: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 html[data-workspace-theme] .crm-pipeline-workspace .crm-stage-head .crm-stage-add {
   background: var(--ws-soft) !important;
@@ -509,7 +462,7 @@ html[data-workspace-theme] :is(
   .crm-stage-add
 ) {
   background: var(--ws-accent) !important;
-  color: #fff !important;
+  color: var(--gp-on-brand, #fff) !important;
   border-color: var(--ws-accent) !important;
 }
 
@@ -572,7 +525,7 @@ html[data-workspace-theme] :is(
 
 html[data-workspace-theme] :is(.crm-source-symbol, .lp-badge i) {
   background-color: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 
 /* Card Borders & Highlights on Active/Featured Elements */
@@ -622,7 +575,7 @@ html[data-workspace-theme] :is(input, select, textarea, button):not(
 /* Login Page (/auth/login) Dynamic Theme Binding */
 html[data-workspace-theme] .login-page .login-submit {
   background: linear-gradient(135deg, var(--ws-accent) 0%, var(--ws-hover) 100%) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 8px 20px var(--ws-glow) !important;
 }
 
@@ -721,7 +674,7 @@ html[data-workspace-theme] :is(
 /* Floating Quick Chat & Support Launcher */
 html[data-workspace-theme] :is(.support-launcher) {
   background: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
   box-shadow: 0 4px 18px var(--ws-glow) !important;
 }
 html[data-workspace-theme] :is(.support-launcher:hover) {
@@ -739,7 +692,7 @@ html[data-workspace-theme] :is(
 }
 html[data-workspace-theme] :is(.support-new-chat) {
   background: var(--ws-accent) !important;
-  color: #ffffff !important;
+  color: var(--gp-on-brand, #fff) !important;
 }
 html[data-workspace-theme] :is(.support-role-tabs button[aria-selected="true"]) {
   border-color: var(--ws-accent) !important;
@@ -801,65 +754,43 @@ html[data-workspace-theme] :is(
   border-color: var(--ws-border-subtle) !important;
 }
 
-/* Minimalist Dark Mode High-Contrast Font Correction */
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] :is(
-  .adm-primary,
-  .st-primary,
-  .st-button.primary,
-  .crm2-btn-primary,
-  .bl-btn.primary,
-  .bl-btn-primary,
-  .btn-primary,
-  .aw-primary,
-  .bk-primary,
-  .fb-primary,
-  .login-submit,
-  .layout-plan-cta,
-  .layout-nav-item.is-active,
-  .reference-user-sidebar .layout-nav-item.is-active,
-  .adm-sidebar nav a.active,
-  .support-launcher,
-  .lp-btn--primary,
-  .lp-checks li > span,
-  .crm-source-symbol,
-  .lp-badge i
-) {
-  color: #09090b !important;
-}
-
-:is(html.dark, html[data-theme='dark'])[data-workspace-theme="minimalist"] :is(
-  .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
-  .reference-user-sidebar .layout-nav-item.is-active :is(svg, .layout-nav-icon, .layout-nav-label),
-  .adm-sidebar nav a.active svg
-) {
-  color: #09090b !important;
-}
-
 .workspace-logo { display:block; width:auto; max-width:160px; height:48px; object-fit:contain; }
 .layout-sidebar-content.is-collapsed .workspace-logo { max-width:36px; height:36px; }
 .adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; }
 
-/* Settings panel uses the original admin palette (light + dark) with the active accent. */
-.workspace-customization-panel {
-  --adm-bg:#f6f7fb;
-  --adm-surface:#ffffff;
-  --adm-soft:#f5f3fc;
-  --adm-text:#24243a;
-  --adm-muted:#64748b;
-  --adm-border:#e7e8f0;
-  --adm-accent:var(--ws-accent,#7C3AED);
-  --adm-accent-soft:var(--ws-soft,#EDE9FE);
-  color:var(--adm-text);
+html[data-workspace-theme] :is(.adm-shell, .workspace-customization-panel) {
+  --adm-bg: var(--gp-background);
+  --adm-surface: var(--gp-surface);
+  --adm-soft: var(--ws-soft);
+  --adm-text: var(--gp-text);
+  --adm-muted: var(--gp-muted-text);
+  --adm-border: var(--gp-border);
+  color: var(--adm-text);
 }
-html.dark .workspace-customization-panel {
-  --adm-bg:#11121c;
-  --adm-surface:#1b1d2b;
-  --adm-soft:#222435;
-  --adm-text:#eef0fb;
-  --adm-muted:#a4a8bf;
-  --adm-border:#303348;
-  --adm-accent:var(--ws-accent,#A78BFA);
-  --adm-accent-soft:var(--ws-soft,#302849);
+
+html[data-workspace-theme] :is(.layout-header, .adm-sidebar, .layout-sidebar, .layout-mobile-sidebar) {
+  border-color: var(--gp-border);
+}
+
+html[data-workspace-theme] .lp-logo-image {
+  display: block;
+  width: auto;
+  max-width: 160px;
+  height: 42px;
+  object-fit: contain;
+}
+
+
+html[data-workspace-theme] .lp .lp-cta {
+  background: radial-gradient(ellipse at top, var(--ws-soft), transparent 75%), var(--gp-background) !important;
+}
+html[data-workspace-theme] .lp .lp-cta :is(.lp-cta__title, .lp-cta__text, .lp-cta__perks li) {
+  color: var(--gp-text) !important;
+}
+html[data-workspace-theme] .lp .lp-btn--primary,
+html[data-workspace-theme] .support-launcher {
+  background: var(--gp-button-background) !important;
+  color: var(--gp-on-primary) !important;
 }
 
 .workspace-customization-panel .adm-form {
@@ -1072,7 +1003,7 @@ html.dark .workspace-customization-panel {
 
 .dark .ws-logo-status-pill {
   background:rgba(139, 92, 246, 0.18);
-  color:#c4b5fd;
+  color:var(--ws-accent);
 }
 
 .ws-logo-preview-stage {
@@ -1222,7 +1153,7 @@ html.dark .workspace-customization-panel {
 
 .dark .ws-logo-drop-icon {
   background:rgba(139, 92, 246, 0.18);
-  color:#c4b5fd;
+  color:var(--ws-accent);
 }
 
 .ws-logo-dropzone b {

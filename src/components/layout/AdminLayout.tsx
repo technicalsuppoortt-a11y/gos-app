@@ -16,7 +16,7 @@ import { modules } from '../../pages/admin/catalog';
 import '../../pages/admin/admin-workspace.css';
 import { AdminGroupNav, dashboardModules } from '../../pages/admin/AdminGroups';
 export function AdminLayout() {
- const { values: workspaceBrand } = useWorkspacePreferences();
+ const { effective: workspaceBrand } = useWorkspacePreferences();
  const language=useUILanguage(); const ar=language.startsWith('ar'); const location=useLocation(); const navigate=useNavigate(); const dispatch=useDispatch(); const [open,setOpen]=useState(false);
  const user=useSelector((s:RootState)=>s.auth.user); const role=useSelector((s:RootState)=>s.auth.role);
  const { data: sub, loading: subLoading } = useSubscription(user?.id ?? null);

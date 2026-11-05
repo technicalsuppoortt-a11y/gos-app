@@ -1,3 +1,4 @@
+import { useWorkspacePreferences } from '../../backend/workspacePreferences';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,19 +6,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import { Globe } from 'lucide-react';
-import { storageSet } from '../../utils/browserStorage';
 
 export const LanguageSwitcher: React.FC<{ onLanguageChange?: (language: Language) => void }> = ({ onLanguageChange }) => {
   useUILanguage();
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
+  const { setPreference } = useWorkspacePreferences();
   const language = useSelector((state: RootState) => state.ui.language);
 
   const selectLanguage = (newLang: Language) => {
-    void i18n.changeLanguage(newLang);
-    dispatch(setLanguage(newLang));
+    if (setPreference) setPreference({ language: newLang });
+    else {
+      void i18n.changeLanguage(newLang);
+      dispatch(setLanguage(newLang));
+    }
     onLanguageChange?.(newLang);
-    storageSet('i18nextLng', newLang);
   };
 
   return (

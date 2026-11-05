@@ -48,3 +48,12 @@ html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.s
 html[data-gp-brand] :is(.workspace-logo,.workspace-logo-preview) { background:#fff; border-radius:10px; padding:8px; }
 html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] { background: var(--gp-surface) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .gos-home-dashboard #dash-greeting { color: var(--gp-text); }
+
+html[data-gp-brand="true"] :is(.adm-shell, .adm-main, .layout-workspace, .layout-main) {
+  background: var(--gp-background);
+  color: var(--gp-text);
+}
+html[data-gp-brand="true"] :is(.adm-sidebar, .adm-topbar) {
+  background: var(--gp-header-background);
+  border-color: var(--gp-border);
+}

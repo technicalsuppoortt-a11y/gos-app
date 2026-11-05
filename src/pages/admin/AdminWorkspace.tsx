@@ -22,7 +22,7 @@ export function AdminWorkspace() {
   const location = useLocation();
   const id = location.pathname.replace(/\/$/, '').split('/').at(-1) ?? 'dashboard';
   const [params] = useSearchParams();
-  const module = modules.find(m => m.id === (id === 'funnels' ? 'funnels-websites' : id)) ?? modules[0];
+  const module = modules.find(m => m.id === (id === 'funnels' ? 'funnels-websites' : id === 'dashboard-management' ? 'templates' : id)) ?? modules[0];
   if (id === 'dashboard') return <AdminDashboard/>;
   if (id === 'settings') return <WorkspaceBrandSettings/>;
   if (id === 'conversations' || id === 'analytics' || id === 'ai-usage') return <AdminOperations key={id} moduleId={id}/>;

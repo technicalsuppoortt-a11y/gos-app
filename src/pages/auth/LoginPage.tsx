@@ -251,6 +251,14 @@ export const LoginPage: React.FC = () => {
           <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{translateText("Sign in to keep your business moving.")}</p>
         </div>
 
+        {(location.state as { passwordUpdated?: boolean } | null)?.passwordUpdated && (
+          <p role="status" className="mb-4 rounded-xl border border-[var(--gp-border)] bg-[var(--gp-soft)] px-3.5 py-3 text-xs text-[var(--gp-text)]">
+            {currentLang === 'ar'
+              ? 'تم تحديث كلمة المرور. يرجى تسجيل الدخول بكلمة المرور الجديدة.'
+              : 'Password updated. Sign in with your new password.'}
+          </p>
+        )}
+
         {displayError && (
           <motion.div
             role="alert"

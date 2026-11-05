@@ -8,7 +8,12 @@ export async function firebaseSettingsRequest<T>(path: string, body?: any, metho
   const settings = read<any>('settings', {});
   if (path === '/settings') {
     if (method === 'GET') return structuredClone(settings) as T;
-    saveSettings({ ...settings, ...body });
+    const { personalPreferences, ...changes } = body;
+    saveSettings({ ...settings, ...changes });
+    if (personalPreferences && Object.keys(personalPreferences).length) {
+      const path = 'doc:users/' + demoSession.user.id + '/preferences/dashboard';
+      write(path, { ...read(path, {}), ...personalPreferences });
+    }
     if (body.profile) store.dispatch(loginSuccess({ ...demoSession, user: { ...demoSession.user, name: body.profile.name, email: body.profile.email, avatar: body.profile.photo } }));
     return { success: true, profile: body.profile ?? settings.profile } as T;
   }

@@ -1,3 +1,4 @@
+import { useWorkspacePreferences } from '../../backend/workspacePreferences';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,10 +11,12 @@ export const ThemeToggle: React.FC = () => {
   useUILanguage();
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const { setPreference } = useWorkspacePreferences();
   const theme = useSelector((state: RootState) => state.ui.theme);
 
   const handleToggle = () => {
-    dispatch(toggleTheme());
+    if (setPreference) setPreference({ mode: theme === 'light' ? 'dark' : 'light' });
+    else dispatch(toggleTheme());
   };
 
   return (

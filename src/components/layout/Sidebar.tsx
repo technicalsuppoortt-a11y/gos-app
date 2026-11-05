@@ -124,8 +124,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
   const dispatch = useDispatch();
   const platformTenant = useSelector((state: RootState) => state.auth.tenant);
   const phoenixBrand = platformTenant?.id.startsWith('phoenix_') ? platformTenant : null;
-  const savedBrand = usePhoenixBrand();
-  const { values: workspaceBrand } = useWorkspacePreferences();
+  const phoenixConfig = usePhoenixBrand();
+  const { effective: workspaceBrand, hasWorkspaceTheme } = useWorkspacePreferences();
+  const savedBrand = hasWorkspaceTheme ? null : phoenixConfig;
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
@@ -184,11 +185,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           onClick={close}
           title={collapsed ? translateText("Upclick") : undefined}
         >
-          {workspaceBrand?.logoUrl && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <img src={workspaceBrand.logoUrl} alt={`${workspaceBrand.name} logo`} className="workspace-logo"/> : savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
+          {hasWorkspaceTheme && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <img src={workspaceBrand.logoUrl} alt={`${workspaceBrand.name} logo`} className="workspace-logo"/> : savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
             {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
           </span>}
-          {(!workspaceBrand?.logoUrl || isDefaultBrandLogo(workspaceBrand.logoUrl)) && !(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
-            <span className="layout-brand-wordmark"><b>{workspaceBrand?.name || phoenixBrand?.name || 'Upclick'}</b></span>
+          {(!hasWorkspaceTheme || isDefaultBrandLogo(workspaceBrand.logoUrl)) && !(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
+            <span className="layout-brand-wordmark"><b>{(hasWorkspaceTheme ? workspaceBrand.name : phoenixBrand?.name) || 'Upclick'}</b></span>
             <small>{translateText("Ideas to impact")}</small>
           </div>}
         </NavLink>

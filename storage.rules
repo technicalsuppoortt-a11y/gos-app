@@ -1,6 +1,12 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    match /profilePhotos/{uid}/{photoId} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif'];
+    }
     match /tenants/{tenantId}/branding/{fileId} {
       function profile() { return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data; }
       function member() { return firestore.get(/databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
@@ -12,7 +18,7 @@ service firebase.storage {
       }
       allow read: if request.auth != null && profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] && (profile().get('tenantId', '') == tenantId || member().get('active', false) || manager());
       allow create: if manager() && request.resource.size > 0 && request.resource.size <= 10 * 1024 * 1024
-        && request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'application/pdf', 'text/plain'];
+        && request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'application/pdf', 'text/plain'];
       allow delete: if manager();
       allow update: if false;
     }
@@ -31,6 +37,24 @@ service firebase.storage {
     }
     match /tenants/{tenantId}/commerce/{allPaths=**} {
       allow read, write: if request.auth != null;
+    }
+    // Template gallery images. System templates (super admin library) and each admin's own templates.
+    function templateRole() {
+      return request.auth.token.get('role', '') != '' ? request.auth.token.get('role', '')
+        : firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.get('role', '');
+    }
+    function templateImage() {
+      return request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024 && request.resource.contentType in ['image/png', 'image/jpeg', 'image/webp'];
+    }
+    match /templateThumbnails/{templateId}/{fileName} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && templateRole() in ['SUPER_ADMIN', 'super_admin', 'platform_admin'] && templateImage();
+      allow delete: if request.auth != null && templateRole() in ['SUPER_ADMIN', 'super_admin', 'platform_admin'];
+    }
+    match /templateThumbnails/admins/{adminUid}/{templateId}/{fileName} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == adminUid && templateRole() in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'platform_admin'] && templateImage();
+      allow delete: if request.auth != null && request.auth.uid == adminUid;
     }
     match /{allPaths=**} { allow read, write: if false; }
   }

@@ -35,6 +35,7 @@ const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module =>
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const BusinessAssetsPage = lazy(() => import('../pages/admin/BusinessAssetsPage').then(module => ({ default: module.BusinessAssetsPage })));
+const AdminPreviewPage = lazy(() => import('../pages/admin/AdminPreviewPage').then(module => ({ default: module.AdminPreviewPage })));
 const AdminTools = lazy(() => import('../pages/admin/AdminTools').then(module => ({ default: module.AdminTools })));
 const SuperAdminDashboard = lazy(() => import('../pages/super-admin/SuperAdminDashboard').then(module => ({ default: module.SuperAdminDashboard })));
 const BookingEditorPage = lazy(() => import('../pages/booking/BookingEditorPage'));
@@ -170,6 +171,7 @@ export const router = createBrowserRouter([
       { path: 'settings/*', element: <Suspended><SettingsWorkspace/></Suspended> },
     ].map(controlToolRoute),
   },
+  { path: '/admin-preview', element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminPreviewPage/></GuardedLayout> },
   {
     path: '/admin',
     element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
@@ -197,7 +199,8 @@ export const router = createBrowserRouter([
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'templates', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
+      { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace/> },
+      { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
       { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },

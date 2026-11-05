@@ -20,7 +20,7 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
   { label: 'All Clients', to: '/super-admin/clients', icon: Users },
   { label: 'Plans & Credits', ar: 'الباقات والرصيد', to: '/super-admin/plans', icon: Layers },
   { label: 'All Softwares', to: '/super-admin/subscriptions', icon: AppWindow },
-  { label: 'Templates', to: '/super-admin/templates', icon: Grid2X2 },
+  { label: 'Dashboard Management', ar: 'إدارة لوحة التحكم', to: '/super-admin/dashboard-management', icon: Grid2X2 },
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },

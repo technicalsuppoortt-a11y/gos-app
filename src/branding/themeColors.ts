@@ -72,7 +72,7 @@ export function bindCapturedBrandColors(root: Element): void {
   if (root.matches('[style], [fill], [stroke], [stop-color]')) elements.unshift(root as HTMLElement | SVGElement);
   elements.forEach((element) => {
     // Template artwork is its own design, independent of the dashboard brand.
-    if (element.closest(".aw-thumbnail,.aw-live-preview,.pf-page,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.landing-page,.product-live-preview,.lp")) return;
+    if (element.closest(".ws-theme-card,[data-public-asset],[data-form-theme],.aw-thumbnail,.aw-live-preview,.pf-page,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.landing-page,.product-live-preview,.lp")) return;
     for (const property of Array.from(element.style)) {
       if (!property.startsWith("--") && !/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow)$/.test(property)) continue;
       const value = element.style.getPropertyValue(property);

@@ -21,6 +21,7 @@
     "test:firebase-ui": "node tests/firebase-dashboard-browser.test.mjs",
     "test:firebase-rules": "node tests/firebase-rules-emulator.test.mjs",
     "seed:firebase": "node functions/seed.mjs",
+    "seed:thumbnails": "node functions/seed-template-thumbnails.mjs",
     "firebase:catalog": "node scripts/export-template-catalog.mjs",
     "test:crm": "node --test tests/gos-api.test.mjs tests/crm-booking-stage.test.mjs tests/crm-model.test.cjs tests/crm-persistence.test.mjs tests/crm-id-sync.test.mjs",
     "test:crm:browser": "node tests/crm-workspace-browser.test.mjs"

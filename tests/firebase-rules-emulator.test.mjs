@@ -37,6 +37,28 @@ try {
   await denied(() => setDoc(doc(limited.db, 'tenants', tenantA, 'preferences', 'general'), { ...preferences, updatedBy: limited.account.uid }));
   await denied(() => setDoc(doc(owner.db, 'tenants', tenantA, 'preferences', 'general'), { ...preferences, values: { ...preferences.values, theme: 'arbitrary' } }));
   await setDoc(doc(admin.db, 'dashboardBrands', admin.account.uid), { ...preferences, updatedBy: admin.account.uid });
+  const publicAppearance = doc(admin.db, 'settings', 'publicAppearance');
+  const { supportEmail, ...publicValues } = preferences.values;
+  await setDoc(publicAppearance, { values: publicValues });
+  await denied(() => setDoc(publicAppearance, { values: { ...publicValues, supportEmail } }));
+  await denied(() => setDoc(doc(limited.db, 'settings', 'publicAppearance'), { values: publicValues }));
+  const guest = initializeApp({ projectId }, 'public-appearance-' + run);
+  clients.push(guest);
+  const guestDb = getFirestore(guest);
+  const [emulatorHost, emulatorPort] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
+  connectFirestoreEmulator(guestDb, emulatorHost, Number(emulatorPort));
+  assert.deepEqual((await getDoc(doc(guestDb, 'settings', 'publicAppearance'))).data()?.values, publicValues);
+  await denied(() => getDoc(doc(guestDb, 'tenants', tenantA, 'preferences', 'general')));
+
+  const personal = doc(limited.db, 'users', limited.account.uid, 'preferences', 'dashboard');
+  await setDoc(personal, { currency: 'EUR', timezone: null, mode: 'system' });
+  await denied(() => updateDoc(personal, { theme: 'emerald' }));
+  await denied(() => getDoc(doc(owner.db, 'users', limited.account.uid, 'preferences', 'dashboard')));
+  const key = ['gos-settings-v1', tenantA, limited.account.uid].join(':');
+  const profilePath = ['tenants', tenantA, 'workspaceState', encodeURIComponent(key)];
+  await setDoc(doc(limited.db, ...profilePath), { key, value: { profile: { name: 'Member' } }, updatedBy: limited.account.uid });
+  await denied(() => getDoc(doc(owner.db, ...profilePath)));
+
   await db.doc(`users/${owner.account.uid}`).update({ supportParentId: admin.account.uid });
   await getDoc(doc(owner.db, 'dashboardBrands', admin.account.uid));
   await denied(() => getDoc(doc(other.db, 'dashboardBrands', admin.account.uid)));

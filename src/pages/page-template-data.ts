@@ -123,6 +123,8 @@ export type PageTemplate = {
   cta: string;
   color: string;
   image: string;
+  /** Admin-managed gallery image. Only used on template cards, never inside the page. */
+  thumbnail?: string;
   benefits?: string[];
   fields?: FormField[];
   backgroundPreset?: string;
