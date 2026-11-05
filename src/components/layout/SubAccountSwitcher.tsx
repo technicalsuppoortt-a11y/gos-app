@@ -21,7 +21,7 @@ import type { RootState } from '../../store';
 import { useAdminUsers } from '../../backend/adminUsers';
 import { switchToUser, returnToAdmin } from '../../backend/impersonation';
 import { showToast } from '../../utils/toast';
-import { translateText } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 import type { Invite } from '../../pages/onboarding/onboarding-store';
 
 const CACHE_KEY = 'admin_sub_accounts_cache';
@@ -50,6 +50,7 @@ interface SubAccountSwitcherProps {
 }
 
 export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubAccountSwitcherProps) {
+  const agencyLabel = useUILanguage().startsWith('ar') ? 'مستخدم وكالة' : 'Agency user';
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -408,7 +409,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                        {translateText('Currently Viewing Sub-Account')}
+                        {currentUser?.accountType === 'agency' ? agencyLabel : translateText('Currently Viewing Sub-Account')}
                       </p>
                       <p className="text-[11px] text-amber-600/90 dark:text-amber-400/90 truncate">
                         {currentUser?.name || currentUser?.email}
@@ -548,6 +549,9 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                               <span className="font-semibold text-xs text-gray-900 dark:text-gray-100 truncate">
                                 {account.name || translateText('Unnamed Account')}
                               </span>
+                              {account.accountType === 'agency' && (
+                                <span className="shrink-0 text-[10px] text-[var(--ws-accent,#7C3AED)]">{agencyLabel}</span>
+                              )}
                               {account.status && (
                                 <span 
                                   title={account.status === 'Active' ? translateText('Active') : account.status}

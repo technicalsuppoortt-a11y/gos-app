@@ -35,7 +35,7 @@ export type Invite = {
   activatedAt?: string;
   updatedAt?: string;
   credits?: number;
-  /** Set for directly provisioned User Agency accounts (role USER, no invitation). */
+  /** Set for directly provisioned Agency user accounts (role USER, no invitation). */
   accountType?: 'agency';
 };
 

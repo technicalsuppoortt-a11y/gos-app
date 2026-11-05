@@ -33,7 +33,7 @@ export async function billingServiceRequest(request, { actor, db }) {
   const operation = request.data?.operation;
   if (typeof operation !== 'string') throw new HttpsError('invalid-argument', 'Provide a billing operation.');
   try {
-    return await db.runTransaction(tx => executeBilling(operation, request.data, { uid: user.uid, role: user.role, name: user.name, email: user.email, supportParentId: user.supportParentId }, transactionStore(db, tx)));
+    return await db.runTransaction(tx => executeBilling(operation, request.data, user, transactionStore(db, tx)));
   } catch (error) {
     throw toHttpsError(error);
   }

@@ -10,7 +10,6 @@ import type { Directory, LiveRecord, ManagementResource } from '../pages/admin/l
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
-import { ensureAgencyLandingInFirestore } from './agencyLanding';
 
 // This hook never enters the tenant workspace store, changes backend context, or writes tenant documents.
 export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0) {
@@ -83,7 +82,6 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
         }
         snapshot.docs.forEach(item => {
           tenants[item.id] = item.data();
-          if (item.data()?.accountType === 'agency') void ensureAgencyLandingInFirestore(item.id);
           for (const resource of resources) {
             const address = `${item.id}/${resource}`;
             if (listeners.has(address)) continue;

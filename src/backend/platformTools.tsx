@@ -49,7 +49,7 @@ export function PlatformToolBoundary({ children }: { children: ReactNode }) {
   const id = pathname.startsWith('/dashboard/settings/integrations') ? 'webhooks-api' : routes[pathname.replace(/^\/dashboard\/?/, '').replace(/^\//, '').split('/')[0]];
   const tool = tools[id];
   const tenantId = useSelector((s: RootState) => s.auth.tenant?.id);
-  const uid = useSelector((s: RootState) => s.auth.user?.id ?? null);
+  const uid = useSelector((s: RootState) => s.auth.user?.accountType === 'agency' ? null : s.auth.user?.id ?? null);
   const { data: sub, loading: subLoading } = useSubscription(uid);
   const [plan, setPlan] = useState('');
   useEffect(() => {

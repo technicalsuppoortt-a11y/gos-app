@@ -2,7 +2,7 @@ import { Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { useBillingIdentity, useCommunicationWallet, WALLET_CURRENCY } from '../../backend/billing';
+import { useAgencyBilling, useBillingIdentity, useCommunicationWallet, WALLET_CURRENCY } from '../../backend/billing';
 import { isDemoAccount } from '../../backend/demoContext';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 
@@ -18,12 +18,15 @@ export function WalletBadge() {
   const language = useUILanguage();
   const navigate = useNavigate();
   const role = useSelector((state: RootState) => state.auth.role);
+  const agency = useSelector((state: RootState) => state.auth.user?.accountType === 'agency');
   const identity = useBillingIdentity();
-  const { data: wallet, loading } = useCommunicationWallet(identity.uid);
+  const { data: wallet, loading: walletLoading } = useCommunicationWallet(agency ? null : identity.uid);
+  const { data: shared, loading: sharedLoading } = useAgencyBilling(agency ? identity.uid : null);
+  const loading = agency ? sharedLoading || !shared : walletLoading;
 
-  const currency = wallet?.currency ?? WALLET_CURRENCY;
+  const currency = shared?.currency ?? wallet?.currency ?? WALLET_CURRENCY;
   const symbol = CURRENCY_SYMBOLS[currency] ?? '€';
-  const available = wallet ? Math.max(0, (wallet.balance ?? 0) - (wallet.held ?? 0)) : 0;
+  const available = shared?.communicationBalance ?? (wallet ? Math.max(0, (wallet.balance ?? 0) - (wallet.held ?? 0)) : 0);
 
   const formattedAmount = loading
     ? '—'
@@ -43,7 +46,7 @@ export function WalletBadge() {
   };
 
   const title = t(
-    isDemoAccount
+    agency ? (language.startsWith('ar') ? 'محفظة الاتصالات المشتركة' : 'Shared communication wallet') : isDemoAccount
       ? 'Communication Wallet · Carrier Balance (Demo)'
       : 'Communication Wallet · Live Carrier Balance'
   );

@@ -83,8 +83,8 @@ export async function sendOfficialPasswordResetEmail(email: string, continueUrl?
   }
 }
 
-export async function callBackend<T>(name: string, data: unknown): Promise<T> {
-  return (await httpsCallable<unknown, T>(functions, name)(data)).data;
+export async function callBackend<T>(name: string, data: unknown, timeout?: number): Promise<T> {
+  return (await httpsCallable<unknown, T>(functions, name, timeout === undefined ? undefined : { timeout })(data)).data;
 }
 export function backendError(error: unknown): string {
   const code = (error as { code?: string })?.code;

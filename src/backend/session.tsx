@@ -115,7 +115,7 @@ export async function endActivation() {
 }
 
 const resolvedProfileSignatures = new WeakMap<User, string>();
-const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name]);
+const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.accountType]);
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
   const tokenResult = await user.getIdTokenResult(forceRefreshToken);
@@ -160,6 +160,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
 
   // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile or USER.
   const role: Role = claimRole || normalizedDataRole;
+  const agency = data?.accountType === 'agency' || tokenResult.claims.accountType === 'agency';
 
   const tenantId = (typeof claimTenantId === 'string' && claimTenantId)
     ? claimTenantId
@@ -180,7 +181,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
-    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar },
+    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}) },
     role,
     tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,

@@ -18,6 +18,8 @@
 //   commit(writes: [path, data][]) → void | Promise<void>
 // Writes are buffered and committed only if the whole operation succeeds (transaction semantics).
 
+import { agencyBillingOwnerId, isAgencyBillingOwner } from './agency-billing.js';
+
 export const PLATFORM = 'platform';
 // Plan capabilities (entitlements a plan can unlock). 'ai' is a capability only — never a billable channel.
 export const CHANNEL_IDS = ['ai', 'whatsapp', 'messenger', 'instagram', 'email', 'sms'];
@@ -439,6 +441,20 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   data = data && typeof data === 'object' ? data : {};
   const store = buffered(base);
   const role = actor.role;
+  const sharedBillingMessage = 'Billing for this Agency user is managed by the Platform Admin.';
+  const requireIndependentBilling = account => {
+    if (account?.accountType === 'agency') fail('failed-precondition', sharedBillingMessage);
+  };
+  if (actor.accountType === 'agency' && actor.status !== 'Active') fail('permission-denied', 'An active Agency user account is required.');
+  if (actor.accountType === 'agency' && !['sharedBilling', 'walletLedger', 'cancelRequest'].includes(operation)) {
+    fail('failed-precondition', sharedBillingMessage);
+  }
+  async function agencyPayer(account) {
+    const uid = agencyBillingOwnerId(account);
+    const owner = uid && await store.get(`users/${uid}`);
+    if (!isAgencyBillingOwner(owner)) fail('failed-precondition', 'The Agency user billing owner is unavailable.');
+    return { uid, role: owner.role };
+  }
 
   const providerOf = account => account.role === 'ADMIN' ? PLATFORM : account.role === 'USER' ? (account.supportParentId || PLATFORM) : PLATFORM;
   const ownerOf = () => role === 'SUPER_ADMIN' ? PLATFORM : role === 'ADMIN' ? actor.uid : fail('permission-denied', 'Only administrators can manage plans.');
@@ -633,6 +649,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   async function managedAccount(subscriberId) {
     const target = await store.get(`users/${identifier(subscriberId, 'account')}`);
     if (!target) fail('not-found', 'Account not found.');
+    requireIndependentBilling(target);
     const account = { uid: subscriberId, role: target.role, name: target.name, email: target.email, supportParentId: target.supportParentId };
     const providerId = providerOf(account);
     if (!canDecide(providerId)) fail('permission-denied', 'You can only manage your own clients.');
@@ -760,6 +777,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   const handlers = {
     async refresh() {
       const uid = role === 'SYSTEM' ? identifier(data.subscriberId, 'account') : actor.uid;
+      if (role === 'SYSTEM' && (await store.get(`users/${uid}`))?.accountType === 'agency') return { subscription: null, wallet: null };
       const { sub, wallet } = await freshen(uid);
       return { subscription: sub ?? null, wallet: wallet ?? null };
     },
@@ -832,6 +850,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       } else {
         const target = await store.get(`users/${targetUid}`);
         if (!target) fail('not-found', 'Account not found.');
+        requireIndependentBilling(target);
         account = { uid: targetUid, role: target.role, name: target.name, email: target.email, supportParentId: target.supportParentId };
         providerId = providerOf(account);
       }
@@ -950,8 +969,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       }
       if (!isApprove) fail('invalid-argument', 'Choose approve or reject.');
       const reason = text(data.reason, 300, 'Reason', false);
+      const target = await store.get(`users/${request.requesterId}`);
+      requireIndependentBilling(target);
       if (request.type === 'wallet_topup') {
-        const target = await store.get(`users/${request.requesterId}`);
         const topupAccount = { uid: request.requesterId, role: request.requesterRole, name: request.requesterName || target?.name, email: request.requesterEmail };
         // The customer pays `total` (after any coupon discount) and receives `creditAmount` (face value + bonus).
         await creditCommunicationWallet(topupAccount, request.providerId, request.creditAmount ?? request.total, request.currency ?? request.plan?.currency ?? WALLET_CURRENCY, 'Wallet top-up', { ref_type: 'request', ref_id: request.id, payment_method: request.paymentMethod ?? 'manual', ...(request.coupon?.code ? { coupon_code: request.coupon.code } : {}) });
@@ -1020,24 +1040,45 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     /** Server-only usage deduction (AI generation, WhatsApp/email sends…). Idempotent per usage event. */
     async consume() {
       if (role !== 'SYSTEM') fail('permission-denied', 'Usage can only be recorded by the server.');
-      const uid = identifier(data.subscriberId, 'account');
+      const subscriberId = identifier(data.subscriberId, 'account');
+      const account = await store.get(`users/${subscriberId}`);
+      const agency = account?.accountType === 'agency';
+      if (agency && account.status !== 'Active') fail('permission-denied', 'An active Agency user account is required.');
+      const payer = agency ? await agencyPayer(account) : { uid: subscriberId };
       const eventId = identifier(data.idempotencyKey, 'usage event');
-      const entryId = `usage_${eventId}`;
+      const entryId = agency ? `usage_agency_${subscriberId}_${eventId}` : `usage_${eventId}`;
       if (await store.get(`billingLedger/${entryId}`)) return { duplicate: true };
       const credits = int(data.amount, 'Credits', 1, 1000000);
-      const { sub, wallet } = await freshen(uid);
-      if (!isLive(sub, now)) fail('failed-precondition', 'No active subscription. Renew to continue using this feature.');
+      const { sub, wallet } = await freshen(payer.uid);
+      if (!isLive(sub, now) && !(payer.role === 'SUPER_ADMIN' && !sub)) fail('failed-precondition', 'No active subscription. Renew to continue using this feature.');
+      if (agency && sub && data.tool && sub.plan?.tools?.length && !entitledTools(sub, now).includes(data.tool)) fail('failed-precondition', 'The Platform Admin plan does not include this tool.');
+      if (agency && sub && data.usageType === 'ai' && sub.plan?.channels?.length && !sub.plan.channels.includes('ai')) fail('failed-precondition', 'The Platform Admin plan does not include AI usage.');
       if (!wallet || wallet.balance < credits) fail('resource-exhausted', 'Not enough credits. Request a credit add-on to continue.');
       wallet.balance -= credits;
-      entry(wallet, 'usage', -credits, text(data.description, 200, 'Description') || `Usage · ${text(data.usageType, 40, 'Usage type') || 'service'}`, { entryId, refType: 'usage', refId: eventId, usageType: text(data.usageType, 40, 'Usage type') });
+      entry(wallet, 'usage', -credits, text(data.description, 200, 'Description') || `Usage · ${text(data.usageType, 40, 'Usage type') || 'service'}`, { entryId, refType: 'usage', refId: eventId, usageType: text(data.usageType, 40, 'Usage type'), ...(agency ? { subscriberId, workspaceId: account.tenantId } : {}) });
       saveWallet(wallet);
       return { balance: wallet.balance };
+    },
+
+    async sharedBilling() {
+      if (actor.accountType !== 'agency') fail('permission-denied', 'An Agency user account is required.');
+      const payer = await agencyPayer(actor);
+      const { sub, wallet } = await freshen(payer.uid);
+      const communications = await store.get(`communicationWallets/${payer.uid}`);
+      return {
+        active: isLive(sub, now) || payer.role === 'SUPER_ADMIN' && !sub,
+        credits: wallet?.balance ?? 0,
+        communicationBalance: communications ? Math.max(0, round4(communications.balance - (communications.held ?? 0))) : 0,
+        currency: communications?.currency ?? WALLET_CURRENCY,
+      };
     },
 
     /** The caller's Communication Wallet history. Provider cost and margin are only returned to administrators. */
     async walletLedger() {
       const showCost = role === 'ADMIN' || role === 'SUPER_ADMIN';
-      const rows = await store.query('communicationLedger', 'subscriber_id', actor.uid);
+      const own = await store.query('communicationLedger', 'subscriber_id', actor.uid);
+      const shared = showCost ? await store.query('communicationLedger', 'wallet_id', actor.uid) : [];
+      const rows = [...new Map([...own, ...shared].map(row => [row.id, row])).values()];
       const entries = rows.filter(row => row.status !== 'failed')
         .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 200)
         .map(row => ({
@@ -1195,7 +1236,11 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         rows = await store.list('communicationLedger', { orderBy: 'created_at', limit: 5000 });
         wallets = await store.list('communicationWallets', { limit: 5000 });
       } else {
-        const scoped = [...await store.query('communicationLedger', 'tenant_id', actor.uid), ...await store.query('communicationLedger', 'subscriber_id', actor.uid)];
+        const scoped = [
+          ...await store.query('communicationLedger', 'tenant_id', actor.uid),
+          ...await store.query('communicationLedger', 'subscriber_id', actor.uid),
+          ...await store.query('communicationLedger', 'wallet_id', actor.uid),
+        ];
         rows = [...new Map(scoped.map(row => [row.id, row])).values()];
         const own = await store.get(`communicationWallets/${actor.uid}`);
         wallets = [...(own ? [{ ...own, id: actor.uid }] : []), ...(await store.query('communicationWallets', 'providerId', actor.uid))];

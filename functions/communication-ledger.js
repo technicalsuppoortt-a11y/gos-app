@@ -11,6 +11,7 @@
 //   transaction (`tx`): every read happens before any write.
 import { createHash } from 'node:crypto';
 import { CHANNEL_IDS, COMMUNICATION_CHANNELS, PLATFORM, isLive, newCommunicationWallet, round4 } from './billing-engine.js';
+import { agencyBillingOwnerId, isAgencyBillingOwner } from './agency-billing.js';
 
 /**
  * Fallback rate card (EUR, per message). Placeholders only: the Super Admin should override them in
@@ -83,18 +84,25 @@ export async function reserveCharge(tx, db, input, now = new Date().toISOString(
     return { ok: ['pending', 'confirmed'].includes(entry.status), duplicate: true, entryId, entry, code: entry.status, reason: 'This send was already charged.' };
   }
   const tenant = (await tx.get(db.doc(`tenants/${businessId}`))).data();
-  const subscriberId = input.subscriberId || tenant?.ownerId || tenant?.ownerUid;
+  const subscriberId = tenant?.accountType === 'agency'
+    ? tenant.ownerId
+    : input.subscriberId || tenant?.ownerId || tenant?.ownerUid;
   if (!subscriberId) return { ok: false, entryId, code: 'no-billing-owner', reason: 'This workspace has no billing owner.' };
-  const [userSnap, subSnap, walletSnap] = await Promise.all([
-    tx.get(db.doc(`users/${subscriberId}`)), tx.get(db.doc(`billingSubscriptions/${subscriberId}`)), tx.get(db.doc(`communicationWallets/${subscriberId}`)),
-  ]);
-  const account = userSnap.exists ? userSnap.data() : {};
+  const subscriber = (await tx.get(db.doc(`users/${subscriberId}`))).data();
+  const agency = tenant?.accountType === 'agency' || subscriber?.accountType === 'agency';
+  const walletId = agency ? agencyBillingOwnerId(subscriber) : subscriberId;
+  const account = agency && walletId ? (await tx.get(db.doc(`users/${walletId}`))).data() : subscriber;
+  if (!walletId || agency && (!isAgencyBillingOwner(account) || subscriber?.status !== 'Active')) {
+    return { ok: false, entryId, code: 'no-billing-owner', reason: 'The Agency user billing owner is unavailable.' };
+  }
+  const walletRef = db.doc(`communicationWallets/${walletId}`);
+  const [subSnap, walletSnap] = await Promise.all([tx.get(db.doc(`billingSubscriptions/${walletId}`)), tx.get(walletRef)]);
   const sub = subSnap.exists ? subSnap.data() : null;
   // Entitlement gate (plan) comes first — a plan problem is not a balance problem.
-  if (!isLive(sub, now)) return { ok: false, entryId, code: 'subscription-inactive', reason: 'No active subscription. Renew to send messages.' };
-  if (CHANNEL_IDS.includes(channel) && sub.plan?.channels?.length && !sub.plan.channels.includes(channel)) return { ok: false, entryId, code: 'channel-not-entitled', reason: `Your plan does not include the ${channel} channel.` };
+  if (!isLive(sub, now) && !(agency && account.role === 'SUPER_ADMIN' && !sub)) return { ok: false, entryId, code: 'subscription-inactive', reason: 'No active subscription. Renew to send messages.' };
+  if (CHANNEL_IDS.includes(channel) && sub?.plan?.channels?.length && !sub.plan.channels.includes(channel)) return { ok: false, entryId, code: 'channel-not-entitled', reason: `Your plan does not include the ${channel} channel.` };
   const rate = await resolveRate(tx, db, { provider, channel, category, country });
-  const wallet = walletSnap.exists ? walletSnap.data() : newCommunicationWallet(subscriberId, account.role ?? 'USER', providerOfAccount(account), now);
+  const wallet = walletSnap.exists ? walletSnap.data() : newCommunicationWallet(walletId, account?.role ?? 'USER', providerOfAccount(account), now);
   if (rate.currency !== wallet.currency) fail('failed-precondition', `The ${channel} rate is priced in ${rate.currency} but the wallet uses ${wallet.currency}.`);
   const price = priceUsage(rate, quantity);
   const available = round4(wallet.balance - (wallet.held ?? 0));
@@ -103,9 +111,9 @@ export async function reserveCharge(tx, db, input, now = new Date().toISOString(
   wallet.held = round4((wallet.held ?? 0) + price.customer_charge);
   wallet.lowBalance = round4(wallet.balance - wallet.held) < (wallet.lowBalanceThreshold ?? 0);
   wallet.updatedAt = now;
-  tx.set(db.doc(`communicationWallets/${subscriberId}`), wallet);
+  tx.set(walletRef, wallet);
   tx.set(entryRef, {
-    id: entryId, wallet_id: subscriberId, subscriber_id: subscriberId, tenant_id: wallet.providerId, business_id: businessId,
+    id: entryId, wallet_id: walletId, subscriber_id: subscriberId, tenant_id: wallet.providerId, business_id: businessId,
     channel, provider, provider_account_id: providerAccountId, provider_event_id: null, message_id: messageId, message_path: messagePath,
     usage_type: category ? `${channel}_${category}` : channel, category, recipient_country: country,
     ...price, status: 'pending', amount: -price.customer_charge, balance_after: null,

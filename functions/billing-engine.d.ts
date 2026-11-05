@@ -207,7 +207,7 @@ export interface BillingRequest {
   receiptName?: string; fileName?: string; transactionId?: string;
 }
 
-export interface BillingActor { uid: string; role: string; name?: string; email?: string; supportParentId?: string }
+export interface BillingActor { uid: string; role: string; name?: string; email?: string; supportParentId?: string; accountType?: 'agency'; status?: string; billingOwnerId?: string; createdBy?: string }
 export interface BillingStore {
   get(path: string): Promise<any>;
   query(collection: string, field: string, value: unknown): Promise<any[]>;

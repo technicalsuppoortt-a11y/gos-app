@@ -7,6 +7,7 @@
     {
       "source": "functions",
       "codebase": "user-dashboard",
+      "predeploy": ["node scripts/export-agency-landing.mjs"],
       "ignore": [
         "node_modules",
         "*.test.js"

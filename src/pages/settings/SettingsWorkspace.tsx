@@ -14,6 +14,7 @@ import { defaultSettings, friendlyError, settingsRequest } from './data';
 import type { SettingsData } from './data';
 import { ProfilePanel } from './ProfilePanel';
 import { BillingPanel } from './BillingPanel';
+import { AgencyBilling } from '../billing/AgencyBilling';
 import { IntegrationsPanel } from './IntegrationsPanel';
 import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
@@ -49,6 +50,7 @@ function ScopedSettings() {
 function SettingsWorkspaceView() {
   useUILanguage();
   const location = useLocation();
+  const user = useSelector((state: RootState) => state.auth.user);
   const [data, setData] = useState<SettingsData>(defaultSettings), [loading, setLoading] = useState(true), [error, setError] = useState('');
   const currentTab = new URLSearchParams(location.search).get('tab');
   const paymentMethodsTab = currentTab === 'payment-methods';
@@ -56,11 +58,12 @@ function SettingsWorkspaceView() {
   void paymentMethodsTab; void isWalletTab;
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
+  const sharedBillingUid = user?.accountType === 'agency' && (active.slug === 'plans' || active.slug === 'billing') ? user.id : null;
   const refresh = useCallback(async () => {
     setError('');
     try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
-  useEffect(() => { if (active.slug !== 'domains') void refresh(); }, [refresh, active.slug]);
+  useEffect(() => { if (!sharedBillingUid && active.slug !== 'domains') void refresh(); }, [refresh, active.slug, sharedBillingUid]);
   async function save(next: SettingsData, personalPreferences?: PersonalPreferences) {
     const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', {
       profile: next.profile, business: next.business, payment: next.payment, personalPreferences,
@@ -70,6 +73,7 @@ function SettingsWorkspaceView() {
   }
   if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
+  if (sharedBillingUid) return <AgencyBilling uid={sharedBillingUid}/>;
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>

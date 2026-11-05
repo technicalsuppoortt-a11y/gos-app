@@ -4,7 +4,9 @@ import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
-import { billingServiceRequest } from './billing-service.js';
+import { billingServiceRequest, consumeCredits } from './billing-service.js';
+import { agencyLandingWrites, reconcileAgencyWorkspace } from './agency-workspace.js';
+import { isAgencyBillingOwner } from './agency-billing.js';
 import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
@@ -16,10 +18,10 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { mayManageUser, maySend, validateBooking } from './policy.js';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { completeUserActivation, initializeProvisionedPlan } from './onboarding.js';
+import { completeUserActivation } from './onboarding.js';
 import { createImpersonationSession } from './impersonation.js';
 import { userManagementRequest } from './user-management-request.js';
 import { buildActivationLink } from './activation-links.js';
@@ -83,7 +85,7 @@ async function workspace(request, permission) {
   try {
     await checkPlatformTool(db, user.tenantId, permission);
   } catch (err) {
-    if (!isAdmin && !isOwner) throw err;
+    if (user.accountType === 'agency' || !isAdmin && !isOwner) throw err;
   }
 
   return { user, root: db.doc(`tenants/${user.tenantId}`) };
@@ -164,15 +166,62 @@ export const siteProxy = onRequest({ timeoutSeconds: 60 }, (req, res) => {
   return handleDomainProxy(req, res, { db, appOrigin: appOrigin.value() });
 });
 export const activateUser = onCall(request => completeUserActivation(request, { db, auth }));
+export const prepareAgencyWorkspace = onCall(async request => {
+  const user = await actor(request);
+  const { id, language } = request.data ?? {};
+  if (id === undefined) return reconcileAgencyWorkspace(db, user, language);
+  if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role) || typeof id !== 'string' || !/^[\w-]{1,128}$/.test(id)) {
+    throw new HttpsError('permission-denied', 'Administrator access is required.');
+  }
+  const target = (await db.doc(`users/${id}`).get()).data();
+  if (!target || !mayManageUser(user, { ...target, id })) throw new HttpsError('permission-denied', 'You cannot access this account.');
+  return reconcileAgencyWorkspace(db, { ...target, uid: id }, language);
+});
+
+const agencyGosActions = {
+  copilot: { path: '/ai/copilot', permission: 'copilot', tool: 'ai-copilot', description: 'AI Copilot response', fields: ['text', 'conversationId', 'webSearch', 'deepResearch'] },
+  playground: { path: '/ai/playground', permission: 'follow-up', tool: 'ai-followup', description: 'AI playground response', fields: ['question', 'channel', 'city', 'session_id', 'source_id'] },
+  inboxSimulation: { path: '/inbox/messages', permission: 'inbox', tool: 'ai-followup', description: 'AI inbox simulation', fields: ['body', 'channel', 'external_thread_id', 'external_message_id', 'customer_name', 'phone'] },
+};
+
+export const agencyGosUsage = onCall({ timeoutSeconds: 120 }, async request => {
+  const action = request.data?.action;
+  const payload = request.data?.payload;
+  if (typeof action !== 'string' || !Object.hasOwn(agencyGosActions, action) || !payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new HttpsError('invalid-argument', 'Choose a supported Agency user action.');
+  }
+  const { path, permission, tool, description, fields } = agencyGosActions[action];
+  const { user } = await workspace(request, permission);
+  if (user.accountType !== 'agency' || user.status !== 'Active') throw new HttpsError('permission-denied', 'An active Agency user account is required.');
+  const input = Object.fromEntries(Object.entries(payload).filter(([key, value]) => fields.includes(key) && ['string', 'boolean'].includes(typeof value)));
+  const body = JSON.stringify(input);
+  const prompt = input[fields[0]];
+  if (body.length > 30000 || typeof prompt !== 'string' || !prompt.trim() || prompt.length > 12000) {
+    throw new HttpsError('invalid-argument', 'Enter a valid message.');
+  }
+  await chargeAgencyAI(user, tool, description);
+  const response = await fetch(`${gosApiBase.value().replace(/\/$/, '')}/api/v1${path}`, {
+    method: 'POST',
+    headers: { Authorization: request.rawRequest.headers.authorization, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body,
+    signal: AbortSignal.timeout(90000),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok || result?.success === false) {
+    throw new HttpsError(response.status === 429 ? 'resource-exhausted' : 'unavailable', result?.error?.message || result?.message || 'The Upclick API could not complete the request.');
+  }
+  if (result?.data === undefined) throw new HttpsError('internal', 'The Upclick API returned an unexpected response.');
+  return result.data;
+});
 export const manageUser = onCall(async request => {
   const user = await actor(request);
   if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) throw new HttpsError('permission-denied', 'Administrator access is required.');
   const { operation, id, email, name, role = 'USER', tenantId: requestedTenantId, accountType, password } = userManagementRequest(request.data);
   if (operation === 'create') {
-    // User Agency: a fully provisioned USER account (no invitation) with its own isolated workspace.
     const agency = accountType === 'agency';
     if (accountType !== undefined && !agency) throw new HttpsError('invalid-argument', 'Unsupported account type.');
-    if (agency && role !== 'USER') throw new HttpsError('invalid-argument', 'A User Agency account must use the user role.');
+    if (agency && !isAgencyBillingOwner(user)) throw new HttpsError('permission-denied', 'An active Platform Admin account is required.');
+    if (agency && role !== 'USER') throw new HttpsError('invalid-argument', 'An Agency user account must use the user role.');
     if (agency && (typeof password !== 'string' || password.length < 8 || password.length > 128)) throw new HttpsError('invalid-argument', 'Enter a password between 8 and 128 characters.');
     if (role !== 'USER' && !(user.role === 'SUPER_ADMIN' && role === 'ADMIN')) throw new HttpsError('permission-denied', 'You cannot assign this role.');
     if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpsError('invalid-argument', 'Enter a valid email.');
@@ -187,19 +236,21 @@ export const manageUser = onCall(async request => {
     const createdAt = new Date().toISOString();
     const status = agency ? 'Active' : 'Pending';
     const supportParentId = role === 'ADMIN' || user.role === 'ADMIN' ? user.uid : '';
+    const workspaceName = `${account.displayName}'s workspace`;
     try {
-      await auth.setCustomUserClaims(account.uid, { role, tenantId });
+      await auth.setCustomUserClaims(account.uid, { role, tenantId, ...(agency ? { accountType: 'agency' } : {}) });
       const batch = db.batch();
-      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId, status, created: createdAt, mfa: false, ...(agency ? { accountType: 'agency', activatedAt: createdAt, createdBy: user.uid } : {}) });
-      batch.create(db.doc(`tenants/${tenantId}`), { name: `${account.displayName}'s workspace`, ownerId: account.uid, ...(agency ? { accountType: 'agency' } : {}) });
+      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId, status, created: createdAt, mfa: false, ...(agency ? { accountType: 'agency', activatedAt: createdAt, createdBy: user.uid, billingOwnerId: user.uid, tenantName: workspaceName } : {}) });
+      const root = db.doc(`tenants/${tenantId}`);
+      batch.create(root, { name: workspaceName, ownerId: account.uid, ...(agency ? { accountType: 'agency', billingOwnerId: user.uid, agencyLandingSeeded: true } : {}) });
       batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status, active: agency, permissions: ['*'], ...(agency ? { activatedAt: createdAt } : {}) });
+      if (agency) {
+        for (const [ref, value] of agencyLandingWrites(root, user.uid, createdAt, request.data?.language)) batch.create(ref, value);
+      }
       batch.create(db.collection('userManagementAudit').doc(), { actorId: user.uid, type: agency ? 'user.agency_created' : 'user.created', userId: account.uid, createdAt: FieldValue.serverTimestamp() });
       await batch.commit();
     } catch (error) { await auth.deleteUser(account.uid); throw error; }
-    if (agency) {
-      const planAssigned = await initializeProvisionedPlan(db, { uid: account.uid, role, name: account.displayName, email: account.email, supportParentId }, createdAt);
-      return { id: account.uid, status, tenantId, accountType: 'agency', ...(planAssigned ? { planAssigned: true } : {}) };
-    }
+    if (agency) return { id: account.uid, status, tenantId, accountType: 'agency' };
     const link = buildActivationLink(await auth.generatePasswordResetLink(account.email), appOrigin.value());
     return { id: account.uid, link, status: 'Pending', tenantId };
   }
@@ -212,6 +263,7 @@ export const manageUser = onCall(async request => {
   }
   if (operation === 'activationLink') return { link: buildActivationLink(await auth.generatePasswordResetLink(target.email), appOrigin.value()) };
   if (operation === 'role') {
+    if (target.accountType === 'agency') throw new HttpsError('failed-precondition', 'Agency user accounts use the user role.');
     if (user.role !== 'SUPER_ADMIN' || !['USER', 'ADMIN'].includes(role)) throw new HttpsError('permission-denied', 'Only a super administrator can assign administrator roles.');
     const account = await auth.getUser(id);
     await auth.setCustomUserClaims(id, { ...account.customClaims, role });
@@ -232,6 +284,13 @@ export const manageUser = onCall(async request => {
     await db.doc(`tenants/${target.tenantId}/members/${id}`).update({ status: nextStatus, active: nextStatus === 'Active' });
   } else if (operation === 'delete') {
     await ref.update({ status: 'Deactivated' });
+    if (target.accountType === 'agency') {
+      const subscription = db.doc(`billingSubscriptions/${id}`);
+      await db.runTransaction(async tx => {
+        const previous = (await tx.get(subscription)).data();
+        if (['active', 'trialing'].includes(previous?.status)) tx.update(subscription, { status: 'cancelled', statusBeforeSharedBilling: previous.status });
+      });
+    }
     await auth.deleteUser(id);
     await ref.delete();
     await db.doc(`tenants/${target.tenantId}/members/${id}`).delete();
@@ -284,6 +343,11 @@ async function indexedKnowledge(request, question) {
   } catch { throw new HttpsError('unavailable', 'Workspace knowledge retrieval failed. Please try again.'); }
 }
 
+async function chargeAgencyAI(user, tool, description) {
+  if (user.accountType !== 'agency') return;
+  await consumeCredits(db, { subscriberId: user.uid, amount: 1, usageType: 'ai', tool, description, idempotencyKey: randomUUID() });
+}
+
 export const agentConfiguration = onCall(async request => {
   const { user, root } = await workspace(request, 'follow-up');
   if (request.data?.operation === 'save') {
@@ -307,7 +371,7 @@ export const agentConfiguration = onCall(async request => {
 });
 
 export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 120 }, async request => {
-  const { root } = await workspace(request, 'follow-up');
+  const { user, root } = await workspace(request, 'follow-up');
   const { leadId, channel, instruction = '' } = request.data ?? {};
   if (!['email', 'whatsapp', 'instagram', 'messenger', 'facebook'].includes(channel) || typeof instruction !== 'string' || instruction.length > 4000 || leadId !== undefined && (typeof leadId !== 'string' || !/^[\w-]{1,150}$/.test(leadId))) throw new HttpsError('invalid-argument', 'Choose a valid lead, channel and instructions.');
   let lead = null;
@@ -319,6 +383,7 @@ export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeo
     lead = { name: row.name, company: row.company ?? '', stage: row.lifecycleStage ?? row.stage, state: row.followUpState ?? '' };
   }
   const agent = await readAgent(root);
+  await chargeAgencyAI(user, 'ai-followup', 'AI follow-up draft');
   const knowledge = await indexedKnowledge(request, `Retrieve workspace facts relevant to this follow-up goal: ${agent.goal}. Request: ${instruction || 'Introduce our services and offer a helpful next step.'}`);
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST', headers: { Authorization: `Bearer ${openaiKey.value()}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(60000),
@@ -343,8 +408,9 @@ export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds
   const history = (await threadRef.get()).data();
   if (history?.actorId && history.actorId !== user.uid) throw new HttpsError('permission-denied', 'This conversation belongs to another team member.');
   const membership = (await root.collection('members').doc(user.uid).get()).data();
-  const grants = membership.permissions ?? [];
+  const grants = membership?.permissions ?? [];
   const contextPermissions = { products: 'products', calendars: 'booking', leads: 'crm' };
+  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot response');
   const [products, calendars, leads, knowledge, agent] = await Promise.all([
     ...['products', 'calendars', 'leads'].map(resource => grants.includes('*') || grants.includes(contextPermissions[resource]) ? root.collection(resource).limit(50).get() : Promise.resolve({ docs: [], size: 0 })),
     indexedKnowledge(request, [...(history?.messages ?? []).slice(-4).map(item => item.text), text].join('\n').slice(-12000)), readAgent(root),

@@ -16,6 +16,7 @@ import {
   Coins,
   Copy,
   Eye,
+  EyeOff,
   Layers,
   Mail,
   MoreHorizontal,
@@ -37,7 +38,6 @@ import { backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import { safeDate } from '../../utils/safeDate';
 import { switchToUser } from '../../backend/impersonation';
-import { ensureAgencyLandingInFirestore } from '../../backend/agencyLanding';
 import { PLATFORM, useBillingIdentity, usePlans, useSubscription, useTrial, useWallet } from '../../backend/billing';
 import './onboarding.css';
 
@@ -262,8 +262,9 @@ function SubAccountDetailsModal({
 }) {
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const dir = ar ? 'rtl' : 'ltr';
-  const sub = useSubscription(user?.id ?? null);
-  const wallet = useWallet(user?.id ?? null);
+  const agency = user?.accountType === 'agency';
+  const sub = useSubscription(agency ? null : user?.id ?? null);
+  const wallet = useWallet(agency ? null : user?.id ?? null);
 
   if (!user) return null;
 
@@ -359,7 +360,7 @@ function SubAccountDetailsModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <b style={{ fontSize: '15px', color: 'var(--ob-ink)' }}>{user.name || user.email.split('@')[0]}</b>
             <span className="ob-badge" style={{ fontSize: '10px' }}>
-              {user.accountType === 'agency' ? t('User Agency', 'وكالة مستخدم') : user.role === 'ADMIN' ? t('Admin', 'مسؤول') : t('Team Member', 'عضو فريق')}
+              {user.accountType === 'agency' ? t('Agency user', 'مستخدم وكالة') : user.role === 'ADMIN' ? t('Admin', 'مسؤول') : t('Team Member', 'عضو فريق')}
             </span>
           </div>
           <div dir="ltr" style={{ fontSize: '12px', color: 'var(--ob-muted)', margin: '2px 0 4px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -443,7 +444,12 @@ function SubAccountDetailsModal({
       </div>
 
       {/* Grid: Plan Tier & Credits */}
-      <div className="ob-details-grid">
+      {agency ? (
+        <div className="ob-details-section">
+          <div className="ob-details-section-title"><Coins size={14}/><span>{t('Shared billing', 'الفوترة المشتركة')}</span></div>
+          <p>{t('Usage draws from the creating Platform Admin’s plan credits and communication wallet.', 'يُخصم الاستخدام من رصيد باقة ومحفظة اتصالات مسؤول المنصة الذي أنشأ الحساب.')}</p>
+        </div>
+      ) : <div className="ob-details-grid">
         {/* Subscription & Tier */}
         <div className="ob-details-section">
           <div className="ob-details-section-title">
@@ -501,7 +507,7 @@ function SubAccountDetailsModal({
             <span className="ob-details-meta-value">{(wallet.data?.lifetimeSpent ?? 0).toLocaleString()}</span>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Assigned Permissions & Capabilities */}
       <div className="ob-details-section" style={{ marginBottom: '18px' }}>
@@ -675,6 +681,8 @@ export function AdminUsers() {
   const [query, setQuery] = React.useState('');
   const [error, setError] = React.useState('');
   const [role, setRole] = React.useState('USER');
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [filter, setFilter] = React.useState('All');
 
   // Pagination states
@@ -737,8 +745,8 @@ export function AdminUsers() {
     { value: 'ADMIN', label: t('Admin', 'مسؤول') },
     { value: 'USER', label: t('Team member', 'عضو الفريق') },
   ];
-  // Creation-only option: a User Agency is a USER account provisioned directly (no invitation).
-  const createRoles = [...roles, { value: 'AGENCY', label: t('User Agency', 'وكالة مستخدم') }];
+  // Creation-only option: a Agency user is a USER account provisioned directly (no invitation).
+  const createRoles = [...roles, { value: 'AGENCY', label: t('Agency user', 'مستخدم وكالة') }];
   const isAgency = role === 'AGENCY';
 
   const handleToggleStatus = async (invite: Invite) => {
@@ -923,7 +931,7 @@ export function AdminUsers() {
                     <td>
                       {i.accountType === 'agency' ? (
                         <span className="ob-badge" title={t('Directly provisioned account with its own workspace', 'حساب مُنشأ مباشرة بمساحة عمل مستقلة')}>
-                          {t('User Agency', 'وكالة مستخدم')}
+                          {t('Agency user', 'مستخدم وكالة')}
                         </span>
                       ) : (
                       <Combobox
@@ -1441,13 +1449,12 @@ export function AdminUsers() {
               try {
                 if (isAgency) {
                   // Provisioned active immediately: no invitation, no activation link.
-                  const agencyRes = await manageAccount('create', { email, name: invite.name, role: 'USER', accountType: 'agency', password });
-                  if (agencyRes?.tenantId) void ensureAgencyLandingInFirestore(agencyRes.tenantId);
+                  await manageAccount('create', { email, name: invite.name, role: 'USER', accountType: 'agency', password, language: ar ? 'ar' : 'en' });
                   form.reset();
                   setRole('USER');
                   setError('');
                   setOpen(false);
-                  showToast.success(t('User Agency account created and active. Sign in with it, or switch to it from the accounts list.', 'تم إنشاء حساب وكالة المستخدم وتفعيله. سجّل الدخول به أو بدّل إليه من قائمة الحسابات.'));
+                  showToast.success(t('Agency user account created and active. Sign in with it, or switch to it from the accounts list.', 'تم إنشاء حساب مستخدم الوكالة وتفعيله. سجّل الدخول به أو بدّل إليه من قائمة الحسابات.'));
                   return;
                 }
                 const result = await manageAccount('create', { email, name: invite.name, role });
@@ -1471,13 +1478,13 @@ export function AdminUsers() {
             <span className="ob-orb">
               <Mail />
             </span>
-            <h2>{isAgency ? t('Create User Agency', 'إنشاء وكالة مستخدم') : t('Invite Sub-Account', 'دعوة حساب فرعي')}</h2>
+            <h2>{isAgency ? t('Create Agency user', 'إنشاء مستخدم وكالة') : t('Invite Sub-Account', 'دعوة حساب فرعي')}</h2>
             <p>{isAgency
-              ? t('A ready-to-use account to market your own business and try the user dashboard.', 'حساب جاهز للاستخدام لتسويق نشاطك وتجربة لوحة المستخدم.')
+              ? t('Create a ready-to-use workspace with an editable copy of the platform landing page. Paid usage draws from your plan credits and communication wallet.', 'أنشئ مساحة عمل جاهزة مع نسخة قابلة للتعديل من صفحة هبوط المنصة. يُخصم الاستخدام المدفوع من رصيد باقتك ومحفظة الاتصالات.')
               : t('They’ll get a personal activation link and a guided workspace setup.', 'سيحصل المستخدم على رابط تفعيل شخصي وخطوات لإعداد المساحة.')}</p>
 
             {/* Dynamic Plan Onboarding Information Box */}
-            {isFreePlanEnabled ? (
+            {!isAgency && (isFreePlanEnabled ? (
               <div
                 style={{
                   display: 'flex',
@@ -1538,7 +1545,7 @@ export function AdminUsers() {
                   </div>
                 </div>
               </div>
-            )}
+            ))}
 
             <label className="ob-field">
               {t('Full name', 'الاسم الكامل')}
@@ -1564,11 +1571,31 @@ export function AdminUsers() {
               <>
                 <label className="ob-field">
                   {t('Password', 'كلمة المرور')}
-                  <input name="password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" placeholder={t('At least 8 characters', '8 أحرف على الأقل')} />
+                  <div className="ob-password" dir="ltr">
+                    <input name="password" type={showPassword ? 'text' : 'password'} required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" placeholder={t('At least 8 characters', '8 أحرف على الأقل')} />
+                    <button
+                      type="button"
+                      className="ob-icon"
+                      aria-label={t(showPassword ? 'Hide password' : 'Show password', showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور')}
+                      onClick={() => setShowPassword(v => !v)}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </label>
                 <label className="ob-field">
                   {t('Confirm password', 'تأكيد كلمة المرور')}
-                  <input name="confirmPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" />
+                  <div className="ob-password" dir="ltr">
+                    <input name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} required minLength={8} maxLength={128} autoComplete="new-password" dir="ltr" />
+                    <button
+                      type="button"
+                      className="ob-icon"
+                      aria-label={t(showConfirmPassword ? 'Hide password' : 'Show password', showConfirmPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور')}
+                      onClick={() => setShowConfirmPassword(v => !v)}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </label>
               </>
             )}
@@ -1593,7 +1620,7 @@ export function AdminUsers() {
             )}
             <button className="ob-primary ob-full" type="submit" disabled={busy}>
               {isAgency ? <UserCheck size={16} /> : <Mail size={16} />}
-              {isAgency ? t('Create User Agency account', 'إنشاء حساب وكالة المستخدم') : t('Send invite & activation link', 'إرسال دعوة ورابط التفعيل')}
+              {isAgency ? t('Create Agency user account', 'إنشاء حساب مستخدم الوكالة') : t('Send invite & activation link', 'إرسال دعوة ورابط التفعيل')}
             </button>
           </form>
         )}

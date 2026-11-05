@@ -22,7 +22,7 @@
 .ob-root .ob-eyebrow,.ob-admin .ob-eyebrow{color:var(--ob-accent)}
 .ob-root :is(.ob-step-heading p,.ob-step-sidebar>p,.ob-sidebar-bottom,.ob-sidebar-bottom b,.ob-sidebar-bottom p,.ob-section-note,.ob-setup-topline,.ob-setup-footer>span,.ob-demo-note),.ob-admin :is(.ob-page-head p,.ob-demo-note,.ob-empty p),.ob-dialog :is(p,.ob-demo-note){color:var(--ob-muted)}
 .ob-root .ob-field,.ob-dialog .ob-field{font-size:12px;color:var(--ob-secondary);margin-bottom:16px}
-.ob-root .ob-field>input,.ob-root .ob-field>textarea,.ob-root .ob-field>div>input,.ob-dialog .ob-field>input{background:var(--ob-surface);border-color:var(--ob-border);color:var(--ob-ink);height:38px;font-size:12px;border-radius:8px}
+.ob-root .ob-field>input,.ob-root .ob-field>textarea,.ob-root .ob-field>div>input,.ob-dialog .ob-field>input,.ob-dialog .ob-field>div>input{background:var(--ob-surface);border-color:var(--ob-border);color:var(--ob-ink);height:38px;font-size:12px;border-radius:8px}
 .ob-root .ob-field>textarea{height:auto;min-height:100px}
 .ob-root .ob-field input::placeholder,.ob-root .ob-field textarea::placeholder,.ob-dialog input::placeholder,.ob-admin input::placeholder{color:var(--ob-muted);opacity:1}
 .ob-root .ob-field>small,.ob-dialog .ob-field>small,.ob-root .ob-optional{color:var(--ob-muted);font-size:10px}
@@ -115,7 +115,7 @@
 .ob-strength-bars>span{height:4px;background:var(--ob-border);flex:1;border-radius:4px;transition:background .2s}
 .ob-strength-bars .strength-1{background:#dd7e90}.ob-strength-bars .strength-2{background:#d7a342}.ob-strength-bars .strength-3{background:#35b58e}
 .ob-strength>small{font-size:9px;color:var(--ob-muted);white-space:nowrap}
-.ob-root .ob-password .ob-icon{top:5px}
+.ob-root .ob-password .ob-icon,.ob-dialog .ob-password .ob-icon{top:5px}
 .ob-admin .ob-stats>div,.ob-admin .ob-table-card{background:var(--ob-surface);border-color:var(--ob-border)}
 .ob-admin .ob-stats>div>svg{background:var(--ob-soft);color:var(--ob-accent)}
 .ob-admin .ob-stats span{color:var(--ob-muted)}

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Business Assets Hub — Professional UI/UX (Admin & User Agency Workspaces)
+   Business Assets Hub — Professional UI/UX (Admin & Agency user workspaces)
    ========================================================================== */
 
 .ba-hub {
@@ -215,7 +215,7 @@
   text-overflow: ellipsis;
 }
 
-/* User Agency Spotlight & Workspace Scope Bar */
+/* Agency user Spotlight & Workspace Scope Bar */
 .ba-agency-bar {
   display: flex;
   flex-direction: column;
@@ -310,7 +310,7 @@
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
 }
 
-/* User Agency Cards Strip */
+/* Agency user Cards Strip */
 .ba-agency-strip {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
@@ -328,7 +328,6 @@
   background: var(--adm-soft, #f8fafc);
   border: 1px solid var(--adm-border, #e2e8f0);
   transition: all 0.16s ease;
-  cursor: pointer;
 }
 
 .ba-agency-card:hover {
@@ -348,6 +347,13 @@
   align-items: center;
   gap: 11px;
   min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
 }
 
 .ba-avatar {

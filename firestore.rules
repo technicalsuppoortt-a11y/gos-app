@@ -111,6 +111,13 @@ service cloud.firestore {
         superAdmin()
       );
     }
+    function agencyWorkspace(tenantId) {
+      let path = /databases/$(database)/documents/tenants/$(tenantId);
+      return exists(path) && get(path).data.get('accountType', '') == 'agency';
+    }
+    function agencyUser() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('accountType', '') == 'agency';
+    }
     match /billingPlans/{planId} {
       allow read: if superAdmin() || featureAdmin() || signedIn() && (
         resource.data.ownerId == request.auth.uid ||
@@ -163,7 +170,10 @@ service cloud.firestore {
       allow write: if false;
     }
     match /communicationLedger/{entryId} {
-      allow read: if superAdmin() || featureAdmin() || (signedIn() && (request.auth.uid == resource.data.tenant_id || request.auth.uid == resource.data.subscriber_id));
+      allow read: if superAdmin() || featureAdmin() || (signedIn() && (
+        request.auth.uid == resource.data.tenant_id ||
+        request.auth.uid == resource.data.subscriber_id && (!agencyUser() || resource.data.get('wallet_id', resource.data.subscriber_id) == resource.data.subscriber_id)
+      ));
       allow write: if false;
     }
     // Provider costs are never exposed to tenants.
@@ -294,7 +304,7 @@ service cloud.firestore {
     }
     match /tenants/{tenantId} {
       // Admin reads do not depend on membership documents in each client workspace.
-      allow get, list: if featureAdmin() || superAdmin() || tenant(tenantId) || signedIn();
+      allow get, list: if featureAdmin() || superAdmin() || tenant(tenantId) || signedIn() && resource.data.get('accountType', '') != 'agency';
       match /{adminResource}/{adminRecord} {
         allow read: if (featureAdmin() || superAdmin() || tenant(tenantId) || permit(tenantId, 'settings')) && adminResource in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'userTemplates', 'files', 'handoffLogs', 'aiUsage', 'modelAllocations'];
       }
@@ -306,7 +316,7 @@ service cloud.firestore {
         allow delete: if signedIn() && (permit(tenantId, 'settings') || featureAdmin() || superAdmin());
       }
       match /businessAssets/{assetId} {
-        allow read: if tenant(tenantId) || signedIn();
+        allow read: if tenant(tenantId) || (signedIn() && !agencyWorkspace(tenantId) && !agencyUser());
         allow create, update: if (permit(tenantId, 'settings') || featureAdmin() || superAdmin())
           && request.resource.data.keys().hasOnly(['name', 'category', 'url', 'path', 'createdAt', 'createdBy'])
           && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 180
@@ -328,7 +338,14 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.token.tenantId == tenantId
         && platformOwner(resource.data.ownerUid);
       allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
-      allow create, update, delete: if signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
+      function tenantAdmin() { return signedIn() && profile().role in ['SUPER_ADMIN', 'ADMIN']; }
+      allow create: if tenantAdmin() && request.resource.data.get('accountType', '') != 'agency'
+        && !request.resource.data.keys().hasAny(['billingOwnerId', 'agencyLandingSeeded']);
+      allow update: if tenantAdmin()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['billingOwnerId', 'agencyLandingSeeded'])
+        && (resource.data.get('accountType', '') != 'agency' && request.resource.data.get('accountType', '') != 'agency'
+          || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['accountType', 'ownerId', 'ownerUid']));
+      allow delete: if tenantAdmin() && resource.data.get('accountType', '') != 'agency';
       match /members/{userId} {
         allow read: if tenant(tenantId) || signedIn() && (profile().role == 'SUPER_ADMIN' || profile().role == 'ADMIN');
         allow create, delete: if false;
@@ -347,8 +364,9 @@ service cloud.firestore {
           && request.resource.data.updatedBy == request.auth.uid
           && request.resource.data.value is map;
         // Transitional editor preferences. Canonical financial/access records are never writable here.
-        allow create, update: if !isProfileSettings() && (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
-        allow delete: if !isProfileSettings() && permit(tenantId, 'settings');
+        allow create, update: if stateId != 'gos.agency.landing-seed.v1' && request.resource.data.key != 'gos.agency.landing-seed.v1'
+          && !isProfileSettings() && (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
+        allow delete: if stateId != 'gos.agency.landing-seed.v1' && !isProfileSettings() && permit(tenantId, 'settings');
       }
       match /products/{productId}/publicReviews/current {
         // Public review projection contains no customer emails or order data.

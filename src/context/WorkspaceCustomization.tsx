@@ -1,8 +1,15 @@
-import { useCallback, useLayoutEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  preferenceDefaults, savePersonalPreferences, useWorkspacePreferenceState, WorkspacePreferencesContext,
-  type PersonalPreferences, type WorkspacePreferences,
+  inheritWorkspacePreferences,
+  preferenceDefaults,
+   sanitizeWorkspacePreferences,
+  savePersonalPreferences,
+  saveWorkspacePreferences,
+  useWorkspacePreferenceState,
+  WorkspacePreferencesContext,
+  type PersonalPreferences,
+  type WorkspacePreferences,
 } from '../backend/workspacePreferences';
 import { backendError } from '../backend/firebase';
 import { usePhoenixBrand } from '../backend/phoenixBrand';
@@ -12,7 +19,7 @@ import './workspace-customization.css';
 
 export function WorkspaceCustomization({ children, publicPage }: { children: ReactNode; publicPage?: boolean }) {
   const state = useWorkspacePreferenceState();
-  const { uid } = state;
+  const { uid, tenantId, canPublish, publicSync } = state;
   const scope = publicPage ? 'public' : state.scope;
   const values = publicPage ? state.publicValues : state.values;
   const personal = publicPage ? {} : state.personal;
@@ -47,13 +54,13 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     const root = document.documentElement;
     if (theme === 'violet') delete root.dataset.workspaceTheme;
     else root.dataset.workspaceTheme = theme;
-  }, [theme]);
+  }, [theme, publicSync]);
   useLayoutEffect(() => {
     dispatch(setLanguage(language));
-  }, [scope, language, dispatch]);
+  }, [scope, language, publicSync, dispatch]);
   useLayoutEffect(() => {
     dispatch(setCurrency(currency));
-  }, [scope, currency, dispatch]);
+  }, [scope, currency, publicSync, dispatch]);
   useLayoutEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => dispatch(setTheme(mode === 'system' ? (media.matches ? 'dark' : 'light') : mode));
@@ -61,10 +68,63 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     if (mode !== 'system') return;
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
-  }, [scope, mode, dispatch]);
+  }, [scope, mode, publicSync, dispatch]);
+
+  const adminSyncedRef = useRef('');
+  useEffect(() => {
+    if (publicPage || !canPublish || !tenantId || state.loading || previewValues) return;
+    const desired = sanitizeWorkspacePreferences(effective);
+    const currentPublic = state.publicValues ? sanitizeWorkspacePreferences(state.publicValues) : null;
+    const desiredKey = JSON.stringify({
+      name: desired.name,
+      logoUrl: desired.logoUrl,
+      theme: desired.theme,
+      language: desired.language,
+      currency: desired.currency,
+      mode: desired.mode,
+      timezone: desired.timezone,
+    });
+    const publicKey = currentPublic
+      ? JSON.stringify({
+          name: currentPublic.name,
+          logoUrl: currentPublic.logoUrl,
+          theme: currentPublic.theme,
+          language: currentPublic.language,
+          currency: currentPublic.currency,
+          mode: currentPublic.mode,
+          timezone: currentPublic.timezone,
+        })
+      : '';
+    if (desiredKey !== publicKey && adminSyncedRef.current !== desiredKey) {
+      adminSyncedRef.current = desiredKey;
+      void saveWorkspacePreferences(tenantId, desired, true, inheritWorkspacePreferences).catch(() => {});
+    }
+  }, [publicPage, canPublish, tenantId, state.loading, state.publicValues, effective, previewValues]);
 
   const setPreference = uid && !publicPage ? (patch: PersonalPreferences) => {
     setLastTopbarChange({ scope, patch });
+    if (canPublish && tenantId) {
+      const nextWorkspace = sanitizeWorkspacePreferences({
+        ...effective,
+        ...(patch.language ? { language: patch.language } : {}),
+        ...(patch.currency ? { currency: patch.currency } : {}),
+        ...(patch.mode ? { mode: patch.mode } : {}),
+        ...(patch.timezone ? { timezone: patch.timezone } : {}),
+      });
+      adminSyncedRef.current = JSON.stringify({
+        name: nextWorkspace.name,
+        logoUrl: nextWorkspace.logoUrl,
+        theme: nextWorkspace.theme,
+        language: nextWorkspace.language,
+        currency: nextWorkspace.currency,
+        mode: nextWorkspace.mode,
+        timezone: nextWorkspace.timezone,
+      });
+      void saveWorkspacePreferences(tenantId, nextWorkspace, true, inheritWorkspacePreferences).catch(error =>
+        showToast.error(backendError(error))
+      );
+      return;
+    }
     void savePersonalPreferences(uid, patch).catch(error => showToast.error(backendError(error)));
   } : undefined;
   return (

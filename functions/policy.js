@@ -1,5 +1,10 @@
+import { agencyBillingOwnerId } from './agency-billing.js';
+
 export function mayManageUser(actor, target) {
   if (target.id === actor.uid || target.role === 'SUPER_ADMIN') return false;
+  if (target.accountType === 'agency' && actor.role === 'ADMIN') {
+    return target.role === 'USER' && agencyBillingOwnerId(target) === actor.uid;
+  }
   return actor.role === 'SUPER_ADMIN' || actor.role === 'ADMIN' && target.role === 'USER';
 }
 export function maySend({ lead, conversation, integration, ai = false }) {

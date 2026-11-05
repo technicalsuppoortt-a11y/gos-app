@@ -38,9 +38,8 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { auth, backendError, db, primaryDb, storage } from '../../backend/firebase';
+import { auth, backendError, callBackend, db, primaryDb, storage } from '../../backend/firebase';
 import { decodeFirestoreValue } from '../../backend/firestoreCodec';
-import { ensureAgencyLandingInFirestore } from '../../backend/agencyLanding';
 import { switchToUser } from '../../backend/impersonation';
 import { uploadBrandFile } from '../../backend/workspacePreferences';
 import { AGENCY_LANDING_PREFIX } from '../agency-landing-asset';
@@ -89,6 +88,15 @@ interface WorkspaceDirectoryEntry {
   ownerEmail: string;
   accountType: 'agency' | 'team' | 'admin';
   userRecord?: Invite;
+}
+
+interface WorkspaceMetadata {
+  accountType?: 'agency';
+  ownerId?: string;
+  ownerUid?: string;
+  ownerName?: string;
+  name?: string;
+  agencyLandingSeeded?: boolean;
 }
 
 type CategoryFilter =
@@ -150,8 +158,8 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
 
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // Directory state (for Admin multi-workspace & User Agency sync)
-  const [tenantsMap, setTenantsMap] = useState<Record<string, Record<string, any>>>({});
+  // Directory state (for Admin multi-workspace & Agency user sync)
+  const [tenantsMap, setTenantsMap] = useState<Record<string, WorkspaceMetadata>>({});
   const [usersMap, setUsersMap] = useState<Record<string, Invite>>({});
   const [sharedAssetsMap, setSharedAssetsMap] = useState<Record<string, SharedBrandAsset[]>>({});
   const [digitalAssetsMap, setDigitalAssetsMap] = useState<Record<string, WorkspaceDigitalAsset[]>>({});
@@ -196,23 +204,22 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
     setFilePreviewUrl('');
   }, [file]);
 
-  // Real-time listeners for workspaces, User Agency accounts, digital assets, and brand files
+  // Real-time listeners for workspaces, Agency user accounts, digital assets, and brand files
   useEffect(() => {
     setLoading(true);
     setError('');
+    setTenantsMap({});
+    setUsersMap({});
     setSharedAssetsMap({});
     setDigitalAssetsMap({});
 
     if (!isAdminView) {
-      // Single-workspace mode (User / User Agency dashboard)
+      // Single-workspace mode (User / Agency user dashboard)
       const unsubTenant = onSnapshot(
         doc(db, 'tenants', tenantId),
         snap => {
           const data = snap.data() ?? {};
           setTenantsMap({ [tenantId]: data });
-          if (data.accountType === 'agency') {
-            void ensureAgencyLandingInFirestore(tenantId);
-          }
         },
         () => {}
       );
@@ -277,6 +284,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
 
     // Admin multi-workspace mode: watch all tenants + users + each tenant's businessAssets & digital assets
     const perTenantUnsubs = new Map<string, () => void>();
+    const preparing = new Set<string>();
 
     const attachWorkspaceListeners = (wid: string) => {
       if (!wid || perTenantUnsubs.has(wid)) return;
@@ -348,9 +356,6 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
           nextUsers[item.id] = invite;
           if (invite.tenantId) {
             attachWorkspaceListeners(invite.tenantId);
-            if (invite.accountType === 'agency') {
-              void ensureAgencyLandingInFirestore(invite.tenantId);
-            }
           }
         });
         setUsersMap(nextUsers);
@@ -360,14 +365,18 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
 
     const unsubTenants = onSnapshot(
       collection(primaryDb, 'tenants'),
+      { includeMetadataChanges: true },
       snap => {
-        const nextTenants: Record<string, Record<string, any>> = {};
+        const nextTenants: Record<string, WorkspaceMetadata> = {};
         snap.docs.forEach(item => {
-          const data = item.data();
+          const data: WorkspaceMetadata = item.data();
           nextTenants[item.id] = data;
           attachWorkspaceListeners(item.id);
-          if (data.accountType === 'agency') {
-            void ensureAgencyLandingInFirestore(item.id);
+          if (!snap.metadata.fromCache && data.accountType === 'agency' && !data.agencyLandingSeeded && data.ownerId && !preparing.has(item.id)) {
+            preparing.add(item.id);
+            void callBackend('prepareAgencyWorkspace', { id: data.ownerId, language: ar ? 'ar' : 'en' }).catch(error => {
+              console.warn('Could not prepare the Agency user workspace.', error);
+            });
           }
         });
         setTenantsMap(nextTenants);
@@ -387,7 +396,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
     };
   }, [tenantId, isAdminView, ar]);
 
-  // Build normalized directory of workspaces (Admin, User Agencies, Team Members)
+  // Build normalized directory of workspaces (Admin, Agency users, Team Members)
   const workspaces = useMemo<WorkspaceDirectoryEntry[]>(() => {
     const entries = new Map<string, WorkspaceDirectoryEntry>();
 
@@ -579,15 +588,15 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
 
   const handleSwitchToWorkspace = async (ws: WorkspaceDirectoryEntry, targetPath = '/dashboard/websites') => {
     if (!ws.userRecord) {
-      showToast.info(t('Select a User Agency or Sub-Account to switch into.', 'اختر وكالة مستخدم أو حساباً فرعياً للتبديل إليه.'));
+      showToast.info(t('Select an Agency user or Sub-Account to switch into.', 'اختر مستخدم وكالة أو حساباً فرعياً للتبديل إليه.'));
       return;
     }
     setSwitchingWorkspaceId(ws.workspaceId);
     try {
-      await switchToUser(ws.userRecord.id, ws.userRecord.tenantId);
+      await switchToUser(ws.userRecord.id, ws.userRecord.tenantId, ws.accountType === 'agency' ? ws.userRecord : undefined);
       showToast.success(
         t(
-          `Switched to ${ws.ownerName} (${ws.accountType === 'agency' ? 'User Agency' : 'Sub-Account'})`,
+          `Switched to ${ws.ownerName} (${ws.accountType === 'agency' ? 'Agency user' : 'Sub-Account'})`,
           `تم التبديل إلى ${ws.ownerName}`
         )
       );
@@ -672,22 +681,22 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
           <span className="ba-eyebrow">
             <Sparkles size={13} />
             {isAdminView
-              ? t('PLATFORM & USER AGENCY ASSET HUB', 'مركز أصول المنصة ووكالات المستخدمين')
+              ? t('PLATFORM & AGENCY USER ASSET HUB', 'مركز أصول المنصة ومستخدمي الوكالات')
               : isCurrentUserAgency
-              ? t('USER AGENCY ISOLATED WORKSPACE', 'مساحة عمل وكالة المستخدم المستقلة')
+              ? t('AGENCY USER ISOLATED WORKSPACE', 'مساحة عمل مستخدم الوكالة المستقلة')
               : t('WORKSPACE BRAND & DIGITAL ASSETS', 'أصول الهوية والمواقع لمساحة العمل')}
           </span>
           <h1>{t('Business Assets', 'أصول الأعمال')}</h1>
           <p>
             {isAdminView
               ? t(
-                  'Control shared brand files, media kits, knowledge resources, and isolated User Agency websites & landing pages (/) from one command center.',
-                  'تحكم في ملفات الهوية والمواد الإعلامية والموارد المشتركة، بالإضافة إلى مواقع وصفحات هبوط حسابات User Agency المستقلة من مكان واحد.'
+                  'Control shared brand files, media kits, knowledge resources, and isolated Agency user websites & landing pages (/) from one command center.',
+                  'تحكم في ملفات الهوية والمواد الإعلامية والموارد المشتركة، بالإضافة إلى مواقع وصفحات هبوط حسابات Agency user المستقلة من مكان واحد.'
                 )
               : isCurrentUserAgency
               ? t(
-                  'Your User Agency workspace includes your independent copy of the main Landing Page (/) plus all websites, funnels, and brand kits you create — isolated from other accounts.',
-                  'تتضمن مساحة User Agency الخاصة بك نسخة مستقلة وقابلة للتعديل من صفحة الهبوط الرئيسية (/) وكل المواقع والملفات التي تنشئها بمعزل تام عن أي حساب آخر.'
+                  'Your Agency user workspace includes your independent copy of the main Landing Page (/) plus all websites, funnels, and brand kits you create — isolated from other accounts.',
+                  'تتضمن مساحة Agency user الخاصة بك نسخة مستقلة وقابلة للتعديل من صفحة الهبوط الرئيسية (/) وكل المواقع والملفات التي تنشئها بمعزل تام عن أي حساب آخر.'
                 )
               : t(
                   'Manage brand files, media kits, shared knowledge resources, and workspace websites in one place.',
@@ -706,7 +715,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
           {isAdminView && (
             <Link to="/admin/users" className="ba-btn">
               <Users size={15} />
-              {t('Manage User Agencies', 'إدارة حسابات User Agency')}
+              {t('Manage Agency users', 'إدارة حسابات Agency user')}
             </Link>
           )}
           <button
@@ -747,14 +756,14 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
           <div className="ba-kpi-meta">
             <span>
               {isAdminView
-                ? t('User Agency Workspaces', 'مساحات User Agency')
+                ? t('Agency user workspaces', 'مساحات Agency user')
                 : t('Workspace Isolation', 'استقلالية المساحة')}
             </span>
             <strong>
               {isAdminView
                 ? agencyWorkspaces.length
                 : isCurrentUserAgency
-                ? t('User Agency', 'وكالة مستخدم')
+                ? t('Agency user', 'مستخدم وكالة')
                 : t('Isolated', 'مستقلة')}
             </strong>
             <small>
@@ -804,7 +813,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
         </div>
       </div>
 
-      {/* Admin Scope & User Agency Switcher Strip */}
+      {/* Admin Scope & Agency user Switcher Strip */}
       {isAdminView && (
         <div className="ba-agency-bar">
           <div className="ba-agency-bar-top">
@@ -812,7 +821,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
               {(
                 [
                   { id: 'all', label: t('All Workspaces', 'كل المساحات'), count: workspaces.length },
-                  { id: 'agency', label: t('User Agency', 'وكالة مستخدم (User Agency)'), count: agencyWorkspaces.length },
+                  { id: 'agency', label: t('Agency user', 'مستخدم وكالة (Agency user)'), count: agencyWorkspaces.length },
                   {
                     id: 'team',
                     label: t('Team Members', 'أعضاء الفريق'),
@@ -854,7 +863,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                 </option>
                 {workspaces.map(ws => (
                   <option key={ws.workspaceId} value={ws.workspaceId}>
-                    {ws.ownerName} ({ws.accountType === 'agency' ? 'User Agency' : ws.accountType === 'admin' ? 'Admin' : 'Team Member'})
+                    {ws.ownerName} ({ws.accountType === 'agency' ? 'Agency user' : ws.accountType === 'admin' ? 'Admin' : 'Team Member'})
                   </option>
                 ))}
               </select>
@@ -871,44 +880,48 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
             </div>
           </div>
 
-          {/* User Agency Quick Directory Cards */}
+          {/* Agency user Quick Directory Cards */}
           {agencyWorkspaces.length > 0 ? (
             <div className="ba-agency-strip">
               {agencyWorkspaces.map(ws => {
                 const wsDigital = digitalAssetsMap[ws.workspaceId] ?? [];
                 const wsShared = sharedAssetsMap[ws.workspaceId] ?? [];
                 const hasRootLanding = wsDigital.some(a => a.isRootLanding);
+                const sites = wsDigital.filter(a => a.subtype !== 'Forms').length;
+                const forms = wsDigital.length - sites;
                 const isSelected = selectedWorkspaceId === ws.workspaceId;
                 return (
-                  <div
-                    key={ws.workspaceId}
-                    className={`ba-agency-card${isSelected ? ' is-selected' : ''}`}
-                    onClick={() =>
-                      setSelectedWorkspaceId(prev =>
-                        prev === ws.workspaceId ? '' : ws.workspaceId
-                      )
-                    }
-                  >
-                    <div className="ba-agency-card-head">
+                  <div key={ws.workspaceId} className={`ba-agency-card${isSelected ? ' is-selected' : ''}`}>
+                    <button
+                      type="button"
+                      className="ba-agency-card-head"
+                      aria-pressed={isSelected}
+                      aria-label={t(`Filter assets for ${ws.ownerName}`, `تصفية أصول ${ws.ownerName}`)}
+                      onClick={() => {
+                        setScopeFilter('agency');
+                        setSelectedWorkspaceId(isSelected ? '' : ws.workspaceId);
+                      }}
+                    >
                       <span className="ba-avatar">{getInitials(ws.ownerName)}</span>
-                      <div className="ba-agency-card-info">
-                        <div className="ba-agency-card-title">
+                      <span className="ba-agency-card-info">
+                        <span className="ba-agency-card-title">
                           <strong>{ws.ownerName}</strong>
                           <span className="ba-role-badge agency">
                             <Sparkles size={10} />
-                            {t('User Agency', 'User Agency')}
+                            {t('Agency user', 'مستخدم وكالة')}
                           </span>
-                        </div>
+                        </span>
                         <small dir="ltr">{ws.ownerEmail || ws.workspaceId}</small>
-                      </div>
-                    </div>
+                      </span>
+                    </button>
 
                     <div className="ba-agency-card-foot">
                       <div className="ba-agency-stats">
                         <span>
                           <Globe2 size={12} />
-                          {wsDigital.length} {t('Sites/Funnels', 'مواقع')}
+                          {sites} {t('Sites/Funnels', 'مواقع ومسارات')}
                         </span>
+                        {forms > 0 && <span><FileText size={12}/>{forms} {t('Forms', 'نماذج')}</span>}
                         <span>
                           <Palette size={12} />
                           {wsShared.length} {t('Files', 'ملفات')}
@@ -930,12 +943,12 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                             e.stopPropagation();
                             void handleSwitchToWorkspace(ws, '/dashboard/websites');
                           }}
-                          title={t('Open this User Agency dashboard', 'فتح لوحة تحكم وكالة المستخدم')}
+                          title={t('Open this Agency user dashboard', 'فتح لوحة تحكم مستخدم الوكالة')}
                         >
                           <ArrowRightLeft size={12} />
                           {switchingWorkspaceId === ws.workspaceId
                             ? t('Switching…', 'جارٍ التبديل…')
-                            : t('Open Agency', 'فتح الحساب')}
+                            : t('Open workspace', 'فتح مساحة العمل')}
                         </button>
                       )}
                     </div>
@@ -962,14 +975,14 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                 <Sparkles size={16} style={{ color: '#6d28d9', flexShrink: 0 }} />
                 <span>
                   {t(
-                    'Need an isolated User Agency account with its own editable copy of the main Landing Page (/)? Create one in Sub Accounts.',
-                    'هل تريد إنشاء حساب User Agency مستقل مع نسخة قابلة للتعديل من صفحة الهبوط الرئيسية (/)؟ يمكنك إنشاؤه من قسم الحسابات الفرعية.'
+                    'Need an isolated Agency user account with its own editable copy of the main Landing Page (/)? Create one in Sub Accounts.',
+                    'هل تريد إنشاء حساب Agency user مستقل مع نسخة قابلة للتعديل من صفحة الهبوط الرئيسية (/)؟ يمكنك إنشاؤه من قسم الحسابات الفرعية.'
                   )}
                 </span>
               </div>
               <Link to="/admin/users" className="ba-btn sm primary">
                 <Plus size={13} />
-                {t('Create User Agency', 'إنشاء User Agency')}
+                {t('Create Agency user', 'إنشاء Agency user')}
               </Link>
             </div>
           )}
@@ -1005,14 +1018,14 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
             <div className="ba-composer-fields">
               {isAdminView && (
                 <label className="ba-field">
-                  <span>{t('Target Workspace / User Agency', 'مساحة العمل المستهدفة / User Agency')}</span>
+                  <span>{t('Target Workspace / Agency user', 'مساحة العمل المستهدفة / Agency user')}</span>
                   <select
                     value={targetWorkspace}
                     onChange={e => setTargetWorkspace(e.target.value)}
                   >
                     {workspaces.map(ws => (
                       <option key={ws.workspaceId} value={ws.workspaceId}>
-                        {ws.ownerName} — {ws.accountType === 'agency' ? 'User Agency' : ws.accountType === 'admin' ? 'Admin Workspace' : 'Team Member'} ({ws.name})
+                        {ws.ownerName} — {ws.accountType === 'agency' ? 'Agency user' : ws.accountType === 'admin' ? 'Admin Workspace' : 'Team Member'} ({ws.name})
                       </option>
                     ))}
                   </select>
@@ -1293,7 +1306,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
               <Layers3 size={24} />
             </span>
             <h3>{t('Loading business assets…', 'جارٍ تحميل أصول الأعمال…')}</h3>
-            <p>{t('Syncing workspace brand files and User Agency digital experiences.', 'جارٍ مزامنة ملفات الهوية ومواقع وكالات المستخدمين.')}</p>
+            <p>{t('Syncing workspace brand files and Agency user digital experiences.', 'جارٍ مزامنة ملفات الهوية ومواقع مستخدمي الوكالات.')}</p>
           </div>
         ) : filteredDigital.length === 0 && filteredShared.length === 0 ? (
           <div className="ba-empty">
@@ -1308,8 +1321,8 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                     'جرّب مسح البحث أو تغيير فلتر مساحة العمل أو الفئة.'
                   )
                 : t(
-                    'Upload your first brand asset, media kit, or knowledge resource above, or create a User Agency account to provision its Landing Page (/).',
-                    'ارفع أول ملف هوية أو حقيبة إعلامية من الأعلى، أو أنشئ حساب User Agency لتجهيز صفحة الهبوط (/) تلقائياً.'
+                    'Upload a brand asset, media kit, or knowledge resource, or create an Agency user to seed an editable landing page.',
+                    'ارفع أول ملف هوية أو حقيبة إعلامية من الأعلى، أو أنشئ حساب Agency user لتجهيز صفحة الهبوط (/) تلقائياً.'
                   )}
             </p>
             {(search || categoryFilter !== 'all' || selectedWorkspaceId || scopeFilter !== 'all') && (
@@ -1329,7 +1342,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
           </div>
         ) : viewMode === 'grid' ? (
           <div className="ba-asset-grid">
-            {/* Digital Assets (User Agency Landing Pages, Websites, Funnels, Forms) */}
+            {/* Digital Assets (Agency user Landing Pages, Websites, Funnels, Forms) */}
             {filteredDigital.map(asset => {
               const ws = workspaceById[asset.workspaceId];
               const isAgencyOwner = ws?.accountType === 'agency';
@@ -1380,7 +1393,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                       {asset.description ||
                         (asset.isRootLanding
                           ? t(
-                              'Editable copy of the main platform landing page (/) isolated to this User Agency workspace.',
+                              'Editable copy of the main platform landing page (/) isolated to this Agency user workspace.',
                               'نسخة قابلة للتعديل من صفحة الهبوط الرئيسية (/) مخصصة ومستقلة لهذه الوكالة.'
                             )
                           : t('Workspace digital experience managed in Website & Funnel Builder.', 'تجربة رقمية مُدارة عبر منشئ المواقع والأقماع.'))}
@@ -1408,7 +1421,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                           }`}
                         >
                           {isAgencyOwner
-                            ? 'User Agency'
+                            ? 'Agency user'
                             : ws.accountType === 'admin'
                             ? 'Admin'
                             : 'Team Member'}
@@ -1547,7 +1560,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                           }`}
                         >
                           {isAgencyOwner
-                            ? 'User Agency'
+                            ? 'Agency user'
                             : ws.accountType === 'admin'
                             ? 'Admin'
                             : 'Team Member'}
@@ -1648,7 +1661,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                               }`}
                             >
                               {isAgencyOwner
-                                ? 'User Agency'
+                                ? 'Agency user'
                                 : ws.accountType === 'admin'
                                 ? 'Admin'
                                 : 'Team Member'}
@@ -1715,7 +1728,7 @@ export function BusinessAssets({ tenantId }: { tenantId: string }) {
                               }`}
                             >
                               {isAgencyOwner
-                                ? 'User Agency'
+                                ? 'Agency user'
                                 : ws.accountType === 'admin'
                                 ? 'Admin'
                                 : 'Team Member'}

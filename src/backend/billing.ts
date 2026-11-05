@@ -60,6 +60,34 @@ export function useBillingIdentity() {
 
 export const useSubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null);
 export const useWallet = (uid: string | null) => useDoc<BillingWallet>(uid ? `billingWallets/${uid}` : null);
+
+type AgencyBillingSummary = { active: boolean; credits: number; communicationBalance: number; currency: string };
+
+export function useAgencyBilling(uid: string | null): Live<AgencyBillingSummary | null> {
+  const [state, setState] = useState<Live<AgencyBillingSummary | null> & { uid: string | null }>({ uid: null, data: null, loading: false, error: '' });
+  useEffect(() => {
+    if (!uid) return;
+    let active = true;
+    const refresh = async () => {
+      try {
+        if (auth.currentUser?.uid !== uid) throw new Error('Sign in as the Agency user to view shared billing.');
+        const data = await billing<AgencyBillingSummary>('sharedBilling');
+        if (active) setState({ uid, data, loading: false, error: '' });
+      } catch (error) {
+        if (active) setState({ uid, data: null, loading: false, error: backendError(error) });
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [uid]);
+  return state.uid === uid ? state : { data: null, loading: Boolean(uid), error: '' };
+}
 export const useTrial = (ownerId: string | null) => useDoc<BillingPlan>(ownerId ? `billingPlans/${ownerId}__trial` : null);
 export const useSubscribers = (providerId: string | null) => useCollection<BillingSubscription>('billingSubscriptions', 'providerId', providerId);
 export const useProviderWallets = (providerId: string | null) => useCollection<BillingWallet>('billingWallets', 'providerId', providerId);

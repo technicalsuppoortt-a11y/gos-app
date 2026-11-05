@@ -16,6 +16,7 @@ export interface SubAccountFallback {
   email?: string;
   tenantId?: string;
   avatar?: string;
+  accountType?: User['accountType'];
 }
 
 function readCachedAccount(id: string): SubAccountFallback | null {
@@ -53,6 +54,7 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
   const adminToken = state.impersonation?.token || state.token || '';
   switching = true;
   let app: FirebaseApp | null = null;
+  let switchError: unknown;
   try {
     try {
       const result = await callBackend<{ customToken: string; user: User; tenant: Tenant }>('manageUser', {
@@ -70,7 +72,8 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
       clearPhoenixBrand();
       store.dispatch(startImpersonation({ user: result.user, tenant: result.tenant, role: 'USER', token }));
       return;
-    } catch {
+    } catch (error) {
+      switchError = error;
       // Clean up partial secondary app if Cloud Function or customToken sign-in failed
       if (app) {
         await signOut(getAuth(app)).catch(() => {});
@@ -90,6 +93,7 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
       docData = undefined;
     }
     const cached = fallbackAccount || readCachedAccount(id);
+    if (docData?.accountType === 'agency' || cached?.accountType === 'agency') throw switchError;
     const resolvedName = docData?.name || cached?.name || docData?.email?.split('@')[0] || cached?.email?.split('@')[0] || 'Sub-Account';
     const resolvedEmail = docData?.email || cached?.email || '';
     const resolvedAvatar = docData?.avatar || cached?.avatar;

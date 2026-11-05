@@ -47,10 +47,12 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
-  useUILanguage();
+  const ar = useUILanguage().startsWith('ar');
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
-  const { data: subscription } = useSubscription(currentUser?.id ?? null);
+  const agency = currentUser?.accountType === 'agency';
+  const { data: subscription } = useSubscription(agency ? null : currentUser?.id ?? null);
+  const planLabel = agency ? (ar ? 'الفوترة المشتركة' : 'Shared billing') : translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan');
   const initials = (currentUser?.name || 'MJ').slice(0, 2).toUpperCase();
   const navigate = useNavigate();
   const location = useLocation();
@@ -228,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
-      <button type="button" onClick={() => navigate('/dashboard/settings/plans')} aria-label={translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')} className="layout-plan-cta"><Sparkles size={15}/><span>{translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan')}</span></button>
+      <button type="button" onClick={() => navigate(agency ? '/dashboard/settings/billing' : '/dashboard/settings/plans')} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>
@@ -238,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           aria-expanded={profileOpen}
         >
           <span className="layout-profile-avatar">{initials}</span>
-          <span><b>{currentUser?.name || translateText("Mohamed Joe")}</b><small>{translateText("Business Owner")}</small></span>
+          <span><b>{currentUser?.name || translateText("Mohamed Joe")}</b><small>{agency ? (ar ? 'مستخدم وكالة' : 'Agency user') : translateText("Business Owner")}</small></span>
           <ChevronDown size={14} className={`transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`}/>
         </button>
 
