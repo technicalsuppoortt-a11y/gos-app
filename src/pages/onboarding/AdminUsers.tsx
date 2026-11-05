@@ -684,6 +684,7 @@ export function AdminUsers() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [filter, setFilter] = React.useState('All');
+  const [roleFilter, setRoleFilter] = React.useState('All');
 
   // Pagination states
   const [page, setPage] = React.useState(1);
@@ -797,6 +798,12 @@ export function AdminUsers() {
   };
 
   // Filtered users
+  const getAccountRoleType = (invite: Invite) => {
+    if (invite.accountType === 'agency') return 'AGENCY';
+    if (invite.role === 'SUPER_ADMIN' || invite.role === 'ADMIN') return 'ADMIN';
+    return 'USER';
+  };
+
   const filtered = invites.filter(i => {
     const q = query.trim().toLowerCase();
     const matchesQuery =
@@ -805,7 +812,8 @@ export function AdminUsers() {
       (i.name && i.name.toLowerCase().includes(q));
     const currentStatus = getStatus(i);
     const matchesFilter = filter === 'All' || currentStatus === filter;
-    return matchesQuery && matchesFilter;
+    const matchesRole = roleFilter === 'All' || getAccountRoleType(i) === roleFilter;
+    return matchesQuery && matchesFilter && matchesRole;
   });
 
   // Pagination calculation
@@ -818,6 +826,11 @@ export function AdminUsers() {
   // Dynamic counts for metrics
   const activeCount = invites.filter(i => getStatus(i) === 'Active').length;
   const pendingCount = invites.filter(i => getStatus(i) === 'Pending').length;
+  const inactiveCount = invites.filter(i => getStatus(i) === 'Inactive').length;
+  const teamCount = invites.filter(i => getAccountRoleType(i) === 'USER').length;
+  const agencyCount = invites.filter(i => getAccountRoleType(i) === 'AGENCY').length;
+  const adminCount = invites.filter(i => getAccountRoleType(i) === 'ADMIN').length;
+  const hasActiveFilters = query.trim() !== '' || filter !== 'All' || roleFilter !== 'All';
 
   return (
     <section className="ob-admin" dir={dir}>
@@ -864,25 +877,12 @@ export function AdminUsers() {
       <div className="ob-table-card">
         <div className="ob-table-head">
           <h2>
-            {t('Sub Accounts', 'الحسابات الفرعية')} <span>{invites.length}</span>
+            {t('Sub Accounts', 'الحسابات الفرعية')}{' '}
+            <span>{hasActiveFilters ? `${filtered.length}/${invites.length}` : invites.length}</span>
           </h2>
           <div className="ob-table-filters">
-            <Combobox
-              label={t('Filter sub-accounts by status', 'تصفية الحسابات حسب الحالة')}
-              value={filter}
-              dir={dir}
-              options={['All', 'Active', 'Pending', 'Inactive'].map(value => ({
-                value,
-                label: statusName(value),
-              }))}
-              portal={false}
-              onChange={val => {
-                setFilter(val);
-                setPage(1);
-              }}
-            />
             <label className="ob-search">
-              <Search size={16} />
+              <Search size={15} className="ob-search-icon" />
               <input
                 aria-label={t('Search sub-accounts', 'البحث عن الحسابات الفرعية')}
                 placeholder={t('Search by name or email…', 'ابحث بالاسم أو البريد…')}
@@ -892,7 +892,73 @@ export function AdminUsers() {
                   setPage(1);
                 }}
               />
+              {query && (
+                <button
+                  type="button"
+                  className="ob-search-clear"
+                  onClick={() => {
+                    setQuery('');
+                    setPage(1);
+                  }}
+                  aria-label={t('Clear search', 'مسح البحث')}
+                  title={t('Clear search', 'مسح البحث')}
+                >
+                  <X size={13} />
+                </button>
+              )}
             </label>
+            <div className="ob-filter-combo">
+              <Combobox
+                label={t('Filter sub-accounts by status', 'تصفية الحسابات حسب الحالة')}
+                value={filter}
+                dir={dir}
+                options={[
+                  { value: 'All', label: statusName('All'), badge: String(invites.length) },
+                  { value: 'Active', label: statusName('Active'), badge: String(activeCount) },
+                  { value: 'Pending', label: statusName('Pending'), badge: String(pendingCount) },
+                  { value: 'Inactive', label: statusName('Inactive'), badge: String(inactiveCount) },
+                ]}
+                portal={true}
+                onChange={val => {
+                  setFilter(val);
+                  setPage(1);
+                }}
+              />
+            </div>
+            <div className="ob-filter-combo">
+              <Combobox
+                label={t('Filter sub-accounts by role', 'تصفية الحسابات حسب الدور')}
+                value={roleFilter}
+                dir={dir}
+                options={[
+                  { value: 'All', label: t('All roles', 'كل الأدوار'), badge: String(invites.length) },
+                  { value: 'USER', label: t('Team member', 'عضو الفريق'), badge: String(teamCount) },
+                  { value: 'AGENCY', label: t('Agency user', 'مستخدم وكالة'), badge: String(agencyCount) },
+                  { value: 'ADMIN', label: t('Admin', 'مسؤول'), badge: String(adminCount) },
+                ]}
+                portal={true}
+                onChange={val => {
+                  setRoleFilter(val);
+                  setPage(1);
+                }}
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="ob-filter-reset"
+                onClick={() => {
+                  setQuery('');
+                  setFilter('All');
+                  setRoleFilter('All');
+                  setPage(1);
+                }}
+                title={t('Reset filters', 'إعادة ضبط الفلاتر')}
+              >
+                <X size={13} />
+                <span>{t('Reset', 'إعادة ضبط')}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1055,7 +1121,24 @@ export function AdminUsers() {
           )}
 
           {!!invites.length && !filtered.length && (
-            <p className="ob-empty">{t('No sub-accounts match your search.', 'لا توجد حسابات فرعية تطابق بحثك.')}</p>
+            <div className="ob-empty ob-empty-filtered">
+              <p>{t('No sub-accounts match your search or filter criteria.', 'لا توجد حسابات فرعية تطابق معايير البحث أو التصفية.')}</p>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="ob-secondary"
+                  onClick={() => {
+                    setQuery('');
+                    setFilter('All');
+                    setRoleFilter('All');
+                    setPage(1);
+                  }}
+                >
+                  <X size={14} />
+                  {t('Clear filters', 'مسح الفلاتر')}
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -1065,19 +1148,25 @@ export function AdminUsers() {
             <div className="ob-pagination-info">
               <div className="ob-rows-per-page">
                 <span>{t('Rows per page:', 'الصفوف بالصفحة:')}</span>
-                <DashboardSelect
-                  aria-label={t('Rows per page', 'الصفوف بالصفحة')}
-                  value={pageSize}
-                  onChange={e => {
-                    setPageSize(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="ob-rows-select"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                </DashboardSelect>
+                <div className="ob-rows-combo">
+                  <Combobox
+                    label={t('Rows per page', 'الصفوف بالصفحة')}
+                    value={String(pageSize)}
+                    dir={dir}
+                    portal={true}
+                    minPanelWidth={92}
+                    options={[
+                      { value: '5', label: '5' },
+                      { value: '10', label: '10' },
+                      { value: '25', label: '25' },
+                      { value: '50', label: '50' },
+                    ]}
+                    onChange={val => {
+                      setPageSize(Number(val));
+                      setPage(1);
+                    }}
+                  />
+                </div>
               </div>
               <span className="ob-pagination-counter">
                 {t(

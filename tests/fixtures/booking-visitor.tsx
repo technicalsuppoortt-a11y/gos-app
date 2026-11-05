@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { store } from '../../src/store';
 import PublicBookingPage from '../../src/pages/booking/PublicBookingPage';
 import { BookingLivePreview } from '../../src/pages/booking/BookingLivePreview';
+import { BookingBuilder } from '../../src/pages/booking/BookingBuilder';
 import { blankPage } from '../../src/pages/booking/model';
 import '../../src/index.css';
 
@@ -15,5 +16,11 @@ page.afterBooking = { ...page.afterBooking, scheduleAnother: options.get('anothe
 page.questions.push({ id:'company', label:'Company', type:'text', required:false, options:[] });
 if (options.has('split')) page.formSettings.nameType = 'firstlast';
 if (options.has('phone')) { page.locations = [{id:'phone',type:'phone',label:'Phone call',address:'',customLabel:'',linked:false}]; page.locationOptions = ['Phone call']; }
-Object.assign(window, { __bookingPage: page, __bookings: [], __failBooking: options.has('fail') });
-createRoot(document.getElementById('root')!).render(<Provider store={store}><MemoryRouter initialEntries={['/book/visitor']}>{options.has('preview') ? <div className="bk-editor-page" style={{height:'100vh',display:'flex'}}><BookingLivePreview page={page}/></div> : <Routes><Route path="/book/:slug" element={<PublicBookingPage/>}/></Routes>}</MemoryRouter></Provider>);
+if (options.has('screening')) page.qualificationQuestions = [
+  { id: 'budget', label: 'Project budget in USD', type: 'minimum', minimum: 1500 },
+  { id: 'scope', label: 'Project scope', type: 'choice', options: ['Strategy', 'One-off task'], accepted: ['Strategy'] },
+];
+Object.assign(window, { __bookingPage: page, __bookings: [], __bookMeetingCount: 0, __failBooking: options.has('fail') });
+createRoot(document.getElementById('root')!).render(<Provider store={store}><MemoryRouter initialEntries={['/book/visitor']}>{options.has('builder')
+  ? <BookingBuilder page={page} pages={[page]} close={() => {}} save={draft => { window.__bookingPage = draft; }}/>
+  : options.has('preview') ? <div className="bk-editor-page" style={{height:'100vh',display:'flex'}}><BookingLivePreview page={page}/></div> : <Routes><Route path="/book/:slug" element={<PublicBookingPage/>}/></Routes>}</MemoryRouter></Provider>);

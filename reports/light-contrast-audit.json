@@ -18,23 +18,18 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 200,
+      "line": 202,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 211,
+      "line": 213,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 259,
+      "line": 261,
       "utility": "text-gray-500"
-    },
-    {
-      "file": "src/components/layout/Header.tsx",
-      "line": 265,
-      "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
@@ -42,48 +37,53 @@
       "utility": "text-gray-400"
     },
     {
+      "file": "src/components/layout/Header.tsx",
+      "line": 269,
+      "utility": "text-gray-400"
+    },
+    {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 336,
+      "line": 337,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 352,
+      "line": 353,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 383,
+      "line": 384,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 396,
+      "line": 397,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 466,
+      "line": 467,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 499,
+      "line": 500,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 516,
+      "line": 517,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 565,
+      "line": 569,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 582,
+      "line": 586,
       "utility": "text-gray-400"
     },
     {

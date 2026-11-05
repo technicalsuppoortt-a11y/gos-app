@@ -24,6 +24,7 @@ export function Combobox({
   name,
   disabled = false,
   portal,
+  minPanelWidth = 180,
 }: {
   value: string;
   options: readonly ComboOption[];
@@ -36,6 +37,7 @@ export function Combobox({
   name?: string;
   disabled?: boolean;
   portal?: boolean;
+  minPanelWidth?: number;
 }) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -90,7 +92,7 @@ export function Combobox({
 
     const triggerWidth = r.width;
     // Strictly match trigger width, with safe bounds
-    const width = Math.min(Math.max(triggerWidth, 180), window.innerWidth - 24);
+    const width = Math.min(Math.max(triggerWidth, minPanelWidth), window.innerWidth - 24);
 
     const maxMenuHeight = 280;
     const estimatedMenuHeight = Math.min(
@@ -119,7 +121,7 @@ export function Combobox({
       width: Math.round(width),
       maxHeight: Math.round(maxHeight),
     });
-  }, [dir, filtered.length, searchable]);
+  }, [dir, filtered.length, minPanelWidth, searchable]);
 
   const openPanel = () => {
     const anchor = trigger.current;

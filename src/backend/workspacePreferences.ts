@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { doc, onSnapshot, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, primaryDb, storage, backendError } from './firebase';
-import { storageGet, storageSet } from '../utils/browserStorage';
 import type { RootState } from '../store';
 
 export const DEFAULT_BRAND_NAME = 'Upclick';
@@ -126,8 +125,8 @@ export function personalPreferencesRef(uid: string) {
   return doc(db, 'users', uid, 'preferences', 'dashboard');
 }
 
-export function profileSettingsRef(tenantId: string, uid: string) {
-  return doc(db, 'tenants', tenantId, 'workspaceState', encodeURIComponent(['gos-settings-v1', tenantId, uid].join(':')));
+export function profileSettingsRef(tenantId: string, uid: string, workspaceDb = db) {
+  return doc(workspaceDb, 'tenants', tenantId, 'workspaceState', encodeURIComponent(['gos-settings-v1', tenantId, uid].join(':')));
 }
 
 export async function savePersonalPreferences(uid: string, patch: PersonalPreferences) {
@@ -161,7 +160,7 @@ export function useWorkspacePreferenceState() {
   const tenantId = tenant?.id ?? '';
   const uid = user?.id ?? '';
   const adminUid = impersonation?.user.id ?? '';
-  const scope = JSON.stringify([tenantId, uid, adminUid]);
+  const scope = JSON.stringify([tenantId, uid, adminUid, role]);
   const [publicState, setPublicState] = useState<{ values: WorkspacePreferences | null; sync: string }>({
     values: null,
     sync: '',
@@ -183,6 +182,8 @@ export function useWorkspacePreferenceState() {
 
   useEffect(() => {
     if (!uid || !tenantId) return;
+    const workspaceDb = db;
+    let active = true;
     let tenantValues: WorkspacePreferences | null = null;
     let ownBrand: WorkspacePreferences | null = null;
     let parentBrand: WorkspacePreferences | null = null;
@@ -197,6 +198,7 @@ export function useWorkspacePreferenceState() {
     let stopLegacy = () => {};
 
     const publish = (source: string) => {
+      if (!active) return;
       pending.delete(source);
       // Client workspaces follow their linked provider's publication, even when
       // an older client document still contains a copy of the previous theme.
@@ -212,11 +214,11 @@ export function useWorkspacePreferenceState() {
     };
     const brand = (value: unknown) => value && typeof value === 'object' ? sanitizeWorkspacePreferences(value) : null;
 
-    const stopTenant = onSnapshot(doc(db, 'tenants', tenantId, 'preferences', 'general'), snapshot => {
+    const stopTenant = onSnapshot(doc(workspaceDb, 'tenants', tenantId, 'preferences', 'general'), snapshot => {
       tenantValues = brand(snapshot.data()?.values);
       publish('tenant');
     }, cause => failed('tenant', cause));
-    const stopSelf = onSnapshot(doc(db, 'dashboardBrands', uid), snapshot => {
+    const stopSelf = onSnapshot(doc(workspaceDb, 'dashboardBrands', uid), snapshot => {
       ownBrand = brand(snapshot.data()?.values);
       publish('self');
     }, cause => failed('self', cause));
@@ -225,9 +227,12 @@ export function useWorkspacePreferenceState() {
       publish('personal');
     }, cause => failed('personal', cause));
 
-    const stopProfile = onSnapshot(doc(db, 'users', uid), snapshot => {
+    const stopProfile = onSnapshot(doc(workspaceDb, 'users', uid), snapshot => {
+      if (!active) return;
       const profile = snapshot.data();
-      const linkedAdmin = profile?.supportParentId || adminUid;
+      const linkedAdmin = profile?.supportParentId ||
+        (profile?.accountType === 'agency' ? profile.billingOwnerId || profile.createdBy : '') ||
+        adminUid;
       if (linkedAdmin !== parentId) {
         stopParent();
         parentId = linkedAdmin;
@@ -235,10 +240,12 @@ export function useWorkspacePreferenceState() {
         pending.delete('parent');
         if (typeof linkedAdmin === 'string' && linkedAdmin && linkedAdmin !== uid) {
           pending.add('parent');
-          stopParent = onSnapshot(doc(db, 'dashboardBrands', linkedAdmin), brandSnapshot => {
+          const brandDb = linkedAdmin === adminUid ? primaryDb : workspaceDb;
+          stopParent = onSnapshot(doc(brandDb, 'dashboardBrands', linkedAdmin), brandSnapshot => {
+            if (!active || parentId !== linkedAdmin) return;
             parentBrand = brand(brandSnapshot.data()?.values);
             publish('parent');
-          }, cause => failed('parent', cause));
+          }, cause => { if (active && parentId === linkedAdmin) failed('parent', cause); });
         }
       }
       // Older versions persisted overrides alongside the profile.
@@ -250,7 +257,7 @@ export function useWorkspacePreferenceState() {
         legacyTenant = profileTenant;
         legacy = {};
         pending.add('legacy');
-        stopLegacy = onSnapshot(profileSettingsRef(profileTenant, uid), settings => {
+        stopLegacy = onSnapshot(profileSettingsRef(profileTenant, uid, workspaceDb), settings => {
           const saved = settings.data()?.value?.profile;
           legacy = saved?.hasUserOverrides === true ? readPersonal({
             ...saved,
@@ -262,31 +269,20 @@ export function useWorkspacePreferenceState() {
       publish('profile');
     }, cause => failed('profile', cause));
 
-    return () => { stopTenant(); stopSelf(); stopPersonal(); stopProfile(); stopParent(); stopLegacy(); };
+    return () => { active = false; stopTenant(); stopSelf(); stopPersonal(); stopProfile(); stopParent(); stopLegacy(); };
   }, [uid, tenantId, adminUid, role, scope]);
 
   const current = uid && scope === account.scope ? account : null;
-  const inheritsProvider = role === 'USER';
   const publicValues = publicState.values;
   const publicSync = publicState.sync;
-  const syncKey = uid ? `gos_public_sync_${uid}` : '';
-  const needsPublicSync = Boolean(uid && publicSync && storageGet(syncKey) !== publicSync);
-
-  useEffect(() => {
-    if (!uid || !publicSync || !needsPublicSync) return;
-    storageSet(syncKey, publicSync);
-    if (auth.currentUser?.uid === uid && inheritsProvider) {
-      void savePersonalPreferences(uid, inheritWorkspacePreferences).catch(() => {});
-    }
-  }, [uid, publicSync, needsPublicSync, syncKey, inheritsProvider]);
 
   return {
     scope, uid, tenantId,
     canPublish: !impersonation && (role === 'ADMIN' || role === 'SUPER_ADMIN'),
-    values: inheritsProvider ? (publicValues ?? current?.workspace ?? null) : (current?.workspace ?? publicValues),
+    values: current?.workspace ?? publicValues,
     publicValues,
     publicSync,
-    personal: needsPublicSync && inheritsProvider ? inheritWorkspacePreferences : (current?.personal ?? inheritWorkspacePreferences),
+    personal: current?.personal ?? inheritWorkspacePreferences,
     loading: Boolean(uid && (!current || current.loading)),
     error: current?.error ?? '',
   };

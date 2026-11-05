@@ -2,6 +2,7 @@ import { getAuth } from './auth';
 import { read, write, rows, entityMutation, spendCredits } from '../store';
 import { gatewayFields, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
 import { normalizeTrackingConfig, trackingDefaults } from '../../../functions/marketing-tracking-model.js';
+import { evaluateQualification, publicScreeningQuestions, validQualificationQuestions } from '../../../functions/booking-qualification.js';
 import { demoBilling } from './billing';
 export const auth = getAuth(), primaryAuth = auth;
 export const db = {}, primaryDb = db, firebaseApp = {}, firebaseConfig = {}, functions = {};
@@ -54,6 +55,8 @@ async function demoRequest(name: string, data: any): Promise<any> {
       const kind = /landing|funnel|website/i.test(data.text) ? 'landing' : /course|product/i.test(data.text) ? 'product' : /booking|appointment/i.test(data.text) ? 'booking' : /campaign/i.test(data.text) ? 'campaign' : undefined;
       return { text, ...(kind ? { draft: { kind, name: 'Demo Growth Offer', price: '99', currency: 'USD', channel: 'WhatsApp', content: 'A personalized demo offer to help customers reach their next milestone.', description: 'Sample demo draft', duration: '30' } } : {}) };
     }
+    case 'transcribeCopilotVoice':
+    case 'extractCopilotVoice': throw new Error('Voice transcription is available in a connected workspace.');
     case 'createCopilotDraft': {
       const resource = data.draft.kind === 'landing' ? 'assets' : data.draft.kind === 'campaign' ? 'templates' : 'products';
       entityMutation(resource, data.requestId, { ...data.record, id: data.requestId });
@@ -69,9 +72,29 @@ async function demoRequest(name: string, data: any): Promise<any> {
     case 'startWorkflow': entityMutation('workflowRuns', crypto.randomUUID(), { workflowId: data.workflowId, status: 'Completed', demo: true, createdAt: new Date().toISOString() }); spendCredits(); return { success: true };
     case 'saveBookings': for (const row of data.upserts ?? []) entityMutation('bookings', row.id, row, true); for (const id of data.removed ?? []) entityMutation('bookings', id); return { success: true };
     case 'publicBooking': {
-      const page = rows('calendars').find(row => row.slug === data.slug) ?? rows('calendars')[0];
-      if (data.operation) { const booking = { ...data.booking, id: data.booking.id ?? crypto.randomUUID(), status: data.operation === 'cancel' ? 'Cancelled' : 'Confirmed' }; entityMutation('bookings', booking.id, booking); return { booking }; }
-      return { page, bookings: rows('bookings') };
+      const record = rows('calendars').find(row => row.slug === data.slug) ?? rows('calendars')[0];
+      if (!record) throw new Error('Booking page not found.');
+      const { qualificationQuestions, ...page } = record;
+      const rules = qualificationQuestions ?? [];
+      if (!validQualificationQuestions(rules)) throw new Error('This booking page has an invalid screening configuration.');
+      const screeningQuestions = publicScreeningQuestions(rules);
+      const evaluation = evaluateQualification(rules, data.screeningAnswers);
+      const qualification = evaluation.status === 'incomplete' ? { status: evaluation.status, screeningQuestions } : { status: evaluation.status };
+      if (data.operation === 'qualify') return qualification;
+      if (data.operation === 'create' && evaluation.status !== 'qualified') return { qualification };
+      if (data.operation && data.operation !== 'availability') {
+        const old = rows('bookings').find(row => row.id === data.booking.id);
+        if (old && data.operation === 'create') return { booking: old };
+        const responses = data.operation === 'create' && evaluation.status === 'qualified' ? evaluation.responses : old?.qualificationResponses;
+        const booking = {
+          ...data.booking, id: data.booking.id ?? crypto.randomUUID(),
+          status: data.operation === 'cancel' ? 'Canceled' : page.requireApproval || !page.free ? 'Pending' : 'Confirmed',
+          ...(responses?.length ? { qualificationResponses: responses } : {}),
+        };
+        entityMutation('bookings', booking.id, booking);
+        return { booking };
+      }
+      return { page, bookings: rows('bookings'), screeningQuestions };
     }
     case 'publishAsset': { const asset = rows('assets').find(row => row.id === data.assetId); const url = window.location.origin + '/asset-preview/' + data.assetId; if (asset) entityMutation('assets', asset.id, { ...asset, status: 'Published', publishedUrl: url }); return { url, draftChanged: false }; }
     case 'deleteWorkspaceAsset': entityMutation('assets', data.assetId); write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') }); return { success: true };

@@ -7,6 +7,8 @@ import { availableSlots, bookingColor, dateKey, displayedSlots, firstAvailableDa
 import type { BookingPage } from './model';
 import { Empty } from './ui';
 import { BookingPageView } from './BookingPageView';
+import { BookingScreeningExit, BookingScreeningView, screeningText } from './BookingScreeningView';
+import { evaluateQualification, publicScreeningQuestions } from '../../../functions/booking-qualification.js';
 import { BookingPreviewViewport } from './BookingPreviewViewport';
 import { BookingConfirmationView } from './BookingConfirmationView';
 import type { Appointment } from './model';
@@ -47,6 +49,13 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
   const [meeting,setMeeting] = useState(page.locationOptions[0]||page.location);
   const [timezone,setTimezone] = useState(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [step,setStep] = useState<'time'|'details'|'done'>('time');
+  const [screeningAnswers, setScreeningAnswers] = useState<Record<string, string>>({});
+  const [checkedScreening, setCheckedScreening] = useState<{ rules: string; status: 'qualified' | 'ineligible' }>();
+  const [screeningError, setScreeningError] = useState('');
+  const rules = page.qualificationQuestions ?? [];
+  const screeningKey = JSON.stringify(rules);
+  const screeningStatus = checkedScreening?.rules === screeningKey ? checkedScreening.status : undefined;
+  const editScreening = () => { setCheckedScreening(undefined); setScreeningError(''); setSlot(''); setStep('time'); };
   const [answers,setAnswers] = useState<Record<string,string>>({});
   const [guests,setGuests] = useState<{name:string;email:string}[]>([]);
   const [inviteeLocation,setInviteeLocation] = useState('');
@@ -138,7 +147,22 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
         <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
           <header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{translateText("Booking")}</span></header>
           <div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
-            {!page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/> : step==='done' ? <BookingConfirmationView success={confirmation} page={page} error=""><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></BookingConfirmationView> : <BookingPageView
+            {!page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/>
+            : rules.length > 0 && screeningStatus === 'ineligible' ? <BookingScreeningExit language={page.language} restart={editScreening}/>
+            : rules.length > 0 && screeningStatus !== 'qualified' ? <BookingScreeningView
+              page={page} questions={publicScreeningQuestions(rules)} answers={screeningAnswers} error={screeningError} saving={false} focusOnMount={false}
+              setAnswer={(id, answer) => setScreeningAnswers(current => ({ ...current, [id]: answer }))}
+              submit={event => {
+                event.preventDefault();
+                const result = evaluateQualification(rules, screeningAnswers);
+                if (result.status === 'incomplete') {
+                  setScreeningError(screeningText(page.language, 'Please check your answers and complete every screening question.'));
+                } else {
+                  setCheckedScreening({ rules: screeningKey, status: result.status });
+                  setScreeningError(''); setStep('time');
+                }
+              }}/>
+            : step==='done' ? <BookingConfirmationView success={confirmation} page={page} error=""><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></BookingConfirmationView> : <BookingPageView
               page={page} bookings={bookings} showTroubleshoot={showTroubleshoot} setShowTroubleshoot={setShowTroubleshoot} enabledDates={enabledDates}
               duration={duration} setDuration={setChoice} location={location} setLocation={setMeeting}
               displayTimezone={zone} setTimezone={setTimezone} step={step==='details'?'confirm-form':'select-slot'}
@@ -149,6 +173,7 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
               submit={e=>{e.preventDefault();setStep('done')}} answers={answers} setAnswers={setAnswers}
               guests={guests} setGuests={setGuests} inviteeLocation={inviteeLocation} setInviteeLocation={setInviteeLocation}
               source={source} setSource={setSource} fromAd={fromAd} setFromAd={setFromAd} saving={false}
+              editScreening={rules.length > 0 ? editScreening : undefined}
             />}
             <BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/>
           </div></div>

@@ -1,5 +1,7 @@
 import { BookingConfirmationView } from './BookingConfirmationView';
 import { BookingPageView } from './BookingPageView';
+import { BookingScreeningExit, BookingScreeningView, screeningText } from './BookingScreeningView';
+import type { PublicQualificationResult, ScreeningQuestion } from '../../../functions/booking-qualification.js';
 import { Tracking } from '../../backend/marketingTracking';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 
@@ -7,7 +9,7 @@ import { BookingBrandingFooter } from './BookingBrandingFooter';
 
 import { callBackend } from '../../backend/firebase';
 import type { BookingPage } from './model';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight, CalendarDays, CalendarX2, Lock, RefreshCw } from 'lucide-react';
 import { Empty } from './ui';
@@ -17,6 +19,9 @@ import { readVisitorAnswers, readVisitorPhone, saveVisitorAnswers } from './visi
 import { normalizeBookingPage, availableSlots, firstAvailableDate, parseDate, displayedSlots, troubleshootSlots, remainingSpots, bookingColor, dateKey, uid } from './model';
 import type { Appointment } from './model';
 import './booking-workspace.css';
+
+type PublicAvailability = { page: BookingPage; bookings: Appointment[]; screeningQuestions?: ScreeningQuestion[] };
+type BookingSubmission = { booking: Appointment } | { qualification: Exclude<PublicQualificationResult, { status: 'qualified' }> };
 
 export function PublicBookingSkeleton() {
   return (
@@ -98,14 +103,14 @@ export function PublicBookingSkeleton() {
 export default function PublicBookingPage() {
   useUILanguage();
   const { slug } = useParams();
-  const [data, setData] = useState<{page: BookingPage; bookings: Appointment[]}>();
+  const [data, setData] = useState<PublicAvailability>();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   useEffect(() => { let active = true; setData(undefined);
     const bookingId = new URLSearchParams(window.location.search).get('bookingId');
     const token = bookingId ? sessionStorage.getItem('gos.booking.token.' + bookingId) : null;
-    callBackend<{page: BookingPage; bookings: Appointment[]}>('publicBooking', {slug, password, bookingId, token}).then(result => { if(active) { setData({ ...result, page: normalizeBookingPage(result.page) }); setError(''); } }).catch(e => { if(active) setError(e.message); });
+    callBackend<PublicAvailability>('publicBooking', {slug, password, bookingId, token}).then(result => { if(active) { setData({ ...result, page: normalizeBookingPage(result.page) }); setError(''); } }).catch(e => { if(active) setError(e.message); });
     return () => { active = false; };
   }, [slug, retry]);
 
@@ -195,7 +200,7 @@ export default function PublicBookingPage() {
   return <PublicBookingFlow key={slug} initial={data} password={password}/>;
 }
 
-function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage; bookings: Appointment[]}; password: string }) {
+function PublicBookingFlow({ initial, password }: { initial: PublicAvailability; password: string }) {
   useUILanguage();
   const { slug } = useParams();
   const [params, setParams] = useSearchParams();
@@ -224,6 +229,10 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
   const [fromAd, setFromAd] = useState<boolean | null>(null);
   const [inviteeLocation, setInviteeLocation] = useState(() => page?.locations.find(item => item.label === location)?.type === 'phone' ? readVisitorPhone(page.id, page.afterBooking.prefill) : '');
   const [rescheduleId, setRescheduleId] = useState<string>();
+  const bookingAttempt = useRef<string | null>(null);
+  const [screeningQuestions, setScreeningQuestions] = useState(initial.screeningQuestions ?? []);
+  const [screeningAnswers, setScreeningAnswers] = useState<Record<string, string>>({});
+  const [qualification, setQualification] = useState<'incomplete' | 'ineligible' | 'qualified'>('incomplete');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showTroubleshoot, setShowTroubleshoot] = useState(false);
@@ -232,6 +241,8 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
   const changeMonth = (by: number) => { setMonth(d => new Date(d.getFullYear(), d.getMonth() + by, 1)); setDate(''); setSlot(''); };
   const reset = () => {
     setStep('select-slot'); setSlot(''); setDate(''); setError(''); setRescheduleId(undefined);
+    bookingAttempt.current = null;
+    setScreeningAnswers({}); setQualification('incomplete');
     const now = new Date(); setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     setDuration(page?.duration || 30); setLocation(page?.locationOptions[0] || 'None');
     const savedAnswers = returningVisitor();
@@ -270,6 +281,26 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
   const firstOffset = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
   const total = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const days = Array.from({ length: Math.ceil((firstOffset + total) / 7) * 7 }, (_, i) => i - firstOffset + 1);
+  const applyQualification = (result: PublicQualificationResult) => {
+    setQualification(result.status);
+    if (result.status === 'incomplete') {
+      setScreeningQuestions(result.screeningQuestions);
+      setScreeningAnswers(current => Object.fromEntries(result.screeningQuestions
+        .filter(question => Object.hasOwn(current, question.id) && (question.type !== 'choice' || question.options.includes(current[question.id])))
+        .map(question => [question.id, current[question.id]])));
+      setError(screeningText(page.language, 'Please check your answers and complete every screening question.'));
+    }
+  };
+  const qualify = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true); setError('');
+    try {
+      applyQualification(await callBackend<PublicQualificationResult>('publicBooking', { slug, password, operation: 'qualify', screeningAnswers }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : translateText('Could not check your answers. Please try again.'));
+    } finally { setSaving(false); }
+  };
+  const editScreening = () => { setQualification('incomplete'); setError(''); };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setSaving(true); setError('');
     try {
@@ -283,7 +314,7 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
         if (currentPage.formSettings.guestsActive && currentPage.formSettings.guestsRequired && !guests.length) throw new Error('Add at least one guest.');
         const meetingLocation = currentPage.locations.find(l => l.label === location);
         const booking: Appointment = {
-          id: rescheduleId || uid(), calendarId: page.id, serviceName: currentPage.name,
+          id: rescheduleId || (bookingAttempt.current ??= uid()), calendarId: page.id, serviceName: currentPage.name,
           name: (answers.name || '').trim(), email: (answers.email || '').trim().toLowerCase(), whatsapp: answers.whatsapp || (meetingLocation?.type === 'phone' ? inviteeLocation : ''),
           date, time: selected.time, start: selected.start, duration, timezone: displayTimezone, location: meetingLocation?.type === 'ask-invitee' ? inviteeLocation : meetingLocation?.address ? location + ' · ' + meetingLocation.address : location,
           status: currentPage.requireApproval || !currentPage.free ? 'Pending' : 'Confirmed', source, fromAd, customAnswers: answers, guests: currentPage.formSettings.guestsActive ? guests : [],
@@ -291,7 +322,12 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
         };
 
         // The appointment is the authoritative record: publish it before optional auxiliary writes.
-        const result = await callBackend<{booking: Appointment}>('publicBooking', {slug, password, operation: rescheduleId ? 'reschedule' : 'create', booking, token: managementToken(booking.id)});
+        const result = await callBackend<BookingSubmission>('publicBooking', {slug, password, operation: rescheduleId ? 'reschedule' : 'create', booking, token: managementToken(booking.id), screeningAnswers});
+        if ('qualification' in result) {
+          applyQualification(result.qualification);
+          setStep('select-slot'); setSlot('');
+          return;
+        }
         Tracking.bookMeeting({ calendarId: page.id, status: result.booking.status });
         setBookings(current => [...current.filter(b => b.id !== booking.id), result.booking]);
         setParams({ bookingId: booking.id }); setRescheduleId(undefined);
@@ -313,6 +349,13 @@ function PublicBookingFlow({ initial, password }: { initial: {page: BookingPage;
     catch(e) { setError(e instanceof Error ? e.message : 'Could not cancel your appointment.'); }
   };
   return <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language === 'ar' ? 'rtl' : 'ltr'}><header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{translateText("Booking")}</span></header><div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
-    {localizeNode(success ? <BookingConfirmationView success={success} page={page} error={error}>{page.afterBooking.allowCancelReschedule && success.status !== 'Canceled' && <><button className="bk-button" onClick={() => { setAnswers({ ...success.customAnswers, name: success.name, email: success.email, whatsapp: success.whatsapp }); setGuests(success.guests); setDuration(success.duration); setLocation(page.locationOptions.includes(success.location) ? success.location : page.locationOptions[0]); setRescheduleId(success.id); setParams({}); setSlot(''); setDate(''); setStep('select-slot'); }}>{translateText("Reschedule")}</button><button className="bk-button danger" onClick={cancel}>{translateText("Cancel appointment")}</button></>}{page.afterBooking.scheduleAnother && <Link className="bk-button primary" to={"/book/" + encodeURIComponent(page.slug)} onClick={reset}>{translateText("Book another appointment")}</Link>}<Link className="bk-button" to="/dashboard/booking?tab=bookings">{translateText("Go to Dashboard")}</Link></BookingConfirmationView> : !page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/> : <BookingPageView page={page} bookings={bookings} showTroubleshoot={showTroubleshoot} setShowTroubleshoot={setShowTroubleshoot} duration={duration} setDuration={setDuration} setSlot={setSlot} location={location} setLocation={setLocation} displayTimezone={displayTimezone} setTimezone={setTimezone} step={step} error={error} month={month} changeMonth={changeMonth} days={days} total={total} date={date} rescheduleId={rescheduleId} setDate={setDate} setError={setError} slots={slots} slot={slot} setStep={setStep} submit={submit} answers={answers} setAnswers={setAnswers} guests={guests} setGuests={setGuests} inviteeLocation={inviteeLocation} setInviteeLocation={setInviteeLocation} source={source} setSource={setSource} fromAd={fromAd} setFromAd={setFromAd} saving={saving}/>)}
+    {success ? <BookingConfirmationView success={success} page={page} error={error}>{page.afterBooking.allowCancelReschedule && success.status !== 'Canceled' && <><button className="bk-button" onClick={() => { setAnswers({ ...success.customAnswers, name: success.name, email: success.email, whatsapp: success.whatsapp }); setGuests(success.guests); setDuration(success.duration); setLocation(page.locationOptions.includes(success.location) ? success.location : page.locationOptions[0]); setRescheduleId(success.id); setParams({}); setSlot(''); setDate(''); setStep('select-slot'); }}>{translateText("Reschedule")}</button><button className="bk-button danger" onClick={cancel}>{translateText("Cancel appointment")}</button></>}{page.afterBooking.scheduleAnother && <Link className="bk-button primary" to={"/book/" + encodeURIComponent(page.slug)} onClick={reset}>{translateText("Book another appointment")}</Link>}<Link className="bk-button" to="/dashboard/booking?tab=bookings">{translateText("Go to Dashboard")}</Link></BookingConfirmationView>
+      : !page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/>
+      : !rescheduleId && qualification === 'ineligible' ? <BookingScreeningExit language={page.language}/>
+      : !rescheduleId && screeningQuestions.length > 0 && qualification === 'incomplete' ? <BookingScreeningView
+        page={page} questions={screeningQuestions} answers={screeningAnswers} saving={saving} error={error} submit={qualify}
+        setAnswer={(id, answer) => setScreeningAnswers(current => ({ ...current, [id]: answer }))}/>
+      : <BookingPageView page={page} bookings={bookings} showTroubleshoot={showTroubleshoot} setShowTroubleshoot={setShowTroubleshoot} duration={duration} setDuration={setDuration} setSlot={setSlot} location={location} setLocation={setLocation} displayTimezone={displayTimezone} setTimezone={setTimezone} step={step} error={error} month={month} changeMonth={changeMonth} days={days} total={total} date={date} rescheduleId={rescheduleId} setDate={setDate} setError={setError} slots={slots} slot={slot} setStep={setStep} submit={submit} answers={answers} setAnswers={setAnswers} guests={guests} setGuests={setGuests} inviteeLocation={inviteeLocation} setInviteeLocation={setInviteeLocation} source={source} setSource={setSource} fromAd={fromAd} setFromAd={setFromAd} saving={saving}
+        editScreening={!rescheduleId && screeningQuestions.length > 0 ? editScreening : undefined}/>}
     <BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/></div></div></main>;
 }

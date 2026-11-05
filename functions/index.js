@@ -1,5 +1,6 @@
 import { checkPlatformTool } from './platform-tools.js';
 import { recordAIUsage } from './ai-usage.js';
+import { structureVoice, transcribeVoice, voiceAudio } from './copilot-voice.js';
 import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
@@ -343,9 +344,9 @@ async function indexedKnowledge(request, question) {
   } catch { throw new HttpsError('unavailable', 'Workspace knowledge retrieval failed. Please try again.'); }
 }
 
-async function chargeAgencyAI(user, tool, description) {
+async function chargeAgencyAI(user, tool, description, idempotencyKey = randomUUID()) {
   if (user.accountType !== 'agency') return;
-  await consumeCredits(db, { subscriberId: user.uid, amount: 1, usageType: 'ai', tool, description, idempotencyKey: randomUUID() });
+  await consumeCredits(db, { subscriberId: user.uid, amount: 1, usageType: 'ai', tool, description, idempotencyKey });
 }
 
 export const agentConfiguration = onCall(async request => {
@@ -436,6 +437,65 @@ export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds
   await threadRef.set({ actorId: user.uid, title: history?.title ?? text.slice(0, 70), prompt: history?.prompt ?? text, category: 'Workspace', group: 'Today', time: new Date().toLocaleTimeString('en-GB', { timeZone: 'UTC' }), messages: savedMessages, updatedAt: now, draft: answer.draft ?? null });
   await audit(root, user, 'copilot.responded', conversationId);
   return answer;
+}) : undefined;
+
+export const transcribeCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 90, memory: '512MiB', concurrency: 4 }, async request => {
+  const { user } = await workspace(request, 'copilot');
+  const requestId = request.data?.requestId;
+  if (typeof requestId !== 'string' || !/^[\w-]{1,150}$/.test(requestId)) {
+    throw new HttpsError('invalid-argument', 'Choose a voice recording.');
+  }
+  const audio = voiceAudio(request.data);
+  const usageKey = createHash('sha256').update(JSON.stringify(['copilot-transcription', user.uid, requestId])).digest('hex');
+  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot voice transcription', usageKey);
+  return { transcript: await transcribeVoice(audio, openaiKey.value()) };
+}) : undefined;
+
+export const extractCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 120, memory: '512MiB', concurrency: 4 }, async request => {
+  const { user, root } = await workspace(request, 'copilot');
+  const { conversationId, requestId, focus = '' } = request.data ?? {};
+  const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
+  if (!validId(conversationId) || !validId(requestId) || typeof focus !== 'string' || focus.length > 2000) {
+    throw new HttpsError('invalid-argument', 'Choose a conversation and enter a short extraction request.');
+  }
+  const audio = voiceAudio(request.data);
+  const threadRef = root.collection('copilotConversations').doc(conversationId);
+  const userMessageId = 'voice-' + requestId;
+  const assistantMessageId = userMessageId + '-result';
+  const readTurn = history => {
+    if (history && history.actorId !== user.uid) throw new HttpsError('permission-denied', 'This conversation belongs to another team member.');
+    const userMessage = history?.messages?.find(item => item.id === userMessageId);
+    const assistant = history?.messages?.find(item => item.id === assistantMessageId);
+    return userMessage && assistant ? { user: userMessage, assistant } : null;
+  };
+  const existing = readTurn((await threadRef.get()).data());
+  if (existing) return existing;
+  const usageKey = createHash('sha256').update(JSON.stringify(['copilot-voice', user.uid, conversationId, requestId])).digest('hex');
+  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot voice extraction', usageKey);
+
+  const apiKey = openaiKey.value();
+  const transcript = await transcribeVoice(audio, apiKey);
+  const structured = await structureVoice(transcript, focus.trim(), apiKey, openaiModel.value()).catch(() => null);
+  if (structured) await recordAIUsage(root, structured.response, 'copilot').catch(() => console.warn('Could not record Copilot voice extraction usage.'));
+  const turn = {
+    user: { id: userMessageId, role: 'user', text: focus.trim(), transcript },
+    assistant: { id: assistantMessageId, role: 'assistant', text: structured?.extraction.summary ?? '', voiceExtraction: structured?.extraction ?? null },
+  };
+  return db.runTransaction(async tx => {
+    const history = (await tx.get(threadRef)).data();
+    const duplicate = readTurn(history);
+    if (duplicate) return duplicate;
+    const messages = [...(history?.messages ?? []), turn.user, turn.assistant].slice(-100);
+    // Bound transcript-heavy threads well below Firestore's document size limit.
+    while (Buffer.byteLength(JSON.stringify(messages)) > 700_000 && messages.length > 2) messages.splice(0, 2);
+    const now = new Date();
+    tx.set(threadRef, {
+      actorId: user.uid, title: history?.title ?? transcript.slice(0, 70), prompt: history?.prompt ?? focus.trim(),
+      category: history?.category ?? 'General', group: 'Today', time: now.toLocaleTimeString('en-GB', { timeZone: 'UTC' }),
+      updatedAt: now.toISOString(), messages,
+    }, { merge: true });
+    return turn;
+  });
 }) : undefined;
 
 export const createCopilotDraft = onCall(async request => {
@@ -536,6 +596,7 @@ export const saveBookings = onCall(async request => {
     const lock = root.collection('bookingLocks').doc('schedule');
     const version = (await tx.get(lock)).data()?.version ?? 0;
     const existing = (await tx.get(root.collection('bookings'))).docs.map(item => ({ ...item.data(), id: item.id }));
+    const originals = new Map(existing.map(item => [item.id, item]));
     const operations = [];
     for (const booking of upserts) {
       if (!/^[\w-]{1,150}$/.test(booking.id) || !/^[\w-]{1,150}$/.test(booking.calendarId) || typeof booking.name !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.email)) throw new HttpsError('invalid-argument', 'Enter a valid booking and contact email.');
@@ -550,7 +611,15 @@ export const saveBookings = onCall(async request => {
       const leadRef = root.collection('leads').doc(leadId);
       const lead = (await tx.get(leadRef)).data();
       const status = booking.status === 'Canceled' ? 'Canceled' : calendar.requireApproval || !calendar.free ? 'Pending' : 'Confirmed';
-      operations.push({ booking: { ...booking, email, status, leadId, ...(!calendar.free ? { payment: { amount: calendar.price, currency: calendar.currency, status: 'Pending' } } : {}) }, leadRef, lead });
+      const { qualificationResponses, managementTokenHash, ...details } = booking;
+      const previous = originals.get(booking.id);
+      const sameCalendar = previous?.calendarId === booking.calendarId;
+      operations.push({ booking: {
+        ...details, email, status, leadId,
+        ...(sameCalendar && previous.qualificationResponses?.length ? { qualificationResponses: previous.qualificationResponses } : {}),
+        ...(sameCalendar && previous.managementTokenHash ? { managementTokenHash: previous.managementTokenHash } : {}),
+        ...(!calendar.free ? { payment: { amount: calendar.price, currency: calendar.currency, status: 'Pending' } } : {}),
+      }, leadRef, lead });
       existing.push({ ...booking, status });
     }
     for (const id of removed) if (typeof id !== 'string' || !/^[\w-]{1,150}$/.test(id)) throw new HttpsError('invalid-argument', 'Invalid booking ID.');

@@ -62,9 +62,9 @@
   - Can control of every thins and every media
 - Agency User Cycle
   - ADD or Auto Created
-  - Funnel and website
-  - Bussiness assets
-  - credites and wallets
+  - Funnel and website => done
+  - Bussiness assets => done
+  - credites and wallets => done
 - Templetes
 
 # Super Admin Dashbaord

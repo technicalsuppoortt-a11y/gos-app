@@ -2,6 +2,7 @@ import { cloudStorage } from '../../backend/workspace';
 import { useCallback, useEffect, useState } from 'react';
 import { locationFromLabel, sectionDefaults, weekdayMatches } from './booking-section-schema';
 import type { AfterBooking, SectionSettings } from './booking-section-schema';
+import type { QualificationQuestion, ScreeningResponse } from '../../../functions/booking-qualification.js';
 
 export type Question = { id: string; label: string; type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'radio' | 'text-block'; required: boolean; options: string[]; active?: boolean; text?: string };
 export type Hours = { day: number; enabled: boolean; start: string; end: string };
@@ -13,6 +14,7 @@ export type BookingPage = {
   minNotice: number; maxAdvanceBooking: number; bufferTime: number; startIncrement: number | 'use-duration';
   groupCapacity: number; dailyLimit: number; fixedDateRange: { start: string; end: string };
   questions: Question[]; requireApproval: boolean;
+  qualificationQuestions?: QualificationQuestion[];
   afterBooking: AfterBooking;
 } & SectionSettings;
 export type Appointment = {
@@ -20,6 +22,7 @@ export type Appointment = {
   date: string; time: string; start: string; duration: number; timezone: string; location: string;
   status: 'Confirmed' | 'Pending' | 'Canceled'; source: string; fromAd: boolean | null;
   customAnswers: Record<string, string>; guests: { name: string; email: string }[]; payment?: { amount: number; currency: string; status: 'Pending' };
+  qualificationResponses?: ScreeningResponse[];
 };
 export type Contact = { id: string; name: string; email: string; phone: string; company: string };
 export type Member = { id: string; name: string; email: string; role: 'Admin' | 'Member'; status: 'Active' | 'Invited' };

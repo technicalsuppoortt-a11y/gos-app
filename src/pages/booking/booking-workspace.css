@@ -417,6 +417,9 @@ html:has(main.bk-public),body:has(main.bk-public){height:100%;min-width:0;overfl
 .bk-public .bk-public-details .bk-tip{padding:8px 10px;font-size:10px}
 .bk-public .bk-public-wizard{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:18px 22px}
 .bk-public .bk-wizard-steps{flex:none;gap:12px;padding-bottom:10px}
+.bk-wizard-steps{flex-wrap:wrap}
+.bk-wizard-steps .bk-screening-back{display:inline-flex;align-items:center;gap:5px;padding:0;font-size:inherit}
+.bk-screening-form{margin-top:16px}
 .bk-public .bk-public-wizard>h2{flex:none;margin:12px 0;font-size:17px}
 .bk-public .bk-slot-layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 160px;gap:16px;align-items:stretch;overflow:hidden}
 .bk-public .bk-slot-layout>div:first-child{min-width:0;min-height:0;overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}

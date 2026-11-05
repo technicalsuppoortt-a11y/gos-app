@@ -3,11 +3,13 @@ import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { ColorPicker, Toggle } from './EditorControls';
 import { EditorAvailability } from './EditorAvailability';
 import { EditorBookingForm } from './EditorBookingForm';
+import { EditorQualification } from './EditorQualification';
+import { validQualificationQuestions } from '../../../functions/booking-qualification.js';
 import { EditorNotifications } from './EditorNotifications';
 import { EditorDurations } from './EditorDurations';
 import { BookingSelect } from './BookingSelect';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, Bell, CalendarDays, Check, Clock3, ExternalLink, FileText, Layers, MapPin, Plus, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Bell, CalendarDays, Check, ClipboardCheck, Clock3, ExternalLink, FileText, Layers, MapPin, Plus, Trash2, Users } from 'lucide-react';
 import { blankPage, publicUrl, slugify, bookingColor, uid, TIMEZONES, readMembers } from './model';
 import type { BookingPage } from './model';
 import { LOCATION_TYPES, safeHttpUrl } from './booking-section-schema';
@@ -18,7 +20,7 @@ import './booking-editor-reference.css';
 
 const tabs = [
   { name:'Page',icon:FileText },{ name:'Location',icon:MapPin },{ name:'Duration',icon:Clock3 },{ name:'Group / class',icon:Users },
-  { name:'Availability',icon:CalendarDays },{ name:'Booking form',icon:FileText },{ name:'Notifications',icon:Bell },{ name:'Templates',icon:Layers },{ name:'After booking',icon:Check },
+  { name:'Availability',icon:CalendarDays },{ name:'Booking form',icon:FileText },{ name:'Lead qualification',icon:ClipboardCheck },{ name:'Notifications',icon:Bell },{ name:'Templates',icon:Layers },{ name:'After booking',icon:Check },
 ];
 
 const sectionTitles:Record<string,string> = {Page:'Booking page',Duration:'Appointment types', 'Booking form':'Booking form & questions'};
@@ -53,6 +55,7 @@ export function BookingBuilder({ page, pages, save, close, onDraftChange }: { pa
     'Group / class':draft.groupCapacity>1?draft.groupCapacity+' spots':'One-to-one',
     Availability:draft.hostTimezone,
     'Booking form':draft.questions.filter(q=>q.active!==false&&q.type!=='text-block').length+' fields',
+    'Lead qualification':draft.qualificationQuestions?.length ? String(draft.qualificationQuestions.length) : 'Off',
     Notifications:Object.values(draft.notificationWorkflows).filter(w=>w.enabled).length+' workflows',
     Templates:draft.templateSettings.previewMode==='template'?'Custom template':'Standard Upclick',
     'After booking':draft.templateSettings.postBookingMode==='standard'?'Confirmation':draft.templateSettings.postBookingMode==='custom_url'?'Redirect':'Template',
@@ -69,6 +72,7 @@ export function BookingBuilder({ page, pages, save, close, onDraftChange }: { pa
   const fail = (section:string,message:string)=>{setTab(section);setOpenSections(sections=>sections.includes(section)?sections:[...sections,section]);setError(message)};
   useEffect(()=>{if(error)document.getElementById('booking-section-'+tab.replaceAll(' ','-').replaceAll('/','-'))?.scrollIntoView({block:'start',behavior:'smooth'})},[tab,error]);
   const submit = ()=>{
+    if (!validQualificationQuestions(draft.qualificationQuestions ?? [])) return fail('Lead qualification', 'Review the screening questions before saving.');
     const slug = slugify(draft.slug||draft.name).slice(0,50);
     if(!draft.name.trim()||!slug) return fail('Page','Enter a booking title and a valid booking URL.');
     if(pages.some(p=>p.id!==draft.id&&p.slug.toLowerCase()===slug.toLowerCase())) return fail('Page','This booking URL is already in use.');
@@ -109,6 +113,7 @@ export function BookingBuilder({ page, pages, save, close, onDraftChange }: { pa
       <ConfiguratorSection summary={sectionSummary["Availability"]} name="Availability" expanded={openSections.includes("Availability")} toggle={()=>toggleSection("Availability")}><EditorAvailability page={draft} change={patch}/></ConfiguratorSection>
 
       <ConfiguratorSection summary={sectionSummary["Booking form"]} name="Booking form" expanded={openSections.includes("Booking form")} toggle={()=>toggleSection("Booking form")}><EditorBookingForm page={draft} change={patch}/></ConfiguratorSection>
+      <ConfiguratorSection summary={sectionSummary["Lead qualification"]} name="Lead qualification" expanded={openSections.includes("Lead qualification")} toggle={()=>toggleSection("Lead qualification")}><EditorQualification questions={draft.qualificationQuestions ?? []} change={qualificationQuestions => field('qualificationQuestions', qualificationQuestions)}/></ConfiguratorSection>
 
       <ConfiguratorSection summary={sectionSummary["Notifications"]} name="Notifications" expanded={openSections.includes("Notifications")} toggle={()=>toggleSection("Notifications")}><EditorNotifications page={draft} change={patch}/></ConfiguratorSection>
       <ConfiguratorSection summary={sectionSummary["Templates"]} name="Templates" expanded={openSections.includes("Templates")} toggle={()=>toggleSection("Templates")}> <div className="bk-builder-grid"><section className="bk-card bk-form"><h3>{translateText("Booking page template")}</h3><label>{translateText("Public page layout")}<BookingSelect aria-label={translateText("Public page layout")} value={draft.templateSettings.previewMode} onChange={e=>templates({previewMode:e.target.value as 'default'|'template'})}><option value="default">{translateText("Standard Upclick booking page")}</option><option value="template">{translateText("Custom template")}</option></BookingSelect></label>{localizeNode(draft.templateSettings.previewMode==='template'&&<label>{translateText("Booking template ID")}<input value={draft.templateSettings.previewTemplateId} onChange={e=>templates({previewTemplateId:e.target.value})}/></label>)}<p className="bk-tip">{translateText("Template IDs are preserved for your connected template library. This local preview uses the standard Upclick renderer.")}</p></section><section className="bk-card bk-form"><h3>{translateText("Email notification template")}</h3><label>{translateText("Email notification mode")}<BookingSelect aria-label={translateText("Email notification mode")} value={draft.templateSettings.emailNotificationMode} onChange={e=>templates({emailNotificationMode:e.target.value as 'default'|'template'})}><option value="default">{translateText("Default email")}</option><option value="template">{translateText("Custom email template")}</option></BookingSelect></label>{localizeNode(draft.templateSettings.emailNotificationMode==='template'&&<label>{translateText("Email template ID")}<input value={draft.templateSettings.emailTemplateId} onChange={e=>templates({emailTemplateId:e.target.value})}/></label>)}</section></div> </ConfiguratorSection>

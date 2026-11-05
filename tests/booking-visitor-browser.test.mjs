@@ -50,6 +50,45 @@ try {
   await page.evaluate(()=>Object.defineProperty(window,'localStorage',{configurable:true,get(){throw new Error('Storage blocked');}}));
   await confirm();await page.getByRole('link',{name:'Book another appointment',exact:true}).click();await details();
   assert.equal(await page.locator('#question-email').inputValue(),'visitor@example.com');
+
+  const screening = async (budget, scope, query = '?screening') => {
+    await page.goto(url + query, { waitUntil: 'domcontentloaded' });
+    await page.getByRole('heading', { name: 'Before you book' }).waitFor();
+    assert.equal(await page.locator('.bk-date-grid').count(), 0);
+    await page.getByLabel('Project budget in USD', { exact: true }).fill(budget);
+    await page.getByRole('combobox', { name: 'Project scope', exact: true }).click();
+    await page.getByRole('option', { name: scope, exact: true }).click();
+    await page.getByRole('button', { name: 'Continue to availability' }).click();
+  };
+  await page.setViewportSize({ width: 390, height: 844 });
+  await screening('1499', 'Strategy');
+  await page.getByRole('heading', { name: 'Thank you for your interest' }).waitFor();
+  assert.equal(await page.locator('.bk-date-grid').count(), 0);
+  assert.deepEqual(await page.evaluate(() => [window.__bookings.length, window.__bookMeetingCount]), [0, 0]);
+  await screening('1500', 'Strategy');
+  await details(); await fill();
+  // Tightening the rule after screening should return an exit instead of confirming.
+  await page.evaluate(() => { window.__bookingPage.qualificationQuestions[0].minimum = 2000; });
+  await page.getByRole('button', { name: 'Confirm booking', exact: true }).click();
+  await page.getByRole('heading', { name: 'Thank you for your interest' }).waitFor();
+  assert.deepEqual(await page.evaluate(() => [window.__bookings.length, window.__bookMeetingCount]), [0, 0]);
+  await screening('1500', 'Strategy');
+  await details(); await fill(); await confirm();
+  assert.deepEqual(await page.evaluate(() => [window.__bookings.length, window.__bookMeetingCount]), [1, 1]);
+  await page.getByRole('link', { name: 'Book another appointment', exact: true }).click();
+  assert.equal(await page.getByLabel('Project budget in USD').inputValue(), '');
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(url + '?builder', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: /Lead qualification/ }).click();
+  await page.getByRole('button', { name: 'Add screening question', exact: true }).click();
+  await page.getByLabel('Screening question', { exact: true }).fill('What is your budget?');
+  await page.getByLabel('Minimum accepted amount', { exact: true }).fill('2500');
+  await page.getByRole('button', { name: 'Save question', exact: true }).click();
+  const preview = page.frameLocator('iframe[title="Booking page preview"]');
+  await preview.getByLabel('What is your budget?').waitFor();
+  await page.getByRole('button', { name: 'Save changes', exact: true }).first().click();
+  await page.waitForFunction(() => window.__bookingPage.qualificationQuestions?.[0]?.minimum === 2500);
   assert.deepEqual(errors,[]);
-  console.log('PASS: confirmation toggle, successful-booking cache, return/reload and Book another autofill, editable defaults, disabled autofill, calendar isolation, corrupt storage and failed bookings.');
+  console.log('PASS: visitor prefill, booking confirmation, screening, conversion gating, builder persistence and live preview.');
 }catch(error){console.error(error);throw error;}finally{await browser?.close();await server.close();}
