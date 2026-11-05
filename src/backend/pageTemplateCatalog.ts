@@ -6,7 +6,7 @@ export function pageCatalogTemplates(catalog: ManagedTemplate[]): PageTemplate[]
     const page = t.builderDocument?.pages[0];
     return { ...t.pageTemplate, id: t.id, name: t.name, mode: t.category === 'Forms' ? 'form' : t.category === 'Funnels' ? 'funnel' : 'website', industry: t.industry, goal: t.goal,
       title: page?.headline || t.content.headline, body: page?.subheadline || t.description, cta: page?.cta || t.pageTemplate?.cta || 'Get started', color: t.color,
-      image: t.pageTemplate?.image || page?.featuredImage || '', builderDocument: t.builderDocument } as PageTemplate;
+      image: t.pageTemplate?.image || page?.featuredImage || '', thumbnail: t.thumbnail || '', builderDocument: t.builderDocument } as PageTemplate;
   });
 }
 export function usePageTemplateCatalogState() { const state = useTemplateCatalogState(); return { ...state, templates: pageCatalogTemplates(state.templates) }; }

@@ -8,6 +8,8 @@ export type ManagedTemplate = Template & {
   productTemplate?: import('../commerce/productTemplates').ProductTemplate;
   pipelineTemplate?: { name: string; description: string; stages: string[] };
   schemaVersion?: number;
+  /** Gallery card image shown to users; managed from the admin template editor. */
+  thumbnail?: string;
 };
 export function templateIsActive(template: { active?: boolean; status?: string }) {
   return template.active !== false && (!template.status || template.status === 'Published');

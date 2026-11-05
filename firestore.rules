@@ -184,10 +184,14 @@ service cloud.firestore {
         && c.enabled is bool && c.advancedMode is bool && c.customEvents is list && c.customEvents.size() <= 50
         && c.webhookUrl is string && c.webhookUrl.size() <= 1000 && (c.webhookUrl == '' || c.webhookUrl.matches('https://.*'));
     }
-    match /templateCatalog/{templateId} {
-      allow read: if signedIn();
-      allow create, update: if featureAdmin()
-        && request.resource.data.name is string && request.resource.data.name.size() > 0
+    // Template ownership: templateCatalog = super admin library ("General templates" for admins, read-only for them).
+    function templateSuperAdmin() {
+      return request.auth != null && (
+        request.auth.token.get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin']));
+    }
+    function validTemplate() {
+      return request.resource.data.name is string && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 180
         && request.resource.data.category in ['Funnels', 'Websites', 'Forms', 'Landing Pages', 'Booking Pages', 'CRM Pipelines', 'AI Assistants', 'AI Knowledge Packs', 'Automations', 'Products', 'Email/SMS/WhatsApp']
         && request.resource.data.source == 'official'
@@ -198,7 +202,28 @@ service cloud.firestore {
         && request.resource.data.content.steps is list
         && request.resource.data.content.settings is map
         && request.resource.data.updatedBy == request.auth.uid;
-      allow delete: if featureAdmin();
+    }
+    function myAdmin(adminUid) {
+      return signedIn() && (request.auth.uid == adminUid ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('supportParentId', '') == adminUid));
+    }
+    match /templateCatalog/{templateId} {
+      allow read: if signedIn();
+      allow create, update: if templateSuperAdmin() && validTemplate();
+      allow delete: if templateSuperAdmin();
+    }
+    // An admin's own templates: only that admin edits; that admin's users read; the super admin reads all ("Client templates").
+    match /adminTemplates/{templateId} {
+      allow read: if templateSuperAdmin() || myAdmin(resource.data.ownerUid);
+      allow create: if featureAdmin() && validTemplate() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if featureAdmin() && validTemplate() && resource.data.ownerUid == request.auth.uid && request.resource.data.ownerUid == request.auth.uid;
+      allow delete: if featureAdmin() && resource.data.ownerUid == request.auth.uid;
+    }
+    // General templates an admin hid from their own users.
+    match /adminTemplateSettings/{adminUid} {
+      allow read: if templateSuperAdmin() || myAdmin(adminUid);
+      allow write: if featureAdmin() && request.auth.uid == adminUid
+        && request.resource.data.keys().hasOnly(['hiddenGeneral', 'updatedAt']) && request.resource.data.hiddenGeneral is list;
     }
 
     // Published funnel websites (public live pages + custom domains)
