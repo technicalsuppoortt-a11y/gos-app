@@ -89,6 +89,43 @@ try {
   await preview.getByLabel('What is your budget?').waitFor();
   await page.getByRole('button', { name: 'Save changes', exact: true }).first().click();
   await page.waitForFunction(() => window.__bookingPage.qualificationQuestions?.[0]?.minimum === 2500);
+
+  await page.goto(url + '?screening', { waitUntil: 'domcontentloaded' });
+  await page.locator('.bk-screening-form').waitFor();
+  const layout = () => page.locator('.bk-public').evaluate(main => {
+    const bounds = selector => main.querySelector(selector).getBoundingClientRect();
+    const style = selector => getComputedStyle(main.querySelector(selector));
+    return {
+      dir: main.dir,
+      sidebarOnRight: bounds('.bk-public-details').left > bounds('.bk-public-wizard').left,
+      firstStepOnRight: bounds('.bk-wizard-steps span:first-child').left > bounds('.bk-wizard-steps span:last-child').left,
+      labelAlign: style('.bk-screening-form label').textAlign,
+      inputAlign: style('.bk-screening-form input[type=number]').textAlign,
+      selectDirection: style('.bk-screening-form [role=combobox]').direction,
+      arrowScale: style('.bk-screening-form .lucide-arrow-right').scale,
+    };
+  });
+  assert.equal((await layout()).sidebarOnRight, false);
+  await page.getByLabel('Project budget in USD').fill('1500');
+  await page.evaluate(() => window.__setBookingLanguage('ar'));
+  await page.getByRole('heading', { name: 'قبل الحجز' }).waitFor();
+  assert.deepEqual(await layout(), { dir: 'rtl', sidebarOnRight: true, firstStepOnRight: true, labelAlign: 'right', inputAlign: 'right', selectDirection: 'rtl', arrowScale: '-1 1' });
+  assert.equal(await page.getByLabel('Project budget in USD').inputValue(), '1500');
+  await page.getByRole('combobox', { name: 'Project scope' }).click();
+  assert.equal(await page.getByRole('listbox').evaluate(element => getComputedStyle(element).direction), 'rtl');
+  await page.getByRole('option', { name: 'الاستراتيجية' }).click();
+  await page.locator('.bk-screening-form .bk-next').click();
+  await page.locator('.bk-date-grid').waitFor();
+  assert.equal(await page.locator('.bk-public-details [role=combobox]').first().evaluate(element => getComputedStyle(element).direction), 'rtl');
+  await page.evaluate(() => window.__setBookingLanguage('en'));
+  await page.locator('.bk-public[dir=ltr]').waitFor();
+  await page.goto(url + '?screening&arabic-calendar', { waitUntil: 'domcontentloaded' });
+  await page.locator('.bk-screening-form').waitFor();
+  assert.equal((await layout()).sidebarOnRight, true);
+  assert.equal((await layout()).selectDirection, 'rtl');
+  await page.setViewportSize({ width: 320, height: 760 });
+  assert.equal(await page.locator('.bk-public-grid').evaluate(grid => grid.scrollWidth <= grid.clientWidth), true);
+  assert.equal(await page.locator('.bk-public-details').evaluate(sidebar => sidebar.getBoundingClientRect().bottom <= sidebar.nextElementSibling.getBoundingClientRect().top), true);
   assert.deepEqual(errors,[]);
-  console.log('PASS: visitor prefill, booking confirmation, screening, conversion gating, builder persistence and live preview.');
+  console.log('PASS: visitor prefill, booking confirmation, screening, builder preview and Arabic/English layout.');
 }catch(error){console.error(error);throw error;}finally{await browser?.close();await server.close();}

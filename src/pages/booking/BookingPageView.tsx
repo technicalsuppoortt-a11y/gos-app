@@ -1,7 +1,8 @@
-import { translateText, localizeNode } from '../../i18n/display';
+import { localizeNode } from '../../i18n/display';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Globe2, Video } from 'lucide-react';
 import { TroubleshootControls, TroubleshootTimeSlots } from './BookingTroubleshoot';
 import { BookingSelect } from './BookingSelect';
+import { screeningText } from './BookingScreeningView';
 import { Avatar, Empty } from './ui';
 import { InviteeFields } from './InviteeFields';
 import { availableSlots, dateKey, formatDay, formatTime, TIMEZONES } from './model';
@@ -49,6 +50,7 @@ type Props = {
   editScreening?: () => void;
 };
 export function BookingPageView({page, bookings, showTroubleshoot, setShowTroubleshoot, duration, setDuration, setSlot, location, setLocation, displayTimezone, setTimezone, step, error, month, changeMonth, days, total, date, rescheduleId, setDate, setError, slots, slot, setStep, submit, answers, setAnswers, guests, setGuests, inviteeLocation, setInviteeLocation, source, setSource, fromAd, setFromAd, saving, enabledDates, editScreening}:Props) {
+  const translateText = (copy: string) => screeningText(page.language, copy);
   const firstStep = editScreening ? 2 : 1;
   return <div className="bk-public-grid"><aside className="bk-public-details"><TroubleshootControls page={page} bookings={bookings} checked={showTroubleshoot} change={setShowTroubleshoot}/>{localizeNode(page.image ? <div className="bk-public-media">{localizeNode(page.mediaType === 'video' ? <video src={page.image} controls playsInline style={{borderRadius:page.imageRound?'50%':12}}/> : <img src={page.image} alt={translateText(page.titleOverride || page.name)} style={{borderRadius:page.imageRound?'50%':12}}/>)}</div> : <Avatar name={page.hostName}/>)}<span className="bk-muted">{localizeNode(page.hostName)}</span><h1>{localizeNode(page.titleOverride || page.name)}</h1><div className="bk-public-meta"><span><Clock3 size={16}/>{localizeNode(duration)}{translateText(" minutes")}</span><span><Video size={16}/>{localizeNode(location)}</span></div><p>{localizeNode(page.description)}</p><label>{translateText("Meeting duration")}<BookingSelect value={duration} onChange={e => { setDuration(Number(e.target.value)); setSlot(''); }}>{localizeNode(page.durationOptions.map(n => <option key={n} value={n}>{localizeNode(n)}{translateText(" minutes")}</option>))}</BookingSelect></label><label>{translateText("Meeting location")}<BookingSelect value={location} onChange={e => setLocation(e.target.value)}>{localizeNode(page.locationOptions.map(l => <option key={l} value={l}>{localizeNode(l)}</option>))}</BookingSelect></label>{localizeNode(page.showTimezone && <label><span><Globe2 size={13}/>{translateText(" Your timezone")}</span><BookingSelect value={displayTimezone} disabled={page.timezoneDisplay === 'locked'} onChange={e => setTimezone(e.target.value)}>{localizeNode([...new Set([displayTimezone, ...TIMEZONES])].map(t => <option key={t} value={t}>{localizeNode(t)}</option>))}</BookingSelect></label>)}<div className="bk-tip">{translateText("Dates follow the host’s calendar in ")}{localizeNode(page.hostTimezone)}{translateText(". Times are shown in your chosen timezone.")}</div></aside>
       <section className="bk-public-wizard">

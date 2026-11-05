@@ -18,12 +18,21 @@ Copilot remains undeployed: the final secret-metadata check returned 404 for `OP
 - Default Firebase Storage bucket: `gos-app-3c7fb.firebasestorage.app`, `US-CENTRAL1`.
 - Runtime service account: `gos-app-3c7fb@appspot.gserviceaccount.com`. Its existing Editor grant provides Firebase Admin access. Client rules prohibit role/tenant escalation.
 
-After adding the real key, enable Copilot:
+To enable Copilot voice transcription and structured extraction, set the key in Firebase Secret Manager. The CLI prompts for the value.
 
 ```sh
 firebase functions:secrets:set OPENAI_API_KEY --project gos-app-3c7fb
 # Change DEPLOY_COPILOT=false to DEPLOY_COPILOT=true in functions/.env.gos-app-3c7fb.
-firebase deploy --project gos-app-3c7fb --only functions:user-dashboard:copilot
+firebase deploy --project gos-app-3c7fb --only functions:user-dashboard:transcribeCopilotVoice,functions:user-dashboard:extractCopilotVoice
+```
+
+Verify the browser preflight after deployment. Expect HTTP 204 and an `Access-Control-Allow-Origin` header. A 404 here indicates Firebase is missing the callable and may appear as a CORS error in the browser.
+
+```sh
+curl -i -X OPTIONS 'https://us-central1-gos-app-3c7fb.cloudfunctions.net/transcribeCopilotVoice' \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: authorization,content-type'
 ```
 
 Do not put API keys in Vite variables or commit secret values.

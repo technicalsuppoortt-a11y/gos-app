@@ -2848,6 +2848,7 @@ html.dark :is(
   .activity-status.completed,
   .activity-status.failed,
   .ai-mic-button.recording,
+  .ai-attachment-preview > .ai-transcribe-button,
   .af-status-switch.on,
   .bc-event-block.mint,
   .bc-link-item.selected,
@@ -3027,7 +3028,8 @@ html.dark :is(
     var(--adm-surface, var(--ui-surface))
 }
 html.dark :is(
-  .ba-btn.danger:hover:not(:disabled)
+  .ba-btn.danger:hover:not(:disabled),
+  .ai-attachment-preview > .ai-transcribe-button:hover:not(:disabled)
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-hover)
 }

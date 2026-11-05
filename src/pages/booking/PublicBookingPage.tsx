@@ -1,6 +1,7 @@
 import { BookingConfirmationView } from './BookingConfirmationView';
 import { BookingPageView } from './BookingPageView';
-import { BookingScreeningExit, BookingScreeningView, screeningText } from './BookingScreeningView';
+import { BookingDirectionContext } from './BookingSelect';
+import { BookingScreeningExit, BookingScreeningView, bookingLocale, screeningText } from './BookingScreeningView';
 import type { PublicQualificationResult, ScreeningQuestion } from '../../../functions/booking-qualification.js';
 import { Tracking } from '../../backend/marketingTracking';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
@@ -24,8 +25,9 @@ type PublicAvailability = { page: BookingPage; bookings: Appointment[]; screenin
 type BookingSubmission = { booking: Appointment } | { qualification: Exclude<PublicQualificationResult, { status: 'qualified' }> };
 
 export function PublicBookingSkeleton() {
+  const locale = bookingLocale(useUILanguage());
   return (
-    <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
+    <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
       <header className="bk-public-brand">
         <CalendarDays size={21} className="bk-brand-pulse" />
         <b>Upclick</b>
@@ -101,12 +103,13 @@ export function PublicBookingSkeleton() {
 }
 
 export default function PublicBookingPage() {
-  useUILanguage();
+  const uiLanguage = useUILanguage();
   const { slug } = useParams();
   const [data, setData] = useState<PublicAvailability>();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+  const locale = bookingLocale(uiLanguage, data?.page.language);
   useEffect(() => { let active = true; setData(undefined);
     const bookingId = new URLSearchParams(window.location.search).get('bookingId');
     const token = bookingId ? sessionStorage.getItem('gos.booking.token.' + bookingId) : null;
@@ -120,7 +123,7 @@ export default function PublicBookingPage() {
     const isPasswordRequired = error.toLowerCase().includes('password') || error.includes('Enter the page password');
     if (isPasswordRequired) {
       return (
-        <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
+        <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
           <header className="bk-public-brand">
             <CalendarDays size={21} />
             <b>Upclick</b>
@@ -163,7 +166,7 @@ export default function PublicBookingPage() {
     }
 
     return (
-      <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
+      <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
         <header className="bk-public-brand">
           <CalendarDays size={21} />
           <b>Upclick</b>
@@ -197,14 +200,15 @@ export default function PublicBookingPage() {
     );
   }
 
-  return <PublicBookingFlow key={slug} initial={data} password={password}/>;
+  return <BookingDirectionContext.Provider value={locale.dir}>
+    <PublicBookingFlow key={slug} initial={data} password={password} locale={locale}/>
+  </BookingDirectionContext.Provider>;
 }
 
-function PublicBookingFlow({ initial, password }: { initial: PublicAvailability; password: string }) {
-  useUILanguage();
+function PublicBookingFlow({ initial, password, locale }: { initial: PublicAvailability; password: string; locale: ReturnType<typeof bookingLocale> }) {
   const { slug } = useParams();
   const [params, setParams] = useSearchParams();
-  const pages = [initial.page];
+  const pages = [{ ...initial.page, language: locale.lang }];
   const [bookings, setBookings] = useState(initial.bookings);
   const readPages = () => pages;
   const readAppointments = () => bookings;
@@ -250,7 +254,7 @@ function PublicBookingFlow({ initial, password }: { initial: PublicAvailability;
     setAnswers(savedAnswers);
   };
   if (!page) return (
-    <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
+    <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':'#7C3AED'} as React.CSSProperties}>
       <header className="bk-public-brand">
         <CalendarDays size={21}/>
         <b>{translateText("Upclick")}</b>
@@ -348,7 +352,7 @@ function PublicBookingFlow({ initial, password }: { initial: PublicAvailability;
     try { const result = await callBackend<{booking: Appointment}>('publicBooking', {slug, password, operation: 'cancel', booking: success, token: managementToken(success.id)}); setBookings(current => current.map(b => b.id === success.id ? result.booking : b)); }
     catch(e) { setError(e instanceof Error ? e.message : 'Could not cancel your appointment.'); }
   };
-  return <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language === 'ar' ? 'rtl' : 'ltr'}><header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{translateText("Booking")}</span></header><div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
+  return <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties}><header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{screeningText(locale.lang, "Booking")}</span></header><div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
     {success ? <BookingConfirmationView success={success} page={page} error={error}>{page.afterBooking.allowCancelReschedule && success.status !== 'Canceled' && <><button className="bk-button" onClick={() => { setAnswers({ ...success.customAnswers, name: success.name, email: success.email, whatsapp: success.whatsapp }); setGuests(success.guests); setDuration(success.duration); setLocation(page.locationOptions.includes(success.location) ? success.location : page.locationOptions[0]); setRescheduleId(success.id); setParams({}); setSlot(''); setDate(''); setStep('select-slot'); }}>{translateText("Reschedule")}</button><button className="bk-button danger" onClick={cancel}>{translateText("Cancel appointment")}</button></>}{page.afterBooking.scheduleAnother && <Link className="bk-button primary" to={"/book/" + encodeURIComponent(page.slug)} onClick={reset}>{translateText("Book another appointment")}</Link>}<Link className="bk-button" to="/dashboard/booking?tab=bookings">{translateText("Go to Dashboard")}</Link></BookingConfirmationView>
       : !page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/>
       : !rescheduleId && qualification === 'ineligible' ? <BookingScreeningExit language={page.language}/>

@@ -9,7 +9,17 @@ import { Avatar } from './ui';
 import type { BookingPage } from './model';
 
 export function screeningText(language: BookingPage['language'], copy: string) {
+  if (language !== 'ar') {
+    if (copy === 'Screening') return 'Quick questions';
+    if (copy === 'Answer these required questions to see if this appointment is a fit.') return 'Please answer a few quick questions to help us prepare for your appointment.';
+    if (copy === 'Please check your answers and complete every screening question.') return 'Please complete all questions to continue.';
+  }
   return language === 'ar' ? resolveDisplayTranslation(copy) ?? copy : translateText(copy);
+}
+
+export function bookingLocale(locale: string, pageLanguage?: BookingPage['language']) {
+  const arabic = pageLanguage === 'ar' || locale.startsWith('ar');
+  return arabic ? { lang: 'ar', dir: 'rtl' } as const : { lang: 'en', dir: 'ltr' } as const;
 }
 
 export function BookingScreeningView({ page, questions, answers, setAnswer, submit, saving, error, focusOnMount = true }: {

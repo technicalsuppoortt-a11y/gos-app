@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, Pencil, Plus, Trash2 } from 'lucide-react';
 import { translateText as t } from '../../i18n/display';
 import { MAX_SCREENING_CHOICE, MAX_SCREENING_CHOICES, MAX_SCREENING_LABEL, MAX_SCREENING_QUESTIONS, validQualificationQuestions } from '../../../functions/booking-qualification.js';
 import type { QualificationQuestion } from '../../../functions/booking-qualification.js';
@@ -63,25 +63,86 @@ function QualificationDialog({ question, close, save }: {
       }
       save(next);
     }}>
-      <div className="bk-dialog-body bk-form">
-        <label>{t('Screening question')}<input autoFocus required maxLength={MAX_SCREENING_LABEL} value={label} onChange={event => setLabel(event.target.value)} placeholder={t('What is your project budget in USD?')}/></label>
-        <label>{t('Qualification rule')}<BookingSelect aria-label={t('Qualification rule')} value={type} onChange={event => setType(event.target.value === 'choice' ? 'choice' : 'minimum')}>
-          <option value="minimum">{t('Minimum amount')}</option>
-          <option value="choice">{t('Qualifying choices')}</option>
-        </BookingSelect></label>
-        {type === 'minimum' ? <label>{t('Minimum accepted amount')}<input required type="number" min="0" step="any" value={minimum} onChange={event => setMinimum(event.target.value)}/></label>
-          : <div className="bk-form">
-            <p className="bk-muted">{t('Mark each choice that should let a visitor continue.')}</p>
-            {choices.map((choice, index) => <div className="bk-question bk-form" key={choice.id}>
-              <label>{t('Choice')} {index + 1}<input required maxLength={MAX_SCREENING_CHOICE} value={choice.label} onChange={event => setChoices(choices.map(item => item.id === choice.id ? { ...item, label: event.target.value } : item))}/></label>
-              <div className="bk-question-footer">
-                <label className="bk-checkbox"><input type="checkbox" checked={choice.accepted} onChange={event => setChoices(choices.map(item => item.id === choice.id ? { ...item, accepted: event.target.checked } : item))}/>{t('Qualifies')}</label>
-                <button type="button" className="bk-icon danger" aria-label={t('Remove choice') + ' ' + (index + 1)} disabled={choices.length <= 2} onClick={() => setChoices(choices.filter(item => item.id !== choice.id))}><Trash2 size={14}/></button>
-              </div>
-            </div>)}
-            <button type="button" className="bk-button" disabled={choices.length >= MAX_SCREENING_CHOICES}
-              onClick={() => setChoices([...choices, { id: uid(), label: '', accepted: false }])}><Plus size={14}/>{t('Add choice')}</button>
-          </div>}
+      <div className="bk-dialog-body bk-form bk-qual-dialog-body">
+        <label className="bk-qual-field">
+          <span>{t('Screening question')}</span>
+          <input autoFocus required maxLength={MAX_SCREENING_LABEL} value={label} onChange={event => setLabel(event.target.value)} placeholder={t('What is your project budget in USD?')}/>
+        </label>
+        <label className="bk-qual-field">
+          <span>{t('Qualification rule')}</span>
+          <BookingSelect aria-label={t('Qualification rule')} value={type} onChange={event => setType(event.target.value === 'choice' ? 'choice' : 'minimum')}>
+            <option value="minimum">{t('Minimum amount')}</option>
+            <option value="choice">{t('Qualifying choices')}</option>
+          </BookingSelect>
+        </label>
+        {type === 'minimum' ? (
+          <label className="bk-qual-field">
+            <span>{t('Minimum accepted amount')}</span>
+            <input required type="number" min="0" step="any" value={minimum} onChange={event => setMinimum(event.target.value)} placeholder="0"/>
+          </label>
+        ) : (
+          <div className="bk-qual-choices-section">
+            <div className="bk-qual-choices-head">
+              <p className="bk-muted">{t('Mark each choice that should let a visitor continue.')}</p>
+              <span className="bk-qual-counter">
+                {choices.filter(c => c.accepted).length}/{choices.length} {t('Qualifies')}
+              </span>
+            </div>
+            <div className="bk-qual-choices-list">
+              {choices.map((choice, index) => (
+                <div className={`bk-question bk-qual-choice-card ${choice.accepted ? 'is-accepted' : ''}`} key={choice.id}>
+                  <div className="bk-qual-choice-top">
+                    <label className="bk-qual-choice-label">
+                      <span className="bk-qual-choice-title">
+                        <i className="bk-qual-choice-badge">{index + 1}</i>
+                        {t('Choice')} {index + 1}
+                      </span>
+                      <input
+                        required
+                        maxLength={MAX_SCREENING_CHOICE}
+                        value={choice.label}
+                        placeholder={`${t('Choice')} ${index + 1}`}
+                        onChange={event => setChoices(choices.map(item => item.id === choice.id ? { ...item, label: event.target.value } : item))}
+                      />
+                    </label>
+                  </div>
+                  <div className="bk-question-footer bk-qual-choice-footer">
+                    <label className={`bk-checkbox bk-qual-check-pill ${choice.accepted ? 'is-checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={choice.accepted}
+                        onChange={event => setChoices(choices.map(item => item.id === choice.id ? { ...item, accepted: event.target.checked } : item))}
+                      />
+                      <span className="bk-qual-check-box" aria-hidden="true">
+                        <Check size={11} strokeWidth={3} />
+                      </span>
+                      <span>{t('Qualifies')}</span>
+                    </label>
+                    <button
+                      type="button"
+                      className="bk-icon danger bk-qual-remove-btn"
+                      aria-label={t('Remove choice') + ' ' + (index + 1)}
+                      title={t('Remove choice') + ' ' + (index + 1)}
+                      disabled={choices.length <= 2}
+                      onClick={() => setChoices(choices.filter(item => item.id !== choice.id))}
+                    >
+                      <Trash2 size={14}/>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="bk-button bk-qual-add-choice"
+              disabled={choices.length >= MAX_SCREENING_CHOICES}
+              onClick={() => setChoices([...choices, { id: uid(), label: '', accepted: false }])}
+            >
+              <Plus size={15}/>
+              {t('Add choice')}
+            </button>
+          </div>
+        )}
         {error && <p className="bk-error" role="alert">{error}</p>}
       </div>
       <footer className="bk-dialog-footer">

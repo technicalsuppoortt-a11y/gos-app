@@ -210,8 +210,7 @@
 .bk-password-gate h1{font-size:20px;margin:0 0 20px;color:var(--bk-text)}
 .bk-slot-list button:disabled{background:var(--bk-bg);border-color:var(--bk-line);color:var(--bk-muted);cursor:not-allowed}
 .bk-slot-list button .bk-spots{font-size:9px;opacity:.8}
-.bk-public[dir=rtl] .bk-public-details{border-right:0;border-left:1px solid var(--bk-line)}
-@media(max-width:760px){.bk-interval{grid-template-columns:1fr 1fr 30px}.bk-interval>:first-child{grid-column:1/-1}.bk-limit-row{grid-template-columns:1fr 1fr 30px}.bk-limit-row>:first-child{grid-column:1/-1}.bk-public[dir=rtl] .bk-public-details{border-left:0}.bk-workflow summary{flex-wrap:wrap}.bk-workflow summary .bk-muted{margin-inline-start:0}}
+@media(max-width:760px){.bk-interval{grid-template-columns:1fr 1fr 30px}.bk-interval>:first-child{grid-column:1/-1}.bk-limit-row{grid-template-columns:1fr 1fr 30px}.bk-limit-row>:first-child{grid-column:1/-1}.bk-workflow summary{flex-wrap:wrap}.bk-workflow summary .bk-muted{margin-inline-start:0}}
 @media(max-width:430px){.bk-public-guests .bk-guest{grid-template-columns:minmax(0,1fr) 30px}.bk-public-guests .bk-guest>label{grid-column:1}.bk-public-guests .bk-guest>.bk-icon{grid-column:2;grid-row:1}.bk-interval input{width:100%}.bk-workflow .bk-form-grid{grid-template-columns:1fr}}
 
 .bk-public-details{border-top:3px solid var(--booking-color,var(--bk-indigo))}
@@ -420,6 +419,13 @@ html:has(main.bk-public),body:has(main.bk-public){height:100%;min-width:0;overfl
 .bk-wizard-steps{flex-wrap:wrap}
 .bk-wizard-steps .bk-screening-back{display:inline-flex;align-items:center;gap:5px;padding:0;font-size:inherit}
 .bk-screening-form{margin-top:16px}
+.bk-public[dir="rtl"] :is(.bk-public-details, .bk-public-wizard, .bk-form input, .bk-form textarea, .bk-state-input) {
+  text-align: right;
+}
+.bk-public[dir="rtl"] :is(h1, h2, label, button) { letter-spacing: normal; }
+.bk-public[dir="rtl"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right) {
+  scale: -1 1;
+}
 .bk-public .bk-public-wizard>h2{flex:none;margin:12px 0;font-size:17px}
 .bk-public .bk-slot-layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 160px;gap:16px;align-items:stretch;overflow:hidden}
 .bk-public .bk-slot-layout>div:first-child{min-width:0;min-height:0;overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}

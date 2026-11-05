@@ -1,10 +1,13 @@
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 
-import { Children, isValidElement, useId, useRef, useState } from 'react';
+import { Children, createContext, isValidElement, useContext, useId, useState } from 'react';
 import type { ChangeEvent, ReactNode, SelectHTMLAttributes } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useSelectPortal } from '../../components/ui/select-layer';
+import { resolveDisplayTranslation } from '../../i18n/translate';
+
+export const BookingDirectionContext = createContext<'rtl' | 'ltr' | undefined>(undefined);
 
 type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'multiple' | 'size'>;
 type Option = { value:string; label:ReactNode; text:string; disabled:boolean };
@@ -20,6 +23,7 @@ function optionsFrom(children:ReactNode):Option[] {
 // Native-compatible props keep each existing field's value and change handler intact.
 export function BookingSelect({children,value,defaultValue,onChange,disabled,required,name,id,className='',style,...props}:Props) {
   useUILanguage();
+  const direction = useContext(BookingDirectionContext) ?? uiDirection();
   const autoId = useId();
   const { trigger, container, onOpenChange } = useSelectPortal();
   const [uncontrolled,setUncontrolled] = useState(() => String(defaultValue ?? optionsFrom(children)[0]?.value ?? ''));
@@ -27,15 +31,16 @@ export function BookingSelect({children,value,defaultValue,onChange,disabled,req
   const items = optionsFrom(children).filter((item,index,all)=>all.findIndex(o=>o.value===item.value)===index);
   const current = String(value ?? uncontrolled);
   const selected = items.find(o=>o.value===current);
+  const emptyLabel = direction === 'rtl' ? resolveDisplayTranslation('Select an option') ?? 'Select an option' : 'Select an option';
   const choose = (next:string) => {
     const actual = next===empty?'':next;
     setUncontrolled(actual);setInvalid(false);
     onChange?.({target:{value:actual,name:name||''},currentTarget:{value:actual,name:name||''}} as ChangeEvent<HTMLSelectElement>);
   };
   return <span style={style} className={'bk-select '+className}>
-    <Select.Root dir={uiDirection()} value={current||empty} onValueChange={choose} disabled={disabled} onOpenChange={onOpenChange}>
+    <Select.Root dir={direction} value={current||empty} onValueChange={choose} disabled={disabled} onOpenChange={onOpenChange}>
       <Select.Trigger ref={trigger} type="button" id={id||autoId} className="bk-select-trigger" aria-label={translateText(props['aria-label'])} aria-labelledby={props['aria-labelledby']} aria-required={required} aria-invalid={invalid||undefined} title={translateText(selected?.text)} onFocus={props.onFocus as never} onBlur={props.onBlur as never}>
-        <Select.Value placeholder={translateText("Select an option")}>{localizeNode(selected?.label||'Select an option')}</Select.Value><Select.Icon><ChevronDown size={14}/></Select.Icon>
+        <Select.Value placeholder={emptyLabel}>{localizeNode(selected?.label) || emptyLabel}</Select.Value><Select.Icon><ChevronDown size={14}/></Select.Icon>
       </Select.Trigger>
       <Select.Portal container={container||undefined}><Select.Content className="bk-select-content" position="popper" sideOffset={5} collisionPadding={8}>
         <Select.ScrollUpButton className="bk-select-scroll"><ChevronUp size={13}/></Select.ScrollUpButton>

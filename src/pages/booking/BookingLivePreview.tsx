@@ -7,16 +7,17 @@ import { availableSlots, bookingColor, dateKey, displayedSlots, firstAvailableDa
 import type { BookingPage } from './model';
 import { Empty } from './ui';
 import { BookingPageView } from './BookingPageView';
-import { BookingScreeningExit, BookingScreeningView, screeningText } from './BookingScreeningView';
+import { BookingScreeningExit, BookingScreeningView, bookingLocale, screeningText } from './BookingScreeningView';
 import { evaluateQualification, publicScreeningQuestions } from '../../../functions/booking-qualification.js';
 import { BookingPreviewViewport } from './BookingPreviewViewport';
 import { BookingConfirmationView } from './BookingConfirmationView';
 import type { Appointment } from './model';
-import { BookingSelect } from './BookingSelect';
+import { BookingDirectionContext } from './BookingSelect';
 import { InviteeFields } from './InviteeFields';
 
-export function BookingLivePreview({page}:{page:BookingPage}) {
-  useUILanguage();
+export function BookingLivePreview({page: draft}:{page:BookingPage}) {
+  const locale = bookingLocale(useUILanguage(), draft.language);
+  const page = { ...draft, language: locale.lang };
   const [device,setDevice] = useState<'desktop'|'mobile'>('desktop');
   const viewportRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -144,7 +145,8 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
     <div className="bk-preview-banner"><CalendarDays size={13}/><span>{translateText("Preview · Appointments are not saved here")}</span></div>
     <div className="bk-preview-scroll" ref={viewportRef}><div className="bk-preview-fit" style={{height:fit.height*fit.scale}}><div ref={frameRef} className={'bk-preview-frame '+device} style={{width:device==='mobile'?390:1040,maxWidth:'none',transform:`translateX(-50%) scale(${fit.scale})`}}>
       <BookingPreviewViewport mobile={device==='mobile'}>
-        <main className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties} dir={page.language==='ar'?'rtl':'ltr'}>
+        <BookingDirectionContext.Provider value={locale.dir}>
+        <main {...locale} className="bk-public h-screen overflow-hidden flex flex-col" style={{'--booking-color':bookingColor(page.color)} as React.CSSProperties}>
           <header className="bk-public-brand"><CalendarDays size={21}/><b>{translateText("Upclick")}</b><span>{translateText("Booking")}</span></header>
           <div className="bk-public-scroll custom-scrollbar"><div className="bk-public-shell">
             {!page.active ? <Empty title={translateText("This booking page is turned off")} detail="Please contact the host to arrange an appointment."/>
@@ -178,6 +180,7 @@ export function BookingLivePreview({page}:{page:BookingPage}) {
             <BookingBrandingFooter hostName={page.hostName} visible={page.displayBranding}/>
           </div></div>
         </main>
+        </BookingDirectionContext.Provider>
       </BookingPreviewViewport>
     </div></div></div>
   </aside>;
