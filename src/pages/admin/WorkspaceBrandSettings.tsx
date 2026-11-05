@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Globe, Info, Loader2, Palette, RotateCcw, Sparkles } from 'lucide-react';
 import { backendError } from '../../backend/firebase';
+import { browserStorage } from '../../utils/browserStorage';
 import { showToast } from '../../utils/toast';
 import {
   DEFAULT_SUPPORT_EMAIL,
@@ -30,7 +31,7 @@ import { ChangePasswordCard } from '../settings/ChangePasswordCard';
 import { DomainsSettingsPanel } from '../settings/DomainsSettingsPanel';
 
 export function WorkspaceBrandSettings() {
-  const { values, tenantId, loading, error: loadError, canPublish, preview } = useWorkspacePreferences();
+  const { values, effective, topbarChange, tenantId, loading, error: loadError, canPublish, preview } = useWorkspacePreferences();
   const ar = useUILanguage().startsWith('ar');
   const role = useSelector((s: RootState) => s.auth.role);
   const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(role ?? '');
@@ -55,6 +56,22 @@ export function WorkspaceBrandSettings() {
     return () => preview(null);
   }, [dirty, edits, preview, resetting, tab]);
 
+  const previousTopbarChange = useRef(topbarChange);
+  useEffect(() => {
+    if (!topbarChange || previousTopbarChange.current === topbarChange) return;
+    previousTopbarChange.current = topbarChange;
+    const { language, currency, mode } = topbarChange;
+    if (!language && !currency && !mode) return;
+    // The Topbar saves a personal choice. Saving this draft publishes it to the workspace.
+    setEdits(current => ({
+      ...current,
+      ...(language && { language }),
+      ...(currency && { currency }),
+      ...(mode && { mode }),
+    }));
+    setSaved(false);
+  }, [topbarChange]);
+
   function update<K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) {
     setEdits(current => ({ ...current, [key]: value }));
     setSaved(false);
@@ -64,6 +81,9 @@ export function WorkspaceBrandSettings() {
     if (loading || busy || resetting) return;
     if (reset) {
       setResetting(true);
+      for (const key of ['workspace_theme', 'workspace_preferences_local', 'gos-theme-mode']) {
+        browserStorage.removeItem(key);
+      }
       preview(preferenceDefaults);
     } else {
       setBusy(true);
@@ -332,7 +352,7 @@ export function WorkspaceBrandSettings() {
                     {ar ? 'اختر اللغة' : 'Choose Language'}
                     <Select
                       label={ar ? 'اختر اللغة' : 'Choose Language'}
-                      value={draft.language}
+                      value={resetting ? preferenceDefaults.language : edits.language ?? effective.language}
                       onChange={value => update('language', value as WorkspacePreferences['language'])}
                       options={[
                         { value: 'en', label: 'English' },
@@ -344,7 +364,7 @@ export function WorkspaceBrandSettings() {
                     {ar ? 'الوضع الافتراضي' : 'Default Mode'}
                     <Select
                       label={ar ? 'الوضع الافتراضي' : 'Default Mode'}
-                      value={draft.mode}
+                      value={resetting ? preferenceDefaults.mode : edits.mode ?? effective.mode}
                       onChange={value => update('mode', value as WorkspacePreferences['mode'])}
                       options={[
                         { value: 'light', label: ar ? 'فاتح' : 'Light' },
@@ -357,7 +377,7 @@ export function WorkspaceBrandSettings() {
                     {ar ? 'العملة' : 'Currency'}
                     <Select
                       label={ar ? 'العملة' : 'Currency'}
-                      value={draft.currency}
+                      value={resetting ? preferenceDefaults.currency : edits.currency ?? effective.currency}
                       onChange={value => update('currency', value)}
                       options={['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP']}
                     />

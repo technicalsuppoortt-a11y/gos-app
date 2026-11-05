@@ -275,7 +275,7 @@ body.layout-locked #root {
 }
 
 .layout-nav-item.is-active {
-  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%) !important;
+  background: var(--gp-nav-gradient, linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%)) !important;
   color: #fff !important;
   font-weight: 650;
   box-shadow: 0 4px 12px var(--ws-glow, rgba(110, 84, 228, 0.22));
@@ -1140,7 +1140,7 @@ body.layout-locked #root {
 }
 
 .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%);
+  background: var(--gp-nav-gradient, linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%));
   color: #fff;
   box-shadow: 0 4px 11px var(--ws-glow, rgba(110, 84, 228, 0.17));
 }
@@ -1200,7 +1200,7 @@ html.dark .layout-nav-item:hover {
 
 html.dark .layout-nav-item.is-active,
 html.dark .reference-user-sidebar .layout-nav-item.is-active {
-  background: linear-gradient(105deg, var(--ws-accent, #7C3AED) 0%, var(--ws-hover, #A78BFA) 100%) !important;
+  background: var(--gp-nav-gradient, linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%)) !important;
   color: #fff !important;
 }
 

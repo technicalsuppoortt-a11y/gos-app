@@ -67,7 +67,7 @@ export function themeColorValue(value: string, property: string): string {
 }
 
 /** Call once when a captured page mounts; variables then update it live. */
-export function bindCapturedBrandColors(root: Element): void {
+export function bindCapturedBrandColors(root: Element, register: (element: Element, restore: () => void) => void): void {
   const elements = Array.from(root.querySelectorAll<HTMLElement | SVGElement>("[style], [fill], [stroke], [stop-color]"));
   if (root.matches('[style], [fill], [stroke], [stop-color]')) elements.unshift(root as HTMLElement | SVGElement);
   elements.forEach((element) => {
@@ -77,13 +77,27 @@ export function bindCapturedBrandColors(root: Element): void {
       if (!property.startsWith("--") && !/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow)$/.test(property)) continue;
       const value = element.style.getPropertyValue(property);
       const themed = themeColorValue(value, property);
-      if (themed !== value) element.style.setProperty(property, themed, element.style.getPropertyPriority(property));
+      if (themed !== value) {
+        const priority = element.style.getPropertyPriority(property);
+        element.style.setProperty(property, themed, priority);
+        const applied = element.style.getPropertyValue(property);
+        if (applied !== value) register(element, () => {
+          if (element.style.getPropertyValue(property) === applied && element.style.getPropertyPriority(property) === priority) {
+            element.style.setProperty(property, value, priority);
+          }
+        });
+      }
     }
     for (const property of ["fill", "stroke", "stop-color"]) {
       const value = element.getAttribute(property);
       if (value) {
         const themed = themeColorValue(value, property);
-        if (themed !== value) element.setAttribute(property, themed);
+        if (themed !== value) {
+          element.setAttribute(property, themed);
+          register(element, () => {
+            if (element.getAttribute(property) === themed) element.setAttribute(property, value);
+          });
+        }
       }
     }
   });

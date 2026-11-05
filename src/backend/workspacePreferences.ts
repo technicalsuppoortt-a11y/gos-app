@@ -38,9 +38,9 @@ export const preferenceDefaults: WorkspacePreferences = {
   name: DEFAULT_BRAND_NAME,
   logoUrl: DEFAULT_BRAND_LOGO_URL,
   theme: 'violet',
-  language: 'en',
+  language: 'ar',
   currency: 'USD',
-  mode: 'system',
+  mode: 'light',
   timezone: 'UTC',
   supportEmail: DEFAULT_SUPPORT_EMAIL,
 };
@@ -63,9 +63,9 @@ export function sanitizeWorkspacePreferences(
   const rawTheme = typeof obj.theme === 'string' && Object.hasOwn(workspaceThemes, obj.theme)
     ? (obj.theme as WorkspacePreferences['theme'])
     : 'violet';
-  const rawLang: 'en' | 'ar' = obj.language === 'ar' ? 'ar' : 'en';
+  const rawLang: 'en' | 'ar' = obj.language === 'en' ? 'en' : 'ar';
   const rawMode: 'light' | 'dark' | 'system' =
-    obj.mode === 'light' || obj.mode === 'dark' || obj.mode === 'system' ? obj.mode : 'system';
+    obj.mode === 'light' || obj.mode === 'dark' || obj.mode === 'system' ? obj.mode : 'light';
   const rawCurr =
     typeof obj.currency === 'string' && ['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP'].includes(obj.currency)
       ? obj.currency
@@ -176,6 +176,7 @@ export function useWorkspacePreferenceState() {
     let tenantValues: WorkspacePreferences | null = null;
     let ownBrand: WorkspacePreferences | null = null;
     let parentBrand: WorkspacePreferences | null = null;
+    const inheritsProvider = role === 'USER';
     let legacy: PersonalPreferences = {};
     let personal: PersonalPreferences = {};
     let error = '';
@@ -187,7 +188,12 @@ export function useWorkspacePreferenceState() {
 
     const publish = (source: string) => {
       pending.delete(source);
-      setAccount({ scope, workspace: tenantValues ?? parentBrand ?? ownBrand,
+      // Client workspaces follow their linked provider's publication, even when
+      // an older client document still contains a copy of the previous theme.
+      const workspace = inheritsProvider
+        ? parentBrand ?? tenantValues ?? ownBrand
+        : tenantValues ?? ownBrand ?? parentBrand;
+      setAccount({ scope, workspace,
         personal: { ...legacy, ...personal }, loading: pending.size > 0, error });
     };
     const failed = (source: string, cause: unknown) => {
@@ -254,7 +260,7 @@ export function useWorkspacePreferenceState() {
     scope, uid, tenantId,
     canPublish: !impersonation && (role === 'ADMIN' || role === 'SUPER_ADMIN'),
     values: current?.workspace ?? publicValues,
-    hasAccountWorkspace: !!current?.workspace,
+    publicValues,
     personal: current?.personal ?? inheritWorkspacePreferences,
     loading: Boolean(uid && (!current || current.loading)),
     error: current?.error ?? '',
@@ -264,12 +270,14 @@ export function useWorkspacePreferenceState() {
 type WorkspaceContext = ReturnType<typeof useWorkspacePreferenceState> & {
   effective: WorkspacePreferences;
   hasWorkspaceTheme: boolean;
+  topbarChange?: PersonalPreferences;
+  themePreview?: Partial<WorkspacePreferences> | null;
   preview: (patch: Partial<WorkspacePreferences> | null) => void;
   setPreference?: (patch: PersonalPreferences) => void;
 };
 
 export const WorkspacePreferencesContext = createContext<WorkspaceContext>({
-  scope: '', uid: '', tenantId: '', canPublish: false, values: null, hasAccountWorkspace: false,
+  scope: '', uid: '', tenantId: '', canPublish: false, values: null, publicValues: null,
   hasWorkspaceTheme: false, personal: inheritWorkspacePreferences, effective: preferenceDefaults, loading: false, error: '',
   preview: () => {},
 });

@@ -34,7 +34,7 @@ export function ProfilePanel({ data, save }: {
   useUILanguage();
   const file = useRef<HTMLInputElement>(null), navigate = useNavigate();
   const theme = useSelector((s: RootState) => s.ui.theme);
-  const { effective, values, uid, loading, error: preferencesError } = useWorkspacePreferences();
+  const { effective, values, setPreference, uid, loading, error: preferencesError } = useWorkspacePreferences();
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [edits, setEdits] = useState<Partial<Profile>>({});
   const [preferences, setPreferences] = useState<PersonalPreferences>({});
@@ -64,6 +64,10 @@ export function ProfilePanel({ data, save }: {
     setEdits(current => ({ ...current, [key]: value }));
   const updatePreference = <K extends keyof PersonalPreferences>(key: K, value: PersonalPreferences[K]) =>
     setPreferences(current => ({ ...current, [key]: value }));
+  const updateRegional = <K extends 'language' | 'currency' | 'mode'>(key: K, value: PersonalPreferences[K]) => {
+    if (setPreference) setPreference({ [key]: value });
+    else updatePreference(key, value);
+  };
   const isDarkModeChecked = draft.mode === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : (draft.mode ?? theme) === 'dark';
   useEffect(() => () => { if (photo) URL.revokeObjectURL(photo.preview); }, [photo]);
   const avatar = photo?.preview ?? draft.photo;
@@ -130,8 +134,8 @@ export function ProfilePanel({ data, save }: {
             <Field label="Full Name"><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
             <Field label="Email Address"><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
             <Field label="Phone Number"><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
-            <Field label="Language"><Select value={draft.language} onChange={value => updatePreference('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
-            <Field label="Currency"><Select value={draft.currency || 'USD'} onChange={value => updatePreference('currency', value)} options={CURRENCY_SELECT_OPTIONS} /></Field>
+            <Field label="Language"><Select value={draft.language} onChange={value => updateRegional('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
+            <Field label="Currency"><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={CURRENCY_SELECT_OPTIONS} /></Field>
             <Field label="Timezone"><TimezoneSelect value={draft.timezone} onChange={value => updatePreference('timezone', value)}/></Field>
             <Field label="Date Format"><Select value={draft.dateFormat || 'DD / MM / YYYY'} onChange={value => updatePreference('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>
           </div>
@@ -145,7 +149,7 @@ export function ProfilePanel({ data, save }: {
               text: isDarkModeChecked ? 'Dark mode' : 'Light mode',
               icon: Moon,
               value: isDarkModeChecked,
-              change: (checked: boolean) => updatePreference('mode', checked ? 'dark' : 'light'),
+              change: (checked: boolean) => updateRegional('mode', checked ? 'dark' : 'light'),
             }
           ].map(p => (
             <div key={p.name} className="st-preference">
@@ -155,7 +159,12 @@ export function ProfilePanel({ data, save }: {
             </div>
           )))}
           <button type="button" className="st-secondary" disabled={loading || busy || !!preferencesError}
-            onClick={() => setPreferences(inheritWorkspacePreferences)}>{translateText("Use workspace defaults")}</button>
+            onClick={() => {
+              if (setPreference) {
+                setPreferences({});
+                setPreference(inheritWorkspacePreferences);
+              } else setPreferences(inheritWorkspacePreferences);
+            }}>{translateText("Use workspace defaults")}</button>
         </Card>
 
         <aside className="st-profile-summary">

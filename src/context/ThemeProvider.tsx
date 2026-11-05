@@ -14,10 +14,11 @@ import { WorkspaceCustomization } from './WorkspaceCustomization';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
+  publicPage?: boolean;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => (
-  <WorkspaceCustomization><ThemeRuntime>{children}</ThemeRuntime></WorkspaceCustomization>
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, publicPage }) => (
+  <WorkspaceCustomization publicPage={publicPage}><ThemeRuntime>{children}</ThemeRuntime></WorkspaceCustomization>
 );
 
 const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
@@ -25,19 +26,31 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
   const theme = useSelector((state: RootState) => state.ui.theme);
   const language = useSelector((state: RootState) => state.ui.language);
   const phoenixTheme = usePhoenixBrand()?.brand.theme;
-  const { effective, hasWorkspaceTheme } = useWorkspacePreferences();
+  const { effective, hasWorkspaceTheme, themePreview } = useWorkspacePreferences();
   const palette = effective.theme;
   useLayoutEffect(() => {
     const root = document.documentElement;
-    const design = !hasWorkspaceTheme && phoenixTheme ? phoenixTheme : workspaceTheme(palette);
-    const set = (key: string, value: string) => root.style.setProperty(`--gp-${key}`, value);
-    const isCustomBrand = (hasWorkspaceTheme || !!phoenixTheme) && design.paletteId !== 'dashboard-default';
-    root.dataset.gpBrand = String(isCustomBrand);
+    const workspace = workspaceTheme(palette);
+    const design = !hasWorkspaceTheme && phoenixTheme ? phoenixTheme : workspace;
+    const set = (key: string, value: string) => {
+      const property = key.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
+      root.style.setProperty('--gp-' + property, value);
+    };
+    // The original Violet Indigo stylesheet is already the complete default design.
+    const customWorkspace = design === workspace && palette !== 'violet';
+    const isCustomBrand = (customWorkspace || design !== workspace) && design.paletteId !== 'dashboard-default';
     if (isCustomBrand) {
+      root.dataset.gpBrand = 'true';
       void import('./phoenix-brand-generated.css');
     }
     for (const [key, value] of Object.entries(design[theme])) {
-      if (typeof value === 'string' && CSS.supports('color', value)) set(key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`), value);
+      if (typeof value === 'string' && CSS.supports('color', value)) set(key, value);
+    }
+    if (design === workspace) {
+      if (customWorkspace) root.dataset.gpWorkspace = '';
+      for (const [key, value] of Object.entries(workspace.gradients[theme])) {
+        if (CSS.supports('background-image', value)) set(key, value);
+      }
     }
     const font = (value: string) => `"${value.replace(/["\\]/g, '')}", sans-serif`;
     set('body-font', font(language === 'ar' ? design.typography.arabic : design.typography.body));
@@ -64,8 +77,13 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
     set('button-radius', design.buttons.shape === 'pill' ? '999px' : design.buttons.shape === 'square' ? '0px' : `${design.appearance.radius}px`);
     root.dataset.gpButtons = design.buttons.variant;
     set('shadow', design.appearance.shadow === 'none' ? 'none' : '0 4px 18px color-mix(in srgb, var(--gp-text) 7%, transparent)');
+    const restorers = new WeakMap<Element, Array<() => void>>();
     const bind = (element: Element) => {
-      bindCapturedBrandColors(element);
+      bindCapturedBrandColors(element, (target, restore) => {
+        const changes = restorers.get(target) ?? [];
+        changes.push(restore);
+        restorers.set(target, changes);
+      });
       const buttons = Array.from(element.querySelectorAll('button'));
       if (element instanceof HTMLButtonElement) buttons.unshift(element);
       for (const button of buttons) {
@@ -86,12 +104,18 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
     observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['style','fill','stroke','stop-color'] });
     return () => {
       observer.disconnect();
+      if (isCustomBrand) {
+        for (const element of document.querySelectorAll('[style], [fill], [stroke], [stop-color]')) {
+          restorers.get(element)?.reverse().forEach(restore => restore());
+        }
+      }
       fontSheet.remove();
       delete root.dataset.gpBrand;
+      delete root.dataset.gpWorkspace;
       delete root.dataset.gpButtons;
       for (const key of Array.from(root.style)) if (key.startsWith('--gp-')) root.style.removeProperty(key);
     };
-  }, [hasWorkspaceTheme, palette, phoenixTheme, theme, language]);
+  }, [hasWorkspaceTheme, palette, phoenixTheme, theme, language, themePreview]);
 
   useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

@@ -10,9 +10,13 @@ import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
 
-export function WorkspaceCustomization({ children }: { children: ReactNode }) {
+export function WorkspaceCustomization({ children, publicPage }: { children: ReactNode; publicPage?: boolean }) {
   const state = useWorkspacePreferenceState();
-  const { scope, uid, values, personal } = state;
+  const { uid } = state;
+  const scope = publicPage ? 'public' : state.scope;
+  const values = publicPage ? state.publicValues : state.values;
+  const personal = publicPage ? {} : state.personal;
+  const [lastTopbarChange, setLastTopbarChange] = useState<{ scope: string; patch: PersonalPreferences }>();
   const phoenix = usePhoenixBrand();
   const dispatch = useDispatch();
   const [draft, setDraft] = useState<{ scope: string; patch: Partial<WorkspacePreferences> } | null>(null);
@@ -20,7 +24,7 @@ export function WorkspaceCustomization({ children }: { children: ReactNode }) {
     setDraft(current => patch ? { scope, patch } : current?.scope === scope ? null : current);
   }, [scope]);
   const previewValues = draft?.scope === scope ? draft.patch : null;
-  const usePhoenixDefaults = uid && !state.hasAccountWorkspace && phoenix;
+  const usePhoenixDefaults = !publicPage && uid && !values && phoenix;
   const workspace = usePhoenixDefaults ? {
     ...preferenceDefaults,
     name: phoenix.brand.name,
@@ -40,7 +44,9 @@ export function WorkspaceCustomization({ children }: { children: ReactNode }) {
 
   const { language, currency, mode, theme } = effective;
   useLayoutEffect(() => {
-    document.documentElement.dataset.workspaceTheme = theme;
+    const root = document.documentElement;
+    if (theme === 'violet') delete root.dataset.workspaceTheme;
+    else root.dataset.workspaceTheme = theme;
   }, [theme]);
   useLayoutEffect(() => {
     dispatch(setLanguage(language));
@@ -57,12 +63,15 @@ export function WorkspaceCustomization({ children }: { children: ReactNode }) {
     return () => media.removeEventListener('change', apply);
   }, [scope, mode, dispatch]);
 
-  const setPreference = uid ? (patch: PersonalPreferences) => {
+  const setPreference = uid && !publicPage ? (patch: PersonalPreferences) => {
+    setLastTopbarChange({ scope, patch });
     void savePersonalPreferences(uid, patch).catch(error => showToast.error(backendError(error)));
   } : undefined;
   return (
     <WorkspacePreferencesContext.Provider value={{
       ...state, values: usePhoenixDefaults ? workspace : values, effective, preview, setPreference,
+      topbarChange: lastTopbarChange?.scope === scope ? lastTopbarChange.patch : undefined,
+      themePreview: previewValues?.theme ? previewValues : null,
       hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && values)),
     }}>
       {children}

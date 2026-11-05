@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import { FirebaseSession } from './backend/session';
 import { useSessionReady } from './backend/sessionState';
 import { CustomDomainInterceptor } from './components/common/CustomDomainInterceptor';
@@ -18,9 +19,10 @@ function ReadyTracking() {
 }
 
 function App() {
+  const publicPage = useSyncExternalStore(router.subscribe, () => router.state.location.pathname === '/');
   return (
     <Provider store={store}>
-      <ThemeProvider>
+      <ThemeProvider publicPage={publicPage}>
         <CustomDomainInterceptor>
           <FirebaseSession><ReadyTracking/><RouterProvider router={router} /></FirebaseSession>
         </CustomDomainInterceptor>

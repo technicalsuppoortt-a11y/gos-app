@@ -57,3 +57,34 @@ html[data-gp-brand="true"] :is(.adm-sidebar, .adm-topbar) {
   background: var(--gp-header-background);
   border-color: var(--gp-border);
 }
+
+/* Workspace gradients sit above the generated color roles. Authored previews keep their own design. */
+html[data-gp-workspace][data-workspace-theme] :is(.layout-sidebar,.layout-mobile-sidebar,.adm-sidebar):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background: var(--gp-sidebar-gradient) !important;
+}
+html[data-gp-workspace][data-workspace-theme] :is(.adm-main,.layout-main,.layout-route-content,.lp):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background: var(--gp-canvas-gradient) !important;
+}
+html[data-gp-workspace][data-workspace-theme] :is(.adm-sidebar nav a.active,.layout-sidebar .layout-nav-item.is-active,.layout-mobile-sidebar .layout-nav-item.is-active):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background: var(--gp-nav-gradient) !important;
+  color: var(--gp-on-primary) !important;
+}
+html[data-gp-workspace][data-workspace-theme] :is(.adm-sidebar nav a.active,.layout-nav-item.is-active) :is(svg,.layout-nav-icon,.layout-nav-label):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  color: var(--gp-on-primary) !important;
+}
+html[data-gp-workspace][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.crm2-btn-primary,.button-primary,.aw-primary,.layout-header .layout-plan-cta,.support-launcher,.lp .lp-btn--primary,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *)) {
+  background: var(--gp-button-gradient) !important;
+  color: var(--gp-on-primary) !important;
+  border-color: transparent !important;
+}
+html[data-gp-workspace][data-workspace-theme] :is(.ws-section-head,.st-card > .st-card-heading,.crm-pipeline-workspace .crm-stage-head,.adm-tabs button.active,.adm-group-nav a.active,.st-tabs a.active):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background: var(--gp-card-header-gradient) !important;
+}
+html[data-gp-workspace][data-workspace-theme] .crm2-subnav-btn.active:not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *)::after {
+  background: var(--gp-nav-gradient) !important;
+}
+
+/* Custom palettes keep profile cards on a readable surface. */
+html[data-gp-workspace][data-gp-brand="true"] .st-profile .st-card:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: var(--gp-surface) !important;
+}

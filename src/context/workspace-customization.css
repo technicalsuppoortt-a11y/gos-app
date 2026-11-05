@@ -25,7 +25,7 @@ html[data-workspace-theme] {
   --upclick-primary: var(--ws-accent);
   --upclick-secondary: var(--ws-hover);
   --upclick-tint: var(--ws-soft);
-  --upclick-gradient: linear-gradient(115deg, var(--ws-accent), var(--ws-hover));
+  --upclick-gradient: var(--gp-button-gradient, linear-gradient(115deg, var(--ws-accent), var(--ws-hover)));
   --upclick-gradient-soft: linear-gradient(115deg, var(--ws-soft), var(--ws-hover));
 }
 
@@ -461,8 +461,8 @@ html[data-workspace-theme] :is(
   button[type="submit"]:not(.st-secondary):not(.btn-secondary):not(.aw-secondary),
   .crm-stage-add
 ) {
-  background: var(--ws-accent) !important;
-  color: var(--gp-on-brand, #fff) !important;
+  background: var(--gp-button-gradient, var(--ws-accent)) !important;
+  color: var(--gp-on-primary, var(--gp-on-brand, #fff)) !important;
   border-color: var(--ws-accent) !important;
 }
 
@@ -772,7 +772,7 @@ html[data-workspace-theme] :is(.layout-header, .adm-sidebar, .layout-sidebar, .l
   border-color: var(--gp-border);
 }
 
-html[data-workspace-theme] .lp-logo-image {
+.lp .lp-logo-image {
   display: block;
   width: auto;
   max-width: 160px;

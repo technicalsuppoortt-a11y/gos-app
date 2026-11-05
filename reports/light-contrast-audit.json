@@ -163,7 +163,7 @@
     },
     {
       "file": "src/components/ui/CurrencySelector.tsx",
-      "line": 93,
+      "line": 78,
       "utility": "text-slate-400"
     },
     {
@@ -253,32 +253,32 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 268,
+      "line": 276,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 272,
+      "line": 280,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 272,
+      "line": 280,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 294,
+      "line": 302,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 297,
+      "line": 305,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 306,
+      "line": 314,
       "utility": "text-slate-100"
     },
     {
@@ -4747,7 +4747,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75

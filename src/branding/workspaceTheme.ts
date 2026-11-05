@@ -17,7 +17,7 @@ export const themePaletteDetails: Record<
     primary: '#7c3aed',
     accent: '#a78bfa',
     soft: '#ede9fe',
-    hover: '#6d28d9',
+    hover: '#a78bfa',
     darkBg: '#111827',
     badge: ['Default Brand', 'السمة الافتراضية'],
     desc: ['Signature royal violet & indigo contrast', 'بنفسجي ملكي متوازن وعصري'],
@@ -105,19 +105,48 @@ export const themePaletteDetails: Record<
   },
 };
 
-export function workspaceTheme(id: WorkspacePreferences['theme']): NonNullable<PhoenixBrand['theme']> {
+type WorkspaceGradients = Record<'buttonGradient' | 'navGradient' | 'sidebarGradient' | 'canvasGradient' | 'cardHeaderGradient', string>;
+type WorkspaceTheme = NonNullable<PhoenixBrand['theme']> & { gradients: Record<'light' | 'dark', WorkspaceGradients> };
+
+export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceTheme {
   const p = themePaletteDetails[id] ?? themePaletteDetails.violet;
-  const darkSurface = 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
+  const violet = id === 'violet';
+  const darkSurface = violet ? '#242538' : 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
+  const buttonEnd = violet ? '#A78BFA' : 'color-mix(in srgb, ' + p.primary + ' 80%, ' + p.hover + ')';
+  const buttonGradient = 'linear-gradient(115deg, ' + p.primary + ', ' + buttonEnd + ')';
+  const lightBackground = violet ? '#f3f7fc' : '#f8fafc';
+  // Upclick's official palette (671c48c) and shell (202efed's parent).
+  const navGradient = violet ? 'linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%)' : buttonGradient;
   return {
     paletteId: `workspace-${id}`,
+    gradients: {
+      light: {
+        buttonGradient,
+        navGradient: navGradient,
+        sidebarGradient: violet
+          ? 'linear-gradient(180deg, #f7faff 0%, #f3f7fc 100%)'
+          : 'linear-gradient(180deg, #fff, color-mix(in srgb, ' + p.soft + ' 42%, #f5f8fc))',
+        canvasGradient: 'linear-gradient(160deg, #fff, ' + lightBackground + ')',
+        cardHeaderGradient: 'linear-gradient(105deg, color-mix(in srgb, ' + p.soft + ' 38%, #fff), #fff)',
+      },
+      dark: {
+        buttonGradient,
+        navGradient: navGradient,
+        sidebarGradient: violet
+          ? 'linear-gradient(180deg, #151a27 0%, #101521 100%)'
+          : 'linear-gradient(180deg, ' + darkSurface + ', ' + p.darkBg + ')',
+        canvasGradient: 'linear-gradient(160deg, color-mix(in srgb, ' + p.darkBg + ', ' + p.primary + ' 10%), ' + p.darkBg + ')',
+        cardHeaderGradient: 'linear-gradient(105deg, color-mix(in srgb, ' + darkSurface + ', ' + p.primary + ' 15%), ' + darkSurface + ')',
+      },
+    },
     light: {
       primary: p.primary,
       hover: p.hover,
       buttonBackground: p.primary,
-      background: '#f8fafc',
+      background: lightBackground,
       surface: '#ffffff',
-      text: '#172033',
-      mutedText: '#475569',
+      text: violet ? '#0F172A' : '#172033',
+      mutedText: violet ? '#94A38B' : '#475569',
       border: '#cbd5e1',
       soft: p.soft,
       success: '#047857',
