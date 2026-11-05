@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 209,
+  "utilityOccurrences": 210,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -43,47 +43,47 @@
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 327,
+      "line": 336,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 352,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 383,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 396,
+      "utility": "text-gray-400"
+    },
+    {
+      "file": "src/components/layout/SubAccountSwitcher.tsx",
+      "line": 466,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 344,
+      "line": 499,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 375,
+      "line": 516,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 388,
-      "utility": "text-gray-400"
-    },
-    {
-      "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 453,
+      "line": 565,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 486,
-      "utility": "text-gray-400"
-    },
-    {
-      "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 503,
-      "utility": "text-gray-400"
-    },
-    {
-      "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 552,
-      "utility": "text-gray-500"
-    },
-    {
-      "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 569,
+      "line": 582,
       "utility": "text-gray-400"
     },
     {
@@ -275,6 +275,11 @@
       "file": "src/pages/auth/LoginPage.tsx",
       "line": 297,
       "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 306,
+      "utility": "text-slate-100"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
