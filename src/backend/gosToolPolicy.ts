@@ -5,7 +5,7 @@ import { toolPolicyAllows, unavailableToolPolicy } from './toolPolicy';
 /** Enforce Firebase operational policy before an existing external API mutation. */
 export async function checkGosToolPolicy(path: string, method = 'GET') {
   if (method === 'GET') return;
-  const toolId = path.startsWith('/crm/') ? 'crm-pipeline' : path.startsWith('/inbox/') ? 'unified-inbox' : path.startsWith('/ai/') ? 'ai-followup' : '';
+  const toolId = path.startsWith('/crm/') ? 'crm-pipeline' : path.startsWith('/inbox/') ? 'unified-inbox' : path.startsWith('/ai/') || path.startsWith('/flows') ? 'ai-followup' : '';
   if (!toolId) return;
   await auth.authStateReady();
   if (!auth.currentUser) throw new Error('Sign in to continue.');

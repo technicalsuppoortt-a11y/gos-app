@@ -11,6 +11,11 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
   if (['/health', '/auth/me', '/auth/verify', '/firestore/status'].includes(url.pathname)) return { ok: true, user: { id: 'demo-account-user' }, connected: true } as T;
   if (parts[0] === 'ai') {
     if (parts[1] === 'training') return { embedding_percent: 100 } as T;
+    // Flow Builder's Meta connect is not available in the demo account.
+    if (parts[1] === 'channels' && parts[2] === 'meta') {
+      if (method === 'GET') return { meta: { app_id: null, graph_version: 'v21.0', login_config_id: null, whatsapp_config_id: null, ready: false, channels: { messenger: false, instagram: false, whatsapp: false }, webhook_url: '', verify_token: null } } as T;
+      throw new Error('Connecting Meta channels is not available in the demo account.');
+    }
     if (parts[1] === 'channels') { const current = read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }); if (method === 'PUT' && parts[2]) write('assistant', { ...current, channels: { ...current.channels, [parts[2]]: !!body.enabled } }); return { channels: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }).channels } as T; }
     if (parts[1] === 'assistant') { if (method !== 'GET') write('assistant', { ...read('assistant', { live_enabled: false, channels: {} }), ...body }); return { assistant: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true } }) } as T; }
     if (parts[1] === 'sources') {
@@ -86,6 +91,28 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
       }
     }
     return (id ? { [resource === 'leads' ? 'lead' : 'pipeline']: rows(resource).find(row => row.id === id) } : { [resource]: rows(resource) }) as T;
+  }
+  // Flow Builder: flows are kept in the demo store; the simulator and Messenger need the real API.
+  if (parts[0] === 'flows') {
+    const flows = read<ApiRecord[]>('flowBuilder.flows', []);
+    const save = (next: ApiRecord[]) => write('flowBuilder.flows', next);
+    const now = new Date().toISOString();
+    if (!parts[1]) {
+      if (method === 'POST') {
+        const flow = { id: crypto.randomUUID().slice(0, 12), name: body.name, status: 'draft', draft: { triggers: [], rootId: null, nodes: {}, coordinates: {} }, live: null, has_unpublished_changes: false, updated_at: now };
+        save([...flows, flow]); return flow as T;
+      }
+      return flows as T;
+    }
+    const flow = flows.find(row => row.id === parts[1]);
+    if (!flow) throw new Error('Automation not found.');
+    const update = (patch: ApiRecord) => { const next = { ...flow, ...patch, updated_at: now }; save(flows.map(row => row.id === flow.id ? next : row)); return next as T; };
+    if (parts[2] === 'draft') return update({ draft: body.graph, name: body.name ?? flow.name, has_unpublished_changes: true });
+    if (parts[2] === 'publish') return update({ live: flow.draft, status: 'live', has_unpublished_changes: false });
+    if (parts[2] === 'stop') return update({ status: 'stopped' });
+    if (parts[2] === 'stats') return {} as T;
+    if (parts[2] === 'simulator') throw new Error('The demo account cannot run the simulator. Sign in to test flows.');
+    return flow as T;
   }
   throw new Error('Unknown demo API action: ' + url.pathname);
 }
