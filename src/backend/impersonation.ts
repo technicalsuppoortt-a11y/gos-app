@@ -1,7 +1,7 @@
 import { deleteApp, initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, inMemoryPersistence, setPersistence, signInWithCustomToken, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { callBackend, firebaseConfig, primaryAuth, primaryDb, setBackendContext } from './firebase';
+import { callBackend, firebaseConfig, primaryAuth, primaryDb, primaryFunctions, setBackendContext } from './firebase';
 import { store } from '../store';
 import { loginSuccess, startImpersonation, stopImpersonation } from '../store/slices/authSlice';
 import type { Role, Tenant, User } from '../types/auth';
@@ -16,18 +16,8 @@ export interface SubAccountFallback {
   email?: string;
   tenantId?: string;
   avatar?: string;
+  role?: Role;
   accountType?: User['accountType'];
-}
-
-function readCachedAccount(id: string): SubAccountFallback | null {
-  try {
-    const raw = localStorage.getItem('admin_sub_accounts_cache') || localStorage.getItem('gos_subaccounts_cache_v1');
-    if (!raw) return null;
-    const list = JSON.parse(raw) as SubAccountFallback[];
-    return Array.isArray(list) ? list.find(item => item.id === id) || null : null;
-  } catch {
-    return null;
-  }
 }
 
 /** The administrator's Firebase login is never replaced or persisted as a target login. */
@@ -38,17 +28,8 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
   }
   const state = store.getState().auth;
   const effectiveRole = state.impersonation?.role ?? state.role ?? '';
-  if (switching || !['ADMIN', 'SUPER_ADMIN'].includes(effectiveRole)) {
+  if (switching || !['ADMIN', 'SUPER_ADMIN'].includes(effectiveRole) || state.impersonation && effectiveRole !== 'SUPER_ADMIN') {
     throw new Error('Administrator access is required.');
-  }
-
-  // If already impersonating another sub-account, clean up the previous secondary FirebaseApp without flipping role to ADMIN mid-flight
-  if (secondaryApp) {
-    const prevApp = secondaryApp;
-    secondaryApp = null;
-    setBackendContext();
-    await signOut(getAuth(prevApp)).catch(() => {});
-    await deleteApp(prevApp).catch(() => {});
   }
 
   const adminToken = state.impersonation?.token || state.token || '';
@@ -57,21 +38,24 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
   let switchError: unknown;
   try {
     try {
-      const result = await callBackend<{ customToken: string; user: User; tenant: Tenant }>('manageUser', {
+      const result = await callBackend<{ customToken: string; user: User; tenant: Tenant; role?: 'ADMIN' | 'USER' }>('manageUser', {
         operation: 'impersonate',
         id,
         ...(tenantId ? { tenantId } : {}),
-      });
+      }, undefined, primaryFunctions);
       app = initializeApp(firebaseConfig, `impersonation-${crypto.randomUUID()}`);
       const targetAuth = getAuth(app);
       await setPersistence(targetAuth, inMemoryPersistence);
       const credential = await signInWithCustomToken(targetAuth, result.customToken);
       const token = await credential.user.getIdToken();
+      if (primaryAuth.currentUser?.uid !== (state.impersonation?.user.id ?? state.user?.id) || store.getState().auth.user?.id !== state.user?.id) throw new Error('Your session changed. Try again.');
+      if (secondaryApp) clearImpersonationContext();
       secondaryApp = app;
       setBackendContext(app);
       clearPhoenixBrand();
-      store.dispatch(startImpersonation({ user: result.user, tenant: result.tenant, role: 'USER', token }));
-      return;
+      const role = result.role ?? 'USER';
+      store.dispatch(startImpersonation({ user: result.user, tenant: result.tenant, role, token }));
+      return role;
     } catch (error) {
       switchError = error;
       // Clean up partial secondary app if Cloud Function or customToken sign-in failed
@@ -80,8 +64,7 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
         await deleteApp(app).catch(() => {});
         app = null;
       }
-      secondaryApp = null;
-      setBackendContext();
+      if (!fallbackAccount) throw error;
     }
 
     // Client-side impersonation fallback (uses primary admin session which has featureAdmin() Firestore permissions)
@@ -92,15 +75,19 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
     } catch {
       docData = undefined;
     }
-    const cached = fallbackAccount || readCachedAccount(id);
-    if (docData?.accountType === 'agency' || cached?.accountType === 'agency') throw switchError;
+    const cached = fallbackAccount;
+    const isAgency = docData?.accountType === 'agency' || cached?.accountType === 'agency';
+    if (isAgency && effectiveRole !== 'SUPER_ADMIN') throw switchError;
+    const rawRole = String(docData?.role || cached?.role || 'USER').toUpperCase();
+    const resolvedRole: 'ADMIN' | 'USER' = rawRole === 'ADMIN' && effectiveRole === 'SUPER_ADMIN' ? 'ADMIN' : 'USER';
     const resolvedName = docData?.name || cached?.name || docData?.email?.split('@')[0] || cached?.email?.split('@')[0] || 'Sub-Account';
     const resolvedEmail = docData?.email || cached?.email || '';
     const resolvedAvatar = docData?.avatar || cached?.avatar;
-    const resolvedTenantId = (tenantId && tenantId.trim()) || docData?.tenantId || cached?.tenantId || `workspace-${id}`;
+    const resolvedTenantId = (tenantId && tenantId.trim()) || docData?.tenantId || cached?.tenantId || (resolvedRole === 'ADMIN' ? id : `workspace-${id}`);
     const resolvedTenantName = docData?.tenantName || `${resolvedName}'s workspace`;
 
-    clearPhoenixBrand();
+    if (!store.getState().auth.isAuthenticated || store.getState().auth.user?.id !== state.user?.id) throw switchError;
+    clearImpersonationContext();
     store.dispatch(
       startImpersonation({
         user: {
@@ -108,15 +95,17 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
           name: resolvedName,
           email: resolvedEmail,
           ...(resolvedAvatar ? { avatar: resolvedAvatar } : {}),
+          ...(isAgency ? { accountType: 'agency' } : {}),
         },
         tenant: {
           id: resolvedTenantId,
           name: resolvedTenantName,
         },
-        role: 'USER',
+        role: resolvedRole,
         token: adminToken,
       })
     );
+    return resolvedRole;
   } finally {
     switching = false;
   }
@@ -133,18 +122,13 @@ export function clearImpersonationContext() {
 export async function returnToAdmin(): Promise<string> {
   const original = store.getState().auth.impersonation;
   if (!original) return '/admin/dashboard';
-  let resolvedRole: Role = ['ADMIN', 'SUPER_ADMIN'].includes(original.role) ? original.role : 'ADMIN';
-  try {
-    const adminUid = primaryAuth.currentUser?.uid || original.user.id;
-    if (adminUid) {
-      const profile = (await getDoc(doc(primaryDb, 'users', adminUid))).data();
-      const rawRole = typeof profile?.role === 'string' ? profile.role.toUpperCase() : '';
-      if (rawRole === 'SUPER_ADMIN') resolvedRole = 'SUPER_ADMIN';
-      else if (['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawRole)) resolvedRole = 'ADMIN';
-    }
-  } catch {
-    // Keep original admin role if Firestore lookup fails
-  }
+  const adminUid = primaryAuth.currentUser?.uid;
+  if (adminUid !== original.user.id) throw new Error('Your original account is no longer available.');
+  const profile = await getDoc(doc(primaryDb, 'users', adminUid)).then(snapshot => snapshot.data(), () => undefined);
+  if (/^(deactivated|inactive|suspended|deleted)$/i.test(profile?.status || '') || primaryAuth.currentUser?.uid !== adminUid) throw new Error('Your original account is no longer available.');
+  const rawRole = typeof profile?.role === 'string' ? profile.role.toUpperCase() : '';
+  if (rawRole && !['SUPER_ADMIN', 'ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawRole)) throw new Error('Your original account is no longer available.');
+  const resolvedRole: Role = rawRole ? rawRole === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'ADMIN' : original.role;
   clearImpersonationContext();
   store.dispatch(loginSuccess({ ...original, role: resolvedRole }));
   store.dispatch(stopImpersonation());

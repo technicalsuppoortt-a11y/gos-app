@@ -1,6 +1,6 @@
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { useRef, useState } from 'react';
-import { CheckCircle2, CreditCard, Loader2, Plus, ShieldCheck, ShoppingBag, Users } from 'lucide-react';
+import { CreditCard, Loader2, Plus, ShoppingBag, Users } from 'lucide-react';
 import { cloudStorage, readCloud, useEntities } from '../../backend/workspace';
 import { translateText } from '../../i18n/display';
 import { storageKey, useProducts } from './repository';
@@ -71,8 +71,8 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
   const rows: string[][] = tab === 'Orders'
     ? [...draftOrders, ...orders].map(row => [row.id, row.customerName || row.customer?.name || (typeof row.customer === 'string' ? row.customer : '—'), row.productName || row.product_name || '—', money(row), row.status || 'Pending'])
     : tab === 'Customers'
-      ? contacts.map(row => { const purchases = orders.filter(order => order.contactId === row.id || order.customerEmail && order.customerEmail.toLowerCase() === row.email?.toLowerCase()); return [row.name || '—', row.email || '—', `${purchases.length} orders`, customerTotals(purchases), row.status || 'Active']; })
-      : methodRows.length ? [...methodRows, ...txRows] : txRows;
+      ? contacts.map(row => { const purchases = orders.filter(order => order.contactId === row.id || order.customerEmail && order.customerEmail.toLowerCase() === row.email?.toLowerCase()); return [row.name || '—', row.email || '—', `${purchases.length} orders`, customerTotals(purchases.filter(order => /^(paid|completed|succeeded)$/i.test(order.status || ''))), row.status || 'Active']; })
+      : methodRows.length ? methodRows : txRows;
   const headers = tab === 'Orders'
     ? ['Order', 'Customer', 'Product', 'Total', 'Status']
     : tab === 'Customers'
@@ -132,24 +132,10 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
     <div className="pp-secondary-heading"><div><h2>{translateText(tab)}</h2><p>{translateText(`Manage your ${tab.toLowerCase()} across products and payments.`)}</p></div><button onClick={openCreate}><Plus size={14}/>{translateText(label)}</button></div>
     {rows.length ? <div className="pp-secondary-table"><div>{headers.map(header => <b key={header}>{translateText(header)}</b>)}<b>Details</b></div>{rows.map((row, index) => <div key={`${row[0]}:${index}`}>{row.map((cell, column) => <span key={column}>{column === 0 && tab === 'Payments' ? <span className="pp-table-cell-with-icon"><CreditCard size={14} className="pp-cell-icon"/><b>{cell}</b></span> : column === row.length - 1 ? <em className={`pp-secondary-status ${cell.toLowerCase()}`}>{translateText(cell)}</em> : cell}</span>)}<button className="cw-button" onClick={() => setQuick(tab === 'Orders' ? [...draftOrders, ...orders][index] : tab === 'Customers' ? contacts[index] : payments[index - methodRows.length] || { id: row[0], provider: row[1], status: row[4] })}>Quick details</button></div>)}</div>
       : <div className="pp-records-empty"><span className="pp-records-empty-icon"><EmptyIcon size={28} strokeWidth={1.5} aria-hidden="true"/></span><h3>{translateText(`No ${tab} Yet`)}</h3><p>{translateText(emptyDescription)}</p><button type="button" className="cw-button primary" onClick={openCreate}><Plus size={15}/>{translateText(label)}</button></div>}
-    {tab === 'Payments' && (
-      <div className="pp-payments-banner">
-        <div className="pp-payments-banner-icon"><ShieldCheck size={20} /></div>
-        <div className="pp-payments-banner-body">
-          <div className="pp-payments-banner-header">
-            <h4>{translateText('Active Checkout Gateways')}</h4>
-            <span className="pp-payments-banner-badge"><span className="pp-pulse-dot" />{translateText('Live & Verified')}</span>
-          </div>
-          <p>{translateText('These payment gateways are integrated and ready to securely accept customer payments across your stores, booking links, and funnels.')}</p>
-          <div className="pp-payments-gateways-list">
-            <span className="pp-gateways-label">{translateText('Enabled Providers')}:</span>
-            {Object.entries(providers).filter(([key]) => preferences[key as keyof typeof providers]).map(([key, name]) => (
-              <span key={key} className="pp-gateway-pill"><CheckCircle2 size={13} className="pp-gateway-pill-icon" /><b>{name}</b></span>
-            ))}
-          </div>
-        </div>
-      </div>
-    )}
+    {tab === 'Payments' && methodRows.length > 0 && txRows.length > 0 && <div className="pp-secondary-table">
+      <div>{['Payment', 'Customer', 'Provider', 'Amount', 'Status', 'Details'].map(label => <b key={label}>{translateText(label)}</b>)}</div>
+      {txRows.map((row, index) => <div key={row[0]}>{row.map((cell, column) => <span key={column}>{column === row.length - 1 ? translateText(cell) : cell}</span>)}<button type="button" className="cw-button" onClick={() => setQuick(payments[index])}>{translateText('Quick details')}</button></div>)}
+    </div>}
     {open && <Dialog title={label} onClose={() => { if (!saving.current) setOpen(false); }}><form className="ce-settings-form" onSubmit={event => { event.preventDefault(); void save(); }}><fieldset disabled={busy} className="pp-settings-fields">
       {tab === 'Payments' ? <><p className="cw-help">{translateText('Enable a payment method for checkout. Live payments require a connected payment provider.')}</p><Field label="Payment method"><CommerceSelect value={draft.provider} options={Object.entries(providers).map(([value, label]) => ({ value, label }))} onChange={provider => setDraft(current => ({ ...current, provider }))}/></Field></> : <>
         <Field label="Customer name"><input required value={draft.name} placeholder={translateText('Customer name')} onChange={event => setDraft(current => ({ ...current, name: event.target.value }))}/></Field>

@@ -6,6 +6,7 @@ export const firebaseApp = {};
 export const firebaseConfig = {};
 export const storage = {};
 export const functions = {};
+export const primaryFunctions = functions;
 export const setBackendContext = () => {};
 export const backendError = (error: unknown) => error instanceof Error ? error.message : 'Demo preview';
 export async function callBackend<T>(name: string): Promise<T> {

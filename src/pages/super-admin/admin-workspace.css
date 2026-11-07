@@ -23,3 +23,1200 @@ html:not(.dark) .saw-switch-row{border-color:#e5e8f0}
 html:not(.dark) .saw-workspace input[role=switch]{background:#ccd1e0}
 html:not(.dark) .saw-workspace input[role=switch]:checked{background:#7C3AED}
 html[dir=rtl] .saw-switch-row input:checked::after{transform:translateX(-17px)}
+
+/* Password Input + Eye Toggle inside Create Admin Modal */
+.saw-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.saw-password-wrap input {
+  width: 100%;
+  padding-inline-end: 42px !important;
+}
+
+.saw-modal .saw-password-eye,
+html:not(.dark) .saw-workspace .saw-modal .saw-password-eye {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: none !important;
+  border-radius: 6px;
+  background: transparent !important;
+  color: #64748b !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.saw-modal .saw-password-eye:hover:not(:disabled),
+html:not(.dark) .saw-workspace .saw-modal .saw-password-eye:hover:not(:disabled) {
+  color: #7c3aed !important;
+  background: rgba(124, 58, 237, 0.12) !important;
+}
+
+.saw-modal input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* Professional Loading Shell & Shimmer Skeletons */
+@keyframes sawSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sawShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.saw-loading-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.saw-loading-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 13px;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(19, 25, 38, 0.92));
+}
+
+.saw-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(167, 139, 250, 0.25);
+  border-top-color: #7c3aed;
+  animation: sawSpin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.saw-loading-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.saw-loading-copy strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #eef0fa;
+}
+
+.saw-loading-copy span {
+  font-size: 12px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-loading-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(124, 58, 237, 0.18);
+  color: #c4b5fd;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  white-space: nowrap;
+}
+
+.saw-sk-line,
+.saw-sk-avatar {
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.1) 25%,
+    rgba(167, 139, 250, 0.22) 50%,
+    rgba(148, 163, 184, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: sawShimmer 1.6s ease-in-out infinite;
+}
+
+.saw-skeleton-card {
+  gap: 11px;
+}
+
+.saw-sk-sm {
+  width: 48%;
+  height: 11px;
+}
+
+.saw-sk-lg {
+  width: 64%;
+  height: 26px;
+  border-radius: 8px;
+}
+
+.saw-sk-xs {
+  width: 40%;
+  height: 9px;
+}
+
+.saw-sk-md {
+  width: 140px;
+  height: 12px;
+}
+
+.saw-skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.saw-sk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.saw-sk-search {
+  width: 280px;
+  max-width: 100%;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.saw-sk-filter {
+  width: 130px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.saw-sk-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--saw-border, #293144);
+}
+
+.saw-sk-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.saw-sk-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.saw-sk-pill {
+  width: 68px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.saw-sk-btn {
+  width: 96px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+html:not(.dark) .saw-loading-banner {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(255, 255, 255, 0.98));
+  border-color: rgba(124, 58, 237, 0.22);
+}
+
+html:not(.dark) .saw-loading-copy strong {
+  color: #1e293b;
+}
+
+html:not(.dark) .saw-loading-pill {
+  background: rgba(124, 58, 237, 0.1);
+  color: #6d28d9;
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+html:not(.dark) .saw-sk-line,
+html:not(.dark) .saw-sk-avatar {
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.75) 25%,
+    rgba(196, 181, 253, 0.35) 50%,
+    rgba(226, 232, 240, 0.75) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ==========================================================================
+   Light Mode Modals (White Popups in Light Mode)
+   ========================================================================== */
+html:not(.dark) .saw-modal {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 24px 64px -12px rgba(15, 23, 42, 0.18), 0 8px 20px -6px rgba(15, 23, 42, 0.08);
+  color-scheme: light;
+}
+
+html:not(.dark) .saw-modal::backdrop {
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+html:not(.dark) .saw-modal h2,
+html:not(.dark) .saw-modal .saw-detail h3 {
+  color: #0f172a;
+}
+
+html:not(.dark) .saw-modal p,
+html:not(.dark) .saw-modal .saw-detail dt {
+  color: #64748b;
+}
+
+html:not(.dark) .saw-modal-form label {
+  color: #334155;
+  font-weight: 600;
+}
+
+html:not(.dark) .saw-modal input,
+html:not(.dark) .saw-modal select {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  color-scheme: light;
+}
+
+html:not(.dark) .saw-modal input:focus,
+html:not(.dark) .saw-modal select:focus {
+  background: #ffffff;
+  border-color: #7c3aed;
+}
+
+html:not(.dark) .saw-modal .saw-detail dl > div {
+  border-top-color: #e2e8f0;
+}
+
+/* ==========================================================================
+   Single-Line Row Actions
+   ========================================================================== */
+.saw-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.saw-workspace .saw-action-btn {
+  padding: 6px 10px;
+  font-size: 11.5px;
+  border-radius: 7px;
+  gap: 5px;
+}
+
+.saw-workspace .saw-action-btn.saw-btn-warn:hover:not(:disabled) {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.saw-workspace .saw-action-btn.saw-btn-success:hover:not(:disabled) {
+  border-color: #10b981;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.saw-workspace .saw-action-btn.saw-btn-danger {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.saw-workspace .saw-action-btn.saw-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+html:not(.dark) .saw-workspace .saw-action-btn.saw-btn-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+html:not(.dark) .saw-workspace .saw-action-btn.saw-btn-danger:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
+/* ==========================================================================
+   Professional View Details Modal + Plan Card
+   ========================================================================== */
+.saw-detail-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.saw-detail-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.22);
+}
+
+html:not(.dark) .saw-detail-profile {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.saw-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(30, 41, 59, 0.6));
+  border: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+html:not(.dark) .saw-plan-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(245, 243, 255, 0.9));
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+.saw-plan-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saw-plan-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.saw-plan-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 58, 237, 0.2);
+  color: #a78bfa;
+  flex-shrink: 0;
+}
+
+html:not(.dark) .saw-plan-icon {
+  background: rgba(124, 58, 237, 0.14);
+  color: #6d28d9;
+}
+
+.saw-plan-eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a78bfa;
+}
+
+html:not(.dark) .saw-plan-eyebrow {
+  color: #6d28d9;
+}
+
+.saw-plan-title-wrap strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #eef0fa;
+  margin-top: 2px;
+}
+
+html:not(.dark) .saw-plan-title-wrap strong {
+  color: #0f172a;
+}
+
+.saw-plan-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+html:not(.dark) .saw-plan-meta {
+  border-top-color: rgba(124, 58, 237, 0.15);
+}
+
+.saw-plan-meta span {
+  display: block;
+  font-size: 11px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-plan-meta b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #eef0fa;
+  margin-top: 2px;
+}
+
+html:not(.dark) .saw-plan-meta b {
+  color: #1e293b;
+}
+
+.saw-detail .saw-detail-grid {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.saw-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Professional Suspend / Activate / Delete Confirmation Dialog
+   ========================================================================== */
+.saw-confirm-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.saw-confirm-target {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+html:not(.dark) .saw-confirm-target {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.saw-confirm-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.saw-confirm-icon.is-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.saw-confirm-icon.is-warn {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+}
+
+.saw-confirm-icon.is-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.saw-confirm-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.saw-confirm-callout {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.saw-confirm-callout p {
+  margin: 0 !important;
+}
+
+.saw-confirm-callout.is-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #fca5a5;
+}
+
+.saw-confirm-callout.is-warn {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #fde68a;
+}
+
+.saw-confirm-callout.is-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #a7f3d0;
+}
+
+html:not(.dark) .saw-confirm-callout.is-danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+html:not(.dark) .saw-confirm-callout.is-warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+html:not(.dark) .saw-confirm-callout.is-success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.saw-confirm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.saw-modal .saw-danger-solid,
+html:not(.dark) .saw-workspace .saw-modal .saw-danger-solid {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.saw-modal .saw-danger-solid:hover:not(:disabled),
+html:not(.dark) .saw-workspace .saw-modal .saw-danger-solid:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.saw-modal .saw-warn-solid,
+html:not(.dark) .saw-workspace .saw-modal .saw-warn-solid {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+.saw-modal .saw-warn-solid:hover:not(:disabled),
+html:not(.dark) .saw-workspace .saw-modal .saw-warn-solid:hover:not(:disabled) {
+  background: #b45309;
+  border-color: #b45309;
+}
+
+/* ==========================================================================
+   Professional Pagination Footer with Row Number Control
+   ========================================================================== */
+.saw-grid {
+  overflow: visible;
+}
+
+.saw-grid .saw-table-wrap {
+  border-radius: 12px 12px 0 0;
+  overflow: auto;
+}
+
+.saw-pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-top: 1px solid var(--saw-border, #293144);
+  border-radius: 0 0 12px 12px;
+}
+
+.saw-pagination-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.saw-pagination-summary {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-page-size-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saw-page-size-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-grid footer .saw-page-size-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 58px;
+  height: 31px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #353e54;
+  background: #141b29;
+  color: #eef0fa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.saw-grid footer .saw-page-size-trigger:hover,
+.saw-grid footer .saw-page-size-trigger.is-open {
+  border-color: #7c3aed;
+  background: rgba(124, 58, 237, 0.12);
+}
+
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-trigger {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-trigger:hover,
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-trigger.is-open {
+  background: #ffffff;
+  border-color: #7c3aed;
+  color: #6d28d9;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.saw-page-size-chevron {
+  color: var(--saw-muted, #9ba6bd);
+  transition: transform 0.18s ease;
+}
+
+.saw-page-size-trigger.is-open .saw-page-size-chevron {
+  transform: rotate(180deg);
+  color: #7c3aed;
+}
+
+.saw-page-size-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 50;
+  min-width: 118px;
+  padding: 5px;
+  border-radius: 10px;
+  background: #161d2e;
+  border: 1px solid #353e54;
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html:not(.dark) .saw-workspace .saw-page-size-menu {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.14), 0 4px 10px -3px rgba(15, 23, 42, 0.06);
+}
+
+.saw-grid footer .saw-page-size-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: none !important;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: start;
+}
+
+.saw-grid footer .saw-page-size-option:hover {
+  background: rgba(124, 58, 237, 0.14);
+  color: #ffffff;
+}
+
+.saw-grid footer .saw-page-size-option.is-selected {
+  background: rgba(124, 58, 237, 0.2);
+  color: #c4b5fd;
+  font-weight: 700;
+}
+
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-option {
+  background: transparent;
+  color: #334155;
+}
+
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-option:hover {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-size-option.is-selected {
+  background: rgba(124, 58, 237, 0.1);
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+.saw-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.saw-page-numbers {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.saw-page-num-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.saw-page-dots {
+  font-style: normal;
+  padding: 0 4px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-grid footer .saw-page-btn,
+.saw-grid footer .saw-page-num {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.saw-grid footer .saw-page-num.is-active,
+html:not(.dark) .saw-workspace .saw-grid footer .saw-page-num.is-active {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Dedicated Sub-Users Page Parent Banner
+   ========================================================================== */
+.saw-subusers-parent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.saw-subusers-parent-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.saw-subusers-parent-meta {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.saw-subusers-parent-meta span {
+  display: block;
+  font-size: 11px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-subusers-parent-meta b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   Compact Live Sync Status Chip + Hover Tooltip + Auto-Dismiss Fade
+   ========================================================================== */
+.saw-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@keyframes sawPulseDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.55);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.92);
+    box-shadow: 0 0 0 5px rgba(167, 139, 250, 0);
+  }
+}
+
+@keyframes sawSyncChipFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.saw-live-sync-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: rgba(124, 58, 237, 0.14);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.32);
+  cursor: default;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+html:not(.dark) .saw-live-sync-chip {
+  background: rgba(124, 58, 237, 0.08);
+  color: #6d28d9;
+  border-color: rgba(124, 58, 237, 0.24);
+}
+
+.saw-live-sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: sawPulseDot 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+html:not(.dark) .saw-live-sync-dot {
+  background: #7c3aed;
+}
+
+.saw-live-sync-chip.is-fading {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.32);
+  animation: sawSyncChipFadeOut 0.95s ease forwards;
+}
+
+html:not(.dark) .saw-live-sync-chip.is-fading {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.saw-live-sync-chip.is-fading .saw-live-sync-dot {
+  background: #10b981;
+  animation: none;
+}
+
+.saw-live-sync-tooltip {
+  position: absolute;
+  top: calc(100% + 7px);
+  inset-inline-start: 0;
+  z-index: 60;
+  width: max-content;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+  pointer-events: none;
+}
+
+.saw-live-sync-chip:hover .saw-live-sync-tooltip,
+.saw-live-sync-chip:focus-visible .saw-live-sync-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Team Management Granular Sidebar Permissions (Add / Edit Member Modal)
+   ========================================================================== */
+.saw-role-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saw-role-cell strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.saw-role-tabs-summary {
+  font-size: 11px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-permissions-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #2b3346;
+  background: rgba(15, 20, 32, 0.55);
+}
+
+html:not(.dark) .saw-modal .saw-permissions-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.saw-permissions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.saw-permissions-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+html:not(.dark) .saw-modal .saw-permissions-title {
+  color: #1e293b;
+}
+
+.saw-permissions-count {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(124, 58, 237, 0.18);
+  color: #c4b5fd;
+}
+
+html:not(.dark) .saw-modal .saw-permissions-count {
+  background: rgba(124, 58, 237, 0.12);
+  color: #6d28d9;
+}
+
+.saw-permissions-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.saw-modal-form .saw-perm-quick-btn {
+  padding: 4px 10px;
+  min-height: 26px;
+  border-radius: 6px;
+  border: 1px solid #353e54;
+  background: #161d2e;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.saw-modal-form .saw-perm-quick-btn:hover:not(:disabled) {
+  border-color: #7c3aed;
+  background: rgba(124, 58, 237, 0.15);
+  color: #ffffff;
+}
+
+.saw-modal-form .saw-perm-quick-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+html:not(.dark) .saw-modal .saw-modal-form .saw-perm-quick-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+html:not(.dark) .saw-modal .saw-modal-form .saw-perm-quick-btn:hover:not(:disabled) {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.saw-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@media (max-width: 520px) {
+  .saw-permissions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.saw-modal-form label.saw-perm-item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid #2b3346;
+  background: #141b29;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.saw-modal-form label.saw-perm-item:hover {
+  border-color: #4b5563;
+  background: #1a2335;
+}
+
+.saw-modal-form label.saw-perm-item.is-checked {
+  border-color: rgba(124, 58, 237, 0.65);
+  background: rgba(124, 58, 237, 0.14);
+  color: #f8fafc;
+}
+
+html:not(.dark) .saw-modal .saw-modal-form label.saw-perm-item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+html:not(.dark) .saw-modal .saw-modal-form label.saw-perm-item:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+html:not(.dark) .saw-modal .saw-modal-form label.saw-perm-item.is-checked {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+  color: #4c1d95;
+}
+
+.saw-modal-form label.saw-perm-item input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.saw-perm-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #475569;
+  background: rgba(15, 23, 42, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.saw-perm-item.is-checked .saw-perm-check {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+html:not(.dark) .saw-modal .saw-perm-check {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+
+html:not(.dark) .saw-modal .saw-perm-item.is-checked .saw-perm-check {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+.saw-perm-label {
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

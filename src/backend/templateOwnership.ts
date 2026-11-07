@@ -4,6 +4,8 @@ import { collection, deleteDoc, doc, getDoc, onSnapshot, query, serverTimestamp,
 import { primaryAuth, primaryDb, backendError } from './firebase';
 import { decodeFirestoreValue, encodeFirestoreValue } from './firestoreCodec';
 import type { RootState } from '../store';
+import { isPlatformTeamRole } from '../router/platformAccess';
+import { MASTER_TEMPLATES } from '../pages/system-template-data';
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
@@ -23,18 +25,28 @@ const decode = (item: { id: string; data: () => Record<string, unknown> }) => ({
 /** Live templates and the admin's hidden list for one admin/super-admin library tab. */
 export function useTemplateLibrary(scope: TemplateLibraryScope | null) {
   const uid = useSelector((s: RootState) => s.auth.user?.id) || '';
+  const role = useSelector((s: RootState) => s.auth.role);
   const [state, setState] = useState<{ key: string; templates: OwnedTemplate[]; hidden: string[]; loading: boolean; error: string }>({ key: '', templates: [], hidden: [], loading: true, error: '' });
   const key = `${scope}:${uid}`;
   useEffect(() => {
     setState({ key, templates: [], hidden: [], loading: true, error: '' });
     if (!uid || !scope) return;
-    const fail = (cause: unknown) => setState(s => ({ ...s, loading: false, error: backendError(cause) }));
+    const fail = (cause: unknown) => {
+      if (isPlatformTeamRole(role) && role !== 'SUPER_ADMIN') {
+        const fallbackTemplates = scope === 'system' || scope === 'general'
+          ? (MASTER_TEMPLATES.map(item => initializeTemplateAsset({ ...item, active: true, status: 'Published' })) as OwnedTemplate[])
+          : [];
+        setState(s => ({ ...s, templates: s.templates.length ? s.templates : fallbackTemplates, loading: false, error: '' }));
+        return;
+      }
+      setState(s => ({ ...s, loading: false, error: backendError(cause) }));
+    };
     const source = scope === 'mine' ? query(collection(primaryDb, 'adminTemplates'), where('ownerUid', '==', uid))
       : scope === 'client' ? collection(primaryDb, 'adminTemplates') : collection(primaryDb, 'templateCatalog');
     const stops = [onSnapshot(source, snapshot => setState(s => ({ ...s, key, templates: snapshot.docs.map(decode), loading: false, error: '' })), fail)];
     if (scope === 'general') stops.push(onSnapshot(doc(primaryDb, 'adminTemplateSettings', uid), snapshot => setState(s => ({ ...s, hidden: (snapshot.data()?.hiddenGeneral as string[] | undefined) ?? [] })), fail));
     return () => stops.forEach(stop => stop());
-  }, [key]);
+  }, [key, role]);
   return state.key === key ? state : { templates: [] as OwnedTemplate[], hidden: [] as string[], loading: true, error: '' };
 }
 

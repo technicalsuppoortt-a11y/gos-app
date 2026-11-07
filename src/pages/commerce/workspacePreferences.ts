@@ -15,7 +15,7 @@ export const defaultWorkspacePreferences: WorkspacePreferences = {
   paymentMethods: [],
 };
 export function readWorkspacePreferences(key: string): WorkspacePreferences {
-  try { return { ...defaultWorkspacePreferences, ...JSON.parse(browserStorage.getItem(`${key}:settings:fallback`) ?? cloudStorage.getItem(`${key}:settings`) ?? '{}') }; }
+  try { return { ...defaultWorkspacePreferences, ...JSON.parse(cloudStorage.getItem(`${key}:settings`) ?? browserStorage.getItem(`${key}:settings:fallback`) ?? '{}') }; }
   catch { return { ...defaultWorkspacePreferences }; }
 }
 export async function saveWorkspacePreferences(key: string, preferences: WorkspacePreferences) {
@@ -23,13 +23,6 @@ export async function saveWorkspacePreferences(key: string, preferences: Workspa
   if (!Number.isFinite(preferences.taxRate) || preferences.taxRate < 0 || preferences.taxRate > 100) throw new Error('Tax rate must be between 0 and 100.');
   if (preferences.redirectUrl) { try { if (!['https:', 'http:'].includes(new URL(preferences.redirectUrl).protocol)) throw new Error(); } catch { throw new Error('Enter an HTTP or HTTPS redirect URL.'); } }
   const value = JSON.stringify(preferences);
-  try {
-    await cloudStorage.setItem(`${key}:settings`, value);
-    browserStorage.removeItem(`${key}:settings:fallback`);
-  } catch (cause) {
-    // A rejected backend write must not masquerade as a successful save.
-    const code = (cause as { code?: string })?.code;
-    if (typeof code === 'string' && !['unavailable', 'resource-exhausted'].includes(code)) throw cause;
-    browserStorage.setItem(`${key}:settings:fallback`, value);
-  }
+  await cloudStorage.setItem(`${key}:settings`, value);
+  browserStorage.removeItem(`${key}:settings:fallback`);
 }

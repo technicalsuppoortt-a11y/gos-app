@@ -6,6 +6,7 @@ import { evaluateQualification, publicScreeningQuestions, validQualificationQues
 import { demoBilling } from './billing';
 export const auth = getAuth(), primaryAuth = auth;
 export const db = {}, primaryDb = db, firebaseApp = {}, firebaseConfig = {}, functions = {};
+export const primaryFunctions = functions;
 export const storage = { app: { options: { storageBucket: 'isolated-demo' } } };
 export const setBackendContext = () => {};
 export const backendError = (error: unknown) => error instanceof Error ? error.message : 'Demo action could not be completed.';

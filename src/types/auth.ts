@@ -8,6 +8,7 @@ export interface User {
   avatar?: string;
   accountType?: 'agency';
   cashWalletRestricted?: boolean;
+  allowedTabs?: string[];
 }
 
 export interface Tenant {

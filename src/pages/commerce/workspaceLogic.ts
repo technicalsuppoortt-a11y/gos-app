@@ -18,7 +18,7 @@ export function customizeProduct(product: Product, patch: Partial<ProductExperie
   return { ...product, config };
 }
 const instant = (value: any) => typeof value?.toDate === 'function' ? value.toDate().toISOString() : typeof value === 'string' ? value : '';
-const status = (value: string): CommerceOrder['status'] => /refund/i.test(value) ? 'Refunded' : /^(paid|completed|succeeded)$/i.test(value) ? 'Paid' : 'Pending';
+const status = (value: string): CommerceOrder['status'] => /refund/i.test(value) ? 'Refunded' : /^rejected$/i.test(value) ? 'Rejected' : /^(paid|completed|succeeded)$/i.test(value) ? 'Paid' : 'Pending';
 export function productOrders(product: Product, orders: Record<string, any>[], transactions: Record<string, any>[]): CommerceOrder[] {
   if (!product.id) return product.config?.orders ?? [];
   const rows = new Map<string, CommerceOrder>((product.config?.orders ?? []).map(row => [row.id, row]));
@@ -33,7 +33,7 @@ export function productOrders(product: Product, orders: Record<string, any>[], t
       email: row.customerEmail || row.customer_email || row.customer?.email || row.email || previous?.email || '',
       at: instant(row.createdAt || row.created_at || row.at || row.date) || previous?.at || '',
       amount: Number(line?.total ?? line?.amount ?? (line ? Number(line.price || 0) * Number(line.quantity || 1) : row.total ?? row.amount ?? previous?.amount ?? 0)),
-      currency: row.currency || previous?.currency || product.config!.currency, status: status(row.status || previous?.status || ''), productName: line?.name || row.productName || previous?.productName || product.name });
+      currency: row.currency || previous?.currency || product.config!.currency, status: status(row.status || previous?.status || ''), productName: line?.productName || line?.name || row.productName || previous?.productName || product.name });
   }
   return [...rows.values()];
 }

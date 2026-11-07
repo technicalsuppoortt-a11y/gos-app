@@ -18,6 +18,7 @@ import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
+import { productCheckoutRequest } from './product-checkout.js';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -70,6 +71,7 @@ export const billingService = onCall({ cors: true, invoker: 'public' }, request 
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
+export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90 }, request => productCheckoutRequest(request, { db, workspace, bucket: getStorage().bucket() }));
 export const productAccess = onCall(async request => {
   if (typeof request.data?.tenantId === 'string' && /^[\w-]{1,150}$/.test(request.data.tenantId)) await checkPlatformTool(db, request.data.tenantId, 'portal');
   return productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] });
@@ -258,6 +260,7 @@ export const manageUser = onCall(async request => {
     throw new HttpsError('failed-precondition', 'Manage this account from the Super Admin dashboard.');
   }
   if (operation === 'impersonate') {
+    if (request.auth.token?.impersonatedBy) throw new HttpsError('permission-denied', 'Switch accounts from your original session.');
     if (requestedTenantId !== undefined && requestedTenantId !== target.tenantId) throw new HttpsError('failed-precondition', 'The user workspace changed. Refresh the users list and try again.');
     return createImpersonationSession(user, target, id, { db, auth });
   }

@@ -6,6 +6,7 @@
 - dark mode colors
 - develop support
 - Notification
+- payment methods must be different
 ===========================================
 
 # User Dashboad
@@ -69,23 +70,22 @@
 # Super Admin Dashbaord
 
 - Handled Backend
-  - Ovrview
-  - All accounts
-  - All Admins
-  - Usage & Revenu
-  - Team Management
+  - Ovrview => done
+  - All accounts => done
+  - All Admins => done
+  - Usage & Revenu => done
+  - Team Management => done
   - System Settings
     - Providers
   - Integrations
-  - Payments
-  - Payments Logs & Monitoring
+  - Payments => done
+  - Payments Logs & Monitoring => done
 - Add Templete Control
 - Switch between users
 
 ======================
 
 # Advanced
-
 - Move Launch brand in gos
 - Make Upclick Domain
 - Plan and subscription from joe academy

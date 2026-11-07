@@ -10,6 +10,7 @@ import type { Directory, LiveRecord, ManagementResource } from '../pages/admin/l
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
+import { isPlatformTeamRole } from '../router/platformAccess';
 
 // This hook never enters the tenant workspace store, changes backend context, or writes tenant documents.
 export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0) {
@@ -20,7 +21,7 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
   useEffect(() => {
     const empty = { scope, records: [], tenants: {}, users: {}, templates: [], loading: true, error: '', sourceErrors: {}, pendingSources: templates ? ['templates'] : ['directory', 'users'] };
     setState(empty);
-    if (!user || impersonation || !['ADMIN', 'SUPER_ADMIN'].includes(role ?? '')) {
+    if (!user || impersonation || !(role === 'ADMIN' || isPlatformTeamRole(role))) {
       setState({ ...empty, loading: false, error: 'Administrator access is required.' }); return;
     }
     let active = true, generation = 0;
@@ -42,6 +43,7 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
       const fail = (label: string, error: unknown) => {
         if (!valid()) return;
         pending.delete(label);
+        if (isPlatformTeamRole(role) && role !== 'SUPER_ADMIN') { publish(); return; }
         if (label === 'directory' || label === 'templates') {
           fatalError = backendError(error);
           rows.clear();

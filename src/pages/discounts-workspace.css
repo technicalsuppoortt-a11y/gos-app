@@ -64,7 +64,7 @@
 .dc-dashboard .dc-search input{font-size:11px}
 .dc-dashboard .dc-sort{width:160px}
 .dc-dashboard .dc-toolbar>.dc-select{width:135px}
-.dc-dashboard .dc-performance{grid-template-columns:minmax(0,2.5fr) minmax(240px,1fr);height:clamp(150px,23vh,230px)}
+.dc-dashboard .dc-performance{grid-template-columns:minmax(0,1fr);height:clamp(150px,23vh,230px)}
 .dc-dashboard .dc-summary{display:flex}
 .dc-dashboard .dc-summary>div>span:first-child{font-size:10px}
 .dc-dashboard .dc-summary strong{font-size:14px}

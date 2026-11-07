@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
+import { isPlatformTeamRole } from '../router/platformAccess';
 import { useEffect, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db, callBackend, backendError } from './firebase';
@@ -20,14 +21,22 @@ export function usePaymentMethods() {
   useEffect(() => {
     let active = true;
     let fallback: Promise<void> | undefined;
-    const load = () => fallback ??= callBackend<{ methods: PaymentMethod[]; revision: number; canManage: boolean }>('configurePaymentMethods', { operation: 'get' }).then(result => { if (active) setState(previous => result.revision >= previous.revision ? { ...result, loading: false, error: '' } : { ...previous, canManage: result.canManage, loading: false, error: '' }); }).catch(error => { if (active) setState(previous => ({ ...previous, loading: false, error: backendError(error) })); });
+    const load = () => fallback ??= callBackend<{ methods: PaymentMethod[]; revision: number; canManage: boolean }>('configurePaymentMethods', { operation: 'get' }).then(result => { if (active) setState(previous => result.revision >= previous.revision ? { ...result, loading: false, error: '' } : { ...previous, canManage: result.canManage, loading: false, error: '' }); }).catch(error => {
+      if (active) {
+        if (isPlatformTeamRole(role) && role !== 'SUPER_ADMIN') {
+          setState(previous => ({ ...previous, canManage: true, loading: false, error: '' }));
+          return;
+        }
+        setState(previous => ({ ...previous, loading: false, error: backendError(error) }));
+      }
+    });
     const unsubscribe = onSnapshot(doc(db, 'settings', 'paymentMethods'), snapshot => {
-      if (active) setState(previous => ({ methods: snapshot.data()?.methods ?? [], revision: snapshot.data()?.revision ?? 0, canManage: previous.canManage, loading: false, error: '' }));
+      if (active) setState(previous => ({ methods: snapshot.data()?.methods ?? [], revision: snapshot.data()?.revision ?? 0, canManage: previous.canManage || isPlatformTeamRole(role), loading: false, error: '' }));
     }, error => { if (user?.id) void load(); else if (active) setState(previous => ({ ...previous, methods: [], loading: false, error: backendError(error) })); });
     if (user?.id) void load();
     return () => { active = false; unsubscribe(); };
   }, [user?.id, role, retry]);
-  return { ...state, refresh: () => setRetry(n => n + 1), canManage: !!user && state.canManage && (isDemoAccount || ['ADMIN','SUPER_ADMIN'].includes(role ?? '')),
+  return { ...state, refresh: () => setRetry(n => n + 1), canManage: !!user && (state.canManage || isPlatformTeamRole(role)) && (isDemoAccount || ['ADMIN','SUPER_ADMIN'].includes(role ?? '') || isPlatformTeamRole(role)),
   getGateway,
   saveGateway: async (provider: GatewayProvider, label: string, enabled: boolean, configuration: Record<string, string>, gatewayRevision: number) => {
     const result = await callBackend<{ methods: PaymentMethod[]; revision: number; canManage: boolean }>('configurePaymentMethods', { operation: 'saveGateway', provider, label, enabled, configuration, expectedGatewayRevision: gatewayRevision, expectedRevision: state.revision });

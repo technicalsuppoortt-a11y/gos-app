@@ -30,8 +30,10 @@ function DiscountEditor({ id }: { id?: string }) {
   const notify = (message: string) => showToast.error(message);
   const update = <K extends keyof Discount>(key: K, value: Discount[K]) => setForm(current => ({ ...current, [key]: value }));
 
-  const save = (event?: React.FormEvent) => {
+  const [saving, setSaving] = React.useState(false);
+  const save = async (event?: React.FormEvent) => {
     if (event) event.preventDefault();
+    if (saving) return;
     const discounts = readDiscounts();
     const code = form.code.trim().toUpperCase();
     const invalid = (message: string) => { notify(message); requestAnimationFrame(() => codeRef.current?.focus()); };
@@ -44,8 +46,10 @@ function DiscountEditor({ id }: { id?: string }) {
 
     if (form.applies === 'Specific Products' && !form.productIds?.length) { invalid('Select at least one product.'); return; }
     const saved = { ...form, code, id: form.id || crypto.randomUUID(), uses: form.id ? form.uses : 0 };
-    try { writeDiscounts(form.id ? discounts.map(discount => discount.id === form.id ? saved : discount) : [saved, ...discounts]); }
-    catch { notify('Unable to save the discount. Please allow browser storage and try again.'); return; }
+    setSaving(true);
+    try { await writeDiscounts(form.id ? discounts.map(discount => discount.id === form.id ? saved : discount) : [saved, ...discounts]); }
+    catch { notify('Unable to save the discount. Please try again.'); return; }
+    finally { setSaving(false); }
 
     showToast.success(form.id ? 'Discount updated.' : 'Discount created.');
     navigate(discountsPath);

@@ -29,3 +29,4 @@ export const settingsAliases: Record<string, string> = {
   domain: 'domains',
   'custom-domains': 'domains',
 };
+

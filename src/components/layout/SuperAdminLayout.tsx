@@ -1,4 +1,7 @@
+import { doc, onSnapshot } from 'firebase/firestore';
+import { primaryDb } from '../../backend/firebase';
 import { logoutFirebase } from '../../backend/session';
+import { syncPlatformDataMirror } from '../../backend/superAdmin';
 import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
@@ -14,6 +17,7 @@ import '../../pages/admin/admin-workspace.css';
 import './super-admin.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
+import { PlatformAccountSwitcher } from './PlatformAccountSwitcher';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
@@ -35,8 +39,33 @@ export const SuperAdminLayout: React.FC = () => {
   const { role, user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
   const navigate = useNavigate();
-  const canOpen = (path: string) => canOpenPlatformPage(role, path);
-  const home = isPlatformTeamRole(role) ? platformHome(role) : '/auth/login';
+  const [liveTabsOverride, setLiveTabsOverride] = useState<string[] | undefined>(undefined);
+  useEffect(() => {
+    if (role === 'SUPER_ADMIN') {
+      void syncPlatformDataMirror();
+    }
+  }, [role, location.pathname]);
+  useEffect(() => {
+    if (!user?.id) {
+      setLiveTabsOverride(undefined);
+      return;
+    }
+    return onSnapshot(
+      doc(primaryDb, 'settings', 'teamMemberPermissions'),
+      snap => {
+        const custom = snap.data()?.members?.[user.id];
+        if (Array.isArray(custom?.allowedTabs)) {
+          setLiveTabsOverride(custom.allowedTabs.filter((item: unknown): item is string => typeof item === 'string'));
+        } else {
+          setLiveTabsOverride(undefined);
+        }
+      },
+      () => {}
+    );
+  }, [user?.id]);
+  const effectiveAllowedTabs = liveTabsOverride ?? user?.allowedTabs;
+  const canOpen = (path: string) => canOpenPlatformPage(role, path, effectiveAllowedTabs);
+  const home = isPlatformTeamRole(role) ? platformHome(role, effectiveAllowedTabs) : '/auth/login';
   const visibleNav = navigation.filter(item => canOpen(item.to));
   const name = user?.name || translateText('Platform team');
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,7 +78,7 @@ export const SuperAdminLayout: React.FC = () => {
     const controls = () => Array.from(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? []).filter(node => node.getClientRects().length);
     const frame = requestAnimationFrame(() => controls()[0]?.focus());
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileOpen(false);
+      if (event.key === 'Escape' && !(event.target as HTMLElement).closest('#workspace-switcher-popover, #workspace-switcher-trigger[aria-expanded="true"]')) setMobileOpen(false);
       if (event.key !== 'Tab') return;
       const nodes = controls(), first = nodes[0], last = nodes.at(-1);
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
@@ -76,7 +105,7 @@ export const SuperAdminLayout: React.FC = () => {
     : [];
 
   const handleSaSearchSubmit = (to?: string) => {
-    const target = to || saFilteredNav[0]?.to || (role === 'SUPER_ADMIN' ? `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}` : home);
+    const target = to || saFilteredNav[0]?.to || (canOpen('/super-admin/clients') ? `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}` : home);
     navigate(target);
     setSaSearch('');
     setSaSearchOpen(false);
@@ -92,7 +121,16 @@ export const SuperAdminLayout: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  if (!canOpen(location.pathname)) return <Navigate to={home} replace/>;
+  const allowedCurrentPath = canOpen(location.pathname);
+  const blockedPathRef = useRef('');
+  useEffect(() => {
+    if (!allowedCurrentPath && location.pathname !== '/super-admin' && blockedPathRef.current !== location.pathname) {
+      blockedPathRef.current = location.pathname;
+      showToast.error(translateText('Access restricted: You do not have permission to view that section.'));
+    }
+  }, [allowedCurrentPath, location.pathname]);
+
+  if (!allowedCurrentPath) return <Navigate to={home} replace/>;
 
   return <div className="sa-shell">
     {mobileOpen && <button className="sa-mobile-scrim" aria-label={translateText("Close navigation")} onClick={() => setMobileOpen(false)}/>}
@@ -100,6 +138,7 @@ export const SuperAdminLayout: React.FC = () => {
       <button className="sa-mobile-close" aria-label={translateText("Close menu")} onClick={() => setMobileOpen(false)}><X size={18}/></button>
       <NavLink to={home} className="layout-brand sa-brand" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit', padding: '4px 6px 20px' }}><span className="layout-brand-icon"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span><div className="layout-brand-copy"><span className="layout-brand-wordmark"><b>Upclick</b></span><small>{translateText("Ideas to impact")}</small></div></NavLink>
       <div className="sa-nav-label">{translateText("PLATFORM")}</div>
+      {role === 'SUPER_ADMIN' && <div className="adm-switcher-wrap" style={{ padding: '0 4px 12px' }}><PlatformAccountSwitcher/></div>}
       <nav className="sa-nav" aria-label={translateText("Super admin navigation")}>
         {localizeNode(visibleNav.map(({ label, ar, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{ar && language.startsWith('ar') ? ar : localizeNode(label)}</span></NavLink>))}
       </nav>
@@ -116,8 +155,8 @@ export const SuperAdminLayout: React.FC = () => {
           <label className="sa-search">
             <Search size={14}/>
             <input 
-              placeholder={translateText(role === 'SUPER_ADMIN' ? 'Search admins or sections…' : 'Search sections…')}
-              aria-label={translateText(role === 'SUPER_ADMIN' ? 'Search admins or sections' : 'Search sections')}
+              placeholder={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections…' : 'Search sections…')}
+              aria-label={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections' : 'Search sections')}
               value={saSearch}
               onChange={e => { setSaSearch(e.target.value); setSaSearchOpen(true); }}
               onFocus={() => { if (saSearch.trim()) setSaSearchOpen(true); }}

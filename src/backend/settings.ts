@@ -34,7 +34,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     }
     if (path.startsWith('/security/')) throw new Error('This security feature requires additional Firebase Authentication configuration.');
     const session = store.getState().auth;
-    if (path === '/settings' && session.impersonation && session.user?.id !== user.uid) {
+    if (path === '/settings' && method !== 'GET' && session.impersonation && session.user?.id !== user.uid) {
       throw new Error('Sign in to your account to update these settings.');
     }
     // Use the authenticated account's tenant, never an arbitrary tenant from a request.
@@ -58,19 +58,19 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     if (!scope && profile?.status === 'Active') {
       scope = user.uid;
     }
-    if (!scope && path === '/settings' && session.user?.id === user.uid) {
+    if (!scope && session.user?.id === user.uid) {
       scope = session.tenant?.id ?? '';
     }
     if (!scope) throw new Error('Your workspace access could not be verified. Sign in again.');
 
     if (path !== '/settings') {
-      let isMember = false;
+      let isMember = false, hasMemberDoc = false;
       let memberRole = '';
       let memberPermissions: string[] = [];
       try {
         const memberDoc = await getDoc(doc(db, 'tenants', scope, 'members', user.uid));
         if (memberDoc.exists()) {
-          const mData = memberDoc.data();
+          hasMemberDoc = true; const mData = memberDoc.data();
           isMember = mData?.active !== false;
           memberRole = String(mData?.role ?? '');
           memberPermissions = Array.isArray(mData?.permissions) ? mData.permissions : [];
@@ -79,11 +79,11 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         // member check non-fatal for admins
       }
 
-      let isTenantOwner = false;
+      let isTenantOwner = !hasMemberDoc && (scope === user.uid || scope === `workspace-${user.uid}` || scope === profile?.tenantId || (session.user?.id === user.uid && scope === session.tenant?.id));
       try {
         const tenantSnap = await getDoc(doc(db, 'tenants', scope));
         const tData = tenantSnap.data();
-        isTenantOwner = tData?.ownerUid === user.uid || tData?.ownerId === user.uid || profile?.ownerUid === user.uid;
+        isTenantOwner = isTenantOwner || tData?.ownerUid === user.uid || tData?.ownerId === user.uid || profile?.ownerUid === user.uid;
       } catch {
         // owner check non-fatal for admins
       }
@@ -101,13 +101,13 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     if (path === '/settings') {
       if (method === 'GET') {
         const [saved, connections] = await Promise.all([
-          getDoc(ref),
+          getDoc(ref).catch(error => { if ((error as { code?: string }).code !== 'permission-denied') throw error; return null; }),
           getDocs(integrations).catch(error => {
             if ((error as { code?: string }).code !== 'permission-denied') throw error;
             return null;
           }),
         ]);
-        const savedData = saved.data()?.value ?? {};
+        const savedData = saved?.data()?.value ?? {};
         const connectionMap = Object.fromEntries((connections?.docs ?? []).map(item => [item.id, integrationState(item.data())]));
         return { ...savedData, integrations: connectionMap, hasSavedProfile: Boolean(savedData.profile) } as T;
       }

@@ -10,7 +10,7 @@ import { showToast } from '../utils/toast';
 import { hydrateCRM, type CanonicalLead } from '../store/slices/crmSlice';
 import type { Pipeline } from '../pages/crm/model';
 import { beginWrite } from './writeStatus';
-import { WorkspaceLoading } from '../components/common/WorkspaceLoading';
+import { WorkspaceAccessError, WorkspaceLoading } from '../components/common/WorkspaceLoading';
 import { encodeFirestoreValue, decodeFirestoreValue } from './firestoreCodec';
 import { createAssetPersistence } from './assetPersistence';
 import { safeDate } from '../utils/safeDate';
@@ -135,6 +135,9 @@ export const cloudStorage = {
         if (resource === 'products') {
           delete value.reviews; delete value.ratingAverage; delete value.reviewsCount; delete value.ratingTotal;
           batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value), { mergeFields: Object.keys(value) });
+        } else if (resource === 'discounts' && before.has(row.id)) {
+          delete value.uses;
+          batch.update(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value));
         } else batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value));
       }
       for (const row of oldRows) if (!after.has(row.id)) batch.delete(doc(db, 'tenants', scope, resource, row.id));
@@ -289,7 +292,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
   useEffect(() => { requestResources.current(); }, [pathname]);
   const routeReady = workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));
   if (status.scope !== scope || !status.ready || !routeReady) {
-    if (status.error && status.scope === scope) return <div className="grid h-full min-h-0 place-items-center p-6" role="alert"><div><p>{status.error}</p><button type="button" className="mt-3 rounded-lg border px-4 py-2" onClick={() => { setStatus({ scope, ready: false, error: '' }); setRetry(value => value + 1); }}>Try again</button></div></div>;
+    if (status.error && status.scope === scope) return <WorkspaceAccessError message={status.error} onRetry={() => { setStatus({ scope, ready: false, error: '' }); setRetry(value => value + 1); }}/>;
     return <WorkspaceLoading/>;
   }
   return children;

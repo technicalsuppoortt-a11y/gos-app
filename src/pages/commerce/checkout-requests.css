@@ -1,0 +1,19 @@
+.checkout-requests .request-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.checkout-requests .request-filters input, .checkout-requests .request-filters select, .request-review textarea { border: 1px solid var(--bl-card-border, #dfe3ef); border-radius: 8px; background: var(--bl-card-bg, #fff); color: inherit; padding: 8px 10px; }
+.checkout-requests .request-filters input { width: min(330px, 100%); }
+.request-table { overflow-x: auto; border: 1px solid var(--bl-card-border, #dfe3ef); border-radius: 12px; }
+.request-table table { width: 100%; border-collapse: collapse; text-align: start; }
+.request-table th, .request-table td { text-align: start; padding: 11px 12px; border-bottom: 1px solid var(--bl-card-border, #dfe3ef); }
+.request-table th { background: var(--bl-card-bg, #f6f7fb); font-size: 12px; }
+.request-table td { font-size: 13px; }
+.request-table td small { display: block; overflow-wrap: anywhere; }
+.request-table tr:last-child td { border-bottom: 0; }
+.request-status { display: inline-block; padding: 3px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #765321; background: #fbedd0; }
+.request-status.approved { color: #12634c; background: #d6f3e7; }
+.request-status.rejected { color: #a1223b; background: #fbe2e8; }
+.request-details { overflow-wrap: anywhere; }
+.request-details h3 { margin-top: 16px; }
+.request-receipt { display: block; width: 100%; max-height: 300px; object-fit: contain; border: 1px solid var(--bl-card-border, #dfe3ef); border-radius: 8px; margin: 8px 0; }
+iframe.request-receipt { height: 300px; }
+.request-review label { display: grid; gap: 5px; margin-top: 8px; }
+.request-review > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }

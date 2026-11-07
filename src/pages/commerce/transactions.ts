@@ -9,14 +9,14 @@ export interface CommerceTransaction {
   amount: string;
   amountValue: number;
   currency: string;
-  status: 'Completed' | 'Pending' | 'Refunded';
+  status: 'Completed' | 'Pending' | 'Refunded' | 'Rejected';
   customerName?: string;
   customerEmail?: string;
   method?: string;
 }
 
 // Read-only view over tenants/{tenantId}/transactions. Records are written exclusively by the
-// payment-provider webhook (Cloud Function); the client can never create or edit them.
+// payment backend. The client can never create or edit them.
 const STORAGE_KEY = 'gos-commerce-transactions';
 const EMPTY: CommerceTransaction[] = [];
 const listeners = new Set<() => void>();
@@ -26,6 +26,7 @@ function normalizeStatus(status = ''): CommerceTransaction['status'] {
   const value = status.toUpperCase();
   if (['PAID', 'COMPLETED', 'SUCCEEDED'].includes(value)) return 'Completed';
   if (['REFUNDED', 'PARTIALLY_REFUNDED'].includes(value)) return 'Refunded';
+  if (value === 'REJECTED') return 'Rejected';
   return 'Pending';
 }
 function normalize(row: StoredTransaction): CommerceTransaction {

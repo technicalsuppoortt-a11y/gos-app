@@ -31,8 +31,11 @@ const authSlice = createSlice({
       state.token = null;
     },
     startImpersonation: (state, action: PayloadAction<StoredAuth>) => {
-      if (!state.isAuthenticated || state.impersonation || !state.user || !state.token || !['ADMIN', 'SUPER_ADMIN'].includes(state.role ?? '') || action.payload.role !== 'USER') return;
-      state.impersonation = { user: state.user, role: state.role!, tenant: state.tenant, token: state.token };
+      const originalRole = state.impersonation?.role ?? state.role;
+      if (!state.isAuthenticated || !state.user || !state.token || !originalRole || !['ADMIN', 'SUPER_ADMIN'].includes(originalRole)) return;
+      if (state.impersonation && originalRole !== 'SUPER_ADMIN') return;
+      if (action.payload.role !== 'USER' && !(originalRole === 'SUPER_ADMIN' && action.payload.role === 'ADMIN')) return;
+      state.impersonation ??= { user: state.user, role: originalRole, tenant: state.tenant, token: state.token };
       Object.assign(state, action.payload);
     },
     stopImpersonation: state => {

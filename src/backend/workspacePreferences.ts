@@ -209,7 +209,7 @@ export function useWorkspacePreferenceState() {
         personal: inheritsProvider ? personal : { ...legacy, ...personal }, loading: pending.size > 0, error });
     };
     const failed = (source: string, cause: unknown) => {
-      if (source === 'tenant' || (source === 'personal' && auth.currentUser?.uid === uid)) error = backendError(cause);
+      if ((cause as { code?: string })?.code !== 'permission-denied' && (source === 'tenant' || (source === 'personal' && auth.currentUser?.uid === uid))) error = backendError(cause);
       publish(source);
     };
     const brand = (value: unknown) => value && typeof value === 'object' ? sanitizeWorkspacePreferences(value) : null;

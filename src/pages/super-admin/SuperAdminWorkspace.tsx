@@ -9,15 +9,155 @@ type GridProps = { columns: string[]; rows: { id: string; cells: ReactNode[] }[]
 function Grid(props: GridProps) { return <DataGrid key={props.rows.map(row => row.id).join('|')} {...props}/>; }
 function DataGrid({ columns, rows }: GridProps) {
   const [page, setPage] = useState(1);
-  const pages = Math.max(1, Math.ceil(rows.length / 8)), current = Math.min(page, pages);
-  return <div className="saw-grid"><div className="saw-table-wrap"><table><thead><tr>{columns.map(c => <th key={c}>{t(c)}</th>)}</tr></thead><tbody>{rows.slice((current - 1) * 8, current * 8).map(row => <tr key={row.id}>{row.cells.map((cell, i) => <td key={i}>{cell}</td>)}</tr>)}{!rows.length && <tr><td colSpan={columns.length} className="saw-empty"><Search size={24}/><p>{t('No matching records. Try another search or filter.')}</p></td></tr>}</tbody></table></div><footer><span>{rows.length} {t('records')} · {t('Page')} {current} / {pages}</span><div><button aria-label={t('Previous page')} disabled={current === 1} onClick={() => setPage(current - 1)}><ChevronLeft size={16}/></button><button aria-label={t('Next page')} disabled={current === pages} onClick={() => setPage(current + 1)}><ChevronRight size={16}/></button></div></footer></div>;
+  const [pageSize, setPageSize] = useState(8);
+  const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
+  const sizeMenuRef = useRef<HTMLDivElement>(null);
+  const pages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const current = Math.min(page, pages);
+  const startIdx = rows.length ? (current - 1) * pageSize + 1 : 0;
+  const endIdx = Math.min(current * pageSize, rows.length);
+
+  useEffect(() => {
+    if (!sizeMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (sizeMenuRef.current && !sizeMenuRef.current.contains(e.target as Node)) {
+        setSizeMenuOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSizeMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [sizeMenuOpen]);
+
+  const visiblePageNumbers = () => {
+    if (pages <= 5) return Array.from({ length: pages }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, pages];
+    if (current >= pages - 2) return [1, pages - 3, pages - 2, pages - 1, pages];
+    return [1, current - 1, current, current + 1, pages];
+  };
+
+  return (
+    <div className="saw-grid">
+      <div className="saw-table-wrap">
+        <table>
+          <thead>
+            <tr>{columns.map(c => <th key={c}>{t(c)}</th>)}</tr>
+          </thead>
+          <tbody>
+            {rows.slice((current - 1) * pageSize, current * pageSize).map(row => (
+              <tr key={row.id}>{row.cells.map((cell, i) => <td key={i}>{cell}</td>)}</tr>
+            ))}
+            {!rows.length && (
+              <tr>
+                <td colSpan={columns.length} className="saw-empty">
+                  <Search size={24} />
+                  <p>{t('No matching records. Try another search or filter.')}</p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <footer className="saw-pagination-footer">
+        <div className="saw-pagination-meta">
+          <span className="saw-pagination-summary">
+            {rows.length
+              ? `${t('Showing')} ${startIdx}–${endIdx} ${t('of')} ${rows.length} ${t('records')}`
+              : `0 ${t('records')}`}
+          </span>
+          <div className="saw-page-size-picker" ref={sizeMenuRef}>
+            <span className="saw-page-size-label">{t('Rows per page')}</span>
+            <button
+              type="button"
+              className={`saw-page-size-trigger${sizeMenuOpen ? ' is-open' : ''}`}
+              aria-haspopup="listbox"
+              aria-expanded={sizeMenuOpen}
+              aria-label={t('Rows per page')}
+              onClick={() => setSizeMenuOpen(prev => !prev)}
+            >
+              <strong>{pageSize}</strong>
+              <ChevronDown size={14} className="saw-page-size-chevron" />
+            </button>
+            {sizeMenuOpen && (
+              <div className="saw-page-size-menu" role="listbox" aria-label={t('Rows per page')}>
+                {[5, 8, 10, 20, 50].map(size => {
+                  const active = size === pageSize;
+                  return (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      key={size}
+                      className={`saw-page-size-option${active ? ' is-selected' : ''}`}
+                      onClick={() => {
+                        setPageSize(size);
+                        setPage(1);
+                        setSizeMenuOpen(false);
+                      }}
+                    >
+                      <span>{size} {t('rows')}</span>
+                      {active && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="saw-pagination-controls">
+          <button
+            type="button"
+            className="saw-page-btn"
+            aria-label={t('Previous page')}
+            disabled={current === 1}
+            onClick={() => setPage(current - 1)}
+          >
+            <ChevronLeft size={15} />
+          </button>
+          <div className="saw-page-numbers">
+            {visiblePageNumbers().map((num, idx, arr) => {
+              const prev = arr[idx - 1];
+              const showEllipsis = prev !== undefined && num - prev > 1;
+              return (
+                <span key={num} className="saw-page-num-group">
+                  {showEllipsis && <em className="saw-page-dots">…</em>}
+                  <button
+                    type="button"
+                    className={`saw-page-num${num === current ? ' is-active' : ''}`}
+                    onClick={() => setPage(num)}
+                  >
+                    {num}
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className="saw-page-btn"
+            aria-label={t('Next page')}
+            disabled={current === pages}
+            onClick={() => setPage(current + 1)}
+          >
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
 }
 function Filters({ query, setQuery, status, setStatus, options }: { query: string; setQuery: (v: string) => void; status: string; setStatus: (v: string) => void; options: string[] }) {
   return <div className="saw-filters"><label className="saw-search"><Search size={17}/><input aria-label={t('Search records')} placeholder={t('Search by name, email or ID…')} value={query} onChange={e => setQuery(e.target.value)}/></label><DashboardSelect aria-label={t('Filter by status')} value={status} onChange={e => setStatus(e.target.value)}><option value="All">{t('All statuses')}</option>{options.map(o => <option key={o} value={o}>{t(o)}</option>)}</DashboardSelect>{(query || status !== 'All') && <button onClick={() => { setQuery(''); setStatus('All'); }}>{t('Clear filters')}</button>}</div>;
 }
-import { createContext, useContext, useEffect, useRef, useState, type FormEvent, type PropsWithChildren, type ReactNode } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ArrowDownToLine, Check, ChevronLeft, ChevronRight, Plus, Search, ShieldCheck, X } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type PropsWithChildren, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { AlertTriangle, ArrowDownToLine, ArrowLeft, Ban, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CreditCard, Eye, EyeOff, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
@@ -26,7 +166,15 @@ import { translateText as t, useUILanguage } from '../../i18n/display';
 import { backendError } from '../../backend/firebase';
 import { usePaymentMethods } from '../../backend/paymentMethods';
 import { useTrackingConfig, validGoogle, validMeta } from '../../backend/marketingTracking';
-import { isPlatformTeamRole, platformTeamRoles } from '../../router/platformAccess';
+import {
+  ALL_PLATFORM_TAB_KEYS,
+  defaultTabsForRole,
+  isPlatformTeamRole,
+  PLATFORM_SIDEBAR_TABS,
+  platformTeamRoles,
+  resolveAllowedTabKeys,
+  type PlatformTabKey,
+} from '../../router/platformAccess';
 import type { PlatformTeamRole } from '../../types/auth';
 import {
   isAdminAccount, isSubUser, platformTimezones, updatePlatform, usePlatformAccounts, usePlatformAudit,
@@ -45,18 +193,94 @@ function useFilters() {
     (status === 'All' || status === value) && fields.some(field => field.toLowerCase().includes(query.trim().toLowerCase())) };
 }
 
+type SyncPhase = 'idle' | 'syncing' | 'fading';
+const SyncStatusContext = createContext<{
+  phase: SyncPhase;
+  reportSyncing: (active: boolean) => void;
+}>({ phase: 'idle', reportSyncing: () => {} });
+
 function LiveContent({ sources, children }: PropsWithChildren<{ sources: { loading: boolean; error: string; cached?: boolean }[] }>) {
   const error = sources.find(source => source.error)?.error;
   const retry = useContext(RetryContext);
+  const { reportSyncing } = useContext(SyncStatusContext);
+  const isHydrating = sources.some(source => source.loading || source.cached);
+
+  useEffect(() => {
+    reportSyncing(isHydrating);
+  }, [isHydrating, reportSyncing]);
+
   if (error) return <div className="saw-warning" role="alert">{t(error)} <button onClick={retry}>{t('Try again')}</button></div>;
-  if (sources.some(source => source.loading)) return <div className="saw-panel" role="status">{t('Loading Firebase data…')}</div>;
-  return <>{sources.some(source => source.cached) && <div className="saw-warning" role="status">{t('Showing cached data while connecting to Firebase.')}</div>}{children}</>;
+  if (sources.some(source => source.loading)) {
+    return (
+      <div className="saw-loading-shell" role="status" aria-label={t('Syncing with cloud…')}>
+        <div className="saw-stats" aria-hidden="true">
+          {[0, 1, 2, 3].map(idx => (
+            <div className="saw-stat saw-skeleton-card animate-pulse" key={idx}>
+              <div className="saw-sk-line saw-sk-sm" />
+              <div className="saw-sk-line saw-sk-lg" />
+              <div className="saw-sk-line saw-sk-xs" />
+            </div>
+          ))}
+        </div>
+        <div className="saw-panel saw-skeleton-table animate-pulse" aria-hidden="true">
+          <div className="saw-sk-toolbar">
+            <div className="saw-sk-line saw-sk-search" />
+            <div className="saw-sk-line saw-sk-filter" />
+          </div>
+          {[0, 1, 2, 3, 4].map(idx => (
+            <div className="saw-sk-row" key={idx}>
+              <div className="saw-sk-avatar" />
+              <div className="saw-sk-col">
+                <div className="saw-sk-line saw-sk-md" />
+                <div className="saw-sk-line saw-sk-xs" />
+              </div>
+              <div className="saw-sk-line saw-sk-pill" />
+              <div className="saw-sk-line saw-sk-btn" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
 }
 
 const RetryContext = createContext<() => void>(() => {});
 
 function Heading({ title, description, children, platform }: PropsWithChildren<{ title: string; description: string; platform?: string }>) {
-  return <header className="saw-heading"><div><span className="saw-eyebrow">{platform ? `${platform.toUpperCase()} / ${t('PLATFORM CONTROL')}` : t('UPCLICK / PLATFORM CONTROL')}</span><h1>{t(title)}</h1><p>{t(description)}</p></div><div className="saw-actions">{children}</div></header>;
+  const { phase } = useContext(SyncStatusContext);
+  const tooltipText = t('Using cached offline data — sync in progress with Firebase');
+
+  return (
+    <header className="saw-heading">
+      <div>
+        <div className="saw-eyebrow-row">
+          <span className="saw-eyebrow">
+            {platform ? `${platform.toUpperCase()} / ${t('PLATFORM CONTROL')}` : t('UPCLICK / PLATFORM CONTROL')}
+          </span>
+          {phase !== 'idle' && (
+            <div
+              className={`saw-live-sync-chip${phase === 'fading' ? ' is-fading' : ''}`}
+              role="status"
+              aria-live="polite"
+              title={tooltipText}
+            >
+              <span className="saw-live-sync-dot" aria-hidden="true" />
+              <span className="saw-live-sync-text">
+                {phase === 'fading' ? t('Live Synced') : t('Syncing with cloud…')}
+              </span>
+              <span className="saw-live-sync-tooltip" role="tooltip">
+                {tooltipText}
+              </span>
+            </div>
+          )}
+        </div>
+        <h1>{t(title)}</h1>
+        <p>{t(description)}</p>
+      </div>
+      <div className="saw-actions">{children}</div>
+    </header>
+  );
 }
 
 const displayDate = (date: Date | null, timeZone?: string) => date ? date.toLocaleDateString(undefined, { timeZone }) : '—';
@@ -68,26 +292,156 @@ function Person({ account }: { account: PlatformAccount }) {
   return <div className="saw-person"><span className="saw-avatar">{name.split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><div><b>{name}</b><small>{account.email || account.id}</small></div></div>;
 }
 
-type AccountDialog = { kind: 'create' } | { kind: 'edit' | 'details' | 'subUsers'; id: string }
+type AccountDialog = { kind: 'create' } | { kind: 'edit' | 'details'; id: string }
   | { kind: 'delete'; id: string } | { kind: 'status'; id: string; active: boolean };
 
-function Accounts({ team = false }: { team?: boolean }) {
-  const language = useUILanguage();
+function SubUsersPage({ adminId }: { adminId: string }) {
+  const navigate = useNavigate();
   const source = usePlatformAccounts();
+  const filters = useFilters();
+  const parentAdmin = source.data.find(account => account.id === adminId);
+  const subUsers = parentAdmin ? source.data.filter(row => isSubUser(row, parentAdmin)) : [];
+  const visible = subUsers.filter(row => filters.matches([row.name, row.email, row.id], row.status));
+
+  return (
+    <>
+      <Heading
+        title="Sub-users"
+        description={
+          parentAdmin
+            ? `${t('Linked workspace users and default Agency account for')} ${parentAdmin.name || parentAdmin.email || parentAdmin.id}`
+            : t('Manage linked sub-users for this platform admin.')
+        }
+      >
+        <button type="button" onClick={() => navigate('/super-admin/clients')}>
+          <ArrowLeft size={16} />
+          {t('Back to All Admins')}
+        </button>
+        <button
+          disabled={source.loading || !!source.error || !visible.length}
+          onClick={() =>
+            exportCsv(
+              `upclick-sub-users-${adminId}.csv`,
+              ['ID', 'Name', 'Email', 'Account Type', 'Status'],
+              visible.map(row => [row.id, row.name, row.email, row.agency ? 'Agency user' : 'User', row.status])
+            )
+          }
+        >
+          <ArrowDownToLine size={16} />
+          {t('Export CSV')}
+        </button>
+      </Heading>
+
+      <LiveContent sources={[source]}>
+        {parentAdmin && (
+          <div className="saw-panel saw-subusers-parent">
+            <div className="saw-subusers-parent-main">
+              <Person account={parentAdmin} />
+              <Badge value={parentAdmin.status} />
+            </div>
+            <div className="saw-subusers-parent-meta">
+              <div>
+                <span>{t('Workspace')}</span>
+                <b className="saw-mono">{parentAdmin.tenantId || '—'}</b>
+              </div>
+              <div>
+                <span>{t('Joined')}</span>
+                <b>{displayDate(parentAdmin.joined)}</b>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="saw-stats">
+          <Stat label="Linked users" value={subUsers.length} note="Total sub-users under this admin" />
+          <Stat label="Active accounts" value={subUsers.filter(row => row.status === 'Active').length} note="Sub-users with active access" />
+          <Stat label="Agency user" value={subUsers.filter(row => row.agency).length} note="Default agency workspace account" />
+          <Stat label="Suspended accounts" value={subUsers.filter(row => row.status === 'Suspended').length} note="Sub-users with disabled access" />
+        </div>
+
+        <Filters {...filters} options={['Active', 'Suspended', 'Pending']} />
+
+        <Grid
+          columns={['User', 'Account type', 'Status', 'Joined']}
+          rows={visible.map(row => ({
+            id: row.id,
+            cells: [
+              <Person key="person" account={row} />,
+              <span key="type" className={`saw-badge ${row.agency ? 'saw-trial' : ''}`}>
+                {t(row.agency ? 'Agency user' : 'User')}
+              </span>,
+              <Badge key="status" value={row.status} />,
+              displayDate(row.joined),
+            ],
+          }))}
+        />
+      </LiveContent>
+    </>
+  );
+}
+
+function Accounts({ team = false }: { team?: boolean }) {
+  const { adminId } = useParams<{ adminId?: string }>();
+  const navigate = useNavigate();
+  const language = useUILanguage();
+  const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+  const source = usePlatformAccounts();
+  const subscriptions = usePlatformSubscriptions();
   const filters = useFilters();
   const [dialog, setDialog] = useState<AccountDialog | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [role, setRole] = useState<PlatformTeamRole>('PLATFORM_SUPPORT');
+  const [allowedTabs, setAllowedTabs] = useState<PlatformTabKey[]>(() => defaultTabsForRole('PLATFORM_SUPPORT'));
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const requestId = useRef('');
+
+  if (!team && adminId) {
+    return <SubUsersPage adminId={adminId} />;
+  }
+
   const rows = source.data.filter(account => team ? isPlatformTeamRole(account.role) : isAdminAccount(account));
   const visible = rows.filter(account => filters.matches([account.name, account.email, account.id], account.status));
   const selected = dialog && 'id' in dialog ? source.data.find(account => account.id === dialog.id) : undefined;
+  const selectedSubscription = selected ? subscriptions.data.find(sub => sub.id === selected.id) : undefined;
   const open = (next: AccountDialog) => {
-    setError(''); setNotice(''); setRole('PLATFORM_SUPPORT');
+    setError(''); setNotice('');
+    setShowPassword(false); setShowConfirmPassword(false);
+    if (next.kind === 'edit') {
+      const target = source.data.find(account => account.id === next.id);
+      if (target && isPlatformTeamRole(target.role)) {
+        const initialTabs = resolveAllowedTabKeys(target.role, target.allowedTabs);
+        setRole(target.role);
+        setAllowedTabs(initialTabs);
+      }
+    } else {
+      const defaultRole: PlatformTeamRole = 'PLATFORM_SUPPORT';
+      setRole(defaultRole);
+      setAllowedTabs(defaultTabsForRole(defaultRole));
+    }
     if (next.kind === 'create') requestId.current = crypto.randomUUID();
     setDialog(next);
+  };
+  const handleRoleChange = (value: string) => {
+    if (isPlatformTeamRole(value)) {
+      setRole(value);
+      setAllowedTabs(defaultTabsForRole(value));
+    }
+  };
+  const toggleAllowedTab = (tabKey: PlatformTabKey) => {
+    const nextTabs = allowedTabs.includes(tabKey)
+      ? allowedTabs.filter(item => item !== tabKey)
+      : [...allowedTabs, tabKey];
+    const ordered = ALL_PLATFORM_TAB_KEYS.filter(item => nextTabs.includes(item));
+    setAllowedTabs(ordered);
+  };
+  const selectAllTabs = () => {
+    setAllowedTabs([...ALL_PLATFORM_TAB_KEYS]);
+  };
+  const clearAllTabs = () => {
+    setAllowedTabs([]);
   };
   const close = () => { if (!busy) setDialog(null); };
   const save = async (input: Parameters<typeof updatePlatform>[0], success: string) => {
@@ -102,11 +456,19 @@ function Accounts({ team = false }: { team?: boolean }) {
     const fields = new FormData(event.currentTarget);
     const name = String(fields.get('name') ?? '').trim(), email = String(fields.get('email') ?? '').trim();
     if (!name) { setError('Enter a valid name.'); return; }
-    if (dialog.kind === 'edit' && selected) { void save({ operation: 'editAdmin', id: selected.id, name, email }, 'Admin details saved.'); return; }
+    if (team && !allowedTabs.length) { setError('Select at least one permitted sidebar tab.'); return; }
+    if (dialog.kind === 'edit' && selected) {
+      if (team) {
+        void save({ operation: 'editAdmin', id: selected.id, name, email, role, allowedTabs }, 'Team member permissions saved.');
+      } else {
+        void save({ operation: 'editAdmin', id: selected.id, name, email }, 'Admin details saved.');
+      }
+      return;
+    }
     const password = String(fields.get('password') ?? '');
     if (password !== fields.get('confirmPassword')) { setError('Passwords must match.'); return; }
     const credentials = { name, email, password, requestId: requestId.current, language };
-    if (team) void save({ operation: 'createMember', role, ...credentials }, 'Team member created.');
+    if (team) void save({ operation: 'createMember', role, allowedTabs, ...credentials }, 'Team member created.');
     else void save({ operation: 'createAdmin', ...credentials }, 'Admin and default Agency user created.');
   }
   return <>
@@ -119,41 +481,404 @@ function Accounts({ team = false }: { team?: boolean }) {
       {team ? <div className="saw-panel saw-permissions"><ShieldCheck size={22}/><div><h2>{t('Access with intention')}</h2><p>{t('Superadmin has full access. Support can open Support and Logs. Finance can open Payments, Usage & Revenue, and Wallet.')}</p></div></div>
         : <div className="saw-stats"><Stat label="Total admins" value={rows.length} note="Platform admin accounts"/><Stat label="Active accounts" value={rows.filter(row => row.status === 'Active').length} note="Admins with access"/><Stat label="Suspended accounts" value={rows.filter(row => row.status === 'Suspended').length} note="Admins with disabled access"/><Stat label="Pending accounts" value={rows.filter(row => row.status === 'Pending').length} note="Awaiting activation"/></div>}
       <Filters {...filters} options={team ? ['Active', 'Suspended'] : ['Active', 'Suspended', 'Pending']}/>
-      <Grid columns={[team ? 'Member' : 'Admin', team ? 'Role' : 'Account ID', 'Status', 'Actions']} rows={visible.map(account => ({ id: account.id, cells: [
-        <Person key="person" account={account}/>, isPlatformTeamRole(account.role) ? t(teamLabel[account.role]) : account.id, <Badge key="status" value={account.status}/>,
-        <div key="actions" className="saw-actions">
-          {!team && <><button onClick={() => open({ kind: 'details', id: account.id })}>{t('View details')}</button><button onClick={() => open({ kind: 'subUsers', id: account.id })}>{t('View sub-users')}</button><button disabled={source.cached} onClick={() => open({ kind: 'edit', id: account.id })}>{t('Edit')}</button></>}
-          {account.role !== 'SUPER_ADMIN' && <button disabled={source.cached} onClick={() => open({ kind: 'status', id: account.id, active: account.status !== 'Active' })}>{t(account.status === 'Active' ? 'Suspend' : 'Activate')}</button>}
-          {!team && <button disabled={source.cached} onClick={() => open({ kind: 'delete', id: account.id })}>{t('Delete')}</button>}
-        </div>,
-      ] }))}/>
+      <Grid
+        columns={team ? ['Member', 'Role', 'Status', 'Actions'] : ['Admin', 'Status', 'Actions']}
+        rows={visible.map(account => {
+          const memberRole = isPlatformTeamRole(account.role) ? account.role : null;
+          const memberTabs = memberRole ? resolveAllowedTabKeys(memberRole, account.allowedTabs) : [];
+          return {
+            id: account.id,
+            cells: [
+              <Person key="person" account={account}/>,
+              ...(team ? [
+                <div key="role" className="saw-role-cell">
+                  <strong>
+                    {memberRole ? t(teamLabel[memberRole]) : account.id}
+                  </strong>
+                  {memberRole && (
+                    <small className="saw-role-tabs-summary">
+                      {memberTabs.length === PLATFORM_SIDEBAR_TABS.length
+                        ? t('All sidebar tabs permitted')
+                        : `${memberTabs.length} / ${PLATFORM_SIDEBAR_TABS.length} ${t('permitted tabs')}`}
+                    </small>
+                  )}
+                </div>,
+              ] : []),
+              <Badge key="status" value={account.status}/>,
+              <div key="actions" className="saw-actions saw-row-actions">
+                {!team && (
+                  <>
+                    <button type="button" className="saw-action-btn" onClick={() => open({ kind: 'details', id: account.id })}>
+                      <Eye size={13}/>
+                      {t('View details')}
+                    </button>
+                    <button
+                      type="button"
+                      className="saw-action-btn"
+                      onClick={() => navigate(`/super-admin/clients/${encodeURIComponent(account.id)}/sub-users`)}
+                    >
+                      <Users size={13}/>
+                      {t('View sub-users')}
+                    </button>
+                  </>
+                )}
+                {(!team || account.id !== currentUserId) && (
+                  <button type="button" className="saw-action-btn" disabled={source.cached} onClick={() => open({ kind: 'edit', id: account.id })}>
+                    <Pencil size={13}/>
+                    {t('Edit')}
+                  </button>
+                )}
+                {account.role !== 'SUPER_ADMIN' && (
+                  <button
+                    type="button"
+                    className={`saw-action-btn ${account.status === 'Active' ? 'saw-btn-warn' : 'saw-btn-success'}`}
+                    disabled={source.cached}
+                    onClick={() => open({ kind: 'status', id: account.id, active: account.status !== 'Active' })}
+                  >
+                    {account.status === 'Active' ? <Ban size={13}/> : <CheckCircle2 size={13}/>}
+                    {t(account.status === 'Active' ? 'Suspend' : 'Activate')}
+                  </button>
+                )}
+                {(!team || (account.role !== 'SUPER_ADMIN' && account.id !== currentUserId)) && (
+                  <button
+                    type="button"
+                    className="saw-action-btn saw-btn-danger"
+                    disabled={source.cached}
+                    onClick={() => open({ kind: 'delete', id: account.id })}
+                  >
+                    <Trash2 size={13}/>
+                    {t('Delete')}
+                  </button>
+                )}
+              </div>,
+            ],
+          };
+        })}
+      />
     </LiveContent>
-    {(dialog?.kind === 'create' || dialog?.kind === 'edit' && selected) && <Modal title={dialog.kind === 'edit' ? 'Edit admin' : team ? 'Add team member' : 'Add admin'} close={close}>
+    {(dialog?.kind === 'create' || dialog?.kind === 'edit' && selected) && <Modal title={dialog.kind === 'edit' ? (team ? 'Edit team member' : 'Edit admin') : team ? 'Add team member' : 'Add admin'} close={close}>
       <form className="saw-modal-form" onSubmit={submit}>
-        <label>{t('Name')}<input name="name" required maxLength={80} defaultValue={selected?.name} autoFocus disabled={busy}/></label>
-        <label>{t('Email')}<input name="email" type="email" required maxLength={160} defaultValue={selected?.email} disabled={busy}/></label>
-        {dialog.kind === 'create' && <><label>{t('Password')}<input name="password" type="password" autoComplete="new-password" required minLength={8} maxLength={128} disabled={busy}/></label>
-          <label>{t('Confirm Password')}<input name="confirmPassword" type="password" autoComplete="new-password" required minLength={8} maxLength={128} disabled={busy}/></label>
-          {team ? <label>{t('Role')}<DashboardSelect value={role} onChange={event => { if (isPlatformTeamRole(event.target.value)) setRole(event.target.value); }} disabled={busy}>{platformTeamRoles.map(value => <option key={value} value={value}>{t(teamLabel[value])}</option>)}</DashboardSelect></label>
-            : <p>{t('The admin can open the default Agency workspace from the account switcher. Both use the admin’s credit and wallet balances.')}</p>}
+        <label>
+          {t('Name')}
+          <input
+            name="name"
+            required
+            maxLength={80}
+            defaultValue={selected?.name}
+            placeholder={t(team ? 'e.g. Sarah Jenkins — Platform Support' : 'e.g. Alex Morgan — Agency Owner')}
+            autoFocus
+            disabled={busy}
+          />
+        </label>
+        <label>
+          {t('Email')}
+          <input
+            name="email"
+            type="email"
+            required
+            maxLength={160}
+            defaultValue={selected?.email}
+            placeholder={t(team ? 'member@upclick.app' : 'admin@company.com')}
+            disabled={busy}
+          />
+        </label>
+        {dialog.kind === 'create' && <>
+          <label>
+            {t('Password')}
+            <div className="saw-password-wrap">
+              <input
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder={t('Enter strong password (min. 8 characters)')}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={128}
+                disabled={busy}
+              />
+              <button
+                type="button"
+                className="saw-password-eye"
+                aria-label={t(showPassword ? 'Hide password' : 'Show password')}
+                onClick={() => setShowPassword(prev => !prev)}
+                disabled={busy}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </label>
+          <label>
+            {t('Confirm Password')}
+            <div className="saw-password-wrap">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder={t('Re-enter password to confirm')}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={128}
+                disabled={busy}
+              />
+              <button
+                type="button"
+                className="saw-password-eye"
+                aria-label={t(showConfirmPassword ? 'Hide password' : 'Show password')}
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                disabled={busy}
+              >
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </label>
+          {!team && <p>{t('The admin can open the default Agency workspace from the account switcher. Both use the admin’s credit and wallet balances.')}</p>}
         </>}
+        {team && (
+          <>
+            <label>
+              {t('Role')}
+              <DashboardSelect
+                value={role}
+                onChange={event => handleRoleChange(event.target.value)}
+                disabled={busy}
+              >
+                {platformTeamRoles.map(value => (
+                  <option key={value} value={value}>{t(teamLabel[value])}</option>
+                ))}
+              </DashboardSelect>
+            </label>
+            <div className="saw-permissions-box" role="group" aria-label={t('Permitted Sidebar Tabs')}>
+              <div className="saw-permissions-head">
+                <div className="saw-permissions-title">
+                  <span>{t('Permitted Sidebar Tabs')}</span>
+                  <small className="saw-permissions-count">
+                    {allowedTabs.length} / {PLATFORM_SIDEBAR_TABS.length}
+                  </small>
+                </div>
+                <div className="saw-permissions-actions">
+                  <button
+                    type="button"
+                    className="saw-perm-quick-btn"
+                    onClick={selectAllTabs}
+                    disabled={busy || allowedTabs.length === PLATFORM_SIDEBAR_TABS.length}
+                  >
+                    {t('Select All')}
+                  </button>
+                  <button
+                    type="button"
+                    className="saw-perm-quick-btn"
+                    onClick={clearAllTabs}
+                    disabled={busy || allowedTabs.length === 0}
+                  >
+                    {t('Clear All')}
+                  </button>
+                </div>
+              </div>
+              <div className="saw-permissions-grid">
+                {PLATFORM_SIDEBAR_TABS.map(tab => {
+                  const checked = allowedTabs.includes(tab.key);
+                  return (
+                    <label
+                      key={tab.key}
+                      className={`saw-perm-item${checked ? ' is-checked' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleAllowedTab(tab.key)}
+                        disabled={busy}
+                      />
+                      <span className="saw-perm-check" aria-hidden="true">
+                        {checked && <Check size={12} />}
+                      </span>
+                      <span className="saw-perm-label">
+                        {language === 'ar' ? tab.ar : t(tab.label)}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
         {error && <p role="alert" className="saw-warning">{t(error)}</p>}
         <button className="saw-primary" disabled={busy || source.cached} type="submit">{t(busy ? 'Saving…' : dialog.kind === 'edit' ? 'Save changes' : team ? 'Create team member' : 'Create admin')}</button>
       </form>
     </Modal>}
-    {dialog?.kind === 'details' && selected && <Modal title="Admin details" close={close}><div className="saw-detail"><h3>{selected.name || selected.id}</h3><p>{selected.email}</p><Badge value={selected.status}/><dl>
-      <div><dt>{t('Account ID')}</dt><dd className="break-all">{selected.id}</dd></div><div><dt>{t('Workspace')}</dt><dd className="break-all">{selected.tenantId || '—'}</dd></div><div><dt>{t('Joined')}</dt><dd>{displayDate(selected.joined)}</dd></div><div><dt>{t('Linked users')}</dt><dd>{source.data.filter(row => isSubUser(row, selected)).length}</dd></div>
-    </dl></div></Modal>}
-    {dialog?.kind === 'subUsers' && selected && <Modal title="Sub-users" close={close}><div className="saw-detail"><h3>{selected.name || selected.id}</h3><p>{selected.email}</p></div><Grid columns={['User', 'Account type', 'Status']} rows={source.data.filter(row => isSubUser(row, selected)).map(row => ({ id: row.id, cells: [<Person key="person" account={row}/>, t(row.agency ? 'Agency user' : 'User'), <Badge key="status" value={row.status}/>] }))}/></Modal>}
-    {(dialog?.kind === 'delete' || dialog?.kind === 'status') && selected && <Modal title={dialog.kind === 'delete' ? 'Delete admin' : dialog.active ? 'Activate account' : 'Suspend account'} close={close}>
-      <p>{selected.name || selected.email || selected.id}</p>
-      {dialog.kind === 'delete' && <p>{t('The admin and default Agency sign-in will be deleted. Billing history and workspace records are retained.')}</p>}
-      {error && <p role="alert" className="saw-warning">{t(error)}</p>}
-      <div className="saw-actions"><button disabled={busy} onClick={close}>{t('Cancel')}</button><button className="saw-primary" disabled={busy || source.cached} onClick={() => {
-        if (dialog.kind === 'delete') void save({ operation: 'deleteAdmin', id: selected.id }, 'Admin deleted.');
-        else void save({ operation: 'setStatus', id: selected.id, active: dialog.active }, 'Account status updated.');
-      }}>{t(busy ? 'Saving…' : 'Confirm change')}</button></div>
-    </Modal>}
+    {dialog?.kind === 'details' && selected && (
+      <Modal title="Admin details" close={close}>
+        <div className="saw-detail saw-detail-pro">
+          <div className="saw-detail-profile">
+            <Person account={selected} />
+            <Badge value={selected.status} />
+          </div>
+
+          <div className="saw-plan-card">
+            <div className="saw-plan-card-head">
+              <div className="saw-plan-title-wrap">
+                <span className="saw-plan-icon">
+                  <CreditCard size={18} />
+                </span>
+                <div>
+                  <span className="saw-plan-eyebrow">{t('CURRENT SUBSCRIPTION PLAN')}</span>
+                  <strong>
+                    {selectedSubscription?.plan
+                      ? (language === 'ar' ? selectedSubscription.planAr || selectedSubscription.plan : selectedSubscription.plan)
+                      : t('No active plan')}
+                  </strong>
+                </div>
+              </div>
+              {selectedSubscription?.status ? (
+                <Badge value={selectedSubscription.status.charAt(0).toUpperCase() + selectedSubscription.status.slice(1)} />
+              ) : (
+                <span className="saw-badge">{t('Unsubscribed')}</span>
+              )}
+            </div>
+            <div className="saw-plan-meta">
+              <div>
+                <span>{t('Plan Rate')}</span>
+                <b>
+                  {selectedSubscription?.price !== null && selectedSubscription?.price !== undefined
+                    ? displayMoney(selectedSubscription.price, selectedSubscription.currency || 'USD')
+                    : '—'}
+                </b>
+              </div>
+              <div>
+                <span>{t('Renewal / Expiry')}</span>
+                <b>{displayDate(selectedSubscription?.expires ?? null)}</b>
+              </div>
+            </div>
+          </div>
+
+          <dl className="saw-detail-grid">
+            <div>
+              <dt>{t('Account ID')}</dt>
+              <dd className="saw-mono break-all">{selected.id}</dd>
+            </div>
+            <div>
+              <dt>{t('Workspace')}</dt>
+              <dd className="saw-mono break-all">{selected.tenantId || '—'}</dd>
+            </div>
+            <div>
+              <dt>{t('Joined')}</dt>
+              <dd>{displayDate(selected.joined)}</dd>
+            </div>
+            <div>
+              <dt>{t('Linked users')}</dt>
+              <dd>{source.data.filter(row => isSubUser(row, selected)).length}</dd>
+            </div>
+          </dl>
+        </div>
+      </Modal>
+    )}
+    {(dialog?.kind === 'delete' || dialog?.kind === 'status') && selected && (
+      <Modal
+        title={dialog.kind === 'delete' ? (team ? 'Delete team member' : 'Delete admin') : dialog.active ? 'Activate account' : 'Suspend account'}
+        close={close}
+      >
+        <div className="saw-confirm-dialog">
+          <div className="saw-confirm-target">
+            <div
+              className={`saw-confirm-icon ${
+                dialog.kind === 'delete' ? 'is-danger' : dialog.active ? 'is-success' : 'is-warn'
+              }`}
+            >
+              {dialog.kind === 'delete' ? (
+                <Trash2 size={20} />
+              ) : dialog.active ? (
+                <CheckCircle2 size={20} />
+              ) : (
+                <AlertTriangle size={20} />
+              )}
+            </div>
+            <div className="saw-confirm-account">
+              <Person account={selected} />
+              <Badge value={selected.status} />
+            </div>
+          </div>
+
+          <div
+            className={`saw-confirm-callout ${
+              dialog.kind === 'delete' ? 'is-danger' : dialog.active ? 'is-success' : 'is-warn'
+            }`}
+          >
+            {dialog.kind === 'delete' ? (
+              <p>
+                {t(
+                  team
+                    ? 'This team member will be permanently removed and their sign-in access to the platform control center will be revoked immediately.'
+                    : 'The admin and default Agency sign-in will be deleted. Billing history and workspace records are retained.'
+                )}
+              </p>
+            ) : dialog.active ? (
+              <p>
+                {t(
+                  team
+                    ? 'Activating this account immediately restores sign-in and permitted sidebar access for this team member.'
+                    : 'Activating this account immediately restores sign-in and workspace access for this admin and their linked sub-users.'
+                )}
+              </p>
+            ) : (
+              <p>
+                {t(
+                  team
+                    ? 'Suspending this account immediately revokes sign-in access for this team member until reactivated.'
+                    : 'Suspending this account immediately revokes sign-in access for this admin and pauses their workspace operations until reactivated.'
+                )}
+              </p>
+            )}
+          </div>
+
+          {error && <p role="alert" className="saw-warning">{t(error)}</p>}
+
+          <div className="saw-confirm-footer">
+            <button type="button" disabled={busy} onClick={close}>
+              {t('Cancel')}
+            </button>
+            <button
+              type="button"
+              className={
+                dialog.kind === 'delete'
+                  ? 'saw-danger-solid'
+                  : dialog.active
+                  ? 'saw-primary'
+                  : 'saw-warn-solid'
+              }
+              disabled={busy || source.cached}
+              onClick={() => {
+                if (dialog.kind === 'delete') {
+                  void save(
+                    { operation: 'deleteAdmin', id: selected.id, ...(team ? { teamMember: true } : {}) },
+                    team ? 'Team member deleted.' : 'Admin deleted.'
+                  );
+                } else {
+                  void save({ operation: 'setStatus', id: selected.id, active: dialog.active }, 'Account status updated.');
+                }
+              }}
+            >
+              {dialog.kind === 'delete' ? (
+                <Trash2 size={15} />
+              ) : dialog.active ? (
+                <CheckCircle2 size={15} />
+              ) : (
+                <Ban size={15} />
+              )}
+              {t(
+                busy
+                  ? 'Saving…'
+                  : dialog.kind === 'delete'
+                  ? team
+                    ? 'Delete team member'
+                    : 'Delete admin'
+                  : dialog.active
+                  ? 'Activate account'
+                  : 'Suspend account'
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    )}
   </>;
 }
 
@@ -368,6 +1093,33 @@ export function SuperAdminWorkspace() {
   const uid = useSelector((state: RootState) => state.auth.user?.id);
   const { pathname, search } = useLocation();
   const [attempt, setAttempt] = useState(0);
+  const [syncPhase, setSyncPhase] = useState<SyncPhase>('idle');
+  const wasSyncingRef = useRef(false);
+
+  const reportSyncing = useCallback((active: boolean) => {
+    if (active) {
+      wasSyncingRef.current = true;
+      setSyncPhase('syncing');
+    } else if (wasSyncingRef.current) {
+      wasSyncingRef.current = false;
+      setSyncPhase('fading');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (syncPhase !== 'fading') return;
+    const timer = window.setTimeout(() => setSyncPhase('idle'), 950);
+    return () => window.clearTimeout(timer);
+  }, [syncPhase]);
+
   const Screen = screens[pathname.split('/')[2] || 'overview'] ?? Overview;
-  return <RetryContext.Provider value={() => setAttempt(value => value + 1)}><div className="saw-workspace"><Screen key={`${uid}:${pathname}:${search}:${attempt}`}/></div></RetryContext.Provider>;
+  return (
+    <RetryContext.Provider value={() => setAttempt(value => value + 1)}>
+      <SyncStatusContext.Provider value={{ phase: syncPhase, reportSyncing }}>
+        <div className="saw-workspace">
+          <Screen key={`${uid}:${pathname}:${search}:${attempt}`} />
+        </div>
+      </SyncStatusContext.Provider>
+    </RetryContext.Provider>
+  );
 }

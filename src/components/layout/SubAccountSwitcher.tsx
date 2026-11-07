@@ -49,10 +49,23 @@ interface SubAccountSwitcherProps {
   className?: string;
 }
 
-export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubAccountSwitcherProps) {
+export type SwitchableAccount = Pick<Invite, 'id' | 'name' | 'email' | 'tenantId' | 'accountType' | 'status' | 'avatar'> & { role?: Invite['role'] };
+
+export function SubAccountSwitcher(props: SubAccountSwitcherProps) {
+  const { invites } = useAdminUsers();
+  return <WorkspaceSwitcher {...props} liveInvites={invites}/>;
+}
+
+export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInvites, platform = false, sourceMessage, onOpenChange }: SubAccountSwitcherProps & {
+  liveInvites: SwitchableAccount[];
+  platform?: boolean;
+  sourceMessage?: string;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const agencyLabel = useUILanguage().startsWith('ar') ? 'مستخدم وكالة' : 'Agency user';
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => { onOpenChange?.(isOpen); }, [isOpen, onOpenChange]);
   const [searchQuery, setSearchQuery] = useState('');
   const [switchingId, setSwitchingId] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -88,21 +101,18 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
   const isImpersonating = !!impersonation;
   const isAdminOrImpersonating = role === 'ADMIN' || role === 'SUPER_ADMIN' || isImpersonating;
 
-  // Live admin users query
-  const { invites: liveInvites } = useAdminUsers();
-
   // Cache persistence for seamless switching while impersonating
   useEffect(() => {
-    if (liveInvites && liveInvites.length > 0) {
+    if (!platform && liveInvites.length > 0) {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(liveInvites));
       } catch {}
     }
-  }, [liveInvites]);
+  }, [liveInvites, platform]);
 
   // Read accounts from live query or cached store
-  const allSubAccounts = useMemo<Invite[]>(() => {
-    if (liveInvites && liveInvites.length > 0) {
+  const allSubAccounts = useMemo<SwitchableAccount[]>(() => {
+    if (platform || liveInvites.length > 0) {
       return liveInvites;
     }
     try {
@@ -112,13 +122,13 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
       }
     } catch {}
     return [];
-  }, [liveInvites]);
+  }, [liveInvites, platform]);
 
   // Update floating popover position relative to trigger button
   const updatePosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    const popoverWidth = 356;
+    const popoverWidth = Math.min(356, window.innerWidth - 20);
     const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
 
     let left = isRtl ? (rect.right - popoverWidth) : rect.left;
@@ -175,6 +185,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setIsOpen(false);
+        triggerRef.current?.focus();
       }
     };
     if (isOpen) {
@@ -227,10 +238,11 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
   // Currently active account name
   const activeLabel = isImpersonating 
     ? (currentUser?.name || translateText('Sub-Account')) 
-    : (adminAccount.name || translateText('Main Workspace'));
+    : (platform ? translateText('Platform view') : adminAccount.name || translateText('Main Workspace'));
 
   // Switch to a Sub-Account
-  const handleSwitchTo = async (account: Invite) => {
+  const handleSwitchTo = async (account: SwitchableAccount) => {
+    if (switchingId) return;
     if (isImpersonating && currentUser?.id === account.id) {
       setIsOpen(false);
       return;
@@ -238,11 +250,11 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
     setSwitchingId(account.id);
     try {
-      await switchToUser(account.id, account.tenantId, account);
-      localStorage.setItem('activeSubAccountId', account.id);
+      const targetRole = await switchToUser(account.id, account.tenantId, account);
+      if (!platform) localStorage.setItem('activeSubAccountId', account.id);
       showToast.success(translateText(`Switched to ${account.name || account.email}`));
       setIsOpen(false);
-      navigate('/dashboard', { replace: true });
+      navigate(targetRole === 'ADMIN' ? '/admin/dashboard' : '/dashboard', { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Could not switch to sub-account';
       showToast.error(msg);
@@ -253,6 +265,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
 
   // Switch back to Main Admin Account
   const handleSwitchToAdmin = async () => {
+    if (switchingId) return;
     if (!isImpersonating) {
       setIsOpen(false);
       return;
@@ -261,8 +274,8 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
     setSwitchingId('main');
     try {
       const targetPath = await returnToAdmin();
-      localStorage.removeItem('activeSubAccountId');
-      showToast.success(translateText('Switched back to Main Admin Account'));
+      if (!platform) localStorage.removeItem('activeSubAccountId');
+      showToast.success(translateText(platform ? 'Returned to platform view' : 'Switched back to Main Admin Account'));
       setIsOpen(false);
       navigate(targetPath, { replace: true });
     } catch (err: unknown) {
@@ -387,7 +400,8 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder={translateText('Search sub-accounts...')}
+                    aria-label={translateText(platform ? 'Search workspaces' : 'Search sub-accounts')}
+                    placeholder={translateText(platform ? 'Search workspaces…' : 'Search sub-accounts...')}
                     className="w-full ps-9 pe-8 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl placeholder:text-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[var(--ws-accent,#7C3AED)] transition-all"
                   />
                   {searchQuery && (
@@ -426,7 +440,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                       ) : (
                         <ArrowRightLeft size={12} />
                       )}
-                      <span>{translateText('Switch to Admin')}</span>
+                      <span>{translateText(platform ? 'Platform view' : 'Switch to Admin')}</span>
                     </button>
                   </div>
                 </div>
@@ -458,10 +472,10 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
-                          {adminAccount.name}
+                          {platform ? translateText('Platform view') : adminAccount.name}
                         </span>
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[var(--ws-soft,#EDE9FE)] text-[var(--ws-accent,#7C3AED)]">
-                          {translateText('Admin')}
+                          {translateText(platform ? 'Platform' : 'Admin')}
                         </span>
                       </div>
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate block">
@@ -499,7 +513,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                 {/* Sub-Accounts Header */}
                 <div className="px-3 pt-2.5 pb-1 flex items-center justify-between text-[10px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">
                   <div className="flex items-center gap-1.5">
-                    <span>{translateText('Sub-Accounts')}</span>
+                    <span>{translateText(platform ? 'Managed workspaces' : 'Sub-Accounts')}</span>
                     {pinnedCount > 0 && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--ws-accent,#7C3AED)] bg-[var(--ws-soft,#EDE9FE)] px-1.5 py-0.5 rounded-md">
                         <Pin size={9} className="fill-current -rotate-45" />
@@ -515,7 +529,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                 {/* Sub-Accounts List */}
                 {filteredAccounts.length === 0 ? (
                   <div className="p-5 text-center text-xs text-gray-400">
-                    {searchQuery ? translateText('No sub-accounts found matching your search.') : translateText('No sub-accounts registered yet.')}
+                    {sourceMessage ? translateText(sourceMessage) : searchQuery ? translateText('No sub-accounts found matching your search.') : translateText('No sub-accounts registered yet.')}
                   </div>
                 ) : (
                   filteredAccounts.map(account => {
@@ -552,6 +566,7 @@ export function SubAccountSwitcher({ isCollapsed = false, className = '' }: SubA
                               {account.accountType === 'agency' && (
                                 <span className="shrink-0 text-[10px] text-[var(--ws-accent,#7C3AED)]">{agencyLabel}</span>
                               )}
+                              {platform && account.role === 'ADMIN' && <span className="shrink-0 text-[10px] text-[var(--ws-accent,#7C3AED)]">{translateText('Admin')}</span>}
                               {account.status && (
                                 <span 
                                   title={account.status === 'Active' ? translateText('Active') : account.status}

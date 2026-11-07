@@ -196,6 +196,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
       { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'clients/:adminId/sub-users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'subscriptions', element: <Navigate to="/super-admin" replace/> },
       { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },

@@ -46,12 +46,19 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
       const deliveryId = createHash('sha256').update(`${root.path}:${job.id}`).digest('hex');
       if (!product) throw new Error('Product no longer exists.');
       const order = (await root.collection('orders').doc(data.orderId).get()).data() || (await root.collection('transactions').doc(data.orderId).get()).data();
-      if (!order || !/^(paid|completed|succeeded)$/i.test(order.status || '') && data.eventType !== 'order.refunded') throw new Error('Order is no longer paid.');
+      const requestNotice = ['checkoutSubmitted', 'checkoutRejected'].includes(data.kind);
+      const eligible = data.kind === 'checkoutSubmitted' ? order?.status === 'Pending'
+        : data.kind === 'checkoutRejected' ? order?.status === 'Rejected'
+        : /^(paid|completed|succeeded)$/i.test(order?.status || '') || data.eventType === 'order.refunded';
+      if (!order || !eligible) {
+        await job.ref.update({ status: 'skipped' });
+        continue;
+      }
       if (data.kind === 'webhook') {
         if (!product.config.webhookEvents?.includes(data.eventType)) throw new Error('This webhook trigger has been disabled.');
         await deliverWebhook(product.config.webhookUrl, { event: data.eventType, productId: data.productId, orderId: data.orderId, email: data.email, at: data.createdAt }, deliveryId);
       } else {
-        if (!product.config.automations?.[data.kind]) throw new Error('This notification has been disabled.');
+        if (!product.config.automations?.[requestNotice ? 'confirmation' : data.kind]) throw new Error('This notification has been disabled.');
         const integration = (await root.collection('integrations').doc('email').get()).data();
         const booking = data.bookingId ? (await root.collection('bookings').doc(data.bookingId).get()).data() : null;
         if (data.kind === 'calendarInvite' && !booking?.start) throw new Error('A scheduled booking is required for the calendar invitation.');
@@ -62,14 +69,16 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
           const access = await commerceServiceRequest({ data: { action: 'grant', productId: data.productId, email: data.email } }, { db, workspace: async () => ({ root, user: { uid: 'commerce-worker' } }) });
           accessLink = `${origin.value()}/product-access?tenant=${encodeURIComponent(root.id)}&token=${access.token}`;
         }
-        const text = data.kind === 'calendarInvite' ? `Your ${product.name} session is scheduled for ${booking.start}. ${product.config.bookingUrl || ''}` : data.kind === 'fileDelivery' ? `Your ${product.name} files are ready. ${accessLink}` : `Thank you for your purchase of ${product.name}. ${product.config.fulfillment || ''}`;
+        const notice = data.kind === 'checkoutSubmitted' ? ['request received', `We received your request for ${product.name}. It is pending review.`]
+          : data.kind === 'checkoutRejected' ? ['request declined', `Your request for ${product.name} was declined. Contact the seller for more information.`] : null;
+        const text = notice?.[1] ?? (data.kind === 'calendarInvite' ? `Your ${product.name} session is scheduled for ${booking.start}. ${product.config.bookingUrl || ''}` : data.kind === 'fileDelivery' ? `Your ${product.name} files are ready. ${accessLink}` : `Thank you for your purchase of ${product.name}. ${product.config.fulfillment || ''}`);
         const attachments = data.kind === 'calendarInvite' ? [calendarAttachment(booking, product.name, deliveryId)] : [];
         emailEntryId = await db.runTransaction(async tx => {
           const entryId = await chargeEmail(db, tx, root, job.ref.path, attachments);
           tx.update(job.ref, { emailEntryId: entryId });
           return entryId;
         });
-        await deliverMessage({ channel: 'email', deliveryId, subject: `${product.name}: ${data.kind === 'confirmation' ? 'purchase confirmation' : data.kind === 'calendarInvite' ? 'booking confirmation' : 'file delivery'}`, text, attachments }, { email: data.email }, integration || {}, { resendApiKey: resendKey.value() });
+        await deliverMessage({ channel: 'email', deliveryId, subject: `${product.name}: ${notice?.[0] ?? (data.kind === 'confirmation' ? 'purchase confirmation' : data.kind === 'calendarInvite' ? 'booking confirmation' : 'file delivery')}`, text, attachments }, { email: data.email }, integration || {}, { resendApiKey: resendKey.value() });
         providerAccepted = true;
       }
       await job.ref.update({ status: 'delivered', deliveredAt: new Date().toISOString() });

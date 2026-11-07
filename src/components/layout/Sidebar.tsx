@@ -22,6 +22,7 @@ import { logoutFirebase } from '../../backend/session';
 import { showToast } from '../../utils/toast';
 import { returnToAdmin } from '../../backend/impersonation';
 import { SubAccountSwitcher } from './SubAccountSwitcher';
+import { PlatformAccountSwitcher } from './PlatformAccountSwitcher';
 
 export interface SidebarItem {
   name: string;
@@ -226,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
         <nav className="layout-nav" aria-label={translateText(navigationLabel)}>
           {impersonation && (
             <div style={{ padding: '0 4px 10px' }}>
-              <SubAccountSwitcher isCollapsed={collapsed} />
+              {impersonation.role === 'SUPER_ADMIN' ? <PlatformAccountSwitcher isCollapsed={collapsed}/> : <SubAccountSwitcher isCollapsed={collapsed}/>}
             </div>
           )}
           {impersonation && <button

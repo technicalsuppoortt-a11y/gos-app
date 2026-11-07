@@ -7,6 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CommerceSelect } from '../components/ui/CommerceSelect';
 import { WorkspaceSettings } from './commerce/WorkspaceSettings';
 import { CommerceRecords } from './commerce/CommerceRecords';
+import { CheckoutRequests } from './commerce/CheckoutRequests';
 import { DiscountsWorkspace } from './DiscountsWorkspace';
 
 import { useTransactions } from './commerce/transactions';
@@ -21,6 +22,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  ClipboardList,
   CreditCard,
   FileText,
   Grid2X2,
@@ -64,6 +66,7 @@ const productTabs = [
 
   ['Transactions', Receipt],
   ['Orders', FileText],
+  ['Requests', ClipboardList],
   ['Customers', Users],
   ['Payments', CreditCard],
   ['Discounts', SlidersHorizontal],
@@ -94,6 +97,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
     if (rawTab === 'transactions') return 'Transactions';
     if (rawTab === 'payments') return 'Payments';
     if (rawTab === 'orders') return 'Orders';
+    if (rawTab === 'requests') return 'Requests';
     if (rawTab === 'customers') return 'Customers';
     if (rawTab === 'discounts') return 'Discounts';
     if (rawTab === 'settings') return 'Settings';
@@ -441,10 +445,14 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
           </>
         ) : selectedTab === 'Transactions' ? (
           <TransactionsView notify={notify} />
+        ) : selectedTab === 'Requests' ? (
+          <CheckoutRequests/>
         ) : selectedTab === 'Discounts' ? (
           <DiscountsWorkspace notify={notify} />
         ) : selectedTab === 'Settings' ? (
           <WorkspaceSettings notify={notify} />
+        ) : selectedTab === 'Payments' ? (
+          <><PaymentMethodsSummary/><CommerceRecords tab={selectedTab} notify={notify}/></>
         ) : (
           <CommerceRecords tab={selectedTab} notify={notify} />
         )
@@ -563,7 +571,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
   useUILanguage();
   const transactions = useTransactions();
   const [txnSearch, setTxnSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Pending' | 'Refunded'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Pending' | 'Refunded' | 'Rejected'>('All');
 
   const filteredTxns = useMemo(() => {
     return transactions.filter(t => {
@@ -646,7 +654,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
         </label>
 
         <div className="pp-txn-filters">
-          {(['All', 'Completed', 'Pending', 'Refunded'] as const).map(tab => (
+          {(['All', 'Completed', 'Pending', 'Refunded', 'Rejected'] as const).map(tab => (
             <button
               key={tab}
               type="button"

@@ -175,11 +175,11 @@ export const LoginPage: React.FC = () => {
       dispatch(loginSuccess(session));
       const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
       const canOpenRequestedPath = isPlatformTeamRole(session.role)
-        ? requestedPath && canOpenPlatformPage(session.role, requestedPath)
+        ? requestedPath && canOpenPlatformPage(session.role, requestedPath, session.user.allowedTabs)
         : session.role === 'ADMIN'
           ? requestedPath?.startsWith('/admin')
           : requestedPath?.startsWith('/dashboard');
-      navigate(canOpenRequestedPath ? requestedPath! : routeForRole(session.role), { replace: true });
+      navigate(canOpenRequestedPath ? requestedPath! : routeForRole(session.role, session.user.allowedTabs), { replace: true });
     })();
   };
 

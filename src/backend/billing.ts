@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { auth, backendError, callBackend, db } from './firebase';
 import { isDemoAccount } from './demoContext';
-import type { RootState } from '../store';
+import { store, type RootState } from '../store';
+import { isPlatformTeamRole } from '../router/platformAccess';
 import type { AddonItem, BillingCoupon, BillingPlan, BillingRequest, BillingSubscription, BillingWallet, CommunicationWallet, CouponScope, CouponType, LedgerEntry, ProviderBillingSettings, WalletAnalyticsReport, WalletLedgerRow } from '../../functions/billing-engine.js';
 import { DEFAULT_BILLING_SETTINGS, PLATFORM } from '../../functions/billing-engine.js';
 
@@ -30,7 +31,15 @@ function useDoc<T>(path: string | null): Live<T | null> {
     return onSnapshot(doc(db, col, id), snapshot => {
       const value = snapshot.exists() ? snapshot.data() as T : null;
       setState({ data: value ? { ...value, id } as T : null, loading: false, error: '', path });
-    }, error => setState({ data: null, loading: false, error: backendError(error), path }));
+    }, error => {
+      const role = store.getState().auth.role;
+      const isPermDenied = (error as { code?: string })?.code === 'permission-denied';
+      if (isPermDenied && isPlatformTeamRole(role)) {
+        setState({ data: null, loading: false, error: '', path });
+        return;
+      }
+      setState({ data: null, loading: false, error: backendError(error), path });
+    });
   }, [path]);
   return state.path === path ? state : { data: null, loading: true, error: '' };
 }
@@ -43,7 +52,15 @@ function useCollection<T>(name: string, field: string, value: string | null | un
     setState(s => ({ ...s, loading: true, key }));
     return onSnapshot(query(collection(db, name), where(field, '==', value)), snapshot => {
       setState({ data: snapshot.docs.map(item => ({ ...item.data(), id: item.id }) as T), loading: false, error: '', key });
-    }, error => setState({ data: [], loading: false, error: backendError(error), key }));
+    }, error => {
+      const role = store.getState().auth.role;
+      const isPermDenied = (error as { code?: string })?.code === 'permission-denied';
+      if (isPermDenied && isPlatformTeamRole(role)) {
+        setState({ data: [], loading: false, error: '', key });
+        return;
+      }
+      setState({ data: [], loading: false, error: backendError(error), key });
+    });
   }, [name, field, value, key]);
   return state.key === key ? state : { data: [], loading: true, error: '' };
 }

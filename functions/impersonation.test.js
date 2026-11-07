@@ -35,3 +35,10 @@ test('switch token is scoped to selected user and records the administrator in a
   assert.equal(deps.audit[0].actorId, 'admin'); assert.equal(deps.audit[0].userId, 'user');
   assert.equal(result.user.id, 'user'); assert.equal(result.tenant.id, 'workspace-user');
 });
+test('a super administrator can enter an active admin workspace with that account role', async () => {
+  const deps = dependencies();
+  const result = await createImpersonationSession({ uid: 'platform', role: 'SUPER_ADMIN' }, { ...target, role: 'ADMIN' }, 'managed-admin', deps);
+  assert.equal(result.role, 'ADMIN');
+  assert.deepEqual(deps.minted[0], ['managed-admin', { role: 'ADMIN', tenantId: 'workspace-user', impersonatedBy: 'platform' }]);
+  assert.equal(deps.audit[0].actorId, 'platform');
+});

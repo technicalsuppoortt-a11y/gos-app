@@ -23,7 +23,8 @@ export function checkoutTotals(product: Product, billing?: Billing, bump = 0, co
   const c = product.config!; const e = c.experience ?? defaultExperience();
   const selected = billing || c.billing;
   const price = selected === 'One-time' ? e.oneTimeAmount : selected === 'Payment plan' ? e.installmentAmount : e.recurringAmount;
-  const discounts = e.discounts.filter(discount => discount.enabled && (discount.appliesTo === 'All pricing options' || discount.appliesTo === selected));
+  const discountScope = selected === 'One-time' ? 'One-time payment' : selected;
+  const discounts = e.discounts.filter(discount => discount.enabled && ['All pricing options', selected, discountScope].includes(discount.appliesTo));
   const promo = resolvePromoDiscount(product, code, globals, billing);
   if (promo) discounts.push({ ...promo, enabled: true, id: 'coupon', appliesTo: 'All pricing options' });
   let discounted = price;

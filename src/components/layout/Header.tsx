@@ -50,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const ar = useUILanguage().startsWith('ar');
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+
   const agency = currentUser?.accountType === 'agency';
   const { data: subscription } = useSubscription(agency ? null : currentUser?.id ?? null);
   const planLabel = agency ? (ar ? 'الفوترة المشتركة' : 'Shared billing') : translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan');
@@ -258,7 +259,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 font-bold dark:bg-indigo-500/20 dark:text-indigo-400">{initials}</span>
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{currentUser?.name || translateText("Mohamed Joe")}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{translateText("mohamed@example.com")}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{currentUser?.email}</span>
                   </div>
                 </div>
               </div>

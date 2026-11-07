@@ -5,6 +5,10 @@ import { agencyLandingWrites } from './agency-workspace.js';
 import { newCommunicationWallet, PLATFORM } from './billing-engine.js';
 
 const teamRoles = ['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE'];
+const validTabs = ['overview', 'all_admins', 'plans_billing', 'templates', 'usage_revenue', 'meta_wallet', 'team_management', 'system_settings', 'integrations', 'payments', 'logs_monitoring', 'support'];
+const parseAllowedTabs = value => Array.isArray(value)
+  ? [...new Set(value.map(item => String(item).trim()).filter(item => validTabs.includes(item)))]
+  : null;
 const zones = ['Africa/Cairo', 'UTC', 'Europe/London', 'America/New_York', 'Asia/Dubai'];
 const text = (value, max) => typeof value === 'string' && value.trim().length <= max ? value.trim() : '';
 const isEmail = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -19,17 +23,31 @@ export function isSuspended(profile) {
 
 export async function superAdminRequest(request, { actor, db, auth }) {
   const user = await actor(request);
-  if (user.role?.toUpperCase() !== 'SUPER_ADMIN' || !['active', 'activated'].includes(String(user.status ?? 'Active').toLowerCase())) throw new HttpsError('permission-denied', 'Superadmin access is required.');
+  const role = user.role?.toUpperCase();
+  const active = ['active', 'activated'].includes(String(user.status ?? 'Active').toLowerCase());
+  const isSuperAdmin = role === 'SUPER_ADMIN';
+  const userTabs = Array.isArray(user.allowedTabs) ? user.allowedTabs : [];
+  const hasTab = tab => isSuperAdmin || (teamRoles.includes(role) && userTabs.includes(tab));
+  if (!active || (!isSuperAdmin && !teamRoles.includes(role))) {
+    throw new HttpsError('permission-denied', 'Superadmin access is required.');
+  }
   const input = request.data ?? {};
   switch (input.operation) {
-    case 'createAdmin': return provisionAccount(db, auth, user, input, 'ADMIN');
+    case 'createAdmin':
+      if (!hasTab('all_admins')) throw new HttpsError('permission-denied', 'Superadmin access is required.');
+      return provisionAccount(db, auth, user, input, 'ADMIN');
     case 'createMember':
+      if (!hasTab('team_management')) throw new HttpsError('permission-denied', 'Superadmin access is required.');
       if (!teamRoles.includes(input.role)) throw new HttpsError('invalid-argument', 'Choose a team role.');
       return provisionAccount(db, auth, user, input, input.role);
     case 'editAdmin':
     case 'setStatus':
-    case 'deleteAdmin': return changeAccount(db, auth, user, input);
-    case 'saveSettings': return saveSettings(db, user, input);
+    case 'deleteAdmin':
+      if (!hasTab('all_admins') && !hasTab('team_management')) throw new HttpsError('permission-denied', 'Superadmin access is required.');
+      return changeAccount(db, auth, user, input);
+    case 'saveSettings':
+      if (!hasTab('system_settings')) throw new HttpsError('permission-denied', 'Superadmin access is required.');
+      return saveSettings(db, user, input);
     default: throw new HttpsError('invalid-argument', 'Unknown platform operation.');
   }
 }
@@ -39,6 +57,10 @@ async function provisionAccount(db, auth, user, input, role) {
   const { password, requestId } = input;
   if (!name || !isEmail(email) || typeof password !== 'string' || password.length < 8 || password.length > 128 || !validId(requestId)) {
     throw new HttpsError('invalid-argument', 'Enter a name, valid email and a password between 8 and 128 characters.');
+  }
+  const allowedTabs = role !== 'ADMIN' && input.allowedTabs !== undefined ? parseAllowedTabs(input.allowedTabs) : null;
+  if (role !== 'ADMIN' && input.allowedTabs !== undefined && (!allowedTabs || !allowedTabs.length)) {
+    throw new HttpsError('invalid-argument', 'Select at least one permitted sidebar tab.');
   }
   const id = createHash('sha256').update(`${user.uid}:${requestId}`).digest('hex');
   const ref = db.doc(`users/${id}`);
@@ -51,7 +73,7 @@ async function provisionAccount(db, auth, user, input, role) {
     const agencyId = role === 'ADMIN' ? `agency-${id}` : '';
     if (!existing) {
       await createDisabledIdentity(auth, { uid: id, email, password, displayName: name });
-      await auth.setCustomUserClaims(id, { role, ...(role === 'ADMIN' ? { tenantId } : {}) });
+      await auth.setCustomUserClaims(id, { role, ...(role === 'ADMIN' ? { tenantId } : {}), ...(allowedTabs ? { allowedTabs } : {}) });
       if (agencyId) {
         await createDisabledIdentity(auth, { uid: agencyId, displayName: name });
         await auth.setCustomUserClaims(agencyId, { role: 'USER', tenantId: `workspace-${agencyId}`, accountType: 'agency' });
@@ -59,7 +81,7 @@ async function provisionAccount(db, auth, user, input, role) {
       const now = new Date().toISOString();
       const batch = db.batch();
       const base = { name, status: 'Active', created: now, activatedAt: now, createdBy: user.uid };
-      batch.create(ref, { ...base, id, email, role, tenantId, ...(agencyId ? { defaultAgencyUserId: agencyId, supportParentId: user.uid } : { platformTeamOwnerId: user.uid }) });
+      batch.create(ref, { ...base, id, email, role, tenantId, ...(agencyId ? { defaultAgencyUserId: agencyId, supportParentId: user.uid } : { platformTeamOwnerId: user.uid, ...(allowedTabs ? { allowedTabs } : {}) }) });
       if (agencyId) {
         const agencyTenantId = `workspace-${agencyId}`;
         const tenantName = `${name}'s Agency workspace`;
@@ -120,8 +142,9 @@ async function changeAccount(db, auth, user, input) {
   return withAccountLock(db, id, async () => {
     const ref = db.doc(`users/${id}`), target = (await ref.get()).data();
     const admin = ['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(target?.role?.toUpperCase());
+    const teamMember = teamRoles.includes(target?.role);
     const limitedTeamMember = ['PLATFORM_SUPPORT', 'PLATFORM_FINANCE'].includes(target?.role);
-    if (!target || (!admin && !(operation === 'setStatus' && limitedTeamMember))) throw new HttpsError('permission-denied', 'This account cannot be managed here.');
+    if (!target || (!admin && !((operation === 'setStatus' || operation === 'deleteAdmin') && limitedTeamMember) && !(operation === 'editAdmin' && teamMember))) throw new HttpsError('permission-denied', 'This account cannot be managed here.');
     if (target.deletedAt && operation !== 'deleteAdmin') throw new HttpsError('failed-precondition', 'This account was deleted.');
     const linkedId = target.defaultAgencyUserId;
     const linkedRef = validId(linkedId) ? db.doc(`users/${linkedId}`) : null;
@@ -131,12 +154,27 @@ async function changeAccount(db, auth, user, input) {
     if (operation === 'editAdmin') {
       const name = text(input.name, 80), email = text(input.email, 160).toLowerCase();
       if (!name || !isEmail(email)) throw new HttpsError('invalid-argument', 'Enter a name and valid email.');
+      const nextRole = teamMember && input.role ? (teamRoles.includes(input.role) ? input.role : null) : target.role;
+      if (!nextRole) throw new HttpsError('invalid-argument', 'Choose a team role.');
+      const allowedTabs = teamMember && input.allowedTabs !== undefined ? parseAllowedTabs(input.allowedTabs) : undefined;
+      if (allowedTabs !== undefined && (!allowedTabs || !allowedTabs.length)) {
+        throw new HttpsError('invalid-argument', 'Select at least one permitted sidebar tab.');
+      }
       try { await auth.updateUser(id, { displayName: name, ...(email !== target.email ? { email, emailVerified: false } : {}) }); }
       catch (error) {
         if (error.code === 'auth/email-already-exists') throw new HttpsError('already-exists', 'This email already has an account.');
         throw error;
       }
-      batch.update(ref, { name, email });
+      if (teamMember && (nextRole !== target.role || allowedTabs !== undefined)) {
+        const finalTabs = allowedTabs ?? target.allowedTabs;
+        await auth.setCustomUserClaims(id, { role: nextRole, ...(Array.isArray(finalTabs) ? { allowedTabs: finalTabs } : {}) });
+      }
+      batch.update(ref, {
+        name,
+        email,
+        ...(teamMember && nextRole ? { role: nextRole } : {}),
+        ...(allowedTabs ? { allowedTabs } : {}),
+      });
       if (accounts.length > 1) batch.update(linkedRef, { name, contactEmail: email });
     } else {
       const deleting = operation === 'deleteAdmin';

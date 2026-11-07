@@ -5,7 +5,7 @@ export const initialForm: Discount = {id:'',code:'',description:'',type:'Percent
 const storageKey='gos-discounts-v1';
 export function readDiscounts(): Discount[] { try {const saved=JSON.parse(cloudStorage.getItem(storageKey)??'null');return Array.isArray(saved)&&saved.every(d=>typeof d.code==='string'&&typeof d.id==='string')?saved:seed;}catch{return seed;} }
 
-export function writeDiscounts(discounts: Discount[]) { cloudStorage.setItem(storageKey, JSON.stringify(discounts)); }
+export function writeDiscounts(discounts: Discount[]) { return cloudStorage.setItem(storageKey, JSON.stringify(discounts)); }
 export const discountsPath = '/dashboard/products-payments?tab=discounts';
 export const discountNewPath = '/dashboard/products-payments/discounts/new';
 export const discountEditPath = (id: string) => '/dashboard/products-payments/discounts/' + encodeURIComponent(id) + '/edit';

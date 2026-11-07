@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
-const isPublic = p => p?.status === 'Active' && ['Published', 'Unlisted'].includes(p.config?.experience?.visibility || 'Published');
+export const isPublicProduct = p => p?.status === 'Active' && ['Published', 'Unlisted'].includes(p.config?.experience?.visibility || 'Published');
 export function reviewSummary(reviews = []) {
   const valid = (Array.isArray(reviews) ? reviews : []).filter(r => r && Number.isInteger(r.rating) && r.rating >= 1 && r.rating <= 5).map(r => ({ id: r.id || '', rating: r.rating, author: typeof r.author === 'string' ? r.author : '', comment: typeof r.comment === 'string' ? r.comment : '', createdAt: typeof r.createdAt === 'string' ? r.createdAt : '' }));
   const ratingTotal = valid.reduce((sum, r) => sum + r.rating, 0);
@@ -35,7 +35,7 @@ export async function productReviewsRequest(request, { db, workspace, now = Date
   const productRef = db.doc(`tenants/${tenantId}/products/${productId}`);
   if (action === 'product') {
     const product = (await productRef.get()).data();
-    if (!isPublic(product)) throw new HttpsError('not-found', 'This product is not available.');
+    if (!isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
     return publicProduct(product, productId);
   }
   if (action !== 'submit' || !validId(review?.id) || !Number.isInteger(review?.rating) || review.rating < 1 || review.rating > 5 || typeof review.author !== 'string' || !review.author.trim() || review.author.length > 80 || typeof review.comment !== 'string' || !review.comment.trim() || review.comment.length > 1000) throw new HttpsError('invalid-argument', 'Choose 1–5 stars and enter your name and review.');
@@ -48,7 +48,7 @@ export async function productReviewsRequest(request, { db, workspace, now = Date
   const reviewRef = db.doc(`tenants/${tenantId}/products/${productId}/reviews/${review.id}`);
   return db.runTransaction(async tx => {
     const product = (await tx.get(productRef)).data();
-    if (!product || !staff && !isPublic(product)) throw new HttpsError('not-found', 'This product is not available.');
+    if (!product || !staff && !isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
     const current = storedSummary(product);
     const existing = (await tx.get(reviewRef)).data();
     if (existing || current.reviews.some(r => r.id === review.id)) return current; // Retried requests never count twice.

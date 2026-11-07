@@ -20,13 +20,13 @@ export function useTrackingConfig(global = false) {
   useEffect(() => {
     if (!scope) return;
     let active = true, sawSnapshot = false, hasCanonical = false, snapshotError = false, backendRead: Promise<void> | undefined;
-    const load = () => backendRead ??= callBackend<{ config: TrackingConfig; canManage: boolean }>('marketingTrackingConfiguration', { operation: 'get', scope: global ? 'platform' : 'workspace', ...(!global ? { tenantId } : {}) }).then(result => { if (active) { if (sawSnapshot && hasCanonical && !snapshotError) setState(previous => ({ ...previous, canManage: result.canManage, error: '' })); else publish(normalizeTrackingConfig(result.config), result.canManage); } }).catch(error => { if (active) setState(previous => ({ ...previous, scope, loading: false, error: backendError(error) })); });
+    const load = () => backendRead ??= callBackend<{ config: TrackingConfig; canManage: boolean }>('marketingTrackingConfiguration', { operation: 'get', scope: global ? 'platform' : 'workspace', ...(!global ? { tenantId } : {}) }).then(result => { if (active) { if (sawSnapshot && hasCanonical && !snapshotError) setState(previous => ({ ...previous, canManage: result.canManage, error: '' })); else publish(normalizeTrackingConfig(result.config), result.canManage); } }).catch(error => { if (active) setState(previous => ({ ...previous, scope, loading: false, error: /(?:^|\/)permission-denied$/i.test(String((error as { code?: string })?.code ?? '')) ? '' : backendError(error) })); });
     const ref = global ? doc(db, 'settings', 'marketingTracking') : doc(db, 'tenants', tenantId!, 'preferences', 'marketingTracking');
     const unsubscribe = onSnapshot(ref, snapshot => {
       if (!active) return;
       sawSnapshot = true; hasCanonical = snapshot.data() !== undefined; snapshotError = false;
       try { publish(normalizeTrackingConfig(snapshot.data() ?? emptyTracking)); } catch (error) { setState(previous => ({ ...previous, scope, loading: false, error: backendError(error) })); }
-    }, error => { snapshotError = true; if (uid) void load(); else if (active) setState(previous => ({ ...previous, scope, loading: false, error: backendError(error) })); });
+    }, error => { snapshotError = true; if (uid) void load(); else if (active) setState(previous => ({ ...previous, scope, loading: false, error: /(?:^|\/)permission-denied$/i.test(String((error as { code?: string })?.code ?? '')) ? '' : backendError(error) })); });
     if (uid) void load();
     return () => { active = false; unsubscribe(); };
   }, [uid, tenantId, global, scope, publish, attempt]);

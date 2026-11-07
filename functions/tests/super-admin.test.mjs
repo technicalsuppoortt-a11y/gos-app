@@ -115,3 +115,14 @@ test('settings updates validate values and reject stale edits', async () => {
   await assert.rejects(call({ operation: 'saveSettings', settings, revision: 0 }), { code: 'aborted' });
   await assert.rejects(call({ operation: 'saveSettings', settings: { ...settings, trialDays: 0 }, revision: 1 }), { code: 'invalid-argument' });
 });
+
+test('platform team members can execute operations permitted by their allowedTabs', async () => {
+  const { db, auth, profiles } = fixture();
+  const supportWithAllAdmins = { uid: 'support-1', role: 'PLATFORM_SUPPORT', status: 'Active', allowedTabs: ['all_admins', 'overview'] };
+  const callAsSupport = data => superAdminRequest({ data }, { db, auth, actor: async () => supportWithAllAdmins });
+  const { id } = await callAsSupport({ operation: 'createAdmin', ...credentials });
+  assert.equal(profiles.get(`users/${id}`).role, 'ADMIN');
+  await callAsSupport({ operation: 'editAdmin', id, name: 'Edited By Support', email: 'edited-support@example.com' });
+  assert.equal(profiles.get(`users/${id}`).name, 'Edited By Support');
+  await assert.rejects(callAsSupport({ operation: 'createMember', role: 'PLATFORM_FINANCE', name: 'Fin', email: 'fin@example.com', password: 'test-password-123', requestId: 'fin-1' }), { code: 'permission-denied' });
+});

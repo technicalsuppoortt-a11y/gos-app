@@ -31,7 +31,7 @@ export interface ProductExperience {
   accessRule: typeof accessRules[number]; accessDate: string; dripDays: number;
 }
 export interface Student { id: string; name: string; email: string; status: 'Active' | 'Pending' | 'Completed' | 'Suspended'; progress: number; enrolledAt: string; avatar?: string; sample?: boolean }
-export interface CommerceOrder { id: string; customer: string; email: string; at: string; amount: number; currency: CommerceConfig['currency']; status: 'Paid' | 'Pending' | 'Refunded'; productName?: string; sample?: boolean }
+export interface CommerceOrder { id: string; customer: string; email: string; at: string; amount: number; currency: CommerceConfig['currency']; status: 'Paid' | 'Pending' | 'Refunded' | 'Rejected'; productName?: string; sample?: boolean }
 export interface CommerceActivity { id: string; title: string; at: string }
 export interface CommerceConfig {
   crmRouting?: { pipelineId?: string; stageId?: string };

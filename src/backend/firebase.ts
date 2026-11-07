@@ -23,7 +23,8 @@ export const primaryDb = getFirestore(firebaseApp);
 export let auth = primaryAuth;
 export let db = primaryDb;
 export let storage = getStorage(firebaseApp);
-export let functions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+export const primaryFunctions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+export let functions = primaryFunctions;
 export function setBackendContext(app = firebaseApp) {
   auth = getAuth(app);
   db = getFirestore(app);
@@ -84,9 +85,9 @@ export async function sendOfficialPasswordResetEmail(email: string, continueUrl?
   }
 }
 
-export async function callBackend<T>(name: string, data: unknown, timeout?: number): Promise<T> {
+export async function callBackend<T>(name: string, data: unknown, timeout?: number, transport = functions): Promise<T> {
   try {
-    return (await httpsCallable<unknown, T>(functions, name, timeout === undefined ? undefined : { timeout })(data)).data;
+    return (await httpsCallable<unknown, T>(transport, name, timeout === undefined ? undefined : { timeout })(data)).data;
   } catch (error) {
     const { code, details } = (error ?? {}) as { code?: string; details?: { creditBucket?: 'ai' | 'email'; shared?: boolean; accountRole?: string } };
     if (code === 'functions/resource-exhausted' && details?.creditBucket && !details.shared) {

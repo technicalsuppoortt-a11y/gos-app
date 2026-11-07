@@ -1,250 +1,250 @@
-import { PolicyPreviewLink } from './PolicyPreview';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { Check, Copy, CreditCard, Landmark, Loader2, LockKeyhole, Tag, UploadCloud } from 'lucide-react';
 import { useCloudState } from '../../backend/workspace';
-import type { Discount } from '../discounts-data';
-import { checkoutFieldList } from './model';
-import './dynamic-checkout.css';
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import { useState, useId } from 'react';
-import { useProducts } from './repository';
-import { useNavigate } from 'react-router-dom';
-import { Check, CreditCard, LockKeyhole, ShieldCheck, Loader2 } from 'lucide-react';
-import type { Billing, Product } from './model';
-import { defaultExperience, productKind } from './model';
-import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
-import { showToast } from '../../utils/toast';
-import { addPurchasedProduct } from './purchases';
+import { backendError, callBackend } from '../../backend/firebase';
 import { checkoutMethods, usePaymentMethods } from '../../backend/paymentMethods';
 import { track } from '../../backend/marketingTracking';
+import { translateText as t, useUILanguage } from '../../i18n/display';
+import { showToast } from '../../utils/toast';
+import type { Discount } from '../discounts-data';
+import { PolicyPreviewLink } from './PolicyPreview';
+import { checkoutFieldList, defaultExperience, productKind, type Billing, type CheckoutField, type Product } from './model';
+import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
+import { useProducts } from './repository';
+import './dynamic-checkout.css';
+import './product-checkout.css';
 
-export function CheckoutScreen({ product, billing }: { product: Product; billing?: Billing }) {
-  useUILanguage();
-  const navigate = useNavigate();
-  const promoId = useId(), promoErrorId = useId();
-  const c = product.config!;
-  const e = c.experience ?? defaultExperience();
-  const payments = usePaymentMethods();
-  const availableMethods = checkoutMethods(payments.methods, e.paymentMethods);
-  const kind = productKind(product.type);
-  const products = useProducts();
-  const [acceptedTerms, setAcceptedTerms] = useState(false), [bumpSelected, setBumpSelected] = useState(false);
-  const [couponCode, setCouponCode] = useState(''), [appliedCode, setAppliedCode] = useState(''), [couponError, setCouponError] = useState('');
-  const [globalDiscounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
-  const validApplied = appliedCode && resolvePromoDiscount(product, appliedCode, globalDiscounts, billing) ? appliedCode : '';
-  const applyCoupon = () => { if (resolvePromoDiscount(product, couponCode, globalDiscounts, billing)) { setAppliedCode(couponCode.trim()); setCouponError(''); } else { setAppliedCode(''); setCouponError('Invalid discount code'); } };
-  const bump = e.checkout.bumpEnabled && products.find(item => item.id === e.checkout.bumpProductId && item.status === 'Active' && item.config?.currency === c.currency && item.config?.billing === 'One-time');
-  const totals = checkoutTotals(product, billing, bumpSelected && bump ? bump.config?.amount : 0, validApplied, globalDiscounts);
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedMethod, setMethod] = useState<string>(e.paymentMethods[0] ?? '');
-  const method = availableMethods.includes(selectedMethod) ? selectedMethod : availableMethods[0] ?? '';
-  const manualMethod = payments.methods.find(m => m.type === 'manual' && m.enabled && m.name === method);
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [payment, setPayment] = useState({ number: '', expiry: '', cvc: '', paypal: '' });
-  const [walletReady, setWalletReady] = useState(false);
-  const cardMethod = method === 'Visa' || method === 'Mastercard';
-  const money = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: c.currency }).format(value);
+type Totals = ReturnType<typeof checkoutTotals> & { currency: string };
+type Method = { id: string; name: string; account?: string; instructions?: string };
+type Quote = {
+  revision: string;
+  totals: Totals;
+  methods: Method[];
+  bump: { id: string; name: string; amount: number } | null;
+  fields: CheckoutField[];
+  requiresTerms: boolean;
+  guestAllowed: boolean;
+  terms: { termsUrl?: string; termsMode?: 'default' | 'custom' | null; privacyUrl?: string; privacyMode?: 'default' | 'custom' | null };
+  installments: number;
+  frequency: string;
+  trialDays: number;
+};
+type Preview = { methods: Method[]; loading: boolean; error: string; retry: () => void; bump: Quote['bump']; discounts: Discount[]; billing?: Billing };
+const allowedFiles = ['image/png', 'image/jpeg', 'application/pdf'];
+const receiptLimit = 15 * 1024 * 1024;
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (isSubmitting) return;
-    track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: c.currency }, true);
-    showToast.info(manualMethod ? 'Transfer instructions are shown below. Payment remains pending until verified by the payment backend.' : 'Connect a verified payment provider before accepting payments.');
+function encodeReceipt(file: File): Promise<{ name: string; type: string; data: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('The receipt could not be read. Choose the file again.'));
+    reader.onload = () => resolve({ name: file.name, type: file.type, data: String(reader.result).split(',')[1] });
+    reader.readAsDataURL(file);
+  });
+}
+
+export function CheckoutScreen({ product, billing, tenantId }: { product: Product; billing?: Billing; tenantId?: string }) {
+  return tenantId
+    ? <CheckoutForm key={tenantId + '/' + product.id} product={product} tenantId={tenantId}/>
+    : <PreviewCheckout product={product} billing={billing}/>;
+}
+
+function PreviewCheckout({ product, billing }: { product: Product; billing?: Billing }) {
+  const config = product.config!, experience = config.experience ?? defaultExperience();
+  const payments = usePaymentMethods(), products = useProducts();
+  const [discounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
+  const addOn = experience.checkout.bumpEnabled && products.find(item => item.id === experience.checkout.bumpProductId && item.id !== product.id && item.status === 'Active' && item.config?.currency === config.currency && item.config.billing === 'One-time');
+  const bump = addOn ? { id: addOn.id, name: addOn.name, amount: addOn.config!.amount } : null;
+  const methods = checkoutMethods(payments.methods, experience.paymentMethods).map(name => {
+    const method = payments.methods.find(item => item.enabled && item.type === 'manual' && item.name === name);
+    return { id: name, name, account: method?.account, instructions: method?.instructions };
+  });
+  return <CheckoutForm key={product.id} product={product} preview={{ methods, loading: payments.loading, error: payments.error, retry: payments.refresh, bump, discounts, billing }}/>;
+}
+
+function CheckoutForm({ product, preview, tenantId }: { product: Product; preview?: Preview; tenantId?: string }) {
+  const locale = useUILanguage();
+  const config = product.config!, experience = config.experience ?? defaultExperience();
+  const promoId = useId(), paymentGroup = useId(), title = useId();
+  const submission = useRef('');
+  const [name, setName] = useState(''), [email, setEmail] = useState(''), [phone, setPhone] = useState('');
+  const [methodId, setMethod] = useState(''), [note, setNote] = useState('');
+  const [receipt, setReceipt] = useState<File>(), [receiptUrl, setReceiptUrl] = useState('');
+  const [receiptError, setReceiptError] = useState('');
+  const [bumpSelected, setBump] = useState(false), [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [coupon, setCoupon] = useState(''), [discountCode, setDiscountCode] = useState(''), [promoError, setPromoError] = useState('');
+  const [remote, setRemote] = useState<Quote>(), [loading, setLoading] = useState(!!tenantId);
+  const [quoteError, setQuoteError] = useState(''), [submitError, setSubmitError] = useState('');
+  const [reload, setReload] = useState(0), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState('');
+  const [discountEmail, setDiscountEmail] = useState('');
+
+  useEffect(() => {
+    if (!tenantId) return;
+    let active = true;
+    setLoading(true);
+    setQuoteError('');
+    callBackend<Quote>('productCheckout', { action: 'quote', tenantId, productId: product.id, discountCode, email: discountEmail, bump: bumpSelected })
+      .then(quote => { if (active) setRemote(quote); })
+      .catch(error => {
+        if (!active) return;
+        if (discountCode) {
+          setPromoError(backendError(error));
+          setDiscountCode('');
+        } else {
+          setQuoteError(backendError(error));
+        }
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [tenantId, product.id, discountCode, discountEmail, bumpSelected, reload]);
+
+  useEffect(() => {
+    if (!receipt) { setReceiptUrl(''); return; }
+    const url = URL.createObjectURL(receipt);
+    setReceiptUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [receipt]);
+
+  const previewQuote: Omit<Quote, 'revision'> | undefined = preview && {
+    totals: { ...checkoutTotals(product, preview.billing, bumpSelected ? preview.bump?.amount : 0, discountCode, preview.discounts), currency: config.currency },
+    methods: preview.methods, bump: preview.bump, fields: checkoutFieldList(config),
+    requiresTerms: !!experience.checkout.requireTerms, guestAllowed: true, terms: experience.checkout,
+    installments: config.installments, frequency: preview.billing === 'Payment plan' ? experience.paymentInterval : config.frequency, trialDays: config.trialDays,
   };
+  const quote = previewQuote ?? remote, totals = quote?.totals;
+  const methods = quote?.methods ?? [];
+  const method = methods.find(option => option.id === methodId) ?? methods[0];
+  const paymentDue = (totals?.dueToday ?? 0) > 0;
+  const needsReceipt = !!method?.account && (paymentDue || !!preview);
+  const money = (value: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: totals?.currency || config.currency }).format(value);
+  const ready = !!quote && !loading && !quoteError && !preview?.loading && !preview?.error && !busy;
+  const orderAction = productKind(product.type) === 'course' ? 'Complete Enrollment' : productKind(product.type) === 'service' ? 'Complete Booking' : 'Complete Purchase';
 
-  return (
-    <div className="cp-checkout">
-      <main>
-        <div className="cp-eyebrow">
-          <LockKeyhole size={14}/>{translateText("CHECKOUT PREVIEW")}
-        </div>
-        <h1>{product.name}</h1>
-        <p>{translateText("Checkout preview · connect a payment provider to accept payments.")}</p>
+  function applyCoupon() {
+    const code = coupon.trim();
+    if (!code) return;
+    if (preview && !resolvePromoDiscount(product, code, preview.discounts, preview.billing)) {
+      setPromoError('Invalid discount code');
+      setDiscountCode('');
+      return;
+    }
+    setPromoError('');
+    if (tenantId) setDiscountEmail(email.trim());
+    setDiscountCode(code);
+  }
 
-        <form onSubmit={handleSubmit}>
-          <fieldset>
-            <legend>{translateText("1. Your information")}</legend>
-            <label>
-              {translateText("Email address")}
-              <input
-                type="email"
-                placeholder={translateText("you@example.com")}
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            </label>
-            {localizeNode(e.checkout.collectInfo && (
-              <label>
-                {translateText("Full name")}
-                <input
-                  autoComplete="name"
-                  placeholder={translateText("Your name")}
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  required
-                />
+  function chooseReceipt(file?: File) {
+    setReceiptError('');
+    if (file && (!allowedFiles.includes(file.type) || file.size < 1 || file.size > receiptLimit)) {
+      setReceipt(undefined);
+      setReceiptError('Upload a PNG, JPG or PDF receipt up to 15 MB.');
+      return;
+    }
+    setReceipt(file);
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!ready || !totals) return;
+    if (preview) { showToast.info('Checkout preview. No payment was collected.'); return; }
+    if (!tenantId || !remote) return;
+    if (paymentDue && !receipt) { setReceiptError('Upload a receipt to submit your transfer.'); return; }
+    const data = new FormData(event.currentTarget);
+    setBusy(true);
+    setSubmitError('');
+    try {
+      submission.current ||= crypto.randomUUID();
+      const result = await callBackend<{ id: string }>('productCheckout', {
+        action: 'submit', tenantId, productId: product.id, submissionId: submission.current, revision: remote.revision,
+        methodId: method?.id, discountCode, bump: bumpSelected, name, email, phone, note, acceptedTerms,
+        fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
+        ...(receipt && paymentDue ? { receipt: await encodeReceipt(receipt) } : {}),
+      }, 90000);
+      setConfirmation(result.id);
+      setReceipt(undefined);
+      track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
+    } catch (error) {
+      setSubmitError(backendError(error));
+      if (['functions/aborted', 'functions/failed-precondition'].includes((error as { code?: string })?.code ?? '')) {
+        setReceipt(undefined);
+        setReload(value => value + 1);
+      }
+    } finally { setBusy(false); }
+  }
+
+  return <section className="cp-checkout product-checkout" aria-labelledby={title}>
+    <header className="pco-header"><div className="pco-icon"><LockKeyhole size={18}/></div><div>
+      <h1 id={title}>{t(preview ? 'Checkout Preview' : 'Secure Checkout')}</h1>
+      <p>{preview ? t('Preview the customer experience. No payments are collected.') : product.name}</p>
+    </div></header>
+    {confirmation ? <div className="pco-confirmation" role="status"><Check size={26}/><h2>{t('Request submitted')}</h2><p>{t('Your request is pending review.')}</p><small>{t('Reference')} <b>{confirmation.slice(0, 12).toUpperCase()}</b></small></div> :
+      <form onSubmit={submit}>
+        <fieldset disabled={busy} className="pco-columns">
+          <div className="pco-column">
+            <section className="pco-card pco-summary">
+              <div className="pco-product">{product.image && <img src={product.image} alt=""/>}<div><small>{t('ORDER SUMMARY')}</small><h2>{product.name}</h2></div></div>
+              {totals ? <dl>
+                <div><dt>{t(totals.selected === 'One-time' ? 'Product price' : 'First payment')}</dt><dd>{money(totals.price)}</dd></div>
+                {bumpSelected && quote?.bump && <div><dt>{quote.bump.name}</dt><dd>{money(quote.bump.amount)}</dd></div>}
+                {totals.discount > 0 && <div><dt>{t('Discount')}</dt><dd className="pco-accent">−{money(totals.discount)}</dd></div>}
+                <div><dt>{t(totals.included ? 'Tax included' : 'Tax')}</dt><dd>{money(totals.tax)}</dd></div>
+                <div className="pco-total"><dt>{t('Due today')}</dt><dd>{money(totals.dueToday)}</dd></div>
+              </dl> : <p role="status">{loading && t('Loading checkout…')}</p>}
+              {quote && totals?.selected === 'Payment plan' && <small>{quote.installments} × {money(totals.total)} · {t(quote.frequency)}</small>}
+              {quote && totals?.selected === 'Subscription' && <small>{money(totals.total)} · {t(quote.frequency)}{quote.trialDays > 0 && ` · ${quote.trialDays} ${t('trial days')}`}</small>}
+              {!preview && totals && totals.selected !== 'One-time' && <small>{t('Future payments are arranged separately with the seller.')}</small>}
+            </section>
+            {quote?.bump && <label className="pco-card pco-check"><input type="checkbox" checked={bumpSelected} onChange={event => setBump(event.target.checked)}/><span><b>{quote.bump.name}</b><small>{t('Optional add-on')}</small></span><b>{money(quote.bump.amount)}</b></label>}
+            <section className="pco-card cx-promo">
+              <label htmlFor={promoId}><Tag size={15}/>{t('Discount code')}</label>
+              <div className="pco-inline"><input id={promoId} value={coupon} maxLength={100} placeholder={t('Enter coupon or promo code')} aria-invalid={!!promoError} onChange={event => { setCoupon(event.target.value); setDiscountCode(''); setPromoError(''); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); applyCoupon(); } }}/><button type="button" className="pco-secondary" disabled={!coupon.trim() || loading} onClick={applyCoupon}>{t('Apply')}</button></div>
+              {promoError && <p className="pco-error" role="alert">{t(promoError)}</p>}
+              {discountCode && !loading && !promoError && <small role="status">{t('Discount applied')} · {discountCode}</small>}
+            </section>
+            {(needsReceipt || receiptError) && <section className="pco-receipt">
+              <div className="pco-label"><b>{t('Live Receipt Preview')}</b><span>{t(preview ? 'Preview' : 'Required')}</span></div>
+              <label className="pco-upload" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (!busy) chooseReceipt(event.dataTransfer.files[0]); }}>
+                <input type="file" accept={allowedFiles.join(',')} onChange={event => { chooseReceipt(event.target.files?.[0]); event.currentTarget.value = ''; }}/>
+                <UploadCloud size={24}/><b>{receipt?.name || t('Click or drag and drop receipt here')}</b><small>{t('PNG, JPG or PDF · 15 MB max')}</small>
               </label>
-            ))}
-            {localizeNode(e.checkout.requirePhone && (
-              <label>
-                {translateText("Phone number")}
-                <input type="tel" placeholder={translateText("+1 555 012 3456")} required/>
-              </label>
-            ))}
-            {localizeNode(checkoutFieldList(c).map(field => (
-              <label key={field.id}>
-                {localizeNode(field.label)}{field.required && " *"}
-                <input name={field.id} required={field.required} placeholder={translateText(field.label)}/>
-              </label>
-            )))}
-          </fieldset>
-
-          <fieldset>
-            <legend>{translateText("2. Payment details")}</legend>
-            <div className="cp-payment-methods" role="group" aria-label={translateText("Payment method")}>
-              {localizeNode(availableMethods.map(option => (
-                <button
-                  type="button"
-                  aria-pressed={method === option}
-                  className={method === option ? 'selected' : ''}
-                  key={option}
-                  onClick={() => { setMethod(option); setWalletReady(false); setSubmitted(false); }}
-                >
-                  {localizeNode(option)}
-                  {localizeNode(method === option && <Check size={12}/>)}
-                </button>
-              )))}
-            </div>
-
-            {payments.error && <p role="alert">{translateText('Payment methods could not be loaded. Please try again.')}</p>}
-            {localizeNode(!availableMethods.length ? (
-              <p role="status">{translateText(payments.loading ? 'Loading payment methods…' : 'No payment methods enabled. Contact your administrator to configure payment methods.')}</p>
-            ) : manualMethod ? <div className="cp-wallet-preview"><b>{manualMethod.name}</b><p>{manualMethod.account}</p><p>{manualMethod.instructions}</p><small>{translateText('Manual transfers require verification before fulfillment. This is a checkout preview.')}</small></div> : cardMethod ? (
-              <>
-                <label>
-                  {translateText("Card number")}
-                  <div className="cp-card-field">
-                    <CreditCard size={17}/>
-                    <input
-                      placeholder={translateText("4242 4242 4242 4242")}
-                      aria-label={translateText("Mock card number")}
-                      inputMode="numeric"
-                      maxLength={23}
-                      value={payment.number}
-                      onChange={event => { setPayment({ ...payment, number: event.target.value.replace(/[^0-9 ]/g, '') }); setSubmitted(false); }}
-                    />
-                  </div>
-                </label>
-                <div className="cp-two-fields">
-                  <label>
-                    {translateText("Expiry date")}
-                    <input
-                      placeholder={translateText("MM / YY")}
-                      inputMode="numeric"
-                      maxLength={7}
-                      value={payment.expiry}
-                      onChange={event => setPayment({ ...payment, expiry: event.target.value })}
-                    />
-                  </label>
-                  <label>
-                    {translateText("Security code")}
-                    <input
-                      placeholder={translateText("CVC")}
-                      inputMode="numeric"
-                      maxLength={4}
-                      value={payment.cvc}
-                      onChange={event => setPayment({ ...payment, cvc: event.target.value.replace(/\D/g, '') })}
-                    />
-                  </label>
-                </div>
-              </>
-            ) : method === 'PayPal' ? (
-              <label>
-                {translateText("PayPal email")}
-                <input
-                  type="email"
-                  placeholder={translateText("paypal@example.com")}
-                  value={payment.paypal}
-                  onChange={event => setPayment({ ...payment, paypal: event.target.value })}
-                />
-              </label>
-            ) : (
-              <div className="cp-wallet-preview">
-                <p>{translateText("Preview the ")}{localizeNode(method)}{translateText(" payment experience.")}</p>
-                <button type="button" className="cw-button" aria-pressed={walletReady} onClick={() => setWalletReady(current => !current)}>
-                  {localizeNode(walletReady ? 'Demo wallet selected ✓' : 'Select demo wallet')}
-                </button>
-              </div>
-            ))}
-            <small>{translateText("Checkout preview. Payments require a connected payment provider.")}</small>
-          </fieldset>
-          {bump && <label className="cx-bump"><input type="checkbox" checked={bumpSelected} onChange={event => setBumpSelected(event.target.checked)}/><span><b>{bump.name}</b><small>{translateText("Optional add-on")} · {money(bump.config!.amount)}</small></span></label>}
-          <div className="cx-promo"><label htmlFor={promoId}>{translateText('Discount code')}</label><div className="cx-add-row"><input id={promoId} value={couponCode} aria-invalid={!!couponError} aria-describedby={couponError ? promoErrorId : undefined} onChange={event => { setCouponCode(event.target.value); setAppliedCode(''); setCouponError(''); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); applyCoupon(); } }}/><button type="button" className="cw-button" disabled={!couponCode.trim()} onClick={applyCoupon}>{translateText('Apply')}</button></div>{couponError && <p id={promoErrorId} className="cx-inline-error" role="alert">{translateText(couponError)}</p>}{validApplied && <p className="cx-promo-success" role="status">{translateText('Discount applied')} · {validApplied}</p>}</div>
-          {e.checkout.requireTerms && <label className="cx-terms"><input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)}/>{translateText('I agree to the terms and privacy policy')}<PolicyPreviewLink kind="terms" custom={e.checkout.termsMode === 'custom' || !e.checkout.termsMode && !!e.checkout.termsUrl} url={e.checkout.termsUrl} checkout/><PolicyPreviewLink kind="privacy" custom={e.checkout.privacyMode === 'custom' || !e.checkout.privacyMode && !!e.checkout.privacyUrl} url={e.checkout.privacyUrl} checkout/></label>}
-
-          <button
-            className="cp-primary"
-            type="submit"
-            disabled={!availableMethods.length || payments.loading || !!payments.error || isSubmitting || !!e.checkout.requireTerms && !acceptedTerms}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                {translateText("Processing & Syncing...")}
-              </>
-            ) : (
-              <>
-                {translateText("Complete ")}{localizeNode(kind === 'course' ? 'Enrollment' : kind === 'service' ? 'Booking' : 'Purchase')} · {localizeNode(money(totals.dueToday))}
-              </>
-            )}
+              {receipt && receiptUrl && <div className="pco-attachment">{receipt.type.startsWith('image/') && <img src={receiptUrl} alt={t('Receipt preview')}/>}<a href={receiptUrl} target="_blank" rel="noopener noreferrer">{t('Open receipt')}</a><button type="button" onClick={() => chooseReceipt()}>{t('Remove')}</button></div>}
+              {receiptError && <p className="pco-error" role="alert">{t(receiptError)}</p>}
+            </section>}
+            <label className="pco-field">{t('Order note (optional)')}<textarea rows={2} maxLength={1000} value={note} onChange={event => setNote(event.target.value)}/></label>
+          </div>
+          <div className="pco-column">
+            <section className="pco-card pco-customer">
+              <h2>{t('Your information')}</h2>
+              {quote?.guestAllowed === false && <p>{t('Use your signed-in email for this checkout.')} <a href="/auth/login" target="_blank" rel="noopener noreferrer">{t('Sign in')}</a></p>}
+              <label className="pco-field">{t('Email address')}<input type="email" autoComplete="email" placeholder="you@example.com" maxLength={254} value={email} required onChange={event => setEmail(event.target.value)} onBlur={() => { if (tenantId && discountCode) setDiscountEmail(email.trim()); }}/></label>
+              {(!preview || experience.checkout.collectInfo) && <label className="pco-field">{t('Full name')}<input autoComplete="name" maxLength={150} required value={name} onChange={event => setName(event.target.value)}/></label>}
+              {(!preview || experience.checkout.requirePhone) && <label className="pco-field">{t('Phone number')}<input type="tel" autoComplete="tel" maxLength={50} required value={phone} onChange={event => setPhone(event.target.value)}/></label>}
+              {quote?.fields.map(field => <label key={field.id} className="pco-field">{field.label}{field.required && ' *'}<input name={'custom-' + field.id} required={field.required} maxLength={500}/></label>)}
+            </section>
+            {(paymentDue || preview) && <section className="pco-methods" aria-label={t('Choose Payment Method')}>
+              <h2>{t('Choose Payment Method')}</h2>
+              {methods.map(option => <label key={option.id} className={method?.id === option.id ? 'selected' : undefined}>
+                <input type="radio" name={paymentGroup} checked={method?.id === option.id} onChange={() => setMethod(option.id)}/>
+                <span className="pco-icon">{option.account ? <Landmark size={16}/> : <CreditCard size={16}/>}</span>
+                <span><b>{t(option.name)}</b>{option.account && <small>{option.account}</small>}</span>
+                <small className="pco-badge">{t(option.account ? 'Manual' : 'Gateway')}</small>
+              </label>)}
+              {!methods.length && !loading && !preview?.loading && <p role="status">{t('No payment methods are available for this product.')}</p>}
+            </section>}
+            {method?.account && (paymentDue || preview) && <section className="pco-card pco-transfer"><h2><Landmark size={16}/>{t('Transfer Instructions & Account Details')}</h2>
+              <div className="pco-inline"><div><small>{t('Transfer account')}</small><b>{method.account}</b></div><button className="pco-secondary" type="button" onClick={() => void navigator.clipboard.writeText(method.account!).then(() => showToast.success('Copied'), () => showToast.error('Could not copy.'))}><Copy size={13}/>{t('Copy')}</button></div>
+              <p>{method.instructions || t('Transfer the amount shown and upload your receipt for review.')}</p>
+            </section>}
+            {quote?.requiresTerms && <div className="cx-terms"><label><input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)}/>{t('I agree to the terms and privacy policy')}</label> <PolicyPreviewLink kind="terms" custom={quote.terms.termsMode === 'custom' || !quote.terms.termsMode && !!quote.terms.termsUrl} url={quote.terms.termsUrl} checkout/> <PolicyPreviewLink kind="privacy" custom={quote.terms.privacyMode === 'custom' || !quote.terms.privacyMode && !!quote.terms.privacyUrl} url={quote.terms.privacyUrl} checkout/></div>}
+          </div>
+        </fieldset>
+        <footer className="pco-footer">
+          {(quoteError || preview?.error || submitError) && <p className="pco-error" role="alert">{t(quoteError || preview?.error || submitError)} {(quoteError || preview?.error) && <button type="button" onClick={() => preview ? preview.retry() : setReload(value => value + 1)}>{t('Try again')}</button>}</p>}
+          <span><LockKeyhole size={14}/>{t(preview ? 'Checkout preview' : 'Protected checkout')}</span>
+          <button className="pco-primary" type="submit" disabled={!ready || (paymentDue || preview) && !method || !!quote?.requiresTerms && !acceptedTerms}>
+            {busy ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>}
+            {t(busy ? 'Submitting…' : preview ? orderAction : paymentDue ? 'Submit Transfer & Receipt' : 'Submit request')}{totals && !busy && ` · ${money(totals.dueToday)}`}
           </button>
-
-          {localizeNode(submitted && !isSubmitting && (
-            <p className="cp-success" role="status">
-              <Check size={16}/>{translateText("Payment successful! Redirecting to products & payments...")}
-            </p>
-          ))}
-        </form>
-
-        <div className="cp-guarantees">
-          <span><ShieldCheck size={17}/>{translateText("Protected checkout")}</span>
-          <span><LockKeyhole size={17}/>{translateText("Private customer details")}</span>
-          <span><Check size={17}/>{translateText("Clear pricing")}</span>
-        </div>
-      </main>
-
-      <aside>
-        <div className="cp-order-summary">
-          {product.image && <img src={product.image} alt={translateText(product.name)}/>}
-          <span className="cp-eyebrow">{translateText("ORDER SUMMARY")}</span>
-          <h2>{product.name}</h2>
-          <p>{localizeNode(e.shortDescription || product.description.slice(0, 160))}</p>
-          <div>
-            <span>{localizeNode(totals.selected === 'One-time' ? 'Product price' : 'First payment')}</span>
-            <b>{localizeNode(money(totals.price))}</b>
-          </div>
-          {bumpSelected && bump && <div><span>{bump.name}</span><b>{money(bump.config!.amount)}</b></div>}
-          {totals.discount > 0 && <div><span>{translateText('Discount')}</span><b>−{money(totals.discount)}</b></div>}
-          <div><span>{translateText('Subtotal')}</span><b>{money(totals.subtotal)}</b></div>
-          <div>
-            <span>{translateText("Tax (")}{localizeNode(c.taxRate)}%{localizeNode(totals.included ? ', included' : '')})</span>
-            <b>{localizeNode(money(totals.tax))}</b>
-          </div>
-          <div className="cp-total">
-            <span>{translateText("Due today")}</span>
-            <b>{localizeNode(money(totals.dueToday))}</b>
-          </div>
-          {localizeNode(totals.selected === 'Payment plan' && (
-            <p>{localizeNode(c.installments)}{translateText(" payments of ")}{localizeNode(money(totals.total))} · {localizeNode(e.paymentInterval.toLowerCase())}{translateText(" · Total including tax ")}{localizeNode(money(totals.total * c.installments + totals.bumpTotal))}</p>
-          ))}
-          {localizeNode(totals.selected === 'Subscription' && (
-            <p>{translateText("Renews ")}{localizeNode(c.frequency.toLowerCase())}{translateText(" at ")}{localizeNode(money(totals.total))}{localizeNode(c.trialDays ? ` · ${c.trialDays}-day trial configured` : '')}</p>
-          ))}
-          <small>{localizeNode(kind === 'service' ? `${c.duration} minutes · ${e.serviceMode}` : `${c.access} · ${e.accessRule}`)}</small>
-        </div>
-      </aside>
-    </div>
-  );
+        </footer>
+      </form>}
+  </section>;
 }

@@ -116,7 +116,7 @@ export async function endActivation() {
 }
 
 const resolvedProfileSignatures = new WeakMap<User, string>();
-const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.accountType]);
+const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.accountType, value?.allowedTabs]);
 const suspendedStatus = (value: unknown) => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(value).toLowerCase());
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
@@ -153,7 +153,24 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     }
   }
 
-  const rawDataRole = typeof data?.role === 'string' ? data.role.toUpperCase() : '';
+  let rawDataRole = typeof data?.role === 'string' ? data.role.toUpperCase() : '';
+  if (isPlatformTeamRole(rawDataRole) || isPlatformTeamRole(claimRole)) {
+    try {
+      const teamPermsSnap = await getDoc(doc(db, 'settings', 'teamMemberPermissions'));
+      const custom = teamPermsSnap.data()?.members?.[user.uid];
+      if (custom && typeof custom === 'object') {
+        if (custom.deleted) throw new SessionError('DEACTIVATED');
+        data = {
+          ...data,
+          ...(typeof custom.name === 'string' && custom.name.trim() ? { name: custom.name.trim() } : {}),
+          ...(typeof custom.email === 'string' && custom.email.trim() ? { email: custom.email.trim() } : {}),
+          ...(isPlatformTeamRole(custom.role) ? { role: custom.role } : {}),
+          ...(Array.isArray(custom.allowedTabs) ? { allowedTabs: custom.allowedTabs } : {}),
+        };
+        if (typeof data?.role === 'string') rawDataRole = data.role.toUpperCase();
+      }
+    } catch (err) { if (err instanceof SessionError) throw err; }
+  }
   const normalizedDataRole: Role = isPlatformTeamRole(rawDataRole)
     ? rawDataRole
     : ['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawDataRole)
@@ -186,7 +203,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
-    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}), ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}) },
+    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}), ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}), ...(Array.isArray(data?.allowedTabs) ? { allowedTabs: data.allowedTabs.filter((item: unknown): item is string => typeof item === 'string') } : Array.isArray(tokenResult.claims.allowedTabs) ? { allowedTabs: (tokenResult.claims.allowedTabs as unknown[]).filter((item): item is string => typeof item === 'string') } : {}) },
     role,
     tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
