@@ -2864,6 +2864,35 @@ html[data-gp-brand="true"] .aiu-kpi-meta strong:not([data-form-theme]):not([data
 html[data-gp-brand="true"] .aiu-kpi-meta small:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
   color: var(--adm-muted, var(--gp-muted-text, #64748b)) !important;
 }
+html[data-gp-brand="true"] .aiu-nav-tabs:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  background: var(--adm-soft, var(--gp-background, #f1f5f9)) !important;
+  border: 1px solid var(--adm-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+html[data-gp-brand="true"] .aiu-nav-tab:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  color: var(--adm-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+html[data-gp-brand="true"] .aiu-nav-tab:hover:not(.is-active):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  color: var(--adm-ink, var(--gp-text, #0f172a)) !important;
+  background: color-mix(in srgb, var(--gp-surface, rgba(255, 255, 255, 0.6)) 60%, transparent) !important;
+}
+
+html[data-gp-brand="true"] .aiu-nav-tab.is-active:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  background: var(--adm-surface, var(--gp-surface, #ffffff)) !important;
+  color: var(--adm-accent, var(--gp-primary, #6d28d9)) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.2)) 20%, transparent) !important;
+}
+
+html[data-gp-brand="true"] .aiu-nav-tab-badge:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  background: color-mix(in srgb, var(--gp-background, rgba(100, 116, 139, 0.14)) 14%, transparent) !important;
+  color: var(--adm-muted, var(--gp-text, #475569)) !important;
+}
+
+html[data-gp-brand="true"] .aiu-nav-tab.is-active .aiu-nav-tab-badge:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
+  background: color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.12)) 12%, transparent) !important;
+  color: var(--adm-accent, var(--gp-primary, #6d28d9)) !important;
+}
 html[data-gp-brand="true"] .aiu-section:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
   background: var(--adm-surface, var(--gp-surface, #ffffff)) !important;
   border: 1px solid var(--adm-border, var(--gp-border, #e2e8f0)) !important;
