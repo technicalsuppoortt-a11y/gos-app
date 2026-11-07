@@ -64,6 +64,7 @@ import {
   Save,
   Timer,
   BellRing,
+  Workflow,
 } from "lucide-react";
 import {
   FOLLOW_UP_LIFECYCLE,
@@ -77,6 +78,9 @@ import {
 import type { RootState, AppDispatch } from "../store";
 import "./ai-followup.css";
 
+// Loaded only when the tab opens, so React Flow stays out of the main bundle.
+const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
+
 type Props = { notify?: (message: string) => void };
 type Tab =
   | "Overview"
@@ -84,6 +88,7 @@ type Tab =
   | "AI Assistants"
   | "Knowledge"
   | "Automations"
+  | "Flow Builder"
   | "Templates"
   | "Analytics"
   | "Settings";
@@ -445,6 +450,7 @@ const tabs: Tab[] = [
   "AI Assistants",
   "Knowledge",
   "Automations",
+  "Flow Builder",
   "Templates",
   "Analytics",
   "Settings",
@@ -455,6 +461,7 @@ const tabIcons: Record<Tab, React.ElementType | null> = {
   "AI Assistants": UserCheck,
   Knowledge: Archive,
   Automations: Repeat,
+  "Flow Builder": Workflow,
   Templates: BookMarked,
   Analytics: BarChart3,
   Settings: Settings,
@@ -695,7 +702,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const channels = channelDefinitions.map(channel => ({ ...channel, conversations: metrics.conversations.filter(thread => thread.channel === channel.id || channel.id === 'website' && thread.channel === 'webchat').length + ' conversations' }));
   const conversationRecords = useEntities<FollowUpConversation>('conversations');
   const leads = useSelector((state: RootState) => state.crm.leads);
-  const [tab, setTab] = React.useState<Tab>("Overview");
+  // ?tab=flows / ?tab=channels (also where Facebook Login returns) open the Flow Builder tab.
+  const [tab, setTab] = React.useState<Tab>(() => ["flows", "channels"].includes(new URLSearchParams(window.location.search).get("tab") ?? "") ? "Flow Builder" : "Overview");
   const [dateRange, setDateRange] = React.useState("Last 7 days");
   const [conversationChannel, setConversationChannel] = React.useState("All");
   const api = useGosAI();
@@ -1945,6 +1953,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
     if (tab === "Knowledge") return null;
     if (tab === "Templates") return renderTemplatesTab();
     if (tab === "Automations") return renderAutomationTab();
+    if (tab === "Flow Builder")
+      return (
+        <React.Suspense fallback={<p className="af-muted">{translateText("Loading Flow Builder…")}</p>}>
+          <FlowBuilderTab />
+        </React.Suspense>
+      );
     if (tab === "Settings") return renderSettingsTab();
     if (tab === "Analytics")
       return (

@@ -6,6 +6,12 @@ import { demoAccountPlugin } from './scripts/demo-account-plugin.ts'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [demoAccountPlugin(), landingPreviewPlugin(), react()],
+  server: {
+    // Local Meta testing: the Facebook login popup needs https, so the dev server is opened through ngrok.
+    allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.app'],
+    // With VITE_GOS_API_BASE_URL=/ the page calls /api on its own origin and Vite forwards it to the local API.
+    proxy: { '/api': 'http://localhost:8000' },
+  },
   optimizeDeps: {
     include: [
       '@radix-ui/react-select',

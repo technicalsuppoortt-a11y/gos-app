@@ -46,6 +46,7 @@ const PublicBookingPage = lazy(() => import('../pages/booking/PublicBookingPage'
 const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder').then(module => ({ default: module.PagePlaceholder })));
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
+const MetaAppSettings = lazy(() => import('../pages/super-admin/MetaAppSettings').then(module => ({ default: module.MetaAppSettings })));
 const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(module => ({ default: module.MarketingTracking })));
 const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
 const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
@@ -205,6 +206,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
       { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'payment-methods', element: <Suspended><PaymentMethodsPanel/></Suspended> },
+      { path: 'meta-app', element: <Suspended><MetaAppSettings/></Suspended> },
       { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'logs', element: <Suspended><SuperAdminWorkspace/></Suspended> },
