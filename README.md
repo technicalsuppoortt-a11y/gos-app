@@ -9,6 +9,18 @@
 ===========================================
 
 # User Dashboad
+- logic of setting in user dashboard
+  - profile
+  - Bussiness
+  - Integrations
+  - Tools
+  - Team & roles
+  - Pixel
+  - Security
+- Product and checkout
+- Booking Questions => done
+- Analysis Conversition filter
+/* hesham and Abbas */
 - Loading of Crm
 - AI Follow-Up
   - Flow and trigers (many chat refrence) => knwoldege base
@@ -39,24 +51,13 @@
   - Integration and guideline how to connected
   - Can support multi connection => lead have more than number or email
   - تصنفيات الواتس
-- logic of setting in user dashboard
-  - profile
-  - Bussiness
-  - Integrations
-  - Tools
-  - Team & roles
-  - Pixel
-  - Security
-- Product and checkout
-- Booking Questions => done
-- Analysis Conversition filter
-
+  /* hesham and Abbas */
 ===========================================
 
 # Admin Dashbaord
 
-- Plans and Subscription
-  - Control of creidets
+- Plans and Subscription  and remove wallet=> done
+  - Control of creidets => done
 - Agency User Cycle
   - ADD or Auto Created
   - Funnel and website => done

@@ -25,7 +25,7 @@ export function AdminWorkspace() {
   const module = modules.find(m => m.id === (id === 'funnels' ? 'funnels-websites' : id === 'dashboard-management' ? 'templates' : id)) ?? modules[0];
   if (id === 'dashboard') return <AdminDashboard/>;
   if (id === 'settings') return <WorkspaceBrandSettings/>;
-  if (id === 'conversations' || id === 'analytics' || id === 'ai-usage') return <AdminOperations key={id} moduleId={id}/>;
+  if (id === 'conversations' || id === 'analytics' || id === 'ai-usage' || id === 'integrations' || id === 'transactions') return <AdminOperations key={id} moduleId={id}/>;
   if (id === 'payments-gateways') return <PaymentMethodsPanel/>;
   if (id === 'plans') return <AdminPlansPage/>;
   if (id === 'user-billing-settings') return <UserBillingSettingsPage/>;

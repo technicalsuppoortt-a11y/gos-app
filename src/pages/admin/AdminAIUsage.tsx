@@ -104,6 +104,9 @@ export function AdminAIUsage({
   const [search, setSearch] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [page, setPage] = useState(1);
+  const [walletSearch, setWalletSearch] = useState('');
+  const [walletPage, setWalletPage] = useState(1);
+  const [activeSection, setActiveSection] = useState<'usage' | 'wallets' | 'policy'>('usage');
 
   // Global platform policy from settings/platformTools
   useEffect(() => {
@@ -214,10 +217,24 @@ export function AdminAIUsage({
     return usageRows.reduce((sum, r) => sum + r.tokens, 0);
   }, [usageRows]);
 
-  const pageSize = 10;
+  const pageSize = 6;
   const pages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const current = Math.min(page, pages);
   const pagedRows = filteredRows.slice((current - 1) * pageSize, current * pageSize);
+
+  const tenantEntries = useMemo(() => {
+    const q = walletSearch.trim().toLowerCase();
+    return Object.entries(tenants).filter(([wid, tData]) => {
+      if (!q) return true;
+      const name = String(tData.name || wid).toLowerCase();
+      const owner = String(tData.ownerUid ?? tData.ownerId ?? '').toLowerCase();
+      return name.includes(q) || wid.toLowerCase().includes(q) || owner.includes(q);
+    });
+  }, [tenants, walletSearch]);
+
+  const walletPages = Math.max(1, Math.ceil(tenantEntries.length / pageSize));
+  const currentWalletPage = Math.min(walletPage, walletPages);
+  const pagedTenants = tenantEntries.slice((currentWalletPage - 1) * pageSize, currentWalletPage * pageSize);
 
   const handleExport = () => {
     const csvData: RecordRow[] = filteredRows.map(r => ({
@@ -375,347 +392,438 @@ export function AdminAIUsage({
         </div>
       )}
 
+      {/* Horizontal Section Switcher Tabs */}
+      <div className="aiu-nav-tabs" role="tablist" aria-label={t('AI Governance Sections', 'أقسام حوكمة الذكاء الاصطناعي')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === 'usage'}
+          className={`aiu-nav-tab${activeSection === 'usage' ? ' is-active' : ''}`}
+          onClick={() => setActiveSection('usage')}
+        >
+          <Activity size={15} />
+          <span>{t('Workspace Token Usage', 'استهلاك رموز المساحات')}</span>
+          <em className="aiu-nav-tab-badge">{filteredRows.length}</em>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === 'wallets'}
+          className={`aiu-nav-tab${activeSection === 'wallets' ? ' is-active' : ''}`}
+          onClick={() => setActiveSection('wallets')}
+        >
+          <Wallet size={15} />
+          <span>{t('Wallet vs. Plan Credits', 'المحافظ ونقاط الباقات')}</span>
+          <em className="aiu-nav-tab-badge">{Object.keys(tenants).length}</em>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSection === 'policy'}
+          className={`aiu-nav-tab${activeSection === 'policy' ? ' is-active' : ''}`}
+          onClick={() => setActiveSection('policy')}
+        >
+          <Layers size={15} />
+          <span>{t('Model & Quota Policy', 'سياسة النماذج والحصص')}</span>
+          <em className="aiu-nav-tab-badge">{policy.model || 'gpt-4o'}</em>
+        </button>
+      </div>
+
       {/* Section 1: Model Allocation & Policy Hub */}
-      <section className="aiu-section" aria-label={t('Model Allocation Policies', 'سياسات توزيع النماذج')}>
-        <div className="aiu-section-head">
-          <div>
-            <h2>
-              <Layers size={18} style={{ color: '#7c3aed' }} />
-              {t('Model Allocation & Workspace Quota Policy', 'سياسة توزيع النماذج والحصص لمساحات العمل')}
-            </h2>
-            <p>
-              {t(
-                'Platform-level defaults applied when workspaces invoke AI Copilot, Follow-Up workflows, or custom assistants.',
-                'الإعدادات الافتراضية للمنصة عند استدعاء AI Copilot أو حملات المتابعة أو المساعدات الذكية.'
-              )}
-            </p>
-          </div>
-          <Link to="/admin/tools" className="aiu-btn sm">
-            <Settings size={13} />
-            {t('Edit in Platform Tools', 'تعديل في أدوات المنصة')}
-          </Link>
-        </div>
-
-        <div className="aiu-policy-grid">
-          <div className="aiu-policy-card">
-            <div className="aiu-policy-card-title">
-              <strong>{t('Configured Default Model', 'النموذج الافتراضي المعتمد')}</strong>
-              <span className="aiu-badge emerald">
-                <CheckCircle2 size={12} />
-                {t('Active Provider', 'مزوّد نشط')}
-              </span>
+      {activeSection === 'policy' && (
+        <section className="aiu-section aiu-panel-fade" aria-label={t('Model Allocation Policies', 'سياسات توزيع النماذج')}>
+          <div className="aiu-section-head">
+            <div>
+              <h2>
+                <Layers size={18} style={{ color: '#7c3aed' }} />
+                {t('Model Allocation & Workspace Quota Policy', 'سياسة توزيع النماذج والحصص لمساحات العمل')}
+              </h2>
+              <p>
+                {t(
+                  'Platform-level defaults applied when workspaces invoke AI Copilot, Follow-Up workflows, or custom assistants.',
+                  'الإعدادات الافتراضية للمنصة عند استدعاء AI Copilot أو حملات المتابعة أو المساعدات الذكية.'
+                )}
+              </p>
             </div>
-            <div className="aiu-policy-meta">
-              <div>
-                {t('LLM Engine:', 'محرك اللغة:')} <b>{policy.model || 'gpt-4o'}</b>
-              </div>
-              <div>
-                {t('Context Window:', 'نافذة السياق:')} <b>128k Tokens</b>
-              </div>
-              <div>
-                {t('Provider Architecture:', 'بنية المزوّد:')} <b>OpenAI API / Vertex Managed</b>
-              </div>
-            </div>
+            <Link to="/admin/tools" className="aiu-btn sm">
+              <Settings size={13} />
+              {t('Edit in Platform Tools', 'تعديل في أدوات المنصة')}
+            </Link>
           </div>
 
-          <div className="aiu-policy-card">
-            <div className="aiu-policy-card-title">
-              <strong>{t('Default Workspace Token Budget', 'سقف الرموز الافتراضي لكل مساحة')}</strong>
-              <span className="aiu-badge blue">
-                <ShieldCheck size={12} />
-                {t('Rate Governed', 'مضبوط الحصص')}
-              </span>
+          <div className="aiu-policy-grid">
+            <div className="aiu-policy-card">
+              <div className="aiu-policy-card-title">
+                <strong>{t('Configured Default Model', 'النموذج الافتراضي المعتمد')}</strong>
+                <span className="aiu-badge emerald">
+                  <CheckCircle2 size={12} />
+                  {t('Active Provider', 'مزوّد نشط')}
+                </span>
+              </div>
+              <div className="aiu-policy-meta">
+                <div>
+                  {t('LLM Engine:', 'محرك اللغة:')} <b>{policy.model || 'gpt-4o'}</b>
+                </div>
+                <div>
+                  {t('Context Window:', 'نافذة السياق:')} <b>128k Tokens</b>
+                </div>
+                <div>
+                  {t('Provider Architecture:', 'بنية المزوّد:')} <b>OpenAI API / Vertex Managed</b>
+                </div>
+              </div>
             </div>
-            <div className="aiu-policy-meta">
-              <div>
-                {t('Monthly Token Cap:', 'الحد الشهري للرموز:')} <b>{policy.budget} {t('Tokens', 'رمز')}</b>
+
+            <div className="aiu-policy-card">
+              <div className="aiu-policy-card-title">
+                <strong>{t('Default Workspace Token Budget', 'سقف الرموز الافتراضي لكل مساحة')}</strong>
+                <span className="aiu-badge blue">
+                  <ShieldCheck size={12} />
+                  {t('Rate Governed', 'مضبوط الحصص')}
+                </span>
               </div>
-              <div>
-                {t('Overage Policy:', 'سياسة التجاوز:')} <b>{t('Throttles to fallback / prompts wallet balance', 'تخفيض السرعة / الاعتماد على رصيد المحفظة')}</b>
-              </div>
-              <div>
-                {t('Reporting Mode:', 'وضع التقارير:')} <b>{t('Provider-verified exact token counters', 'عدادات رموز دقيقة ومؤكدة من المزوّد')}</b>
+              <div className="aiu-policy-meta">
+                <div>
+                  {t('Monthly Token Cap:', 'الحد الشهري للرموز:')} <b>{policy.budget} {t('Tokens', 'رمز')}</b>
+                </div>
+                <div>
+                  {t('Overage Policy:', 'سياسة التجاوز:')} <b>{t('Throttles to fallback / prompts wallet balance', 'تخفيض السرعة / الاعتماد على رصيد المحفظة')}</b>
+                </div>
+                <div>
+                  {t('Reporting Mode:', 'وضع التقارير:')} <b>{t('Provider-verified exact token counters', 'عدادات رموز دقيقة ومؤكدة من المزوّد')}</b>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Section 2: Workspace Token Consumption & Allocations Data Table */}
-      <section className="aiu-section" aria-label={t('Workspace Usage Table', 'جدول استهلاك مساحات العمل')}>
-        <div className="aiu-section-head">
-          <div>
-            <h2>
-              <Activity size={18} style={{ color: '#7c3aed' }} />
-              {t('Workspace AI Token Usage & Allocations', 'استهلاك رموز الذكاء الاصطناعي وتوزيع المساحات')}
-            </h2>
-            <p>
-              {t(
-                'Live breakdown of consumed tokens, assigned models, and quota compliance per workspace.',
-                'تفصيل حي للرموز المستهلكة والنماذج المخصصة ومدى الالتزام بالحصص لكل مساحة عمل.'
-              )}
-            </p>
+      {activeSection === 'usage' && (
+        <section className="aiu-section aiu-panel-fade" aria-label={t('Workspace Usage Table', 'جدول استهلاك مساحات العمل')}>
+          <div className="aiu-section-head">
+            <div>
+              <h2>
+                <Activity size={18} style={{ color: '#7c3aed' }} />
+                {t('Workspace AI Token Usage & Allocations', 'استهلاك رموز الذكاء الاصطناعي وتوزيع المساحات')}
+              </h2>
+              <p>
+                {t(
+                  'Live breakdown of consumed tokens, assigned models, and quota compliance per workspace.',
+                  'تفصيل حي للرموز المستهلكة والنماذج المخصصة ومدى الالتزام بالحصص لكل مساحة عمل.'
+                )}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              height: 38,
-              padding: '0 12px',
-              borderRadius: 10,
-              border: '1px solid var(--adm-border, #cbd5e1)',
-              background: '#fff',
-              minWidth: 260,
-              flex: 1,
-            }}
-          >
-            <Search size={15} style={{ color: '#64748b', flexShrink: 0 }} />
-            <input
-              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, width: '100%' }}
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder={t('Search workspace name, ID, or model…', 'ابحث باسم المساحة أو المعرف أو النموذج…')}
-            />
-          </label>
-
-          {allModels.length > 1 && (
-            <select
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <label
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
                 height: 38,
                 padding: '0 12px',
                 borderRadius: 10,
                 border: '1px solid var(--adm-border, #cbd5e1)',
-                background: '#fff',
-                fontSize: 13,
-                outline: 'none',
-                minWidth: 160,
-              }}
-              value={selectedModel}
-              onChange={e => {
-                setSelectedModel(e.target.value);
-                setPage(1);
+                background: 'var(--adm-surface, #fff)',
+                minWidth: 260,
+                flex: 1,
               }}
             >
-              <option value="">{t('All Models', 'كل النماذج')}</option>
-              {allModels.map(m => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+              <Search size={15} style={{ color: '#64748b', flexShrink: 0 }} />
+              <input
+                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, width: '100%' }}
+                value={search}
+                onChange={e => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={t('Search workspace name, ID, or model…', 'ابحث باسم المساحة أو المعرف أو النموذج…')}
+              />
+            </label>
 
-        <div className="aiu-table-wrap">
-          <table className="aiu-table">
-            <thead>
-              <tr>
-                <th>{t('Workspace', 'مساحة العمل')}</th>
-                <th>{t('Model Engine', 'محرك النموذج')}</th>
-                <th>{t('Tokens Consumed', 'الرموز المستهلكة')}</th>
-                <th>{t('Token Allocation / Cap', 'الحصة المخصصة')}</th>
-                <th>{t('Status', 'الحالة')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagedRows.map(row => (
-                <tr key={`${row.workspaceId}-${row.model}`}>
-                  <td>
-                    <div className="aiu-ws-cell">
-                      <span className="aiu-avatar">{getInitials(row.workspaceName)}</span>
-                      <div className="aiu-ws-info">
-                        <strong>{row.workspaceName}</strong>
-                        <small dir="ltr">{row.workspaceId}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="aiu-model-pill">
-                      <Bot size={13} style={{ color: '#7c3aed' }} />
-                      <span>{row.model}</span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="aiu-token-count">
-                      {row.tokens.toLocaleString(ar ? 'ar-EG' : 'en-US')}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
-                      {row.budget !== null
-                        ? `${row.budget.toLocaleString(ar ? 'ar-EG' : 'en-US')} Tokens`
-                        : `${policy.budget} Tokens (Default)`}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="aiu-badge emerald">
-                      <CheckCircle2 size={11} />
-                      {row.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {!pagedRows.length && (
+            {allModels.length > 1 && (
+              <select
+                style={{
+                  height: 38,
+                  padding: '0 12px',
+                  borderRadius: 10,
+                  border: '1px solid var(--adm-border, #cbd5e1)',
+                  background: 'var(--adm-surface, #fff)',
+                  fontSize: 13,
+                  outline: 'none',
+                  minWidth: 160,
+                }}
+                value={selectedModel}
+                onChange={e => {
+                  setSelectedModel(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">{t('All Models', 'كل النماذج')}</option>
+                {allModels.map(m => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="aiu-table-wrap">
+            <table className="aiu-table">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="aiu-empty">
-                    {search || selectedModel
-                      ? t('No usage records match the active search filter.', 'لا توجد سجلات مطابقة للبحث المحدد.')
-                      : t('No AI usage records recorded yet.', 'لم يتم تسجيل استهلاك بعد.')}
-                  </td>
+                  <th>{t('Workspace', 'مساحة العمل')}</th>
+                  <th>{t('Tokens Consumed', 'الرموز المستهلكة')}</th>
+                  <th>{t('Token Allocation / Cap', 'الحصة المخصصة')}</th>
+                  <th>{t('Status', 'الحالة')}</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {pages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8 }}>
-            <span style={{ fontSize: 12, color: '#64748b' }}>
-              {t('Page', 'صفحة')} {current} {t('of', 'من')} {pages} ({filteredRows.length} {t('records', 'سجل')})
-            </span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button
-                type="button"
-                className="aiu-btn sm"
-                disabled={current <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-              >
-                {t('Previous', 'السابق')}
-              </button>
-              <button
-                type="button"
-                className="aiu-btn sm"
-                disabled={current >= pages}
-                onClick={() => setPage(p => Math.min(pages, p + 1))}
-              >
-                {t('Next', 'التالي')}
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Section 3: Distinct Wallet vs. Credits Tracking Section */}
-      <section className="aiu-section" aria-label={t('Wallet vs Credits Tracking', 'تتبع المحافظ والنقاط')}>
-        <div className="aiu-section-head">
-          <div>
-            <h2>
-              <Wallet size={18} style={{ color: '#059669' }} />
-              {t('Workspace Financials: Communication Wallet vs. Plan Credits', 'الماليات ومساحات العمل: محفظة الاتصالات مقابل نقاط الباقات')}
-            </h2>
-            <p>
-              {t(
-                'Comprehensive tracking of monetary carrier balances and software plan credit allocations for each workspace.',
-                'تتبع شامل للأرصدة النقدية لتكاليف الاتصالات وحصص نقاط البرمجيات لكل مساحة عمل.'
-              )}
-            </p>
-          </div>
-        </div>
-
-        {/* Dual-Card Architecture Explainer */}
-        <div className="aiu-wallet-explainer">
-          <div className="aiu-wallet-card">
-            <span className="aiu-wallet-card-icon">
-              <Wallet size={20} />
-            </span>
-            <div className="aiu-wallet-card-content">
-              <strong>{t('Communication Wallet (Cash Currency)', 'محفظة الاتصالات (رصيد نقدي)')}</strong>
-              <p>
-                {t(
-                  'Holds real money (USD/EUR) to cover telecommunication carrier pass-through costs (WhatsApp Business API, Twilio SMS, external call minutes, and phone number rentals).',
-                  'تحتفظ بأموال حقيقية لتغطية تكاليف شركات الاتصالات (WhatsApp Cloud API و Twilio SMS والدقائق وحجز الأرقام الخارجية).'
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="aiu-wallet-card">
-            <span className="aiu-wallet-card-icon purple">
-              <Coins size={20} />
-            </span>
-            <div className="aiu-wallet-card-content">
-              <strong>{t('Platform Plan Credits (Usage Entitlements)', 'نقاط الخطة (حصص الاستخدام الرقمية)')}</strong>
-              <p>
-                {t(
-                  'Software credits included with subscription plans or top-up packs. Automatically deducted for AI prompt completions, knowledge training, Copilot runs, and workflow automation steps.',
-                  'نقاط البرمجيات المرفقة بالاشتراكات وباقات الشحن. تُخصم تلقائياً عند توليد إجابات الذكاء وتدريب المعرفة وتشغيل حملات المتابعة.'
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Workspace Financial Balances Table */}
-        <div className="aiu-table-wrap">
-          <table className="aiu-table">
-            <thead>
-              <tr>
-                <th>{t('Workspace', 'مساحة العمل')}</th>
-                <th>{t('Account Owner ID', 'معرّف المالك')}</th>
-                <th>{t('Plan Credits', 'رصيد الباقة')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(tenants).map(([wid, tData]) => {
-                const owner = String(tData.ownerUid ?? tData.ownerId ?? '');
-                return (
-                  <tr key={`financial-${wid}`}>
+              </thead>
+              <tbody>
+                {pagedRows.map(row => (
+                  <tr key={`${row.workspaceId}-${row.model}`}>
                     <td>
                       <div className="aiu-ws-cell">
-                        <span className="aiu-avatar">{getInitials(String(tData.name || wid))}</span>
+                        <span className="aiu-avatar">{getInitials(row.workspaceName)}</span>
                         <div className="aiu-ws-info">
-                          <strong>{String(tData.name || wid)}</strong>
-                          <small dir="ltr">{wid}</small>
+                          <strong>{row.workspaceName}</strong>
+                          <small dir="ltr">{row.workspaceId}</small>
                         </div>
                       </div>
                     </td>
                     <td>
-                      {owner ? (
-                        <code
-                          style={{
-                            fontSize: 11.5,
-                            background: 'var(--adm-soft, #f1f5f9)',
-                            padding: '3px 8px',
-                            borderRadius: 6,
-                            border: '1px solid var(--adm-border, #e2e8f0)',
-                          }}
-                        >
-                          {owner}
-                        </code>
-                      ) : (
-                        <span style={{ color: '#94a3b8', fontSize: 12 }}>{t('Unassigned', 'غير محدد')}</span>
-                      )}
+                      <span className="aiu-token-count">
+                        {row.tokens.toLocaleString(ar ? 'ar-EG' : 'en-US')}
+                      </span>
                     </td>
                     <td>
-                      {owner ? (
-                        <WorkspaceCreditsCell ownerId={owner} ar={ar} />
-                      ) : (
-                        <span style={{ color: '#94a3b8', fontSize: 12 }}>
-                          {t('Owner not configured', 'المالك غير مهيأ')}
-                        </span>
-                      )}
+                      <span style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
+                        {row.budget !== null
+                          ? `${row.budget.toLocaleString(ar ? 'ar-EG' : 'en-US')} Tokens`
+                          : `${policy.budget} Tokens (Default)`}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="aiu-badge emerald">
+                        <CheckCircle2 size={11} />
+                        {row.status}
+                      </span>
                     </td>
                   </tr>
-                );
-              })}
-              {!Object.keys(tenants).length && (
+                ))}
+                {!pagedRows.length && (
+                  <tr>
+                    <td colSpan={4} className="aiu-empty">
+                      {search || selectedModel
+                        ? t('No usage records match the active search filter.', 'لا توجد سجلات مطابقة للبحث المحدد.')
+                        : t('No AI usage records recorded yet.', 'لم يتم تسجيل استهلاك بعد.')}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {pages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                {t('Page', 'صفحة')} {current} {t('of', 'من')} {pages} ({filteredRows.length} {t('records', 'سجل')})
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  type="button"
+                  className="aiu-btn sm"
+                  disabled={current <= 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  {t('Previous', 'السابق')}
+                </button>
+                <button
+                  type="button"
+                  className="aiu-btn sm"
+                  disabled={current >= pages}
+                  onClick={() => setPage(p => Math.min(pages, p + 1))}
+                >
+                  {t('Next', 'التالي')}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Section 3: Distinct Wallet vs. Credits Tracking Section */}
+      {activeSection === 'wallets' && (
+        <section className="aiu-section aiu-panel-fade" aria-label={t('Wallet vs Credits Tracking', 'تتبع المحافظ والنقاط')}>
+          <div className="aiu-section-head">
+            <div>
+              <h2>
+                <Wallet size={18} style={{ color: '#059669' }} />
+                {t('Workspace Financials: Communication Wallet vs. Plan Credits', 'الماليات ومساحات العمل: محفظة الاتصالات مقابل نقاط الباقات')}
+              </h2>
+              <p>
+                {t(
+                  'Comprehensive tracking of monetary carrier balances and software plan credit allocations for each workspace.',
+                  'تتبع شامل للأرصدة النقدية لتكاليف الاتصالات وحصص نقاط البرمجيات لكل مساحة عمل.'
+                )}
+              </p>
+            </div>
+          </div>
+
+          {/* Dual-Card Architecture Explainer */}
+          <div className="aiu-wallet-explainer">
+            <div className="aiu-wallet-card">
+              <span className="aiu-wallet-card-icon">
+                <Wallet size={20} />
+              </span>
+              <div className="aiu-wallet-card-content">
+                <strong>{t('Communication Wallet (Cash Currency)', 'محفظة الاتصالات (رصيد نقدي)')}</strong>
+                <p>
+                  {t(
+                    'Holds real money (USD/EUR) to cover telecommunication carrier pass-through costs (WhatsApp Business API, Twilio SMS, external call minutes, and phone number rentals).',
+                    'تحتفظ بأموال حقيقية لتغطية تكاليف شركات الاتصالات (WhatsApp Cloud API و Twilio SMS والدقائق وحجز الأرقام الخارجية).'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="aiu-wallet-card">
+              <span className="aiu-wallet-card-icon purple">
+                <Coins size={20} />
+              </span>
+              <div className="aiu-wallet-card-content">
+                <strong>{t('Platform Plan Credits (Usage Entitlements)', 'نقاط الخطة (حصص الاستخدام الرقمية)')}</strong>
+                <p>
+                  {t(
+                    'Software credits included with subscription plans or top-up packs. Automatically deducted for AI prompt completions, knowledge training, Copilot runs, and workflow automation steps.',
+                    'نقاط البرمجيات المرفقة بالاشتراكات وباقات الشحن. تُخصم تلقائياً عند توليد إجابات الذكاء وتدريب المعرفة وتشغيل حملات المتابعة.'
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                height: 38,
+                padding: '0 12px',
+                borderRadius: 10,
+                border: '1px solid var(--adm-border, #cbd5e1)',
+                background: 'var(--adm-surface, #fff)',
+                flex: 1,
+              }}
+            >
+              <Search size={15} style={{ color: '#64748b', flexShrink: 0 }} />
+              <input
+                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, width: '100%' }}
+                value={walletSearch}
+                onChange={e => {
+                  setWalletSearch(e.target.value);
+                  setWalletPage(1);
+                }}
+                placeholder={t('Search workspace or owner ID…', 'ابحث باسم مساحة العمل أو معرف المالك…')}
+              />
+            </label>
+          </div>
+
+          {/* Workspace Financial Balances Table */}
+          <div className="aiu-table-wrap">
+            <table className="aiu-table">
+              <thead>
                 <tr>
-                  <td colSpan={3} className="aiu-empty">
-                    {t('No workspaces found.', 'لا توجد مساحات عمل.')}
-                  </td>
+                  <th>{t('Workspace', 'مساحة العمل')}</th>
+                  <th>{t('Account Owner ID', 'معرّف المالك')}</th>
+                  <th>{t('Plan Credits', 'رصيد الباقة')}</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {pagedTenants.map(([wid, tData]) => {
+                  const owner = String(tData.ownerUid ?? tData.ownerId ?? '');
+                  return (
+                    <tr key={`financial-${wid}`}>
+                      <td>
+                        <div className="aiu-ws-cell">
+                          <span className="aiu-avatar">{getInitials(String(tData.name || wid))}</span>
+                          <div className="aiu-ws-info">
+                            <strong>{String(tData.name || wid)}</strong>
+                            <small dir="ltr">{wid}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {owner ? (
+                          <code
+                            style={{
+                              fontSize: 11.5,
+                              background: 'var(--adm-soft, #f1f5f9)',
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              border: '1px solid var(--adm-border, #e2e8f0)',
+                            }}
+                          >
+                            {owner}
+                          </code>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: 12 }}>{t('Unassigned', 'غير محدد')}</span>
+                        )}
+                      </td>
+                      <td>
+                        {owner ? (
+                          <WorkspaceCreditsCell ownerId={owner} ar={ar} />
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: 12 }}>
+                            {t('Owner not configured', 'المالك غير مهيأ')}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!pagedTenants.length && (
+                  <tr>
+                    <td colSpan={3} className="aiu-empty">
+                      {t('No workspaces found.', 'لا توجد مساحات عمل.')}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {walletPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                {t('Page', 'صفحة')} {currentWalletPage} {t('of', 'من')} {walletPages} ({tenantEntries.length} {t('workspaces', 'مساحة عمل')})
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  type="button"
+                  className="aiu-btn sm"
+                  disabled={currentWalletPage <= 1}
+                  onClick={() => setWalletPage(p => Math.max(1, p - 1))}
+                >
+                  {t('Previous', 'السابق')}
+                </button>
+                <button
+                  type="button"
+                  className="aiu-btn sm"
+                  disabled={currentWalletPage >= walletPages}
+                  onClick={() => setWalletPage(p => Math.min(walletPages, p + 1))}
+                >
+                  {t('Next', 'التالي')}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
