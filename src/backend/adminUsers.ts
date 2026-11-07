@@ -144,6 +144,7 @@ export async function manageAccount(operation: string, data: Record<string, unkn
 export function useAdminUsers() {
   const role = useSelector((state: RootState) => state.auth.role);
   const impersonation = useSelector((state: RootState) => state.auth.impersonation);
+  const uid = useSelector((state: RootState) => state.auth.impersonation?.user.id ?? state.auth.user?.id);
   const effectiveRole = impersonation?.role ?? role;
   const [state, setState] = useState<{ invites: Invite[]; loading: boolean; error: string }>({ invites: [], loading: true, error: '' });
 
@@ -159,7 +160,11 @@ export function useAdminUsers() {
       q,
       snapshot => {
         // Provisional invitation docs consumed during activation are superseded by the UID-keyed record.
-        const items = snapshot.docs.filter(item => !item.data().activatedUid).map(item => ({ ...item.data(), id: item.id }) as Invite);
+        const items = snapshot.docs.flatMap(item => {
+          const data = item.data();
+          if (data.activatedUid || data.deletedAt || effectiveRole === 'ADMIN' && data.defaultAgencyFor && data.defaultAgencyFor !== uid) return [];
+          return [{ ...data, email: data.email || data.contactEmail || '', id: item.id } as Invite];
+        });
         setState({ invites: items, loading: false, error: '' });
       },
       error => {
@@ -172,7 +177,7 @@ export function useAdminUsers() {
       unsubscribe();
 
     };
-  }, [effectiveRole]);
+  }, [effectiveRole, uid]);
 
   return state;
 }

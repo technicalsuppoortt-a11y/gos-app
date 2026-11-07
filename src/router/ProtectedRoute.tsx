@@ -6,10 +6,11 @@ import type { RootState } from '../store';
 import type { Role } from '../types/auth';
 import { useSessionReady } from '../backend/sessionState';
 import { WorkspaceLoading, WorkspaceSkeleton } from '../components/common/WorkspaceLoading';
+import { isPlatformTeamRole, platformHome } from './platformAccess';
 
 
 export function routeForRole(role: Role | null): string {
-  if (role === 'SUPER_ADMIN') return '/super-admin';
+  if (isPlatformTeamRole(role)) return platformHome(role);
   if (role === 'ADMIN') return '/admin';
   if (role === 'USER') return '/dashboard';
   return '/auth/login';

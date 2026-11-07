@@ -5,6 +5,7 @@ import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
 import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
+import { platformTeamRoles } from './platformAccess';
 import { Suspended } from './RouteBoundary';
 import { retryImport } from './chunkRecovery';
 const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
@@ -46,6 +47,7 @@ const PagePlaceholder = lazy(() => import('../components/common/PagePlaceholder'
 const ActivityPage = lazy(() => import('../pages/ActivityPage').then(module => ({ default: module.ActivityPage })));
 const SettingsWorkspace = lazy(() => import('../pages/settings/SettingsWorkspace').then(module => ({ default: module.SettingsWorkspace })));
 const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(module => ({ default: module.MarketingTracking })));
+const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
 const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
 const SuperAdminPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.SuperAdminPlansPage })));
 const UserPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.UserPlansPage })));
@@ -189,19 +191,21 @@ export const router = createBrowserRouter([
   },
   {
     path: '/super-admin',
-    element: <GuardedLayout roles={['SUPER_ADMIN']}><SuperAdminLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={platformTeamRoles}><SuperAdminLayout/></GuardedLayout>,
     children: [
       { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
       { path: 'support', element: <Suspended><SupportChat/></Suspended> },
       { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'subscriptions', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'subscriptions', element: <Navigate to="/super-admin" replace/> },
       { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'wallet', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace/> },
       { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
       { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'payment-methods', element: <Suspended><PaymentMethodsPanel/></Suspended> },
       { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
       { path: 'logs', element: <Suspended><SuperAdminWorkspace/></Suspended> },

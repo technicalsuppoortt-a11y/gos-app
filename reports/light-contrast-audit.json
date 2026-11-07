@@ -4858,7 +4858,7 @@
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
-      "line": 229,
+      "line": 228,
       "selector": ".bk-configurator-heading>svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
@@ -4866,7 +4866,7 @@
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
-      "line": 267,
+      "line": 266,
       "selector": ".bk-select-trigger>span:last-child",
       "before": "#8e91aa",
       "after": "#334155",
@@ -4874,7 +4874,7 @@
     },
     {
       "file": "src/pages/booking/booking-workspace.css",
-      "line": 391,
+      "line": 390,
       "selector": ".bk-diagnostic-explanation",
       "before": "#9b7786",
       "after": "#334155",

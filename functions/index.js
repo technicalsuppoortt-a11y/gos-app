@@ -3,6 +3,7 @@ import { recordAIUsage } from './ai-usage.js';
 import { structureVoice, transcribeVoice, voiceAudio } from './copilot-voice.js';
 import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
+import { isSuspended, superAdminRequest } from './super-admin.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
 import { billingServiceRequest, consumeCredits } from './billing-service.js';
@@ -15,7 +16,7 @@ import { fulfillCommerceOrder } from './commerce-orders.js';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { mayManageUser, maySend, validateBooking } from './policy.js';
@@ -43,6 +44,19 @@ setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot
 initializeApp();
 const db = getFirestore(), auth = getAuth();
 export const supportChat = createSupportCallable({ actor, db });
+export const superAdminOperations = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => superAdminRequest(request, { actor, db, auth }));
+export const auditPlatformIntegrations = onDocumentWritten('settings/{id}', async event => {
+  const { id } = event.params;
+  if (!['paymentMethods', 'marketingTracking'].includes(id)) return;
+  const current = event.data?.after.data(), previous = event.data?.before.data();
+  const eventId = createHash('sha256').update(event.id).digest('hex');
+  await db.doc(`userManagementAudit/${eventId}`).set({
+    actorId: current?.updatedBy ?? previous?.updatedBy ?? 'system',
+    type: current ? 'integration.configuration_updated' : 'integration.configuration_removed',
+    resourceId: id,
+    createdAt: Timestamp.fromDate(new Date(event.time)),
+  });
+});
 export const adminDashboardStatus = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => adminDashboardStatusRequest(request, { actor, db, apiBase: gosApiBase.value() }));
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
@@ -58,11 +72,12 @@ export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/t
 async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
-  if (profile?.status && profile.status === 'Deactivated') throw new HttpsError('permission-denied', 'Your account has been deactivated.');
+  if (isSuspended(profile)) throw new HttpsError('permission-denied', 'Your account has been deactivated.');
   return { ...profile, uid: request.auth.uid, tenantId: profile?.tenantId || request.auth.token?.tenantId || request.auth.uid };
 }
 async function workspace(request, permission) {
   const user = await actor(request);
+  if (['PLATFORM_FINANCE', 'PLATFORM_SUPPORT'].includes(user.role)) throw new HttpsError('permission-denied', 'This role has platform access only.');
   const [tenantDoc, memberDoc] = await Promise.all([
     db.doc(`tenants/${user.tenantId}`).get(),
     db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()
@@ -258,6 +273,9 @@ export const manageUser = onCall(async request => {
   if (typeof id !== 'string' || !id.trim() || id !== id.trim() || id.includes('/')) throw new HttpsError('invalid-argument', 'Invalid account.');
   const ref = db.doc(`users/${id}`), target = (await ref.get()).data();
   if (!target || !mayManageUser(user, { ...target, id })) throw new HttpsError('permission-denied', 'You cannot modify this account.');
+  if (['role', 'status', 'delete'].includes(operation) && (target.defaultAgencyFor || target.defaultAgencyUserId || target.platformTeamOwnerId)) {
+    throw new HttpsError('failed-precondition', 'Manage this account from the Super Admin dashboard.');
+  }
   if (operation === 'impersonate') {
     if (requestedTenantId !== undefined && requestedTenantId !== target.tenantId) throw new HttpsError('failed-precondition', 'The user workspace changed. Refresh the users list and try again.');
     return createImpersonationSession(user, target, id, { db, auth });
@@ -439,8 +457,16 @@ export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds
   return answer;
 }) : undefined;
 
-export const transcribeCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 90, memory: '512MiB', concurrency: 4 }, async request => {
+export const transcribeCopilotVoice = onCall({
+  cors: true,
+  invoker: 'public',
+  secrets: openaiKey ? [openaiKey] : [],
+  timeoutSeconds: 90,
+  memory: '512MiB',
+  concurrency: 4,
+}, async request => {
   const { user } = await workspace(request, 'copilot');
+  if (!openaiKey) throw new HttpsError('failed-precondition', 'Voice transcription is unavailable until an administrator configures the AI service.');
   const requestId = request.data?.requestId;
   if (typeof requestId !== 'string' || !/^[\w-]{1,150}$/.test(requestId)) {
     throw new HttpsError('invalid-argument', 'Choose a voice recording.');
@@ -449,7 +475,7 @@ export const transcribeCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey],
   const usageKey = createHash('sha256').update(JSON.stringify(['copilot-transcription', user.uid, requestId])).digest('hex');
   await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot voice transcription', usageKey);
   return { transcript: await transcribeVoice(audio, openaiKey.value()) };
-}) : undefined;
+});
 
 export const extractCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 120, memory: '512MiB', concurrency: 4 }, async request => {
   const { user, root } = await workspace(request, 'copilot');

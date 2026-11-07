@@ -2,10 +2,11 @@ import { logoutFirebase } from '../../backend/session';
 import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Activity, AppWindow, BarChart3, Bell, CreditCard, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
-import { useDispatch } from 'react-redux';
-import { logout } from '../../store/slices/authSlice';
+import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Activity, BarChart3, Bell, CreditCard, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle, Wallet } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
+import { canOpenPlatformPage, isPlatformTeamRole, platformHome } from '../../router/platformAccess';
 import { showToast } from '../../utils/toast';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -17,11 +18,11 @@ import { WalletBadge } from './WalletBadge';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
-  { label: 'All Clients', to: '/super-admin/clients', icon: Users },
+  { label: 'All Admins', ar: 'جميع المسؤولين', to: '/super-admin/clients', icon: Users },
   { label: 'Plans & Credits', ar: 'الباقات والرصيد', to: '/super-admin/plans', icon: Layers },
-  { label: 'All Softwares', to: '/super-admin/subscriptions', icon: AppWindow },
-  { label: 'Dashboard Management', ar: 'إدارة لوحة التحكم', to: '/super-admin/dashboard-management', icon: Grid2X2 },
+  { label: 'Templates', ar: 'القوالب', to: '/super-admin/dashboard-management', icon: Grid2X2 },
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
+  { label: 'Wallet', to: '/super-admin/wallet', icon: Wallet },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
@@ -31,8 +32,13 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
 
 export const SuperAdminLayout: React.FC = () => {
   const language = useUILanguage();
-  const dispatch = useDispatch();
+  const { role, user } = useSelector((state: RootState) => state.auth);
+  const location = useLocation();
   const navigate = useNavigate();
+  const canOpen = (path: string) => canOpenPlatformPage(role, path);
+  const home = isPlatformTeamRole(role) ? platformHome(role) : '/auth/login';
+  const visibleNav = navigation.filter(item => canOpen(item.to));
+  const name = user?.name || translateText('Platform team');
   const [mobileOpen, setMobileOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -63,14 +69,14 @@ export const SuperAdminLayout: React.FC = () => {
   const [saSearchOpen, setSaSearchOpen] = useState(false);
   const saSearchRef = useRef<HTMLDivElement>(null);
   const saFilteredNav = saSearch.trim()
-    ? navigation.filter(n => {
+    ? [...visibleNav, ...(canOpen('/super-admin/support') ? [{ label: 'Support', ar: 'الدعم', to: '/super-admin/support' }] : [])].filter(n => {
         const q = saSearch.toLowerCase().trim();
         return n.label.toLowerCase().includes(q) || (n.ar && n.ar.includes(q)) || translateText(n.label).toLowerCase().includes(q);
       })
     : [];
 
   const handleSaSearchSubmit = (to?: string) => {
-    const target = to || (saFilteredNav[0] ? saFilteredNav[0].to : `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}`);
+    const target = to || saFilteredNav[0]?.to || (role === 'SUPER_ADMIN' ? `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}` : home);
     navigate(target);
     setSaSearch('');
     setSaSearchOpen(false);
@@ -86,17 +92,19 @@ export const SuperAdminLayout: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
+  if (!canOpen(location.pathname)) return <Navigate to={home} replace/>;
+
   return <div className="sa-shell">
     {mobileOpen && <button className="sa-mobile-scrim" aria-label={translateText("Close navigation")} onClick={() => setMobileOpen(false)}/>}
     <aside ref={sidebarRef} className={`sa-sidebar${mobileOpen ? ' is-mobile-open' : ''}`} role={mobileOpen ? 'dialog' : undefined} aria-modal={mobileOpen || undefined} aria-label={translateText("Platform navigation")} onClick={event => { if ((event.target as HTMLElement).closest('a')) setMobileOpen(false); }}>
       <button className="sa-mobile-close" aria-label={translateText("Close menu")} onClick={() => setMobileOpen(false)}><X size={18}/></button>
-      <NavLink to="/super-admin" className="layout-brand sa-brand" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit', padding: '4px 6px 20px' }}><span className="layout-brand-icon"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span><div className="layout-brand-copy"><span className="layout-brand-wordmark"><b>Upclick</b></span><small>{translateText("Ideas to impact")}</small></div></NavLink>
+      <NavLink to={home} className="layout-brand sa-brand" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit', padding: '4px 6px 20px' }}><span className="layout-brand-icon"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span><div className="layout-brand-copy"><span className="layout-brand-wordmark"><b>Upclick</b></span><small>{translateText("Ideas to impact")}</small></div></NavLink>
       <div className="sa-nav-label">{translateText("PLATFORM")}</div>
       <nav className="sa-nav" aria-label={translateText("Super admin navigation")}>
-        {localizeNode(navigation.map(({ label, ar, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{ar && language.startsWith('ar') ? ar : localizeNode(label)}</span></NavLink>))}
+        {localizeNode(visibleNav.map(({ label, ar, to, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `sa-nav-link${isActive ? ' active' : ''}`}><Icon size={15}/><span>{ar && language.startsWith('ar') ? ar : localizeNode(label)}</span></NavLink>))}
       </nav>
       <div className="sa-sidebar-footer">
-        <NavLink to="/super-admin/support" className={({ isActive }) => `sa-nav-link sa-support-link${isActive ? ' active' : ''}`} title={translateText("Support")}><MessageCircle size={17}/><span>{translateText("Support")}</span></NavLink>
+        {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className={({ isActive }) => `sa-nav-link sa-support-link${isActive ? ' active' : ''}`} title={translateText("Support")}><MessageCircle size={17}/><span>{translateText("Support")}</span></NavLink>}
       <button className="sa-logout" onClick={signOut}><LogOut size={15}/>{translateText("Log out")}</button>
       </div>
     </aside>
@@ -108,8 +116,8 @@ export const SuperAdminLayout: React.FC = () => {
           <label className="sa-search">
             <Search size={14}/>
             <input 
-              placeholder={translateText("Search clients or sections…")} 
-              aria-label={translateText("Search clients or sections")} 
+              placeholder={translateText(role === 'SUPER_ADMIN' ? 'Search admins or sections…' : 'Search sections…')}
+              aria-label={translateText(role === 'SUPER_ADMIN' ? 'Search admins or sections' : 'Search sections')}
               value={saSearch}
               onChange={e => { setSaSearch(e.target.value); setSaSearchOpen(true); }}
               onFocus={() => { if (saSearch.trim()) setSaSearchOpen(true); }}
@@ -141,7 +149,10 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           )}
         </div>
-        <GetAppButton/><div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div><CreditBadge/><WalletBadge/><NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink><button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate("/super-admin/logs")}><Bell size={17}/><i/></button><button className="sa-account" onClick={() => navigate("/super-admin/users")}><span>{translateText("JA")}</span><b>{translateText("Jordan Admin")}</b></button>
+        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <><CreditBadge/><WalletBadge/></>}
+        {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink>}
+        {canOpen('/super-admin/logs') && <button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate('/super-admin/logs')}><Bell size={17}/><i/></button>}
+        <button className="sa-account" onClick={() => navigate('/super-admin/users')} disabled={!canOpen('/super-admin/users')}><span>{name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><b>{name}</b></button>
       </header>
       <div className="sa-content"><Outlet/></div>
     </main>

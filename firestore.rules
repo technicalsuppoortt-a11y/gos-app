@@ -6,8 +6,16 @@ service cloud.firestore {
         && request.auth.token.phoenixUid is string;
     }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function accountAvailable() {
+      return request.auth != null && (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+        !(profile().get('status', 'Active') in ['Deactivated', 'deactivated', 'Inactive', 'inactive', 'Suspended', 'suspended', 'Deleted', 'deleted']));
+    }
+    function platformStaff() {
+      return request.auth != null && (request.auth.token.get('role', '') in ['PLATFORM_SUPPORT', 'PLATFORM_FINANCE'] ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['PLATFORM_SUPPORT', 'PLATFORM_FINANCE']);
+    }
     function signedIn() {
-      return request.auth != null && (
+      return accountAvailable() && !platformStaff() && (
         !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
         profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] ||
         profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'platform_admin']
@@ -79,10 +87,10 @@ service cloud.firestore {
       allow delete: if signedIn() && (featureAdmin() || superAdmin() || request.auth.uid == providerId);
     }
     match /supportRooms/{roomId} {
-      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      allow read: if (signedIn() || platformRole(['PLATFORM_SUPPORT'])) && request.auth.uid in resource.data.participants;
       allow write: if false;
       match /messages/{messageId} {
-        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/supportRooms/$(roomId)).data.participants;
+        allow read: if (signedIn() || platformRole(['PLATFORM_SUPPORT'])) && request.auth.uid in get(/databases/$(database)/documents/supportRooms/$(roomId)).data.participants;
         allow write: if false;
       }
     }
@@ -91,17 +99,34 @@ service cloud.firestore {
     match /paymentGatewayConfigurations/{provider} { allow read, write: if false; }
     // Billing: plans, subscriptions, wallets, ledger and requests are server-owned (billingService callable).
     function superAdmin() {
-      return request.auth != null && (
+      return accountAvailable() && !platformStaff() && (
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin', 'platform_admin', 'Owner', 'owner']) ||
         request.auth.token.get('role', '') in ['SUPER_ADMIN', 'ADMIN', 'super_admin', 'admin', 'platform_admin', 'Owner', 'owner']
       );
     }
     function featureAdmin() {
-      return request.auth != null && (
+      return accountAvailable() && !platformStaff() && (
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner', 'platform_admin']) ||
         request.auth.token.get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'Owner', 'owner', 'platform_admin'] ||
         superAdmin()
       );
+    }
+    function platformRole(roles) {
+      return accountAvailable() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        profile().get('status', 'Active') in ['Active', 'active', 'Activated', 'activated'] && profile().get('role', '') in roles;
+    }
+    function platformSuperadmin() { return platformRole(['SUPER_ADMIN', 'super_admin']); }
+    function platformFinance() { return platformRole(['PLATFORM_FINANCE']); }
+    match /settings/platformOperations {
+      allow get: if platformSuperadmin();
+      allow write: if false;
+    }
+    match /userManagementAudit/{entryId} {
+      allow read: if platformSuperadmin() || platformRole(['PLATFORM_SUPPORT']);
+      allow write: if false;
+    }
+    match /{path=**}/transactions/{entryId} {
+      allow read: if platformSuperadmin() || platformFinance();
     }
     function billingParty(subscriberId, providerId) {
       return signedIn() && (
@@ -136,6 +161,7 @@ service cloud.firestore {
     }
     match /billingLedger/{entryId} {
       allow read: if signedIn() && (featureAdmin() || billingParty(resource.data.walletId, resource.data.providerId));
+      allow read: if platformFinance() && resource.data.type == 'usage';
       allow write: if false;
     }
     match /add_on_requests/{requestId} {
@@ -144,6 +170,7 @@ service cloud.firestore {
     }
     match /billingRequests/{requestId} {
       allow read: if signedIn() && (featureAdmin() || billingParty(resource.data.requesterId, resource.data.providerId));
+      allow read: if platformFinance();
       allow write: if false;
     }
     match /billingSettings/{providerId} { allow read: if signedIn(); allow write: if false; }
@@ -167,6 +194,8 @@ service cloud.firestore {
     // Communication Wallet (external carrier costs) — separate from plan credits; server-owned.
     match /communicationWallets/{walletId} {
       allow read: if signedIn() && (request.auth.uid == walletId || featureAdmin() || billingParty(walletId, resource.data.providerId));
+      allow get: if platformFinance() && walletId == 'platform';
+      allow list: if platformFinance() && resource.data.providerId == 'platform';
       allow write: if false;
     }
     match /communicationLedger/{entryId} {
@@ -205,7 +234,7 @@ service cloud.firestore {
     }
     // Template ownership: templateCatalog = super admin library ("General templates" for admins, read-only for them).
     function templateSuperAdmin() {
-      return request.auth != null && (
+      return accountAvailable() && !platformStaff() && (
         request.auth.token.get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin'] ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin']));
     }
@@ -248,14 +277,12 @@ service cloud.firestore {
     // Published funnel websites (public live pages + custom domains)
     match /published_sites/{funnelId} {
       allow read: if true;
-      allow create, update: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow write: if accountAvailable() && !platformStaff();
     }
 
     match /site_domains/{host} {
       allow read: if true;
-      allow create, update: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow write: if accountAvailable() && !platformStaff();
     }
     match /users/{userId} {
       match /preferences/passwordPolicy {

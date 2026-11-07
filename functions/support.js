@@ -11,7 +11,8 @@ export function createSupportCallable(dependencies) {
 
 const managedUser = (user, admin) => user.supportParentId ? user.supportParentId === admin.uid : !!user.tenantId && user.tenantId === admin.tenantId;
 export function mayChat(a, b) {
-  return a.status === 'Active' && b.status === 'Active' && (a.role === 'USER' && b.role === 'ADMIN' && managedUser(a, b) || b.role === 'USER' && a.role === 'ADMIN' && managedUser(b, a) || a.role === 'ADMIN' && b.role === 'SUPER_ADMIN' && a.supportParentId === b.uid || b.role === 'ADMIN' && a.role === 'SUPER_ADMIN' && b.supportParentId === a.uid);
+  const platformSupport = (admin, staff) => admin.role === 'ADMIN' && staff.role === 'PLATFORM_SUPPORT' && !!staff.platformTeamOwnerId && admin.supportParentId === staff.platformTeamOwnerId;
+  return a.status === 'Active' && b.status === 'Active' && (a.role === 'USER' && b.role === 'ADMIN' && managedUser(a, b) || b.role === 'USER' && a.role === 'ADMIN' && managedUser(b, a) || a.role === 'ADMIN' && b.role === 'SUPER_ADMIN' && a.supportParentId === b.uid || b.role === 'ADMIN' && a.role === 'SUPER_ADMIN' && b.supportParentId === a.uid || platformSupport(a, b) || platformSupport(b, a));
 }
 export const supportRoomId = (a, b) => [a, b].sort().map(id => encodeURIComponent(id).replaceAll('~', '%7E')).join('~');
 const validId = id => typeof id === 'string' && /^[\w-]{1,128}$/.test(id);
@@ -65,7 +66,7 @@ export async function supportRequest(request, { actor, db, copyAttachment = copy
   if (data.operation === 'directory') return { users: profiles.map(p => ({ id: p.uid, name: p.name || p.email || p.uid, role: p.role, supportParentId: p.supportParentId ?? '' })) };
   // Older accounts inherit the administrator recorded in their creation audit.
   for (const p of profiles) {
-    if (p.supportParentId || p.role === 'SUPER_ADMIN') continue;
+    if (p.supportParentId || !['USER', 'ADMIN'].includes(p.role)) continue;
     const parentRole = p.role === 'USER' ? 'ADMIN' : 'SUPER_ADMIN';
     const workspaceAdmins = p.role === 'USER' && p.tenantId ? profiles.filter(a => a.role === 'ADMIN' && a.status === 'Active' && a.tenantId === p.tenantId) : [];
     const audit = await db.collection('userManagementAudit').where('userId', '==', p.uid).where('type', '==', 'user.created').limit(1).get();
@@ -80,7 +81,7 @@ export async function supportRequest(request, { actor, db, copyAttachment = copy
   }
   const current = profiles.find(p => p.uid === user.uid);
   const contacts = profiles.filter(p => current && mayChat(current, p));
-  if (data.operation === 'contacts') return { contacts: contacts.map(p => ({ id: p.uid, name: p.name || p.email || 'Support contact', role: p.role })) };
+  if (data.operation === 'contacts') return { contacts: contacts.map(p => ({ id: p.uid, name: p.name || p.email || 'Support contact', role: p.role === 'PLATFORM_SUPPORT' ? 'SUPER_ADMIN' : p.role })) };
   const peer = contacts.find(p => p.uid === data.recipientId);
   if (!peer) throw new HttpsError('permission-denied', 'This account is outside your support team.');
   const roomId = supportRoomId(user.uid, peer.uid);

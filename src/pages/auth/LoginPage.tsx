@@ -6,7 +6,9 @@ import { Activity, ArrowRight, ArrowUpRight, BadgeCheck, CalendarDays, Check, Ey
 import { motion } from 'framer-motion';
 import { consumeAuthNotice, login, SessionError, sessionErrorMessage, type SessionErrorCode } from '../../backend/session';
 import { backendError } from '../../backend/firebase';
-import { loginSuccess, type Role } from '../../store/slices/authSlice';
+import { loginSuccess } from '../../store/slices/authSlice';
+import { routeForRole } from '../../router/ProtectedRoute';
+import { canOpenPlatformPage, isPlatformTeamRole } from '../../router/platformAccess';
 import { toggleTheme, setLanguage, type Language } from '../../store/slices/uiSlice';
 import type { RootState } from '../../store';
 import { showToast } from '../../utils/toast';
@@ -14,12 +16,6 @@ import i18n from '../../i18n/i18n';
 import { startDemoSession } from '../../demo/mode';
 import './login-page.css';
 
-
-const destination: Record<Role, string> = {
-  SUPER_ADMIN: '/super-admin',
-  ADMIN: '/admin',
-  USER: '/dashboard',
-};
 
 export const LoginPage: React.FC = () => {
   useUILanguage();
@@ -110,7 +106,7 @@ export const LoginPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    if (auth.isAuthenticated && auth.role) navigate(destination[auth.role], { replace: true });
+    if (auth.isAuthenticated && auth.role) navigate(routeForRole(auth.role), { replace: true });
   }, [auth.isAuthenticated, auth.role, navigate]);
 
   // Explain why the user landed here after a forced sign-out (pending, deactivated, access denied…).
@@ -178,12 +174,12 @@ export const LoginPage: React.FC = () => {
       showToast.success(currentLang === 'ar' ? `مرحبًا بعودتك، ${session.user.name}!` : `Welcome back, ${session.user.name}!`);
       dispatch(loginSuccess(session));
       const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-      const canOpenRequestedPath = session.role === 'SUPER_ADMIN'
-        ? requestedPath?.startsWith('/super-admin')
+      const canOpenRequestedPath = isPlatformTeamRole(session.role)
+        ? requestedPath && canOpenPlatformPage(session.role, requestedPath)
         : session.role === 'ADMIN'
           ? requestedPath?.startsWith('/admin')
           : requestedPath?.startsWith('/dashboard');
-      navigate(canOpenRequestedPath ? requestedPath! : destination[session.role], { replace: true });
+      navigate(canOpenRequestedPath ? requestedPath! : routeForRole(session.role), { replace: true });
     })();
   };
 

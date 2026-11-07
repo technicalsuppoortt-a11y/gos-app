@@ -8,6 +8,7 @@ import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
 import { SessionReadyContext } from './sessionState';
 import type { StoredAuth, Role } from '../types/auth';
+import { isPlatformTeamRole } from '../router/platformAccess';
 import { clearPhoenixBrand, loadPhoenixBrand } from './phoenixBrand';
 import { loginWithPhoenix } from './phoenixLogin';
 
@@ -116,6 +117,7 @@ export async function endActivation() {
 
 const resolvedProfileSignatures = new WeakMap<User, string>();
 const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.accountType]);
+const suspendedStatus = (value: unknown) => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(value).toLowerCase());
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
   const tokenResult = await user.getIdTokenResult(forceRefreshToken);
@@ -136,10 +138,10 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   }
 
   const rawClaimRole = typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role.toUpperCase() : undefined;
-  const claimRole = (rawClaimRole && ['USER', 'ADMIN', 'SUPER_ADMIN'].includes(rawClaimRole) ? rawClaimRole : undefined) as Role | undefined;
+  const claimRole = isPlatformTeamRole(rawClaimRole) || rawClaimRole === 'ADMIN' || rawClaimRole === 'USER' ? rawClaimRole : undefined;
   const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
 
-  if (data?.status === 'Deactivated' || data?.status === 'Inactive') throw new SessionError('DEACTIVATED');
+  if (suspendedStatus(data?.status)) throw new SessionError('DEACTIVATED');
   if (data && ['Pending', 'Invited'].includes(data.status)) {
     try {
       await callBackend('activateUser', {});
@@ -152,14 +154,15 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   }
 
   const rawDataRole = typeof data?.role === 'string' ? data.role.toUpperCase() : '';
-  const normalizedDataRole: Role = rawDataRole === 'SUPER_ADMIN'
-    ? 'SUPER_ADMIN'
+  const normalizedDataRole: Role = isPlatformTeamRole(rawDataRole)
+    ? rawDataRole
     : ['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawDataRole)
     ? 'ADMIN'
     : 'USER';
 
   // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile or USER.
-  const role: Role = claimRole || normalizedDataRole;
+  const restricted = (value: Role | undefined) => value === 'PLATFORM_SUPPORT' || value === 'PLATFORM_FINANCE';
+  const role: Role = restricted(normalizedDataRole) || restricted(claimRole) ? normalizedDataRole : claimRole || normalizedDataRole;
   const agency = data?.accountType === 'agency' || tokenResult.claims.accountType === 'agency';
 
   const tenantId = (typeof claimTenantId === 'string' && claimTenantId)
@@ -183,7 +186,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   return {
     user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}) },
     role,
-    tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (role === 'SUPER_ADMIN' ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
+    tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
   };
 }
@@ -239,7 +242,7 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
           if (current !== generation || activationInProgress) return;
           if (!snapshot.exists()) return;
           const value = snapshot.data();
-          if (value?.status === 'Deactivated' || value?.status === 'Inactive') { await forceSignOut(new SessionError('DEACTIVATED')); return; }
+          if (suspendedStatus(value?.status)) { await forceSignOut(new SessionError('DEACTIVATED')); return; }
           if (value?.status && value.status !== 'Active' && value.status !== 'Activated') return;
           // Compare source profiles. Display-name fallbacks and authoritative token
           // claims may differ from Firestore without indicating a profile change.

@@ -970,6 +970,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (!isApprove) fail('invalid-argument', 'Choose approve or reject.');
       const reason = text(data.reason, 300, 'Reason', false);
       const target = await store.get(`users/${request.requesterId}`);
+      if (target?.status === 'Deleted' || target?.deletedAt) fail('failed-precondition', 'This account has been deleted.');
       requireIndependentBilling(target);
       if (request.type === 'wallet_topup') {
         const topupAccount = { uid: request.requesterId, role: request.requesterRole, name: request.requesterName || target?.name, email: request.requesterEmail };

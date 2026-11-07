@@ -30,6 +30,7 @@ function toHttpsError(error) {
 
 export async function billingServiceRequest(request, { actor, db }) {
   const user = await actor(request);
+  if (['PLATFORM_FINANCE', 'PLATFORM_SUPPORT'].includes(user.role)) throw new HttpsError('permission-denied', 'This role has reporting access only.');
   const operation = request.data?.operation;
   if (typeof operation !== 'string') throw new HttpsError('invalid-argument', 'Provide a billing operation.');
   try {

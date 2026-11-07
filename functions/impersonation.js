@@ -10,5 +10,5 @@ export async function createImpersonationSession(user, target, id, { db, auth })
   const agencyIdentity = target.accountType === 'agency' ? { accountType: 'agency' } : {};
   const customToken = await auth.createCustomToken(id, { role: 'USER', tenantId: target.tenantId, impersonatedBy: user.uid, ...agencyIdentity });
   await db.collection('userManagementAudit').add({ actorId: user.uid, type: 'user.impersonated', userId: id, tenantId: target.tenantId, createdAt: new Date().toISOString() });
-  return { customToken, user: { id, name: target.name || target.email, email: target.email, ...(target.avatar ? { avatar: target.avatar } : {}), ...agencyIdentity }, tenant: { id: target.tenantId, name: target.tenantName || 'Your workspace' } };
+  return { customToken, user: { id, name: target.name || target.email, email: target.email || target.contactEmail || '', ...(target.avatar ? { avatar: target.avatar } : {}), ...agencyIdentity }, tenant: { id: target.tenantId, name: target.tenantName || 'Your workspace' } };
 }

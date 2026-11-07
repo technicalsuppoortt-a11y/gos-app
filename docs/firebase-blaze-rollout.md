@@ -14,7 +14,7 @@ Copilot remains undeployed: the final secret-metadata check returned 404 for `OP
 
 - `.env.local`: `VITE_USE_CLOUD_FUNCTIONS=true`.
 - `functions/.env.gos-app-3c7fb`: `OPENAI_MODEL=gpt-4o`.
-- `DEPLOY_COPILOT=false` temporarily omits Copilot while its owner provisions the secret.
+- `DEPLOY_COPILOT=false` keeps the transcription callable available for preflight and returns a configuration error to authorized callers until the secret is provisioned and the function is redeployed.
 - Default Firebase Storage bucket: `gos-app-3c7fb.firebasestorage.app`, `US-CENTRAL1`.
 - Runtime service account: `gos-app-3c7fb@appspot.gserviceaccount.com`. Its existing Editor grant provides Firebase Admin access. Client rules prohibit role/tenant escalation.
 
