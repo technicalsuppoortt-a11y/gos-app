@@ -24,6 +24,7 @@ import {
 import { Modal, Spinner, downloadCsv, useAction, useCopy, initials } from './ui';
 import { Select } from '../../components/ui/Select';
 import { getRawReceiptUrl, getReceiptFileName } from './ProviderPanels';
+import { ManagedMetaWalletPanel } from '../settings/MetaWalletPanel';
 import { showToast } from '../../utils/toast';
 
 interface AdminBillingHubProps {
@@ -53,7 +54,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
   const identity = useBillingIdentity();
 
   // Active Hub Sub-Tab
-  const [activeSubTab, setActiveSubTab] = useState<'analytics' | 'pending' | 'ledger' | 'coupons'>('analytics');
+  const [activeSubTab, setActiveSubTab] = useState<'meta' | 'analytics' | 'pending' | 'ledger' | 'coupons'>('meta');
   
   // Analytics timeframe
   const [days, setDays] = useState<number>(30);
@@ -272,7 +273,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
   // Export Ledger to CSV
   const handleExportCsv = () => {
     if (!filteredLedgerEntries.length) return;
-    const headers = ['ID', 'Date', 'Type', 'Channel', 'Customer Charge (€)', 'Provider Cost (€)', 'Margin (€)', 'Balance After (€)', 'Status'];
+    const headers = ['ID', 'Date', 'Type', 'Channel', 'Customer Charge (€)', 'Provider Cost (€)', 'Margin (€)', 'Status'];
     const rows = filteredLedgerEntries.map(e => [
       e.id,
       new Date(e.created_at).toLocaleString(),
@@ -281,7 +282,6 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
       (e.customer_charge ?? 0).toFixed(4),
       (e.provider_cost ?? 0).toFixed(4),
       (e.margin ?? 0).toFixed(4),
-      (e.balance_after ?? 0).toFixed(2),
       e.status
     ]);
     downloadCsv(`wallet_ledger_${Date.now()}.csv`, headers, rows);
@@ -292,6 +292,19 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
       {/* Subtab Navigation Pill Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('meta')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeSubTab === 'meta'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <MessageCircle size={15} />
+            <span>{c.t('Meta Connections', 'اتصالات Meta')}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveSubTab('analytics')}
@@ -367,6 +380,8 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
           </div>
         )}
       </div>
+
+      {activeSubTab === 'meta' && <ManagedMetaWalletPanel/>}
 
       {/* Subtab 1: Analytics & Overview */}
       {activeSubTab === 'analytics' && (
@@ -756,7 +771,6 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   <th className="pb-2.5 text-end font-bold uppercase">{c.t('Customer Charge', 'رسوم العميل')}</th>
                   <th className="pb-2.5 text-end font-bold uppercase">{c.t('Provider Cost', 'تكلفة المزود')}</th>
                   <th className="pb-2.5 text-end font-bold uppercase">{c.t('Net Margin', 'صافي الربح')}</th>
-                  <th className="pb-2.5 text-end font-bold uppercase">{c.t('Balance After', 'الرصيد بعد')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
@@ -782,14 +796,11 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                     <td className="py-2.5 text-end font-bold text-emerald-600 dark:text-emerald-400">
                       +€{(entry.margin ?? 0).toFixed(4)}
                     </td>
-                    <td className="py-2.5 text-end text-slate-600 dark:text-slate-400">
-                      €{(entry.balance_after ?? 0).toFixed(2)}
-                    </td>
                   </tr>
                 ))}
                 {filteredLedgerEntries.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500 font-sans">
+                    <td colSpan={6} className="py-8 text-center text-slate-500 font-sans">
                       {c.t('No transactions found matching your filters.', 'لا توجد عمليات تطابق خيارات التصفية.')}
                     </td>
                   </tr>

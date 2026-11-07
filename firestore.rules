@@ -173,7 +173,7 @@ service cloud.firestore {
       allow read: if platformFinance();
       allow write: if false;
     }
-    match /billingSettings/{providerId} { allow read: if signedIn(); allow write: if false; }
+    match /billingSettings/{providerId} { allow read: if providerId != 'creditWeights' && signedIn(); allow write: if false; }
     match /billingCoupons/{couponId} {
       allow read: if signedIn() && (
         resource.data.ownerId == request.auth.uid ||

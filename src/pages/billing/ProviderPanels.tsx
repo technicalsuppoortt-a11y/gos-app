@@ -988,18 +988,19 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
   const [planId, setPlanId] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
-  const balance = (id: string) => wallets.find(wallet => wallet.id === id)?.balance ?? 0;
+  const [bucket, setBucket] = useState<'ai' | 'email'>('ai');
+  const balance = (id: string, kind: 'ai' | 'email' = 'ai') => wallets.find(wallet => wallet.id === id)?.[kind === 'email' ? 'emailCredits' : 'balance'] ?? 0;
   const rows = useMemo(() => subscribers
     .filter(sub => status === 'all' || effectiveStatus(sub) === status)
     .filter(sub => `${sub.subscriberName} ${sub.subscriberEmail} ${sub.plan?.name?.en}`.toLowerCase().includes(search.trim().toLowerCase()))
     .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')), [subscribers, status, search]);
   const assignable = plans.filter(plan => plan.kind !== 'trial');
-  const close = () => { setDialog(null); setPlanId(''); setAmount(''); setReason(''); };
+  const close = () => { setDialog(null); setPlanId(''); setAmount(''); setReason(''); setBucket('ai'); };
 
   const submit = () => {
     if (!dialog) return;
     if (dialog.type === 'assign') return run('dialog', () => billing('assignPlan', { subscriberId: dialog.sub.id, planId }), c.t('Plan assigned.', 'تم تعيين الباقة.')).then(ok => ok && close());
-    if (dialog.type === 'credits') return run('dialog', () => billing(isPlatform ? 'adjustCredits' : 'transferCredits', { subscriberId: dialog.sub.id, amount: Number(amount), reason }), isPlatform ? c.t('Credits adjusted.', 'تم تعديل الرصيد.') : c.t('Credits transferred from your wallet.', 'تم تحويل الرصيد من محفظتك.')).then(ok => ok && close());
+    if (dialog.type === 'credits') return run('dialog', () => billing(isPlatform ? 'adjustCredits' : 'transferCredits', { subscriberId: dialog.sub.id, amount: Number(amount), reason, bucket }), isPlatform ? c.t('Credits adjusted.', 'تم تعديل الرصيد.') : c.t('Credits transferred from your wallet.', 'تم تحويل الرصيد من محفظتك.')).then(ok => ok && close());
   };
 
   return (
@@ -1027,7 +1028,7 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
                   <td><b>{c.pick(sub.plan?.name)}</b><div style={{ color: 'var(--bl-muted)', fontSize: 11.5 }}>{sub.plan ? billingLabel(sub.plan, c) : ''}{sub.extraSeats ? ` · +${c.num(sub.extraSeats)} ${c.t('seats', 'مقاعد')}` : ''}</div></td>
                   <td><StatusPill status={effectiveStatus(sub)} c={c} />{sub.creditBlocked && <div><span className="bl-pill amber plain" style={{ marginBlockStart: 4 }}>{c.t('Credits blocked', 'الرصيد متوقف')}</span></div>}</td>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--bl-muted)' }}>{sub.currentPeriodEnd ? c.date(sub.currentPeriodEnd) : c.t('Never (lifetime)', 'لا ينتهي')}</td>
-                  <td className="bl-credits">{c.num(balance(sub.id))}</td>
+                  <td className="bl-credits">{c.num(balance(sub.id))} {c.t('AI', 'ذكاء اصطناعي')} · {c.num(balance(sub.id, 'email'))} {c.t('email', 'بريد')}</td>
                   <td><div className="bl-actions">
                     <button type="button" className="bl-btn sm" onClick={() => setDialog({ type: 'ledger', sub })}><History size={13} />{c.t('History', 'السجل')}</button>
                     <button type="button" className="bl-btn sm" onClick={() => setDialog({ type: 'credits', sub })}>{isPlatform ? <SlidersHorizontal size={13} /> : <Coins size={13} />}{isPlatform ? c.t('Adjust', 'تعديل') : c.t('Send credits', 'إرسال رصيد')}</button>
@@ -1064,7 +1065,8 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
             </div>
           ) : (
             <div className="bl-form">
-              <label className="bl-field"><span>{c.t('Credits', 'الرصيد')}</span><input className="bl-input" type="number" step={1} min={isPlatform ? undefined : 1} value={amount} onChange={event => setAmount(event.target.value)} placeholder={isPlatform ? c.t('Use a negative value to deduct', 'استخدم قيمة سالبة للخصم') : '500'} /><small>{c.t('Current balance', 'الرصيد الحالي')}: {c.num(balance(dialog.sub.id))}</small></label>
+              <label className="bl-field"><span>{c.t('Credit type', 'نوع الرصيد')}</span><DashboardSelect className="bl-input" value={bucket} onChange={event => setBucket(event.target.value === 'email' ? 'email' : 'ai')}><option value="ai">{c.t('AI credits', 'رصيد الذكاء الاصطناعي')}</option><option value="email">{c.t('Email credits', 'رصيد البريد الإلكتروني')}</option></DashboardSelect></label>
+              <label className="bl-field"><span>{c.t('Credits', 'الرصيد')}</span><input className="bl-input" type="number" step={1} min={isPlatform ? undefined : 1} value={amount} onChange={event => setAmount(event.target.value)} placeholder={isPlatform ? c.t('Use a negative value to deduct', 'استخدم قيمة سالبة للخصم') : '500'} /><small>{c.t('Current balance', 'الرصيد الحالي')}: {c.num(balance(dialog.sub.id, bucket))}</small></label>
               <label className="bl-field"><span>{c.t('Reason', 'السبب')}{isPlatform && ' *'}</span><input className="bl-input" maxLength={200} value={reason} onChange={event => setReason(event.target.value)} placeholder={c.t('Recorded in the audit ledger', 'يُسجل في سجل المراجعة')} /></label>
               {!isPlatform && <div className="bl-banner warn"><Coins size={16} /><p>{c.t('Sent credits are deducted from your wallet and expire at the end of the client’s monthly cycle.', 'الرصيد المرسل يُخصم من محفظتك وينتهي بنهاية الدورة الشهرية للعميل.')}</p></div>}
             </div>
@@ -1075,7 +1077,7 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
   );
 }
 
-const ledgerType = (entry: LedgerEntry, c: Copy) => ({ grant: c.t('Plan credits', 'رصيد الباقة'), topup: c.t('Top-up', 'شحن'), transfer_out: c.t('Sent to client', 'مرسل لعميل'), expire: c.t('Expired', 'منتهي'), adjustment: c.t('Adjustment', 'تعديل'), usage: c.t('Usage', 'استهلاك') }[entry.type] ?? entry.type);
+const ledgerType = (entry: LedgerEntry, c: Copy) => ({ grant: c.t('Plan credits', 'رصيد الباقة'), topup: c.t('Top-up', 'شحن'), transfer_out: c.t('Sent to client', 'مرسل لعميل'), expire: c.t('Expired', 'منتهي'), adjustment: c.t('Adjustment', 'تعديل'), usage: c.t('Usage', 'استهلاك'), refund: c.t('Refund', 'استرداد') }[entry.type] ?? entry.type);
 
 export function LedgerTable({ entries, compact }: { entries: LedgerEntry[]; compact?: boolean }) {
   const c = useCopy();
@@ -1089,7 +1091,7 @@ export function LedgerTable({ entries, compact }: { entries: LedgerEntry[]; comp
             <tr key={entry.id}>
               <td style={{ whiteSpace: 'nowrap', color: 'var(--bl-muted)' }}>{c.dateTime(entry.createdAt)}</td>
               <td><span className={`bl-pill plain ${entry.amount > 0 ? 'green' : entry.type === 'expire' ? 'amber' : 'red'}`}>{entry.amount > 0 ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}{ledgerType(entry, c)}</span></td>
-              <td style={{ color: 'var(--bl-muted)' }}>{entry.description}</td>
+              <td style={{ color: 'var(--bl-muted)' }}>{entry.description}<br /><small>{entry.bucket === 'email' ? c.t('Email credits', 'رصيد البريد الإلكتروني') : c.t('AI credits', 'رصيد الذكاء الاصطناعي')}</small></td>
               <td className={`num ${entry.amount > 0 ? 'pos' : 'neg'}`} dir="ltr" style={{ textAlign: c.ar ? 'right' : 'left' }}>{entry.amount > 0 ? '+' : ''}{c.num(entry.amount)}</td>
               <td className="num">{c.num(entry.balanceAfter)}</td>
             </tr>

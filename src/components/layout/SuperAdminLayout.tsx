@@ -14,7 +14,6 @@ import '../../pages/admin/admin-workspace.css';
 import './super-admin.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
-import { WalletBadge } from './WalletBadge';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
   { label: 'Overview', to: '/super-admin', icon: LayoutDashboard, end: true },
@@ -22,7 +21,7 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
   { label: 'Plans & Credits', ar: 'الباقات والرصيد', to: '/super-admin/plans', icon: Layers },
   { label: 'Templates', ar: 'القوالب', to: '/super-admin/dashboard-management', icon: Grid2X2 },
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
-  { label: 'Wallet', to: '/super-admin/wallet', icon: Wallet },
+  { label: 'Meta Wallet', to: '/super-admin/wallet', icon: Wallet },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
@@ -149,7 +148,7 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           )}
         </div>
-        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <><CreditBadge/><WalletBadge/></>}
+        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <CreditBadge/>}
         {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink>}
         {canOpen('/super-admin/logs') && <button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate('/super-admin/logs')}><Bell size={17}/><i/></button>}
         <button className="sa-account" onClick={() => navigate('/super-admin/users')} disabled={!canOpen('/super-admin/users')}><span>{name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><b>{name}</b></button>

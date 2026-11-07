@@ -176,6 +176,10 @@ textarea.bl-input { height: auto; min-height: 72px; padding: 10px 12px; resize: 
 .bl-table .num { font-variant-numeric: tabular-nums; font-weight: 700; }
 .bl-table .pos { color: var(--bl-success); }
 .bl-table .neg { color: var(--bl-danger); }
+.bl .bl-credit-actions { min-width: 490px; }
+.bl-credit-cost { display: flex; align-items: center; gap: 8px; }
+.bl-credit-cost .bl-input { width: 90px; }
+.bl-credit-cost small { color: var(--bl-muted); }
 .bl-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .bl-name b {
   display: inline-flex;

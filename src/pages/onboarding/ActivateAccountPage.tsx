@@ -89,7 +89,7 @@ function ActivateAccountForm() {
           <>
             <h1 id="activation-title">{t('Account Activated!', 'تم تفعيل الحساب!')}</h1>
             <p>{t('Your account is active! Please select a subscription plan to unlock your workspace tools.', 'تم تفعيل حسابك بنجاح! يرجى اختيار باقة اشتراك لفتح الوصول الكامل لأدوات مساحة عملك.')}</p>
-            <button type="button" className="gos-activation-primary" onClick={() => navigate('/dashboard/settings/plans', { replace: true })}>{t('Choose a Subscription Plan', 'اختيار باقة الاشتراك')}<ArrowRight size={17}/></button>
+            <button type="button" className="gos-activation-primary" onClick={() => navigate('/dashboard/settings/billing?tab=plans', { replace: true })}>{t('Choose a Subscription Plan', 'اختيار باقة الاشتراك')}<ArrowRight size={17}/></button>
           </>
         )}
       </div> : loading ? <div className="gos-activation-loading" role="status"><LoaderCircle size={25} className="animate-spin"/><p>{t('Checking your invitation…', 'جارٍ التحقق من دعوتك…')}</p></div> : linkError ? <div className="gos-activation-invalid" role="alert">

@@ -27,6 +27,22 @@ const { default: reducer, loginSuccess, logout, startImpersonation, stopImperson
 const admin = { user: { id: 'admin', name: 'Admin', email: 'admin@test.com' }, role: 'ADMIN', tenant: { id: 'admin-tenant' }, token: 'admin-token' };
 const user = { user: { id: 'user', name: 'User', email: 'user@test.com' }, role: 'USER', tenant: { id: 'user-tenant' }, token: 'user-token' };
 
+test('cash wallet visibility is limited to direct user sessions without an admin identity', () => {
+  const { canViewCashWallet } = load('../src/store/cashWalletVisibility.ts');
+  const direct = reducer(undefined, loginSuccess(user));
+  assert.equal(canViewCashWallet({ auth: direct }), true);
+  for (const role of ['ADMIN', 'SUPER_ADMIN']) {
+    const original = reducer(undefined, loginSuccess({ ...admin, role }));
+    const switched = reducer(original, startImpersonation(user));
+    assert.equal(canViewCashWallet({ auth: original }), false);
+    assert.equal(switched.role, 'USER');
+    assert.equal(canViewCashWallet({ auth: switched }), false);
+  }
+  const restricted = reducer(undefined, loginSuccess({ ...user, user: { ...user.user, cashWalletRestricted: true } }));
+  assert.equal(canViewCashWallet({ auth: restricted }), false);
+  assert.equal(canViewCashWallet({ auth: reducer(undefined, { type: 'init' }) }), false);
+});
+
 test('missing, malformed and throwing timestamps never reach formatters', () => {
   for (const value of [null, undefined, '', 'corrupt', {}, false, NaN, Infinity, 1e20, new Date('invalid'), { seconds: Infinity }, { toDate() { throw new Error('bad'); } }, { toMillis: () => NaN }]) assert.equal(safeDate(value), null);
 });

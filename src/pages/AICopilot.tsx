@@ -177,7 +177,13 @@ export const AICopilot: React.FC = () => {
       if (attachedFile && /\.(pdf|docx|csv|md|txt|json)$/i.test(attachedFile.name)) {
         setStatusText('Indexing attached file into Knowledge Base…');
         const form = new FormData(); form.append('file', attachedFile);
-        await gosApi.createSource(form).catch(() => {});
+        try { await gosApi.createSource(form); }
+        catch (error) {
+          setPendingMedia(attachedMedia);
+          pendingFileRef.current = attachedFile;
+          setPrompt(rawPrompt);
+          throw error;
+        }
         setStatusText('Reviewing your workspace…');
       }
       const transcript = messages.findLast(message => message.transcript)?.transcript;

@@ -1,6 +1,6 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 
-export const permissionTools = { copilot: 'ai-copilot', funnels: 'funnel-builder', crm: 'crm-pipeline', inbox: 'unified-inbox', 'inbox.send': 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'follow-up': 'ai-followup', analytics: 'analytics-bi', domains: 'custom-domains', integrations: 'webhooks-api', 'email-sms': 'email-sms', portal: 'client-portal' };
+export const permissionTools = { copilot: 'ai-copilot', funnels: 'funnel-builder', forms: 'funnel-builder', crm: 'crm-pipeline', inbox: 'unified-inbox', 'inbox.send': 'unified-inbox', booking: 'booking-engine', products: 'products-payments', 'follow-up': 'ai-followup', analytics: 'analytics-bi', domains: 'custom-domains', integrations: 'webhooks-api', 'email-sms': 'email-sms', portal: 'client-portal' };
 export function toolAvailable(tool, plan = '') {
   if (!tool) return true;
   if (tool.enabled === false || ['Disabled', 'Maintenance'].includes(tool.status ?? '')) return false;

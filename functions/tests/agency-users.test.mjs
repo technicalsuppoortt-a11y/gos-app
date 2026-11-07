@@ -81,6 +81,7 @@ test('Agency user usage uses only the creating admin plan and credits', async ()
   assert.equal(debit.workspaceId, agency.tenantId);
   await assert.rejects(run('consume', { ...usage, idempotencyKey: 'second' }, system), { code: 'resource-exhausted' });
   assert.deepEqual(await run('sharedBilling', { subscriberId: 'someone-else' }, agency), {
+    emailCredits: 0,
     active: true, credits: 0, communicationBalance: 2, currency: 'EUR',
   });
   await assert.rejects(run('initializeAccountPlan', { subscriberId: agency.uid }, admin), { code: 'failed-precondition' });

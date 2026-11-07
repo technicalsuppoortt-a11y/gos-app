@@ -19,6 +19,7 @@
 // Writes are buffered and committed only if the whole operation succeeds (transaction semantics).
 
 import { agencyBillingOwnerId, isAgencyBillingOwner } from './agency-billing.js';
+import { CREDIT_ACTIONS, MAX_CREDIT_WEIGHT, creditActions, creditBucket, creditRule, creditSettingsPath } from './credit-actions.js';
 
 export const PLATFORM = 'platform';
 // Plan capabilities (entitlements a plan can unlock). 'ai' is a capability only — never a billable channel.
@@ -54,9 +55,9 @@ export const DEFAULT_BILLING_SETTINGS = {
 };
 
 export class BillingError extends Error {
-  constructor(code, message) { super(message); this.name = 'BillingError'; this.code = code; }
+  constructor(code, message, details) { super(message); this.name = 'BillingError'; this.code = code; this.details = details; }
 }
-const fail = (code, message) => { throw new BillingError(code, message); };
+const fail = (code, message, details) => { throw new BillingError(code, message, details); };
 
 // ───────────────────────── dates ─────────────────────────
 export function addDays(start, days) { return new Date(new Date(start).getTime() + days * 86400000).toISOString(); }
@@ -92,7 +93,8 @@ export function entitledTools(sub, now) {
   return list;
 }
 export function planSnapshot(plan) {
-  return { id: plan.id, kind: plan.kind, name: plan.name, billingType: plan.billingType, durationDays: plan.durationDays ?? null, price: plan.price, currency: plan.currency, credits: plan.credits, tools: plan.tools ?? [], channels: plan.channels ?? [], limits: plan.limits ?? {} };
+  const aiCredits = plan.aiCredits ?? plan.credits ?? 0;
+  return { id: plan.id, kind: plan.kind, name: plan.name, billingType: plan.billingType, durationDays: plan.durationDays ?? null, price: plan.price, currency: plan.currency, credits: aiCredits, aiCredits, emailCredits: plan.emailCredits ?? 0, tools: plan.tools ?? [], channels: plan.channels ?? [], limits: plan.limits ?? {} };
 }
 
 // ───────────────────────── validation ─────────────────────────
@@ -133,8 +135,9 @@ export function normalizePlan(input, { ownerId, allowedTools = null, existing = 
   const billingType = kind === 'plan' ? (BILLING_TYPES.includes(input.billingType) ? input.billingType : fail('invalid-argument', 'Choose a billing type.')) : kind === 'trial' ? 'fixed' : 'once';
   const durationDays = kind === 'trial' ? int(input.durationDays, 'Trial duration (days)', 1, 365) : billingType === 'fixed' ? int(input.durationDays, 'Duration (days)', 1, 3650) : null;
   const addonType = kind === 'addon' ? (ADDON_TYPES.includes(input.addonType) ? input.addonType : fail('invalid-argument', 'Choose an add-on type.')) : null;
-  const credits = int(input.credits ?? 0, kind === 'addon' ? 'Credits' : 'Credits per month', 0, 10000000);
-  if (addonType === 'credits' && credits < 1) fail('invalid-argument', 'A credit pack must include at least 1 credit.');
+  const credits = int(input.aiCredits ?? input.credits ?? existing?.aiCredits ?? existing?.credits ?? 0, 'AI credits', 0, 10000000);
+  const emailCredits = int(input.emailCredits ?? existing?.emailCredits ?? 0, 'Email credits', 0, 10000000);
+  if (addonType === 'credits' && credits + emailCredits < 1) fail('invalid-argument', 'A credit pack must include at least 1 credit.');
   const addonSeats = addonType === 'seats' ? int(input.addonSeats, 'Extra seats', 1, 1000) : null;
   const addonTool = addonType === 'tool' ? (TOOL_IDS.includes(input.addonTool) ? input.addonTool : fail('invalid-argument', 'Choose the tool this add-on unlocks.')) : null;
   const requested = addonTool ? [...tools, addonTool] : tools;
@@ -151,7 +154,7 @@ export function normalizePlan(input, { ownerId, allowedTools = null, existing = 
     features: { en: lines(input.features?.en, 'Feature'), ar: lines(input.features?.ar, 'Feature') },
     price: kind === 'trial' ? 0 : amount(input.price, 'Price'),
     currency: CURRENCIES.includes(input.currency) ? input.currency : 'USD',
-    billingType, durationDays, credits,
+    billingType, durationDays, credits, aiCredits: credits, emailCredits,
     tools: kind === 'addon' ? [] : tools,
     channels: ownerId === PLATFORM ? [...new Set((Array.isArray(input.channels) ? input.channels : existing?.channels ?? []).filter(channel => CHANNEL_IDS.includes(channel)))] : [],
     limits: kind === 'addon' ? {} : { clients: audience === 'admin' ? int(input.limits?.clients ?? 0, 'Client limit', 0, 100000) : 0, seats: int(input.limits?.seats ?? 1, 'Team seats', 0, 10000) },
@@ -459,15 +462,17 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   const providerOf = account => account.role === 'ADMIN' ? PLATFORM : account.role === 'USER' ? (account.supportParentId || PLATFORM) : PLATFORM;
   const ownerOf = () => role === 'SUPER_ADMIN' ? PLATFORM : role === 'ADMIN' ? actor.uid : fail('permission-denied', 'Only administrators can manage plans.');
   const canDecide = providerId => providerId === PLATFORM ? role === 'SUPER_ADMIN' : actor.uid === providerId || role === 'SUPER_ADMIN';
-  const identifier = (value, label) => (typeof value === 'string' && value && !value.includes('/') && value.length <= 200) ? value : fail('invalid-argument', `Provide a valid ${label}.`);
+  const identifier = (value, label, max = 200) => (typeof value === 'string' && value && !value.includes('/') && value.length <= max) ? value : fail('invalid-argument', `Provide a valid ${label}.`);
 
+  const creditField = bucket => bucket === 'email' ? 'emailCredits' : 'balance';
+  const creditBalance = (wallet, bucket) => wallet?.[creditField(bucket)] ?? 0;
   function entry(wallet, type, delta, description, extra = {}) {
     const id = extra.entryId ?? store.id();
     delete extra.entryId;
-    store.set(`billingLedger/${id}`, { id, walletId: wallet.id, providerId: wallet.providerId, type, amount: delta, balanceAfter: wallet.balance, description, actorId: actor.uid, createdAt: now, ...extra });
+    store.set(`billingLedger/${id}`, { id, walletId: wallet.id, providerId: wallet.providerId, type, amount: delta, balanceAfter: creditBalance(wallet, extra.bucket), description, actorId: actor.uid, createdAt: now, ...extra });
   }
-  const newWallet = (uid, accountRole, providerId) => ({ id: uid, ownerId: uid, role: accountRole, providerId, balance: 0, createdAt: now, updatedAt: now });
-  const saveWallet = wallet => store.set(`billingWallets/${wallet.id}`, { ...wallet, updatedAt: now });
+  const newWallet = (uid, accountRole, providerId) => ({ id: uid, ownerId: uid, role: accountRole, providerId, balance: 0, aiCredits: 0, emailCredits: 0, createdAt: now, updatedAt: now });
+  const saveWallet = wallet => store.set(`billingWallets/${wallet.id}`, { ...wallet, aiCredits: wallet.balance, emailCredits: wallet.emailCredits ?? 0, updatedAt: now });
   const saveSub = sub => store.set(`billingSubscriptions/${sub.id}`, { ...sub, updatedAt: now });
 
   // ── Communication Wallet (separate bucket for external carrier costs) ──
@@ -501,32 +506,45 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   }
 
   function expireBalance(wallet, reason) {
-    if (wallet.balance <= 0) return;
-    const leftover = wallet.balance;
-    wallet.balance = 0;
-    entry(wallet, 'expire', -leftover, reason);
+    for (const bucket of ['ai', 'email']) {
+      const leftover = creditBalance(wallet, bucket);
+      if (leftover <= 0) continue;
+      wallet[creditField(bucket)] = 0;
+      entry(wallet, 'expire', -leftover, reason, { bucket });
+    }
   }
 
   /** Move credits from the provider to the subscriber. The platform supply is unlimited. */
-  async function transfer(wallet, providerId, credits, type, description, extra = {}) {
-    if (credits <= 0) return;
+  async function transfer(wallet, providerId, credits, type, description, extra = {}, emailCredits = 0) {
+    const amounts = [['ai', credits], ['email', emailCredits]].filter(([, value]) => value > 0);
+    if (!amounts.length) return;
+    let pw;
     if (providerId !== PLATFORM) {
       const provider = await freshen(providerId);
       if (!isLive(provider.sub, now)) fail('failed-precondition', 'The provider subscription is not active, so credits cannot be issued. The provider must renew first.');
-      const pw = provider.wallet ?? newWallet(providerId, 'ADMIN', PLATFORM);
-      if (pw.balance < credits) fail('failed-precondition', `Insufficient provider credits: ${credits} required, ${pw.balance} available. The provider must request a credit add-on from the platform.`);
-      pw.balance -= credits;
-      entry(pw, 'transfer_out', -credits, description, { counterpartyId: wallet.id, ...extra });
-      saveWallet(pw);
+      pw = provider.wallet ?? newWallet(providerId, 'ADMIN', PLATFORM);
+      for (const [bucket, value] of amounts) {
+        const available = creditBalance(pw, bucket);
+        if (available < value) fail('failed-precondition', `Insufficient provider credits: ${value} ${bucket === 'ai' ? 'AI' : 'email'} credits required, ${available} available. The provider must request a credit add-on from the platform.`);
+      }
     }
-    wallet.balance += credits;
-    entry(wallet, type, credits, description, { counterpartyId: providerId, ...extra });
+    for (const [bucket, value] of amounts) {
+      const field = creditField(bucket);
+      if (pw) {
+        pw[field] = creditBalance(pw, bucket) - value;
+        entry(pw, 'transfer_out', -value, description, { counterpartyId: wallet.id, bucket, ...extra });
+      }
+      wallet[field] = creditBalance(wallet, bucket) + value;
+      entry(wallet, type, value, description, { counterpartyId: providerId, bucket, ...extra });
+    }
+    if (pw) saveWallet(pw);
   }
 
   /** Apply lazy lifecycle transitions: period expiry and monthly credit cycles (no rollover). */
   async function freshen(uid) {
     const sub = await store.get(`billingSubscriptions/${uid}`);
     let wallet = await store.get(`billingWallets/${uid}`);
+    if (wallet) wallet.balance = wallet.balance ?? wallet.aiCredits ?? 0;
     if (!sub) return { sub, wallet };
     if (['active', 'trialing'].includes(sub.status) && sub.currentPeriodEnd && sub.currentPeriodEnd <= now) {
       sub.status = 'expired';
@@ -542,7 +560,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       sub.creditCycleStart = start;
       sub.creditCycleEnd = cycleEndFrom(start, sub.currentPeriodEnd);
       try {
-        await transfer(wallet, sub.providerId, sub.plan?.credits ?? 0, 'grant', `Monthly credits · ${sub.plan?.name?.en ?? 'Plan'}`, { refType: 'cycle', refId: sub.creditCycleStart });
+        await transfer(wallet, sub.providerId, sub.plan?.aiCredits ?? sub.plan?.credits ?? 0, 'grant', `Monthly credits · ${sub.plan?.name?.en ?? 'Plan'}`, { refType: 'cycle', refId: sub.creditCycleStart }, sub.plan?.emailCredits ?? 0);
         sub.creditBlocked = false;
       } catch (error) {
         if (!(error instanceof BillingError)) throw error;
@@ -590,7 +608,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       trialUsedAt: kind === 'trial' ? now : previous?.trialUsedAt ?? null,
       extraSeats: 0, extraTools: [], renewals: 0, creditBlocked: false, createdAt: previous?.createdAt ?? now,
     };
-    await transfer(wallet, providerId, plan.credits, 'grant', `${kind === 'trial' ? 'Free trial' : 'Plan'} credits · ${plan.name.en}`, ref);
+    await transfer(wallet, providerId, plan.aiCredits ?? plan.credits ?? 0, 'grant', `${kind === 'trial' ? 'Free trial' : 'Plan'} credits · ${plan.name.en}`, ref, plan.emailCredits ?? 0);
     saveWallet(wallet); saveSub(sub);
     return sub;
   }
@@ -600,7 +618,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     if (!isLive(sub, now)) fail('failed-precondition', 'An active subscription is required before adding add-ons.');
     if (plan.addonType === 'credits') {
       const wallet = existing ?? newWallet(account.uid, account.role, providerId);
-      await transfer(wallet, providerId, plan.credits * quantity, 'topup', `Add-on · ${plan.name.en} ×${quantity} (expires at cycle end)`, ref);
+      await transfer(wallet, providerId, (plan.aiCredits ?? plan.credits ?? 0) * quantity, 'topup', `Add-on · ${plan.name.en} ×${quantity} (expires at cycle end)`, ref, (plan.emailCredits ?? 0) * quantity);
       saveWallet(wallet);
     } else if (plan.addonType === 'seats') {
       sub.extraSeats = (sub.extraSeats ?? 0) + plan.addonSeats * quantity;
@@ -629,11 +647,11 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       }
       sub.extraTools = [...new Set([...(sub.extraTools ?? []), addon.addonTool])];
       saveSub(sub);
-    } else if (addon.credits > 0) {
+    } else if (addon.credits > 0 || addon.emailCredits > 0) {
       const wallet = existing ?? newWallet(account.uid, account.role, providerId);
       const totalCredits = addon.type === 'unit' ? addon.credits : (addon.credits * addon.qty);
       const addonLabel = typeof addon.name === 'string' ? addon.name : (addon.name?.en || 'Add-on credits');
-      await transfer(wallet, providerId, totalCredits, 'topup', `${addonLabel} (expires at cycle end)`, ref);
+      await transfer(wallet, providerId, totalCredits, 'topup', `${addonLabel} (expires at cycle end)`, ref, (addon.emailCredits ?? 0) * addon.qty);
       saveWallet(wallet);
     }
     sub.addons = [...(sub.addons || []), addon];
@@ -780,6 +798,31 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (role === 'SYSTEM' && (await store.get(`users/${uid}`))?.accountType === 'agency') return { subscription: null, wallet: null };
       const { sub, wallet } = await freshen(uid);
       return { subscription: sub ?? null, wallet: wallet ?? null };
+    },
+
+    async getCreditWeights() {
+      const settings = await store.get(creditSettingsPath(ownerOf()));
+      return { revision: settings?.revision ?? 0, rules: settings?.rules ?? {} };
+    },
+
+    async saveCreditWeights() {
+      const providerId = ownerOf();
+      const path = creditSettingsPath(providerId);
+      const current = await store.get(path);
+      if (data.revision !== (current?.revision ?? 0)) fail('aborted', 'Credit settings changed. Reload the latest settings before saving.');
+      if (!data.rules || typeof data.rules !== 'object' || Array.isArray(data.rules)) fail('invalid-argument', 'Provide credit rules.');
+      const rules = { ...current?.rules };
+      for (const [action, value] of Object.entries(data.rules)) {
+        if (!creditActions.includes(action) || typeof value?.enabled !== 'boolean' || !Number.isInteger(value.weight)) {
+          fail('invalid-argument', 'Choose a valid feature, availability and whole-number credit weight.');
+        }
+        const weight = int(value.weight, 'Credit weight', 0, MAX_CREDIT_WEIGHT);
+        if (value.enabled && weight === CREDIT_ACTIONS[action][4]) delete rules[action];
+        else rules[action] = { enabled: value.enabled, weight };
+      }
+      const revision = (current?.revision ?? 0) + 1;
+      store.set(path, { providerId, rules, revision, updatedAt: now, updatedBy: actor.uid });
+      return { revision, rules };
     },
 
     async savePlan() {
@@ -1019,7 +1062,8 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       const { sub, wallet: existing } = await freshen(account.uid);
       if (!isLive(sub, now)) fail('failed-precondition', 'The client needs an active subscription to receive credits.');
       const wallet = existing ?? newWallet(account.uid, account.role, providerId);
-      await transfer(wallet, providerId, credits, 'topup', `${reason} (expires at cycle end)`, { refType: 'transfer' });
+      const email = data.bucket === 'email';
+      await transfer(wallet, providerId, email ? 0 : credits, 'topup', `${reason} (expires at cycle end)`, { refType: 'transfer' }, email ? credits : 0);
       saveWallet(wallet);
       return { wallet };
     },
@@ -1031,34 +1075,67 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (!delta) fail('invalid-argument', 'Enter a non-zero adjustment.');
       const reason = text(data.reason, 200, 'Reason', true);
       const wallet = (await freshen(account.uid)).wallet ?? newWallet(account.uid, account.role, providerId);
-      if (wallet.balance + delta < 0) fail('failed-precondition', 'The adjustment would make the balance negative.');
-      wallet.balance += delta;
-      entry(wallet, 'adjustment', delta, reason, { refType: 'adjustment' });
+      const bucket = data.bucket === 'email' ? 'email' : 'ai';
+      const balance = creditBalance(wallet, bucket) + delta;
+      if (balance < 0) fail('failed-precondition', 'The adjustment would make the balance negative.');
+      wallet[creditField(bucket)] = balance;
+      entry(wallet, 'adjustment', delta, reason, { refType: 'adjustment', bucket });
       saveWallet(wallet);
       return { wallet };
     },
 
-    /** Server-only usage deduction (AI generation, WhatsApp/email sends…). Idempotent per usage event. */
-    async consume() {
+    /** Server-only usage deduction. Pricing, payer, and entitlement are resolved in this transaction. */
+    async checkUsage() { return handlers.consume(true); },
+
+    async consume(checkOnly = false) {
       if (role !== 'SYSTEM') fail('permission-denied', 'Usage can only be recorded by the server.');
       const subscriberId = identifier(data.subscriberId, 'account');
       const account = await store.get(`users/${subscriberId}`);
       const agency = account?.accountType === 'agency';
       if (agency && account.status !== 'Active') fail('permission-denied', 'An active Agency user account is required.');
-      const payer = agency ? await agencyPayer(account) : { uid: subscriberId };
+      if (data.action && (!account || account.deletedAt || /^(suspended|deactivated|deleted|inactive|pending)$/i.test(account.status ?? ''))) fail('permission-denied', 'An active account is required.');
+      const payer = agency ? await agencyPayer(account) : { uid: subscriberId, role: account?.role };
       const eventId = identifier(data.idempotencyKey, 'usage event');
-      const entryId = agency ? `usage_agency_${subscriberId}_${eventId}` : `usage_${eventId}`;
-      if (await store.get(`billingLedger/${entryId}`)) return { duplicate: true };
-      const credits = int(data.amount, 'Credits', 1, 1000000);
+      const action = data.action;
+      if (action && !creditActions.includes(action)) fail('invalid-argument', 'Unknown credit action.');
+      const bucket = action ? creditBucket(action) : 'ai';
+      const entryId = action ? `usage_${subscriberId.length}_${subscriberId}_${action}_${eventId}` : agency ? `usage_agency_${subscriberId}_${eventId}` : `usage_${eventId}`;
+      if (!checkOnly && await store.get(`billingLedger/${entryId}`)) return { duplicate: true };
       const { sub, wallet } = await freshen(payer.uid);
       if (!isLive(sub, now) && !(payer.role === 'SUPER_ADMIN' && !sub)) fail('failed-precondition', 'No active subscription. Renew to continue using this feature.');
       if (agency && sub && data.tool && sub.plan?.tools?.length && !entitledTools(sub, now).includes(data.tool)) fail('failed-precondition', 'The Platform Admin plan does not include this tool.');
-      if (agency && sub && data.usageType === 'ai' && sub.plan?.channels?.length && !sub.plan.channels.includes('ai')) fail('failed-precondition', 'The Platform Admin plan does not include AI usage.');
-      if (!wallet || wallet.balance < credits) fail('resource-exhausted', 'Not enough credits. Request a credit add-on to continue.');
-      wallet.balance -= credits;
-      entry(wallet, 'usage', -credits, text(data.description, 200, 'Description') || `Usage · ${text(data.usageType, 40, 'Usage type') || 'service'}`, { entryId, refType: 'usage', refId: eventId, usageType: text(data.usageType, 40, 'Usage type'), ...(agency ? { subscriberId, workspaceId: account.tenantId } : {}) });
+      if (sub?.plan?.channels?.length && (action || agency && data.usageType === 'ai') && !sub.plan.channels.includes(bucket)) fail('failed-precondition', `Your plan does not include ${bucket === 'ai' ? 'AI' : 'email'} usage. Upgrade to continue.`);
+      const providerId = agency ? payer.role === 'SUPER_ADMIN' ? PLATFORM : payer.uid : sub?.providerId ?? providerOf(account ?? {});
+      const settings = action ? await store.get(creditSettingsPath(providerId)) : null;
+      const rule = action ? creditRule(action, settings?.rules) : null;
+      if (rule && !rule.enabled) fail('failed-precondition', `${CREDIT_ACTIONS[action][2]} is disabled by your billing administrator.`);
+      const credits = rule ? rule.weight * int(data.quantity ?? 1, 'Usage quantity', 1, 10000) : int(data.amount, 'Credits', 1, 1000000);
+      const available = creditBalance(wallet, bucket);
+      if (available < credits) fail('resource-exhausted', action
+        ? `Not enough ${bucket === 'email' ? 'email' : 'AI'} credits. ${agency ? 'Ask your billing administrator to top up or upgrade.' : 'Upgrade your plan or request a credit add-on to continue.'}`
+        : 'Not enough credits. Request a credit add-on to continue.', action ? { creditBucket: bucket, shared: agency, accountRole: account.role } : undefined);
+      if (checkOnly) return { balance: available };
+      const chargedWallet = wallet ?? newWallet(payer.uid, payer.role, sub?.providerId ?? PLATFORM);
+      chargedWallet[creditField(bucket)] = available - credits;
+      const description = action ? CREDIT_ACTIONS[action][2] : text(data.description, 200, 'Description') || 'Service usage';
+      entry(chargedWallet, 'usage', -credits, description, { entryId, refType: 'usage', refId: eventId, usageType: action ? bucket : text(data.usageType, 40, 'Usage type'), ...(action ? { action, bucket, pricingProviderId: providerId, cycleStart: sub?.creditCycleStart ?? null } : {}), ...(agency ? { subscriberId, workspaceId: account.tenantId ?? null } : {}) });
+      saveWallet(chargedWallet);
+      return action ? { balance: available - credits, entryId } : { balance: available - credits };
+    },
+
+    async refundEmailUsage() {
+      if (role !== 'SYSTEM') fail('permission-denied', 'Usage can only be reversed by the server.');
+      const debitId = identifier(data.entryId, 'usage entry', 512);
+      const debit = await store.get(`billingLedger/${debitId}`);
+      if (debit?.bucket !== 'email' || debit.type !== 'usage' || debit.amount >= 0) return { refunded: false };
+      const entryId = `refund_${debitId}`;
+      if (await store.get(`billingLedger/${entryId}`)) return { refunded: false };
+      const { sub, wallet } = await freshen(debit.walletId);
+      if (!wallet || (sub?.creditCycleStart ?? null) !== debit.cycleStart || sub && !isLive(sub, now)) return { refunded: false };
+      wallet.emailCredits = creditBalance(wallet, 'email') - debit.amount;
+      entry(wallet, 'refund', -debit.amount, 'Email delivery rejected', { entryId, bucket: 'email', action: debit.action, refType: 'usage', refId: debitId });
       saveWallet(wallet);
-      return { balance: wallet.balance };
+      return { refunded: true };
     },
 
     async sharedBilling() {
@@ -1069,6 +1146,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       return {
         active: isLive(sub, now) || payer.role === 'SUPER_ADMIN' && !sub,
         credits: wallet?.balance ?? 0,
+        ...(wallet?.emailCredits !== undefined ? { emailCredits: wallet.emailCredits } : {}),
         communicationBalance: communications ? Math.max(0, round4(communications.balance - (communications.held ?? 0))) : 0,
         currency: communications?.currency ?? WALLET_CURRENCY,
       };
@@ -1279,18 +1357,23 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const receiptUrl = cleanReceipt(rawReceipt);
     const rawName = data.receiptName || data.fileName || data.receiptFileName || data.name || '';
     const receiptName = text(rawName, 200, 'Receipt file name') || '';
-    const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
-
     const rawAddons = Array.isArray(data.addons) ? data.addons : [];
-    const cleanedAddons = rawAddons.map(a => ({
-      id: String(a.id || ''),
-      type: a.type === 'unit' ? 'unit' : 'fixed',
-      qty: Math.max(1, Math.min(1000, Number(a.qty) || 1)),
-      credits: Math.max(0, Math.min(10000000, Number(a.credits) || 0)),
-      price: Math.max(0, Math.min(1000000, Math.round((Number(a.price) || 0) * 100) / 100)),
-      name: a.name ?? (a.type === 'unit' ? 'Custom credits' : 'Add-on pack'),
-      addonType: a.addonType || 'credits',
-      addonTool: a.addonTool ? String(a.addonTool) : undefined,
+    if (rawAddons.length > 50) fail('invalid-argument', 'Choose up to 50 add-ons.');
+    const cleanedAddons = await Promise.all(rawAddons.map(async item => {
+      const qty = int(item?.qty ?? 1, 'Add-on quantity', 1, 1000);
+      if (item?.type === 'unit') {
+        return {
+          id: 'dynamic_units', type: 'unit', qty, addonType: 'credits',
+          credits: int(item.credits, 'AI credits', 1, 10000000), price: amount(item.price, 'Price'), name: 'Custom AI credits',
+        };
+      }
+      const addon = await providerPlan(item?.id, providerId, ['addon']);
+      if (!addon.visible || addon.currency !== plan.currency || type === 'addon' && addon.id !== plan.id) fail('invalid-argument', 'Choose a compatible add-on.');
+      return {
+        id: addon.id, type: 'fixed', qty, addonType: addon.addonType, addonTool: addon.addonTool,
+        credits: addon.addonType === 'seats' ? (addon.addonSeats ?? 1) * qty : addon.aiCredits ?? addon.credits ?? 0,
+        emailCredits: addon.emailCredits ?? 0, price: addon.price, name: addon.name,
+      };
     }));
 
     const mainPlanPrice = type === 'addon' ? 0 : Math.round(plan.price * quantity * 100) / 100;
@@ -1328,16 +1411,16 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const request = {
       id, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
       providerId, type, planId: plan.id, quantity,
-      plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, billingType: plan.billingType, addonType: plan.addonType ?? null },
+      plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, emailCredits: plan.emailCredits ?? 0, billingType: plan.billingType, addonType: plan.addonType ?? null },
       mainPlanPrice,
       addons: cleanedAddons,
       totalAmount: payable,
       total: payable,
       ...(resolved ? { subtotal: totalAmount, discount: resolved.discount, coupon: redeemCoupon(resolved, id) } : {}),
       note: text(data.note, 300, 'Note'),
-      status: isGatewayInstant ? 'approved' : 'pending',
+      status: 'pending',
       createdAt: now,
-      paymentMethod: text(data.paymentMethod, 60, 'Payment method') || (isGatewayInstant ? 'gateway' : 'manual'),
+      paymentMethod: text(data.paymentMethod, 60, 'Payment method') || (data.paymentType === 'gateway' ? 'gateway' : 'manual'),
       paymentType: data.paymentType === 'gateway' ? 'gateway' : 'manual',
       receiptUrl,
       receiptPath: receiptUrl,
@@ -1346,33 +1429,14 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       receiptName,
       fileName: receiptName,
       transactionId: text(data.transactionId, 120, 'Transaction ID') || '',
-      decidedAt: isGatewayInstant ? now : undefined,
-      decidedBy: isGatewayInstant ? 'gateway-webhook' : undefined,
     };
-    if (isGatewayInstant) {
-      const account = { uid: actor.uid, role: actor.role, name: actor.name, email: actor.email };
-      const ref = { refType: 'gateway_payment', refId: request.id, method: request.paymentMethod };
-      if (cleanedAddons.length > 0) {
-        if (type !== 'addon') {
-          await startPeriod(account, providerId, plan, 'plan', ref);
-        }
-        for (const addon of cleanedAddons) {
-          await applyAddonItem(account, providerId, addon, ref);
-        }
-      } else if (type === 'addon') {
-        await applyAddon(account, providerId, plan, quantity, ref);
-      } else {
-        await startPeriod(account, providerId, plan, 'plan', ref);
-      }
-      await grantCouponBonus(account, providerId, request, ref);
-    }
     writeRequest(id, request);
     return request;
   }
 
   const handler = Object.hasOwn(handlers, operation) ? handlers[operation] : null;
   if (!handler) fail('invalid-argument', 'Unsupported billing operation.');
-  if (role === 'SYSTEM' && !['refresh', 'consume'].includes(operation)) fail('permission-denied', 'Unsupported system operation.');
+  if (role === 'SYSTEM' && !['refresh', 'consume', 'checkUsage', 'refundEmailUsage'].includes(operation)) fail('permission-denied', 'Unsupported system operation.');
   const result = await handler();
   await store.flush();
   return result;

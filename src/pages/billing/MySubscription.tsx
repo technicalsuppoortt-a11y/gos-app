@@ -6,9 +6,14 @@ import { CheckoutModal } from './CheckoutModal';
 import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, toolName, useAction, useCopy } from './ui';
 
 type View = 'overview' | 'plans' | 'addons' | 'requests' | 'history';
+type BillingSection = 'overview' | 'plans' | 'history';
 
 /** The subscriber's own subscription: Admins buy from the platform, Users buy from their Admin. */
-export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
+export function MySubscription({ audience, section, onSectionChange }: {
+  audience: 'admin' | 'user';
+  section?: BillingSection;
+  onSectionChange?: (section: 'overview' | 'plans') => void;
+}) {
   const c = useCopy();
   const identity = useBillingIdentity();
   useBillingRefresh(!!identity.uid && !identity.loading);
@@ -19,7 +24,17 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
   const { data: ledger } = useLedger(identity.uid);
   const { data: requests } = useRequests('requesterId', identity.uid);
   const { busy, run } = useAction();
-  const [view, setView] = useState<View>('overview');
+  const [localView, setLocalView] = useState<View>('overview');
+  const view = section === 'overview' && (localView === 'addons' || localView === 'requests') ? localView : section ?? localView;
+  const setView = (next: View) => {
+    if (section && next === 'plans') {
+      setLocalView('overview');
+      onSectionChange?.('plans');
+    } else {
+      setLocalView(next);
+      if (section && next === 'requests') onSectionChange?.('overview');
+    }
+  };
   const [cycle, setCycle] = useState<'all' | 'monthly' | 'annual' | 'fixed' | 'lifetime'>('all');
   const [checkoutTarget, setCheckoutTarget] = useState<{ plan: BillingPlan; quantity: number; mode: 'plan' | 'renewal' | 'addon' } | null>(null);
   const [inspectingToolsPlan, setInspectingToolsPlan] = useState<BillingPlan | null>(null);
@@ -43,7 +58,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
   const tools = entitledTools(sub);
   const providerLabel = audience === 'admin' ? c.t('the platform', 'المنصة') : c.t('your provider', 'مزود الخدمة');
 
-  const cycleCredits = sub?.plan?.credits ?? 0;
+  const cycleCredits = sub?.plan?.aiCredits ?? sub?.plan?.credits ?? 0;
   const balance = wallet?.balance ?? 0;
   const usedPct = cycleCredits ? Math.min(100, Math.max(0, (balance / Math.max(cycleCredits, balance)) * 100)) : 0;
   // Snapshot "now" once per subscription change so render stays pure.
@@ -65,13 +80,13 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
 
   return (
     <div className="bl" dir={c.dir}>
-      <Tabs<View> label={c.t('Subscription sections', 'أقسام الاشتراك')} value={view} onChange={setView} tabs={[
+      {(!section || section === 'overview') && <Tabs<View> label={c.t('Subscription sections', 'أقسام الاشتراك')} value={view} onChange={setView} tabs={[
         { id: 'overview', label: c.t('Overview', 'نظرة عامة'), icon: <LayoutGrid size={14} /> },
-        { id: 'plans', label: c.t('Plans', 'الباقات'), icon: <Gem size={14} />, count: plans.filter(plan => plan.kind === 'plan').length },
+        ...(!section ? [{ id: 'plans' as const, label: c.t('Plans', 'الباقات'), icon: <Gem size={14} />, count: plans.filter(plan => plan.kind === 'plan').length }] : []),
         { id: 'addons', label: c.t('Add-ons', 'الإضافات'), icon: <Package size={14} />, count: addons.length },
         { id: 'requests', label: c.t('My requests', 'طلباتي'), icon: <Inbox size={14} />, count: pending.length },
-        { id: 'history', label: c.t('Credit history', 'سجل الرصيد'), icon: <History size={14} /> },
-      ]} />
+        ...(!section ? [{ id: 'history' as const, label: c.t('Credit history', 'سجل الرصيد'), icon: <History size={14} /> }] : []),
+      ]} />}
 
       {noProvider && <div className="bl-banner warn"><AlertTriangle size={17} /><div><b>{c.t('No provider linked', 'لا يوجد مزود مرتبط')}</b><p>{c.t('Your account is not linked to an admin yet, so no plans are available. Contact support.', 'حسابك غير مرتبط بأدمن بعد، لذلك لا توجد باقات متاحة. تواصل مع الدعم.')}</p></div></div>}
       {plansError && <div className="bl-banner danger"><AlertTriangle size={17} /><p>{plansError}</p></div>}
@@ -178,11 +193,11 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
           <section className="bl-card bl-wallet">
             <div className="bl-wallet-top">
               <span className="bl-wallet-orb"><Wallet size={22} /></span>
-              <div><small style={{ color: 'var(--bl-muted)', fontWeight: 600 }}>{c.t('Credit balance', 'رصيد الكريديت')}</small><div><strong>{c.num(balance)}</strong> <span style={{ color: 'var(--bl-muted)', fontSize: 13 }}>/ {c.num(cycleCredits)}</span></div></div>
+              <div><small style={{ color: 'var(--bl-muted)', fontWeight: 600 }}>{c.t('AI credit balance', 'رصيد الذكاء الاصطناعي')}</small><div><strong>{c.num(balance)}</strong> <span style={{ color: 'var(--bl-muted)', fontSize: 13 }}>/ {c.num(cycleCredits)}</span></div></div>
             </div>
             <div className="bl-meter" aria-label={c.t('Remaining credits', 'الرصيد المتبقي')}><b style={{ width: `${usedPct}%` }} /></div>
             <div className="bl-kv">
-              <div><span>{c.t('Monthly allowance', 'الحصة الشهرية')}</span><b>{c.num(cycleCredits)}</b></div>
+              <div><span>{c.t('Email credit balance', 'رصيد البريد الإلكتروني')}</span><b>{c.num(wallet?.emailCredits ?? 0)} / {c.num(sub?.plan?.emailCredits ?? 0)}</b></div>
               <div><span>{c.t('Cycle resets', 'تجديد الدورة')}</span><b>{live && sub?.creditCycleEnd ? c.date(sub.creditCycleEnd) : '—'}</b></div>
               <div><span>{c.t('Rollover', 'ترحيل الرصيد')}</span><b>{c.t('No · unused credits expire', 'لا · الرصيد غير المستخدم ينتهي')}</b></div>
             </div>
@@ -196,7 +211,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
         </section>
       </>}
 
-      {(view === 'plans' || (audience === 'user' && view === 'overview')) && <>
+      {(view === 'plans' || (!section && audience === 'user' && view === 'overview')) && <>
         <div className="bl-toolbar">
           <div className="bl-presets" role="group" aria-label={c.t('Billing type', 'نوع الاشتراك')}>
             {([['all', 'All', 'الكل'], ['monthly', 'Monthly', 'شهري'], ['annual', 'Annual', 'سنوي'], ['fixed', 'Fixed period', 'مدة محددة'], ['lifetime', 'Lifetime', 'مدى الحياة']] as const).map(([id, en, ar]) => <button key={id} type="button" className="bl-chip" aria-pressed={cycle === id} onClick={() => setCycle(id)}>{c.t(en, ar)}</button>)}
@@ -237,7 +252,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
                   {/* Credits Badge with lightning */}
                   <div className="bl-ref-credits-pill">
                     <Zap size={14} fill="currentColor" />
-                    <span>{c.t(`${plan.credits.toLocaleString()} credits / month`, `${c.num(plan.credits)} نقطة / شهريًا`)}</span>
+                    <span>{c.num(plan.credits)} {c.t('AI', 'ذكاء اصطناعي')} · {c.num(plan.emailCredits ?? 0)} {c.t('email credits / month', 'رصيد بريد شهريًا')}</span>
                   </div>
 
                   {/* Main Action Button */}
@@ -635,7 +650,7 @@ export function MySubscription({ audience }: { audience: 'admin' | 'user' }) {
                           {plan.addonType === 'credits' && (
                             <li style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)', lineHeight: 1.4 }}>
                               <Coins size={14} style={{ color: 'var(--bl-accent-2)', flexShrink: 0, marginTop: 2 }} />
-                              <span style={{ fontWeight: 600 }}>{c.t(`+${(plan.credits * quantity).toLocaleString()} credits (expire at cycle end)`, `+${c.num(plan.credits * quantity)} رصيد (ينتهي بنهاية الدورة)`)}</span>
+                              <span style={{ fontWeight: 600 }}>{plan.credits > 0 && `+${c.num(plan.credits * quantity)} ${c.t('AI credits', 'رصيد ذكاء اصطناعي')}`}{plan.credits > 0 && !!plan.emailCredits && ' · '}{!!plan.emailCredits && `+${c.num(plan.emailCredits * quantity)} ${c.t('email credits', 'رصيد بريد إلكتروني')}`}</span>
                             </li>
                           )}
                           {plan.addonType === 'seats' && (

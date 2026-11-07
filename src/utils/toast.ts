@@ -17,6 +17,13 @@ function normalizeMessage(message: unknown, fallback: string): string {
 }
 
 export const showToast = {
+  creditLimit: (message: string, href: string, bucket: 'ai' | 'email') => {
+    toast.warning(translateText(message), {
+      id: `credit-limit-${bucket}`,
+      duration: 10000,
+      action: { label: translateText('Plans & add-ons'), onClick: () => window.location.assign(href) },
+    });
+  },
   success: (message: unknown, description?: ReactNode) => {
     const text = normalizeMessage(message, 'Action completed successfully');
     if (hasPendingWrites()) { toast.info(translateText('Saving changes…'), { description: translateText(text) }); return; }

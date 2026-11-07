@@ -11,7 +11,8 @@ export function TrialSettings({ trial, subscribers, isPlatform, allowedTools, lo
   const fromPlan = () => ({
     enabled: trial?.enabled ?? true,
     days: String(trial?.durationDays ?? defaults.days),
-    credits: String(trial?.credits ?? defaults.credits),
+    credits: String(trial?.aiCredits ?? trial?.credits ?? defaults.credits),
+    emailCredits: String(trial?.emailCredits ?? 0),
     seats: String(trial?.limits?.seats ?? 1),
     clients: String(trial?.limits?.clients ?? 3),
     channels: trial?.channels ?? [],
@@ -28,7 +29,7 @@ export function TrialSettings({ trial, subscribers, isPlatform, allowedTools, lo
   const converted = subscribers.filter(sub => sub.trialUsedAt && sub.plan?.kind === 'plan').length;
 
   const save = () => run('save', () => billing('savePlan', {
-    plan: { kind: 'trial', enabled: form.enabled, durationDays: Number(form.days), credits: Number(form.credits), tools: form.tools, channels: form.channels, limits: { seats: Number(form.seats), clients: Number(form.clients) }, name: form.name, visible: true },
+    plan: { kind: 'trial', enabled: form.enabled, durationDays: Number(form.days), aiCredits: Number(form.credits), emailCredits: Number(form.emailCredits), tools: form.tools, channels: form.channels, limits: { seats: Number(form.seats), clients: Number(form.clients) }, name: form.name, visible: true },
   }), c.t('Free trial settings saved.', 'تم حفظ إعدادات التجربة المجانية.')).then(ok => ok && setDirty(false));
 
   return (
@@ -58,7 +59,8 @@ export function TrialSettings({ trial, subscribers, isPlatform, allowedTools, lo
               <label className="bl-field"><span><CalendarDays size={13} />{c.t('Trial duration (days)', 'مدة التجربة (أيام)')}</span><input className="bl-input" type="number" min={1} max={365} value={form.days} onChange={event => set('days', event.target.value)} />
                 <div className="bl-presets">{[7, 14, 30, 90].map(days => <button key={days} type="button" className="bl-chip" aria-pressed={form.days === String(days)} onClick={() => set('days', String(days))}>{c.t(`${days} days`, `${c.num(days)} يوم`)}</button>)}</div>
               </label>
-              <label className="bl-field"><span><Coins size={13} />{c.t('Credits included', 'الرصيد المجاني')}</span><input className="bl-input" type="number" min={0} value={form.credits} onChange={event => set('credits', event.target.value)} /><small>{c.t('Granted monthly during the trial · no rollover', 'يُمنح شهريًا خلال التجربة · لا يُرحّل')}</small></label>
+              <label className="bl-field"><span><Coins size={13} />{c.t('AI credits included', 'رصيد الذكاء الاصطناعي المجاني')}</span><input className="bl-input" type="number" min={0} value={form.credits} onChange={event => set('credits', event.target.value)} /><small>{c.t('Granted monthly during the trial', 'يُمنح شهريًا خلال التجربة')}</small></label>
+              <label className="bl-field"><span><Coins size={13} />{c.t('Email credits included', 'رصيد البريد الإلكتروني المجاني')}</span><input className="bl-input" type="number" min={0} value={form.emailCredits} onChange={event => set('emailCredits', event.target.value)} /></label>
               <label className="bl-field"><span><Users size={13} />{c.t('Team seats', 'مقاعد الفريق')}</span><input className="bl-input" type="number" min={0} value={form.seats} onChange={event => set('seats', event.target.value)} /></label>
               {isPlatform && <label className="bl-field"><span><Users size={13} />{c.t('Client limit during trial', 'حد العملاء أثناء التجربة')}</span><input className="bl-input" type="number" min={0} value={form.clients} onChange={event => set('clients', event.target.value)} /></label>}
             </div>

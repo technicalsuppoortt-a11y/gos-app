@@ -44,6 +44,7 @@ export async function demoBilling(data: Record<string, any>) {
   // Manual transfers with uploaded receipts remain pending so they can be inspected in the requests panel.
   if ((data.operation === 'requestPlan' || data.operation === 'requestAddon') && result?.request?.id && data.paymentType === 'gateway' && result.request.status !== 'approved') {
     await executeBilling('decideRequest', { requestId: result.request.id, decision: 'approve', reason: 'Auto-approved via simulated gateway in the demo workspace' }, admin, store);
+    return { request: await store.get('billingRequests/' + result.request.id) };
   }
   return result;
 }

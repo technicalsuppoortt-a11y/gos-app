@@ -1,12 +1,17 @@
 import { checkPlatformTool } from './platform-tools.js';
 import { recordAIUsage } from './ai-usage.js';
-import { structureVoice, transcribeVoice, voiceAudio } from './copilot-voice.js';
+import { structureVoice, transcribeVoice, transcriptionMinutes, voiceAudio } from './copilot-voice.js';
+import { generateBuilderDraft as generateBuilderDraftRequest } from './ai-builders.js';
 import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { isSuspended, superAdminRequest } from './super-admin.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
-import { billingServiceRequest, consumeCredits } from './billing-service.js';
+import { billingServiceRequest, executeUsage, toHttpsError } from './billing-service.js';
+import { chargeAction, meteredGosRequest } from './gos-metering.js';
+import { copilotAction } from './credit-actions.js';
+import { chargeEmail } from './email-metering.js';
+import { createLiveUsageHandler } from './gos-live-usage.js';
 import { agencyLandingWrites, reconcileAgencyWorkspace } from './agency-workspace.js';
 import { isAgencyBillingOwner } from './agency-billing.js';
 import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
@@ -20,7 +25,7 @@ import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { mayManageUser, maySend, validateBooking } from './policy.js';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { completeUserActivation } from './onboarding.js';
@@ -37,6 +42,8 @@ import { handleDomainProxy } from './domain-proxy.js';
 const openaiKey = process.env.DEPLOY_COPILOT === 'false' ? null : defineSecret('OPENAI_API_KEY');
 const openaiModel = defineString('OPENAI_MODEL', { default: 'gpt-4o' });
 const gosApiBase = defineString('GOS_API_BASE_URL', { default: 'https://gos-api.vercel.app' });
+const gosMeteringSecret = process.env.ENABLE_GOS_METERING_BRIDGE === 'true' ? defineSecret('GOS_METERING_SECRET') : null;
+const gosSecrets = gosMeteringSecret ? [gosMeteringSecret] : [];
 const appOrigin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
 const hostingProject = defineString('HOSTING_PROJECT_ID', { default: 'gos-app-3c7fb' });
 setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', maxInstances: 10 });
@@ -91,7 +98,8 @@ async function workspace(request, permission) {
   const hasPermission = Boolean(
     member?.permissions?.includes('*') ||
     member?.permissions?.includes(permission) ||
-    (permission === 'funnels' && (member?.permissions?.includes('forms') || member?.permissions?.includes('websites')))
+    (permission === 'funnels' && (member?.permissions?.includes('forms') || member?.permissions?.includes('websites'))) ||
+    (permission === 'forms' && member?.permissions?.includes('funnels'))
   );
 
   if (!isAdmin && !isOwner && (!isMemberActive || !hasPermission)) {
@@ -194,41 +202,14 @@ export const prepareAgencyWorkspace = onCall(async request => {
   return reconcileAgencyWorkspace(db, { ...target, uid: id }, language);
 });
 
-const agencyGosActions = {
-  copilot: { path: '/ai/copilot', permission: 'copilot', tool: 'ai-copilot', description: 'AI Copilot response', fields: ['text', 'conversationId', 'webSearch', 'deepResearch'] },
-  playground: { path: '/ai/playground', permission: 'follow-up', tool: 'ai-followup', description: 'AI playground response', fields: ['question', 'channel', 'city', 'session_id', 'source_id'] },
-  inboxSimulation: { path: '/inbox/messages', permission: 'inbox', tool: 'ai-followup', description: 'AI inbox simulation', fields: ['body', 'channel', 'external_thread_id', 'external_message_id', 'customer_name', 'phone'] },
-};
-
-export const agencyGosUsage = onCall({ timeoutSeconds: 120 }, async request => {
-  const action = request.data?.action;
-  const payload = request.data?.payload;
-  if (typeof action !== 'string' || !Object.hasOwn(agencyGosActions, action) || !payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    throw new HttpsError('invalid-argument', 'Choose a supported Agency user action.');
-  }
-  const { path, permission, tool, description, fields } = agencyGosActions[action];
-  const { user } = await workspace(request, permission);
-  if (user.accountType !== 'agency' || user.status !== 'Active') throw new HttpsError('permission-denied', 'An active Agency user account is required.');
-  const input = Object.fromEntries(Object.entries(payload).filter(([key, value]) => fields.includes(key) && ['string', 'boolean'].includes(typeof value)));
-  const body = JSON.stringify(input);
-  const prompt = input[fields[0]];
-  if (body.length > 30000 || typeof prompt !== 'string' || !prompt.trim() || prompt.length > 12000) {
-    throw new HttpsError('invalid-argument', 'Enter a valid message.');
-  }
-  await chargeAgencyAI(user, tool, description);
-  const response = await fetch(`${gosApiBase.value().replace(/\/$/, '')}/api/v1${path}`, {
-    method: 'POST',
-    headers: { Authorization: request.rawRequest.headers.authorization, 'Content-Type': 'application/json', Accept: 'application/json' },
-    body,
-    signal: AbortSignal.timeout(90000),
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok || result?.success === false) {
-    throw new HttpsError(response.status === 429 ? 'resource-exhausted' : 'unavailable', result?.error?.message || result?.message || 'The Upclick API could not complete the request.');
-  }
-  if (result?.data === undefined) throw new HttpsError('internal', 'The Upclick API returned an unexpected response.');
-  return result.data;
-});
+// Keep the deployed callable name for existing dashboard clients.
+const gosUsageDependencies = () => ({ db, workspace, baseUrl: gosApiBase.value(), gatewaySecret: gosMeteringSecret?.value() });
+export const agencyGosUsage = onCall({ timeoutSeconds: 120, memory: '512MiB', concurrency: 4, secrets: gosSecrets }, request =>
+  meteredGosRequest(request, gosUsageDependencies()));
+export const gosLiveUsage = gosMeteringSecret ? onRequest({ invoker: 'public', timeoutSeconds: 30, secrets: gosSecrets },
+  createLiveUsageHandler({ db, secret: () => gosMeteringSecret.value() })) : undefined;
+export const generateBuilderDraft = onCall({ secrets: openaiKey ? [openaiKey] : [], timeoutSeconds: 90 }, request =>
+  generateBuilderDraftRequest(request, { db, workspace, apiKey: openaiKey?.value(), model: openaiModel.value() }));
 export const manageUser = onCall(async request => {
   const user = await actor(request);
   if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) throw new HttpsError('permission-denied', 'Administrator access is required.');
@@ -335,6 +316,7 @@ export const queueMessage = onCall(async request => {
     const integration = (await tx.get(root.collection('integrations').doc(thread.channel))).data();
     const policy = maySend({ lead: lead ?? {}, conversation: thread, integration, ai: false });
     if (!policy.allowed) throw new HttpsError('failed-precondition', policy.reason);
+    if (thread.channel === 'email') await chargeEmail(db, tx, root, messageRef.path, [], new Date().toISOString(), true).catch(error => { throw toHttpsError(error); });
     // Delivery adapters must consume the outbox and mark sent only after provider acknowledgement.
     tx.create(messageRef, { conversationId, leadId: thread.leadId, channel: thread.channel, direction: 'outbound', text: text.trim(), status: 'queued', sentBy: user.uid, createdAt: new Date().toISOString() });
     return { id: requestId, status: 'queued' };
@@ -358,13 +340,8 @@ export const stopFollowUpOnLeadChange = onDocumentWritten('tenants/{tenantId}/le
 
 async function indexedKnowledge(request, question) {
   try {
-    return await queryIndexedKnowledge({ authorization: request.rawRequest.headers.authorization, question, baseUrl: gosApiBase.value() });
+    return await queryIndexedKnowledge({ authorization: request.rawRequest.headers.authorization, question, baseUrl: gosApiBase.value(), gatewaySecret: gosMeteringSecret?.value() });
   } catch { throw new HttpsError('unavailable', 'Workspace knowledge retrieval failed. Please try again.'); }
-}
-
-async function chargeAgencyAI(user, tool, description, idempotencyKey = randomUUID()) {
-  if (user.accountType !== 'agency') return;
-  await consumeCredits(db, { subscriberId: user.uid, amount: 1, usageType: 'ai', tool, description, idempotencyKey });
 }
 
 export const agentConfiguration = onCall(async request => {
@@ -389,7 +366,7 @@ export const agentConfiguration = onCall(async request => {
   });
 });
 
-export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 120 }, async request => {
+export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey, ...gosSecrets], timeoutSeconds: 120 }, async request => {
   const { user, root } = await workspace(request, 'follow-up');
   const { leadId, channel, instruction = '' } = request.data ?? {};
   if (!['email', 'whatsapp', 'instagram', 'messenger', 'facebook'].includes(channel) || typeof instruction !== 'string' || instruction.length > 4000 || leadId !== undefined && (typeof leadId !== 'string' || !/^[\w-]{1,150}$/.test(leadId))) throw new HttpsError('invalid-argument', 'Choose a valid lead, channel and instructions.');
@@ -402,7 +379,7 @@ export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeo
     lead = { name: row.name, company: row.company ?? '', stage: row.lifecycleStage ?? row.stage, state: row.followUpState ?? '' };
   }
   const agent = await readAgent(root);
-  await chargeAgencyAI(user, 'ai-followup', 'AI follow-up draft');
+  await chargeAction(db, user, 'followup_generate', 'ai-followup');
   const knowledge = await indexedKnowledge(request, `Retrieve workspace facts relevant to this follow-up goal: ${agent.goal}. Request: ${instruction || 'Introduce our services and offer a helpful next step.'}`);
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST', headers: { Authorization: `Bearer ${openaiKey.value()}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(60000),
@@ -418,9 +395,9 @@ export const generateFollowUp = openaiKey ? onCall({ secrets: [openaiKey], timeo
   return { text, citations: knowledge.citations };
 }) : undefined;
 
-export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds: 120 }, async request => {
+export const copilot = openaiKey ? onCall({ secrets: [openaiKey, ...gosSecrets], timeoutSeconds: 120 }, async request => {
   const { user, root } = await workspace(request, 'copilot');
-  const { text, conversationId } = request.data ?? {};
+  const { text, conversationId, webSearch, deepResearch } = request.data ?? {};
   if (typeof text !== 'string' || !text.trim() || text.length > 12000 || !/^[\w-]{1,150}$/.test(conversationId)) throw new HttpsError('invalid-argument', 'Enter a message.');
   if (!openaiModel.value()) throw new HttpsError('failed-precondition', 'The AI service has not been configured yet.');
   const threadRef = root.collection('copilotConversations').doc(conversationId);
@@ -429,7 +406,11 @@ export const copilot = openaiKey ? onCall({ secrets: [openaiKey], timeoutSeconds
   const membership = (await root.collection('members').doc(user.uid).get()).data();
   const grants = membership?.permissions ?? [];
   const contextPermissions = { products: 'products', calendars: 'booking', leads: 'crm' };
-  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot response');
+  const action = copilotAction({ webSearch, deepResearch });
+  if (action !== 'copilot_chat') return meteredGosRequest({
+    ...request, data: { action: 'copilot', payload: { text, conversationId, webSearch, deepResearch } },
+  }, gosUsageDependencies());
+  await chargeAction(db, user, action, 'ai-copilot');
   const [products, calendars, leads, knowledge, agent] = await Promise.all([
     ...['products', 'calendars', 'leads'].map(resource => grants.includes('*') || grants.includes(contextPermissions[resource]) ? root.collection(resource).limit(50).get() : Promise.resolve({ docs: [], size: 0 })),
     indexedKnowledge(request, [...(history?.messages ?? []).slice(-4).map(item => item.text), text].join('\n').slice(-12000)), readAgent(root),
@@ -473,7 +454,7 @@ export const transcribeCopilotVoice = onCall({
   }
   const audio = voiceAudio(request.data);
   const usageKey = createHash('sha256').update(JSON.stringify(['copilot-transcription', user.uid, requestId])).digest('hex');
-  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot voice transcription', usageKey);
+  await chargeAction(db, user, 'voice_transcribe', 'ai-copilot', { idempotencyKey: usageKey, quantity: await transcriptionMinutes(audio) });
   return { transcript: await transcribeVoice(audio, openaiKey.value()) };
 });
 
@@ -497,7 +478,7 @@ export const extractCopilotVoice = openaiKey ? onCall({ secrets: [openaiKey], ti
   const existing = readTurn((await threadRef.get()).data());
   if (existing) return existing;
   const usageKey = createHash('sha256').update(JSON.stringify(['copilot-voice', user.uid, conversationId, requestId])).digest('hex');
-  await chargeAgencyAI(user, 'ai-copilot', 'AI Copilot voice extraction', usageKey);
+  await chargeAction(db, user, 'voice_extract', 'ai-copilot', { idempotencyKey: usageKey });
 
   const apiKey = openaiKey.value();
   const transcript = await transcribeVoice(audio, apiKey);
@@ -535,10 +516,21 @@ export const createCopilotDraft = onCall(async request => {
   const ref = root.collection(resource).doc(requestId);
   // Draft creation cannot publish, grant access or manufacture transactions.
   if (!record || record.name !== draft.name || resource === 'products' && (record.status !== 'Draft' || !Number.isFinite(record.config?.amount) || record.config.amount < 0)) throw new HttpsError('invalid-argument', 'Review the draft details.');
-  if (resource === 'assets' && record.document?.funnel?.status !== 'Draft') throw new HttpsError('invalid-argument', 'Pages must be created as drafts.');
-  await db.runTransaction(async tx => { const existing = await tx.get(ref); if (!existing.exists) tx.create(ref, { ...record, id: requestId, createdAt: new Date().toISOString(), createdBy: user.uid }); });
-  await audit(root, user, 'copilot.draft_created', ref.id);
-  return { id: ref.id, name: draft.name };
+  if (resource === 'assets' && (record.document?.funnel?.status !== 'Draft' || !Array.isArray(record.document.pages) || !record.document.pages.length || record.document.pages.some(page => page?.status !== 'Draft'))) throw new HttpsError('invalid-argument', 'Pages must be created as drafts.');
+  if (resource === 'templates' && record.status !== 'Draft') throw new HttpsError('invalid-argument', 'Campaigns must be created as drafts.');
+  const created = await db.runTransaction(async tx => {
+    const existing = await tx.get(ref);
+    if (existing.exists) {
+      if (existing.data().createdBy !== user.uid) throw new HttpsError('already-exists', 'This draft ID is already in use.');
+      return false;
+    }
+    const charge = await executeUsage(db, tx, 'consume', { subscriberId: user.uid, action: 'copilot_draft', tool: 'ai-copilot', idempotencyKey: requestId }).catch(error => { throw toHttpsError(error); });
+    if (charge.duplicate) throw new HttpsError('already-exists', 'This draft was already created.');
+    tx.create(ref, { ...record, id: requestId, createdAt: new Date().toISOString(), createdBy: user.uid });
+    return true;
+  });
+  if (created) await audit(root, user, 'copilot.draft_created', ref.id);
+  return { success: true, id: ref.id, resource };
 });
 
 export const settingsService = onCall(async request => {

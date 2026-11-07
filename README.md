@@ -57,9 +57,6 @@
 
 - Plans and Subscription
   - Control of creidets
-- Landing Management
-  - Add Preview
-  - Can control of every thins and every media
 - Agency User Cycle
   - ADD or Auto Created
   - Funnel and website => done
@@ -90,3 +87,8 @@
 - Move Launch brand in gos
 - Make Upclick Domain
 - Plan and subscription from joe academy
+===================
+# Log Later
+- Landing Management
+  - Add Preview
+  - Can control of every thins and every media

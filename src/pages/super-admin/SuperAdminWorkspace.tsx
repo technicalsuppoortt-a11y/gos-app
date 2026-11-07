@@ -21,6 +21,7 @@ import { ArrowDownToLine, Check, ChevronLeft, ChevronRight, Plus, Search, Shield
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
+import { ManagedMetaWalletPanel } from '../settings/MetaWalletPanel';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { backendError } from '../../backend/firebase';
 import { usePaymentMethods } from '../../backend/paymentMethods';
@@ -28,8 +29,8 @@ import { useTrackingConfig, validGoogle, validMeta } from '../../backend/marketi
 import { isPlatformTeamRole, platformTeamRoles } from '../../router/platformAccess';
 import type { PlatformTeamRole } from '../../types/auth';
 import {
-  isAdminAccount, isSubUser, platformTimezones, updatePlatform, useManagedWallets, usePlatformAccounts, usePlatformAudit,
-  usePlatformPayments, usePlatformSettings, usePlatformSubscriptions, usePlatformUsage, usePlatformWallet,
+  isAdminAccount, isSubUser, platformTimezones, updatePlatform, usePlatformAccounts, usePlatformAudit,
+  usePlatformPayments, usePlatformSettings, usePlatformSubscriptions, usePlatformUsage,
   type PlatformAccount, type PlatformPayment, type PlatformSettings,
 } from '../../backend/superAdmin';
 import { exportCsv } from './adminData';
@@ -216,7 +217,7 @@ function Overview() {
 }
 
 function Analytics() {
-  const payments = usePlatformPayments(true), usage = usePlatformUsage(), wallet = usePlatformWallet();
+  const payments = usePlatformPayments(true), usage = usePlatformUsage();
   const [months, setMonths] = useState(6);
   const revenue = payments.data.filter(row => row.platformRevenue);
   const credits = usage.data.reduce((sum, row) => sum + row.amount, 0);
@@ -226,9 +227,9 @@ function Analytics() {
     byService.set(service, (byService.get(service) ?? 0) + row.amount);
   }
   return <>
-    <Heading title="Usage & Revenue" description="Track recorded credit consumption, billing activity and the platform wallet."/>
-    <LiveContent sources={[payments, usage, wallet]}>
-      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString()} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/><Stat label="Platform wallet balance" value={displayMoney(wallet.data.balance, wallet.data.currency)} note={wallet.data.balance === null ? 'Wallet record unavailable' : 'Communication wallet'}/></div>
+    <Heading title="Usage & Revenue" description="Track recorded credit consumption and billing activity."/>
+    <LiveContent sources={[payments, usage]}>
+      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString()} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/></div>
       <Period months={months} setMonths={setMonths}/>
       <div className="saw-two-column"><Growth payments={revenue} months={months}/><section className="saw-panel"><h2>{t('Resource consumption')}</h2><p>{t('Credits consumed by activity')}</p>
         {!byService.size && <p className="saw-empty">{t('No credit usage recorded.')}</p>}
@@ -239,25 +240,9 @@ function Analytics() {
 }
 
 function Wallet() {
-  const source = usePlatformWallet(), managed = useManagedWallets();
-  const { balance, available, held, currency } = source.data;
-  const groups = new Map<string, { balance: number; available: number; held: number; count: number }>();
-  for (const row of managed.data) {
-    if (row.id === 'platform' || row.balance === null || !row.currency) continue;
-    const previous = groups.get(row.currency) ?? { balance: 0, available: 0, held: 0, count: 0 };
-    groups.set(row.currency, { balance: previous.balance + row.balance, available: previous.available + (row.available ?? 0), held: previous.held + row.held, count: previous.count + 1 });
-  }
   return <>
-    <Heading title="Wallet" description="View the platform communication wallet and available funds."/>
-    <LiveContent sources={[source, managed]}>
-      {balance === null ? <div className="saw-panel saw-empty">{t('A platform communication wallet has not been recorded.')}</div> : <div className="saw-stats">
-        <Stat label="Wallet balance" value={displayMoney(balance, currency)} note="Platform communication wallet"/>
-        <Stat label="Available balance" value={displayMoney(available, currency)} note="Funds available to spend"/>
-        <Stat label="Held balance" value={displayMoney(held, currency)} note="Reserved funds"/>
-      </div>}
-      <div className="saw-section-head"><h2>{t('Admin wallet balances')}</h2><span>{t('Communication wallets funded through the platform')}</span></div>
-      <Grid columns={['Currency', 'Wallets', 'Balance', 'Available', 'Held']} rows={[...groups].map(([currency, row]) => ({ id: currency, cells: [currency, row.count, displayMoney(row.balance, currency), displayMoney(row.available, currency), displayMoney(row.held, currency)] }))}/>
-    </LiveContent>
+    <Heading title="Meta Advertising & API Wallet" description="Review Meta messaging and advertising connections."/>
+    <ManagedMetaWalletPanel/>
   </>;
 }
 

@@ -61,7 +61,7 @@ export function useBillingIdentity() {
 export const useSubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null);
 export const useWallet = (uid: string | null) => useDoc<BillingWallet>(uid ? `billingWallets/${uid}` : null);
 
-type AgencyBillingSummary = { active: boolean; credits: number; communicationBalance: number; currency: string };
+type AgencyBillingSummary = { active: boolean; credits: number; emailCredits?: number; communicationBalance: number; currency: string };
 
 export function useAgencyBilling(uid: string | null): Live<AgencyBillingSummary | null> {
   const [state, setState] = useState<Live<AgencyBillingSummary | null> & { uid: string | null }>({ uid: null, data: null, loading: false, error: '' });

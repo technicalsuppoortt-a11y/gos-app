@@ -1,14 +1,15 @@
 import { useSearchParams } from 'react-router-dom';
-import { AlertTriangle, Coins, Crown, Gem, Gift, Inbox, Layers, Package, Store, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, Coins, Crown, Gem, Gift, Inbox, Layers, Package, Sparkles, Store, Users, Wallet } from 'lucide-react';
 import { entitledTools, isLive, PLATFORM, useBillingIdentity, useBillingRefresh, usePlans, useProviderWallets, useRequests, useSubscribers, useSubscription, useWallet } from '../../backend/billing';
 import { MySubscription } from './MySubscription';
 import { PlanCatalog } from './PlanCatalog';
 import { RequestsPanel, SubscribersPanel } from './ProviderPanels';
 import { TrialSettings } from './TrialSettings';
 import { AdminBillingHub } from './AdminBillingHub';
+import { AICreditSettings } from './AICreditSettings';
 import { Stat, Tabs, useCopy } from './ui';
 
-type ProviderTab = 'plans' | 'trial' | 'addons' | 'requests' | 'subscribers' | 'wallet';
+type ProviderTab = 'plans' | 'trial' | 'addons' | 'requests' | 'subscribers' | 'wallet' | 'ai-settings';
 
 export function UserPlansPage() {
   const c = useCopy();
@@ -26,7 +27,7 @@ export function UserPlansPage() {
 function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerId: string; isPlatform: boolean; allowedTools?: string[] | null; locked?: boolean }) {
   const c = useCopy();
   const [params, setParams] = useSearchParams();
-  const tab = (['plans', 'trial', 'addons', 'requests', 'subscribers', 'wallet'].includes(params.get('tab') ?? '') ? params.get('tab') : 'plans') as ProviderTab;
+  const tab = (['plans', 'trial', 'addons', 'requests', 'subscribers', 'wallet', 'ai-settings'].includes(params.get('tab') ?? '') ? params.get('tab') : 'plans') as ProviderTab;
   const setTab = (next: ProviderTab) => setParams(current => { current.set('tab', next); return current; }, { replace: true });
   const { data: plans } = usePlans(ownerId, true);
   const { data: subscribers } = useSubscribers(ownerId);
@@ -52,7 +53,8 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
         { id: 'addons', label: c.t('Add-ons', 'الإضافات'), icon: <Package size={14} /> },
         { id: 'requests', label: c.t('Requests', 'الطلبات'), icon: <Inbox size={14} />, count: pending, hot: true },
         { id: 'subscribers', label: isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد'), icon: <Users size={14} /> },
-        { id: 'wallet', label: c.t('Communication Wallet & Hub', 'محفظة المحادثات والإدارة'), icon: <Wallet size={14} /> },
+        { id: 'ai-settings', label: c.t('AI Settings', 'إعدادات الذكاء الاصطناعي'), icon: <Sparkles size={14} /> },
+        { id: 'wallet', label: c.t('Meta Advertising & API Wallet', 'محفظة إعلانات Meta وواجهات API'), icon: <Wallet size={14} /> },
       ]} />
       {tab === 'plans' && <PlanCatalog kind="plan" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} ownerId={ownerId} />}
       {tab === 'addons' && <PlanCatalog kind="addon" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} ownerId={ownerId} />}
@@ -60,6 +62,7 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
       {tab === 'requests' && <RequestsPanel requests={requests} mode="incoming" title={isPlatform ? c.t('Requests from admins', 'طلبات الأدمن') : c.t('Requests from your clients', 'طلبات عملائك')} />}
       {tab === 'subscribers' && <SubscribersPanel subscribers={subscribers} wallets={wallets} plans={plans} isPlatform={isPlatform} title={isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد')} />}
       {tab === 'wallet' && <AdminBillingHub ownerId={ownerId} isPlatform={isPlatform} />}
+      {tab === 'ai-settings' && <AICreditSettings key={ownerId} isPlatform={isPlatform} />}
     </>
   );
 }

@@ -109,6 +109,7 @@ test('initializeAccountPlan conditionally assigns active Free Plan or returns fr
 
 test('saveBillingSettings and itemized cart addons with dynamic and fixed units', async () => {
   const { rows, call } = await fixture();
+  await call('savePlan', { plan: { id: 'fixed_addon_500', kind: 'addon', addonType: 'credits', name: { en: 'Fixed 500' }, credits: 500, price: 20 } }, admin);
   // 1. Super Admin configures unit rate and mode
   const { settings } = await call('saveBillingSettings', {
     addonMode: 'both',
@@ -138,6 +139,63 @@ test('saveBillingSettings and itemized cart addons with dynamic and fixed units'
   // Let's verify client wallet balance
   const clientWallet = rows.get('billingWallets/client');
   assert.ok(clientWallet.balance >= 800);
+});
+
+test('provider pricing is isolated and usage charges the correct account and credit bucket', async () => {
+  const { rows, call } = await fixture();
+  const system = { uid: 'system', role: 'SYSTEM' };
+  const use = (subscriberId, action, idempotencyKey, quantity = 1) => call('consume', { subscriberId, action, idempotencyKey, quantity }, system);
+  await call('saveCreditWeights', { providerId: other.uid, revision: 0, rules: {
+    copilot_chat: { enabled: true, weight: 7 },
+    email_send_single: { enabled: true, weight: 2 },
+    inbox_smart_reply: { enabled: false, weight: 1 },
+  } }, admin);
+  await call('saveCreditWeights', { revision: 0, rules: { copilot_chat: { enabled: false, weight: 2 } } }, other);
+  await assert.rejects(call('saveCreditWeights', { revision: 0, rules: {} }, admin), { code: 'aborted' });
+  await assert.rejects(call('saveCreditWeights', { revision: 0, rules: {} }), { code: 'permission-denied' });
+  assert.equal(rows.get('billingSettings/creditWeights/providers/agency').rules.copilot_chat.weight, 7);
+  assert.equal(rows.get('billingSettings/creditWeights/providers/other').rules.copilot_chat.enabled, false);
+
+  const before = rows.get('billingWallets/client').balance;
+  const charged = await use(user.uid, 'copilot_chat', 'chat');
+  assert.equal(charged.balance, before - 7);
+  assert.equal(rows.get('billingWallets/client').aiCredits, before - 7);
+  assert.deepEqual(await use(user.uid, 'copilot_chat', 'chat'), { duplicate: true });
+  await assert.rejects(use(user.uid, 'inbox_smart_reply', 'disabled'), { code: 'failed-precondition' });
+  await assert.rejects(use(user.uid, 'email_send_single', 'unfunded'), { code: 'resource-exhausted' });
+  await call('adjustCredits', { subscriberId: user.uid, bucket: 'email', amount: 5, reason: 'Email allocation' }, platform);
+  const email = await use(user.uid, 'email_send_single', 'bulk', 2);
+  assert.equal(email.balance, 1);
+  assert.equal(rows.get('billingWallets/client').balance, before - 7);
+  assert.equal(rows.get('billingLedger/' + email.entryId).bucket, 'email');
+  assert.equal(rows.get('billingLedger/' + email.entryId).amount, -4);
+  assert.deepEqual(await call('refundEmailUsage', { entryId: email.entryId }, system), { refunded: true });
+  assert.deepEqual(await call('refundEmailUsage', { entryId: email.entryId }, system), { refunded: false });
+  assert.equal(rows.get('billingWallets/client').emailCredits, 5);
+
+  rows.set('users/agency-workspace', { role: 'USER', accountType: 'agency', status: 'Active', billingOwnerId: admin.uid });
+  const payerBefore = rows.get('billingWallets/agency').balance;
+  const shared = await use('agency-workspace', 'copilot_chat', 'chat');
+  assert.equal(shared.balance, payerBefore - 7);
+  assert.equal(rows.get('billingLedger/' + shared.entryId).pricingProviderId, admin.uid);
+  assert.equal(rows.get('billingWallets/agency-workspace'), undefined);
+});
+
+test('email-only add-ons are provider-funded and require approval despite a client payment flag', async () => {
+  const { rows, call } = await fixture();
+  await call('adjustCredits', { subscriberId: admin.uid, bucket: 'email', amount: 100, reason: 'Email allocation' }, platform);
+  await call('savePlan', { plan: { id: 'email-pack', kind: 'addon', addonType: 'credits', name: { en: 'Email pack' }, aiCredits: 0, emailCredits: 10, price: 5 } }, admin);
+  const { request } = await call('requestAddon', {
+    planId: 'email-pack', quantity: 2, paymentType: 'gateway', gatewayPaid: true,
+    addons: [{ id: 'email-pack', type: 'fixed', qty: 2, credits: 900, emailCredits: 900, price: 0 }],
+  });
+  assert.equal(request.status, 'pending');
+  assert.equal(request.totalAmount, 10);
+  assert.equal(rows.get('billingWallets/client').emailCredits, 0);
+  await call('decideRequest', { requestId: request.id, decision: 'approve' }, admin);
+  assert.equal(rows.get('billingWallets/client').emailCredits, 20);
+  assert.equal(rows.get('billingWallets/client').aiCredits, 100);
+  assert.equal(rows.get('billingWallets/agency').emailCredits, 80);
 });
 
 

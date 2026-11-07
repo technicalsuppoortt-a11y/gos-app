@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { structureVoice, transcribeVoice, voiceAudio } from '../copilot-voice.js';
+import { structureVoice, transcribeVoice, transcriptionMinutes, voiceAudio } from '../copilot-voice.js';
+
+test('transcription bills started minutes from the audio bytes', async () => {
+  const rate = 8000;
+  const dataLength = rate * 2 * 61;
+  const bytes = Buffer.alloc(44 + dataLength);
+  bytes.write('RIFF', 0); bytes.writeUInt32LE(36 + dataLength, 4); bytes.write('WAVEfmt ', 8);
+  bytes.writeUInt32LE(16, 16); bytes.writeUInt16LE(1, 20); bytes.writeUInt16LE(1, 22);
+  bytes.writeUInt32LE(rate, 24); bytes.writeUInt32LE(rate * 2, 28); bytes.writeUInt16LE(2, 32); bytes.writeUInt16LE(16, 34);
+  bytes.write('data', 36); bytes.writeUInt32LE(dataLength, 40);
+  assert.equal(await transcriptionMinutes({ bytes, mime: 'audio/wav', format: 'wav' }), 2);
+  await assert.rejects(transcriptionMinutes({ bytes: Buffer.from('invalid'), mime: 'audio/wav', format: 'wav' }), { code: 'invalid-argument' });
+});
 
 test('validates audio payloads before calling the provider and sends a supported multipart file', async () => {
   const source = { format: 'webm', audio: Buffer.from('example audio').toString('base64') };

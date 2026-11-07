@@ -14,6 +14,8 @@ import { flushAssetWrites } from '../backend/workspace';
 import { CRMRouting } from './CRMRouting';
 import { publishWorkspaceAsset, unpublishWorkspaceAsset, deleteWorkspaceAsset } from '../backend/hosting';
 import { backendError } from '../backend/firebase';
+import { generateBuilderDraft } from '../backend/aiBuilders';
+import { BuilderBriefDialog } from './BuilderBriefDialog';
 import { showToast } from '../utils/toast';
 import { pageTemplates, type FormField, type FormFieldType, FORM_BACKGROUND_PRESETS, type FormBackgroundPreset } from './page-template-data';
 import {
@@ -290,6 +292,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   const [activeTab, setActiveTab] = useState<'builder' | 'preview'>('builder');
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   const [busy, setBusy] = useState(false);
+  const [showAiDraft, setShowAiDraft] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Published' | 'Draft'>('All');
 
@@ -531,6 +534,24 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
     } finally {
       setBusy(false);
     }
+  };
+
+  const createAiForm = async (brief: string) => {
+    const generated = await generateBuilderDraft('form', brief);
+    const asset = createPageAsset('form', generated.name.slice(0, 120));
+    const page = asset.document.pages[0];
+    const form = findFormSection(page.sections);
+    const fields: FormField[] = generated.fields.map(field => ({ ...field, id: crypto.randomUUID() }));
+    if (form) {
+      form.content.customFields = JSON.stringify(fields);
+      form.content.body = generated.description;
+    }
+    page.subheadline = generated.description;
+    asset.description = generated.description;
+    await save(current => ({ ...current, assets: [asset, ...current.assets] }));
+    setSelected(asset.id);
+    setSelectedFieldId(fields[0]?.id ?? '');
+    showToast.success(translateText('Form draft created'));
   };
 
   const autoCreatedRef = React.useRef(false);
@@ -1876,6 +1897,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
         </div>
 
         <div className="forms-hub-actions">
+          <button type="button" className="aw-secondary" disabled={busy} onClick={() => setShowAiDraft(true)}><Sparkles size={16} /> {translateText('Create form with AI')}</button>
           <button
             className="aw-secondary"
             onClick={() => go('funnels?tab=templates&category=Forms')}
@@ -2071,6 +2093,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
       )}
 
       {/* MODAL: PROFESSIONAL DELETE FORM CONFIRMATION */}
+      {showAiDraft && <BuilderBriefDialog title="Create form with AI" placeholder="Describe the form’s purpose and the information you need to collect." close={() => setShowAiDraft(false)} generate={createAiForm} />}
       {formToDelete && (
         <DeleteFormModal
           form={formToDelete}

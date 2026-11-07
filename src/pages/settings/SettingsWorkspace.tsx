@@ -5,7 +5,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Check, ChevronRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { UserPlansPage } from '../billing/PlansPages';
 import { ToolsSettingsPanel } from './ToolsPanel';
 import { showToast } from '../../utils/toast';
 import { Card, Field, PanelHeading, Toggle } from './kit';
@@ -14,7 +13,6 @@ import { defaultSettings, friendlyError, settingsRequest } from './data';
 import type { SettingsData } from './data';
 import { ProfilePanel } from './ProfilePanel';
 import { BillingPanel } from './BillingPanel';
-import { AgencyBilling } from '../billing/AgencyBilling';
 import { IntegrationsPanel } from './IntegrationsPanel';
 import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
@@ -52,18 +50,14 @@ function SettingsWorkspaceView() {
   const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
   const [data, setData] = useState<SettingsData>(defaultSettings), [loading, setLoading] = useState(true), [error, setError] = useState('');
-  const currentTab = new URLSearchParams(location.search).get('tab');
-  const paymentMethodsTab = currentTab === 'payment-methods';
-  const isWalletTab = currentTab === 'wallet';
-  void paymentMethodsTab; void isWalletTab;
   const segment = location.pathname.split('/').filter(Boolean).at(-1);
   const active = tabs.find(t => t.slug === (aliases[segment ?? ''] ?? segment)) ?? tabs[0];
-  const sharedBillingUid = user?.accountType === 'agency' && (active.slug === 'plans' || active.slug === 'billing') ? user.id : null;
+  const agencyUid = user?.accountType === 'agency' && active.slug === 'billing' ? user.id : null;
   const refresh = useCallback(async () => {
     setError('');
     try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
-  useEffect(() => { if (!sharedBillingUid && active.slug !== 'domains') void refresh(); }, [refresh, active.slug, sharedBillingUid]);
+  useEffect(() => { if (active.slug !== 'domains') void refresh(); }, [refresh, active.slug]);
   async function save(next: SettingsData, personalPreferences?: PersonalPreferences) {
     const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', {
       profile: next.profile, business: next.business, payment: next.payment, personalPreferences,
@@ -73,16 +67,22 @@ function SettingsWorkspaceView() {
   }
   if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
-  if (sharedBillingUid) return <AgencyBilling uid={sharedBillingUid}/>;
+  if (active.slug === 'billing' && segment !== 'billing') {
+    const query = new URLSearchParams(location.search);
+    if (!query.has('tab')) {
+      if (segment && ['wallet', 'billing-wallet', 'billing-and-wallet'].includes(segment)) query.set('tab', 'wallet');
+      if (segment === 'payments' && !agencyUid) query.set('tab', 'payment-methods');
+      if (segment && ['plans', 'plans-pricing', 'plans-and-pricing', 'pricing'].includes(segment) && !agencyUid) query.set('tab', 'plans');
+    }
+    return <Navigate to={{ pathname: '/dashboard/settings/billing', search: query.toString(), hash: location.hash }} replace/>;
+  }
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
-        {localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
+        {active.slug === 'billing' ? <BillingPanel data={data} integrations={loading || error ? undefined : data.integrations} refresh={refresh} saveLocal={save} agencyUid={agencyUid}/> : localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {active.slug === 'pixel' && <MarketingTracking/>}
           {active.slug === 'domains' && <DomainsSettingsPanel/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}
-          {localizeNode(active.slug === 'plans' && <UserPlansPage/>)}
-          {localizeNode(active.slug === 'billing' && <BillingPanel data={data} refresh={refresh} saveLocal={save}/>)}
           {localizeNode(active.slug === 'integrations' && <IntegrationsPanel data={data} refresh={refresh}/>)}
           {localizeNode(active.slug === 'business' && <BusinessPanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'team' && <TeamPanel/>)}
@@ -154,5 +154,5 @@ export function PaymentsPanel({ data, save }: { data: SettingsData; save: (data:
     setDraft(data.payment);
   }, [data.payment]);
   const navigate = useNavigate();
-  return <><PanelHeading title={translateText("Payment preferences")} description="Manage payment providers, payout details and receipt preferences."/><Card title={translateText("Connected payment provider")} description="Connect a payment provider to accept payments for products and bookings."><div className="st-row"><span className="st-provider-mark stripe">{translateText("stripe")}</span><div><b>{translateText("Stripe")}</b><p>{localizeNode(data.integrations.stripe?.status ?? 'Not Connected')}</p></div><button className="st-secondary" onClick={() => navigate('/dashboard/settings/integrations?provider=stripe')}>{translateText("Manage provider ")}<ChevronRight size={15}/></button></div></Card><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, payment: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}><Card title={translateText("Payment preferences")}><div className="st-form-grid two"><Field label="Currency"><Select value={draft.currency} onChange={value => setDraft({ ...draft, currency: value })} options={CURRENCY_SELECT_OPTIONS} /></Field><Field label="Receipt email"><input type="email" required value={draft.receiptEmail} onChange={e => setDraft({ ...draft, receiptEmail: e.target.value })}/></Field></div><div className="st-preference"><span><b>{translateText("Send invoices & receipts")}</b><small>{translateText("Email a receipt after a verified payment.")}</small></span><Toggle label="Send invoices and receipts" checked={draft.invoices} onChange={invoices => setDraft({ ...draft, invoices })}/></div><p className="st-note">{translateText("Payout details are managed securely through your connected provider.")}</p><button type="button" className="st-secondary" onClick={() => navigate('/dashboard/settings/billing')}>{translateText("Manage saved payment methods ")}<ChevronRight size={15}/></button></Card>{localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}<div className="st-form-footer"><span/><button className="st-primary" disabled={busy}>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div></form></>;
+  return <><PanelHeading title={translateText("Payment preferences")} description="Manage payment providers, payout details and receipt preferences."/><Card title={translateText("Connected payment provider")} description="Connect a payment provider to accept payments for products and bookings."><div className="st-row"><span className="st-provider-mark stripe">{translateText("stripe")}</span><div><b>{translateText("Stripe")}</b><p>{localizeNode(data.integrations.stripe?.status ?? 'Not Connected')}</p></div><button className="st-secondary" onClick={() => navigate('/dashboard/settings/integrations?provider=stripe')}>{translateText("Manage provider ")}<ChevronRight size={15}/></button></div></Card><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, payment: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}><Card title={translateText("Payment preferences")}><div className="st-form-grid two"><Field label="Currency"><Select value={draft.currency} onChange={value => setDraft({ ...draft, currency: value })} options={CURRENCY_SELECT_OPTIONS} /></Field><Field label="Receipt email"><input type="email" required value={draft.receiptEmail} onChange={e => setDraft({ ...draft, receiptEmail: e.target.value })}/></Field></div><div className="st-preference"><span><b>{translateText("Send invoices & receipts")}</b><small>{translateText("Email a receipt after a verified payment.")}</small></span><Toggle label="Send invoices and receipts" checked={draft.invoices} onChange={invoices => setDraft({ ...draft, invoices })}/></div><p className="st-note">{translateText("Payout details are managed securely through your connected provider.")}</p><button type="button" className="st-secondary" onClick={() => navigate('/dashboard/settings/billing?tab=payment-methods')}>{translateText("Manage saved payment methods ")}<ChevronRight size={15}/></button></Card>{localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}<div className="st-form-footer"><span/><button className="st-primary" disabled={busy}>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div></form></>;
 }

@@ -5,6 +5,8 @@ import { ArrowRight, Check, Sparkles, LoaderCircle } from 'lucide-react';
 import { Modal } from './settings/kit';
 import { AssetSelect } from './AssetControls';
 import { createPageAsset, pageTemplates } from './page-templates';
+import { generateBuilderDraft } from '../backend/aiBuilders';
+import { backendError } from '../backend/firebase';
 
 import type { Asset, BuilderMode, Workspace } from './asset-model';
 
@@ -28,32 +30,44 @@ export function AIWebsiteDialog({ setWorkspace, close, go, kind = 'website', onC
     const templateGoal = goal === 'Sell products' ? 'Sales' : goal === 'Book appointments' ? 'Bookings' : 'Lead generation';
     const candidates = pageTemplates.filter(template => template.mode === kind && template.goal === templateGoal);
     const template = candidates.find(item => new RegExp(item.industry.split(' ')[0], 'i').test(industry)) ?? candidates[0] ?? pageTemplates.find(item => item.mode === kind)!;
-    const created = createPageAsset(kind, title, { ...template, mode: kind, color: palette.colors[0], title: title + ': ' + industry, body: 'Personalized ' + industry.toLowerCase() + ' for ' + audience.trim() + '.', benefits: ['Designed for ' + audience.trim(), 'Expert guidance in ' + industry, 'A clear next step'] });
+    const brief = JSON.stringify({ businessName: title, businessType: industry, audience: audience.trim(), goal });
+    const funnelDraft = kind === 'funnel' ? await generateBuilderDraft('funnel', brief) : null;
+    const copy = funnelDraft ?? await generateBuilderDraft('website', brief);
+    const created = createPageAsset(kind, title, { ...template, builderDocument: undefined, mode: kind, color: palette.colors[0], title: copy.headline, body: copy.description, benefits: copy.benefits, cta: copy.cta });
     const document = created.document;
-    const cta = goal === 'Sell products' ? 'Explore products' : goal === 'Book appointments' ? 'Book an appointment' : goal === 'Build brand awareness' ? 'Discover our story' : 'Get in touch';
     document.theme = { color: palette.colors[0], font: 'Manrope', corners: 'Rounded' };
     document.funnel = { ...document.funnel, goal, audience: audience.trim(), offer: title + ' · ' + industry };
     document.pages.forEach(page => {
       page.seoTitle = page.name + ' | ' + title;
-      page.seoDescription = 'Discover ' + title + ', your partner for ' + industry.toLowerCase() + '.';
-      page.backgroundColor = palette.colors[2]; page.cta = cta;
-      page.sections.forEach(section => { if (section.content.button) section.content.button = cta; });
+      page.seoDescription = copy.description;
+      page.backgroundColor = palette.colors[2];
     });
     const home = document.pages[0];
-    home.headline = title + ': ' + industry + ' made personal';
-    home.subheadline = 'Discover ' + industry.toLowerCase() + ' for ' + audience.trim() + '. Connect with ' + title + ' and take your next step.';
-    const hero = home.sections.find(section => section.type === 'Hero');
-    if (hero) { hero.content.title = home.headline; hero.content.body = home.subheadline; hero.content.button = cta; }
-    created.description = industry + ' · ' + audience.trim() + ' · ' + goal;
+    home.sections = home.sections.filter(section => section.type !== 'Testimonials');
+    const faq = home.sections.find(section => section.type === 'FAQ');
+    if (faq && copy.faq.length) faq.content.questions = JSON.stringify(copy.faq.map(entry => ({ ...entry, id: crypto.randomUUID() })));
+    if (funnelDraft) {
+      const [, next, confirmation] = document.pages;
+      if (next) {
+        next.subheadline = funnelDraft.nextStep;
+        next.sections[0].content.body = funnelDraft.nextStep;
+      }
+      if (confirmation) {
+        confirmation.subheadline = funnelDraft.confirmation;
+        const paragraph = confirmation.sections.find(section => section.type === 'Paragraph');
+        if (paragraph) paragraph.content.body = funnelDraft.confirmation;
+      }
+    }
+    created.description = copy.description;
     created.settings.color = palette.colors[0];
     if (onCreate) { await onCreate(created); return; }
     await setWorkspace?.(current => ({ ...current, assets: [created, ...current.assets] }));
     close(); go?.((kind === 'website' ? 'websites/' : 'funnels/') + created.id + '/edit/' + document.pages[0].id);
-    } catch { setError('Could not save your page. Please try again.'); }
+    } catch (error) { setError(backendError(error)); }
     finally { lock.current = false; setBusy(false); }
   };
   return <Modal title={translateText(kind === "website" ? "AI Website Generator" : "AI Funnel Generator")} close={close}><div className="aw-modal-body aw-ai-generator">
-    <p className="aw-ai-notice">{translateText("Create a personalized starter from your business brief. Live AI generation is not connected.")}</p>
+    <p className="aw-ai-notice">{translateText("Generate editable page copy and a starter layout from your business brief.")}</p>
     <ol className="aw-ai-progress" aria-label={translateText("Creation progress")}>{localizeNode(['Business', 'Goal & brand', 'Review'].map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} className={step >= index ? 'active' : ''}><span>{localizeNode(step > index ? <Check size={13}/> : index + 1)}</span>{localizeNode(label)}</li>))}</ol>
     <form onSubmit={event => { event.preventDefault(); if (step === 0 && (!name.trim() || !niche.trim() || !audience.trim())) { setError('Enter your business name, business type and target audience.'); return; } setError(''); if (step < 2) setStep(step + 1); else create(); }}>
       {localizeNode(step === 0 && <><h3>{translateText("Tell us about your business")}</h3><label>{translateText("Business Name")}<input autoFocus required maxLength={100} value={name} onChange={event => setName(event.target.value)} placeholder={translateText("e.g. Studio North")}/></label><label>{translateText("Business Type")}<input required maxLength={150} value={niche} onChange={event => setNiche(event.target.value)} placeholder={translateText("e.g. Interior design for modern homes")}/></label><label>{translateText("Target Audience")}<input required maxLength={200} value={audience} onChange={event => setAudience(event.target.value)} placeholder={translateText("e.g. Small business owners")}/></label></>)}

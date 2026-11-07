@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 127,
+      "line": 135,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 135,
+      "line": 143,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 138,
+      "line": 146,
       "utility": "text-slate-400"
     },
     {
@@ -238,18 +238,23 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 209,
+      "line": 205,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 221,
+      "line": 217,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 251,
+      "line": 247,
       "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 272,
+      "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
@@ -258,27 +263,22 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 280,
+      "line": 276,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 280,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 302,
+      "line": 298,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 305,
+      "line": 301,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 314,
+      "line": 310,
       "utility": "text-slate-100"
     },
     {

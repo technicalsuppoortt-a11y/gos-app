@@ -164,6 +164,8 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   const restricted = (value: Role | undefined) => value === 'PLATFORM_SUPPORT' || value === 'PLATFORM_FINANCE';
   const role: Role = restricted(normalizedDataRole) || restricted(claimRole) ? normalizedDataRole : claimRole || normalizedDataRole;
   const agency = data?.accountType === 'agency' || tokenResult.claims.accountType === 'agency';
+  const cashWalletRestricted = [claimRole, normalizedDataRole].some(value => value === 'ADMIN' || value === 'SUPER_ADMIN')
+    || typeof tokenResult.claims.impersonatedBy === 'string';
 
   const tenantId = (typeof claimTenantId === 'string' && claimTenantId)
     ? claimTenantId
@@ -184,7 +186,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
-    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}) },
+    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}), ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}) },
     role,
     tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,

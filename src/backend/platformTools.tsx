@@ -68,7 +68,7 @@ export function PlatformToolBoundary({ children }: { children: ReactNode }) {
   if (id && sub && !subLoading) {
     const status = effectiveStatus(sub);
     const name = initialTools.find(t => t.id === id)?.name[ar ? 1 : 0];
-    const billingLink = <a href="/dashboard/settings/plans">{ar ? 'الاشتراك والباقات' : 'View plans'}</a>;
+    const billingLink = <a href="/dashboard/settings/billing?tab=plans">{ar ? 'الاشتراك والباقات' : 'View plans'}</a>;
     if (status === 'expired' || status === 'cancelled') return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'انتهى اشتراكك. جدّد باقتك لمتابعة استخدام هذه الأداة.' : 'Your subscription has ended. Renew your plan to keep using this tool.'}</p>{billingLink}</section>;
     if (sub.plan?.tools?.length && !entitledTools(sub).includes(id)) return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'هذه الأداة غير مشمولة في باقتك الحالية. قم بالترقية أو اطلب إضافة.' : 'This tool is not included in your current plan. Upgrade or request an add-on.'}</p>{billingLink}</section>;
   }

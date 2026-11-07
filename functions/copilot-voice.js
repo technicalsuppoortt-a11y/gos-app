@@ -1,6 +1,7 @@
 // @ts-check
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { parseBuffer } from 'music-metadata';
 import { MAX_VOICE_BYTES, VOICE_FORMATS } from './copilot-voice-model.js';
 
 /** @typedef {import('./copilot-voice-model.js').VoiceExtraction} VoiceExtraction */
@@ -19,6 +20,63 @@ export function voiceAudio(data) {
     throw new HttpsError('invalid-argument', 'The audio recording could not be read.');
   }
   return { bytes, format, mime: VOICE_FORMATS[format] };
+}
+
+/** MediaRecorder WebM streams can omit a declared duration. Read their block timestamps. */
+function webmDuration(bytes) {
+  const segment = 0x18538067, info = 0x1549a966, cluster = 0x1f43b675, group = 0xa0;
+  let scale = 1_000_000, timestamp = 0, lastFrame = -1;
+  const readVint = (offset, end) => {
+    let marker = 0x80, length = 1;
+    while (marker && !(bytes[offset] & marker)) { marker >>= 1; length++; }
+    if (!marker || offset + length > end) throw new Error('Invalid WebM header.');
+    let value = bytes[offset] & (marker - 1), unknown = value === marker - 1;
+    for (let i = 1; i < length; i++) {
+      value = value * 256 + bytes[offset + i];
+      unknown &&= bytes[offset + i] === 255;
+    }
+    return { length, value, unknown };
+  };
+  const walk = (start, end, parent, unknownCluster = false) => {
+    let offset = start;
+    while (offset < end) {
+      const header = readVint(offset, end);
+      if (header.length > 4) throw new Error('Invalid WebM element.');
+      const id = bytes.readUIntBE(offset, header.length);
+      if (unknownCluster && header.length === 4) return offset;
+      const size = readVint(offset + header.length, end);
+      const payload = offset + header.length + size.length;
+      const next = size.unknown ? end : payload + size.value;
+      if (next > end || size.unknown && ![segment, cluster].includes(id)) throw new Error('Invalid WebM size.');
+      if (id === segment && parent === 0 || id === info && parent === segment || id === group && parent === cluster) walk(payload, next, id);
+      else if (id === cluster && parent === segment) {
+        timestamp = 0;
+        offset = walk(payload, next, id, size.unknown);
+        continue;
+      } else if (id === 0x2ad7b1 && parent === info && size.value >= 1 && size.value <= 6) scale = bytes.readUIntBE(payload, size.value);
+      else if (id === 0xe7 && parent === cluster && size.value >= 1 && size.value <= 6) timestamp = bytes.readUIntBE(payload, size.value);
+      else if (id === 0xa3 && parent === cluster || id === 0xa1 && parent === group) {
+        const track = readVint(payload, next);
+        if (payload + track.length + 3 < next) lastFrame = Math.max(lastFrame, timestamp + bytes.readInt16BE(payload + track.length));
+      }
+      offset = next;
+    }
+    return offset;
+  };
+  walk(0, bytes.length, 0);
+  // Opus recordings generally use 20 ms frames. The last block gives its start.
+  return lastFrame < 0 ? 0 : lastFrame * scale / 1e9 + 0.02;
+}
+
+/** @param {ReturnType<typeof voiceAudio>} audio */
+export async function transcriptionMinutes(audio) {
+  const metadata = await parseBuffer(audio.bytes, { mimeType: audio.mime }, { duration: true, skipCovers: true }).catch(() => null);
+  const frames = audio.format === 'webm' ? (() => { try { return webmDuration(audio.bytes); } catch { return 0; } })() : 0;
+  const duration = Math.max(frames, metadata?.format.duration ?? 0);
+  if (!Number.isFinite(duration) || duration <= 0 || duration > 3600) {
+    throw new HttpsError('invalid-argument', 'Choose a readable recording up to 60 minutes long.');
+  }
+  return Math.ceil(duration / 60);
 }
 
 /** @param {ReturnType<typeof voiceAudio>} audio @param {string} apiKey */

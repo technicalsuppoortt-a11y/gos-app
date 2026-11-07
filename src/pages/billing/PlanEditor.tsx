@@ -11,7 +11,7 @@ type Draft = {
   badge: { en: string; ar: string }; cta: { en: string; ar: string };
   features: { en: string[]; ar: string[] };
   price: string; currency: string; billingType: 'monthly' | 'annual' | 'fixed' | 'lifetime'; durationDays: string;
-  credits: string; tools: string[]; channels: string[]; seats: string; clients: string;
+  credits: string; emailCredits: string; tools: string[]; channels: string[]; seats: string; clients: string;
   addonType: 'credits' | 'seats' | 'tool'; addonSeats: string; addonTool: string; sortOrder: string;
 };
 
@@ -23,7 +23,8 @@ function toDraft(kind: 'plan' | 'addon', plan?: BillingPlan | null): Draft {
     features: plan?.features ?? { en: [], ar: [] },
     price: String(plan?.price ?? ''), currency: plan?.currency ?? 'USD',
     billingType: plan && plan.billingType !== 'once' ? plan.billingType : 'monthly',
-    durationDays: String(plan?.durationDays ?? 90), credits: String(plan?.credits ?? (kind === 'addon' ? 1000 : 500)),
+    durationDays: String(plan?.durationDays ?? 90), credits: String(plan?.aiCredits ?? plan?.credits ?? (kind === 'addon' ? 1000 : 500)),
+    emailCredits: String(plan?.emailCredits ?? 0),
     channels: plan?.channels ?? [], tools: plan?.tools ?? [], seats: String(plan?.limits?.seats ?? 1), clients: String(plan?.limits?.clients ?? 10),
     addonType: plan?.addonType ?? 'credits', addonSeats: String(plan?.addonSeats ?? 1), addonTool: plan?.addonTool ?? '',
     sortOrder: String(plan?.sortOrder ?? 0),
@@ -44,7 +45,9 @@ export function PlanEditor({ kind, plan, isPlatform, allowedTools, onClose }: { 
       id: draft.id, kind, visible: draft.visible, name: draft.name, description: draft.description, badge: draft.badge, cta: draft.cta,
       features: { en: draft.features.en.filter(Boolean), ar: draft.features.ar.filter(Boolean) },
       price: Number(draft.price || 0), currency: draft.currency, billingType: draft.billingType, durationDays: Number(draft.durationDays),
-      credits: addon && draft.addonType !== 'credits' ? 0 : Number(draft.credits || 0), tools: draft.tools, channels: draft.channels, limits: { seats: Number(draft.seats || 0), clients: Number(draft.clients || 0) },
+      aiCredits: addon && draft.addonType !== 'credits' ? 0 : Number(draft.credits || 0),
+      emailCredits: addon && draft.addonType !== 'credits' ? 0 : Number(draft.emailCredits || 0),
+      tools: draft.tools, channels: draft.channels, limits: { seats: Number(draft.seats || 0), clients: Number(draft.clients || 0) },
       addonType: draft.addonType, addonSeats: Number(draft.addonSeats || 0), addonTool: draft.addonTool, sortOrder: Number(draft.sortOrder || 0),
     },
   }), editing ? c.t('Plan updated.', 'تم تحديث الباقة.') : c.t('Plan created.', 'تم إنشاء الباقة.')).then(ok => { if (ok) onClose(); });
@@ -116,7 +119,10 @@ export function PlanEditor({ kind, plan, isPlatform, allowedTools, onClose }: { 
           <label className="bl-field"><span>$ {c.t('Price', 'السعر')}</span><input className="bl-input" type="number" min={0} step="0.01" inputMode="decimal" value={draft.price} placeholder="100" onChange={event => set('price', event.target.value)} /></label>
           <label className="bl-field"><span>{c.t('Currency', 'العملة')}</span><DashboardSelect className="bl-input" value={draft.currency} onChange={event => set('currency', event.target.value)}>{CURRENCIES.map(currency => <option key={currency} value={currency}>{currency}</option>)}</DashboardSelect></label>
           {!addon && draft.billingType === 'fixed' && <label className="bl-field"><span>{c.t('Duration (days)', 'المدة (أيام)')}</span><input className="bl-input" type="number" min={1} max={3650} value={draft.durationDays} onChange={event => set('durationDays', event.target.value)} /></label>}
-          {(!addon || draft.addonType === 'credits') && <label className="bl-field"><span><Coins size={13} />{addon ? c.t('Credits', 'الرصيد') : c.t('Credits / month', 'الرصيد / شهريًا')}</span><input className="bl-input" type="number" min={0} value={draft.credits} onChange={event => set('credits', event.target.value)} />{!addon && <small>{c.t('Resets monthly · no rollover', 'يتجدد شهريًا · لا يُرحّل')}</small>}</label>}
+          {(!addon || draft.addonType === 'credits') && <>
+            <label className="bl-field"><span><Coins size={13} />{addon ? c.t('AI credits', 'رصيد الذكاء الاصطناعي') : c.t('AI credits / month', 'رصيد الذكاء الاصطناعي شهريًا')}</span><input className="bl-input" type="number" min={0} max={10000000} step={1} value={draft.credits} onChange={event => set('credits', event.target.value)} /></label>
+            <label className="bl-field"><span><Coins size={13} />{addon ? c.t('Email credits', 'رصيد البريد الإلكتروني') : c.t('Email credits / month', 'رصيد البريد الإلكتروني شهريًا')}</span><input className="bl-input" type="number" min={0} max={10000000} step={1} value={draft.emailCredits} onChange={event => set('emailCredits', event.target.value)} /></label>
+          </>}
           {addon && draft.addonType === 'seats' && <label className="bl-field"><span><Users size={13} />{c.t('Extra seats', 'مقاعد إضافية')}</span><input className="bl-input" type="number" min={1} max={1000} value={draft.addonSeats} onChange={event => set('addonSeats', event.target.value)} /></label>}
           {!isPlatform && addon && draft.addonType === 'tool' && <label className="bl-field"><span><Wrench size={13} />{c.t('Tool', 'الأداة')}</span><DashboardSelect className="bl-input" value={draft.addonTool} onChange={event => set('addonTool', event.target.value)}><option value="">{c.t('Choose a tool…', 'اختر أداة…')}</option>{toolOptions.map(id => <option key={id} value={id}>{toolName(id, c.ar)}</option>)}</DashboardSelect></label>}
         </div>

@@ -2,6 +2,7 @@ import { Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { canViewCashWallet } from '../../store/cashWalletVisibility';
 import { useAgencyBilling, useBillingIdentity, useCommunicationWallet, WALLET_CURRENCY } from '../../backend/billing';
 import { isDemoAccount } from '../../backend/demoContext';
 import { translateText as t, useUILanguage } from '../../i18n/display';
@@ -15,9 +16,13 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export function WalletBadge() {
+  const visible = useSelector(canViewCashWallet);
+  return visible ? <CashWalletBadge/> : null;
+}
+
+function CashWalletBadge() {
   const language = useUILanguage();
   const navigate = useNavigate();
-  const role = useSelector((state: RootState) => state.auth.role);
   const agency = useSelector((state: RootState) => state.auth.user?.accountType === 'agency');
   const identity = useBillingIdentity();
   const { data: wallet, loading: walletLoading } = useCommunicationWallet(agency ? null : identity.uid);
@@ -35,16 +40,6 @@ export function WalletBadge() {
         maximumFractionDigits: 2,
       }).format(available);
 
-  const handleClick = () => {
-    if (role === 'SUPER_ADMIN') {
-      navigate('/super-admin/plans?tab=wallet');
-    } else if (role === 'ADMIN') {
-      navigate('/admin/plans?tab=wallet');
-    } else {
-      navigate('/dashboard/settings/billing?tab=wallet');
-    }
-  };
-
   const title = t(
     agency ? (language.startsWith('ar') ? 'محفظة الاتصالات المشتركة' : 'Shared communication wallet') : isDemoAccount
       ? 'Communication Wallet · Carrier Balance (Demo)'
@@ -54,7 +49,7 @@ export function WalletBadge() {
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={() => navigate(`/dashboard/settings/billing?tab=${agency ? 'wallet' : 'usage'}`)}
       aria-label={t('Communication Wallet balance')}
       title={title}
       className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/80 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 hover:border-emerald-300 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20 shadow-xs"

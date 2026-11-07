@@ -8,7 +8,7 @@ import {
   Eye, Trash2, ZoomIn, Image as ImageIcon, Plus, Minus, PackagePlus, Sliders,
   ChevronDown, ChevronUp, Sparkles, Coins, Tag
 } from 'lucide-react';
-import { billing, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, usePlans, type AddonItem, type BillingPlan, type BillingCoupon } from '../../backend/billing';
+import { billing, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, usePlans, type AddonItem, type BillingPlan, type BillingCoupon, type BillingRequest } from '../../backend/billing';
 import { usePaymentMethods } from '../../backend/paymentMethods';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -165,12 +165,6 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   
-  // Card details state for gateway
-  const [cardName, setCardName] = useState(() => auth.currentUser?.displayName || '');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
-  
   // Completion screen
   const [completed, setCompleted] = useState<{ type: 'manual' | 'gateway'; message: string } | null>(null);
 
@@ -253,8 +247,9 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
         id: plan.id,
         type: 'fixed',
         qty,
-        credits: (plan.credits || 0) * qty,
-        price: Math.round((plan.price || 0) * qty * 100) / 100,
+        credits: plan.credits ?? 0,
+        emailCredits: plan.emailCredits ?? 0,
+        price: plan.price ?? 0,
         name: c.pick(plan.name) || 'Add-on Pack',
         addonType: plan.addonType || 'credits',
         addonTool: plan.addonTool || undefined,
@@ -270,8 +265,9 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
             id: found.id,
             type: 'fixed',
             qty: quantity,
-            credits: (found.credits || 0) * quantity,
-            price: Math.round((found.price || 0) * quantity * 100) / 100,
+            credits: found.credits ?? 0,
+            emailCredits: found.emailCredits ?? 0,
+            price: found.price ?? 0,
             name: c.pick(found.name),
             addonType: found.addonType || 'credits',
             addonTool: found.addonTool || undefined,
@@ -307,7 +303,9 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
     : Math.round((mainPlanPrice + addonsTotal) * 100) / 100;
   const totalCredits = isAddon
     ? (isDynamicStandalone ? dynamicStandaloneCredits : (plan?.credits || 0) * qty)
-    : ((plan?.credits || 0) * qty) + attachedAddons.reduce((sum, item) => sum + (item.credits || 0), 0);
+    : ((plan?.credits || 0) * qty) + attachedAddons.reduce((sum, item) => sum + (item.addonType === 'credits' ? item.credits * (item.type === 'unit' ? 1 : item.qty) : 0), 0);
+  const totalEmailCredits = isAddon ? (plan.emailCredits ?? 0) * qty
+    : (plan.emailCredits ?? 0) * qty + attachedAddons.reduce((sum, item) => sum + (item.emailCredits ?? 0) * item.qty, 0);
 
   // Coupon state
   const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -564,10 +562,10 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
       }, c.t('Submitting transfer request…', 'جاري إرسال طلب التحويل…'));
 
     } else {
-      // Automated Gateway Flow (Stripe/Paddle/Paymob/etc.)
+      // Submit the gateway choice for provider review.
       await run('checkout', async () => {
         const op = isAddon ? 'requestAddon' : 'requestPlan';
-        const res = await billing(op, {
+        const res = await billing<{ request: BillingRequest }>(op, {
           planId: plan.id,
           quantity: isDynamicStandalone ? standaloneDynamicUnits : qty,
           mainPlanPrice,
@@ -580,8 +578,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           currency: plan.currency,
           paymentMethod: selectedMethod.name,
           paymentType: 'gateway',
-          gatewayPaid: true,
-          transactionId: `gtw_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          transactionId: txId.trim(),
           couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
           subtotal: totalAmount,
           discount,
@@ -589,14 +586,13 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
         });
 
         setCompleted({
-          type: 'gateway',
-          message: c.t(
-            'Payment verified successfully! Your plan and credits have been activated immediately.',
-            'تم تأكيد عملية الدفع بنجاح! تم تفعيل باقتك ورصيدك فورًا.'
-          )
+          type: res.request?.status === 'approved' ? 'gateway' : 'manual',
+          message: res.request?.status === 'approved'
+            ? c.t('Your request was approved and your plan or credits are ready.', 'تمت الموافقة وأصبحت الباقة أو الأرصدة جاهزة.')
+            : c.t('Your request is pending payment review. Credits are issued after approval.', 'طلبك قيد مراجعة الدفع. يتم إصدار الرصيد بعد الموافقة.'),
         });
         onSuccess(res);
-      }, c.t('Processing payment…', 'جاري معالجة الدفع…'));
+      }, c.t('Submitting payment request…', 'جارٍ إرسال طلب الدفع…'));
     }
   };
 
@@ -626,7 +622,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
               {busy ? <Spinner /> : <ShieldCheck size={16} />}
               {selectedMethod?.type === 'manual'
                 ? c.t('Submit Transfer & Receipt', 'تأكيد التحويل وإرسال الإيصال')
-                : c.t(`Pay ${c.money(finalAmount, plan.currency)} Now`, `دفع ${c.money(finalAmount, plan.currency)} الآن`)}
+                : c.t('Submit payment request', 'إرسال طلب الدفع')}
             </button>
           </div>
         )
@@ -837,8 +833,12 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                   </div>
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-muted)' }}>
-                  <span>{c.t('Total credits granted', 'إجمالي الكريديت الممنوح')}</span>
-                  <b>{c.num(finalCredits)} {c.t('Credits', 'نقطة')}{creditBonus > 0 ? ` (+${c.num(creditBonus)} bonus)` : ''}</b>
+                  <span>{c.t('AI credits', 'رصيد الذكاء الاصطناعي')}</span>
+                  <b>{c.num(finalCredits)}{creditBonus > 0 ? ` (+${c.num(creditBonus)} bonus)` : ''}</b>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-muted)' }}>
+                  <span>{c.t('Email credits', 'رصيد البريد الإلكتروني')}</span>
+                  <b>{c.num(totalEmailCredits)}</b>
                 </div>
                 {discount > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-success)', fontWeight: 600 }}>
@@ -1329,7 +1329,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                           </div>
                         </div>
                         <span className={`bl-pill ${m.type === 'gateway' ? 'blue' : 'plain'}`} style={{ fontSize: 11, flexShrink: 0 }}>
-                          {m.type === 'gateway' ? c.t('Instant', 'فوري') : c.t('Manual', 'يدوي')}
+                          {m.type === 'gateway' ? c.t('Gateway', 'بوابة دفع') : c.t('Manual', 'يدوي')}
                         </span>
                       </div>
                     );
@@ -1470,66 +1470,13 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                   </label>
                 </div>
               ) : (
-                /* Automated Gateway Card Interface (Stripe/Paddle/Paymob/etc.) */
+                /* Gateway payment reference for provider review. */
                 <div style={{ padding: 14, borderRadius: 12, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', display: 'grid', gap: 12, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h4 style={{ margin: 0, fontSize: 13, fontWeight: 750, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <CreditCard size={15} color="var(--bl-accent)" />
-                      {c.t('Card Information', 'بيانات البطاقة البنكية')}
-                    </h4>
-                    <span className="bl-pill violet plain" style={{ fontSize: 11, flexShrink: 0 }}>
-                      {selectedMethod.name}
-                    </span>
-                  </div>
-
+                  <p>{c.t('Your provider will review this request before issuing credits.', 'سيراجع مزود الخدمة طلبك قبل إصدار الرصيد.')}</p>
                   <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{c.t('Cardholder Name', 'اسم حامل البطاقة')}</span>
-                    <input
-                      type="text"
-                      className="bl-input"
-                      style={{ fontSize: 13, width: '100%', boxSizing: 'border-box' }}
-                      placeholder="e.g. John Doe"
-                      value={cardName}
-                      onChange={e => setCardName(e.target.value)}
-                    />
+                    <span>{c.t('Payment reference (optional)', 'مرجع الدفع (اختياري)')}</span>
+                    <input className="bl-input" maxLength={120} value={txId} onChange={event => setTxId(event.target.value)} />
                   </label>
-
-                  <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{c.t('Card Number', 'رقم البطاقة')}</span>
-                    <input
-                      type="text"
-                      className="bl-input"
-                      style={{ fontSize: 13, letterSpacing: 1, width: '100%', boxSizing: 'border-box' }}
-                      placeholder="4242 •••• •••• 4242"
-                      value={cardNumber}
-                      onChange={e => setCardNumber(e.target.value)}
-                    />
-                  </label>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, minWidth: 0 }}>
-                    <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600 }}>{c.t('Expiry', 'تاريخ الانتهاء')}</span>
-                      <input
-                        type="text"
-                        className="bl-input"
-                        style={{ fontSize: 13, width: '100%', boxSizing: 'border-box' }}
-                        placeholder="MM / YY"
-                        value={cardExpiry}
-                        onChange={e => setCardExpiry(e.target.value)}
-                      />
-                    </label>
-                    <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600 }}>{c.t('CVC / CVV', 'رمز الأمان')}</span>
-                      <input
-                        type="text"
-                        className="bl-input"
-                        style={{ fontSize: 13, width: '100%', boxSizing: 'border-box' }}
-                        placeholder="123"
-                        value={cardCvc}
-                        onChange={e => setCardCvc(e.target.value)}
-                      />
-                    </label>
-                  </div>
                 </div>
               )
             )}

@@ -41,23 +41,15 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-function WorkspaceWalletsCell({ ownerId, ar }: { ownerId: string; ar: boolean }) {
-  const [wallet, setWallet] = useState<Record<string, any> | null>(null);
+function WorkspaceCreditsCell({ ownerId, ar }: { ownerId: string; ar: boolean }) {
   const [credits, setCredits] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
-    setWallet(null);
     setCredits(null);
     if (!ownerId) return;
 
-    const failWallet = () => setWallet({ balance: 0, currency: 'USD' });
     const failCredits = () => setCredits({ balance: 0 });
 
-    const unsubWallet = onSnapshot(
-      doc(primaryDb, 'communicationWallets', ownerId),
-      s => setWallet(s.data() ?? { balance: 0, currency: 'USD' }),
-      failWallet
-    );
     const unsubCredits = onSnapshot(
       doc(primaryDb, 'billingWallets', ownerId),
       s => setCredits(s.data() ?? { balance: 0 }),
@@ -65,31 +57,15 @@ function WorkspaceWalletsCell({ ownerId, ar }: { ownerId: string; ar: boolean })
     );
 
     return () => {
-      unsubWallet();
       unsubCredits();
     };
   }, [ownerId]);
 
-  const walletBalance = wallet && 'balance' in wallet ? numberValue(wallet.balance) : null;
-  const walletCurrency = wallet?.currency || 'USD';
-  const walletHeld = wallet && 'held' in wallet ? numberValue(wallet.held) : 0;
 
   const creditsBalance = credits && 'balance' in credits ? numberValue(credits.balance) : null;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-      {walletBalance !== null ? (
-        <span className="aiu-wallet-badge" title={ar ? 'محفظة الاتصالات' : 'Communication Wallet'}>
-          <Wallet size={12} />
-          <span>
-            {walletBalance.toLocaleString()} {walletCurrency}
-            {walletHeld > 0 && <small style={{ opacity: 0.75 }}> ({ar ? 'معلّق' : 'held'}: {walletHeld.toLocaleString()})</small>}
-          </span>
-        </span>
-      ) : (
-        <span style={{ fontSize: 11.5, color: '#94a3b8' }}>{ar ? 'غير مجهّزة' : 'No wallet'}</span>
-      )}
-
       {creditsBalance !== null ? (
         <span className="aiu-credits-badge" title={ar ? 'رصيد نقاط الخطة' : 'Plan Credits'}>
           <Coins size={12} />
@@ -683,7 +659,7 @@ export function AdminAIUsage({
               <tr>
                 <th>{t('Workspace', 'مساحة العمل')}</th>
                 <th>{t('Account Owner ID', 'معرّف المالك')}</th>
-                <th>{t('Live Balances (Wallet & Credits)', 'الأرصدة المباشرة (المحفظة والنقاط)')}</th>
+                <th>{t('Plan Credits', 'رصيد الباقة')}</th>
               </tr>
             </thead>
             <tbody>
@@ -719,7 +695,7 @@ export function AdminAIUsage({
                     </td>
                     <td>
                       {owner ? (
-                        <WorkspaceWalletsCell ownerId={owner} ar={ar} />
+                        <WorkspaceCreditsCell ownerId={owner} ar={ar} />
                       ) : (
                         <span style={{ color: '#94a3b8', fontSize: 12 }}>
                           {t('Owner not configured', 'المالك غير مهيأ')}

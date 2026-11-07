@@ -5,6 +5,9 @@ import { executeBilling } from '../billing-engine.js';
 import { chargeEntryId, confirmCharge, releaseCharge, reserveCharge, attachProviderEvent } from '../communication-ledger.js';
 import { createMetaWebhookHandler, processMetaWebhook, verifyMetaSignature } from '../meta-webhook.js';
 import { processOutboxMessage } from '../outbox.js';
+import { DeliveryError } from '../delivery.js';
+import { createLiveUsageHandler } from '../gos-live-usage.js';
+import { meteredGosRequest } from '../gos-metering.js';
 
 const NOW = '2026-11-02T10:00:00.000Z';
 
@@ -13,6 +16,7 @@ function memoryDb(seed = {}) {
   const rows = new Map(Object.entries(seed).map(([path, value]) => [path, structuredClone(value)]));
   const ref = path => ({
     path, id: path.split('/').at(-1),
+    async get() { const value = rows.get(path); return { exists: value !== undefined, data: () => structuredClone(value) }; },
     get parent() { const parts = path.split('/'); return { parent: parts.length > 2 ? ref(parts.slice(0, -2).join('/')) : null }; },
     collection: name => ({ doc: id => ref(`${path}/${name}/${id}`) }),
   });
@@ -197,7 +201,8 @@ test('wallet top-up is approved by the provider, credits client wallet directly 
 
 // ── Outbox pre-flight ──
 function outboxDb(balance) {
-  return walletDb(balance, {
+  return walletDb(1, {
+    'billingWallets/owner': { id: 'owner', balance: 11, emailCredits: balance, providerId: 'agency' },
     'tenants/biz/messages/m1': { status: 'queued', channel: 'email', leadId: 'l1', conversationId: 'c1', text: 'Hello' },
     'tenants/biz/leads/l1': { email: 'a@b.co', hasEmailConsent: true },
     'tenants/biz/conversations/c1': { channel: 'email', leadId: 'l1' },
@@ -215,24 +220,82 @@ test('outbox blocks sends with insufficient balance before calling the provider'
   assert.equal(db.rows.get('tenants/biz/messages/m1').status, 'blocked_insufficient_credits');
 });
 
-test('outbox bills email on provider acknowledgement', async () => {
+test('outbox charges one email credit before provider acknowledgement without changing other balances', async () => {
   const db = outboxDb(1);
-  const result = await processOutboxMessage(db, row(db), {}, async () => 'resend-1', () => NOW);
+  const result = await processOutboxMessage(db, row(db), {}, async () => {
+    assert.equal(db.rows.get('billingWallets/owner').emailCredits, 0);
+    return 'resend-1';
+  }, () => NOW);
   assert.equal(result.status, 'sent');
-  const entry = db.rows.get(`communicationLedger/${chargeEntryId('resend', 'biz', 'm1')}`);
-  assert.equal(entry.status, 'confirmed');
-  assert.equal(entry.provider_event_id, 'resend-1');
-  assert.equal(db.rows.get('communicationWallets/owner').balance, 0.998);
+  const message = db.rows.get(row(db).ref.path);
+  assert.equal(message.provider_message_id, 'resend-1');
+  const entry = db.rows.get(`billingLedger/${message.emailEntryId}`);
+  assert.equal(entry.action, 'email_send_single');
+  assert.equal(entry.amount, -1);
+  assert.equal(db.rows.get('billingWallets/owner').aiCredits, 11);
+  assert.equal(db.rows.get('communicationWallets/owner').balance, 1);
+  assert.deepEqual(await processOutboxMessage(db, row(db), {}, async () => assert.fail('duplicate delivery'), () => NOW), { status: 'skipped' });
 });
 
 test('outbox releases the hold when the provider rejects the send', async () => {
   const db = outboxDb(1);
-  const result = await processOutboxMessage(db, row(db), {}, async () => { throw new Error('Provider rejected delivery (HTTP 400).'); }, () => NOW);
+  const result = await processOutboxMessage(db, row(db), {}, async () => { throw new DeliveryError('Provider rejected delivery (HTTP 400).'); }, () => NOW);
   assert.equal(result.status, 'failed');
   const wallet = db.rows.get('communicationWallets/owner');
   assert.equal(wallet.balance, 1);
   assert.equal(wallet.held, 0);
+  assert.equal(db.rows.get('billingWallets/owner').emailCredits, 1);
   assert.equal(db.rows.get('tenants/biz/messages/m1').status, 'failed');
+});
+
+test('live-channel bridge authenticates the worker, meters the owner once, and respects provider toggles', async () => {
+  const db = outboxDb(0);
+  const handler = createLiveUsageHandler({ db, secret: () => 'trusted-worker' });
+  const request = async (token, eventId) => {
+    const response = { status(code) { this.code = code; return this; }, json(value) { this.value = value; } };
+    await handler({ method: 'POST', body: { tenantId: 'biz', channel: 'whatsapp', eventId }, get: () => token }, response);
+    return response;
+  };
+  assert.equal((await request('unknown-worker', 'first')).code, 401);
+  assert.equal((await request('trusted-worker', 'first')).code, 200);
+  assert.equal((await request('trusted-worker', 'first')).code, 409);
+  assert.equal(db.rows.get('billingWallets/owner').aiCredits, 9);
+  db.rows.set('billingSettings/creditWeights/providers/agency', { rules: { live_auto_reply: { enabled: false, weight: 2 } } });
+  assert.equal((await request('trusted-worker', 'second')).code, 403);
+  assert.equal(db.rows.get('billingWallets/owner').aiCredits, 9);
+});
+
+test('the GOS callable charges a standard user before forwarding multipart and guards enablement without debiting', async () => {
+  const db = outboxDb(0);
+  const config = {
+    db,
+    workspace: async () => ({ user: { uid: 'owner' } }),
+    baseUrl: 'https://gos.example',
+    gatewaySecret: 'trusted-worker',
+    fetcher: async (url, options) => {
+      assert.equal(db.rows.get('billingWallets/owner').aiCredits, 8);
+      assert.equal(options.headers.Authorization, 'Bearer user-token');
+      assert.equal(options.headers['X-GOS-Metering-Secret'], 'trusted-worker');
+      if (options.method === 'POST') {
+        assert.equal(url, 'https://gos.example/api/v1/ai/sources');
+        assert.equal(options.body.get('type'), 'file');
+        assert.equal(await options.body.get('file').text(), 'sample');
+      } else {
+        assert.equal(url, 'https://gos.example/api/v1/ai/assistant');
+        assert.equal(options.method, 'PUT');
+      }
+      return Response.json({ success: true, data: { ok: true } });
+    },
+  };
+  const call = (action, payload, dependencies = config) => meteredGosRequest({
+    data: { action, payload }, rawRequest: { headers: { authorization: 'Bearer user-token' } },
+  }, dependencies);
+  assert.deepEqual(await call('source', { type: 'file', name: 'Notes', file: { name: 'notes.docx', data: Buffer.from('sample').toString('base64') } }), { ok: true });
+  await assert.rejects(call('liveEnable', { live_enabled: true }, { ...config, gatewaySecret: undefined }), { code: 'failed-precondition' });
+  assert.deepEqual(await call('liveEnable', { live_enabled: true }), { ok: true });
+  db.rows.set('billingSettings/creditWeights/providers/agency', { rules: { playground_test: { enabled: false, weight: 1 } } });
+  await assert.rejects(call('playground', { question: 'Hello' }, { ...config, fetcher: async () => assert.fail('disabled action reached provider') }), { code: 'failed-precondition' });
+  assert.equal(db.rows.get('billingWallets/owner').aiCredits, 8);
 });
 
 // ── Instant Gateway Top-ups & Coupon Codes ──

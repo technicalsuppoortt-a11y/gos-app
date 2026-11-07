@@ -5,6 +5,8 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { deliverMessage } from './delivery.js';
+import { chargeEmail, refundRejectedEmail } from './email-metering.js';
+import { BillingError } from './billing-engine.js';
 import { commerceServiceRequest } from './commerce-service.js';
 const resendKey = defineSecret('RESEND_API_KEY');
 const origin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
@@ -37,6 +39,8 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
   for (const job of jobs.docs) {
     const claimed = await db.runTransaction(async tx => { if ((await tx.get(job.ref)).data()?.status !== 'queued') return false; tx.update(job.ref, { status: 'processing' }); return true; });
     if (!claimed) continue;
+    let emailEntryId;
+    let providerAccepted = false;
     try {
       const data = job.data(), root = job.ref.parent.parent, product = (await root.collection('products').doc(data.productId).get()).data();
       const deliveryId = createHash('sha256').update(`${root.path}:${job.id}`).digest('hex');
@@ -59,9 +63,25 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
           accessLink = `${origin.value()}/product-access?tenant=${encodeURIComponent(root.id)}&token=${access.token}`;
         }
         const text = data.kind === 'calendarInvite' ? `Your ${product.name} session is scheduled for ${booking.start}. ${product.config.bookingUrl || ''}` : data.kind === 'fileDelivery' ? `Your ${product.name} files are ready. ${accessLink}` : `Thank you for your purchase of ${product.name}. ${product.config.fulfillment || ''}`;
-        await deliverMessage({ channel: 'email', deliveryId, subject: `${product.name}: ${data.kind === 'confirmation' ? 'purchase confirmation' : data.kind === 'calendarInvite' ? 'booking confirmation' : 'file delivery'}`, text, ...(data.kind === 'calendarInvite' ? { attachments: [calendarAttachment(booking, product.name, deliveryId)] } : {}) }, { email: data.email }, integration || {}, { resendApiKey: resendKey.value() });
+        const attachments = data.kind === 'calendarInvite' ? [calendarAttachment(booking, product.name, deliveryId)] : [];
+        emailEntryId = await db.runTransaction(async tx => {
+          const entryId = await chargeEmail(db, tx, root, job.ref.path, attachments);
+          tx.update(job.ref, { emailEntryId: entryId });
+          return entryId;
+        });
+        await deliverMessage({ channel: 'email', deliveryId, subject: `${product.name}: ${data.kind === 'confirmation' ? 'purchase confirmation' : data.kind === 'calendarInvite' ? 'booking confirmation' : 'file delivery'}`, text, attachments }, { email: data.email }, integration || {}, { resendApiKey: resendKey.value() });
+        providerAccepted = true;
       }
       await job.ref.update({ status: 'delivered', deliveredAt: new Date().toISOString() });
-    } catch (error) { await job.ref.update({ status: 'failed', error: error.message, updatedAt: new Date().toISOString() }); }
+    } catch (error) {
+      if (providerAccepted) {
+        console.error('Could not record acknowledged commerce delivery', job.ref.path, error);
+        continue;
+      }
+      await db.runTransaction(async tx => {
+        await refundRejectedEmail(db, tx, emailEntryId, error);
+        tx.update(job.ref, { status: error instanceof BillingError ? error.code === 'resource-exhausted' ? 'blocked_insufficient_credits' : 'blocked' : 'failed', error: error.message, updatedAt: new Date().toISOString() });
+      });
+    }
   }
 });

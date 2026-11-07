@@ -7,6 +7,7 @@ export interface User {
   email: string;
   avatar?: string;
   accountType?: 'agency';
+  cashWalletRestricted?: boolean;
 }
 
 export interface Tenant {

@@ -16,14 +16,14 @@ function stripUndefined(value) {
 function transactionStore(db, tx) {
   return {
     get: async path => { const snapshot = await tx.get(db.doc(path)); return snapshot.exists ? snapshot.data() : undefined; },
-    query: async (collection, field, value) => (await db.collection(collection).where(field, '==', value).get()).docs.map(doc => ({ ...doc.data(), id: doc.id })),
+    query: async (collection, field, value) => (await tx.get(db.collection(collection).where(field, '==', value))).docs.map(doc => ({ ...doc.data(), id: doc.id })),
     id: () => db.collection('billingLedger').doc().id,
     commit: writes => { for (const [path, data] of writes) tx.set(db.doc(path), stripUndefined(data)); },
   };
 }
 
-function toHttpsError(error) {
-  if (error instanceof BillingError) return new HttpsError(error.code, error.message);
+export function toHttpsError(error) {
+  if (error instanceof BillingError) return new HttpsError(error.code, error.message, error.details);
   console.error('Unhandled billing error in billingService:', error);
   return new HttpsError('internal', error?.message || 'An internal billing error occurred.');
 }
@@ -42,12 +42,16 @@ export async function billingServiceRequest(request, { actor, db }) {
 
 /**
  * Charge usage against an account wallet from any backend function, e.g.
- *   await consumeCredits(db, { subscriberId: uid, amount: 1, usageType: 'ai', idempotencyKey: requestId });
+ *   await consumeCredits(db, { subscriberId: uid, action: 'copilot_chat', idempotencyKey: requestId });
  * Throws HttpsError('resource-exhausted') when the balance is insufficient.
  */
+export function executeUsage(db, tx, operation, data, now) {
+  return executeBilling(operation, data, { uid: 'system', role: 'SYSTEM' }, transactionStore(db, tx), now);
+}
+
 export async function consumeCredits(db, usage) {
   try {
-    return await db.runTransaction(tx => executeBilling('consume', usage, { uid: 'system', role: 'SYSTEM' }, transactionStore(db, tx)));
+    return await db.runTransaction(tx => executeUsage(db, tx, 'consume', usage));
   } catch (error) {
     throw toHttpsError(error);
   }

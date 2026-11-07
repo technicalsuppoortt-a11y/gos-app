@@ -54,8 +54,8 @@ export function PlanDetailsModal({ plan, subscribers, isPlatform, onClose }: { p
           <div className="bl-stat" data-tone="violet" style={{ padding: 12 }}>
             <i style={{ width: 32, height: 32 }}><Coins size={16} /></i>
             <div>
-              <span>{c.t('Credits / cycle', 'الكريديت / الدورة')}</span>
-              <strong style={{ fontSize: 18 }}>{c.num(plan.credits)}</strong>
+              <span>{c.t('AI / email credits per cycle', 'رصيد الذكاء الاصطناعي والبريد لكل دورة')}</span>
+              <strong style={{ fontSize: 18 }}>{c.num(plan.credits)} / {c.num(plan.emailCredits ?? 0)}</strong>
               <small>{c.t('Resets monthly', 'يتجدد شهريًا')}</small>
             </div>
           </div>

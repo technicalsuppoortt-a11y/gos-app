@@ -64,6 +64,15 @@ async function demoRequest(name: string, data: any): Promise<any> {
       return { success: true };
     }
     case 'generateFollowUp': spendCredits(); return { text: 'Hi! Just checking in about your interest. Would you like to book a quick discovery call? · Demo message' };
+    case 'generateBuilderDraft': {
+      spendCredits();
+      if (data.kind === 'booking') return { name: 'Discovery call', description: 'Discuss your goals and plan the next step.', duration: 30 };
+      if (data.kind === 'form') return { name: 'Consultation request', description: 'Tell us how we can help.', fields: [
+        { type: 'email', label: 'Email address', required: true, placeholder: 'you@example.com', options: [] },
+        { type: 'textarea', label: 'Your goals', required: true, placeholder: 'Tell us about your project', options: [] },
+      ] };
+      return { headline: 'Take the next step with confidence', description: 'Tell us about your goals and find the right next step.', cta: 'Get in touch', benefits: ['Personal guidance', 'Simple next steps', 'Ongoing support'], faq: [], nextStep: 'Tell us about your project.', confirmation: 'Thank you for getting in touch.' };
+    }
     case 'queueMessage': {
       const thread = rows('conversations').find(row => row.id === data.conversationId);
       if (thread) entityMutation('conversations', thread.id, { ...thread, messages: [...(thread.messages ?? []), { id: crypto.randomUUID(), body: data.text, text: data.text, role: 'assistant', sender: 'ai', created_at: new Date().toISOString() }], last_message_body: data.text });

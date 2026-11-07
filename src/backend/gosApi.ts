@@ -1,5 +1,4 @@
 import { auth, callBackend } from './firebase';
-import { store } from '../store';
 import { checkGosToolPolicy } from './gosToolPolicy';
 import { createGosTransport, GosApiError } from './gosTransport';
 
@@ -9,12 +8,11 @@ export const gosRequest = createGosTransport((import.meta.env.VITE_GOS_API_BASE_
   return auth.currentUser.getIdToken(refresh);
 }, fetch, checkGosToolPolicy);
 
-async function meteredRequest<T>(action: 'copilot' | 'playground' | 'inboxSimulation', path: string, body: object, signal?: AbortSignal): Promise<T> {
-  const user = store.getState().auth.user;
-  if (user?.accountType !== 'agency') return gosRequest<T>(path, { method: 'POST', body, signal });
+async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSignal): Promise<T> {
   signal?.throwIfAborted();
-  if (auth.currentUser?.uid !== user.id) throw new Error('Sign in as the Agency user to use AI tools.');
-  return callBackend<T>('agencyGosUsage', { action, payload: body }, 110000);
+  const result = await callBackend<T>('agencyGosUsage', request, 115000);
+  signal?.throwIfAborted();
+  return result;
 }
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; detail?: string | null; url?: string | null; parent_id?: string | null; progress_percent?: number; chunks_done?: number; chunks_total?: number; content?: string; chunk_count?: number; item_count?: number; error?: string; path?: string | null };
 export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
@@ -25,7 +23,31 @@ export type PlaygroundContext = { channel?: string; city?: string; session_id?: 
 export type PlaygroundCitation = { source_id?: string; source_name?: string; excerpt?: string; score?: number };
 export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: (PlaygroundCitation | string | unknown)[]; verdict?: string; note?: string | null; context_consistent?: boolean; channel?: string | null; city?: string | null; messages?: { role: 'user' | 'assistant'; content: string }[]; created_at?: string | null; session_id?: string; source_id?: string };
 export type ApiRecord = Record<string, any>;
+type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean };
+type InboxSimulationInput = { channel: string; external_thread_id: string; external_message_id: string; customer_name: string; phone?: string; body: string };
+type FileSourceInput = { type: 'file'; name: string; file: { name: string; mime: string; data: string } };
+type MeteredGosRequest =
+  | { action: 'copilot'; payload: CopilotInput }
+  | { action: 'playground' | 'inboxSmartReply'; payload: PlaygroundContext & { question: string } }
+  | { action: 'inboxSimulation'; payload: InboxSimulationInput }
+  | { action: 'source'; payload: GosSourceInput | FileSourceInput }
+  | { action: 'liveEnable'; payload: { live_enabled: true; channels?: GosAssistant['channels'] } };
 const id = encodeURIComponent;
+
+async function createSource(input: GosSourceInput | FormData): Promise<{ source: GosSource }> {
+  if (!(input instanceof FormData)) return meteredRequest({ action: 'source', payload: input });
+  const file = input.get('file');
+  if (!(file instanceof File) || !file.size || file.size > 20 * 1024 * 1024) throw new Error('Choose a knowledge file up to 20 MB.');
+  const data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result.split(',')[1]) : reject(new Error('Could not read the knowledge file.'));
+    reader.onerror = () => reject(new Error('Could not read the knowledge file.'));
+    reader.readAsDataURL(file);
+  });
+  const name = input.get('name');
+  return meteredRequest({ action: 'source', payload: { type: 'file', name: typeof name === 'string' && name.trim() ? name : file.name, file: { name: file.name, mime: file.type, data } } });
+}
+
 export const gosApi = {
   health: (signal?: AbortSignal) => gosRequest('/health', { public: true, signal }),
   me: (signal?: AbortSignal) => gosRequest('/auth/me', { signal }),
@@ -33,24 +55,27 @@ export const gosApi = {
   firestoreStatus: () => gosRequest('/firestore/status'),
   sources: (signal?: AbortSignal) => gosRequest<{ sources: GosSource[] }>('/ai/sources', { signal }),
   source: (sourceId: string, signal?: AbortSignal) => gosRequest<{ source: GosSource }>(`/ai/sources/${id(sourceId)}`, { signal }),
-  createSource: (body: GosSourceInput | FormData) => gosRequest<{ source: GosSource }>('/ai/sources', { method: 'POST', body }),
+  createSource,
   training: (signal?: AbortSignal) => gosRequest<GosTraining & { training?: GosTraining }>('/ai/training', { signal }),
   channels: (signal?: AbortSignal) => gosRequest<{ channels: Record<string, boolean | { enabled: boolean; status?: string; external_id?: string | null }> | { channel: string; enabled: boolean; status?: string; external_id?: string | null }[] }>('/ai/channels', { signal }),
   updateChannel: (channel: string, enabled: boolean, credentials?: { external_id?: string; access_token?: string }) => gosRequest<unknown>(`/ai/channels/${id(channel)}`, { method: 'PUT', body: { enabled, ...credentials } }),
   deleteSource: (sourceId: string) => gosRequest(`/ai/sources/${id(sourceId)}`, { method: 'DELETE' }),
   assistant: (signal?: AbortSignal) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { signal }),
-  updateAssistant: (body: Partial<GosAssistant>) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
+  updateAssistant: (body: Partial<GosAssistant>) => body.live_enabled === true
+    ? meteredRequest<{ assistant: GosAssistant }>({ action: 'liveEnable', payload: { ...body, live_enabled: true } })
+    : gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
   playground: (signal?: AbortSignal) => gosRequest<{ tests: PlaygroundTest[] }>('/ai/playground', { signal }),
-  ask: (question: string, context: PlaygroundContext = {}) => meteredRequest<{ test: PlaygroundTest; session_id?: string; source_id?: string }>('playground', '/ai/playground', { question, ...context }),
+  ask: (question: string, context: PlaygroundContext = {}) => meteredRequest<{ test: PlaygroundTest; session_id?: string; source_id?: string }>({ action: 'playground', payload: { question, ...context } }),
+  smartReply: (question: string) => meteredRequest<{ test: PlaygroundTest }>({ action: 'inboxSmartReply', payload: { question } }),
   grade: (testId: string, verdict: string, note = '') => gosRequest<{ test: PlaygroundTest }>(`/ai/playground/${id(testId)}/grade`, { method: 'POST', body: { verdict, note } }),
   copilotConversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/ai/copilot/conversations', { signal }),
-  copilot: (body: { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean }, signal?: AbortSignal) => meteredRequest<{ text?: string; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; draft?: ApiRecord; actionExecuted?: ApiRecord }>('copilot', '/ai/copilot', body, signal),
-  createCopilotDraft: (body: { draft: ApiRecord; record?: ApiRecord; requestId?: string }) => gosRequest<{ success: boolean; id?: string; resource?: string; href?: string; hrefLabel?: string }>('/ai/copilot/draft', { method: 'POST', body }),
+  copilot: (body: CopilotInput, signal?: AbortSignal) => meteredRequest<{ text?: string; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; draft?: ApiRecord; actionExecuted?: ApiRecord }>({ action: 'copilot', payload: body }, signal),
+  createCopilotDraft: (body: { draft: ApiRecord; record: ApiRecord; requestId: string }) => callBackend<{ success: boolean; id?: string; resource?: string; href?: string; hrefLabel?: string }>('createCopilotDraft', body),
   conversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/inbox/conversations', { signal }),
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),
   inboxSummary: (signal?: AbortSignal) => gosRequest<{ conversations_today: number; needed_team: number; conversations: ApiRecord[] }>('/inbox/summary', { signal }),
   // This ingests customer messages; it is not an outbound staff-reply API.
-  receiveMessage: (body: { channel: string; external_thread_id: string; external_message_id: string; customer_name: string; phone?: string; body: string }) => meteredRequest<{ outcome: string; conversation: ApiRecord; inbound?: ApiRecord; reply: ApiRecord | null; action?: { type: string; label: string; detail?: string; lead_id?: string | null } | null }>('inboxSimulation', '/inbox/messages', body),
+  receiveMessage: (body: InboxSimulationInput) => meteredRequest<{ outcome: string; conversation: ApiRecord; inbound?: ApiRecord; reply: ApiRecord | null; action?: { type: string; label: string; detail?: string; lead_id?: string | null } | null }>({ action: 'inboxSimulation', payload: body }),
   pipelines: (signal?: AbortSignal) => gosRequest<{ pipelines: ApiRecord[] }>('/crm/pipelines', { signal }),
   pipeline: (pipelineId: string) => gosRequest(`/crm/pipelines/${id(pipelineId)}`),
   presets: () => gosRequest('/crm/pipelines/presets'),

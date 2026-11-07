@@ -25,7 +25,7 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/admin/tools': { title: 'All Tools Management', description: 'Platform-wide feature controls and native tools configuration.' },
   '/admin/users': { title: 'Sub Accounts', description: 'Invite and manage your workspace sub-accounts.' },
   '/admin': { title: 'Dashboard', description: 'Workspace administration.' },
-  '/dashboard/settings/plans': { title: 'Plans & Pricing', description: 'Your subscription, credits and available plans.' },
+  '/dashboard/settings/billing': { title: 'Plans & Billing', description: 'Your subscription, credits and available plans.' },
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
   '/dashboard/booking': { title: 'Booking & Calendar', description: 'Create booking links, manage your availability and let clients book appointments with you.' },
   '/dashboard/funnels': { title: 'Funnel & Website', description: 'Build and manage the paths that turn visitors into customers.' },
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
     { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
     { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
-    { title: 'Plans & Pricing', path: '/dashboard/settings/plans', category: 'Settings' },
+    { title: 'Plans & Billing', path: '/dashboard/settings/billing', category: 'Settings' },
     { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
     { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
     { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
@@ -230,7 +230,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
-      <button type="button" onClick={() => navigate(agency ? '/dashboard/settings/billing' : '/dashboard/settings/plans')} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
+      <button type="button" onClick={() => navigate(agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans')} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>

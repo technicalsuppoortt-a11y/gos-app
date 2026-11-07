@@ -57,7 +57,7 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
             <div className="bl-table-wrap" style={{ marginBlockStart: 14 }}>
               <table className="bl-table">
                 <thead><tr>
-                  <th>{c.t('Plan name', 'اسم الباقة')}</th><th>{c.t('Type', 'النوع')}</th><th>{c.t('Price', 'السعر')}</th><th>{addon ? c.t('Gives', 'يمنح') : c.t('Credits / mo', 'رصيد / شهر')}</th>
+                  <th>{c.t('Plan name', 'اسم الباقة')}</th><th>{c.t('Type', 'النوع')}</th><th>{c.t('Price', 'السعر')}</th><th>{addon ? c.t('Gives', 'يمنح') : c.t('AI / email credits per month', 'رصيد الذكاء الاصطناعي والبريد شهريًا')}</th>
                   {!addon && <th>{isPlatform ? c.t('Channels', 'القنوات') : c.t('Tools', 'الأدوات')}</th>}{!addon && <th>{c.t('Subscribers', 'المشتركون')}</th>}<th>{c.t('Visibility', 'الظهور')}</th><th style={{ textAlign: 'end' }}>{c.t('Actions', 'الإجراءات')}</th>
                 </tr></thead>
                 <tbody>
@@ -66,7 +66,7 @@ export function PlanCatalog({ kind, plans, subscribers, isPlatform, allowedTools
                       <td><div className="bl-name"><span className="bl-avatar">{addon ? <Package size={15} /> : <Layers size={15} />}</span><div><b>{c.pick(plan.name)}</b>{plan.badge.en && <small>{c.pick(plan.badge)}</small>}</div></div></td>
                       <td><span className="bl-pill violet plain">{billingLabel(plan, c)}</span></td>
                       <td className="bl-price">{c.money(plan.price, plan.currency)}</td>
-                      <td className="bl-credits">{plan.addonType === 'seats' ? c.t(`+${plan.addonSeats} seats`, `+${c.num(plan.addonSeats ?? 0)} مقاعد`) : plan.addonType === 'tool' ? toolName(plan.addonTool ?? '', c.ar) : c.num(plan.credits)}</td>
+                      <td className="bl-credits">{plan.addonType === 'seats' ? c.t(`+${plan.addonSeats} seats`, `+${c.num(plan.addonSeats ?? 0)} مقاعد`) : plan.addonType === 'tool' ? toolName(plan.addonTool ?? '', c.ar) : `${c.num(plan.credits)} / ${c.num(plan.emailCredits ?? 0)}`}</td>
                       {!addon && <td><span className="bl-pill blue plain" title={isPlatform ? (plan.channels ?? []).join(', ') : plan.tools.map(id => toolName(id, c.ar)).join(', ')}><Sparkles size={12} />{isPlatform ? c.t(`${plan.channels?.length ?? 0} channels`, `${c.num(plan.channels?.length ?? 0)} قنوات`) : c.t(`${plan.tools.length} tools`, `${c.num(plan.tools.length)} أدوات`)}</span></td>}
                       {!addon && <td className="num">{c.num(activeCount(plan.id))}</td>}
                       <td>

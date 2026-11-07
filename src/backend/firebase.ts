@@ -4,6 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import publicDefaults from './gos-public-config.json';
+import { showToast } from '../utils/toast';
 
 const env = import.meta.env;
 const publicConfig: FirebaseOptions = publicDefaults;
@@ -84,7 +85,16 @@ export async function sendOfficialPasswordResetEmail(email: string, continueUrl?
 }
 
 export async function callBackend<T>(name: string, data: unknown, timeout?: number): Promise<T> {
-  return (await httpsCallable<unknown, T>(functions, name, timeout === undefined ? undefined : { timeout })(data)).data;
+  try {
+    return (await httpsCallable<unknown, T>(functions, name, timeout === undefined ? undefined : { timeout })(data)).data;
+  } catch (error) {
+    const { code, details } = (error ?? {}) as { code?: string; details?: { creditBucket?: 'ai' | 'email'; shared?: boolean; accountRole?: string } };
+    if (code === 'functions/resource-exhausted' && details?.creditBucket && !details.shared) {
+      const url = details.accountRole === 'ADMIN' ? '/admin/plans?area=mine' : details.accountRole === 'SUPER_ADMIN' ? '/super-admin/plans' : '/dashboard/settings/billing';
+      showToast.creditLimit(backendError(error), url, details.creditBucket);
+    }
+    throw error;
+  }
 }
 export function backendError(error: unknown): string {
   const code = (error as { code?: string })?.code;

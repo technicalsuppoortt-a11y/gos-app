@@ -623,7 +623,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     }
     setAssistLoading(true);
     try {
-      const result = await gosApi.ask([...active.messages].reverse().find(message => message.sender === 'customer')?.text || 'What services do you offer?');
+      const result = await gosApi.smartReply([...active.messages].reverse().find(message => message.sender === 'customer')?.text || 'What services do you offer?');
       setDraft(result.test.answer || 'A teammate will follow up.'); showToast.info('Draft outcome: ' + result.test.outcome); showToast.success('AI draft ready for review');
     } catch (error) { showToast.error(backendError(error)); } finally { setAssistLoading(false); }
   };

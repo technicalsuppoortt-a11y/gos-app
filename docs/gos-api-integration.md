@@ -58,6 +58,47 @@ Reuse the same external message ID when retrying an event. The collection has
 no staff reply, note, assignment, tag, or takeover endpoint; those operations
 display an availability notice in REST Inbox instead of pretending to save.
 
+## Credit metering
+
+Dashboard AI mutations run through Firebase. The callable forwards the authenticated
+user's token and validated payload to GOS after the billing transaction succeeds.
+Follow-up and Copilot calls that include indexed retrieval charge their parent
+action. File indexing forwards multipart data to the existing source endpoint.
+
+The platform's direct pricing is stored in `billingSettings/creditWeights`.
+Each Admin's overrides live in `billingSettings/creditWeights/providers/{adminUid}`
+and apply to that Admin's subscribers and shared Agency workspaces. Old
+credit balances are AI credits. Allocate email credits through a plan, add-on,
+or wallet transfer before enabling sends for existing subscribers. Email
+charges use email credits per recipient. A send with attachments of at least
+1 MiB in total, or with a remote attachment of unknown size, uses the attachment
+rule. Carrier billing remains separate. Set the Firestore TTL for the
+`gosSimulationResults` collection group on `expiresAt` to expire retry responses.
+
+### GOS service integration
+
+The separately deployed GOS API must enforce the metering boundary for direct
+requests and live provider traffic. Configure a matching `GOS_METERING_SECRET`
+on Firebase and GOS and set `ENABLE_GOS_METERING_BRIDGE=true` in the Firebase
+Functions environment. The dashboard can enable live replies once the bridge
+is configured. The upstream API should require a matching
+`X-GOS-Metering-Secret` on the AI mutation routes that Firebase proxies
+(`POST /ai/copilot`, `POST /ai/playground`, `POST /ai/sources`, and the
+dashboard simulation on `POST /inbox/messages`), in addition to its normal
+user authentication and authorization. The same requirement applies to
+`PUT /ai/assistant` when setting `live_enabled` to true. The dashboard now creates Copilot
+drafts in Firebase, so the upstream draft endpoint must reject public
+requests as well.
+
+For an actual inbound channel event, the GOS worker should ingest the
+message and apply live enablement, consent, and human takeover rules first.
+Before running AI, POST `{ tenantId, channel, eventId }` to the Firebase
+`gosLiveUsage` function with the same secret. Use the authenticated provider
+event's routed tenant and stable event ID. Only HTTP 200 authorizes generation.
+On 403 or 429 preserve the inbound message and skip AI. On 409 the event was
+already charged. Preserve the earlier processing state and skip generation.
+Dashboard simulations are already charged by their callable.
+
 ## Verification
 
 - `npm run test:gos-api`: isolated transport and concrete upload-flow checks.

@@ -50,7 +50,6 @@ const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(m
 const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
 const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
 const SuperAdminPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.SuperAdminPlansPage })));
-const UserPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.UserPlansPage })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
@@ -132,7 +131,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
       { path: 'support', element: <Suspended><UserSupportPage/></Suspended> },
-      { path: 'plans', element: <Navigate to="/dashboard/settings/plans" replace/> },
+      { path: 'plans', element: <Navigate to="/dashboard/settings/billing?tab=plans" replace/> },
       { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
       ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
       { path: 'domains/*', element: <Navigate to="/dashboard/settings/domains" replace/> },

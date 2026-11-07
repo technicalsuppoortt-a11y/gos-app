@@ -20,6 +20,8 @@ export interface BillingPlan {
   billingType: BillingType | 'once';
   durationDays: number | null;
   credits: number;
+  aiCredits?: number;
+  emailCredits?: number;
   tools: string[];
   channels?: string[];
   limits: { clients?: number; seats?: number };
@@ -37,7 +39,7 @@ export interface BillingPlan {
 
 export interface PlanSnapshot {
   id: string; kind: PlanKind; name: LocalizedText; billingType: BillingPlan['billingType']; durationDays: number | null;
-  price: number; currency: Currency; credits: number; tools: string[]; limits: BillingPlan['limits'];
+  price: number; currency: Currency; credits: number; aiCredits?: number; emailCredits?: number; tools: string[]; limits: BillingPlan['limits'];
   channels?: string[];
 }
 
@@ -70,6 +72,7 @@ export interface AddonItem {
   type: 'fixed' | 'unit';
   qty: number;
   credits: number;
+  emailCredits?: number;
   price: number;
   name?: string | LocalizedText;
   addonType?: AddonType;
@@ -89,12 +92,14 @@ export interface ProviderBillingSettings {
   updatedAt?: string;
 }
 
-export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; updatedAt: string; lifetimeAllocated?: number; lifetimeSpent?: number; }
+export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; aiCredits?: number; emailCredits?: number; updatedAt: string; lifetimeAllocated?: number; lifetimeSpent?: number; }
 
 export interface LedgerEntry {
   id: string; walletId: string; providerId: string;
-  type: 'grant' | 'topup' | 'transfer_out' | 'expire' | 'adjustment' | 'usage';
+  type: 'grant' | 'topup' | 'transfer_out' | 'expire' | 'adjustment' | 'usage' | 'refund';
   amount: number; balanceAfter: number; description: string; actorId: string; createdAt: string;
+  bucket?: 'ai' | 'email';
+  action?: import('./credit-actions.js').CreditAction;
   counterpartyId?: string; refType?: string; refId?: string;
 }
 
@@ -191,7 +196,7 @@ export interface WalletAnalyticsReport {
 export interface BillingRequest {
   id: string; requesterId: string; requesterRole: 'ADMIN' | 'USER'; requesterName: string; requesterEmail: string;
   providerId: string; type: 'plan' | 'renewal' | 'addon' | 'wallet_topup'; planId: string; quantity: number; currency?: Currency;
-  plan: { name: LocalizedText; kind: PlanKind; price: number; currency: Currency; credits: number; billingType: BillingPlan['billingType']; addonType: AddonType | null };
+  plan: { name: LocalizedText; kind: PlanKind; price: number; currency: Currency; credits: number; emailCredits?: number; billingType: BillingPlan['billingType']; addonType: AddonType | null };
   mainPlanPrice?: number;
   addons?: AddonItem[];
   subtotal?: number;
@@ -237,7 +242,7 @@ export const ADDON_TYPES: AddonType[];
 export const CURRENCIES: Currency[];
 export const TOOL_IDS: string[];
 export const DEFAULT_TRIAL: { admin: { days: number; credits: number }; user: { days: number; credits: number } };
-export class BillingError extends Error { code: string; constructor(code: string, message: string) }
+export class BillingError extends Error { code: string; details?: unknown; constructor(code: string, message: string, details?: unknown) }
 export function addDays(start: string, days: number): string;
 export function addMonths(start: string, months: number): string;
 export function periodEndFor(plan: Pick<BillingPlan, 'kind' | 'billingType' | 'durationDays'>, start: string): string | null;
