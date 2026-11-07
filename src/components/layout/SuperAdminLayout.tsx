@@ -25,6 +25,7 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
+  { label: 'Meta App', to: '/super-admin/meta-app', icon: MessageCircle },
   { label: 'Payments', to: '/super-admin/payments', icon: CreditCard },
   { label: 'Logs & Monitoring', to: '/super-admin/logs', icon: Activity },
 ];
