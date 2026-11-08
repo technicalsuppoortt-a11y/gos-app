@@ -12,7 +12,7 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
     tags: [], stage: row.status || '', source: row.channel || '', phone: row.phone || '', email: row.email || '',
     location: '', assignee: row.assignee || '', aiAutoReply: row.status !== 'handoff', takenOver: row.status === 'handoff',
     followUp: false, followUpRules: [], starred: false, activity: [],
-    messages: messages.map(message => ({ id: message.id, text: message.body || '', time: message.created_at || '', sender: message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer' })),
+    messages: messages.map(message => ({ id: message.id, text: message.body || '', time: message.created_at || '', sender: message.actor === 'agent' ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer' })),
   };
 }
 export function useGosInbox(enabled: boolean, selectedId: string) {

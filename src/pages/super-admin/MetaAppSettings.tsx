@@ -320,6 +320,7 @@ export function MetaAppSettings() {
       <span className="saw-meta-field-label">{t(label)}</span>
       <input
         inputMode="numeric"
+        autoComplete="off"
         placeholder={placeholder}
         value={form[key] ?? ''}
         onChange={e => setForm({ ...form, [key]: e.target.value })}
@@ -567,7 +568,8 @@ export function MetaAppSettings() {
                       <div className="saw-meta-input-wrap has-trailing">
                         <input
                           type={showSecret ? 'text' : 'password'}
-                          autoComplete="off"
+                          // "new-password" stops Chrome filling the saved login password here.
+                          autoComplete="new-password"
                           placeholder={channelState?.has_secret ? 'Saved. Leave blank to keep it.' : '••••••••••••••••••••••••'}
                           value={form[`${id}_app_secret`] ?? ''}
                           onChange={e => setForm({ ...form, [`${id}_app_secret`]: e.target.value })}
