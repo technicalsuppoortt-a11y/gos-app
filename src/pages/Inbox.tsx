@@ -577,7 +577,18 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (!canSend) return;
     const text = draft.trim();
     const requestId = crypto.randomUUID();
-    if (!demoInbox) { showToast.info('Staff replies and notes are not supported by the supplied inbox API.'); return; }
+    if (!demoInbox) {
+      // The API sends text replies only; notes, files and voice notes stay demo-only for now.
+      if (mode === 'note' || attachments.length || voiceDraft || !text) { showToast.info('Only text replies can be sent to customers for now.'); return; }
+      setSending(true);
+      try {
+        await gosApi.replyToConversation(active.id, text);
+        setDraft('');
+        setSent(true);
+        inboxApi.retry();
+      } catch (error) { showToast.error(backendError(error)); } finally { setSending(false); }
+      return;
+    }
     const message: Message = {
       id: requestId,
       sender: mode === "note" ? "note" : "agent",
