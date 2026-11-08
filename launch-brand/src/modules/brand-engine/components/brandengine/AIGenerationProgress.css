@@ -1,0 +1,55 @@
+
+@scope (.brand-engine-module) {
+.ai-generation-progress {
+  margin-block: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--studio-border, #d5e1e7);
+  border-radius: 12px;
+  background: var(--studio-panel, #f5f8fa);
+  color: inherit;
+  font-size: 13px;
+}
+.ai-generation-progress-title,
+.ai-generation-timing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ai-generation-progress-title {
+  margin-block-end: 8px;
+}
+.ai-generation-progress.is-running .ai-generation-progress-title {
+  color: var(--studio-accent, #6336ff);
+}
+.ai-generation-progress.is-success .ai-generation-progress-title {
+  color: #087f5b;
+}
+.ai-generation-progress.is-error .ai-generation-progress-title {
+  color: #bc3434;
+}
+.ai-generation-timing {
+  font-variant-numeric: tabular-nums;
+}
+.ai-generation-timing span + span {
+  margin-inline-start: auto;
+  font-weight: 600;
+}
+.ai-generation-progress small {
+  display: block;
+  margin-block-start: 8px;
+  line-height: 1.5;
+  opacity: 0.8;
+  font-size: 12px;
+}
+.ai-generation-progress p {
+  margin-block: 8px 0;
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-generation-progress .animate-spin {
+    animation: none;
+  }
+}
+
+}

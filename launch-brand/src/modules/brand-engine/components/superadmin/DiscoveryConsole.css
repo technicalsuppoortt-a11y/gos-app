@@ -1,0 +1,52 @@
+@import "../brandengine/BusinessDiscover.css";
+@scope (.brand-engine-module) {
+
+.discover-admin{height:100%;display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid var(--db);border-radius:14px;overflow:hidden;min-height:0}
+.discover-admin-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.discover-admin-heading>div:last-child{display:flex;gap:7px}
+.discover-admin-heading small{color:var(--dp);font-size:10px;font-weight:750;letter-spacing:.06em}
+.discover-admin-heading h1{font-size:24px;font-weight:800;margin:5px 0}
+.discover-admin-heading p{font-size:11px;color:var(--dm);margin:0}
+.discover-admin-heading button{font-size:11px}
+.discover-admin-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;flex-shrink:0}
+.discover-admin-tabs button{font-size:11px;background:transparent;border:0;border-bottom:2px solid var(--db);border-radius:0}
+.discover-admin-tabs [aria-pressed=true]{color:var(--dp);border-color:var(--dp);background:var(--dl)}
+.discover-admin-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--df);padding:15px;gap:24px}
+.discover-admin h2{font-size:15px;font-weight:750;margin:0 0 10px}
+.discover-admin h3{font-size:13px;margin:8px 0}
+.discover-admin p{font-size:12px;color:var(--dm);line-height:1.6;margin:0 0 10px}
+.discover-admin label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650}
+.discover-admin input,.discover-admin select{height:36px;font-size:12px}
+.discover-admin textarea{height:74px;resize:none;font-size:12px;line-height:1.6}
+.discover-catalog-columns{display:grid;grid-template-columns:210px 190px minmax(0,1fr);gap:15px;height:100%;min-height:0}
+.discover-catalog-columns>aside,.discover-catalog-columns>article{display:flex;flex-direction:column;gap:10px;min-height:0}
+.discover-catalog-columns>aside{border-inline-end:1px solid var(--db);padding-inline-end:12px}
+.discover-catalog-columns aside>small{color:var(--dm);font-size:11px;line-height:1.5}
+.discover-admin-list{display:grid;gap:7px}
+.discover-admin-list button{display:flex;align-items:flex-start;flex-direction:column;text-align:start;padding:9px;gap:3px}
+.discover-admin-list strong{font-size:12px;line-height:1.4}
+.discover-admin-list small{font-size:10px;color:var(--dm)}
+.discover-admin-list [aria-pressed=true]{color:var(--dp);border-color:var(--dp);background:var(--dl)}
+.discover-admin-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.discover-admin-editor-heading select{width:auto;max-width:220px}
+.discover-admin-editor-heading h2{margin:0}
+.discover-admin-editor-footer{margin-top:auto;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.discover-admin-editor-footer select{width:100px}
+.discover-config-editor,.discover-policy-editor{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%}
+.discover-policy-editor>label textarea{height:105px}
+.discover-option-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-height:0}
+.discover-option-editor article{display:flex;flex-direction:column;gap:8px;padding:0 12px;border-inline-start:2px solid var(--db)}
+.discover-option-editor article>small{font-size:10px;color:var(--dp)}
+.discover-option-editor button{font-size:11px;align-self:flex-start}
+.discover-admin-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;font-size:11px;color:var(--dm);min-height:28px}
+.discover-admin-footer span{display:flex;align-items:center;gap:6px;max-width:60%}
+.discover-admin-footer svg{width:15px}
+.discover-admin-footer p{color:#b34420;font-size:11px;margin:0}
+.discover-activity-list{display:grid;gap:8px}
+.discover-activity-list article{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--db);font-size:11px}
+.discover-activity-list article:last-child{border-bottom:none}
+.discover-activity-list span{color:var(--dm)}
+@media(max-height:740px){.discover-admin{padding:12px;gap:9px}.discover-admin-heading h1{font-size:20px}.discover-admin-body{padding:11px}.discover-catalog-columns{gap:10px}.discover-catalog-columns>aside,.discover-catalog-columns>article{gap:7px}.discover-admin textarea{height:62px}.discover-admin-list button{padding:7px}.discover-admin h2{font-size:13px;margin-bottom:6px}.discover-policy-editor>label textarea{height:85px}}
+@media(max-width:1100px){.discover-catalog-columns{grid-template-columns:165px 150px minmax(0,1fr)}.discover-admin{padding:10px}.discover-admin-tabs button{font-size:10px}.discover-admin-heading p{max-width:250px}.discover-admin-heading>div:last-child{gap:4px}.discover-admin-heading button{padding:6px;font-size:10px}}
+
+}

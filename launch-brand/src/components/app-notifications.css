@@ -1,0 +1,12 @@
+/* Keep save confirmations consistent in both light and dark themes. */
+[data-sonner-toast][data-type='success'].app-success-notification {
+  background: hsl(143, 85%, 96%) !important;
+  border-color: hsl(145, 92%, 87%) !important;
+  color: hsl(140, 100%, 27%) !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px #0000001a;
+  font-family: Tajawal, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}

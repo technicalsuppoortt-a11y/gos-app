@@ -16,6 +16,7 @@ import { usePhoenixBrand } from '../backend/phoenixBrand';
 import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
+import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
 
 export function WorkspaceCustomization({ children, publicPage }: { children: ReactNode; publicPage?: boolean }) {
   const state = useWorkspacePreferenceState();
@@ -31,8 +32,10 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     setDraft(current => patch ? { scope, patch } : current?.scope === scope ? null : current);
   }, [scope]);
   const previewValues = draft?.scope === scope ? draft.patch : null;
-  const usePhoenixDefaults = !publicPage && uid && !values && phoenix;
-  const workspace = usePhoenixDefaults ? {
+  // Launch Brand's live preview always shows the brand being designed.
+  const launchBrandPreview = isLaunchBrandPreview() && !!phoenix;
+  const usePhoenixDefaults = launchBrandPreview || (!publicPage && uid && !values && phoenix);
+  const workspace = usePhoenixDefaults && phoenix ? {
     ...preferenceDefaults,
     name: phoenix.brand.name,
     logoUrl: phoenix.logo || preferenceDefaults.logoUrl,
@@ -41,9 +44,9 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   } : values ?? preferenceDefaults;
   const effective = {
     ...workspace,
-    language: personal.language ?? workspace.language,
+    language: launchBrandPreview ? workspace.language : personal.language ?? workspace.language,
     currency: personal.currency ?? workspace.currency,
-    mode: personal.mode ?? workspace.mode,
+    mode: launchBrandPreview ? workspace.mode : personal.mode ?? workspace.mode,
     timezone: personal.timezone ?? workspace.timezone,
     dateFormat: personal.dateFormat ?? workspace.dateFormat,
     ...previewValues,

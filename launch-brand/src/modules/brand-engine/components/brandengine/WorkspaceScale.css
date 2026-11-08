@@ -1,0 +1,65 @@
+
+@scope (.brand-engine-module) {
+/* Match the compact desktop references, including navigation and page controls.
+   Compensate viewport dimensions so scaling never leaves an empty outer frame. */
+@media (min-width: 768px) {
+  .app-shell.workspace-scaled {
+    --workspace-scale: 0.60;
+    /* Launch Brand shares the viewport with the Phoenix header. Measure its
+       available content area instead of expanding beyond that header. */
+    --workspace-viewport-width: calc(100cqw / var(--workspace-scale));
+    --workspace-viewport-height: calc(100cqh / var(--workspace-scale));
+    zoom: var(--workspace-scale);
+    width: var(--workspace-viewport-width);
+    height: var(--workspace-viewport-height);
+  }
+
+  .app-shell.workspace-scaled .wizard--deployment section[aria-labelledby="deployment-title"] {
+    height: calc(var(--workspace-viewport-height) - 150px) !important;
+  }
+
+  .app-shell.workspace-scaled .wizard--deployment .wizard-footer {
+    width: calc(var(--workspace-viewport-width) / 2) !important;
+  }
+
+  /* Keep full navigation available in the extra space provided by scaling. */
+  .app-shell.workspace-scaled .desktop-workspace-sidebar,
+  .app-shell.workspace-scaled:has(.wizard--brand-studio) .desktop-workspace-sidebar {
+    width: 280px !important;
+    max-width: none;
+    padding-inline: 12px;
+  }
+
+  .app-shell.workspace-scaled .desktop-workspace-sidebar.is-collapsed,
+  .app-shell.workspace-scaled:has(.wizard--brand-studio) .desktop-workspace-sidebar.is-collapsed {
+    width: 88px !important;
+  }
+
+  .app-shell.workspace-scaled.has-sidebar .wizard-footer {
+    inset-inline-start: 280px;
+  }
+
+  .app-shell.workspace-scaled.has-sidebar.sidebar-collapsed .wizard-footer {
+    inset-inline-start: 88px;
+  }
+
+  .app-shell.workspace-scaled .wizard.wizard--brand-studio {
+    --studio-footer-inset: 280px;
+  }
+
+  .app-shell.workspace-scaled.sidebar-collapsed .wizard.wizard--brand-studio {
+    --studio-footer-inset: 88px;
+  }
+
+  .app-shell.workspace-scaled:has(.wizard--brand-studio) .desktop-workspace-sidebar:not(.is-collapsed)
+    :is(.sidebar-brand-copy, .sidebar-item-label) {
+    display: flex;
+  }
+
+  .app-shell.workspace-scaled:has(.wizard--brand-studio) .desktop-workspace-sidebar:not(.is-collapsed)
+    :is(.sidebar-brand, nav button) {
+    justify-content: flex-start;
+  }
+}
+
+}

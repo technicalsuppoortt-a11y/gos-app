@@ -1,0 +1,218 @@
+
+@scope (.brand-engine-module) {
+/* Shared GOS shell palette; keep page content and preview branding independent. */
+:scope:not(.dark) .app-shell.has-sidebar {
+  --background: #f8f9fd;
+  background: #f8f9fd;
+}
+
+:scope:not(.dark) .app-shell.has-sidebar > .workspace-column,
+:scope:not(.dark) .app-shell.has-sidebar .workspace-layout,
+:scope:not(.dark) .app-shell.has-sidebar .workspace-main {
+  background: #f8f9fd;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) {
+  min-height: 0;
+  max-height: 100%;
+  padding: 12px 10px;
+  overflow: hidden;
+  background: var(--ui-surface);
+  border-inline-end: 1px solid var(--ui-border);
+  box-shadow: none;
+  color: var(--ui-text-secondary);
+  font-family: var(--app-font-sans, var(--font-sans));
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-brand {
+  height: 44px;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-inline: 6px;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-brand-copy strong {
+  color: var(--ui-text);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-brand-copy small {
+  color: var(--ui-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) nav {
+  min-height: 0;
+  gap: 4px;
+  padding: 0 0 8px;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-footer {
+  flex-shrink: 0;
+  gap: 4px;
+  padding-top: 8px;
+  border-top-color: var(--ui-border);
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) nav button,
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-collapse {
+  height: auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  gap: 10px;
+  border-radius: 10px;
+  color: var(--ui-text-secondary);
+  font-family: inherit;
+  line-height: 20px;
+  white-space: normal;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) nav button:not(.active):hover,
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-collapse:hover {
+  color: var(--ui-accent-text);
+  background: var(--ui-surface-hover);
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) button.active {
+  color: #fff;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-item-icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-item-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-item-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: start;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) button.active .sidebar-item-label {
+  font-weight: 600;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark).is-collapsed nav button,
+.workspace-sidebar:is(.force-light, .force-dark).is-collapsed .sidebar-collapse {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+
+.workspace-sidebar.is-collapsed .sidebar-brand {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0;
+}
+
+.workspace-sidebar.is-collapsed :is(.sidebar-brand-copy, .sidebar-item-label) {
+  display: none;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark).is-collapsed nav {
+  gap: 10px;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark).is-collapsed .sidebar-item-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.9;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark).is-collapsed nav button.active {
+  background: var(--brand-gradient);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--app-indigo) 24%, transparent);
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) :is(nav button, .sidebar-collapse):focus-visible {
+  outline: 2px solid var(--app-indigo);
+  outline-offset: -2px;
+}
+
+/* Floating labels live outside the clipped, scaled app shell. */
+.workspace-nav-tooltip {
+  z-index: 100;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 9px 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 12%);
+  font-family: var(--app-font-sans, var(--font-sans));
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: start;
+}
+
+@media (min-width: 768px) {
+  .app-shell.workspace-scaled .desktop-workspace-sidebar.is-collapsed :is(nav button, .sidebar-collapse) {
+    width: 64px;
+    height: 64px;
+    min-height: 64px;
+    border-radius: 16px;
+  }
+
+  .app-shell.workspace-scaled .desktop-workspace-sidebar.is-collapsed .sidebar-item-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .app-shell.workspace-scaled .desktop-workspace-sidebar.is-collapsed .sidebar-item-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .app-shell.workspace-scaled .desktop-workspace-sidebar.is-collapsed .sidebar-brand img {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .sidebar-tooltip {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .workspace-account {
+  min-height: 48px;
+  border-color: var(--ui-border);
+  color: var(--ui-text);
+  font-family: inherit;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .workspace-account-copy strong {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.workspace-sidebar:is(.force-light, .force-dark) .workspace-account-copy small,
+.workspace-sidebar:is(.force-light, .force-dark) .workspace-account-tier {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ui-text-muted);
+}
+
+:scope:not(.dark) .mobile-workspace-drawer {
+  background: var(--ui-surface);
+}
+
+}

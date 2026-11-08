@@ -1,0 +1,252 @@
+@import "tailwindcss";
+/* The iframe has its own GOS Tailwind 3 stylesheet and HTML captures. */
+@source not "./modules/brand-engine/components/brandengine/gos-preview";
+@import "./modules/brand-engine/styles.css";
+@import "./dashboard-system.css";
+@import "./features/access/studentServiceBadge.css";
+@config "../tailwind.config.js";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text-primary: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-ember-1: var(--ember-1);
+  --color-ember-2: var(--ember-2);
+  --color-tech-1: var(--tech-1);
+  --color-tech-2: var(--tech-2);
+
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-tajawal: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+@layer base {
+  :root {
+    --bg:#F7F5F1; --surface:#FFFFFF; --surface-2:#F1EEE8; --line:rgba(20,18,14,.09);
+    --text:#1C1A17; --text-dim:#767068;
+    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
+    --shadow-soft: rgba(30,25,20,.14);
+  }
+
+  .light {
+    --bg:#F7F5F1; --surface:#FFFFFF; --surface-2:#F1EEE8; --line:rgba(20,18,14,.09);
+    --text:#1C1A17; --text-dim:#767068;
+    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
+    --shadow-soft: rgba(30,25,20,.14);
+  }
+
+  .dark {
+    --bg:#08090D; --surface:#12141B; --surface-2:#191C25; --line:rgba(255,255,255,.07);
+    --text:#F2F1EE; --text-dim:#8B8F9C;
+    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#5B8DEF; --tech-2:#7C6CF0;
+    --shadow-soft: rgba(0,0,0,.6);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    height: 100%;
+    min-height: 100vh;
+    display: flex;
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(118,105,228,.09), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(91,141,239,.09), transparent 60%);
+  }
+
+  #root {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .light body {
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(118,105,228,.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(91,141,239,.06), transparent 60%);
+  }
+}
+
+@layer utilities {
+  .rtl {
+    direction: rtl;
+  }
+}
+
+/* Custom sleek scrollbar matching phoenix-app.html theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #635bff 0%, #7065de 100%);
+}
+
+.chat-scrollbar,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #635bff transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #635bff 0%, #7065de 100%);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px rgba(118,105,228, 0.4);
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #9487f2 0%, #E11D48 100%);
+  box-shadow: 0 0 10px rgba(118,105,228, 0.7);
+}
+
+/* Animations */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulseDot { 0% {box-shadow: 0 0 0 0 rgba(56,224,166,.5);} 70% {box-shadow: 0 0 0 8px rgba(56,224,166,0);} 100% {box-shadow: 0 0 0 0 rgba(56,224,166,0);} }
+@keyframes enter { to { opacity: 1; transform: translateY(0); } }
+@keyframes orbit { from { transform: rotate(0deg) translateX(72px) rotate(0deg); } to { transform: rotate(360deg) translateX(72px) rotate(-360deg); } }
+@keyframes fadeBg { from { opacity: 0; } to { opacity: 1; } }
+@keyframes panelIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes fabFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes fabPulse { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.18); opacity: 0; } }
+@keyframes gateRise { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 10% { opacity: 0.55; } 90% { opacity: 0.25; } 100% { opacity: 0; transform: translateY(-100vh) scale(1.1); } }
+@keyframes shimmerText { 0% { background-position: 200% 0; } 100% { background-position: -40% 0; } }
+@keyframes gateAvIn { to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes gateAvFloat { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+@keyframes gateAvRing { 0% { transform: scale(0.92); opacity: 0.9; } 100% { transform: scale(1.12); opacity: 0; } }
+@keyframes gateIn { to { opacity: 1; transform: translate(0, 0); } }
+@keyframes shakeX { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes ctaPulse { 0%, 100% { box-shadow: 0 8px 22px -9px rgba(118,105,228, 0.55); } 50% { box-shadow: 0 8px 28px -6px rgba(118,105,228, 0.85); } }
+@keyframes welcomePop { 0% { opacity: 0; transform: scale(0.7) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes welcomeBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes confettiFall { 0% { opacity: 1; transform: translateY(-20px) rotate(0deg); } 100% { opacity: 0; transform: translateY(220px) rotate(280deg); } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+/* Global helper classes */
+.eyebrow {
+  @apply text-[11px] tracking-[1.5px] text-ember-1 font-semibold uppercase mb-2;
+}
+
+h1 {
+  @apply font-tajawal font-black text-[25px];
+}
+
+.sub {
+  @apply text-text-dim text-[13.5px] mt-2 max-w-[520px] leading-[1.85];
+}
+
+.btn {
+  @apply border-none cursor-pointer rounded-[11px] px-5 py-3 text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px disabled:opacity-35 disabled:cursor-not-allowed disabled:transform-none;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--ember-1), var(--ember-2));
+  color: #fff;
+  box-shadow: 0 8px 22px -9px rgba(118,105,228, 0.55);
+}
+
+.btn-ghost {
+  @apply bg-transparent text-text-primary border border-line;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--line);
+  @apply rounded-[18px] p-7;
+}
+
+.bust {
+  background: linear-gradient(180deg, var(--ember-1), var(--ember-2));
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.bust::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 78%;
+  height: 62%;
+  transform: translateX(-50%);
+  background: #fff;
+  opacity: .92;
+  border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+}
+.bust::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  width: 34%;
+  aspect-ratio: 1/1;
+  transform: translateX(-50%);
+  background: #fff;
+  opacity: .92;
+  border-radius: 50%;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(118,105,228, 0.5);
+}
+
+/* Hide admin top bar header when modal is open */
+body.modal-open-hide-header .admin-top-header {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-10px) !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+/* Fix browser autofill white background across dark themes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #191C25 inset !important;
+  -webkit-text-fill-color: #F2F1EE !important;
+  caret-color: #F2F1EE !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

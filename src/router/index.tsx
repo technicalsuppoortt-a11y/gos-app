@@ -35,6 +35,7 @@ const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayou
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const LaunchBrandSettings = lazy(() => import('../pages/admin/LaunchBrandSettings').then(module => ({ default: module.LaunchBrandSettings })));
 const BusinessAssetsPage = lazy(() => import('../pages/admin/BusinessAssetsPage').then(module => ({ default: module.BusinessAssetsPage })));
 const AdminPreviewPage = lazy(() => import('../pages/admin/AdminPreviewPage').then(module => ({ default: module.AdminPreviewPage })));
 const AdminTools = lazy(() => import('../pages/admin/AdminTools').then(module => ({ default: module.AdminTools })));
@@ -183,6 +184,7 @@ export const router = createBrowserRouter([
       { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
       { path: 'dashboard', element: <Suspended><AdminDashboard/></Suspended> },
+      { path: 'launch-brand-settings', element: <Suspended><LaunchBrandSettings/></Suspended> },
       { path: 'business-assets', element: <Suspended><BusinessAssetsPage/></Suspended> },
       ...['conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },

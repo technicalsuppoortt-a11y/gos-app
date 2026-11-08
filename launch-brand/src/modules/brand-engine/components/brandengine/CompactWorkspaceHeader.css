@@ -1,0 +1,205 @@
+
+@scope (.brand-engine-module) {
+.app-header.compact-workspace-header {
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 60px;
+  flex-shrink: 0;
+  gap: 8px;
+  margin: 6px 16px;
+  padding: 8px;
+  border-radius: 12px;
+}
+.compact-workspace-header > .mode-switch {
+  position: static;
+  flex: 0 0 auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 8px;
+}
+.compact-workspace-header .mode-switch button {
+  flex: none;
+  padding: 8px 10px;
+  font-size: 15px;
+}
+.compact-workspace-header > .header-actions {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  gap: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+}
+.compact-workspace-header .header-actions .header-control,
+.compact-workspace-header .header-actions .save-bell,
+.compact-workspace-header .header-actions .avatar {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+}
+.compact-workspace-header .header-actions .header-control svg,
+.compact-workspace-header .header-actions .save-bell svg {
+  width: 22px;
+  height: 22px;
+}
+.compact-workspace-header .header-actions .avatar {
+  margin-inline-start: 2px;
+  font-size: 10px;
+  color: #8B75C9;
+}
+.compact-workspace-header .header-actions .header-control:hover,
+.compact-workspace-header .header-actions .header-control.is-active,
+.compact-workspace-header .header-actions .header-control[aria-expanded="true"],
+.compact-workspace-header .header-actions .avatar:hover,
+.compact-workspace-header .header-actions .mobile-menu:hover {
+  border-color: color-mix(in srgb, #8B75C9 28%, var(--border));
+  background: linear-gradient(90deg, color-mix(in srgb, #8B75C9 12%, var(--card)) 0%, color-mix(in srgb, #8B75C9 6%, var(--card)) 100%);
+  color: #8B75C9;
+}
+.compact-workspace-header .header-control:hover .header-action-label,
+.compact-workspace-header .header-control.is-active .header-action-label {
+  background: transparent;
+}
+.compact-workspace-header .header-actions .header-control:focus-visible,
+.compact-workspace-header .header-actions .avatar:focus-visible,
+.compact-workspace-header .header-actions .mobile-menu:focus-visible {
+  outline: 2px solid #8B75C9;
+  outline-offset: 3px;
+}
+.compact-workspace-header .save-bell-dot:not(.error) {
+  background: #8B75C9;
+}
+.compact-phase-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 600px;
+  min-width: 0;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+}
+.compact-phase-track {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+  list-style: none;
+}
+.compact-phase {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.compact-phase-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  min-height: 40px;
+  gap: 5px;
+  padding: 6px 6px;
+  border: 1px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: color-mix(in oklab, var(--secondary) 55%, transparent);
+  color: color-mix(in oklab, var(--foreground) 74%, var(--muted-foreground));
+  cursor: default;
+}
+.compact-phase-number {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: .8;
+}
+.compact-phase-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.compact-phase.is-complete .compact-phase-tab {
+  background: color-mix(in oklab, #6035FB 10%, var(--card));
+  border-color: color-mix(in oklab, #6035FB 30%, var(--border));
+  color: var(--foreground);
+}
+.compact-phase-check {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: #8060FF;
+}
+.compact-phase.is-complete .compact-phase-number {
+  color: #8060FF;
+  opacity: 1;
+}
+.compact-phase.is-active .compact-phase-tab {
+  border-color: var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px color-mix(in oklab, var(--foreground) 6%, transparent);
+}
+.compact-phase.is-active .compact-phase-number {
+  color: #8060FF;
+  opacity: 1;
+}
+.compact-phase.is-active .compact-phase-tab::after {
+  content: "";
+  position: absolute;
+  inset-inline: 4px;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, #6035FB 0%, #C1B0FA 100%);
+}
+.compact-phase-tab:focus-visible {
+  outline: 2px solid #6035FB;
+  outline-offset: 2px;
+}
+.compact-phase-tooltip {
+  background: linear-gradient(90deg, #6035FB 0%, #C1B0FA 100%);
+  color: #ffffff;
+}
+@container (max-width: 1000px) {
+  .compact-workspace-header > .compact-phase-stepper {
+    order: 3;
+    flex-basis: 100%;
+    padding: 8px 0 0;
+    border-inline: 0;
+    border-top: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+  }
+}
+@container (max-width: 800px) {
+  .compact-phase-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .compact-phase-title {
+    white-space: normal;
+  }
+}
+@container (max-width: 440px) {
+  .compact-phase-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .app-header.compact-workspace-header {
+    margin-inline: 8px;
+    padding-inline: 8px;
+    gap: 8px;
+  }
+  .compact-workspace-header .mode-switch button {
+    padding-inline: 7px;
+    font-size: 12px;
+  }
+}
+
+}

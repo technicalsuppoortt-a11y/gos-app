@@ -1,0 +1,214 @@
+
+@scope (.brand-engine-module) {
+/* Improve text independently of workspace zoom. Dashboard and website modes
+   never receive workspace-scaled, and iframe previews retain their own styles. */
+.app-shell.workspace-scaled .workspace-main .wizard:not(:has(.discover-market-only))
+  :is(p, button, input, select, textarea, dt, dd) {
+  font-size: 16px;
+}
+
+.app-shell.workspace-scaled .workspace-main .wizard:not(:has(.discover-market-only))
+  :is(small, label, .profile-option-label) {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.app-shell.workspace-scaled .discover-page:not(.discover-market-only)
+  :is(.profile-section-heading strong, .profile-section h3, .discover-ai-heading h2) {
+  font-size: 16px;
+}
+
+.app-shell.workspace-scaled .discover-page:not(.discover-market-only) .profile-options > button {
+  height: auto;
+  min-height: 34px;
+  white-space: normal;
+}
+
+.app-shell.workspace-scaled .wizard--brand-studio
+  :is(.studio-element-card > strong, .studio-summary-card strong, .studio-section-heading h2) {
+  font-size: 16px;
+}
+
+/* Make the Discover questionnaire easier to read and let its profile card
+   scroll independently when the form is taller than the available workspace. */
+.app-shell .discover-page:not(.discover-market-only) {
+  font-size: 15px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-header p {
+  font-size: 14px;
+}
+
+.app-shell .discover-page:not(.discover-market-only)
+  :is(.profile-section-heading strong, .profile-section h3) {
+  font-size: 14px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .profile-options > button {
+  height: auto;
+  min-height: 36px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+/* Recommendation and review copy also needs to stay readable at workspace scale. */
+.app-shell .discover-page:not(.discover-market-only) .discover-prose {
+  font-size: 20px;
+  line-height: 1.7;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-card-heading p,
+.app-shell .discover-page:not(.discover-market-only) .discover-detail-grid .discover-prose {
+  font-size: 20px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-detail-grid h3 {
+  font-size: 15px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-mini-tabs button {
+  font-size: 12px;
+  min-height: 38px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-ai-heading h2 {
+  font-size: 16px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-ai-heading p,
+.app-shell .discover-page:not(.discover-market-only) .discover-ai-description,
+.app-shell .discover-page:not(.discover-market-only) .discover-summary p,
+.app-shell .discover-page:not(.discover-market-only) .discover-ai-bottom button,
+.app-shell .discover-page:not(.discover-market-only) .discover-research-preview li,
+.app-shell .discover-page:not(.discover-market-only) .discover-progress p,
+.app-shell .discover-page:not(.discover-market-only) .discover-result-meta {
+  font-size: 13px;
+}
+
+.app-shell .discover-page:not(.discover-market-only) .discover-research-preview > small,
+.app-shell .discover-page:not(.discover-market-only) .discover-badge {
+  font-size: 12px;
+}
+
+/* The workspace-scaled wizard has its own global 16px type rule. Give every
+   Discover text group a more specific size so that rule cannot shrink it. */
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only)
+  :is(p, small, li, label, input, textarea, dt, dd) {
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only) .discover-layout button {
+  font-size: 16px;
+  line-height: 1.35;
+  min-height: 42px;
+  height: auto;
+  white-space: normal;
+}
+
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only) .discover-prose,
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only) .discover-detail-grid .discover-prose {
+  font-size: 24px;
+  line-height: 1.7;
+}
+
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only)
+  :is(.discover-header h1, .discover-card-heading h2, .discover-ai-heading h2, .discover-detail-grid h3) {
+  font-size: 20px;
+}
+
+.app-shell.workspace-scaled .workspace-main .wizard .discover-page:not(.discover-market-only)
+  :is(.profile-section-heading strong, .profile-section h3) {
+  font-size: 18px;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-page:not(.discover-market-only) .discover-progress-nav button > span:last-child {
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-page:not(.discover-market-only) .discover-progress-nav button > span:first-child {
+  font-size: 15px;
+}
+
+/* Raise the desktop workspace sidebar labels one step from their compact base. */
+.app-shell.workspace-scaled .desktop-workspace-sidebar .sidebar-brand-copy strong {
+  font-size: 16px;
+}
+
+.app-shell.workspace-scaled .desktop-workspace-sidebar .sidebar-brand-copy small {
+  font-size: 10px;
+}
+
+.app-shell.workspace-scaled .desktop-workspace-sidebar .sidebar-item-label {
+  font-size: 16px;
+}
+
+.app-shell.workspace-scaled .desktop-workspace-sidebar .workspace-account-copy strong {
+  font-size: 12px;
+}
+
+.app-shell.workspace-scaled .desktop-workspace-sidebar .workspace-account-copy small,
+.app-shell.workspace-scaled .desktop-workspace-sidebar .workspace-account-tier {
+  font-size: 10px;
+}
+
+.app-shell.workspace-scaled .compact-workspace-header .compact-phase-title {
+  font-size: 11px;
+}
+
+.app-shell.workspace-scaled .compact-workspace-header .compact-phase-number {
+  font-size: 10px;
+}
+
+/* Deployment has an additional scaled illustration frame. Compensate only its
+   supporting text, leaving the frame and the preview geometry untouched. */
+.app-shell.workspace-scaled .wizard--deployment [class*="scaleFrame"]
+  :is(p, small, button, li) {
+  font-size: 20px;
+}
+
+/* Keep the footer fixed while the Discover profile card scrolls independently. */
+@media (min-width: 768px) {
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-page:not(.discover-market-only):has(.discover-profile-card) {
+  overflow: clip;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-layout:has(> .discover-profile-card) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-layout > .discover-profile-card {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: var(--scrollbar-width, thin);
+  scrollbar-color: var(--db) transparent;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-profile-card .discover-profile-form {
+  overflow: visible;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-layout:has(> .discover-profile-card) > .discover-intelligence {
+  overflow: visible;
+  max-height: none;
+}
+
+.app-shell.discover-mode:not(:has(.discover-market-only)) .discover-page:not(.discover-market-only):has(.discover-profile-card) > .discover-footer {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  margin-top: auto;
+  background: var(--df);
+}
+}
+
+}

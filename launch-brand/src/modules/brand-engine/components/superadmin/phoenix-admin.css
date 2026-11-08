@@ -1,0 +1,63 @@
+.brand-engine-module.phoenix-brand-admin {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  isolation: isolate;
+  color: var(--text);
+  color-scheme: light;
+  --sa-bg: var(--bg);
+  --sa-surface: var(--surface);
+  --sa-surface-elevated: var(--surface);
+  --sa-surface-sunken: var(--surface-2);
+  --sa-border: var(--line);
+  --sa-text-primary: var(--text);
+  --sa-text-secondary: var(--text-dim);
+  --sa-text-disabled: var(--text-dim);
+  --sa-primary: #635bff;
+  --sa-primary-hover: #7065de;
+  --sa-primary-soft: color-mix(in srgb, #635bff 10%, var(--surface));
+  --sa-accent-text: #635bff;
+  --sa-danger: #dc2626;
+  --sa-danger-soft: color-mix(in srgb, #dc2626 8%, var(--surface));
+  --dp: var(--sa-primary);
+  --dt: var(--text);
+  --dm: var(--text-dim);
+  --db: var(--line);
+  --ds: var(--surface);
+  --df: var(--bg);
+  --dl: var(--sa-primary-soft);
+}
+.brand-engine-module.phoenix-brand-admin.dark {
+  color-scheme: dark;
+  --sa-danger: #f87171;
+  --sa-accent-text: #a99fff;
+}
+.phoenix-brand-admin > .space-y-6 { width: 100%; max-width: none; }
+.phoenix-brand-admin--discovery { height: calc(100dvh - 180px); min-height: 650px; }
+.phoenix-brand-admin .discover-admin {
+  --dp: var(--sa-primary);
+  --dt: var(--text);
+  --dm: var(--text-dim);
+  --db: var(--line);
+  --ds: var(--surface);
+  --df: var(--bg);
+  --dl: var(--sa-primary-soft);
+  color: var(--dt);
+  background: var(--ds);
+}
+.phoenix-brand-admin .discover-admin-heading { flex-wrap: wrap; }
+.phoenix-brand-admin .discover-admin-heading p { overflow-wrap: anywhere; }
+.phoenix-brand-admin .discover-admin-footer { flex-wrap: wrap; }
+.phoenix-brand-admin .discover-admin-footer p { overflow-wrap: anywhere; }
+.phoenix-brand-admin [dir="rtl"] input[type="password"],
+.phoenix-brand-admin input[autocomplete="off"] { direction: ltr; text-align: start; }
+@media (max-width: 800px) {
+  .phoenix-brand-admin--discovery { height: auto; min-height: 0; }
+  .phoenix-brand-admin .discover-admin { height: auto; overflow: visible; }
+  .phoenix-brand-admin .discover-admin-body { overflow: visible; }
+  .phoenix-brand-admin .discover-admin-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .phoenix-brand-admin .discover-catalog-columns { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .phoenix-brand-admin .discover-catalog-columns > aside { border-inline-end: 0; border-bottom: 1px solid var(--db); padding: 0 0 14px; }
+  .phoenix-brand-admin .discover-admin-heading > div:last-child { flex-wrap: wrap; }
+  .phoenix-brand-admin .discover-admin-footer span { max-width: 100%; }
+}

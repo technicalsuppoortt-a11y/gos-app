@@ -11,6 +11,7 @@ import fontCatalog from '../branding/brandFontCatalog.json';
 import { useWorkspacePreferences } from '../backend/workspacePreferences';
 import { workspaceTheme } from '../branding/workspaceTheme';
 import { WorkspaceCustomization } from './WorkspaceCustomization';
+import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -31,7 +32,7 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
   useLayoutEffect(() => {
     const root = document.documentElement;
     const workspace = workspaceTheme(palette);
-    const design = !hasWorkspaceTheme && phoenixTheme ? phoenixTheme : workspace;
+    const design = (isLaunchBrandPreview() || !hasWorkspaceTheme) && phoenixTheme ? phoenixTheme : workspace;
     const set = (key: string, value: string) => {
       const property = key.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
       root.style.setProperty('--gp-' + property, value);

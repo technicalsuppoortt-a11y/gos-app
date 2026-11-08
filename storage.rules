@@ -63,6 +63,11 @@ service firebase.storage {
       allow create, update: if request.auth != null && request.auth.uid == adminUid && templateRole() in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'platform_admin'] && templateImage();
       allow delete: if request.auth != null && request.auth.uid == adminUid;
     }
+    // Launch Brand (moved from Joe Academy): logo/brand images, read by their owner only.
+    match /users/{uid}/brandAssets/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid && request.auth.token.launchBrand == true;
+      allow write: if false;
+    }
     match /{allPaths=**} { allow read, write: if false; }
   }
 }

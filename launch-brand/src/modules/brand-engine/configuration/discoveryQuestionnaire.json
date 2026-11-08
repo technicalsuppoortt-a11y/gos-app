@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "version": "discover-profile-v1",
+  "researchEnabled": true,
+  "dailyLimit": 15,
+  "instruction": "Recommend a commercially relevant business direction from the approved GOS catalog. Separate the user's business and paying customer from any downstream audience. GOS is the shared AI sales and follow-up system; do not assume the user's offer is GOS software itself. Respect exclusions and resource limits. Never fabricate market evidence.",
+  "interests": [
+    {
+      "id": "health",
+      "en": "Health & Clinics",
+      "ar": "الصحة والعيادات"
+    },
+    {
+      "id": "fitness",
+      "en": "Fitness & Wellness",
+      "ar": "اللياقة والعافية"
+    },
+    {
+      "id": "education",
+      "en": "Education",
+      "ar": "التعليم"
+    },
+    {
+      "id": "real-estate",
+      "en": "Real Estate",
+      "ar": "العقارات"
+    },
+    {
+      "id": "professional",
+      "en": "Professional Services",
+      "ar": "الخدمات المهنية"
+    },
+    {
+      "id": "ecommerce",
+      "en": "E-commerce",
+      "ar": "التجارة الإلكترونية"
+    },
+    {
+      "id": "hospitality",
+      "en": "Restaurants & Hospitality",
+      "ar": "المطاعم والضيافة"
+    },
+    {
+      "id": "beauty",
+      "en": "Beauty",
+      "ar": "الجمال"
+    },
+    {
+      "id": "finance",
+      "en": "Finance",
+      "ar": "المال"
+    },
+    {
+      "id": "coaching",
+      "en": "Coaches & Consultants",
+      "ar": "التدريب والاستشارات"
+    },
+    {
+      "id": "local",
+      "en": "Local Services",
+      "ar": "الخدمات المحلية"
+    },
+    {
+      "id": "technology",
+      "en": "Technology & AI",
+      "ar": "التكنولوجيا والذكاء الاصطناعي"
+    },
+    {
+      "id": "travel",
+      "en": "Travel & Tourism",
+      "ar": "السفر والسياحة"
+    },
+    {
+      "id": "other",
+      "en": "Other",
+      "ar": "أخرى"
+    }
+  ],
+  "skills": [
+    {
+      "id": "sales",
+      "en": "Sales",
+      "ar": "المبيعات"
+    },
+    {
+      "id": "marketing",
+      "en": "Marketing",
+      "ar": "التسويق"
+    },
+    {
+      "id": "customer-service",
+      "en": "Customer Service",
+      "ar": "خدمة العملاء"
+    },
+    {
+      "id": "operations",
+      "en": "Operations",
+      "ar": "العمليات"
+    },
+    {
+      "id": "design",
+      "en": "Design",
+      "ar": "التصميم"
+    },
+    {
+      "id": "technology",
+      "en": "Technology",
+      "ar": "التكنولوجيا"
+    },
+    {
+      "id": "management",
+      "en": "Management",
+      "ar": "الإدارة"
+    },
+    {
+      "id": "healthcare",
+      "en": "Healthcare",
+      "ar": "الرعاية الصحية"
+    },
+    {
+      "id": "education",
+      "en": "Education",
+      "ar": "التعليم"
+    },
+    {
+      "id": "beginner",
+      "en": "Getting started",
+      "ar": "أبدأ من الصفر"
+    }
+  ],
+  "markets": [
+    {
+      "id": "EG",
+      "en": "Egypt",
+      "ar": "مصر"
+    },
+    {
+      "id": "SA",
+      "en": "Saudi Arabia",
+      "ar": "السعودية"
+    },
+    {
+      "id": "AE",
+      "en": "UAE",
+      "ar": "الإمارات"
+    },
+    {
+      "id": "QA",
+      "en": "Qatar",
+      "ar": "قطر"
+    },
+    {
+      "id": "KW",
+      "en": "Kuwait",
+      "ar": "الكويت"
+    },
+    {
+      "id": "JO",
+      "en": "Jordan",
+      "ar": "الأردن"
+    },
+    {
+      "id": "PS",
+      "en": "Palestine",
+      "ar": "فلسطين"
+    },
+    {
+      "id": "EU",
+      "en": "Europe",
+      "ar": "أوروبا"
+    },
+    {
+      "id": "US",
+      "en": "United States",
+      "ar": "الولايات المتحدة"
+    },
+    {
+      "id": "GLOBAL",
+      "en": "Global",
+      "ar": "عالمي"
+    }
+  ],
+  "timeRanges": [
+    {
+      "id": "under-5",
+      "en": "Under 5 hours",
+      "ar": "أقل من 5 ساعات"
+    },
+    {
+      "id": "5-10",
+      "en": "5–10 hours",
+      "ar": "5–10 ساعات"
+    },
+    {
+      "id": "10-20",
+      "en": "10–20 hours",
+      "ar": "10–20 ساعة"
+    },
+    {
+      "id": "over-20",
+      "en": "20+ hours",
+      "ar": "أكثر من 20 ساعة"
+    }
+  ],
+  "budgetRanges": [
+    {
+      "id": "under-1000",
+      "en": "Under 1,000",
+      "ar": "أقل من 1,000"
+    },
+    {
+      "id": "1000-3000",
+      "en": "1,000–3,000",
+      "ar": "1,000–3,000"
+    },
+    {
+      "id": "3000-10000",
+      "en": "3,000–10,000",
+      "ar": "3,000–10,000"
+    },
+    {
+      "id": "over-10000",
+      "en": "10,000+",
+      "ar": "أكثر من 10,000"
+    },
+    {
+      "id": "unknown",
+      "en": "Need guidance",
+      "ar": "أحتاج إرشادًا"
+    }
+  ]
+}

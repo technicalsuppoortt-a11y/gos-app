@@ -1,0 +1,263 @@
+
+@scope (.brand-engine-module) {
+.studio-dialog-overlay.studio-export-overlay {
+  z-index: 100;
+}
+.studio-export-dialog {
+  position: fixed;
+  z-index: 101;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 24px 80px #0003;
+}
+.studio-export-close {
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.studio-export-close:hover {
+  background: var(--muted);
+}
+.studio-export-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: var(--studio-tint);
+  color: var(--studio-link);
+}
+.studio-export-dialog h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.studio-export-dialog h2 + p {
+  margin: 6px 0 20px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.studio-export-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.studio-export-preview img {
+  width: 88px;
+  height: 60px;
+  padding: 8px;
+  object-fit: contain;
+  background: white;
+  border-radius: 8px;
+}
+.studio-export-preview div {
+  min-width: 0;
+}
+.studio-export-preview strong {
+  display: block;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.studio-export-preview small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.studio-export-formats {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.studio-export-formats legend {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.studio-export-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background 150ms,
+    border-color 150ms;
+}
+.studio-export-option:hover {
+  background: var(--muted);
+}
+.studio-export-option.is-selected {
+  border-color: var(--studio-accent);
+  background: var(--studio-tint);
+}
+.studio-export-option:focus-within {
+  outline: 2px solid var(--studio-link);
+  outline-offset: 3px;
+}
+.studio-export-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.studio-export-option > svg {
+  flex-shrink: 0;
+  color: var(--studio-link);
+}
+.studio-export-option > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+.studio-export-option strong {
+  display: block;
+  font-size: 14px;
+}
+.studio-export-option small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.studio-export-radio {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.is-selected .studio-export-radio {
+  background: var(--studio-accent);
+  color: white;
+  border-color: var(--studio-accent);
+}
+.studio-export-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.studio-export-footer button {
+  height: 40px;
+  border-radius: 10px;
+}
+.studio-export-footer .studio-export-submit {
+  background: var(--studio-accent);
+  color: white;
+}
+.studio-export-footer .studio-export-submit:hover {
+  background: var(--studio-hover);
+}
+.studio-export-error {
+  color: var(--destructive);
+  font-size: 13px;
+  margin-top: 14px;
+}
+.studio-workspace .studio-assets-grid .studio-logo-download-trigger {
+  gap: 6px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.studio-workspace .studio-assets-grid .studio-logo-download-trigger svg:last-child {
+  width: 12px;
+  height: 12px;
+}
+@media (max-width: 480px) {
+  .studio-export-dialog {
+    padding: 22px;
+  }
+  .studio-export-option {
+    padding: 13px;
+  }
+}
+@media (max-height: 640px) {
+  .studio-export-dialog {
+    padding: 20px 24px;
+  }
+  .studio-export-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
+  }
+  .studio-export-dialog h2 + p {
+    margin-bottom: 14px;
+  }
+  .studio-export-preview {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .studio-export-option {
+    padding: 12px;
+  }
+  .studio-export-footer {
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+}
+@media (max-height: 500px) {
+  .studio-export-dialog {
+    padding: 16px 20px;
+    width: min(480px, calc(100vw - 32px));
+  }
+  .studio-export-icon {
+    display: none;
+  }
+  .studio-export-dialog h2 {
+    padding-inline-end: 30px;
+    font-size: 18px;
+  }
+  .studio-export-dialog h2 + p {
+    margin: 4px 0 10px;
+  }
+  .studio-export-preview {
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  .studio-export-preview img {
+    height: 44px;
+  }
+  .studio-export-option {
+    padding: 8px 12px;
+  }
+  .studio-export-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+}
+
+}

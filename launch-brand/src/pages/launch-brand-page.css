@@ -1,0 +1,147 @@
+.launch-brand-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--app-canvas);
+  color: var(--text);
+}
+
+.launch-brand-header {
+  position: relative;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px clamp(12px, 1.6vw, 22px);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.launch-brand-header[hidden] { display: none; }
+.launch-brand-load-error {
+  width: min(560px, calc(100% - 32px));
+  margin: clamp(24px, 8vh, 96px) auto;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: start;
+}
+.launch-brand-load-error h1 { margin: 0 0 12px; font-size: 20px; font-weight: 700; }
+.launch-brand-load-error p { margin: 0 0 20px; line-height: 1.8; }
+.launch-brand-load-error button {
+  padding: 10px 18px;
+  border: 1px solid #635bff;
+  border-radius: 10px;
+  background: #635bff;
+  color: white;
+  cursor: pointer;
+}
+.launch-brand-load-error button:focus-visible { outline: 2px solid #635bff; outline-offset: 3px; }
+.launch-brand-page--preview .launch-brand-content { overflow: hidden; }
+.launch-brand-page--preview .workspace-layout { overflow: hidden; }
+.launch-brand-page--preview .workspace-main { min-height: 0; height: 100%; }
+.launch-brand-page--preview [data-gos-preview] { border-radius: 0 !important; }
+
+.launch-brand-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, #635bff 24%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, #635bff 8%, var(--surface));
+  color: #7065de;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.launch-brand-back:hover { background: color-mix(in srgb, #635bff 15%, var(--surface)); border-color: #7065de; }
+.launch-brand-back:focus-visible { outline: 2px solid #635bff; outline-offset: 3px; }
+.launch-brand-back svg { flex-shrink: 0; width: 16px; height: 16px; }
+.launch-brand-identity { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.launch-brand-identity .joe-academy-logo { width: 30px; height: 30px; }
+.launch-brand-back, .launch-brand-identity { flex-shrink: 0; }
+.launch-brand-toolbar-slot { flex: 1; min-width: 0; }
+.launch-brand-toolbar-slot:empty { display: none; }
+
+/* The portal keeps Redux context; this wrapper keeps the module's scoped styles. */
+.brand-engine-module.launch-brand-toolbar {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  background: transparent;
+  isolation: auto;
+  transform: none;
+}
+
+@scope (.launch-brand-toolbar) {
+  :scope .app-header.compact-workspace-header {
+    width: 100%;
+    min-height: 36px;
+    margin: 0;
+    padding: 0;
+    gap: 4px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  :scope .compact-workspace-header .mode-switch button {
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+  :scope .compact-workspace-header > .compact-phase-stepper {
+    order: 0;
+    flex: 1 1 0;
+    padding: 0 4px;
+    border: 0;
+  }
+  :scope .compact-phase-track { display: flex; }
+  :scope .compact-phase-tab { min-height: 30px; padding: 4px; gap: 3px; border-radius: 6px 6px 0 0; }
+  :scope .compact-phase-title { font-size: 9px; white-space: normal; text-align: center; }
+  :scope .compact-phase-number { font-size: 9px; }
+  :scope .compact-workspace-header > .header-actions { padding-inline-start: 4px; gap: 3px; }
+  :scope .compact-workspace-header .header-actions .header-control,
+  :scope .compact-workspace-header .header-actions .save-bell {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+  :scope .compact-workspace-header .header-actions .header-control svg,
+  :scope .compact-workspace-header .header-actions .save-bell svg { width: 16px; height: 16px; }
+}
+
+@media (max-width: 1199px) {
+  .launch-brand-header { flex-wrap: wrap; gap: 8px 12px; }
+  .launch-brand-toolbar-slot { order: 3; flex-basis: 100%; }
+  .launch-brand-identity { margin-left: auto; }
+}
+
+@media (max-width: 640px) {
+  @scope (.launch-brand-toolbar) {
+  :scope .compact-workspace-header > .compact-phase-stepper {
+    order: 3;
+    flex-basis: 100%;
+    padding: 6px 0 0;
+  }
+  :scope .compact-phase-track { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :scope .compact-phase-title { font-size: 11px; }
+  }
+}
+.launch-brand-content { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: auto; container-type: size; }
+
+@media (max-width: 480px) {
+  .launch-brand-header { gap: 6px; min-height: 52px; padding: 8px 12px; }
+  .launch-brand-back { padding: 7px 8px; font-size: 11px; }
+  .launch-brand-identity > span:last-child { display: none; }
+}
