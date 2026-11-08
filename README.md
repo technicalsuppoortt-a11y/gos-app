@@ -10,7 +10,7 @@
 ===========================================
 
 # User Dashboad
-- logic of setting in user dashboard
+- logic of setting in user dashboard => done until test
   - profile
   - Bussiness
   - Integrations
@@ -18,7 +18,7 @@
   - Team & roles
   - Pixel
   - Security
-- Product and checkout
+- Product and checkout 
 - Booking Questions => done
 
 ## hesham and Abbas 
@@ -81,7 +81,7 @@
   - Payments => done
   - Payments Logs & Monitoring => done
 - Add Templete Control
-- Switch between users
+- Switch between users => done
 
 ======================
 
