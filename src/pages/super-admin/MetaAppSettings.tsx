@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { gosRequest } from '../../backend/gosApi';
+import './admin-workspace.css';
 
 const CHANNELS = [
   { id: 'messenger', title: 'Messenger', config: 'Facebook Login for Business config ID' },
@@ -62,7 +63,7 @@ export function MetaAppSettings() {
   const text = (key: string, label: string) => (
     <label style={field}>
       <span>{label}</span>
-      <input style={input} inputMode="numeric" value={form[key] ?? ''} onChange={e => setForm({ ...form, [key]: e.target.value })} />
+      <input style={input} inputMode="numeric" autoComplete="off" value={form[key] ?? ''} onChange={e => setForm({ ...form, [key]: e.target.value })} />
     </label>
   );
   const copy = (label: string, value: string | null) => (
@@ -76,7 +77,7 @@ export function MetaAppSettings() {
   );
 
   return (
-    <main style={{ padding: 24, maxWidth: 1080 }}>
+    <main className="saw-workspace" style={{ padding: 24, maxWidth: 1080 }}>
       <h1>Meta Apps</h1>
       <p>Clients connect each channel through its own app. Leave a channel blank to keep using the shared server values.</p>
       {status && <p role={status.ok ? 'status' : 'alert'} style={{ color: status.ok ? 'inherit' : '#d92d20' }}>{status.text}</p>}
@@ -109,7 +110,8 @@ export function MetaAppSettings() {
                     <input
                       style={input}
                       type="password"
-                      autoComplete="off"
+                      // "new-password" stops Chrome filling the saved login password here.
+                      autoComplete="new-password"
                       placeholder={settings.apps[id].has_secret ? 'Saved. Leave blank to keep it.' : ''}
                       value={form[`${id}_app_secret`] ?? ''}
                       onChange={e => setForm({ ...form, [`${id}_app_secret`]: e.target.value })}

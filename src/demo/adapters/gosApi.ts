@@ -13,7 +13,7 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     if (parts[1] === 'training') return { embedding_percent: 100 } as T;
     // Flow Builder's Meta connect is not available in the demo account.
     if (parts[1] === 'channels' && parts[2] === 'meta') {
-      if (method === 'GET') return { meta: { app_id: null, graph_version: 'v21.0', login_config_id: null, whatsapp_config_id: null, ready: false, channels: { messenger: false, instagram: false, whatsapp: false }, webhook_url: '', verify_token: null } } as T;
+      if (method === 'GET') return { meta: { app_id: null, graph_version: 'v27.0', login_config_id: null, whatsapp_config_id: null, ready: false, channels: { messenger: false, instagram: false, whatsapp: false }, webhook_url: '', verify_token: null } } as T;
       throw new Error('Connecting Meta channels is not available in the demo account.');
     }
     if (parts[1] === 'channels') { const current = read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }); if (method === 'PUT' && parts[2]) write('assistant', { ...current, channels: { ...current.channels, [parts[2]]: !!body.enabled } }); return { channels: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }).channels } as T; }
