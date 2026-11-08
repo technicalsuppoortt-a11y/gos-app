@@ -467,10 +467,14 @@ export const cloudStorage = {
     const finishWrite = beginWrite();
     const pending = batch.commit().then(() => { finishWrite(); if (!options?.silent) showToast.success('Changes saved'); }).catch(error => {
       finishWrite();
+      if (!resource && isAuthFailure(error)) {
+        // Keep local cache intact for workspaceState preferences if tenant workspaceState rules reject direct client write
+        return;
+      }
       if (tenantId === scope && revisions.get(key) === revision) {
         if (previous === undefined) cache.delete(key); else cache.set(key, previous);
         notify();
-        showToast.error(backendError(error));
+        if (!options?.silent) showToast.error(backendError(error));
       }
       throw error;
     });

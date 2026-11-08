@@ -20,6 +20,7 @@ html.dark :is(
   .bk-segmented,
   .bk-builder-bar,
   .bk-question,
+  .request-receipt,
   .course-module-row,
   .fb-editor-header,
   .fb-center-panel,
@@ -38,6 +39,7 @@ html.dark :is(
   .pm-brand-logo,
   .pm-brand-frame,
   .st-privacy-security-icon,
+  .st-action-toggle-thumb,
   .aw-preview-viewport
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface)
@@ -206,7 +208,6 @@ html.dark :is(
   .cw-pipeline-step-icon,
   .dc-editor-icon,
   .dc-stat-icon,
-  .dc-type-badge,
   .fb-preview-action-icon,
   .fn-tag,
   .fn-tool-logo,
@@ -539,6 +540,8 @@ html.dark :is(
   .bc-month-placeholder,
   .bc-powered,
   .bk-wizard-steps,
+  .cr-search-icon,
+  .cr-page-ellipsis,
   .tw-type-arrow,
   .ce-empty,
   .pt-search,
@@ -611,6 +614,13 @@ html.dark :is(
   .bc-link-icon.mint,
   .bc-link-icon.blue,
   .bc-link-icon.rose,
+  .cr-kpi-pill.pending,
+  .cr-kpi-pill.approved,
+  .cr-kpi-pill.rejected,
+  .cr-action-btn.approve,
+  .cr-action-btn.reject,
+  .cr-decision-summary.approved,
+  .cr-decision-summary.rejected,
   .course-page .course-danger,
   .dw-page .tw-media-cover,
   .pd-content .pd-error,
@@ -624,7 +634,6 @@ html.dark :is(
   .crm-task-card.done,
   .crm-message.outgoing,
   .dc-select-option.highlighted,
-  .dc-status.inactive,
   .fb-page-item:hover,
   .fb-image-dropzone:hover,
   .fb-add-row-button:hover,
@@ -664,6 +673,7 @@ html.dark :is(
   .st-badge.neutral,
   .st-service-icon.red,
   .st-service-icon.neutral,
+  .st-action-toggle.is-on,
   .tl-dialog-body .tl-error
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-raised)
@@ -790,6 +800,13 @@ html.dark :is(
   .bk-platform,
   .bk-error,
   .bk-diagnostic-slot,
+  .cr-error-banner,
+  .cr-detail-customer-head,
+  .cr-detail-note-row,
+  .cr-discount-pill,
+  .cr-receipt-open,
+  .cr-review-error,
+  .cr-btn-reject,
   .pp-payments-banner-badge,
   .course-type-badge,
   .course-view-placeholder,
@@ -818,6 +835,7 @@ html.dark :is(
   .crm-upload,
   .crm-note,
   .crm-demo-label,
+  .dc-type-badge,
   .dc-radio-icon,
   .dc-product-targets,
   .fb-mode-host,
@@ -909,7 +927,6 @@ html.dark :is(
   .crm-person-blue,
   .crm-person-rose,
   .dc-growth,
-  .dc-status,
   .fb-toggle,
   .fb-program-visual,
   .fb-thank-you-check,
@@ -989,6 +1006,17 @@ html.dark :is(
   .bc-meeting-description,
   .bk-filter,
   .bk-diagnostic-explanation,
+  .cr-search-clear,
+  .cr-status-tab,
+  .cr-date-cell,
+  .cr-pagination,
+  .cr-page-size,
+  .cr-loading-state,
+  .cr-detail-product-name,
+  .cr-receipt-filename,
+  .cr-detail-muted,
+  .cr-review-hint,
+  .cr-decision-date,
   .ce-webhooks,
   .ce-chart-legend,
   .pricing-extra,
@@ -1007,6 +1035,8 @@ html.dark :is(
   .crm-custom-select-chevron,
   .crm-custom-select-icon,
   .discount-header-back,
+  .dc-description,
+  .dc-empty,
   .fb-page-item,
   .fb-check-row,
   .fb-toggle-row,
@@ -1048,6 +1078,7 @@ html.dark :is(
   .pp-open,
   .fb-standalone-footer,
   .st-audit-list,
+  .st-team-role-pill,
   .aw-ai-features
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-secondary)
@@ -1077,7 +1108,6 @@ html.dark :is(
   .dw-tools>div,
   .tw-link-input input,
   .tw-module-heading>input,
-  .dc-workspace select,
   .dc-type-options>label,
   .fb-color-swatches button,
   .fb-inspector-field input,
@@ -1165,6 +1195,11 @@ html.dark :is(
   .bc-client-card h3,
   .bc-share-card h3,
   .bc-modal h2,
+  .cr-detail-card-title span,
+  .cr-detail-card-header h3,
+  .cr-detail-customer-head strong,
+  .cr-detail-dl dd,
+  .cr-detail-total-row dt,
   .ce-donut b,
   .dw-pricing-options strong,
   .pricing-payment-badges>span,
@@ -1196,6 +1231,7 @@ html.dark :is(
   .crm-appointment b,
   .crm-order-metrics b,
   .dc-editor-missing h2,
+  .dc-stat strong,
   .dc-search input,
   .dc-table-wrap table,
   .dc-summary strong,
@@ -1356,6 +1392,8 @@ html.dark :is(
   .an-score-num,
   .aw-workspace,
   .bc-page,
+  .cr-review-label,
+  .cr-decision-note,
   .pp-table-cell-with-icon,
   .cw-field,
   .sw-payment,
@@ -1364,6 +1402,7 @@ html.dark :is(
   .crm2-header-title,
   .crm-table-person,
   .dc-code,
+  .dc-value,
   .fb-canvas-section,
   .fb-custom-heading,
   .fb-manager-card-head,
@@ -1404,6 +1443,7 @@ html.dark :is(
   .bc-reminder-option,
   .bk-qual-check-box,
   .bk-heading-icon,
+  .cr-spinner,
   .ce-table-wrap,
   .course-chart-empty,
   .course-module,
@@ -1413,7 +1453,6 @@ html.dark :is(
   .pricing-offer-row,
   .tw-course-module,
   .crm2-pipeline-selector,
-  .dc-search,
   .fb-select-popover,
   .fb-gallery-image,
   .fb-field-toggle-group,
@@ -1547,6 +1586,10 @@ html.dark :is(
   .bk-empty b,
   .bk-menu button,
   .bk-form legend,
+  .request-table th,
+  .cr-customer-meta small,
+  .cr-detail-customer-head span,
+  .cr-detail-dl dt,
   .ce-activity b,
   .ce-revenue-chart b,
   .pp-records-empty p,
@@ -1618,6 +1661,8 @@ html.dark :is(
   .crm-loading-center strong,
   .crm-loading-center span,
   .discount-header-breadcrumb button,
+  .dc-stat small,
+  .dc-sort>svg,
   .fb-viewport-switch button,
   .fb-dropdown button,
   .fb-dropdown b,
@@ -1736,6 +1781,7 @@ html.dark :is(
   .bc-metric,
   .bc-calendar-connection,
   .bc-modal,
+  .cr-detail-card,
   .cw-card,
   .cw-module,
   .tw-rich-editor,
@@ -1946,6 +1992,7 @@ html.dark :is(
   .ai-attachment-preview>a,
   .af-wizard-progress>span,
   .bk-wizard-steps i,
+  .cr-copy-row code,
   .ce-activity>span,
   .dw-editor-content pre,
   .dw-tools em,
@@ -1953,8 +2000,6 @@ html.dark :is(
   .crm-preset-stages span,
   .crm-dialog-head button,
   .crm-record-tags button,
-  .dc-table-wrap th,
-  .dc-actions>button,
   .fb-mini-features i,
   .fb-mini-calendar-grid i,
   .fb-mini-receipt em,
@@ -1976,6 +2021,7 @@ html.dark :is(
 html.dark :is(
   .crm-summary .crm-ai-insight,
   .an-icon-btn:hover,
+  .cr-status-tab.active,
   .pp-subnav-btn.active
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface);
@@ -2109,6 +2155,7 @@ html.dark :is(
   .bc-hours-row,
   .bc-automation-row,
   .bc-policy-toggle,
+  .cr-detail-total-row,
   .course-lesson-row,
   .cx-upsell,
   .cw-mini-preview,
@@ -2249,6 +2296,7 @@ html.dark :is(
   .af-bot-avatar,
   .aw-dns-record,
   .bk-tip,
+  .cr-receipt-frame,
   .cp-wallet-preview,
   .pd-warning,
   .cw-pipeline-step-btn,
@@ -2330,8 +2378,6 @@ html.dark :is(
   .ce-donut>div,
   .course-table th,
   .sw-preview-media>button,
-  .dc-action-menu button,
-  .dc-pagination button,
   .dc-date-input>button,
   .fb-mini-hero b,
   .ob-toggle>span,
@@ -2456,6 +2502,7 @@ html.dark :is(
   .ob-brand .ob-brand-dot,
   .st-transaction-service .purple,
   .st-knowledge-metrics .st-card,
+  .st-team-select-wrap .st-team-select-icon,
   .saw-meta-eye-btn:hover,
   .tl-steps .active
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -2530,7 +2577,8 @@ html.dark :is(
   .product-connection,
   .layout-logout,
   .bc-question-row,
-  .ce-table-pagination
+  .ce-table-pagination,
+  .dc-pagination
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-top-color: var(--ui-border);
     color: var(--ui-text-secondary)
@@ -2619,7 +2667,8 @@ html.dark :is(
 }
 html.dark :is(
   .source-favicon,
-  .af-user-badge
+  .af-user-badge,
+  .st-team-role-count
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-hover);
     color: var(--ui-text-secondary)
@@ -2634,6 +2683,7 @@ html.dark :is(
   .knowledge-safe,
   .af-test-card,
   .af-outcome-badge,
+  .cr-status-tabs,
   .cw-pipeline-detail,
   .legal-clause-card,
   .ob-orb,
@@ -2643,6 +2693,7 @@ html.dark :is(
   .st-danger,
   .st-error,
   .st-delete-confirm-icon,
+  .st-team-role-pills,
   .aw-preview-device-switch
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-raised);
@@ -2886,7 +2937,6 @@ html.dark :is(
   .course-table td,
   .cw-bundle-options label,
   .cw-review>div,
-  .dc-table-wrap td,
   .ob-admin td,
   .pf-code-modal header,
   .st-account-list>div,
@@ -2937,8 +2987,7 @@ html.dark :is(
   .aw-badge.green,
   .aw-badge.orange,
   .bk-pill.amber,
-  .request-status.approved,
-  .request-status.rejected,
+  .cr-receipt-open:hover,
   .ce-status.pending,
   .pt-badge.service,
   .cw-status.active,
@@ -2951,6 +3000,7 @@ html.dark :is(
   .crm-task-due-pill.completed,
   .crm-status.paid,
   .crm-status.pending,
+  .dc-status.inactive,
   .fb-published-pill.draft,
   .legal-badge.purple,
   .legal-badge.green,
@@ -3018,6 +3068,8 @@ html.dark :is(
   .ai-history-modal,
   .an-btn,
   .aw-select-popup,
+  .cr-page-btn,
+  .cr-page-num,
   .cw-button,
   .crm-custom-select-trigger,
   .fb-block-button,
@@ -3112,6 +3164,7 @@ html.dark :is(
   .an-ghost,
   .an-icon-btn,
   .aw-select-trigger,
+  .cr-mini-copy,
   .cw-icon-button,
   .tw-remove-image,
   .crm-options-trigger,
@@ -3156,6 +3209,7 @@ html.dark :is(
   .ai-history-controls button,
   .ai-attachment-preview>button,
   .aw-card-meta a,
+  .dc-table-wrap th,
   .fb-panel-caption span,
   .fb-canvas-section blockquote
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -3179,7 +3233,10 @@ html.dark :is(
 }
 html.dark :is(
   .ai-message-content>p,
+  .cr-page-size select,
+  .request-review textarea,
   .discount-header-buttons>button,
+  .dc-pagination button,
   .fb-booking-date select,
   .pf-start-options button
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -3492,6 +3549,7 @@ html.dark :is(
 }
 html.dark :is(
   .af-feed-panel .af-conversation-name,
+  .cr-status-tab:hover,
   .crm-workspace .crm2-header-title,
   .crm-search:focus-within,
   .pp-page.pp-discounts-page,
@@ -3532,7 +3590,8 @@ html.dark :is(
   .dc-stat.orange .dc-stat-icon,
   .fb-mini-section.hero .fb-mini-copy,
   .st-privacy-btn.deletion-jump:hover,
-  .st-privacy-toc-chip.compliance:hover
+  .st-privacy-toc-chip.compliance:hover,
+  .st-team-role-pill.is-active .st-team-role-count
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-hover)
 }
@@ -3667,6 +3726,7 @@ html.dark :is(
 }
 html.dark :is(
   .af-composer-clear:hover,
+  .cr-search-clear:hover,
   .st-privacy-search-clear:hover,
   .st-search-clear:hover
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -3707,6 +3767,7 @@ html.dark :is(
   .af-grade-btn.incorrect.active,
   .aw-thumbnail.nutrition .aw-thumb-hero,
   .bc-slot.available:hover,
+  .cr-action-btn.details:hover,
   .pricing-icon-button:hover:enabled,
   .pricing-page .tw-checkout-option.selected,
   .pp-card-actions .pp-delete-action:hover,
@@ -3793,7 +3854,8 @@ html.dark :is(
     color: var(--ui-text)
 }
 html.dark :is(
-  .an-checks label
+  .an-checks label,
+  .dc-workspace select
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     color: var(--ui-text-secondary)
@@ -3904,7 +3966,8 @@ html.dark :is(
   .crm-pipeline-workspace .crm-filter-bar,
   .crm-pipeline-workspace .crm-lead-card,
   .crm-workspace .crm2-header,
-  .legal-clause-card:hover
+  .legal-clause-card:hover,
+  .st-team-role-pill.is-active
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface);
     border-color: var(--ui-border)
@@ -4066,6 +4129,7 @@ html.dark :is(
 }
 html.dark :is(
   .aw-workspace .st-modal,
+  .cr-action-btn.details,
   .tw-page .cw-button,
   .fb-form-picker-body .aw-select-trigger
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -4240,6 +4304,9 @@ html.dark :is(
   .bc-payment-state.payment-required,
   .bc-payment-state.unpaid,
   .bc-payment-state.manual-pending,
+  .request-status.rejected,
+  .request-status.refunded,
+  .request-status.inactive,
   .ce-status.paid,
   .ce-status.completed,
   .ce-status.active
@@ -4392,7 +4459,9 @@ html.dark :is(
 }
 html.dark :is(
   .bk-button,
-  .bk-icon
+  .bk-icon,
+  .cr-detail-hero-date,
+  .cr-detail-timestamp
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-secondary)
 }
@@ -4461,6 +4530,80 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: linear-gradient(135deg, var(--ui-surface-hover), var(--ui-surface-hover));
     color: var(--ui-accent-text)
+}
+html.dark :is(
+  .checkout-requests .cr-search-box input:focus,
+  .cr-search-box input:focus
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface)
+}
+html.dark :is(
+  .cr-customer-avatar
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: linear-gradient(135deg, var(--ui-surface-hover), var(--ui-surface-hover))
+}
+html.dark :is(
+  .cr-ref-code,
+  .cr-ref-tag
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text-muted)
+}
+html.dark :is(
+  .cr-method-badge
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface-raised);
+    border-color: var(--ui-border);
+    color: var(--ui-text)
+}
+html.dark :is(
+  .request-status.draft,
+  .request-status.lead
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text-secondary);
+    background: var(--ui-surface-raised);
+    border-color: var(--ui-border)
+}
+html.dark :is(
+  .request-details.cr-details-drawer,
+  .cr-details-drawer
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text)
+}
+html.dark :is(
+  .cr-detail-hero
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: linear-gradient(135deg, var(--ui-surface-raised) 0%, var(--ui-surface-raised) 100%);
+    border-color: var(--ui-border)
+}
+html.dark :is(
+  .cr-ref-pill:hover,
+  .cr-copy-ref:hover
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface)
+}
+html.dark :is(
+  .cr-detail-card-header,
+  .cr-detail-card-title,
+  .fb-tabs,
+  .fb-inspector-tabs
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-bottom-color: var(--ui-border)
+}
+html.dark :is(
+  .cr-detail-products li,
+  .crm-order-metrics>div,
+  .ob-color-row code,
+  .ob-tags>span,
+  .tl-tags span
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface-raised);
+    border-color: var(--ui-border)
+}
+html.dark :is(
+  .cr-review-card
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-color: var(--ui-border);
+    background: linear-gradient(180deg, var(--ui-surface) 0%, var(--ui-surface-raised) 100%)
 }
 html.dark :is(
   .tw-page .cw-button:hover:not(:disabled)
@@ -4560,7 +4703,6 @@ html.dark :is(
 html.dark :is(
   .cp-payment-methods button.selected,
   .dw-editor-toolbar>button:hover,
-  .dc-pagination button.active,
   .tl-actions button:hover
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-hover);
@@ -4757,6 +4899,7 @@ html.dark :is(
 html.dark :is(
   .pt-cover>span,
   .cw-rich-toolbar button,
+  .dc-action-menu button,
   .fn-device-ring b
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface);
@@ -4777,7 +4920,10 @@ html.dark :is(
     color: var(--ui-accent-text)
 }
 html.dark :is(
-  .cw-url
+  .cw-url,
+  .dc-search,
+  .st-team-reset-btn,
+  .st-action-toggle
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: var(--ui-surface-raised);
@@ -4881,7 +5027,8 @@ html.dark :is(
     background: var(--ui-surface)
 }
 html.dark :is(
-  .sw-quick-settings button
+  .sw-quick-settings button,
+  .dc-table-wrap td
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-bottom-color: var(--ui-border);
     color: var(--ui-text)
@@ -5079,15 +5226,6 @@ html.dark :is(
     background-color: var(--ui-surface-raised)
 }
 html.dark :is(
-  .crm-order-metrics>div,
-  .ob-color-row code,
-  .ob-tags>span,
-  .tl-tags span
-):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
-    background: var(--ui-surface-raised);
-    border-color: var(--ui-border)
-}
-html.dark :is(
   .crm-orders-table th
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-muted);
@@ -5161,6 +5299,14 @@ html.dark :is(
     color: var(--ui-accent-text)
 }
 html.dark :is(
+  .dc-actions>button,
+  .dc-actions .dc-row-actions>button:not(.cr-action-btn)
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-raised);
+    color: var(--ui-text-secondary)
+}
+html.dark :is(
   .dc-selection button,
   .dc-empty button,
   .native-template-nav a,
@@ -5203,12 +5349,6 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: var(--ui-surface-hover)
-}
-html.dark :is(
-  .fb-tabs,
-  .fb-inspector-tabs
-):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
-    border-bottom-color: var(--ui-border)
 }
 html.dark :is(
   .fb-global-panel input,
@@ -5689,7 +5829,8 @@ html.dark :is(
     background: var(--ui-surface)
 }
 html.dark :is(
-  .pp-status.draft
+  .pp-status.draft,
+  .st-badge.neutral
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-raised);
     color: var(--ui-text-secondary);
@@ -5924,6 +6065,31 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-muted);
     background: var(--ui-surface-raised);
+    border-color: var(--ui-border)
+}
+html.dark :is(
+  .st-team-select-wrap select
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text);
+    border-color: var(--ui-border);
+    background-color: var(--ui-surface)
+}
+html.dark :is(
+  .st-team-reset-btn:hover
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-raised);
+    color: var(--ui-text)
+}
+html.dark :is(
+  .st-team-role-pill:hover
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    color: var(--ui-text);
+    background: var(--ui-surface)
+}
+html.dark :is(
+  .st-action-toggle:hover:not(:disabled)
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border)
 }
 html.dark :is(

@@ -153,6 +153,8 @@ export type SecurityState = {
   salt?: string;
 };
 
+const localMemoryStore = new Map<string, string>();
+
 function sectionKey(section: string) {
   return section === 'knowledge'
     ? 'gos.ai-followup.knowledge.v1'
@@ -162,8 +164,18 @@ function sectionKey(section: string) {
 }
 
 export function readLocal<T>(section: string, defaults: () => T): T {
+  const key = sectionKey(section);
   try {
-    const saved = JSON.parse(cloudStorage.getItem(sectionKey(section)) ?? 'null');
+    if (section === 'team' || section === 'security') {
+      const fromMem = localMemoryStore.get(key);
+      const fromBrowser =
+        fromMem ?? (typeof window !== 'undefined' ? window.localStorage.getItem(key) : null);
+      if (fromBrowser) {
+        const parsed = JSON.parse(fromBrowser);
+        if (parsed && typeof parsed === 'object') return parsed as T;
+      }
+    }
+    const saved = JSON.parse(cloudStorage.getItem(key) ?? 'null');
     if (saved && typeof saved === 'object') return saved as T;
   } catch {
     /* Recover malformed storage. */
@@ -183,8 +195,22 @@ export function saveLocal(section: string, data: unknown) {
       approved: true,
     }));
   }
+  const key = sectionKey(section);
+  const serialized = JSON.stringify(data);
+  if (section === 'team' || section === 'security') {
+    localMemoryStore.set(key, serialized);
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, serialized);
+      }
+    } catch {
+      /* Ignore browser storage quota errors */
+    }
+    window.dispatchEvent(new Event('gos-settings-changed'));
+    return;
+  }
   try {
-    cloudStorage.setItem(sectionKey(section), JSON.stringify(data));
+    void cloudStorage.setItem(key, serialized, { silent: true });
   } catch {
     throw new Error('Changes could not be saved. Browser storage is full or unavailable.');
   }

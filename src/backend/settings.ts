@@ -398,25 +398,10 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
 
       // If member ID changed to match Firebase Auth UID, remove old placeholder doc ID
       if (requestedMemberId && requestedMemberId !== finalMemberId) {
-        await Promise.all([
-          deleteDoc(doc(db, 'tenants', scope, 'members', requestedMemberId)).catch(() => null),
-          deleteDoc(doc(db, 'settings', `team_${scope}`, 'members', requestedMemberId)).catch(() => null),
-        ]);
+        await deleteDoc(doc(db, 'settings', `team_${scope}`, 'members', requestedMemberId)).catch(() => null);
       }
 
-      let saved = false;
-      try {
-        await setDoc(doc(db, 'tenants', scope, 'members', finalMemberId), payload, { merge: true });
-        saved = true;
-      } catch {
-        // Fallback if remote tenant/members rule is read-only
-      }
-      try {
-        await setDoc(doc(db, 'settings', `team_${scope}`, 'members', finalMemberId), payload, { merge: true });
-        saved = true;
-      } catch (err) {
-        if (!saved) throw err;
-      }
+      await setDoc(doc(db, 'settings', `team_${scope}`, 'members', finalMemberId), payload, { merge: true });
 
       // Write global lookup docs so resolveSession can always locate the team member's workspace & owner on login
       const emailKey = email.replace(/[^a-z0-9@._-]/g, '_');
@@ -424,13 +409,6 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         setDoc(doc(db, 'settings', `teamMember_${emailKey}`), payload, { merge: true }).catch(() => null),
         provisionedUid
           ? setDoc(doc(db, 'settings', `teamMemberUid_${provisionedUid}`), payload, { merge: true }).catch(() => null)
-          : Promise.resolve(null),
-        provisionedUid
-          ? setDoc(
-              doc(db, 'users', provisionedUid),
-              { ...userProfileForMember, id: provisionedUid, uid: provisionedUid },
-              { merge: true },
-            ).catch(() => null)
           : Promise.resolve(null),
       ]);
 
@@ -444,10 +422,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         actorId: user.uid,
         createdAt: new Date().toLocaleString('en-GB'),
       };
-      await Promise.all([
-        setDoc(doc(db, 'tenants', scope, 'auditLogs', auditId), auditPayload).catch(() => null),
-        setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null),
-      ]);
+      await setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null);
 
       const safeMember = { ...payload };
       delete safeMember.authPassword;
@@ -472,9 +447,6 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       const memberAuthUid = String(existingMember?.authUid ?? memberId).trim();
 
       await Promise.all([
-        deleteDoc(doc(db, 'tenants', scope, 'members', memberId)).catch(() =>
-          setDoc(doc(db, 'tenants', scope, 'members', memberId), { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() }, { merge: true }).catch(() => null)
-        ),
         deleteDoc(doc(db, 'settings', `team_${scope}`, 'members', memberId)).catch(() =>
           setDoc(doc(db, 'settings', `team_${scope}`, 'members', memberId), { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() }, { merge: true }).catch(() => null)
         ),
@@ -492,27 +464,17 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
               { merge: true },
             ).catch(() => null)
           : Promise.resolve(null),
-        memberAuthUid
-          ? setDoc(
-              doc(db, 'users', memberAuthUid),
-              { status: 'Suspended', active: false, updatedAt: new Date().toISOString() },
-              { merge: true },
-            ).catch(() => null)
-          : Promise.resolve(null),
       ]);
 
       const auditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const auditPayload = {
         id: auditId,
         type: 'team.member.removed',
-        description: `Removed team member (${memberId})`,
+        description: `Removed team member (${existingMember?.name || memberEmail || memberId})`,
         actorId: user.uid,
         createdAt: new Date().toLocaleString('en-GB'),
       };
-      await Promise.all([
-        setDoc(doc(db, 'tenants', scope, 'auditLogs', auditId), auditPayload).catch(() => null),
-        setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null),
-      ]);
+      await setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null);
 
       return { success: true } as T;
     }

@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 92,
-  "correctedDeclarations": 869,
+  "correctedDeclarations": 865,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 202,
+      "line": 211,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 213,
+      "line": 222,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 261,
+      "line": 318,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 267,
+      "line": 356,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 269,
+      "line": 358,
       "utility": "text-gray-400"
     },
     {
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 174,
+      "line": 175,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 182,
+      "line": 183,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 185,
+      "line": 186,
       "utility": "text-slate-400"
     },
     {
@@ -908,7 +908,7 @@
     },
     {
       "file": "src/pages/DiscountsWorkspace.tsx",
-      "line": 60,
+      "line": 879,
       "utility": "text-slate-500"
     },
     {
@@ -4881,6 +4881,30 @@
       "contrastOnWhite": 3.91
     },
     {
+      "file": "src/pages/commerce/checkout-requests.css",
+      "line": 114,
+      "selector": ".cr-search-icon",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/checkout-requests.css",
+      "line": 340,
+      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/commerce/checkout-requests.css",
+      "line": 587,
+      "selector": ".cr-page-ellipsis",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
       "file": "src/pages/commerce/commerce-density.css",
       "line": 46,
       "selector": ".tw-type-arrow",
@@ -6042,63 +6066,7 @@
     },
     {
       "file": "src/pages/discounts-workspace.css",
-      "line": 177,
-      "selector": ".dc-stat small",
-      "before": "#EDE9FE",
-      "after": "#475569",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 185,
-      "selector": ".dc-search",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 191,
-      "selector": ".dc-sort>svg",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 207,
-      "selector": ".dc-description",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 216,
-      "selector": ".dc-actions>button",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 223,
-      "selector": ".dc-empty",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 224,
-      "selector": ".dc-pagination",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/discounts-workspace.css",
-      "line": 236,
+      "line": 237,
       "selector": ".dc-summary>div>span:first-child",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -6106,7 +6074,7 @@
     },
     {
       "file": "src/pages/discounts-workspace.css",
-      "line": 265,
+      "line": 266,
       "selector": ".dc-type-options small",
       "before": "#EDE9FE",
       "after": "#475569",
@@ -6114,7 +6082,7 @@
     },
     {
       "file": "src/pages/discounts-workspace.css",
-      "line": 276,
+      "line": 277,
       "selector": ".dc-date-input>button",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -6122,7 +6090,7 @@
     },
     {
       "file": "src/pages/discounts-workspace.css",
-      "line": 284,
+      "line": 285,
       "selector": ".dc-description-field>small",
       "before": "#EDE9FE",
       "after": "#475569",
