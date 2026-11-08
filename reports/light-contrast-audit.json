@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 92,
-  "correctedDeclarations": 864,
+  "correctedDeclarations": 869,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 203,
+      "line": 202,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 214,
+      "line": 213,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 262,
+      "line": 261,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 268,
+      "line": 267,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 270,
+      "line": 269,
       "utility": "text-gray-400"
     },
     {
@@ -588,72 +588,72 @@
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 461,
+      "line": 466,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 465,
+      "line": 470,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 498,
+      "line": 503,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 525,
+      "line": 530,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 548,
+      "line": 553,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 617,
+      "line": 622,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 640,
+      "line": 645,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 674,
+      "line": 679,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 726,
+      "line": 731,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 740,
+      "line": 745,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 764,
+      "line": 769,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 768,
+      "line": 773,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 865,
+      "line": 870,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 913,
+      "line": 918,
       "utility": "text-slate-500"
     },
     {
@@ -943,62 +943,62 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 709,
+      "line": 720,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 856,
+      "line": 867,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 909,
+      "line": 920,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 973,
+      "line": 984,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1048,
+      "line": 1059,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1193,
+      "line": 1204,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1224,
+      "line": 1235,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1256,
+      "line": 1267,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1329,
+      "line": 1340,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1474,
+      "line": 1485,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1507,
+      "line": 1518,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1519,
+      "line": 1530,
       "utility": "text-slate-400"
     },
     {
@@ -4747,7 +4747,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -7639,6 +7639,46 @@
       "before": "#f8fafc",
       "after": "#334155",
       "contrastOnWhite": 1.05
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1407,
+      "selector": ".saw-meta-field-label",
+      "before": "#d5dcef",
+      "after": "#475569",
+      "contrastOnWhite": 1.37
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1465,
+      "selector": ".saw-meta-eye-btn",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1603,
+      "selector": ".saw-meta-loader-main strong",
+      "before": "#eef0fa",
+      "after": "#475569",
+      "contrastOnWhite": 1.14
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1639,
+      "selector": ".saw-meta-loader-step",
+      "before": "#94a3b8",
+      "after": "#475569",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/super-admin/admin-workspace.css",
+      "line": 1646,
+      "selector": ".saw-meta-loader-step.is-active",
+      "before": "#e9d5ff",
+      "after": "#475569",
+      "contrastOnWhite": 1.36
     },
     {
       "file": "src/pages/support/support.css",

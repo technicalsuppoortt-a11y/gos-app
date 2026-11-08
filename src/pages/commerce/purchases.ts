@@ -23,27 +23,37 @@ function readPurchases(): string[] {
   return seedPurchasedIds;
 }
 
+let rawPurchases: string | null = typeof window !== 'undefined' ? cloudStorage.getItem(PURCHASES_STORAGE_KEY) : null;
 let purchasesCache: string[] = typeof window !== 'undefined' ? readPurchases() : seedPurchasedIds;
 
+function getPurchasesSnapshot(): string[] {
+  const next = cloudStorage.getItem(PURCHASES_STORAGE_KEY);
+  if (next !== rawPurchases) {
+    rawPurchases = next;
+    purchasesCache = readPurchases();
+  }
+  return purchasesCache;
+}
+
 function notifyListeners() {
+  rawPurchases = cloudStorage.getItem(PURCHASES_STORAGE_KEY);
+  purchasesCache = readPurchases();
   listeners.forEach(fn => fn());
 }
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', event => {
     if (event.key === PURCHASES_STORAGE_KEY || event.key === null) {
-      purchasesCache = readPurchases();
       notifyListeners();
     }
   });
   window.addEventListener('gos-purchases-updated', () => {
-    purchasesCache = readPurchases();
     notifyListeners();
   });
 }
 
 export function getPurchasedProductIds(): string[] {
-  return purchasesCache;
+  return getPurchasesSnapshot();
 }
 
 export function addPurchasedProduct(idOrIdentifier: string): void {
@@ -71,7 +81,7 @@ export function usePurchasedProducts() {
         listeners.delete(fn);
       };
     },
-    () => purchasesCache,
+    getPurchasesSnapshot,
     () => seedPurchasedIds
   );
 

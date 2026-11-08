@@ -22,11 +22,22 @@ function read(key: string): Product[] {
   return [];
 }
 let key = storageKey();
+let rawProducts = cloudStorage.getItem(key);
 let products = read(key);
-store.subscribe(() => { const nextKey = storageKey(); if (nextKey !== key) { key = nextKey; products = read(key); listeners.forEach(fn => fn()); } });
-if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === key || event.key === null) { products = read(key); listeners.forEach(fn => fn()); } });
+function getProductsSnapshot(): Product[] {
+  const nextKey = storageKey();
+  const nextRaw = cloudStorage.getItem(nextKey);
+  if (nextKey !== key || nextRaw !== rawProducts) {
+    key = nextKey;
+    rawProducts = nextRaw;
+    products = read(nextKey);
+  }
+  return products;
+}
+store.subscribe(() => { const nextKey = storageKey(); if (nextKey !== key) { key = nextKey; rawProducts = cloudStorage.getItem(key); products = read(key); listeners.forEach(fn => fn()); } });
+if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === key || event.key === null) { rawProducts = cloudStorage.getItem(key); products = read(key); listeners.forEach(fn => fn()); } });
 export function useProducts() {
-  return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, () => products, () => products);
+  return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, getProductsSnapshot, getProductsSnapshot);
 }
 let pendingWrite: Promise<unknown> = Promise.resolve();
 function commit<T>(change: (current: Product[]) => { next: Product[]; result: T }): Promise<T> {

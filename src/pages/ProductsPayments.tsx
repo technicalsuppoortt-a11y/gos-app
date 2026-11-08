@@ -2,6 +2,9 @@ import { thumbnailImageProps } from '../utils/thumbnailImages';
 import { usePaymentMethods } from '../backend/paymentMethods';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { ProductCardActions } from './commerce/ProductCardActions';
+import { ProductQuickView } from './commerce/ProductQuickView';
+import { QuickDetails } from '../components/ui/QuickDetails';
+import { showToast } from '../utils/toast';
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CommerceSelect } from '../components/ui/CommerceSelect';
@@ -21,13 +24,18 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   ClipboardList,
+  Copy,
   CreditCard,
+  ExternalLink,
+  Eye,
   FileText,
   Grid2X2,
-
   LayoutGrid,
+  Mail,
   PackageCheck,
   Pencil,
   Plus,
@@ -37,16 +45,19 @@ import {
   ShoppingBag,
   SlidersHorizontal,
   TrendingUp,
+  User,
   UserRound,
   UserRoundCheck,
   Users,
   UsersRound,
 } from 'lucide-react';
 import type { Product, StatKind } from './commerce/model';
+import { productPreviewToken, writePreview } from './commerce/previewSnapshot';
 import { useProducts } from './commerce/repository';
 import './products-payments.css';
 import './products-payments-overrides.css';
 import './commerce/commerce-enhancements.css';
+import './commerce/checkout-requests.css';
 
 const statIcons: Record<StatKind, React.ElementType> = {
   sales: UsersRound,
@@ -479,6 +490,7 @@ function ProductCard({
   notify: (message: string) => void;
 }) {
   useUILanguage();
+  const [showUsers, setShowUsers] = useState(false);
 
   return (
     <article className="pp-product-card" onClick={onSelect}>
@@ -532,7 +544,24 @@ function ProductCard({
           {localizeNode(item.name)}
         </button>
         <b className="pp-price">{localizeNode(item.price)}</b>
-        <div className="pp-product-metric">
+        <div
+          className="pp-product-metric"
+          role="button"
+          tabIndex={0}
+          title={translateText('Click to view users who purchased this product')}
+          style={{ cursor: 'pointer', width: 'fit-content' }}
+          onClick={event => {
+            event.stopPropagation();
+            setShowUsers(true);
+          }}
+          onKeyDown={event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              event.stopPropagation();
+              setShowUsers(true);
+            }
+          }}
+        >
           {localizeNode(
             item.stats.map(([kind, text]) => {
               const StatIcon = statIcons[kind];
@@ -550,19 +579,65 @@ function ProductCard({
             <span className="pp-status-dot" aria-hidden="true" />
             {localizeNode(item.status)}
           </span>
-          <button
-            className="pp-open"
-            title={translateText('Edit product')}
-            aria-label={translateText(`Edit ${item.name}`)}
-            onClick={event => {
-              event.stopPropagation();
-              onSelect();
-            }}
-          >
-            <Pencil size={15} />
-          </button>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <button
+              type="button"
+              className="pp-open"
+              title={translateText('View Users & Buyers')}
+              aria-label={translateText(`View users of ${item.name}`)}
+              onClick={event => {
+                event.stopPropagation();
+                setShowUsers(true);
+              }}
+            >
+              <Users size={15} />
+            </button>
+            <a
+              className="pp-open"
+              href={`/product-preview/${encodeURIComponent(productPreviewToken(item))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={translateText('View Live Preview')}
+              aria-label={translateText(`Preview ${item.name}`)}
+              onPointerDown={() => {
+                try {
+                  writePreview(productPreviewToken(item), item);
+                } catch {}
+              }}
+              onClick={event => {
+                event.stopPropagation();
+                try {
+                  writePreview(productPreviewToken(item), item);
+                } catch {
+                  event.preventDefault();
+                  notify('Preview could not be opened. Browser storage is unavailable or full.');
+                }
+              }}
+            >
+              <ExternalLink size={15} />
+            </a>
+            <button
+              className="pp-open"
+              title={translateText('Edit product')}
+              aria-label={translateText(`Edit ${item.name}`)}
+              onClick={event => {
+                event.stopPropagation();
+                onSelect();
+              }}
+            >
+              <Pencil size={15} />
+            </button>
+          </div>
         </div>
       </div>
+      {showUsers && (
+        <ProductQuickView
+          product={item}
+          defaultTab="users"
+          close={() => setShowUsers(false)}
+          edit={onEdit}
+        />
+      )}
     </article>
   );
 }
@@ -572,6 +647,13 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
   const transactions = useTransactions();
   const [txnSearch, setTxnSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Pending' | 'Refunded' | 'Rejected'>('All');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+  const [selectedTxn, setSelectedTxn] = useState<any | null>(null);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [txnSearch, statusFilter, pageSize]);
 
   const filteredTxns = useMemo(() => {
     return transactions.filter(t => {
@@ -581,10 +663,19 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
         !txnSearch ||
         t.productName.toLowerCase().includes(q) ||
         (t.customerName?.toLowerCase() ?? '').includes(q) ||
+        (t.customerEmail?.toLowerCase() ?? '').includes(q) ||
+        (t.method?.toLowerCase() ?? '').includes(q) ||
         t.id.toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
   }, [transactions, statusFilter, txnSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTxns.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedTxns = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredTxns.slice(start, start + pageSize);
+  }, [filteredTxns, currentPage, pageSize]);
 
   const totalVolume = useMemo(() => {
     const completed = transactions.filter(t => t.status === 'Completed');
@@ -603,6 +694,8 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
 
   const completedCount = transactions.filter(t => t.status === 'Completed').length;
   const rate = transactions.length > 0 ? Math.round((completedCount / transactions.length) * 100) : 100;
+  const startIdx = filteredTxns.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIdx = Math.min(currentPage * pageSize, filteredTxns.length);
 
   return (
     <section className="pp-transactions-view"><PaymentMethodsSummary/>
@@ -649,7 +742,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
           <input
             value={txnSearch}
             onChange={e => setTxnSearch(e.target.value)}
-            placeholder={translateText('Search by product, customer, or transaction ID...')}
+            placeholder={translateText('Search by product, customer, email, method, or transaction ID...')}
           />
         </label>
 
@@ -681,18 +774,8 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="pp-txn-table-container">
-        <div className="pp-txn-table-header">
-          <span>{translateText('Transaction ID')}</span>
-          <span>{translateText('Date')}</span>
-          <span>{translateText('Product Name')}</span>
-          <span>{translateText('Customer')}</span>
-          <span>{translateText('Payment Method')}</span>
-          <span className="text-end">{translateText('Amount')}</span>
-          <span className="text-center">{translateText('Status')}</span>
-        </div>
-
+      {/* Professional Table Card with Pagination */}
+      <div className="cr-table-card">
         {filteredTxns.length === 0 ? (
           <div className="pp-txn-empty">
             <Receipt size={28} />
@@ -700,30 +783,220 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
             <span>{translateText('Verified payments from your connected payment provider will appear here.')}</span>
           </div>
         ) : (
-          filteredTxns.map(t => (
-            <div key={t.id} className="pp-txn-row">
-              <span className="pp-txn-id">{t.id}</span>
-              <span className="pp-txn-date">
-                <Clock3 size={12} className="inline me-1 opacity-60" />
-                {t.date}
-              </span>
-              <b className="pp-txn-product">{localizeNode(t.productName)}</b>
-              <span className="pp-txn-customer">{localizeNode(t.customerName || t.customerEmail || '—')}</span>
-              <span className="pp-txn-method">
-                <CreditCard size={12} className="inline me-1 opacity-60" />
-                {localizeNode(t.method || '—')}
-              </span>
-              <b className="pp-txn-amount text-end">{localizeNode(t.amount)}</b>
-              <span className="text-center">
-                <span className={`pp-txn-status ${t.status.toLowerCase()}`}>
-                  <span className="pp-txn-dot" />
-                  {localizeNode(t.status)}
-                </span>
-              </span>
+          <>
+            <div className="request-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{translateText('Customer')}</th>
+                    <th>{translateText('Product & ID')}</th>
+                    <th>{translateText('Method')}</th>
+                    <th>{translateText('Amount')}</th>
+                    <th>{translateText('Date')}</th>
+                    <th>{translateText('Status')}</th>
+                    <th>{translateText('Actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedTxns.map(t => {
+                    const initials = String(t.customerName || t.customerEmail || 'C')
+                      .split(/\s+/)
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((p: string) => p[0]?.toUpperCase() || '')
+                      .join('') || 'C';
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          <div className="cr-customer-cell">
+                            <span className="cr-customer-avatar" aria-hidden="true">{initials}</span>
+                            <div className="cr-customer-meta">
+                              <b>{localizeNode(t.customerName || 'Customer')}</b>
+                              <small>{t.customerEmail || '—'}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="cr-product-cell">
+                            <span className="cr-product-name">{localizeNode(t.productName)}</span>
+                            <small className="cr-ref-code">#{String(t.id).slice(-8).toUpperCase()}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="cr-method-badge">
+                            <CreditCard size={12} />
+                            {localizeNode(t.method || '—')}
+                          </span>
+                        </td>
+                        <td>
+                          <strong className="cr-amount">{localizeNode(t.amount)}</strong>
+                        </td>
+                        <td className="cr-date-cell">{t.date}</td>
+                        <td>
+                          <span className={`request-status ${t.status.toLowerCase()}`}>
+                            <span className="cr-status-dot" aria-hidden="true" />
+                            {localizeNode(t.status)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="cr-row-actions">
+                            <button
+                              type="button"
+                              className="cw-button cr-action-btn details"
+                              onClick={() => setSelectedTxn(t)}
+                            >
+                              <Eye size={14} />
+                              <span>{translateText('View details')}</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))
+
+            <footer className="cr-pagination" aria-label={translateText('Pagination')}>
+              <div className="cr-pagination-info">
+                <span>
+                  {translateText('Showing')} <b>{startIdx}–{endIdx}</b> {translateText('of')}{' '}
+                  <b>{filteredTxns.length}</b> {translateText('transactions')}
+                </span>
+                <label className="cr-page-size">
+                  <span>{translateText('Rows per page')}</span>
+                  <select
+                    value={pageSize}
+                    onChange={e => setPageSize(Number(e.target.value))}
+                    aria-label={translateText('Rows per page')}
+                  >
+                    {[5, 8, 15, 25].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="cr-pagination-controls">
+                <button
+                  type="button"
+                  className="cr-page-btn"
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft size={14} />
+                  <span>{translateText('Previous')}</span>
+                </button>
+                <div className="cr-page-numbers">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`cr-page-num ${n === currentPage ? 'active' : ''}`}
+                      onClick={() => setPage(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="cr-page-btn"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                >
+                  <span>{translateText('Next')}</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </footer>
+          </>
         )}
       </div>
+
+      {selectedTxn && (
+        <QuickDetails title={translateText('Transaction details')} close={() => setSelectedTxn(null)}>
+          <div className="cr-details-drawer">
+            <div className="cr-detail-hero">
+              <div className="cr-detail-hero-top">
+                <span className={`pp-txn-status ${String(selectedTxn.status || 'completed').toLowerCase()}`}>
+                  <span className="pp-txn-dot" />
+                  {localizeNode(selectedTxn.status)}
+                </span>
+                <button
+                  type="button"
+                  className="cr-copy-ref"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(selectedTxn.id);
+                      showToast.success(translateText('Transaction ID copied'));
+                    } catch {}
+                  }}
+                >
+                  <Copy size={12} />
+                  <span>#{String(selectedTxn.id).slice(-8).toUpperCase()}</span>
+                </button>
+              </div>
+              <div className="cr-detail-amount">{localizeNode(selectedTxn.amount)}</div>
+              <div className="cr-detail-product-name">{localizeNode(selectedTxn.productName)}</div>
+              <div className="cr-detail-timestamp">
+                <Clock3 size={12} />
+                <span>{selectedTxn.date}</span>
+              </div>
+            </div>
+
+            <div className="cr-detail-card">
+              <h4 className="cr-detail-card-title">
+                <User size={14} />
+                <span>{translateText('Customer Information')}</span>
+              </h4>
+              <dl className="cr-detail-dl">
+                <div>
+                  <dt>{translateText('Full Name')}</dt>
+                  <dd>{selectedTxn.customerName || '—'}</dd>
+                </div>
+                <div>
+                  <dt>{translateText('Email Address')}</dt>
+                  <dd>
+                    {selectedTxn.customerEmail ? (
+                      <a href={`mailto:${selectedTxn.customerEmail}`} className="cr-detail-link">
+                        <Mail size={12} />
+                        {selectedTxn.customerEmail}
+                      </a>
+                    ) : '—'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="cr-detail-card">
+              <h4 className="cr-detail-card-title">
+                <CreditCard size={14} />
+                <span>{translateText('Payment & Settlement')}</span>
+              </h4>
+              <dl className="cr-detail-dl">
+                <div>
+                  <dt>{translateText('Transaction ID')}</dt>
+                  <dd style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12 }}>{selectedTxn.id}</dd>
+                </div>
+                <div>
+                  <dt>{translateText('Payment Method')}</dt>
+                  <dd>
+                    <span className="cr-method-badge">{selectedTxn.method || '—'}</span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>{translateText('Amount Settled')}</dt>
+                  <dd><strong>{selectedTxn.amount}</strong></dd>
+                </div>
+                <div>
+                  <dt>{translateText('Currency')}</dt>
+                  <dd>{selectedTxn.currency || 'USD'}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </QuickDetails>
+      )}
     </section>
   );
 }

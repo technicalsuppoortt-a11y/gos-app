@@ -9,6 +9,11 @@ export interface User {
   accountType?: 'agency';
   cashWalletRestricted?: boolean;
   allowedTabs?: string[];
+  isTeamMember?: boolean;
+  teamRole?: string;
+  ownerId?: string;
+  ownerName?: string;
+  ownerEmail?: string;
 }
 
 export interface Tenant {

@@ -40,7 +40,7 @@ export const PLATFORM_SIDEBAR_TABS: readonly PlatformTabDefinition[] = [
     pages: ['integrations', 'payment-methods', 'meta-app', 'marketing-tracking'],
     defaultPath: '/super-admin/integrations',
   },
-  { key: 'payments', label: 'Payments', ar: 'المدفوعات', pages: ['payments'], defaultPath: '/super-admin/payments' },
+  { key: 'payments', label: 'Payments', ar: 'المدفوعات', pages: ['payments', 'payment-methods'], defaultPath: '/super-admin/payments' },
   { key: 'logs_monitoring', label: 'Logs & Monitoring', ar: 'السجلات والمراقبة', pages: ['logs'], defaultPath: '/super-admin/logs' },
   { key: 'support', label: 'Support', ar: 'الدعم الفني', pages: ['support'], defaultPath: '/super-admin/support' },
 ] as const;

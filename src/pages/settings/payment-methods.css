@@ -32,6 +32,13 @@
 
 .pm-brand-frame{display:flex;align-items:center;justify-content:center;width:56px;height:28px;overflow:hidden;background:#fff;border-radius:4px}.pm-brand-frame.instapay .pm-brand-logo{width:88px;height:88px;max-width:none;flex:none}.pm-added-row .pm-brand-frame{width:32px;height:24px}.pm-added-row .pm-brand-frame.instapay .pm-brand-logo{width:50px;height:50px}
 
+.pm-loading-card { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 15px; border-radius: 10px; border: 1px solid rgba(124, 58, 237, 0.22); background: linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, rgba(167, 139, 250, 0.03) 100%); }
+.pm-loading-spinner { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex: none; background: rgba(124, 58, 237, 0.12); color: var(--st-accent); }
+.pm-loading-copy { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.pm-loading-copy b { font-size: 12.5px; font-weight: 700; color: var(--st-ink); }
+.pm-loading-copy span { font-size: 11px; color: var(--st-muted); }
+.pm-loading-pill { padding: 3px 9px; border-radius: 999px; background: rgba(124, 58, 237, 0.12); color: var(--st-accent); font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+
 /* Gateway setup guide box */
 .st-guide-box {
   margin: 14px 0 16px;

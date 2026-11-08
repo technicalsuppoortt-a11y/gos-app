@@ -1,9 +1,10 @@
 import { EmailAuthProvider, multiFactor, reauthenticateWithCredential, updatePassword, updateProfile, verifyBeforeUpdateEmail } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, limit, orderBy, query, setDoc, writeBatch } from 'firebase/firestore';
-import { auth, backendError, db } from './firebase';
+import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, setDoc, writeBatch } from 'firebase/firestore';
+import { auth, backendError, db, provisionTeamMemberAuth } from './firebase';
 import { store } from '../store';
 import { personalPreferencesRef, profileSettingsRef, type PersonalPreferences } from './workspacePreferences';
 import { showToast } from '../utils/toast';
+import { buildTabPermissionsMap, modulePermissions } from '../pages/settings/localState';
 
 export async function firebaseSettingsRequest<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {
   const user = auth.currentUser;
@@ -61,37 +62,64 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
     if (!scope && session.user?.id === user.uid) {
       scope = session.tenant?.id ?? '';
     }
-    if (!scope) throw new Error('Your workspace access could not be verified. Sign in again.');
+    if (!scope) scope = `workspace-${user.uid}`;
 
-    if (path !== '/settings') {
-      let isMember = false, hasMemberDoc = false;
-      let memberRole = '';
-      let memberPermissions: string[] = [];
-      try {
-        const memberDoc = await getDoc(doc(db, 'tenants', scope, 'members', user.uid));
-        if (memberDoc.exists()) {
-          hasMemberDoc = true; const mData = memberDoc.data();
-          isMember = mData?.active !== false;
-          memberRole = String(mData?.role ?? '');
-          memberPermissions = Array.isArray(mData?.permissions) ? mData.permissions : [];
-        }
-      } catch {
-        // member check non-fatal for admins
+    let isMember = false, hasMemberDoc = false;
+    let memberRole = '';
+    let memberPermissions: string[] = [];
+    try {
+      const [mSnap1, mSnap2] = await Promise.all([
+        getDoc(doc(db, 'tenants', scope, 'members', user.uid)).catch(() => null),
+        getDoc(doc(db, 'settings', `team_${scope}`, 'members', user.uid)).catch(() => null),
+      ]);
+      const mData = mSnap2?.exists() ? mSnap2.data() : mSnap1?.exists() ? mSnap1.data() : null;
+      if (mData && !mData.deleted) {
+        hasMemberDoc = true;
+        isMember = mData?.active !== false;
+        memberRole = String(mData?.role ?? '');
+        memberPermissions = Array.isArray(mData?.allowedModules)
+          ? mData.allowedModules
+          : Array.isArray(mData?.permissions)
+          ? mData.permissions
+          : [];
       }
+    } catch {
+      // member check non-fatal for admins
+    }
 
-      let isTenantOwner = !hasMemberDoc && (scope === user.uid || scope === `workspace-${user.uid}` || scope === profile?.tenantId || (session.user?.id === user.uid && scope === session.tenant?.id));
-      try {
-        const tenantSnap = await getDoc(doc(db, 'tenants', scope));
+    let isTenantOwner =
+      !hasMemberDoc ||
+      ['Owner', 'owner'].includes(memberRole) ||
+      scope === user.uid ||
+      scope === `workspace-${user.uid}` ||
+      scope === profile?.tenantId ||
+      (session.user?.id === user.uid && scope === session.tenant?.id);
+    try {
+      const tenantSnap = await getDoc(doc(db, 'tenants', scope));
+      if (tenantSnap.exists()) {
         const tData = tenantSnap.data();
-        isTenantOwner = isTenantOwner || tData?.ownerUid === user.uid || tData?.ownerId === user.uid || profile?.ownerUid === user.uid;
-      } catch {
-        // owner check non-fatal for admins
+        if (tData?.ownerUid || tData?.ownerId) {
+          isTenantOwner =
+            tData?.ownerUid === user.uid ||
+            tData?.ownerId === user.uid ||
+            profile?.ownerUid === user.uid ||
+            ['Owner', 'owner'].includes(memberRole);
+        }
       }
+    } catch {
+      // owner check non-fatal for admins
+    }
 
-      const settingsPermission = isPlatformAdmin || isTenantOwner || ['Owner', 'Admin', 'owner', 'admin'].includes(memberRole) || memberPermissions.includes('*') || memberPermissions.includes('settings');
-      if (!settingsPermission && !isMember && !isPlatformAdmin) {
-        throw new Error('You do not have permission for this action.');
-      }
+    const settingsPermission =
+      isPlatformAdmin ||
+      isTenantOwner ||
+      ['Owner', 'Admin', 'Manager', 'owner', 'admin', 'manager'].includes(memberRole) ||
+      memberPermissions.includes('*') ||
+      memberPermissions.includes('settings') ||
+      memberPermissions.includes('settings:team');
+
+    if (path !== '/settings' && !settingsPermission && !isMember && !isPlatformAdmin) {
+      throw new Error('You do not have permission for this action.');
     }
 
     // Preserve compatibility with settings already saved by the former callable.
@@ -130,18 +158,380 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       try { await updateProfile(user, { displayName: nextProfile.name as string }); } catch { /* Retry on a later profile save. */ }
       return { success: true, profile: nextProfile } as T;
     }
+
     if (path === '/team' && method === 'GET') {
+      const allModuleIds = modulePermissions.map(m => m.id);
+      const mergedMap = new Map<string, Record<string, unknown>>();
       try {
-        const members = await getDocs(collection(db, 'tenants', scope, 'members'));
-        return { members: members.docs.map(item => ({ name: item.id === user.uid ? profile?.name ?? user.displayName ?? '' : '', email: item.id === user.uid ? user.email ?? '' : '', ...item.data(), id: item.id })) } as T;
+        const [tenantMembers, settingsMembers] = await Promise.all([
+          getDocs(collection(db, 'tenants', scope, 'members')).catch(() => null),
+          getDocs(collection(db, 'settings', `team_${scope}`, 'members')).catch(() => null),
+        ]);
+        for (const docSnap of tenantMembers?.docs ?? []) {
+          const d = docSnap.data();
+          if (d?.deleted) continue;
+          mergedMap.set(docSnap.id, {
+            name: docSnap.id === user.uid ? profile?.name ?? user.displayName ?? '' : '',
+            email: docSnap.id === user.uid ? user.email ?? '' : '',
+            ...d,
+            id: docSnap.id,
+          });
+        }
+        for (const docSnap of settingsMembers?.docs ?? []) {
+          const d = docSnap.data();
+          if (d?.deleted) {
+            mergedMap.delete(docSnap.id);
+            continue;
+          }
+          const prev = mergedMap.get(docSnap.id) ?? {};
+          mergedMap.set(docSnap.id, {
+            name: docSnap.id === user.uid ? profile?.name ?? user.displayName ?? '' : '',
+            email: docSnap.id === user.uid ? user.email ?? '' : '',
+            ...prev,
+            ...d,
+            id: docSnap.id,
+          });
+        }
       } catch {
-        return { members: [] } as T;
+        // ignore read errors
       }
+
+      // Ensure workspace owner is always present in the list
+      if (isTenantOwner && !mergedMap.has(user.uid)) {
+        mergedMap.set(user.uid, {
+          id: user.uid,
+          name: profile?.name || user.displayName || session.user?.name || user.email?.split('@')[0] || 'Workspace Owner',
+          email: user.email || profile?.email || session.user?.email || '',
+          role: 'Owner',
+          isOwner: true,
+          active: true,
+          preset: 'full',
+          permissions: allModuleIds,
+          allowedModules: allModuleIds,
+          tabPermissions: buildTabPermissionsMap(allModuleIds),
+        });
+      }
+
+      // Deduplicate by email (preferring owner or most recently updated record)
+      const byEmail = new Map<string, Record<string, unknown>>();
+      for (const item of mergedMap.values()) {
+        const em = String(item.email ?? '').trim().toLowerCase();
+        const key = em || String(item.id ?? '');
+        const existing = byEmail.get(key);
+        if (!existing) {
+          byEmail.set(key, item);
+        } else {
+          const itemIsOwner = item.role === 'Owner' || item.isOwner;
+          const existingIsOwner = existing.role === 'Owner' || existing.isOwner;
+          if (itemIsOwner && !existingIsOwner) {
+            byEmail.set(key, item);
+          } else if (
+            !existingIsOwner &&
+            String(item.updatedAt ?? '') >= String(existing.updatedAt ?? '')
+          ) {
+            byEmail.set(key, { ...existing, ...item });
+          }
+        }
+      }
+
+      const list = Array.from(byEmail.values()).sort((a, b) => {
+        const aOwner = a.role === 'Owner' || a.isOwner ? 0 : 1;
+        const bOwner = b.role === 'Owner' || b.isOwner ? 0 : 1;
+        return aOwner - bOwner;
+      });
+      return { members: list } as T;
     }
+
+    if ((path === '/team' && method === 'POST') || (/^\/team\/[^/]+$/.test(path) && (method === 'PATCH' || method === 'POST'))) {
+      if (!settingsPermission) {
+        throw new Error('Only workspace owners and administrators can manage team members.');
+      }
+      const raw = (body ?? {}) as Record<string, unknown>;
+      const isUpdate = path.startsWith('/team/');
+      const requestedMemberId = isUpdate
+        ? decodeURIComponent(path.slice('/team/'.length))
+        : String(raw.id || crypto.randomUUID());
+      const name = String(raw.name || '').trim();
+      const email = String(raw.email || '').trim().toLowerCase();
+      const role = String(raw.role || 'Manager').trim();
+      const active = raw.active !== false;
+      const preset = typeof raw.preset === 'string' ? raw.preset : undefined;
+      const rawPassword = typeof raw.password === 'string' ? raw.password.trim() : '';
+
+      if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('Enter a valid full name and email address.');
+      }
+
+      // Check existing member doc if updating
+      let existingData: Record<string, any> | null = null;
+      if (isUpdate) {
+        const [ex1, ex2] = await Promise.all([
+          getDoc(doc(db, 'settings', `team_${scope}`, 'members', requestedMemberId)).catch(() => null),
+          getDoc(doc(db, 'tenants', scope, 'members', requestedMemberId)).catch(() => null),
+        ]);
+        existingData = (ex1?.exists() ? ex1.data() : ex2?.exists() ? ex2.data() : null) ?? null;
+      }
+
+      const previousPassword =
+        typeof existingData?.authPassword === 'string' ? existingData.authPassword.trim() : '';
+
+      if (!isUpdate && rawPassword.length < 6) {
+        throw new Error('Please enter a login password (at least 6 characters) for the team member.');
+      }
+      if (rawPassword && rawPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters.');
+      }
+
+      const rawPerms = Array.isArray(raw.allowedModules)
+        ? (raw.allowedModules as string[])
+        : Array.isArray(raw.permissions)
+        ? (raw.permissions as string[])
+        : [];
+      const allowedModules = [...new Set(rawPerms.filter(item => typeof item === 'string'))];
+      if (allowedModules.some(p => p.startsWith('settings:')) && !allowedModules.includes('settings')) {
+        allowedModules.push('settings');
+      }
+      const tabPermissions =
+        raw.tabPermissions && typeof raw.tabPermissions === 'object'
+          ? (raw.tabPermissions as Record<string, boolean>)
+          : buildTabPermissionsMap(allowedModules);
+
+      const ownerId =
+        (typeof profile?.ownerId === 'string' && profile.ownerId) ||
+        (typeof profile?.ownerUid === 'string' && profile.ownerUid) ||
+        user.uid;
+      const ownerName =
+        (typeof profile?.ownerName === 'string' && profile.ownerName) ||
+        (typeof profile?.name === 'string' && profile.name) ||
+        user.displayName ||
+        session.user?.name ||
+        user.email?.split('@')[0] ||
+        'Workspace Owner';
+      const ownerEmail =
+        (typeof profile?.ownerEmail === 'string' && profile.ownerEmail) ||
+        user.email ||
+        (typeof profile?.email === 'string' && profile.email) ||
+        session.user?.email ||
+        '';
+      const tenantName =
+        (typeof profile?.tenantName === 'string' && profile.tenantName) ||
+        session.tenant?.name ||
+        `${ownerName}'s Workspace`;
+
+      const now = new Date().toISOString();
+      const effectivePassword = rawPassword || previousPassword;
+      const userProfileForMember: Record<string, unknown> = {
+        name,
+        email,
+        role: 'USER',
+        teamRole: role,
+        isTeamMember: true,
+        status: active ? 'Active' : 'Suspended',
+        active,
+        tenantId: scope,
+        tenantName,
+        ownerId,
+        ownerName,
+        ownerEmail,
+        allowedTabs: allowedModules,
+        allowedModules,
+        tabPermissions,
+        updatedAt: now,
+      };
+
+      let provisionedUid =
+        typeof existingData?.authUid === 'string' && existingData.authUid
+          ? existingData.authUid
+          : typeof raw.authUid === 'string' && raw.authUid
+          ? raw.authUid
+          : '';
+
+      if (effectivePassword) {
+        try {
+          const prov = await provisionTeamMemberAuth({
+            email,
+            password: rawPassword || undefined,
+            previousPassword: previousPassword || undefined,
+            displayName: name,
+            userProfile: userProfileForMember,
+          });
+          if (prov.uid) {
+            provisionedUid = prov.uid;
+          }
+        } catch (provErr: any) {
+          const msg = String(provErr?.message || '');
+          if (msg.includes('weak-password')) {
+            throw new Error('Password is too weak. Please enter at least 6 characters.');
+          }
+          if (msg.includes('invalid-email')) {
+            throw new Error('Enter a valid email address.');
+          }
+          // Non-fatal if secondary provisioning hits network/existing account issue
+        }
+      }
+
+      const finalMemberId = provisionedUid || requestedMemberId;
+
+      const payload: Record<string, unknown> = {
+        id: finalMemberId,
+        ...(provisionedUid ? { authUid: provisionedUid } : {}),
+        tenantId: scope,
+        tenantName,
+        ownerId,
+        ownerName,
+        ownerEmail,
+        name,
+        email,
+        role,
+        active,
+        status: active ? 'Active' : 'Inactive',
+        isOwner: role.toLowerCase() === 'owner',
+        ...(preset ? { preset } : {}),
+        ...(effectivePassword ? { authPassword: effectivePassword, hasPassword: true } : {}),
+        permissions: allowedModules,
+        allowedModules,
+        tabPermissions,
+        updatedAt: now,
+        updatedBy: user.uid,
+        deleted: false,
+      };
+
+      // If member ID changed to match Firebase Auth UID, remove old placeholder doc ID
+      if (requestedMemberId && requestedMemberId !== finalMemberId) {
+        await Promise.all([
+          deleteDoc(doc(db, 'tenants', scope, 'members', requestedMemberId)).catch(() => null),
+          deleteDoc(doc(db, 'settings', `team_${scope}`, 'members', requestedMemberId)).catch(() => null),
+        ]);
+      }
+
+      let saved = false;
+      try {
+        await setDoc(doc(db, 'tenants', scope, 'members', finalMemberId), payload, { merge: true });
+        saved = true;
+      } catch {
+        // Fallback if remote tenant/members rule is read-only
+      }
+      try {
+        await setDoc(doc(db, 'settings', `team_${scope}`, 'members', finalMemberId), payload, { merge: true });
+        saved = true;
+      } catch (err) {
+        if (!saved) throw err;
+      }
+
+      // Write global lookup docs so resolveSession can always locate the team member's workspace & owner on login
+      const emailKey = email.replace(/[^a-z0-9@._-]/g, '_');
+      await Promise.all([
+        setDoc(doc(db, 'settings', `teamMember_${emailKey}`), payload, { merge: true }).catch(() => null),
+        provisionedUid
+          ? setDoc(doc(db, 'settings', `teamMemberUid_${provisionedUid}`), payload, { merge: true }).catch(() => null)
+          : Promise.resolve(null),
+        provisionedUid
+          ? setDoc(
+              doc(db, 'users', provisionedUid),
+              { ...userProfileForMember, id: provisionedUid, uid: provisionedUid },
+              { merge: true },
+            ).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+
+      // Write audit log entry
+      const auditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const actionVerb = isUpdate ? 'Updated' : 'Invited';
+      const auditPayload = {
+        id: auditId,
+        type: 'team.member',
+        description: `${actionVerb} ${name} (${email}) as ${role} (${allowedModules.filter(m => m !== 'settings').length} permissions)`,
+        actorId: user.uid,
+        createdAt: new Date().toLocaleString('en-GB'),
+      };
+      await Promise.all([
+        setDoc(doc(db, 'tenants', scope, 'auditLogs', auditId), auditPayload).catch(() => null),
+        setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null),
+      ]);
+
+      const safeMember = { ...payload };
+      delete safeMember.authPassword;
+      return { success: true, member: safeMember } as T;
+    }
+
+    if (/^\/team\/[^/]+$/.test(path) && method === 'DELETE') {
+      if (!settingsPermission) {
+        throw new Error('Only workspace owners and administrators can remove team members.');
+      }
+      const memberId = decodeURIComponent(path.slice('/team/'.length));
+      if (memberId === user.uid && isTenantOwner) {
+        throw new Error('The workspace owner cannot be removed.');
+      }
+
+      const [existingSnap1, existingSnap2] = await Promise.all([
+        getDoc(doc(db, 'settings', `team_${scope}`, 'members', memberId)).catch(() => null),
+        getDoc(doc(db, 'tenants', scope, 'members', memberId)).catch(() => null),
+      ]);
+      const existingMember = existingSnap1?.data() ?? existingSnap2?.data() ?? null;
+      const memberEmail = String(existingMember?.email ?? '').trim().toLowerCase();
+      const memberAuthUid = String(existingMember?.authUid ?? memberId).trim();
+
+      await Promise.all([
+        deleteDoc(doc(db, 'tenants', scope, 'members', memberId)).catch(() =>
+          setDoc(doc(db, 'tenants', scope, 'members', memberId), { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() }, { merge: true }).catch(() => null)
+        ),
+        deleteDoc(doc(db, 'settings', `team_${scope}`, 'members', memberId)).catch(() =>
+          setDoc(doc(db, 'settings', `team_${scope}`, 'members', memberId), { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() }, { merge: true }).catch(() => null)
+        ),
+        memberEmail
+          ? setDoc(
+              doc(db, 'settings', `teamMember_${memberEmail.replace(/[^a-z0-9@._-]/g, '_')}`),
+              { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() },
+              { merge: true },
+            ).catch(() => null)
+          : Promise.resolve(null),
+        memberAuthUid
+          ? setDoc(
+              doc(db, 'settings', `teamMemberUid_${memberAuthUid}`),
+              { deleted: true, active: false, status: 'Inactive', updatedAt: new Date().toISOString() },
+              { merge: true },
+            ).catch(() => null)
+          : Promise.resolve(null),
+        memberAuthUid
+          ? setDoc(
+              doc(db, 'users', memberAuthUid),
+              { status: 'Suspended', active: false, updatedAt: new Date().toISOString() },
+              { merge: true },
+            ).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+
+      const auditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const auditPayload = {
+        id: auditId,
+        type: 'team.member.removed',
+        description: `Removed team member (${memberId})`,
+        actorId: user.uid,
+        createdAt: new Date().toLocaleString('en-GB'),
+      };
+      await Promise.all([
+        setDoc(doc(db, 'tenants', scope, 'auditLogs', auditId), auditPayload).catch(() => null),
+        setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null),
+      ]);
+
+      return { success: true } as T;
+    }
+
     if (path === '/team/audit' || path === '/integrations/logs') {
       try {
-        const logs = await getDocs(query(collection(db, 'tenants', scope, 'auditLogs'), orderBy('createdAt', 'desc'), limit(50)));
-        return { entries: logs.docs.map(item => `${item.data().createdAt ?? ''} · ${item.data().description ?? item.data().type ?? ''}`) } as T;
+        const [logs1, logs2] = await Promise.all([
+          getDocs(query(collection(db, 'tenants', scope, 'auditLogs'), orderBy('createdAt', 'desc'), limit(50))).catch(() => null),
+          getDocs(query(collection(db, 'settings', `team_${scope}`, 'auditLogs'), orderBy('createdAt', 'desc'), limit(50))).catch(() => null),
+        ]);
+        const seen = new Set<string>();
+        const entries: string[] = [];
+        for (const snap of [...(logs2?.docs ?? []), ...(logs1?.docs ?? [])]) {
+          if (seen.has(snap.id)) continue;
+          seen.add(snap.id);
+          const d = snap.data();
+          entries.push(`${d.createdAt ?? ''} · ${d.description ?? d.type ?? ''}`);
+        }
+        return { entries } as T;
       } catch {
         return { entries: [] } as T;
       }
@@ -155,7 +545,6 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       await setDoc(ref, { key, value: { recharge: { enabled: false, below: '', amount: '', method: '' } }, updatedAt: new Date().toISOString(), updatedBy: user.uid }, { merge: true });
       return { success: true } as T;
     }
-    if (path.startsWith('/team')) throw new Error('Ask your account administrator to manage workspace invitations and access.');
     if (path === '/account') throw new Error('Contact your workspace administrator to securely delete your account and personal data.');
     throw new Error('This provider action is not configured for your workspace. Contact your workspace administrator.');
   } catch (error) {

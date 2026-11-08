@@ -2,7 +2,7 @@ import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useCallback, useEffect, useState } from 'react';
 import { 
   BookOpen, CheckCircle2, ChevronDown, ChevronUp, CreditCard, 
-  Eye, EyeOff, Landmark, Pencil, Plus, Power, Trash2 
+  Eye, EyeOff, Landmark, Loader2, Pencil, Plus, Power, Trash2 
 } from 'lucide-react';
 import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration, type PaymentScope } from '../../backend/paymentMethods';
 import { gatewayFields, paytabsRegions, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
@@ -248,7 +248,18 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
   return <div className="st-workspace pm-methods">
     <PanelHeading title={t('Payment Methods')} description="Accept payments through manual transfers or payment gateways. Methods are synchronized across products and checkout."/>
     {(error || failure) && <div className="st-error" role="alert">{error || failure}{error && <button className="st-link" onClick={source.refresh}>{t('Try again')}</button>}</div>}
-    {loading && <p role="status" className="st-note">{t('Loading payment methods…')}</p>}
+    {loading && (
+      <div className="pm-loading-card" role="status" aria-live="polite">
+        <div className="pm-loading-spinner" aria-hidden="true">
+          <Loader2 size={16} className="animate-spin" />
+        </div>
+        <div className="pm-loading-copy">
+          <b>{t('Loading payment methods…')}</b>
+          <span>{t('Syncing configured manual transfer wallets and payment gateways')}</span>
+        </div>
+        <span className="pm-loading-pill">{t('Cloud Sync')}</span>
+      </div>
+    )}
     {!loading && !admin && <p className="st-note">{t('Contact your administrator to configure payment methods.')}</p>}
     <section aria-labelledby="pm-manual-title" className="pm-section">
       <h3 id="pm-manual-title">{t('Manual Transfer Methods')}</h3>

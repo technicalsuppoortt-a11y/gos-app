@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
-import { onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
+import { createUserWithEmailAndPassword, onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { primaryAuth as auth, primaryDb as db, callBackend } from './firebase';
 import { clearImpersonationContext, returnToAdmin } from './impersonation';
@@ -137,6 +137,97 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     } catch { /* treated as missing below */ }
   }
 
+  // Check workspace team member lookup documents (by UID or email)
+  try {
+    const emailLower = (user.email || data?.email || '').trim().toLowerCase();
+    const emailKey = emailLower ? emailLower.replace(/[^a-z0-9@._-]/g, '_') : '';
+    const [uidLookupSnap, emailLookupSnap] = await Promise.all([
+      getDoc(doc(db, 'settings', `teamMemberUid_${user.uid}`)).catch(() => null),
+      emailKey ? getDoc(doc(db, 'settings', `teamMember_${emailKey}`)).catch(() => null) : Promise.resolve(null),
+    ]);
+    let teamRecord = (uidLookupSnap?.exists() ? uidLookupSnap.data() : null) ?? (emailLookupSnap?.exists() ? emailLookupSnap.data() : null);
+
+    // Also check live member document inside the workspace team collection if tenantId is known
+    const candidateScope = String(teamRecord?.tenantId || data?.tenantId || '').trim();
+    const candidateMemberId = String(teamRecord?.id || user.uid).trim();
+    if (candidateScope && (teamRecord || data?.isTeamMember)) {
+      const [liveSettingsSnap, liveTenantSnap] = await Promise.all([
+        getDoc(doc(db, 'settings', `team_${candidateScope}`, 'members', candidateMemberId)).catch(() => null),
+        getDoc(doc(db, 'tenants', candidateScope, 'members', candidateMemberId)).catch(() => null),
+      ]);
+      const liveDoc = (liveSettingsSnap?.exists() ? liveSettingsSnap.data() : null) ?? (liveTenantSnap?.exists() ? liveTenantSnap.data() : null);
+      if (liveDoc) {
+        teamRecord = { ...(teamRecord ?? {}), ...liveDoc };
+      }
+    }
+
+    if (teamRecord) {
+      const isSelfOwner =
+        Boolean(teamRecord.isOwner) ||
+        String(teamRecord.role || '').toLowerCase() === 'owner' ||
+        teamRecord.ownerId === user.uid ||
+        teamRecord.tenantId === user.uid ||
+        teamRecord.tenantId === `workspace-${user.uid}`;
+
+      if (!isSelfOwner) {
+        if (teamRecord.deleted === true || teamRecord.active === false || suspendedStatus(teamRecord.status)) {
+          throw new SessionError('DEACTIVATED');
+        }
+        const resolvedOwnerId = String(
+          teamRecord.ownerId ||
+            data?.ownerId ||
+            String(teamRecord.tenantId || '').replace(/^workspace-/, '') ||
+            '',
+        ).trim();
+        let resolvedOwnerName = String(teamRecord.ownerName || data?.ownerName || '').trim();
+        let resolvedOwnerEmail = String(teamRecord.ownerEmail || data?.ownerEmail || '').trim();
+
+        if (resolvedOwnerId && (!resolvedOwnerName || resolvedOwnerName === 'Workspace Owner' || !resolvedOwnerEmail)) {
+          try {
+            const ownerProfileSnap = await getDoc(doc(db, 'users', resolvedOwnerId));
+            if (ownerProfileSnap.exists()) {
+              const ownerData = ownerProfileSnap.data();
+              if (typeof ownerData?.name === 'string' && ownerData.name.trim()) {
+                resolvedOwnerName = ownerData.name.trim();
+              }
+              if (typeof ownerData?.email === 'string' && ownerData.email.trim()) {
+                resolvedOwnerEmail = ownerData.email.trim();
+              }
+            }
+          } catch {
+            // ignore owner profile lookup error
+          }
+        }
+
+        const memberAllowed = Array.isArray(teamRecord.allowedModules)
+          ? teamRecord.allowedModules
+          : Array.isArray(teamRecord.permissions)
+          ? teamRecord.permissions
+          : Array.isArray(data?.allowedTabs)
+          ? data.allowedTabs
+          : undefined;
+
+        data = {
+          ...(data ?? {}),
+          name: String(teamRecord.name || data?.name || user.displayName || '').trim() || undefined,
+          email: String(teamRecord.email || user.email || data?.email || '').trim(),
+          role: 'USER',
+          status: 'Active',
+          isTeamMember: true,
+          teamRole: String(teamRecord.role || data?.teamRole || 'Team Member').trim(),
+          tenantId: String(teamRecord.tenantId || data?.tenantId || '').trim(),
+          tenantName: String(teamRecord.tenantName || data?.tenantName || '').trim() || undefined,
+          ownerId: resolvedOwnerId || undefined,
+          ownerName: resolvedOwnerName || 'Workspace Owner',
+          ownerEmail: resolvedOwnerEmail || undefined,
+          ...(memberAllowed ? { allowedTabs: memberAllowed } : {}),
+        };
+      }
+    }
+  } catch (err) {
+    if (err instanceof SessionError) throw err;
+  }
+
   const rawClaimRole = typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role.toUpperCase() : undefined;
   const claimRole = isPlatformTeamRole(rawClaimRole) || rawClaimRole === 'ADMIN' || rawClaimRole === 'USER' ? rawClaimRole : undefined;
   const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
@@ -203,7 +294,28 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
   return {
-    user: { id: user.uid, name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User', email: user.email || data?.email || '', avatar: data?.avatar, ...(agency ? { accountType: 'agency' } : {}), ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}), ...(Array.isArray(data?.allowedTabs) ? { allowedTabs: data.allowedTabs.filter((item: unknown): item is string => typeof item === 'string') } : Array.isArray(tokenResult.claims.allowedTabs) ? { allowedTabs: (tokenResult.claims.allowedTabs as unknown[]).filter((item): item is string => typeof item === 'string') } : {}) },
+    user: {
+      id: user.uid,
+      name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User',
+      email: user.email || data?.email || '',
+      avatar: data?.avatar,
+      ...(agency ? { accountType: 'agency' } : {}),
+      ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}),
+      ...(Array.isArray(data?.allowedTabs)
+        ? { allowedTabs: data.allowedTabs.filter((item: unknown): item is string => typeof item === 'string') }
+        : Array.isArray(tokenResult.claims.allowedTabs)
+        ? { allowedTabs: (tokenResult.claims.allowedTabs as unknown[]).filter((item): item is string => typeof item === 'string') }
+        : {}),
+      ...(data?.isTeamMember
+        ? {
+            isTeamMember: true,
+            teamRole: typeof data.teamRole === 'string' ? data.teamRole : 'Team Member',
+            ...(typeof data.ownerId === 'string' && data.ownerId ? { ownerId: data.ownerId } : {}),
+            ...(typeof data.ownerName === 'string' && data.ownerName ? { ownerName: data.ownerName } : {}),
+            ...(typeof data.ownerEmail === 'string' && data.ownerEmail ? { ownerEmail: data.ownerEmail } : {}),
+          }
+        : {}),
+    },
     role,
     tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
@@ -215,8 +327,27 @@ export async function login(email: string, password: string) {
   try {
     try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
     let usedPhoenix = false;
-    let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(error => {
+    const cleanEmail = email.trim().toLowerCase();
+    let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(async error => {
       if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error.code)) throw error;
+      // Check if this is an invited workspace team member whose Firebase Auth account needs lazy initialization
+      try {
+        const emailKey = cleanEmail.replace(/[^a-z0-9@._-]/g, '_');
+        const teamSnap = await getDoc(doc(db, 'settings', `teamMember_${emailKey}`));
+        if (teamSnap.exists()) {
+          const teamData = teamSnap.data();
+          if (
+            !teamData?.deleted &&
+            teamData?.active !== false &&
+            typeof teamData?.authPassword === 'string' &&
+            teamData.authPassword === password
+          ) {
+            return await createUserWithEmailAndPassword(auth, cleanEmail, password);
+          }
+        }
+      } catch {
+        // Proceed to Phoenix fallback if team lookup or creation fails
+      }
       usedPhoenix = true;
       return loginWithPhoenix(email, password);
     });

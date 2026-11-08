@@ -980,6 +980,7 @@ function Payments() {
   const payment = source.data.find(row => row.key === details);
   return <>
     <Heading title="Payments" description="Track billing requests, invoices and gateway transactions across the platform.">
+      <Link className="saw-primary" to="/super-admin/payment-methods"><CreditCard size={16}/>{t('Payment Methods')}</Link>
       <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-payments.csv', ['Invoice', 'Account', 'Source', 'Method', 'Date', 'Amount', 'Currency', 'Status'], visible.map(row => [row.id, row.name, row.scope, row.method, row.date?.toISOString() ?? '', row.amount ?? '', row.currency, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
     </Heading>
     <LiveContent sources={[source]}>
@@ -1040,7 +1041,7 @@ function Settings() {
 }
 
 function Integrations() {
-  const gateways = usePaymentMethods(), tracking = useTrackingConfig(true);
+  const gateways = usePaymentMethods({ scope: 'super_admin' }), tracking = useTrackingConfig(true);
   const stripe = gateways.methods.find(row => row.provider === 'stripe' && row.enabled);
   const gatewayStatus = stripe?.status ?? 'Disconnected';
   const others = gateways.methods.filter(row => row.type === 'gateway' && row.provider !== 'stripe' && row.enabled);

@@ -8,7 +8,7 @@ import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-
 import { BarChart3, CalendarDays, Contact, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, ArrowLeft, Lock } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
-import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
+import { useModuleAccess, moduleForPath, isTabAllowed, firstAuthorizedPath } from '../../pages/settings/useModuleAccess';
 import { settingsTabs } from '../../pages/settings/navigation';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -69,12 +69,14 @@ export const UserLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useSelector((s: RootState) => s.auth.user);
+  const tenant = useSelector((s: RootState) => s.auth.tenant);
   const role = useSelector((s: RootState) => s.auth.role);
   const agency = user?.accountType === 'agency';
-  const { data: sub, loading: subLoading } = useSubscription(agency ? null : user?.id ?? null);
+  const subOwnerId = user?.ownerId || (tenant?.id ? tenant.id.replace(/^workspace-/, '') : null) || user?.id || null;
+  const { data: sub, loading: subLoading } = useSubscription(agency ? null : subOwnerId);
   const live = isLive(sub);
   const impersonation = useSelector((s: RootState) => s.auth.impersonation);
-  const isLocked = !agency && !impersonation && !(isDemoAccount || isDemoSessionActive()) && role === 'USER' && !subLoading && !live;
+  const isLocked = !agency && !impersonation && !user?.isTeamMember && !(isDemoAccount || isDemoSessionActive()) && role === 'USER' && !subLoading && !live;
 
   useEffect(() => {
     if (isLocked) {
@@ -89,11 +91,27 @@ export const UserLayout: React.FC = () => {
   const module = moduleForPath(location.pathname);
   const permitted = isLocked
     ? (module === 'settings' || module === 'support')
-    : (['settings', 'integrations', 'support'].includes(module) || canAccess(module));
+    : isTabAllowed(canAccess, location.pathname);
+
+  useEffect(() => {
+    if (!isLocked && !permitted) {
+      const fallback = firstAuthorizedPath(canAccess);
+      if (fallback && fallback !== location.pathname) {
+        navigate(fallback, { replace: true });
+      }
+    }
+  }, [isLocked, permitted, canAccess, location.pathname, navigate]);
 
   const visibleItems = isLocked
     ? userItems.filter(item => item.href === '/settings' || item.href === '/support')
-    : userItems.filter(item => item.href === '/support' || item.href === '/settings' || canAccess(moduleForPath('/dashboard' + item.href)));
+    : userItems.filter(item => {
+        if (item.href === '/support') return true;
+        if (item.href === '/settings') return canAccess('settings');
+        return canAccess(moduleForPath('/dashboard' + item.href));
+      });
+
+  const visibleSettingsTabs = settingsTabs.filter(tab => canAccess(`settings:${tab.slug}`));
+  const backMainHref = canAccess('home') ? '' : firstAuthorizedPath(canAccess).replace(/^\/dashboard/, '');
 
   const isBooking = location.pathname.startsWith('/dashboard/booking');
   const isSettings = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/integrations';
@@ -116,9 +134,56 @@ export const UserLayout: React.FC = () => {
   const isDashboard = location.pathname === '/dashboard';
   const isFullPage = isInbox || isCRM || isContacts || isBooking || isNativeTemplates || isBuilder;
   return <div className={`layout-dashboard-shell user-dashboard-shell h-screen max-h-screen overflow-hidden${isDashboard ? ' is-dashboard-route' : ''}${isNativeTemplates ? ' is-module-templates-route' : ''}${isBooking ? ' is-booking-route' : ''}${isSettings ? ' is-settings-route' : ''}${isProductWorkspace ? ' is-product-workspace' : ''}${isFullPage ? ' is-inbox-route' : ''}${isCRM || isContacts ? ' is-crm-route' : ''}${isBuilder ? ' is-builder-route' : ''}`} dir={uiDirection()}>
-    <Sidebar navigationLabel={isSettings ? "Settings navigation" : "Main navigation"} items={isSettings ? [{ name: 'Back to Main Sidebar', href: '', icon: ArrowLeft, end: true }, ...settingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon }))] : visibleItems} basePath="/dashboard"/>
+    <Sidebar navigationLabel={isSettings ? "Settings navigation" : "Main navigation"} items={isSettings ? [{ name: 'Back to Main Sidebar', href: backMainHref, icon: ArrowLeft, end: true }, ...visibleSettingsTabs.map(tab => ({ name: tab.name, href: '/settings/' + tab.slug, icon: tab.icon }))] : visibleItems} basePath="/dashboard"/>
     <div className={`layout-workspace flex-1 flex flex-col min-w-0${isFullPage ? ' layout-workspace-inbox' : ''}`}>
       <Header title={translateText(location.pathname === '/dashboard/support' ? 'Support' : isBooking ? 'Booking & Calendar' : isContacts ? 'Contacts' : isCRM ? 'CRM & Leads' : isProductWorkspace ? 'Products & Payments' : isSettings ? 'Settings' : undefined)}/>
+      {localizeNode(
+        user?.isTeamMember && user?.ownerName && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 10,
+              padding: '7px 20px',
+              background: 'linear-gradient(90deg, #f5f3ff 0%, #faf5ff 100%)',
+              borderBottom: '1px solid #e9d5ff',
+              fontSize: 12,
+              color: '#4c1d95',
+            }}
+          >
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  background: '#7c3aed',
+                  color: '#ffffff',
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                }}
+              >
+                <Users size={11} />
+                {translateText(user.teamRole || 'Team Member')}
+              </span>
+              <span>
+                {translateText('Logged in to workspace of')}{' '}
+                <b style={{ fontWeight: 700, color: '#2e1065' }}>{user.ownerName}</b>
+                {user.ownerEmail ? (
+                  <span style={{ color: '#6d28d9', marginInlineStart: 4 }}>({user.ownerEmail})</span>
+                ) : null}
+              </span>
+            </div>
+            <span style={{ fontSize: 11, color: '#6d28d9', fontWeight: 600 }}>
+              {translateText('Owner')}: {user.ownerName}
+            </span>
+          </div>
+        ),
+      )}
       {localizeNode(isBooking && <BookingTabs/>)}
       <main className={`layout-main${isFullPage ? ' layout-main-inbox' : ''}`}>
         {/* Onboarding progress is temporarily disabled. */}

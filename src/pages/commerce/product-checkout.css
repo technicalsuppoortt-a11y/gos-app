@@ -69,6 +69,22 @@
 .pco-attachment button, .pco-attachment a, .pco-footer p button { color: var(--pco-accent); text-decoration: underline; }
 .pco-attachment button, .pco-footer p button { background: none; border: 0; padding: 0; font: inherit; }
 .pco-methods { display: grid; gap: 7px; }
+.pco-methods-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pco-methods-sync-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(113, 57, 210, 0.1); border: 1px solid rgba(113, 57, 210, 0.22); color: var(--pco-accent); font-size: 11px; font-weight: 650; }
+.pco-methods-loading { display: grid; gap: 8px; }
+.pco-methods-loading-banner { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(113, 57, 210, 0.2); background: linear-gradient(135deg, rgba(113, 57, 210, 0.06) 0%, rgba(124, 58, 237, 0.02) 100%); }
+.pco-methods-spinner { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; background: rgba(113, 57, 210, 0.12); color: var(--pco-accent); }
+.pco-methods-loading-copy { display: grid; gap: 2px; min-width: 0; }
+.pco-methods-loading-copy b { font-size: 12.5px; font-weight: 700; color: var(--pco-ink); }
+.pco-methods-loading-copy small { font-size: 11px; color: var(--pco-muted); }
+.pco-method-skeleton { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 50px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--pco-border); background: var(--pco-surface); }
+.pco-sk-brand, .pco-sk-line, .pco-sk-badge { position: relative; overflow: hidden; background: linear-gradient(90deg, rgba(148, 163, 184, 0.14) 25%, rgba(148, 163, 184, 0.26) 50%, rgba(148, 163, 184, 0.14) 75%); background-size: 200% 100%; animation: pco-shimmer 1.4s ease-in-out infinite; }
+.pco-sk-brand { width: 42px; height: 30px; border-radius: 7px; flex: none; }
+.pco-sk-info { display: grid; gap: 6px; min-width: 0; }
+.pco-sk-title { display: block; width: 52%; height: 11px; border-radius: 5px; }
+.pco-sk-sub { display: block; width: 36%; height: 9px; border-radius: 5px; }
+.pco-sk-badge { width: 52px; height: 19px; border-radius: 999px; flex: none; }
+@keyframes pco-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .product-checkout .pco-methods label { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 50px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--pco-border); background: var(--pco-surface); cursor: pointer; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease; }
 .pco-methods label.selected { border-color: var(--pco-accent); background: #7139d210; box-shadow: 0 0 0 1px var(--pco-accent); }
 .pco-methods label.brand-vodafone.selected { border-color: #e60000; background: rgba(230, 0, 0, 0.06); box-shadow: 0 0 0 1px rgba(230, 0, 0, 0.35); }

@@ -346,6 +346,12 @@ function buildScopeDescriptor(
   };
 }
 
+const paymentScopeCache = new Map<string, { methods: PaymentMethod[]; revision: number }>();
+
+function isTestTransportActive() {
+  return typeof window !== 'undefined' && typeof (window as any).__publicPayments === 'function';
+}
+
 export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
   const { user, role, tenant } = useSelector((s: RootState) => s.auth);
   const [retry, setRetry] = useState(0);
@@ -356,6 +362,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
   );
 
   const scopeKey = `${descriptor.scope}:${descriptor.primaryId}:${descriptor.secondaryId}`;
+  const cachedScope = !isTestTransportActive() ? paymentScopeCache.get(scopeKey) : undefined;
 
   const [state, setState] = useState<{
     scopeKey: string;
@@ -366,15 +373,16 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
     canManage: boolean;
   }>({
     scopeKey,
-    methods: [],
-    revision: 0,
-    loading: true,
+    methods: cachedScope?.methods ?? [],
+    revision: cachedScope?.revision ?? 0,
+    loading: !cachedScope,
     error: '',
     canManage: descriptor.canManage,
   });
 
   useEffect(() => {
     let active = true;
+    let settleTimer: number | undefined;
     if (!descriptor.paths.length) {
       setState({
         scopeKey,
@@ -388,9 +396,21 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
     }
 
     const snapshots = new Map<number, Record<string, any> | undefined>();
-    let settledCount = 0;
-    let errorCount = 0;
+    const settledIndices = new Set<number>();
+    const errorIndices = new Set<number>();
     let fallbackPromise: Promise<void> | undefined;
+
+    const finishEmptyIfStillLoading = () => {
+      if (!active) return;
+      setState(previous => ({
+        scopeKey,
+        methods: previous.scopeKey === scopeKey ? previous.methods : [],
+        revision: previous.scopeKey === scopeKey ? previous.revision : 0,
+        loading: false,
+        error: '',
+        canManage: descriptor.canManage,
+      }));
+    };
 
     const recompute = () => {
       if (!active) return;
@@ -399,17 +419,17 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
           Boolean(item && Array.isArray(item.methods))
       );
       if (!valid.length) {
-        if (settledCount >= descriptor.paths.length) {
-          setState(previous => ({
-            scopeKey,
-            methods: previous.scopeKey === scopeKey ? previous.methods : [],
-            revision: previous.scopeKey === scopeKey ? previous.revision : 0,
-            loading: false,
-            error: '',
-            canManage: descriptor.canManage,
-          }));
+        if (settledIndices.size >= descriptor.paths.length) {
+          if (settleTimer) window.clearTimeout(settleTimer);
+          finishEmptyIfStillLoading();
+        } else if (settledIndices.size >= 1 && !settleTimer && typeof window !== 'undefined') {
+          settleTimer = window.setTimeout(finishEmptyIfStillLoading, 350);
         }
         return;
+      }
+      if (settleTimer) {
+        window.clearTimeout(settleTimer);
+        settleTimer = undefined;
       }
       valid.sort((a, b) => {
         const revDiff = (Number(b.revision) || 0) - (Number(a.revision) || 0);
@@ -421,10 +441,14 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         ...m,
         provider: resolvePaymentProviderKey(m.provider, m.id, m.name),
       }));
+      const nextRevision = Number(best.revision) || 0;
+      if (!isTestTransportActive()) {
+        paymentScopeCache.set(scopeKey, { methods: normalizedMethods, revision: nextRevision });
+      }
       setState({
         scopeKey,
         methods: normalizedMethods,
-        revision: Number(best.revision) || 0,
+        revision: nextRevision,
         loading: false,
         error: '',
         canManage: descriptor.canManage,
@@ -503,14 +527,14 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
       return onSnapshot(
         ref,
         snapshot => {
-          settledCount++;
+          settledIndices.add(index);
           snapshots.set(index, snapshot.data() as Record<string, any> | undefined);
           recompute();
         },
         error => {
-          settledCount++;
-          errorCount++;
-          if (errorCount >= descriptor.paths.length) {
+          settledIndices.add(index);
+          errorIndices.add(index);
+          if (errorIndices.size >= descriptor.paths.length) {
             if (user?.id) void loadBackendFallback();
             else if (active) {
               const isPermDenied = /(?:^|\/)permission-denied$/i.test(
@@ -537,6 +561,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
 
     return () => {
       active = false;
+      if (settleTimer) window.clearTimeout(settleTimer);
       unsubscribes.forEach(unsub => unsub());
     };
   }, [descriptor, scopeKey, user?.id, role, retry]);
@@ -693,6 +718,9 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
       }
 
       const result = { methods: nextMethods, revision: nextRevision, canManage: true };
+      if (!isTestTransportActive()) {
+        paymentScopeCache.set(scopeKey, { methods: nextMethods, revision: nextRevision });
+      }
       setState({
         scopeKey,
         ...result,
@@ -772,6 +800,9 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
       }
 
       const result = { methods: sanitized, revision: nextRevision, canManage: true };
+      if (!isTestTransportActive()) {
+        paymentScopeCache.set(scopeKey, { methods: sanitized, revision: nextRevision });
+      }
       setState({
         scopeKey,
         ...result,

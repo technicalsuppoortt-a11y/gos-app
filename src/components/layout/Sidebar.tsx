@@ -272,7 +272,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           <span className="layout-profile-avatar">{(currentUser?.name || 'MJ').slice(0, 2).toUpperCase()}</span>
           <span className="layout-profile-copy">
             <b>{currentUser?.name || translateText("Mohamed Joe")}</b>
-            <small>{translateText("Business Owner")}</small>
+            <small
+              title={
+                currentUser?.isTeamMember && currentUser?.ownerName
+                  ? `${translateText(currentUser.teamRole || 'Team Member')} · ${translateText('Owner')}: ${currentUser.ownerName}${currentUser.ownerEmail ? ` (${currentUser.ownerEmail})` : ''}`
+                  : undefined
+              }
+            >
+              {currentUser?.isTeamMember
+                ? `${translateText(currentUser.teamRole || 'Team Member')}${currentUser.ownerName ? ` · ${translateText('Owner')}: ${currentUser.ownerName}` : ''}`
+                : translateText("Business Owner")}
+            </small>
           </span>
           <span className="layout-plan"><Crown size={12}/>{translateText(" Pro")}</span>
         </button>

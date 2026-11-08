@@ -6,7 +6,7 @@ import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, BarChart3, Bell, CreditCard, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle, Wallet } from 'lucide-react';
+import { Activity, BarChart3, Bell, CreditCard, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle, Wallet } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { canOpenPlatformPage, isPlatformTeamRole, platformHome } from '../../router/platformAccess';
@@ -31,6 +31,7 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
   { label: 'Meta App', to: '/super-admin/meta-app', icon: MessageCircle },
   { label: 'Payments', to: '/super-admin/payments', icon: CreditCard },
+  { label: 'Payment Methods', ar: 'طرق الدفع', to: '/super-admin/payment-methods', icon: Landmark },
   { label: 'Logs & Monitoring', to: '/super-admin/logs', icon: Activity },
 ];
 

@@ -51,9 +51,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const agency = currentUser?.accountType === 'agency';
-  const { data: subscription } = useSubscription(agency ? null : currentUser?.id ?? null);
-  const planLabel = agency ? (ar ? 'الفوترة المشتركة' : 'Shared billing') : translateText(isLive(subscription) ? 'My Plan' : 'Upgrade Plan');
+  const subOwnerId = currentUser?.ownerId || currentUser?.id || null;
+  const { data: subscription } = useSubscription(agency ? null : subOwnerId);
+  const planLabel = agency
+    ? ar
+      ? 'الفوترة المشتركة'
+      : 'Shared billing'
+    : translateText(isLive(subscription) || currentUser?.isTeamMember ? 'My Plan' : 'Upgrade Plan');
   const initials = (currentUser?.name || 'MJ').slice(0, 2).toUpperCase();
+  const isTeamMember = Boolean(currentUser?.isTeamMember);
+  const ownerDisplayName = currentUser?.ownerName || '';
+  const ownerDisplayEmail = currentUser?.ownerEmail || '';
+  const memberRoleLabel = currentUser?.teamRole || 'Team Member';
   const navigate = useNavigate();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -230,6 +239,43 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/></div>
+      {localizeNode(
+        isTeamMember && ownerDisplayName && (
+          <div
+            title={
+              ownerDisplayEmail
+                ? `${translateText('Workspace Owner')}: ${ownerDisplayName} (${ownerDisplayEmail})`
+                : `${translateText('Workspace Owner')}: ${ownerDisplayName}`
+            }
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 10px',
+              borderRadius: 999,
+              background: '#f5f3ff',
+              border: '1px solid #ddd6fe',
+              color: '#5b21b6',
+              fontSize: 11.5,
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: '#7c3aed',
+                flexShrink: 0,
+              }}
+            />
+            <span>
+              {translateText('Owner')}: <b style={{ fontWeight: 700 }}>{ownerDisplayName}</b>
+            </span>
+          </div>
+        ),
+      )}
       <button type="button" onClick={() => navigate(agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans')} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
@@ -240,7 +286,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           aria-expanded={profileOpen}
         >
           <span className="layout-profile-avatar">{initials}</span>
-          <span><b>{currentUser?.name || translateText("Mohamed Joe")}</b><small>{agency ? (ar ? 'مستخدم وكالة' : 'Agency user') : translateText("Business Owner")}</small></span>
+          <span>
+            <b>{currentUser?.name || translateText("Mohamed Joe")}</b>
+            <small>
+              {isTeamMember
+                ? `${translateText(memberRoleLabel)}${ownerDisplayName ? ` · ${translateText('Owner')}: ${ownerDisplayName}` : ''}`
+                : agency
+                ? ar
+                  ? 'مستخدم وكالة'
+                  : 'Agency user'
+                : translateText("Business Owner")}
+            </small>
+          </span>
           <ChevronDown size={14} className={`transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`}/>
         </button>
 
@@ -251,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.98 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute end-0 top-[calc(100%+8px)] w-56 rounded-xl bg-white shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
+              className="absolute end-0 top-[calc(100%+8px)] w-64 rounded-xl bg-white shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
             >
               <div className="p-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-3">
@@ -261,6 +318,38 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                     <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{currentUser?.email}</span>
                   </div>
                 </div>
+                {isTeamMember && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: '8px 10px',
+                      borderRadius: 9,
+                      background: '#f5f3ff',
+                      border: '1px solid #ddd6fe',
+                      fontSize: 11.5,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                      <span style={{ color: '#64748b', fontWeight: 500 }}>{translateText('Your Role')}:</span>
+                      <strong style={{ color: '#6d28d9' }}>{translateText(memberRoleLabel)}</strong>
+                    </div>
+                    {ownerDisplayName && (
+                      <div style={{ marginTop: 4, paddingTop: 4, borderTop: '1px dashed #ddd6fe' }}>
+                        <span style={{ display: 'block', fontSize: 10.5, color: '#64748b' }}>
+                          {translateText('Workspace Owner')}:
+                        </span>
+                        <strong style={{ display: 'block', color: '#1e293b', fontSize: 12 }}>
+                          {ownerDisplayName}
+                        </strong>
+                        {ownerDisplayEmail && (
+                          <span style={{ display: 'block', fontSize: 10.5, color: '#64748b' }}>
+                            {ownerDisplayEmail}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="p-1.5">
                 <button onClick={() => { navigate('/dashboard/settings/profile'); setProfileOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">

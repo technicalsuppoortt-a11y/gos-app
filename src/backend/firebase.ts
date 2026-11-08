@@ -1,6 +1,14 @@
 import { deleteApp, getApp, getApps, initializeApp, type FirebaseOptions } from 'firebase/app';
-import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from 'firebase/auth';
-import { getFirestore, initializeFirestore } from 'firebase/firestore';
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
+  updateProfile,
+} from 'firebase/auth';
+import { doc, getFirestore, initializeFirestore, setDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import publicDefaults from './gos-public-config.json';
@@ -68,6 +76,110 @@ export async function createClientAuthUser(
     if (errCode === 'auth/email-already-in-use' || errMsg.includes('EMAIL_EXISTS')) {
       return { uid: '', email, alreadyExists: true };
     }
+    throw error;
+  }
+}
+
+/**
+ * Provisions or updates a workspace team member's Firebase Auth credentials and
+ * user profile document using an isolated secondary FirebaseApp so the active
+ * workspace owner remains signed in.
+ */
+export async function provisionTeamMemberAuth(options: {
+  email: string;
+  password?: string;
+  previousPassword?: string;
+  displayName?: string;
+  userProfile?: Record<string, unknown>;
+}): Promise<{ uid: string; email: string; alreadyExists?: boolean; passwordUpdated?: boolean }> {
+  const cleanEmail = options.email.trim().toLowerCase();
+  const targetPassword = options.password?.trim() || options.previousPassword?.trim() || '';
+  if (!targetPassword) {
+    return { uid: '', email: cleanEmail };
+  }
+
+  const secondaryAppName = `team_prov_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+  const secondaryAuth = getAuth(secondaryApp);
+  const secondaryDb = initDb(secondaryApp);
+
+  try {
+    let uid = '';
+    let alreadyExists = false;
+    let passwordUpdated = false;
+
+    try {
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, cleanEmail, targetPassword);
+      uid = cred.user.uid;
+      passwordUpdated = true;
+      if (options.displayName) {
+        await updateProfile(cred.user, { displayName: options.displayName }).catch(() => null);
+      }
+      if (options.userProfile) {
+        await setDoc(
+          doc(secondaryDb, 'users', uid),
+          { ...options.userProfile, id: uid, uid },
+          { merge: true },
+        ).catch(() => null);
+      }
+    } catch (createErr: any) {
+      const errCode = createErr?.code || '';
+      const errMsg = String(createErr?.message || '');
+      if (errCode === 'auth/email-already-in-use' || errMsg.includes('EMAIL_EXISTS')) {
+        alreadyExists = true;
+        let signedInUser = null;
+        try {
+          const signCred = await signInWithEmailAndPassword(secondaryAuth, cleanEmail, targetPassword);
+          signedInUser = signCred.user;
+          uid = signedInUser.uid;
+          passwordUpdated = true;
+        } catch {
+          if (
+            options.previousPassword &&
+            options.previousPassword.trim() &&
+            options.previousPassword.trim() !== targetPassword
+          ) {
+            try {
+              const prevCred = await signInWithEmailAndPassword(
+                secondaryAuth,
+                cleanEmail,
+                options.previousPassword.trim(),
+              );
+              signedInUser = prevCred.user;
+              uid = signedInUser.uid;
+              if (options.password?.trim()) {
+                await updatePassword(signedInUser, options.password.trim());
+                passwordUpdated = true;
+              }
+            } catch {
+              // Existing account has different password
+            }
+          }
+        }
+
+        if (signedInUser && uid) {
+          if (options.displayName) {
+            await updateProfile(signedInUser, { displayName: options.displayName }).catch(() => null);
+          }
+          if (options.userProfile) {
+            await setDoc(
+              doc(secondaryDb, 'users', uid),
+              { ...options.userProfile, id: uid, uid },
+              { merge: true },
+            ).catch(() => null);
+          }
+        }
+      } else {
+        throw createErr;
+      }
+    }
+
+    await signOut(secondaryAuth).catch(() => null);
+    await deleteApp(secondaryApp).catch(() => null);
+    return { uid, email: cleanEmail, alreadyExists, passwordUpdated };
+  } catch (error) {
+    await signOut(secondaryAuth).catch(() => null);
+    await deleteApp(secondaryApp).catch(() => null);
     throw error;
   }
 }

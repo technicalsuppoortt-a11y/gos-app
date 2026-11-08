@@ -44,6 +44,318 @@ let tenantId = '';
 let loaded = false;
 const initializedResources = new Set<string>();
 const revisions = new Map<string, number>();
+const rawEntitySnapshots = new Map<string, Record<string, any>[]>();
+const rawCheckoutRequests = new Map<'tenant' | 'mirror', Record<string, any>[]>();
+const commerceResources = new Set(['products', 'orders', 'transactions', 'contacts', 'discounts']);
+
+function resetRawCommerceCache() {
+  rawEntitySnapshots.clear();
+  rawCheckoutRequests.clear();
+}
+
+function reconcileCommerceFromRequests() {
+  const byId = new Map<string, Record<string, any>>();
+  for (const sourceKey of ['tenant', 'mirror'] as const) {
+    for (const item of rawCheckoutRequests.get(sourceKey) ?? []) {
+      if (!item || typeof item.id !== 'string' || !item.id) continue;
+      const prev = byId.get(item.id);
+      if (!prev) {
+        byId.set(item.id, item);
+      } else {
+        const prevDecided = prev.status === 'Approved' || prev.status === 'Rejected';
+        const nextDecided = item.status === 'Approved' || item.status === 'Rejected';
+        if (nextDecided && !prevDecided) {
+          byId.set(item.id, { ...prev, ...item });
+        } else if (String(item.decidedAt ?? item.createdAt ?? '') >= String(prev.decidedAt ?? prev.createdAt ?? '')) {
+          byId.set(item.id, { ...prev, ...item });
+        }
+      }
+    }
+  }
+  const requests = [...byId.values()].sort((a, b) =>
+    String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
+  );
+
+  const readEntityList = (res: string): Record<string, any>[] => {
+    if (rawEntitySnapshots.has(res)) return [...(rawEntitySnapshots.get(res) ?? [])];
+    try {
+      const parsed = JSON.parse(cache.get(`entity:${res}`) ?? '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // 1. Orders
+  const baseOrders = readEntityList('orders');
+  const ordersById = new Map<string, Record<string, any>>(
+    baseOrders.filter(o => o && typeof o.id === 'string').map(o => [o.id, o])
+  );
+  for (const req of requests) {
+    const existing = ordersById.get(req.id) ?? {};
+    const orderStatus =
+      req.status === 'Approved' || req.status === 'Paid'
+        ? 'Paid'
+        : req.status === 'Rejected'
+          ? 'Rejected'
+          : 'Pending';
+    const amount = Number(req.totals?.dueToday ?? req.total ?? req.amount ?? existing.amount ?? 0);
+    const discount = Number(req.totals?.discount ?? req.discount ?? existing.discount ?? 0);
+    const productId = req.productId || req.items?.[0]?.productId || existing.productId || '';
+    const productName = req.productName || req.items?.[0]?.productName || existing.productName || 'Product';
+    const emailSlug = String(req.customerEmail || existing.customerEmail || req.id)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 24);
+    const contactId = req.contactId || existing.contactId || `contact-${emailSlug || req.id.slice(0, 12)}`;
+    const items =
+      Array.isArray(req.items) && req.items.length
+        ? req.items
+        : [{ productId, productName, amount, quantity: 1 }];
+    ordersById.set(req.id, {
+      ...existing,
+      id: req.id,
+      orderId: req.id,
+      source: req.source || existing.source || 'Product checkout',
+      productId,
+      productName,
+      items,
+      contactId,
+      customerName: req.customerName || existing.customerName || 'Customer',
+      customerEmail: req.customerEmail || existing.customerEmail || '',
+      customerPhone: req.customerPhone || existing.customerPhone || '',
+      currency: req.currency || req.totals?.currency || existing.currency || 'USD',
+      amount,
+      total: amount,
+      discountCode: req.discountCode ?? existing.discountCode ?? '',
+      discount,
+      method: req.method || existing.method || 'Manual transfer',
+      transferAccount: req.transferAccount || existing.transferAccount || '',
+      createdAt: req.createdAt || existing.createdAt || new Date().toISOString(),
+      ...(req.decidedAt ? { decidedAt: req.decidedAt } : {}),
+      ...(req.reviewNote ? { reviewNote: req.reviewNote } : {}),
+      status: orderStatus,
+    });
+  }
+  const ordersList = [...ordersById.values()].sort((a, b) =>
+    String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
+  );
+  if (initializedResources.has('orders') || rawEntitySnapshots.has('orders') || requests.length > 0) {
+    cache.set('entity:orders', JSON.stringify(ordersList));
+  }
+
+  // 2. Transactions
+  const baseTxns = readEntityList('transactions');
+  const txnsById = new Map<string, Record<string, any>>(
+    baseTxns.filter(t => t && typeof t.id === 'string').map(t => [t.id, t])
+  );
+  for (const req of requests) {
+    const derivedOrder = ordersById.get(req.id);
+    if (!derivedOrder) continue;
+    const existing = txnsById.get(req.id) ?? {};
+    txnsById.set(req.id, {
+      ...existing,
+      ...derivedOrder,
+      date: derivedOrder.createdAt,
+    });
+  }
+  const txnsList = [...txnsById.values()].sort((a, b) =>
+    String(b.createdAt ?? b.date ?? '').localeCompare(String(a.createdAt ?? a.date ?? ''))
+  );
+  if (initializedResources.has('transactions') || rawEntitySnapshots.has('transactions') || requests.length > 0) {
+    cache.set('entity:transactions', JSON.stringify(txnsList));
+  }
+
+  // 3. Contacts (Customers)
+  if (initializedResources.has('contacts') || rawEntitySnapshots.has('contacts') || requests.length > 0) {
+    const contactsList = [...readEntityList('contacts')];
+    for (const order of ordersList) {
+      const email = String(order.customerEmail || '').trim().toLowerCase();
+      const name = String(order.customerName || '').trim();
+      if (!email && !name) continue;
+      const exists = contactsList.some(
+        c =>
+          (email && String(c.email || '').trim().toLowerCase() === email) ||
+          (order.contactId && c.id === order.contactId)
+      );
+      if (!exists) {
+        contactsList.push({
+          id: order.contactId || `contact-${order.id.slice(0, 12)}`,
+          name: name || email.split('@')[0] || 'Customer',
+          email: order.customerEmail || '',
+          phone: order.customerPhone && order.customerPhone !== '—' ? order.customerPhone : '',
+          status: 'Active',
+          source: 'Checkout',
+          createdAt: order.createdAt || new Date().toISOString(),
+        });
+      }
+    }
+    cache.set('entity:contacts', JSON.stringify(contactsList));
+  }
+
+  // 4. Discounts
+  if (initializedResources.has('discounts') || rawEntitySnapshots.has('discounts')) {
+    const discountsList = readEntityList('discounts');
+    const nonRejectedOrders = ordersList.filter(o => !/^rejected$/i.test(String(o.status || '')));
+    const enrichedDiscounts = discountsList.map(discount => {
+      const code = String(discount.code || '').trim().toLowerCase();
+      if (!code) return discount;
+      const matchingCount = nonRejectedOrders.filter(o => {
+        const orderCode = String(o.discountCode || '').trim().toLowerCase();
+        if (orderCode && orderCode === code) return true;
+        if (!orderCode && Number(o.discount) > 0 && discountsList.length === 1) return true;
+        return false;
+      }).length;
+      return {
+        ...discount,
+        uses: Math.max(Number(discount.uses) || 0, matchingCount),
+      };
+    });
+    cache.set('entity:discounts', JSON.stringify(enrichedDiscounts));
+  }
+
+  // 5. Products & Purchased Product IDs
+  const paidOrders = ordersList.filter(o => /^(paid|completed|succeeded)$/i.test(String(o.status || '')));
+  let existingPurchased: string[] = [];
+  try {
+    const parsed = JSON.parse(cache.get('gos_purchased_product_ids') ?? '[]');
+    if (Array.isArray(parsed)) existingPurchased = parsed.filter(id => typeof id === 'string');
+  } catch {
+    existingPurchased = [];
+  }
+  const purchasedSet = new Set<string>(existingPurchased);
+  for (const o of paidOrders) {
+    if (o.productId) purchasedSet.add(String(o.productId));
+    if (o.productName) purchasedSet.add(String(o.productName));
+    if (Array.isArray(o.items)) {
+      for (const item of o.items) {
+        if (item?.productId) purchasedSet.add(String(item.productId));
+        if (item?.productName) purchasedSet.add(String(item.productName));
+      }
+    }
+  }
+
+  if (initializedResources.has('products') || rawEntitySnapshots.has('products')) {
+    const productsList = readEntityList('products');
+    const enrichedProducts = productsList.map(product => {
+      if (!product || typeof product.id !== 'string') return product;
+      const pNameLower = String(product.name || '').trim().toLowerCase();
+      const matchingOrders = ordersList.filter(o => {
+        if (o.productId === product.id) return true;
+        if (pNameLower && String(o.productName || '').trim().toLowerCase() === pNameLower) return true;
+        if (
+          Array.isArray(o.items) &&
+          o.items.some(
+            (item: any) =>
+              (item?.productId || item?.product_id) === product.id ||
+              (pNameLower && String(item?.productName || item?.name || '').trim().toLowerCase() === pNameLower)
+          )
+        ) {
+          return true;
+        }
+        return false;
+      });
+      if (!matchingOrders.length) return product;
+
+      const prodOrdersMap = new Map<string, Record<string, any>>(
+        (Array.isArray(product.config?.orders) ? product.config.orders : [])
+          .filter((o: any) => o && typeof o.id === 'string')
+          .map((o: any) => [o.id, o])
+      );
+      for (const o of matchingOrders) {
+        const normStatus = /refund/i.test(String(o.status || ''))
+          ? 'Refunded'
+          : /^rejected$/i.test(String(o.status || ''))
+            ? 'Rejected'
+            : /^(paid|completed|succeeded)$/i.test(String(o.status || ''))
+              ? 'Paid'
+              : 'Pending';
+        if (normStatus === 'Paid') {
+          purchasedSet.add(product.id);
+          if (product.name) purchasedSet.add(product.name);
+        }
+        prodOrdersMap.set(o.id, {
+          id: o.id,
+          customer: o.customerName || 'Customer',
+          email: o.customerEmail || '',
+          at: o.createdAt || new Date().toISOString(),
+          amount: Number(o.amount ?? o.total ?? 0),
+          currency: o.currency || product.config?.currency || 'USD',
+          status: normStatus,
+          productName: product.name,
+        });
+      }
+      const mergedProdOrders = [...prodOrdersMap.values()].sort((a, b) =>
+        String(b.at ?? '').localeCompare(String(a.at ?? ''))
+      );
+      const paidProdOrders = mergedProdOrders.filter(o => o.status === 'Paid');
+      const salesCount = Math.max(Number.parseInt(String(product.sales || '0'), 10) || 0, paidProdOrders.length);
+      const currency = product.config?.currency || paidProdOrders[0]?.currency || 'USD';
+      const revenueSum = paidProdOrders.reduce((sum, o) => sum + (Number(o.amount) || 0), 0);
+      let revenueStr = product.revenue || '$0';
+      if (paidProdOrders.length > 0) {
+        try {
+          revenueStr = new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency,
+            maximumFractionDigits: 2,
+          }).format(revenueSum);
+        } catch {
+          revenueStr = `${revenueSum.toFixed(2)} ${currency}`;
+        }
+      }
+      const prevStats = Array.isArray(product.stats) ? product.stats : [['sales', '0 sales']];
+      const hasSalesStat = prevStats.some((s: any) => Array.isArray(s) && s[0] === 'sales');
+      const nextStats = hasSalesStat
+        ? prevStats.map((s: any) => (Array.isArray(s) && s[0] === 'sales' ? ['sales', `${salesCount} sales`] : s))
+        : [['sales', `${salesCount} sales`], ...prevStats];
+
+      const prevStudents = Array.isArray(product.config?.students) ? [...product.config.students] : [];
+      for (const po of paidProdOrders) {
+        const emailLower = String(po.email || '').trim().toLowerCase();
+        if (
+          emailLower &&
+          !prevStudents.some((s: any) => String(s?.email || '').trim().toLowerCase() === emailLower)
+        ) {
+          prevStudents.push({
+            id: `student-${po.id.slice(0, 10)}`,
+            name: po.customer || emailLower.split('@')[0] || 'Student',
+            email: po.email,
+            status: 'Active',
+            progress: 0,
+            enrolledAt: String(po.at || new Date().toISOString()).slice(0, 10),
+          });
+        }
+      }
+
+      return {
+        ...product,
+        sales: String(salesCount),
+        revenue: revenueStr,
+        stats: nextStats,
+        config: product.config
+          ? {
+              ...product.config,
+              orders: mergedProdOrders,
+              students: prevStudents,
+              experience: product.config.experience
+                ? {
+                    ...product.config.experience,
+                    activeStudents: Math.max(
+                      Number(product.config.experience.activeStudents) || 0,
+                      prevStudents.filter((s: any) => s?.status === 'Active').length
+                    ),
+                  }
+                : product.config.experience,
+            }
+          : product.config,
+      };
+    });
+    cache.set('entity:products', JSON.stringify(enrichedProducts));
+  }
+
+  cache.set('gos_purchased_product_ids', JSON.stringify([...purchasedSet]));
+}
 const entityCollections = ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'assets', 'domains', 'copilotConversations', 'members', 'userTemplates'] as const;
 function entityFor(key: string): string | undefined {
   if (key.startsWith('gos-commerce-products-v1:') && !key.includes(':preview:') && !key.endsWith(':settings') && !key.endsWith(':order-drafts')) return 'products';
@@ -141,10 +453,17 @@ export const cloudStorage = {
         } else batch.set(doc(db, 'tenants', scope, resource, row.id), encodeFirestoreValue(value));
       }
       for (const row of oldRows) if (!after.has(row.id)) batch.delete(doc(db, 'tenants', scope, resource, row.id));
+      if (commerceResources.has(resource)) {
+        rawEntitySnapshots.set(resource, parsed as Record<string, any>[]);
+      }
     } else batch.set(doc(db, 'tenants', scope, 'workspaceState', encodeURIComponent(key)), { key, value: encodeFirestoreValue(parsed), updatedAt: at, updatedBy: store.getState().auth.user!.id });
     const event = doc(collection(db, 'tenants', scope, 'events'));
     batch.set(event, { type: 'workspace.updated', resource: key, actorId: store.getState().auth.user!.id, createdAt: at });
-    cache.set(key, value); notify();
+    cache.set(key, value);
+    if (resource && commerceResources.has(resource)) {
+      reconcileCommerceFromRequests();
+    }
+    notify();
     const finishWrite = beginWrite();
     const pending = batch.commit().then(() => { finishWrite(); if (!options?.silent) showToast.success('Changes saved'); }).catch(error => {
       finishWrite();
@@ -188,7 +507,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     assetPersistence.reset();
-    cache.clear(); initializedResources.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
+    cache.clear(); resetRawCommerceCache(); initializedResources.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
     notify();
     if (!scope) return;
     let crmState = store.getState().crm;
@@ -211,7 +530,11 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     let active = true;
     const applyMembership = (member?: Record<string, any>) => {
       if (!active) return;
-      const isDeactivated = member?.status === 'Deactivated' || member?.status === 'Inactive';
+      const isDeactivated =
+        member?.status === 'Deactivated' ||
+        member?.status === 'Inactive' ||
+        member?.active === false ||
+        member?.deleted === true;
       if (isDeactivated && !store.getState().auth.impersonation) {
         void forceSignOut(new SessionError('DEACTIVATED'));
         return;
@@ -226,7 +549,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       unsubscribers.forEach(unsubscribe => unsubscribe());
       unsubscribers = [];
       assetPersistence.reset();
-      cache.clear(); initializedResources.clear(); loaded = false; hydrate(); notify();
+      cache.clear(); resetRawCommerceCache(); initializedResources.clear(); loaded = false; hydrate(); notify();
       setStatus({ scope, ready: false, error: '' });
       const resources = entityCollections.filter(resource => resource === 'members' || permissions.includes('*') || permissions.includes('analytics') || permissions.includes(resourcePermissions[resource]));
       const allowed = ['workspaceState', ...resources];
@@ -246,6 +569,45 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       };
       requestResources.current = () => {
         if (!isCurrent()) return;
+        if (!subscribed.has('__checkoutRequestsSync')) {
+          subscribed.add('__checkoutRequestsSync');
+          unsubscribers.push(
+            onSnapshot(
+              collection(db, 'tenants', scope, 'checkoutRequests'),
+              snapshot => {
+                if (!isCurrent()) return;
+                const previous = new Map(cache);
+                const rows = snapshot.docs.map(item =>
+                  decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id }))
+                );
+                rawCheckoutRequests.set('tenant', rows);
+                reconcileCommerceFromRequests();
+                const changed =
+                  previous.size !== cache.size || [...cache].some(([k, v]) => previous.get(k) !== v);
+                if (changed) notify();
+              },
+              () => {}
+            )
+          );
+          unsubscribers.push(
+            onSnapshot(
+              collection(db, 'settings', `checkoutRequests_${scope}`, 'items'),
+              snapshot => {
+                if (!isCurrent()) return;
+                const previous = new Map(cache);
+                const rows = snapshot.docs.map(item =>
+                  decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id }))
+                );
+                rawCheckoutRequests.set('mirror', rows);
+                reconcileCommerceFromRequests();
+                const changed =
+                  previous.size !== cache.size || [...cache].some(([k, v]) => previous.get(k) !== v);
+                if (changed) notify();
+              },
+              () => {}
+            )
+          );
+        }
         for (const resource of required()) {
           if (subscribed.has(resource)) continue;
           subscribed.add(resource);
@@ -255,11 +617,18 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
             if (resource === 'workspaceState') {
               for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
               snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
+              reconcileCommerceFromRequests();
             } else {
               let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
               if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
               if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
+              if (commerceResources.has(resource)) {
+                rawEntitySnapshots.set(resource, rows);
+              }
               cache.set('entity:' + resource, JSON.stringify(rows));
+              if (commerceResources.has(resource)) {
+                reconcileCommerceFromRequests();
+              }
             }
             initializedResources.add(resource);
             failures.delete(resource);
@@ -271,6 +640,9 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
             if (!isCurrent()) return;
             if (resource !== 'workspaceState' && !cache.has('entity:' + resource)) {
               cache.set('entity:' + resource, '[]');
+              if (commerceResources.has(resource)) {
+                reconcileCommerceFromRequests();
+              }
             }
             initializedResources.add(resource);
             failures.delete(resource);
@@ -282,12 +654,23 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       };
       requestResources.current();
     };
+    let tenantMemData: Record<string, any> | undefined;
+    let settingsMemData: Record<string, any> | undefined;
+    const syncMergedMembership = () => {
+      applyMembership(settingsMemData ?? tenantMemData);
+    };
     const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', store.getState().auth.user!.id), membership => {
-      applyMembership(membership.data());
+      tenantMemData = membership.exists() ? membership.data() : undefined;
+      syncMergedMembership();
     }, () => {
-      applyMembership(undefined);
+      tenantMemData = undefined;
+      syncMergedMembership();
     });
-    return () => { active = false; generation++; requestResources.current = () => {}; assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); initializedResources.clear(); loaded = false; tenantId = ''; hydrate(); };
+    const settingsMembershipUnsubscribe = onSnapshot(doc(db, 'settings', `team_${scope}`, 'members', store.getState().auth.user!.id), membership => {
+      settingsMemData = membership.exists() ? membership.data() : undefined;
+      if (settingsMemData) syncMergedMembership();
+    }, () => {});
+    return () => { active = false; generation++; requestResources.current = () => {}; assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); settingsMembershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); resetRawCommerceCache(); initializedResources.clear(); loaded = false; tenantId = ''; hydrate(); };
   }, [scope, retry]);
   useEffect(() => { requestResources.current(); }, [pathname]);
   const routeReady = workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));

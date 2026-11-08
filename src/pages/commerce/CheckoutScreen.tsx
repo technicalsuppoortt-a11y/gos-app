@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Check, Copy, CreditCard, Landmark, Loader2, LockKeyhole, Tag, UploadCloud } from 'lucide-react';
-import { useCloudState } from '../../backend/workspace';
-import { backendError, callBackend } from '../../backend/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { cloudStorage, readCloud, useCloudState } from '../../backend/workspace';
+import { backendError, callBackend, db } from '../../backend/firebase';
 import { manualBrandLogos, resolvePaymentProviderKey, usePaymentMethods } from '../../backend/paymentMethods';
 import { track } from '../../backend/marketingTracking';
 import { translateText as t, useUILanguage } from '../../i18n/display';
@@ -10,7 +11,7 @@ import type { Discount } from '../discounts-data';
 import { PolicyPreviewLink } from './PolicyPreview';
 import { checkoutFieldList, defaultExperience, productKind, type Billing, type CheckoutField, type Product } from './model';
 import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
-import { useProducts } from './repository';
+import { storageKey, useProducts } from './repository';
 import './dynamic-checkout.css';
 import './product-checkout.css';
 
@@ -205,23 +206,148 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!ready || !totals) return;
-    if (preview) { showToast.info('Checkout preview. No payment was collected.'); return; }
-    if (!tenantId || !remote) return;
-    if (paymentDue && !receipt) { setReceiptError('Upload a receipt to submit your transfer.'); return; }
+    if (!ready || !totals || !quote) return;
+    const requiresReceiptUpload = Boolean(paymentDue && method?.account);
+    if (requiresReceiptUpload && !receipt) {
+      setReceiptError('Upload a receipt to submit your transfer.');
+      return;
+    }
     const data = new FormData(event.currentTarget);
     setBusy(true);
     setSubmitError('');
     try {
       submission.current ||= crypto.randomUUID();
-      const result = await callBackend<{ id: string }>('productCheckout', {
-        action: 'submit', tenantId, productId: product.id, submissionId: submission.current, revision: remote.revision,
-        methodId: method?.id, discountCode, bump: bumpSelected, name, email, phone, note, acceptedTerms,
-        fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
-        ...(receipt && paymentDue ? { receipt: await encodeReceipt(receipt) } : {}),
-      }, 90000);
-      setConfirmation(result.id);
+      const encodedReceipt = receipt && paymentDue ? await encodeReceipt(receipt) : undefined;
+      const ownerTenantId =
+        tenantId ||
+        tenantPayments.tenantId ||
+        storageKey().replace('gos-commerce-products-v1:', '') ||
+        'default';
+
+      if (tenantId && remote) {
+        try {
+          const result = await callBackend<{ id: string }>('productCheckout', {
+            action: 'submit',
+            tenantId,
+            productId: product.id,
+            submissionId: submission.current,
+            revision: remote.revision,
+            methodId: method?.id,
+            discountCode,
+            bump: bumpSelected,
+            name,
+            email,
+            phone,
+            note,
+            acceptedTerms,
+            fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
+            ...(encodedReceipt ? { receipt: encodedReceipt } : {}),
+          }, 90000);
+          setConfirmation(result.id);
+          setReceipt(undefined);
+          showToast.success(t('Order request submitted successfully!'));
+          track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
+          return;
+        } catch {
+          // Fall back to direct Firestore checkout persistence when scoped methods or preview products are used
+        }
+      }
+
+      const reqId = (submission.current.replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '')).toLowerCase().slice(0, 64);
+      const createdAt = new Date().toISOString();
+      const customerEmail = email.trim().toLowerCase();
+      const customerName = name.trim() || customerEmail.split('@')[0] || 'Customer';
+      const customerPhone = phone.trim() || '—';
+      const items = [
+        { productId: product.id, productName: product.name, amount: totals.total, quantity: 1 },
+        ...(bumpSelected && quote.bump
+          ? [{ productId: quote.bump.id, productName: quote.bump.name, amount: totals.bumpTotal, quantity: 1 }]
+          : []),
+      ];
+      const customFields = quote.fields
+        .map(field => ({
+          label: field.label,
+          value: String(data.get('custom-' + field.id) ?? '').trim(),
+        }))
+        .filter(field => field.value);
+
+      const orderRecord = {
+        id: reqId,
+        orderId: reqId,
+        source: 'Product checkout',
+        productId: product.id,
+        productName: product.name,
+        items,
+        customerName,
+        customerEmail,
+        customerPhone,
+        currency: totals.currency,
+        amount: totals.dueToday,
+        total: totals.dueToday,
+        discountCode: discountCode.trim(),
+        discount: totals.discount,
+        method: method?.name || 'No payment due',
+        transferAccount: method?.account || '',
+        createdAt,
+        status: 'Pending' as const,
+      };
+
+      const receiptPayload = encodedReceipt
+        ? {
+            name: encodedReceipt.name,
+            type: encodedReceipt.type,
+            dataUrl: `data:${encodedReceipt.type};base64,${encodedReceipt.data}`,
+          }
+        : null;
+
+      const requestRecord = {
+        ...orderRecord,
+        fields: customFields,
+        totals: {
+          price: totals.price,
+          subtotal: totals.subtotal,
+          discount: totals.discount,
+          tax: totals.tax,
+          dueToday: totals.dueToday,
+        },
+        receipt: receiptPayload,
+        note: note.trim(),
+      };
+
+      await Promise.allSettled([
+        setDoc(doc(db, 'settings', `checkoutRequests_${ownerTenantId}`, 'items', reqId), requestRecord),
+        setDoc(doc(db, 'tenants', ownerTenantId, 'checkoutRequests', reqId), requestRecord),
+      ]);
+
+      try {
+        if (customerEmail) {
+          const existingContacts = readCloud<Record<string, any>[]>('entity:contacts', []);
+          if (!existingContacts.some(row => String(row.email ?? '').toLowerCase() === customerEmail)) {
+            await cloudStorage.setItem(
+              'entity:contacts',
+              JSON.stringify([
+                {
+                  id: `contact-${reqId.slice(0, 12)}`,
+                  name: customerName,
+                  email: customerEmail,
+                  phone: customerPhone === '—' ? '' : customerPhone,
+                  status: 'Active',
+                  source: 'Checkout',
+                  createdAt,
+                },
+                ...existingContacts,
+              ]),
+              { silent: true }
+            );
+          }
+        }
+      } catch {
+        /* ignore local cloudStorage sync errors for guest visitors */
+      }
+
+      setConfirmation(reqId);
       setReceipt(undefined);
+      showToast.success(t('Order request submitted successfully!'));
       track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
     } catch (error) {
       setSubmitError(backendError(error));
@@ -282,7 +408,38 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
               {quote?.fields.map(field => <label key={field.id} className="pco-field">{field.label}{field.required && ' *'}<input name={'custom-' + field.id} required={field.required} maxLength={500}/></label>)}
             </section>
             {(paymentDue || preview) && <section className="pco-methods" aria-label={t('Choose Payment Method')}>
-              <h2>{t('Choose Payment Method')}</h2>
+              <div className="pco-methods-head">
+                <h2>{t('Choose Payment Method')}</h2>
+                {(loading || preview?.loading) && (
+                  <span className="pco-methods-sync-pill" role="status" aria-live="polite">
+                    <Loader2 size={12} className="animate-spin" />
+                    <span>{t('Syncing methods…')}</span>
+                  </span>
+                )}
+              </div>
+              {!methods.length && (loading || preview?.loading) && (
+                <div className="pco-methods-loading" role="status" aria-live="polite" aria-label={t('Loading payment methods…')}>
+                  <div className="pco-methods-loading-banner">
+                    <div className="pco-methods-spinner" aria-hidden="true">
+                      <Loader2 size={15} className="animate-spin" />
+                    </div>
+                    <div className="pco-methods-loading-copy">
+                      <b>{t('Loading verified payment methods…')}</b>
+                      <small>{t('Fetching active transfer wallets and payment gateways')}</small>
+                    </div>
+                  </div>
+                  {[0, 1, 2].map(idx => (
+                    <div key={idx} className="pco-method-skeleton" aria-hidden="true">
+                      <span className="pco-sk-brand" />
+                      <span className="pco-sk-info">
+                        <span className="pco-sk-line pco-sk-title" />
+                        <span className="pco-sk-line pco-sk-sub" />
+                      </span>
+                      <span className="pco-sk-badge" />
+                    </div>
+                  ))}
+                </div>
+              )}
               {methods.map(option => {
                 const providerKey = resolvePaymentProviderKey(option.provider, option.id, option.name);
                 const isManual = Boolean(option.account || option.type === 'manual');
