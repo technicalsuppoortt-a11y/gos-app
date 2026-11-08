@@ -4,7 +4,7 @@ html:not(.dark) .saw-workspace{--saw-border:#e1e5ef;--saw-muted:#717b91;color:#2
 html:not(.dark) .saw-workspace :is(.saw-panel,.saw-grid){background:#fff}
 html:not(.dark) .saw-stat{background:linear-gradient(120deg,#fff,#f5f2ff)}
 html:not(.dark) .saw-stat>span,html:not(.dark) .saw-workspace p{color:#707a8e}
-html:not(.dark) .saw-workspace :is(input,select){background:#fff;color:#30384d;border-color:#dce0eb;color-scheme:light}
+html:not(.dark) .saw-workspace :is(input,select,textarea){background:#fff;color:#30384d;border-color:#dce0eb;color-scheme:light}
 html:not(.dark) .saw-search{background:#fff}
 html:not(.dark) .saw-grid th{background:#f8f9fc;color:#737c92}
 html:not(.dark) .saw-grid td{color:#343d53;border-color:#edf0f6}
@@ -1220,3 +1220,453 @@ html:not(.dark) .saw-modal .saw-perm-item.is-checked .saw-perm-check {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ==========================================================================
+   Meta Apps Configuration Workspace (/super-admin/meta-app)
+   ========================================================================== */
+
+.saw-workspace textarea {
+  color: #eef0fa;
+  background: #101725;
+  border: 1px solid #353e54;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  width: 100%;
+  max-width: 100%;
+  resize: vertical;
+  color-scheme: dark;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saw-workspace textarea::placeholder {
+  color: #8490a6;
+}
+
+.saw-workspace input:focus,
+.saw-workspace textarea:focus {
+  outline: none;
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
+}
+
+.saw-meta-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.saw-meta-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1120px) {
+  .saw-meta-channels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .saw-meta-grid-2,
+  .saw-meta-channels-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.saw-meta-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.saw-meta-panel:hover {
+  border-color: rgba(124, 58, 237, 0.38);
+}
+
+.saw-meta-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--saw-border, #293144);
+}
+
+.saw-meta-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.saw-meta-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.14);
+  color: #c4b5fd;
+}
+
+.saw-meta-icon.is-messenger {
+  border-color: rgba(59, 130, 246, 0.38);
+  background: rgba(59, 130, 246, 0.14);
+  color: #60a5fa;
+}
+
+.saw-meta-icon.is-instagram {
+  border-color: rgba(236, 72, 153, 0.38);
+  background: rgba(236, 72, 153, 0.14);
+  color: #f472b6;
+}
+
+.saw-meta-icon.is-whatsapp {
+  border-color: rgba(16, 185, 129, 0.38);
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+}
+
+.saw-meta-icon.is-webhook {
+  border-color: rgba(245, 158, 11, 0.38);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-icon {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-icon.is-messenger {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-icon.is-instagram {
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+  color: #db2777;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-icon.is-whatsapp {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #059669;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-icon.is-webhook {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+.saw-meta-title-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.saw-meta-title-copy h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+}
+
+.saw-meta-title-copy p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.saw-meta-field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #d5dcef;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-field-label {
+  color: #334155;
+}
+
+.saw-meta-field-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-meta-secret-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+html:not(.dark) .saw-workspace .saw-meta-secret-pill {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.saw-meta-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.saw-meta-input-wrap input {
+  width: 100%;
+}
+
+.saw-meta-input-wrap.has-trailing input {
+  padding-inline-end: 40px;
+}
+
+.saw-meta-eye-btn {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  border-radius: 6px;
+}
+
+.saw-meta-eye-btn:hover {
+  color: #7c3aed !important;
+  background: rgba(124, 58, 237, 0.12) !important;
+}
+
+.saw-meta-copy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .saw-meta-copy-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.saw-meta-copy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 11px;
+  border: 1px solid var(--saw-border, #293144);
+  background: rgba(16, 23, 37, 0.55);
+}
+
+html:not(.dark) .saw-workspace .saw-meta-copy-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.saw-meta-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saw-meta-copy-row input {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.saw-meta-copy-btn.is-copied {
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #6ee7b7 !important;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-copy-btn.is-copied {
+  background: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+  color: #047857 !important;
+}
+
+.saw-meta-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--saw-border, #293144);
+  background: #131926;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-footer-bar {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 18px -6px rgba(15, 23, 42, 0.06);
+}
+
+.saw-meta-footer-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--saw-muted, #9ba6bd);
+}
+
+.saw-meta-unsaved-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+}
+
+.saw-meta-synced-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.16);
+}
+
+/* Advanced Loading Stage Progress for Meta Apps */
+.saw-meta-loader-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.32);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.11), rgba(19, 25, 38, 0.94));
+}
+
+html:not(.dark) .saw-workspace .saw-meta-loader-card {
+  background: linear-gradient(135deg, #f5f3ff, #ffffff);
+  border-color: #ddd6fe;
+  box-shadow: 0 10px 28px -10px rgba(124, 58, 237, 0.14);
+}
+
+.saw-meta-loader-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.saw-meta-loader-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.saw-meta-loader-main strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #eef0fa;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-loader-main strong {
+  color: #1e293b;
+}
+
+.saw-meta-loader-main span {
+  display: block;
+  font-size: 12px;
+  color: var(--saw-muted, #9ba6bd);
+  margin-top: 2px;
+}
+
+.saw-meta-loader-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .saw-meta-loader-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.saw-meta-loader-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.45);
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.saw-meta-loader-step.is-active {
+  border-color: rgba(124, 58, 237, 0.48);
+  background: rgba(124, 58, 237, 0.16);
+  color: #e9d5ff;
+}
+
+.saw-meta-loader-step.is-done {
+  border-color: rgba(16, 185, 129, 0.38);
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-loader-step {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-loader-step.is-active {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #5b21b6;
+}
+
+html:not(.dark) .saw-workspace .saw-meta-loader-step.is-done {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+

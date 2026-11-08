@@ -13,6 +13,7 @@ import { defaultSettings, friendlyError, settingsRequest } from './data';
 import type { SettingsData } from './data';
 import { ProfilePanel } from './ProfilePanel';
 import { BillingPanel } from './BillingPanel';
+import { PaymentMethodsPanel } from './PaymentMethodsPanel';
 import { IntegrationsPanel } from './IntegrationsPanel';
 import { TeamPanel, SecurityPanel } from './SystemPanels';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
@@ -67,6 +68,7 @@ function SettingsWorkspaceView() {
   }
   if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
+  if (active.slug === 'payment-methods') return <PaymentMethodsPanel scope="user"/>;
   if (active.slug === 'billing' && segment !== 'billing') {
     const query = new URLSearchParams(location.search);
     if (!query.has('tab')) {

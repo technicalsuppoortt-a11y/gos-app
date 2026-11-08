@@ -84,9 +84,15 @@ async function buildQuote(read, db, root, data, now, verifiedEmail) {
   if (!product?.config || !isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
   const c = product.config, checkout = c.experience?.checkout || {};
   if (checkout.secure === false) throw new HttpsError('failed-precondition', 'Checkout is disabled for this product.');
-  const settings = (await read(db.doc('settings/paymentMethods'))).data();
+  const tenantPaymentSnap = await read(root.collection('paymentMethods').doc('config'));
+  const mirrorPaymentSnap = !tenantPaymentSnap.exists && data.tenantId ? await read(db.doc(`settings/paymentMethods_user_${data.tenantId}`)) : null;
+  const settings = tenantPaymentSnap.exists
+    ? tenantPaymentSnap.data()
+    : mirrorPaymentSnap?.exists
+      ? mirrorPaymentSnap.data()
+      : (await read(db.doc('settings/paymentMethods'))).data();
   const methods = (settings?.methods || []).filter(method => method.enabled && method.type === 'manual' && validId(method.id) && text(method.name, 60) && text(method.account, 150))
-    .map(({ id, name, account, instructions }) => ({ id, name, account, instructions }));
+    .map(({ id, provider, name, account, instructions }) => ({ id, provider: provider || id, name, account, instructions }));
   const addOnId = checkout.bumpEnabled && checkout.bumpProductId;
   const addOn = validId(addOnId) && addOnId !== data.productId ? (await read(root.collection('products').doc(addOnId))).data() : null;
   const bump = addOn?.status === 'Active' && addOn.config?.currency === c.currency && addOn.config?.billing === 'One-time'

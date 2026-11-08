@@ -105,3 +105,47 @@ test('stale gateway revisions cannot overwrite a credential rotation, and invali
   await assert.rejects(configurePaymentMethodsRequest({ data: { ...data, label: '', expectedRevision: 1, expectedGatewayRevision: 1 } }, { actor: adminActor, db }), e => e.code === 'invalid-argument');
   assert.equal(JSON.stringify([...db.documents]), before);
 });
+test('scoped payment methods isolate super_admin, admin and user hierarchy levels', async () => {
+  const db = gatewayDatabase();
+  const superActor = async () => ({ uid: 'super-1', role: 'SUPER_ADMIN', tenantId: 'platform' });
+  const adminRoleActor = async () => ({ uid: 'admin-1', role: 'ADMIN', tenantId: 'workspace-admin-1' });
+  const userActor = async () => ({ uid: 'user-1', role: 'USER', tenantId: 'workspace-user-1' });
+
+  // Super Admin configures platform methods
+  const superMethod = { ...method, id: 'instapay', provider: 'instapay', name: 'InstaPay', account: 'super@instapay' };
+  await configurePaymentMethodsRequest({ data: { scope: 'super_admin', methods: [superMethod] } }, { actor: superActor, db });
+  assert.equal(db.documents.get('settings/paymentMethods').methods[0].account, 'super@instapay');
+  assert.equal(db.documents.get('tenants/platform/paymentMethods/config').methods[0].account, 'super@instapay');
+
+  // Admin cannot overwrite Super Admin methods, but can read them when paying upwards
+  await assert.rejects(
+    configurePaymentMethodsRequest({ data: { scope: 'super_admin', methods: [method] } }, { actor: adminRoleActor, db }),
+    e => e.code === 'permission-denied'
+  );
+  const adminReadsSuper = await configurePaymentMethodsRequest({ data: { operation: 'get', scope: 'super_admin' } }, { actor: adminRoleActor, db });
+  assert.equal(adminReadsSuper.canManage, false);
+  assert.equal(adminReadsSuper.methods[0].account, 'super@instapay');
+
+  // Admin configures their own methods (isolated from Super Admin)
+  const adminMethod = { ...method, id: 'vodafone', provider: 'vodafone', name: 'Vodafone Cash', account: '01000000001' };
+  await configurePaymentMethodsRequest({ data: { scope: 'admin', methods: [adminMethod] } }, { actor: adminRoleActor, db });
+  assert.equal(db.documents.get('tenants/workspace-admin-1/paymentMethods/config').methods[0].account, '01000000001');
+  assert.equal(db.documents.get('tenants/admin-1/paymentMethods/config').methods[0].account, '01000000001');
+  assert.equal(db.documents.get('settings/paymentMethods').methods[0].account, 'super@instapay');
+
+  // User reads Admin's methods when paying Admin, but cannot modify Admin's methods
+  const userReadsAdmin = await configurePaymentMethodsRequest({ data: { operation: 'get', scope: 'admin', targetId: 'admin-1' } }, { actor: userActor, db });
+  assert.equal(userReadsAdmin.canManage, false);
+  assert.equal(userReadsAdmin.methods[0].account, '01000000001');
+  await assert.rejects(
+    configurePaymentMethodsRequest({ data: { scope: 'admin', targetId: 'admin-1', methods: [method] } }, { actor: userActor, db }),
+    e => e.code === 'permission-denied'
+  );
+
+  // User has full CRUD over their own scope: 'user' methods & gateways
+  const userMethod = { ...method, id: 'orange', provider: 'orange', name: 'Orange Cash', account: '01200000002' };
+  const userSaved = await configurePaymentMethodsRequest({ data: { scope: 'user', methods: [userMethod] } }, { actor: userActor, db });
+  assert.equal(userSaved.canManage, true);
+  assert.equal(db.documents.get('tenants/workspace-user-1/paymentMethods/config').methods[0].account, '01200000002');
+  assert.equal(db.documents.get('tenants/admin-1/paymentMethods/config').methods[0].account, '01000000001');
+});

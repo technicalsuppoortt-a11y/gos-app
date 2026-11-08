@@ -885,7 +885,7 @@ function RowsIcon() {
 }
 
 function PaymentMethodsSummary() {
- const { methods, loading, error } = usePaymentMethods();
+ const { methods, loading, error } = usePaymentMethods({ scope: 'user' });
  const navigate = useNavigate();
- return <div className="pp-payments-banner"><span className="pp-payments-banner-icon"><CreditCard size={20}/></span><div className="pp-payments-banner-body"><b>{translateText('Payment Methods')}</b><span>{translateText(error ? 'Payment methods could not be loaded.' : loading ? 'Loading payment methods…' : methods.filter(m=>m.enabled && (m.type === 'manual' || m.status === 'Connected')).map(m=>m.name).join(' · ') || 'No payment methods configured.')}</span></div><button className="cw-button" onClick={()=>navigate('/dashboard/settings/billing?tab=payment-methods')}>{translateText('Manage payment methods')}</button></div>;
+ return <div className="pp-payments-banner"><span className="pp-payments-banner-icon"><CreditCard size={20}/></span><div className="pp-payments-banner-body"><b>{translateText('Payment Methods')}</b><span>{translateText(error ? 'Payment methods could not be loaded.' : loading ? 'Loading payment methods…' : methods.filter(m=>m.enabled && (m.type === 'manual' || m.status === 'Connected')).map(m=>m.name).join(' · ') || 'No payment methods configured.')}</span></div><button className="cw-button" onClick={()=>navigate('/dashboard/settings/payment-methods')}>{translateText('Manage payment methods')}</button></div>;
 }

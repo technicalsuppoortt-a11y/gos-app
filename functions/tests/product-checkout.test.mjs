@@ -132,3 +132,18 @@ test('a fixed discount can cover the full price without creating a payment trans
   await call({ action: 'review', id, decision: 'approve' }, staff);
   assert.equal(read('orders/' + id).status, 'Paid');
 });
+
+test('quote pulls active payment methods and brand providers from the product owner tenant scope', async () => {
+  const { call, rows } = fixture();
+  rows.set('tenants/shop/paymentMethods/config', {
+    methods: [
+      { id: 'vodafone', provider: 'vodafone', name: 'Vodafone Cash', type: 'manual', enabled: true, account: '01099998888', instructions: 'Send to Vodafone Cash wallet.' },
+      { id: 'instapay', provider: 'instapay', name: 'InstaPay', type: 'manual', enabled: false, account: 'shop@instapay', instructions: 'Disabled' },
+    ],
+  });
+  const quote = await call({ action: 'quote', email: 'buyer@example.com' });
+  assert.equal(quote.methods.length, 1);
+  assert.equal(quote.methods[0].id, 'vodafone');
+  assert.equal(quote.methods[0].provider, 'vodafone');
+  assert.equal(quote.methods[0].account, '01099998888');
+});

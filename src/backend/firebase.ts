@@ -1,6 +1,6 @@
 import { deleteApp, getApp, getApps, initializeApp, type FirebaseOptions } from 'firebase/app';
 import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import publicDefaults from './gos-public-config.json';
@@ -17,9 +17,17 @@ export const firebaseConfig = {
   appId: env.VITE_FIREBASE_APP_ID || publicConfig.appId,
 };
 
+function initDb(app = firebaseApp) {
+  try {
+    return initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+  } catch {
+    return getFirestore(app);
+  }
+}
+
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const primaryAuth = getAuth(firebaseApp);
-export const primaryDb = getFirestore(firebaseApp);
+export const primaryDb = initDb(firebaseApp);
 export let auth = primaryAuth;
 export let db = primaryDb;
 export let storage = getStorage(firebaseApp);
@@ -27,7 +35,7 @@ export const primaryFunctions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNC
 export let functions = primaryFunctions;
 export function setBackendContext(app = firebaseApp) {
   auth = getAuth(app);
-  db = getFirestore(app);
+  db = initDb(app);
   storage = getStorage(app);
   functions = getFunctions(app, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
 }

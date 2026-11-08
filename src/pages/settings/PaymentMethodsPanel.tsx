@@ -2,9 +2,9 @@ import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useCallback, useEffect, useState } from 'react';
 import { 
   BookOpen, CheckCircle2, ChevronDown, ChevronUp, CreditCard, 
-  Eye, EyeOff, Landmark, Pencil, Plus, Trash2 
+  Eye, EyeOff, Landmark, Pencil, Plus, Power, Trash2 
 } from 'lucide-react';
-import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration } from '../../backend/paymentMethods';
+import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration, type PaymentScope } from '../../backend/paymentMethods';
 import { gatewayFields, paytabsRegions, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { Card, Field, Modal, PanelHeading, Toggle, Badge } from './kit';
@@ -197,9 +197,9 @@ const gateways = [
 const brandAssets: Record<string, string> = { vodafone: 'vodafone.svg', instapay: 'instapay.png', etisalat: 'etisalat.ico', orange: 'orange.svg', stc: 'stc.svg' };
 const ManualIcon = ({ provider }: { provider: string }) => provider === 'bank' ? <Landmark size={24}/> : <span className={`pm-brand-frame ${provider}`}><img className="pm-brand-logo" src={`/payment-brands/${brandAssets[provider]}`} alt="" aria-hidden="true"/></span>;
 
-export function PaymentMethodsPanel() {
+export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
   useUILanguage();
-  const source = usePaymentMethods();
+  const source = usePaymentMethods(scope ? { scope } : undefined);
   const { methods, loading, error, save, canManage: admin } = source;
   const [draft, setDraft] = useState<PaymentMethod | null>(null), [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState('');
@@ -266,7 +266,7 @@ export function PaymentMethodsPanel() {
             <span className="st-service-icon purple"><ManualIcon provider={method.provider}/></span>
             <div className="pm-account"><b>{t(method.name)}</b><span>{method.account}</span>{method.instructions && <small>{method.instructions}</small>}</div>
             <Badge tone={method.enabled ? 'green' : 'neutral'}>{t(method.enabled ? 'Enabled' : 'Disabled')}</Badge>
-            {admin && <div className="pm-row-actions"><button type="button" className="st-icon-button" aria-label={t(`Edit ${method.name}`)} disabled={disabled} onClick={() => configure(method.provider)}><Pencil size={14}/></button><button type="button" className="st-icon-button" aria-label={t(`Remove ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.filter(item => item.id !== method.id))}><Trash2 size={14}/></button></div>}
+            {admin && <div className="pm-row-actions"><button type="button" className="st-icon-button" title={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} aria-label={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.map(item => item.id === method.id ? { ...item, enabled: !item.enabled } : item))}><Power size={14}/></button><button type="button" className="st-icon-button" aria-label={t(`Edit ${method.name}`)} disabled={disabled} onClick={() => configure(method.provider)}><Pencil size={14}/></button><button type="button" className="st-icon-button" aria-label={t(`Remove ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.filter(item => item.id !== method.id))}><Trash2 size={14}/></button></div>}
           </div>)}
           {!added.length && <p className="st-note">{t('No transfer methods added yet.')}</p>}
         </div>

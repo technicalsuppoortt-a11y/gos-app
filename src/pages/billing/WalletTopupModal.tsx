@@ -60,7 +60,12 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   const c = useCopy();
   const { busy, run } = useAction();
   const identity = useBillingIdentity();
-  const { methods: savedMethods, loading: methodsLoading } = usePaymentMethods();
+  const providerId = identity.providerId || (identity.role === 'ADMIN' ? 'platform' : '');
+  const paymentScope = providerId === 'platform' || identity.role === 'ADMIN' ? 'super_admin' : 'admin';
+  const { methods: savedMethods, loading: methodsLoading } = usePaymentMethods({
+    scope: paymentScope,
+    targetId: paymentScope === 'super_admin' ? 'platform' : providerId,
+  });
   const uid = identity.uid || auth.currentUser?.uid || null;
   const { data: userRequests } = useRequests('requesterId', uid);
   const pendingTopup = useMemo(() => {

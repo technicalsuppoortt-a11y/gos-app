@@ -157,7 +157,7 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
     </aside>}</div>
     </>}
     {tab === "payment-methods" && <>
-      <PaymentMethodsPanel/>
+      <PaymentMethodsPanel scope="user"/>
       <div className="bl"><RequestsPanel requests={userRequests} mode="outgoing" title={translateText("Invoices & receipts")}/></div>
     </>}
     {!managed && tab === "usage" && showTopup && (

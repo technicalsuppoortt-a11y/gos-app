@@ -44,7 +44,7 @@ export const SuperAdminLayout: React.FC = () => {
     if (role === 'SUPER_ADMIN') {
       void syncPlatformDataMirror();
     }
-  }, [role, location.pathname]);
+  }, [role]);
   useEffect(() => {
     if (!user?.id) {
       setLiveTabsOverride(undefined);

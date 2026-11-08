@@ -9,6 +9,49 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
   const url = new URL(input, 'https://demo.invalid');
   const parts = url.pathname.split('/').filter(Boolean), method = options.method ?? 'GET', body = options.body ?? {};
   if (['/health', '/auth/me', '/auth/verify', '/firestore/status'].includes(url.pathname)) return { ok: true, user: { id: 'demo-account-user' }, connected: true } as T;
+  if (parts[0] === 'platform' && parts[1] === 'meta-app') {
+    const defaultMeta = {
+      apps: {
+        messenger: { app_id: null, config_id: null, has_secret: false },
+        instagram: { app_id: null, config_id: null, has_secret: false },
+        whatsapp: { app_id: null, config_id: null, has_secret: false },
+      },
+      public_url: 'https://gos-api.vercel.app',
+      allowed_origins: ['https://app.client-domain.com'],
+      unreadable_secrets: [],
+      verify_token: 'upclick_meta_verify_demo_token',
+      webhook_url: 'https://gos-api.vercel.app/api/v1/webhooks/meta',
+      redirect_uri: 'https://gos-api.vercel.app/api/v1/oauth/meta/callback',
+    };
+    const current = read('platform.metaApp', defaultMeta);
+    if (method === 'PUT') {
+      const next = {
+        ...current,
+        public_url: body.public_url || current.public_url,
+        allowed_origins: Array.isArray(body.allowed_origins) ? body.allowed_origins : current.allowed_origins,
+        apps: {
+          messenger: {
+            app_id: body.messenger_app_id || null,
+            config_id: body.messenger_config_id || null,
+            has_secret: Boolean(body.messenger_app_secret || current.apps?.messenger?.has_secret),
+          },
+          instagram: {
+            app_id: body.instagram_app_id || null,
+            config_id: body.instagram_config_id || null,
+            has_secret: Boolean(body.instagram_app_secret || current.apps?.instagram?.has_secret),
+          },
+          whatsapp: {
+            app_id: body.whatsapp_app_id || null,
+            config_id: body.whatsapp_config_id || null,
+            has_secret: Boolean(body.whatsapp_app_secret || current.apps?.whatsapp?.has_secret),
+          },
+        },
+      };
+      write('platform.metaApp', next);
+      return { settings: next } as T;
+    }
+    return { settings: current } as T;
+  }
   if (parts[0] === 'ai') {
     if (parts[1] === 'training') return { embedding_percent: 100 } as T;
     // Flow Builder's Meta connect is not available in the demo account.

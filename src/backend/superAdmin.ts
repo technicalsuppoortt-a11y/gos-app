@@ -93,29 +93,53 @@ const platformDataMirrorDoc = doc(primaryDb, 'settings', 'platformDataMirror');
 const LOCAL_MIRROR_KEY = 'gos.platform.mirror.v1';
 
 const mirrorListeners = new Set<() => void>();
+let memoryMirrorCache: PlatformMirrorPayload | null = null;
+const lastWrittenMirrorSlice = new Map<string, string>();
+
 function notifyMirrorListeners() {
   mirrorListeners.forEach(listener => listener());
 }
 
 function readLocalMirror(): PlatformMirrorPayload {
+  if (memoryMirrorCache) return memoryMirrorCache;
   try {
     const raw = typeof window !== 'undefined' ? window.localStorage.getItem(LOCAL_MIRROR_KEY) : null;
-    if (!raw) return {};
+    if (!raw) {
+      memoryMirrorCache = {};
+      return memoryMirrorCache;
+    }
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? (parsed as PlatformMirrorPayload) : {};
+    memoryMirrorCache = parsed && typeof parsed === 'object' ? (parsed as PlatformMirrorPayload) : {};
+    return memoryMirrorCache;
   } catch {
-    return {};
+    memoryMirrorCache = {};
+    return memoryMirrorCache;
   }
+}
+
+function hasMirrorPatchChanged(patch: Partial<PlatformMirrorPayload>): boolean {
+  let changed = false;
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === 'updatedAt') continue;
+    const serialized = JSON.stringify(value);
+    if (lastWrittenMirrorSlice.get(key) !== serialized) {
+      lastWrittenMirrorSlice.set(key, serialized);
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 function writeLocalMirror(patch: Partial<PlatformMirrorPayload>) {
   try {
     if (typeof window === 'undefined') return;
+    if (!hasMirrorPatchChanged(patch)) return;
     const next: PlatformMirrorPayload = {
       ...readLocalMirror(),
       ...patch,
       updatedAt: new Date().toISOString(),
     };
+    memoryMirrorCache = next;
     window.localStorage.setItem(LOCAL_MIRROR_KEY, JSON.stringify(next));
     notifyMirrorListeners();
   } catch {
@@ -124,7 +148,21 @@ function writeLocalMirror(patch: Partial<PlatformMirrorPayload>) {
 }
 
 function writeCloudMirror(patch: Partial<PlatformMirrorPayload>) {
-  writeLocalMirror(patch);
+  if (!hasMirrorPatchChanged(patch)) return;
+  try {
+    if (typeof window !== 'undefined') {
+      const next: PlatformMirrorPayload = {
+        ...readLocalMirror(),
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      };
+      memoryMirrorCache = next;
+      window.localStorage.setItem(LOCAL_MIRROR_KEY, JSON.stringify(next));
+      notifyMirrorListeners();
+    }
+  } catch {
+    /* ignore storage quota */
+  }
   const { role } = store.getState().auth;
   if (role === 'SUPER_ADMIN') {
     void setDoc(
@@ -475,47 +513,80 @@ function payment(record: QueryDocumentSnapshot): PlatformPayment {
 
 type Live<T> = { data: T; loading: boolean; error: string; cached: boolean; fallback?: boolean };
 const emptyRows: never[] = [];
+const liveRowsMemoryCache = new WeakMap<Query<DocumentData>, { data: unknown[]; cached: boolean; fallback: boolean }>();
+const liveDocMemoryCache = new WeakMap<DocumentReference, { data: unknown; cached: boolean; fallback: boolean }>();
 
 function useRows<T>(source: Query<DocumentData>, map: (record: QueryDocumentSnapshot) => T, enabled = true): Live<T[]> {
-  const [state, setState] = useState<Live<T[]>>({ data: emptyRows, loading: enabled, error: '', cached: false, fallback: false });
+  const [state, setState] = useState<Live<T[]>>(() => {
+    if (!enabled) return { data: emptyRows, loading: false, error: '', cached: false, fallback: false };
+    const warm = liveRowsMemoryCache.get(source);
+    if (warm) {
+      return { data: warm.data as T[], loading: false, error: '', cached: warm.cached, fallback: warm.fallback };
+    }
+    return { data: emptyRows, loading: true, error: '', cached: false, fallback: false };
+  });
   useEffect(() => {
     if (!enabled) return;
-    return onSnapshot(source, { includeMetadataChanges: true }, snapshot => {
-      setState({ data: snapshot.docs.map(map), loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
+    return onSnapshot(source, snapshot => {
+      const mapped = snapshot.docs.map(map);
+      liveRowsMemoryCache.set(source, { data: mapped, cached: snapshot.metadata.fromCache, fallback: false });
+      setState({ data: mapped, loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
     }, error => {
       if (isPermissionError(error) && isPlatformTeamRole(store.getState().auth.role)) {
+        liveRowsMemoryCache.set(source, { data: emptyRows, cached: false, fallback: true });
         setState({ data: emptyRows, loading: false, error: '', cached: false, fallback: true });
         return;
       }
       setState({ data: emptyRows, loading: false, error: backendError(error), cached: false, fallback: false });
     });
   }, [source, map, enabled]);
-  return state;
+  return enabled ? state : { data: emptyRows, loading: false, error: '', cached: false, fallback: false };
 }
 
-function useRecord<T>(source: DocumentReference, map: (data: DocumentData) => T): Live<T> {
-  const [state, setState] = useState<Live<T>>(() => ({ data: map({}), loading: true, error: '', cached: false, fallback: false }));
-  useEffect(() => onSnapshot(source, { includeMetadataChanges: true }, snapshot => {
-    setState({ data: map(snapshot.data() ?? {}), loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
-  }, error => {
-    if (isPermissionError(error) && isPlatformTeamRole(store.getState().auth.role)) {
-      setState({ data: map({}), loading: false, error: '', cached: false, fallback: true });
-      return;
+function useRecord<T>(source: DocumentReference, map: (data: DocumentData) => T, enabled = true): Live<T> {
+  const [state, setState] = useState<Live<T>>(() => {
+    if (!enabled) return { data: map({}), loading: false, error: '', cached: false, fallback: false };
+    const warm = liveDocMemoryCache.get(source);
+    if (warm) {
+      return { data: warm.data as T, loading: false, error: '', cached: warm.cached, fallback: warm.fallback };
     }
-    setState({ data: map({}), loading: false, error: backendError(error), cached: false, fallback: false });
-  }), [source, map]);
+    return { data: map({}), loading: true, error: '', cached: false, fallback: false };
+  });
+  useEffect(() => {
+    if (!enabled) return;
+    return onSnapshot(source, snapshot => {
+      const mapped = map(snapshot.data() ?? {});
+      liveDocMemoryCache.set(source, { data: mapped, cached: snapshot.metadata.fromCache, fallback: false });
+      setState({ data: mapped, loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
+    }, error => {
+      if (isPermissionError(error) && isPlatformTeamRole(store.getState().auth.role)) {
+        const emptyMapped = map({});
+        liveDocMemoryCache.set(source, { data: emptyMapped, cached: false, fallback: true });
+        setState({ data: emptyMapped, loading: false, error: '', cached: false, fallback: true });
+        return;
+      }
+      setState({ data: map({}), loading: false, error: backendError(error), cached: false, fallback: false });
+    });
+  }, [source, map, enabled]);
   return state;
 }
 
-function usePlatformMirror(): PlatformMirrorPayload {
-  const cloud = useRecord(platformDataMirrorDoc, data => (data ?? {}) as PlatformMirrorPayload);
+const mapMirrorPayload = (data: DocumentData): PlatformMirrorPayload => (data ?? {}) as PlatformMirrorPayload;
+
+function usePlatformMirror(needCloudFallback = false): PlatformMirrorPayload {
+  const shouldListenCloud = needCloudFallback || store.getState().auth.role !== 'SUPER_ADMIN';
+  const cloud = useRecord(platformDataMirrorDoc, mapMirrorPayload, shouldListenCloud);
   const [local, setLocal] = useState<PlatformMirrorPayload>(() => readLocalMirror());
   useEffect(() => {
-    const refresh = () => setLocal(readLocalMirror());
-    mirrorListeners.add(refresh);
+    const refresh = () => {
+      memoryMirrorCache = null;
+      setLocal(readLocalMirror());
+    };
+    const refreshInMemory = () => setLocal(readLocalMirror());
+    mirrorListeners.add(refreshInMemory);
     window.addEventListener('storage', refresh);
     return () => {
-      mirrorListeners.delete(refresh);
+      mirrorListeners.delete(refreshInMemory);
       window.removeEventListener('storage', refresh);
     };
   }, []);
@@ -563,7 +634,7 @@ const deserializeAccount = (item: SerializedAccount): PlatformAccount => ({
 export function usePlatformAccounts() {
   const state = useRows(users, account);
   const overrides = useRecord(teamPermissionsDoc, parseTeamPermissions);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(state.fallback));
   const liveAccounts = state.data.filter((row): row is PlatformAccount => row !== null);
 
   useEffect(() => {
@@ -659,7 +730,7 @@ export function usePlatformAccounts() {
 export function usePlatformPayments(includeCommerce: boolean) {
   const invoices = useRows(billingRequests, payment);
   const transactions = useRows(commerceTransactions, payment, includeCommerce);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(invoices.fallback || transactions.fallback));
   const liveRows = [...invoices.data, ...transactions.data].sort((a, b) => timestamp(b.date) - timestamp(a.date));
 
   useEffect(() => {
@@ -692,7 +763,7 @@ const mapUsage = (record: QueryDocumentSnapshot) => {
 };
 export function usePlatformUsage() {
   const state = useRows(usage, mapUsage);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(state.fallback));
   useEffect(() => {
     if (!state.loading && !state.error && !state.fallback && state.data.length > 0) {
       writeCloudMirror({ usage: state.data.slice(0, 300) });
@@ -719,7 +790,7 @@ const mapSubscription = (record: QueryDocumentSnapshot) => {
 };
 export function usePlatformSubscriptions() {
   const state = useRows(subscriptions, mapSubscription);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(state.fallback));
   useEffect(() => {
     if (!state.loading && !state.error && !state.fallback && state.data.length > 0) {
       writeCloudMirror({
@@ -748,7 +819,7 @@ const mapAudit = (record: QueryDocumentSnapshot) => {
 export function usePlatformAudit() {
   // Firestore orders strings and timestamps separately, so query each format before merging.
   const current = useRows(recentAudit, mapAudit), legacy = useRows(legacyAudit, mapAudit);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(current.fallback || legacy.fallback));
   const entries = new Map([...current.data, ...legacy.data].map(row => [row.id, row]));
   const liveRows = [...entries.values()].sort((a, b) => timestamp(b.time) - timestamp(a.time)).slice(0, 500);
 
@@ -786,7 +857,7 @@ const mapSettings = (row: DocumentData) => ({
 });
 export function usePlatformSettings() {
   const state = useRecord(settings, mapSettings);
-  const mirror = usePlatformMirror();
+  const mirror = usePlatformMirror(Boolean(state.fallback));
   useEffect(() => {
     if (!state.loading && !state.error && !state.fallback && state.data.revision > 0) {
       writeCloudMirror({ platformSettings: state.data });

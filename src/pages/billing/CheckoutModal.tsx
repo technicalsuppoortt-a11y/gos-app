@@ -55,10 +55,13 @@ function PaymentBrandIcon({ provider }: { provider: string }) {
 export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', onClose, onSuccess }: CheckoutModalProps) {
   const c = useCopy();
   const { busy, run } = useAction();
-  const { methods: savedMethods, loading: methodsLoading, canManage } = usePaymentMethods();
-  
   const identity = useBillingIdentity();
   const providerId = initialPlan?.ownerId || identity.providerId || 'platform';
+  const paymentScope = providerId === 'platform' || identity.role === 'ADMIN' ? 'super_admin' : 'admin';
+  const { methods: savedMethods, loading: methodsLoading, canManage } = usePaymentMethods({
+    scope: paymentScope,
+    targetId: paymentScope === 'super_admin' ? 'platform' : providerId,
+  });
   const { data: availablePlans } = usePlans(providerId);
   const { data: billingSettings } = useBillingSettings(providerId);
   const rate = billingSettings?.unitRate || DEFAULT_BILLING_SETTINGS.unitRate;

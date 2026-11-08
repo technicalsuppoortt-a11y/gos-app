@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Check, Copy, CreditCard, Landmark, Loader2, LockKeyhole, Tag, UploadCloud } from 'lucide-react';
 import { useCloudState } from '../../backend/workspace';
 import { backendError, callBackend } from '../../backend/firebase';
-import { checkoutMethods, usePaymentMethods } from '../../backend/paymentMethods';
+import { manualBrandLogos, resolvePaymentProviderKey, usePaymentMethods } from '../../backend/paymentMethods';
 import { track } from '../../backend/marketingTracking';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
@@ -15,7 +15,24 @@ import './dynamic-checkout.css';
 import './product-checkout.css';
 
 type Totals = ReturnType<typeof checkoutTotals> & { currency: string };
-type Method = { id: string; name: string; account?: string; instructions?: string };
+type Method = { id: string; provider?: string; type?: 'manual' | 'gateway'; name: string; account?: string; instructions?: string };
+
+function CheckoutMethodIcon({ provider, id, name, isManual }: { provider?: string; id?: string; name: string; isManual: boolean }) {
+  const key = resolvePaymentProviderKey(provider, id, name);
+  const logo = manualBrandLogos[key];
+  if (logo) {
+    return (
+      <span className={`pco-brand-frame ${key}`}>
+        <img className="pco-brand-logo" src={logo} alt={name} loading="lazy" />
+      </span>
+    );
+  }
+  return (
+    <span className={`pco-icon pco-brand-fallback ${key}`}>
+      {isManual || key === 'bank' ? <Landmark size={18} /> : <CreditCard size={18} />}
+    </span>
+  );
+}
 type Quote = {
   revision: string;
   totals: Totals;
@@ -50,14 +67,42 @@ export function CheckoutScreen({ product, billing, tenantId }: { product: Produc
 
 function PreviewCheckout({ product, billing }: { product: Product; billing?: Billing }) {
   const config = product.config!, experience = config.experience ?? defaultExperience();
-  const payments = usePaymentMethods(), products = useProducts();
+  const payments = usePaymentMethods({ scope: 'user' }), products = useProducts();
   const [discounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
   const addOn = experience.checkout.bumpEnabled && products.find(item => item.id === experience.checkout.bumpProductId && item.id !== product.id && item.status === 'Active' && item.config?.currency === config.currency && item.config.billing === 'One-time');
   const bump = addOn ? { id: addOn.id, name: addOn.name, amount: addOn.config!.amount } : null;
-  const methods = checkoutMethods(payments.methods, experience.paymentMethods).map(name => {
-    const method = payments.methods.find(item => item.enabled && item.type === 'manual' && item.name === name);
-    return { id: name, name, account: method?.account, instructions: method?.instructions };
-  });
+  const methods: Method[] = payments.methods
+    .filter(item => item.enabled && (item.type === 'manual' || item.status === 'Connected' || item.status === 'Configured'))
+    .flatMap((item): Method[] => {
+      const providerKey = resolvePaymentProviderKey(item.provider, item.id, item.name);
+      if (item.type === 'manual') {
+        return [{
+          id: item.id || providerKey || item.name,
+          provider: providerKey,
+          type: 'manual',
+          name: item.name,
+          account: item.account,
+          instructions: item.instructions,
+        }];
+      }
+      if (providerKey === 'stripe') {
+        const stripeLabels = ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay'] as const;
+        const allowed = stripeLabels.filter(label => experience.paymentMethods.includes(label));
+        const labels: readonly string[] = allowed.length ? allowed : [item.name];
+        return labels.map(label => ({
+          id: label,
+          provider: 'stripe',
+          type: 'gateway',
+          name: label,
+        }));
+      }
+      return [{
+        id: item.id || providerKey || item.name,
+        provider: providerKey,
+        type: 'gateway',
+        name: item.name,
+      }];
+    });
   return <CheckoutForm key={product.id} product={product} preview={{ methods, loading: payments.loading, error: payments.error, retry: payments.refresh, bump, discounts, billing }}/>;
 }
 
@@ -76,6 +121,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
   const [quoteError, setQuoteError] = useState(''), [submitError, setSubmitError] = useState('');
   const [reload, setReload] = useState(0), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState('');
   const [discountEmail, setDiscountEmail] = useState('');
+  const tenantPayments = usePaymentMethods(tenantId ? { scope: 'user', tenantId } : { scope: 'user' });
 
   useEffect(() => {
     if (!tenantId) return;
@@ -111,7 +157,22 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
     installments: config.installments, frequency: preview.billing === 'Payment plan' ? experience.paymentInterval : config.frequency, trialDays: config.trialDays,
   };
   const quote = previewQuote ?? remote, totals = quote?.totals;
-  const methods = quote?.methods ?? [];
+  const liveTenantMethods: Method[] | null = !preview && tenantId && !tenantPayments.loading && (tenantPayments.revision > 0 || tenantPayments.methods.length > 0)
+    ? tenantPayments.methods
+        .filter(m => m.enabled && ((m.type === 'manual' && m.account) || (m.type === 'gateway' && (m.status === 'Connected' || m.status === 'Configured'))))
+        .map(m => ({
+          id: m.id || resolvePaymentProviderKey(m.provider, m.id, m.name) || m.name,
+          provider: resolvePaymentProviderKey(m.provider, m.id, m.name),
+          type: m.type,
+          name: m.name,
+          account: m.account,
+          instructions: m.instructions,
+        }))
+    : null;
+  const methods = (liveTenantMethods ?? quote?.methods ?? []).map(m => ({
+    ...m,
+    provider: resolvePaymentProviderKey(m.provider, m.id, m.name),
+  }));
   const method = methods.find(option => option.id === methodId) ?? methods[0];
   const paymentDue = (totals?.dueToday ?? 0) > 0;
   const needsReceipt = !!method?.account && (paymentDue || !!preview);
@@ -222,15 +283,22 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
             </section>
             {(paymentDue || preview) && <section className="pco-methods" aria-label={t('Choose Payment Method')}>
               <h2>{t('Choose Payment Method')}</h2>
-              {methods.map(option => <label key={option.id} className={method?.id === option.id ? 'selected' : undefined}>
-                <input type="radio" name={paymentGroup} checked={method?.id === option.id} onChange={() => setMethod(option.id)}/>
-                <span className="pco-icon">{option.account ? <Landmark size={16}/> : <CreditCard size={16}/>}</span>
-                <span><b>{t(option.name)}</b>{option.account && <small>{option.account}</small>}</span>
-                <small className="pco-badge">{t(option.account ? 'Manual' : 'Gateway')}</small>
-              </label>)}
+              {methods.map(option => {
+                const providerKey = resolvePaymentProviderKey(option.provider, option.id, option.name);
+                const isManual = Boolean(option.account || option.type === 'manual');
+                const isSelected = method?.id === option.id;
+                return (
+                  <label key={option.id} data-provider={providerKey} className={`pco-method-card brand-${providerKey}${isSelected ? ' selected' : ''}`}>
+                    <input type="radio" name={paymentGroup} checked={isSelected} onChange={() => setMethod(option.id)}/>
+                    <CheckoutMethodIcon provider={option.provider} id={option.id} name={option.name} isManual={isManual}/>
+                    <span className="pco-method-info"><b>{t(option.name)}</b>{option.account && <small>{option.account}</small>}</span>
+                    <small className={`pco-badge ${isManual ? 'manual' : 'gateway'}`}>{t(isManual ? 'Manual' : 'Gateway')}</small>
+                  </label>
+                );
+              })}
               {!methods.length && !loading && !preview?.loading && <p role="status">{t('No payment methods are available for this product.')}</p>}
             </section>}
-            {method?.account && (paymentDue || preview) && <section className="pco-card pco-transfer"><h2><Landmark size={16}/>{t('Transfer Instructions & Account Details')}</h2>
+            {method?.account && (paymentDue || preview) && <section className={`pco-card pco-transfer brand-${resolvePaymentProviderKey(method.provider, method.id, method.name)}`}><h2><CheckoutMethodIcon provider={method.provider} id={method.id} name={method.name} isManual={true}/><span>{t('Transfer Instructions & Account Details')}</span></h2>
               <div className="pco-inline"><div><small>{t('Transfer account')}</small><b>{method.account}</b></div><button className="pco-secondary" type="button" onClick={() => void navigator.clipboard.writeText(method.account!).then(() => showToast.success('Copied'), () => showToast.error('Could not copy.'))}><Copy size={13}/>{t('Copy')}</button></div>
               <p>{method.instructions || t('Transfer the amount shown and upload your receipt for review.')}</p>
             </section>}

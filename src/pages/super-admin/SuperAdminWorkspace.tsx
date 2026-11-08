@@ -207,6 +207,7 @@ function LiveContent({ sources, children }: PropsWithChildren<{ sources: { loadi
 
   useEffect(() => {
     reportSyncing(isHydrating);
+    return () => reportSyncing(false);
   }, [isHydrating, reportSyncing]);
 
   if (error) return <div className="saw-warning" role="alert">{t(error)} <button onClick={retry}>{t('Try again')}</button></div>;

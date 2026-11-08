@@ -26,7 +26,7 @@ export function AdminWorkspace() {
   if (id === 'dashboard') return <AdminDashboard/>;
   if (id === 'settings') return <WorkspaceBrandSettings/>;
   if (id === 'conversations' || id === 'analytics' || id === 'ai-usage' || id === 'integrations' || id === 'transactions') return <AdminOperations key={id} moduleId={id}/>;
-  if (id === 'payments-gateways') return <PaymentMethodsPanel/>;
+  if (id === 'payments-gateways') return <PaymentMethodsPanel scope="admin"/>;
   if (id === 'plans') return <AdminPlansPage/>;
   if (id === 'user-billing-settings') return <UserBillingSettingsPage/>;
   if (module.id === 'funnels-websites' && ['1', 'templates'].includes(params.get('tab') ?? '')) {
