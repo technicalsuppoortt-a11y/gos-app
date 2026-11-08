@@ -1,0 +1,289 @@
+{
+  "version": "logo-design-sources-v3-styles",
+  "reviewedOn": "2026-10-17",
+  "usage": "Research summaries below were reviewed during development. URLs are provenance, not pages fetched during generation. Learn the design decisions; never reproduce these brands' marks, lettering or colors. Construction studies are original teaching vectors, not actual client logos or templates to return unchanged.",
+  "caseStudies": [
+    {
+      "brand": "Slack",
+      "studio": "Pentagram",
+      "url": "https://www.pentagram.com/work/slack/story",
+      "lesson": "A recognizable organizing symbol ties the mark to how the product works. Its construction remains legible across sizes while retaining a playful character.",
+      "application": "Find an idea native to the user's offer; build a coherent silhouette from related parts. Avoid decorative fragments with no relationship to each other."
+    },
+    {
+      "brand": "Mastercard",
+      "studio": "Pentagram",
+      "url": "https://www.pentagram.com/work/mastercard/story",
+      "lesson": "The identity distills connectivity into a clear relationship between forms and is designed for digital use and varied backgrounds.",
+      "application": "Communicate one relationship clearly and test the mark as a small icon. Do not copy intersecting circles or the Mastercard palette; the user's mark must also work in one color."
+    },
+    {
+      "brand": "Mailchimp",
+      "studio": "COLLINS",
+      "url": "https://wearecollins.com/case-studies/mailchimp/",
+      "lesson": "The mark, lettering and wider identity preserve an individual personality instead of reducing the company to a generic software look.",
+      "application": "Choose a distinctive feature and a matching typographic weight. Simplicity must preserve character; an anonymous polygon is not a finished concept. Do not copy Freddie or the Mailchimp wordmark."
+    },
+    {
+      "brand": "Windows",
+      "studio": "Pentagram",
+      "url": "https://www.pentagram.com/work/windows/story",
+      "lesson": "The symbol returns to the meaning of its name, with perspective providing a consistent geometric construction.",
+      "application": "If the name offers a useful visual idea, develop it deliberately. Keep angles and spacing coherent; do not borrow the four-pane window."
+    }
+  ],
+  "styleDirections": {
+    "Organic": "Create ONE intentional curved silhouette with smooth cubic or quadratic joins and balanced positive/negative space. Use a meaningful metaphor with controlled curve tension. Random blobs, stray leaves and angular chevrons are not acceptable substitutes.",
+    "Geometric": "Use a consistent angle or modular unit and a distinctive silhouette with a meaningful cut or interlock. A bare diamond, triangle or stock hexagon by itself has no brand-specific idea.",
+    "Minimal": "Reduce a meaningful idea to its essential silhouette while retaining one recognizable signature detail. Do not confuse minimal with an arbitrary empty outline.",
+    "Monogram": "Derive the actual first letter or initials from the supplied name. Develop shared stems, ligatures or a deliberate countershape; the letters must remain identifiable. Never use unrelated letters or a font glyph enclosed in a stock badge.",
+    "Auto": "Choose the visual language best suited to the confirmed buyer and offer. Resolve ONE distinctive, business-specific silhouette and its relationship to the chosen wordmark. Do not default to a generic geometric badge.",
+    "Wordmark": "Create a finished lettering-led logo with the exact brand name and NO separate symbol. Return logo.paths: [], separator false and descriptor empty. Choose a considered allowed font, optical weight, casing and spacing. Arabic letters must remain connected with original casing and zero letterSpacing. Distinctiveness comes from typographic character and proportion, never decorative icons.",
+    "Negative Space": "Build ONE coherent positive silhouette with a broad, intentional cutout that reveals a second business-relevant idea or actual initial. Both the outside contour and countershape must remain clear at 24px. Use even-odd closed subpaths. Avoid a random hole in a stock polygon or a visual puzzle that needs explanation.",
+    "Abstract": "Translate one specific relationship from the offer into an original abstract construction. Use a distinctive silhouette, controlled rhythm and purposeful negative space. The form should suggest the business character without literal illustration. Reject anonymous swirls, infinity loops and unrelated stacked primitives.",
+    "Pictorial": "Create a recognizable custom pictogram derived from the real business, name or offer. Distill it into a decisive silhouette with one signature detail, broad counters and optically balanced lettering. Avoid stock clip art, generic category icons, literal product illustrations and tiny details.",
+    "Emblem": "Construct a cohesive seal-like SYMBOL with an original internal motif, shared construction units and a strong outer silhouette. The application places the exact brand name BESIDE this emblem; do not draw letters, circular text or extra taglines in paths. Avoid a generic circle around an initial. Keep counters broad and simplify ornamental detail for small sizes.",
+    "Luxury": "Express premium restraint through deliberate proportions, a distinctive bespoke-feeling symbol, generous counters and refined optical balance. Preserve the selected palette and heading font; tune allowed weight and spacing carefully. No crowns, gold gradients, stock laurels, hairline decoration or unsupported luxury claims.",
+    "Vintage": "Reinterpret the business heritage with a confident, period-informed silhouette and purposeful craft details. Use a custom motif or name-derived construction beside the chosen wordmark. Keep it crisp and contemporary enough for digital use: no distressed textures, tiny ornaments, copied crests or invented establishment dates.",
+    "Modern": "Use a contemporary, disciplined identity language: clean contours, an unexpected but meaningful cut or structural relationship, and balanced typography. Build recognition through proportion and a signature detail. Modern does not mean a bare hexagon or an interchangeable software icon.",
+    "Bold": "Use assertive filled masses, strong proportions, decisive terminals and clear wide counters. Balance the mark against an allowed heavier wordmark weight while preserving the exact chosen font and palette. Strength comes from a cohesive silhouette, not aggressive clutter, oversized initials or generic lightning bolts.",
+    "Friendly": "Express warmth with purposeful rounded contours, open counters, approachable proportions and a controlled playful detail tied to this business. Preserve professional legibility and balance. Avoid random blobs, stock smiley faces, childish clip art or many detached decorative pieces.",
+    "Tech": "Communicate the actual technology offer through a precise modular construction, intentional connectivity or a meaningful engineered cutout. Use an original recognizable silhouette and disciplined spacing. No generic circuit boards, node diagrams, orbit rings, gradients or unconnected futuristic decoration.",
+    "Line Art": "Develop ONE business-relevant contour drawing with deliberate continuous movement, smooth tangent joins and consistent line weight. Keep the silhouette simple and recognizable with broad open spaces. Important lines and gaps must survive 24px; use strokeWidth about 10-12 units or outlined filled contours. No fragile hairlines, dense engraving or arbitrary squiggles."
+  },
+  "constructionStudies": [
+    {
+      "id": "organic-rising-fold",
+      "style": "Organic",
+      "idea": "A single upward fold constructed with broad curves and an open counter; suitable as a construction study for movement, not an automatic business metaphor.",
+      "craft": "The large counter stays open at small size. The left and right contours balance without tiny detached pieces. Notice smooth C curves and the filled silhouette, not a stroked doodle.",
+      "paths": [
+        {
+          "d": "M-78 56C-68 4 -40 -64 28 -78C2 -50 -4 -22 14 -2C30 16 54 8 78 -12C64 38 28 72 -14 72C-38 72 -60 66 -78 56ZM-42 42C-18 20 6 20 34 28C10 44 -14 50 -42 42Z",
+          "fill": true,
+          "strokeWidth": 0
+        }
+      ]
+    },
+    {
+      "id": "organic-shared-current",
+      "style": "Organic",
+      "idea": "Two broad currents meet around a flowing central gap; a study in rhythm and a balanced asymmetric contour.",
+      "craft": "Each filled contour has optical weight. The diagonal channel is broad enough to remain distinct in one color. The two paths read as one unified mark.",
+      "paths": [
+        {
+          "d": "M-78 20C-78 -40 -30 -78 24 -70C50 -66 66 -52 78 -32C38 -52 6 -38 -12 -10C-26 12 -46 26 -78 20Z",
+          "fill": true,
+          "strokeWidth": 0
+        },
+        {
+          "d": "M78 -12C78 48 30 80 -24 72C-50 68 -66 54 -78 34C-38 54 -6 40 12 12C26 -10 46 -24 78 -12Z",
+          "fill": true,
+          "strokeWidth": 0
+        }
+      ]
+    },
+    {
+      "id": "letter-a-counter",
+      "style": "Monogram",
+      "idea": "A constructed A with a wide triangular counter and a deliberate broken crossbar. Appropriate only when the user's actual name has an A initial.",
+      "craft": "The counter is a second closed subpath with even-odd fill. A purposeful notch differentiates the silhouette; stem weights remain consistent.",
+      "paths": [
+        {
+          "d": "M-80 76L-18 -76H18L80 76H42L28 40H-10L2 12H18L0 -36L-44 76ZM-32 68H24V76H-36Z",
+          "fill": true,
+          "strokeWidth": 0
+        }
+      ]
+    },
+    {
+      "id": "geometric-folded-route",
+      "style": "Geometric",
+      "idea": "A folded route with a shared diagonal unit and a recognizable open center.",
+      "craft": "The consistent angle creates rhythm; the inner channel and balanced terminals make the result a constructed mark rather than a random polygon.",
+      "paths": [
+        {
+          "d": "M-78 46L-18 -74H18L-26 14H16L60 -74H82L22 74H-12L2 42H-40L-56 74H-88Z",
+          "fill": true,
+          "strokeWidth": 0
+        }
+      ]
+    }
+  ],
+  "reviewChecklist": [
+    "Name one concrete connection to the supplied business evidence for each route; do not invent facts.",
+    "Respect the requested style in the single finished logo, including regeneration and repair.",
+    "Replace anonymous primitives and disconnected decorations with a cohesive, recognizable silhouette.",
+    "Use an intentional countershape, ligature, contour or structural relationship as a signature feature.",
+    "Center the symbol optically; target a major dimension of 140-176 units inside the -90..90 space.",
+    "Inspect curve tangency, overlaps, stroke weight, readable negative space and the exact chosen name/font.",
+    "Check one-color use, 24px legibility and a distinctive resolved concept before returning compact JSON."
+  ],
+  "learningResources": [
+    {
+      "title": "Adobe - How to design a logo",
+      "url": "https://www.adobe.com/express/learn/blog/how-to-design-a-logo",
+      "lesson": "Start with the business and audience. Combine a distinctive symbol with typography; refine proportion, spacing and negative space. Check one-color and small-size use."
+    },
+    {
+      "title": "Canva Design School - Creating your logo",
+      "url": "https://www.canva.com/design-school/resources/creating-your-logo/",
+      "lesson": "Explore wordmarks, monograms and pictograms. Refine fonts, letter spacing, graphics and colors through iteration rather than accepting the first sketch."
+    },
+    {
+      "title": "Looka - How it works",
+      "url": "https://looka.com/logo-maker/how-it-works/",
+      "lesson": "Use company name, selected styles, colors and symbols as design input. Develop alternatives, then refine layout, spacing and symbol-to-name sizing."
+    },
+    {
+      "title": "Wix - How to design a logo",
+      "url": "https://www.wix.com/blog/how-to-design-a-logo",
+      "lesson": "Move from brand identity and inspiration to selecting a logo type, shaping its elements and refining a usable design."
+    }
+  ],
+  "designWorkflow": [
+    "Brief: use only confirmed offer, buyer, personality and name. Identify one concrete visual association for each route, not the generic word growth.",
+    "Explore: explore different structures internally, then choose the strongest ONE within the requested style. Combine a considered symbol and the exact chosen name. The attached board establishes the desired finish; do not copy its paths.",
+    "Construct: plan the outer contour and countershape before placing coordinates. Use consistent visual weight, tangent curves or a deliberate angle system, broad negative space and resolved terminals. An arbitrary diamond is not a substitute for this process.",
+    "Refine: review symbol mass against the existing wordmark, baseline alignment and a deliberate gap between them. The renderer places the exact brand name beside the mark; do not draw text as geometry or invent a new font.",
+    "Review: consider a website header, a small app icon and a monochrome print. Revise weak silhouettes and remove decorative pieces that do not contribute to recognition. Return ONE resolved original, not an unfinished sketch."
+  ],
+  "styles": [
+    {
+      "id": "Geometric",
+      "en": "Geometric",
+      "ar": "هندسي",
+      "constructionStyles": [
+        "Geometric"
+      ]
+    },
+    {
+      "id": "Minimal",
+      "en": "Minimal",
+      "ar": "بسيط ومميز",
+      "constructionStyles": [
+        "Geometric",
+        "Organic"
+      ]
+    },
+    {
+      "id": "Monogram",
+      "en": "Monogram",
+      "ar": "رمز من حروف الاسم",
+      "constructionStyles": [
+        "Monogram"
+      ]
+    },
+    {
+      "id": "Organic",
+      "en": "Organic",
+      "ar": "انسيابي",
+      "constructionStyles": [
+        "Organic"
+      ]
+    },
+    {
+      "id": "Wordmark",
+      "en": "Wordmark — name only",
+      "ar": "اسم مكتوب فقط",
+      "constructionStyles": []
+    },
+    {
+      "id": "Negative Space",
+      "en": "Negative space",
+      "ar": "مساحات سلبية ذكية",
+      "constructionStyles": [
+        "Geometric",
+        "Monogram"
+      ]
+    },
+    {
+      "id": "Abstract",
+      "en": "Abstract",
+      "ar": "تجريدي",
+      "constructionStyles": [
+        "Geometric",
+        "Organic"
+      ]
+    },
+    {
+      "id": "Pictorial",
+      "en": "Pictorial",
+      "ar": "رمز مرتبط بالنشاط",
+      "constructionStyles": [
+        "Organic",
+        "Geometric"
+      ]
+    },
+    {
+      "id": "Emblem",
+      "en": "Emblem",
+      "ar": "ختم وشعار متكامل",
+      "constructionStyles": [
+        "Geometric",
+        "Monogram"
+      ]
+    },
+    {
+      "id": "Luxury",
+      "en": "Luxury & elegant",
+      "ar": "فاخر وأنيق",
+      "constructionStyles": [
+        "Monogram",
+        "Organic"
+      ]
+    },
+    {
+      "id": "Vintage",
+      "en": "Vintage & heritage",
+      "ar": "كلاسيكي وتراثي",
+      "constructionStyles": [
+        "Monogram",
+        "Geometric"
+      ]
+    },
+    {
+      "id": "Modern",
+      "en": "Modern & contemporary",
+      "ar": "عصري ومعاصر",
+      "constructionStyles": [
+        "Geometric",
+        "Organic"
+      ]
+    },
+    {
+      "id": "Bold",
+      "en": "Bold & confident",
+      "ar": "جريء وقوي",
+      "constructionStyles": [
+        "Geometric",
+        "Monogram"
+      ]
+    },
+    {
+      "id": "Friendly",
+      "en": "Friendly & playful",
+      "ar": "ودود ومرح",
+      "constructionStyles": [
+        "Organic"
+      ]
+    },
+    {
+      "id": "Tech",
+      "en": "Technology & futuristic",
+      "ar": "تقني ومستقبلي",
+      "constructionStyles": [
+        "Geometric"
+      ]
+    },
+    {
+      "id": "Line Art",
+      "en": "Line art",
+      "ar": "رسم خطي أنيق",
+      "constructionStyles": [
+        "Organic",
+        "Geometric"
+      ]
+    }
+  ]
+}

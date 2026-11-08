@@ -1,0 +1,859 @@
+// Launch Brand's own Firestore database ("launch-brand") inside gos-app-3c7fb.
+// Copied unchanged from Joe Academy (phoenix-app firestore.rules), with one
+// change: every sign-in check also requires the launchBrand claim, which only
+// the one-time Joe Academy ticket grants. gos dashboard users can't read it.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return (request.auth != null && request.auth.token.launchBrand == true)
+        && !exists(/databases/$(database)/documents/studentDeletions/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ─── Roles: admin, user (student), coach, support ───────────────────────────
+    // Mirrors src/shared/permissions.ts. Roles are only written by the setUserRole function.
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function activeStaff(roles) {
+      let profile = myProfile();
+      return signedIn() && profile.get('role', 'user') in roles && profile.get('disabled', false) != true
+        && !(string(profile.get('status', '')).lower() in ['blocked', 'suspended', 'disabled', 'inactive'])
+        && !(string(profile.get('accountStatus', '')).lower() in ['blocked', 'suspended', 'disabled', 'inactive']);
+    }
+    function isSupport() { return activeStaff(['support']); }
+    function isCoach() { return activeStaff(['coach']); }
+    function isAdminOrSupport() { return activeStaff(['admin', 'support']); }
+    function isStaff() { return activeStaff(['admin', 'coach', 'support']); }
+    // The student is currently assigned to the calling coach.
+    function isMyStudent(studentUid) {
+      return isCoach() && get(/databases/$(database)/documents/users/$(studentUid)).data.get('coachId', null) == request.auth.uid;
+    }
+    function isMySalesStudent(studentUid) {
+      let student = get(/databases/$(database)/documents/users/$(studentUid)).data;
+      return isSupport() && student.get('role', 'user') == 'user' && student.get('salespersonId', null) == request.auth.uid;
+    }
+
+    function contractsAdmin() {
+      let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return signedIn() && profile.role == 'admin' && profile.get('disabled', false) != true
+        && !(profile.get('status', '').lower() in ['blocked', 'suspended', 'disabled', 'inactive'])
+        && !(profile.get('accountStatus', '').lower() in ['blocked', 'suspended', 'disabled', 'inactive']);
+    }
+    match /contractRecords/{id} {
+      allow read: if contractsAdmin() || isSupport();
+      allow delete: if contractsAdmin();
+      // Support may only create a contract whose clauses are exactly the approved template.
+      allow create, update: if (contractsAdmin() || (isSupport() && request.method == 'create'
+          && exists(/databases/$(database)/documents/contractSettings/template)
+          && request.resource.data.clauses == get(/databases/$(database)/documents/contractSettings/template).data.clauses))
+        && request.resource.data.keys().hasOnly(['id','client','programStart','total','currency','paymentMethod','installments','clauses','createdAt','updatedAt','status','signatureDataUrl','signedAt','providerApproval','userId','ownerAssignedByUid','ownerAssignedAt'])
+        && (request.resource.data.get('userId', null) == null || (request.resource.data.userId is string
+          && request.resource.data.userId.size() > 0 && request.resource.data.userId.size() <= 128
+          && exists(/databases/$(database)/documents/users/$(request.resource.data.userId))))
+        && ((request.method == 'create' && !request.resource.data.keys().hasAny(['ownerAssignedByUid','ownerAssignedAt']))
+          || (request.method == 'update'
+            && request.resource.data.get('userId', null) == resource.data.get('userId', null)
+            && request.resource.data.get('ownerAssignedByUid', null) == resource.data.get('ownerAssignedByUid', null)
+            && request.resource.data.get('ownerAssignedAt', null) == resource.data.get('ownerAssignedAt', null)))
+        && ((request.method == 'create' && !('providerApproval' in request.resource.data))
+          || (request.method == 'update' && request.resource.data.get('providerApproval', null) == resource.data.get('providerApproval', null)))
+        && request.resource.data.id == id && request.resource.data.client is map
+        && request.resource.data.client.keys().hasOnly(['name','address','email','phone'])
+        && request.resource.data.client.name is string && request.resource.data.client.address is string
+        && request.resource.data.client.email is string && request.resource.data.client.phone is string
+        && request.resource.data.programStart is string && request.resource.data.total is string
+        && request.resource.data.currency is string && request.resource.data.paymentMethod is string
+        && request.resource.data.installments is list && request.resource.data.clauses is list
+        && request.resource.data.status in ['pending_signature','signed']
+        && request.resource.data.createdAt is timestamp && request.resource.data.updatedAt is timestamp;
+    }
+    match /contractSettings/template {
+      // Only admin manages the clause template (تخصيص وإدارة البنود). Support reads it to create contracts.
+      allow read: if contractsAdmin() || isSupport();
+      allow create, update: if contractsAdmin() && request.resource.data.keys().hasOnly(['clauses','updatedAt'])
+        && request.resource.data.clauses is list && request.resource.data.updatedAt is timestamp;
+      allow delete: if false;
+    }
+    match /contractLinks/{document=**} { allow read, write: if false; }
+
+    // Only public booking presentation settings are readable by invitees.
+    match /bookingSettings/{setting} {
+      allow read: if signedIn() && setting in ['form', 'locations'];
+      allow create, update: if isAdmin() && setting in ['form', 'locations']
+        && request.resource.data.schemaVersion == 1
+        && ((setting == 'form' && request.resource.data.keys().hasOnly(['schemaVersion', 'fields'])
+          && request.resource.data.fields is list && request.resource.data.fields.size() <= 100)
+        || (setting == 'locations' && request.resource.data.keys().hasOnly(['schemaVersion', 'locations'])
+          && request.resource.data.locations is list && request.resource.data.locations.size() <= 30));
+      allow delete: if false;
+    }
+    // Published questionnaire only. Never expose the whole staff settings document.
+    match /bookingSettings/form/hosts/{hostUid} {
+      allow read: if signedIn();
+      allow create, update: if (activeStaff(['admin']) || ((isCoach() || isSupport()) && request.auth.uid == hostUid))
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'fields'])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.fields is list && request.resource.data.fields.size() <= 100;
+      allow delete: if activeStaff(['admin']) || ((isCoach() || isSupport()) && request.auth.uid == hostUid);
+    }
+    match /systemConfig/intakeForm {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /schedules/{category}/days/{date} {
+      allow read: if signedIn() && category in ['coach', 'sales'];
+      // Reservation is performed by the trusted bookAppointment transaction.
+      // Coaches add their own slots; day-level settings are hidden from them in the UI.
+      allow write: if isAdmin() || (isCoach() && category == 'coach');
+    }
+    // Personal staff settings; the legacy collection name also covers support/sales.
+    match /coachBookingSettings/{coachUid} {
+      allow read, write: if activeStaff(['admin']) || ((isCoach() || isSupport()) && request.auth.uid == coachUid);
+    }
+    match /settings/notifications {
+      allow read: if isStaff();
+      // Staff customize their own document; only admin edits shared defaults.
+      allow create, update: if activeStaff(['admin']);
+      allow delete: if false;
+    }
+    match /session_types/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /bookings/{id} {
+      allow read: if isAdmin() || isMySalesStudent(resource.data.get('userId', '')) || (signedIn() && resource.data.get('userId', '') == request.auth.uid)
+        || (isCoach() && resource.data.coachId == request.auth.uid);
+      // Creation and lifecycle changes must update reservations atomically on the server.
+      allow write: if false;
+    }
+
+    // Public availability contains intervals/resources only, never invitee identity or answers.
+    match /bookedSlots/{slotId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+    // Ownership and booking references are private to the trusted reservation services.
+    match /bookingLocks/{slotId} {
+      allow read, write: if false;
+    }
+
+    // ─── Users ──────────────────────────────────────────────────────────────────
+    // Users can read their own document and update only profile-safe fields.
+    // Privileged fields (role, userTier, purchasedCourses, brandLaunched) are
+    // immutable from the client; only admin-initiated writes (or trusted server
+    // contexts) may touch them.
+    match /users/{uid} {
+      // Coaches read their own students, unassigned students and the coach directory.
+      // Direct field checks so list queries (where coachId == me / coachId == null / role == coach) are provable.
+      allow read: if isOwner(uid) || isAdmin() || isSupport()
+        || (isCoach() && (resource.data.coachId == request.auth.uid
+          || (resource.data.role == 'user' && resource.data.coachId == null)
+          || resource.data.role in ['coach', 'support']));
+
+      // Create: only during account setup (no admin escalation allowed)
+      allow create: if isOwner(uid)
+        && !exists(/databases/$(database)/documents/studentDeletions/$(uid))
+        && request.resource.data.get('coachId', null) == null
+        && request.resource.data.get('salespersonId', null) == null
+        && !request.resource.data.keys().hasAny(['salespersonAssignedAt', 'salespersonAssignedBy'])
+        // Legacy: && !('role' in request.resource.data)
+        // Legacy: && !('userTier' in request.resource.data)
+        && request.resource.data.get('role', 'user') == 'user'
+        && request.resource.data.get('userTier', 'high_ticket') == 'high_ticket'
+        && request.resource.data.get('tier', 'high_ticket') == 'high_ticket'
+        && !('purchasedCourses' in request.resource.data);
+
+      // Update: user can only update their own profile-safe subset
+      allow update: if isOwner(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['role', 'userTier', 'purchasedCourses', 'brandLaunched', 'coachId', 'coachAssignedAt', 'coachAssignedBy', 'salespersonId', 'salespersonAssignedAt', 'salespersonAssignedBy', 'createdBy', 'accountStatus', 'accessCode']);
+
+      // Admins may write any field (needed for tier assignment, course unlock, etc.)
+      allow write: if isAdmin();
+    }
+
+    // ─── Access Codes ────────────────────────────────────────────────────────────
+    match /accessCodes/{codeId} {
+      // A single code can be checked by whoever holds it (sign-up). Listing is staff-only and scoped.
+      allow get: if true;
+      allow list: if isAdminOrSupport() || (isCoach() && resource.data.coachId == request.auth.uid);
+      // Codes are generated by the generateAccessCode function.
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
+      // Support (any code) and coaches (their own) can only switch a code on/off.
+      allow update: if (isSupport() || (isCoach() && resource.data.get('coachId', null) == request.auth.uid))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isActive'])
+        && request.resource.data.isActive is bool;
+      // Signed-in users may consume an active, unused code only for their own account.
+      // Code creation, deletion, activation, and tier assignment stay admin-only.
+      allow update: if signedIn()
+        && resource.data.used == false
+        && resource.data.get('isActive', true) == true
+        && request.resource.data.used == true
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.get('usedByEmail', request.auth.token.email) == request.auth.token.email
+        && request.resource.data.usedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['used', 'usedBy', 'usedByEmail', 'usedAt']);
+    }
+
+    // ─── Support Threads & Messages ──────────────────────────────────────────────
+    // A coach only reaches threads of students assigned to him; support and admin reach all.
+    function threadAccess(thread) {
+      return isAdmin() || isMySalesStudent(thread.userId) || (signedIn() && thread.userId == request.auth.uid)
+        || (isCoach() && thread.get('coachId', null) == request.auth.uid);
+    }
+    function coachOfUser(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.get('coachId', null);
+    }
+    match /threads/{threadId} {
+      // getOrCreateThread reads the thread before creating it. A thread that doesn't exist yet has
+      // no resource.data and holds nothing to protect, so that read must not fail.
+      allow get: if signedIn() && (resource == null || threadAccess(resource.data));
+      allow list: if isAdmin() || isMySalesStudent(resource.data.userId) || (signedIn() && resource.data.userId == request.auth.uid)
+        || (isCoach() && resource.data.coachId == request.auth.uid);
+      // coachId must match the student's current coach; nobody picks it freely.
+      allow create: if signedIn()
+        && request.resource.data.get('coachId', null) == coachOfUser(request.resource.data.userId)
+        && (request.resource.data.userId == request.auth.uid || isAdmin() || isMySalesStudent(request.resource.data.userId)
+          || (isCoach() && coachOfUser(request.resource.data.userId) == request.auth.uid));
+      // Only the assignment functions (server) move a thread between coaches.
+      allow update: if threadAccess(resource.data)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'studentId', 'coachId']);
+      allow delete: if isAdmin();
+      match /messages/{messageId} {
+        allow read: if threadAccess(get(/databases/$(database)/documents/threads/$(threadId)).data);
+        // Students post as themselves; staff post as themselves or as the legacy team identity.
+        allow create: if threadAccess(getAfter(/databases/$(database)/documents/threads/$(threadId)).data)
+          && ((request.resource.data.senderRole == 'user' && request.resource.data.senderId == request.auth.uid)
+            || (request.resource.data.senderRole == 'admin'
+              && ((isStaff() && request.resource.data.senderId == request.auth.uid)
+                || request.resource.data.senderId in ['exec_team', 'marketing_team'])));
+        allow update: if threadAccess(get(/databases/$(database)/documents/threads/$(threadId)).data)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['senderId', 'senderRole', 'senderName', 'senderStaffRole', 'createdAt']);
+        allow delete: if isAdmin();
+      }
+    }
+    match /accessAudit/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Admin/support for every student; a coach only for students assigned to him.
+    function coachingStaff(studentUid) {
+        return activeStaff(['admin']) || isMySalesStudent(studentUid) || isMyStudent(studentUid);
+      }
+
+    // Coaching assignments are independent of lessons and journey approvals.
+    match /coachingTasks/{studentUid} {
+      allow read: if coachingStaff(studentUid);
+      allow create, update: if coachingStaff(studentUid)
+        && request.resource.data.keys().hasOnly(['lastSequence'])
+        && request.resource.data.lastSequence is int && request.resource.data.lastSequence >= 0;
+      allow delete: if false;
+    }
+    match /coachingTasks/{studentUid}/items/{taskId} {
+      allow read: if isOwner(studentUid) || coachingStaff(studentUid);
+      allow create: if coachingStaff(studentUid)
+        && exists(/databases/$(database)/documents/users/$(studentUid))
+        && request.resource.data.keys().hasOnly(['sequence', 'title', 'description', 'createdBy', 'completed', 'createdAt', 'updatedAt'])
+        && request.resource.data.sequence is int && request.resource.data.sequence > 0
+        && request.resource.data.sequence == getAfter(/databases/$(database)/documents/coachingTasks/$(studentUid)).data.lastSequence
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string && request.resource.data.description.size() <= 3000
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.completed == false
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      // Student submission and creator approval are separate permissions.
+      allow update: if isOwner(studentUid) && resource.data.completed == false
+        && resource.data.get('submitted', false) == false
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submitted', 'updatedAt'])
+        && request.resource.data.submitted == true && request.resource.data.updatedAt == request.time;
+      allow update: if coachingStaff(studentUid) && resource.data.createdBy == request.auth.uid
+        && resource.data.get('submitted', false) == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'submitted', 'updatedAt'])
+        && request.resource.data.submitted == false
+        && request.resource.data.completed is bool && request.resource.data.updatedAt == request.time;
+      allow update: if coachingStaff(studentUid) && !('sequence' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sequence'])
+        && request.resource.data.sequence is int && request.resource.data.sequence > 0
+        && request.resource.data.sequence <= getAfter(/databases/$(database)/documents/coachingTasks/$(studentUid)).data.lastSequence;
+      allow delete: if coachingStaff(studentUid);
+    }
+
+    // ─── Tour Steps ──────────────────────────────────────────────────────────────
+    match /tourSteps/{stepId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── Academy Modules & Subcollections ────────────────────────────────────────
+    match /academy_modules/{moduleId} {
+      allow read: if signedIn();
+      allow write: if isAdmin() || isCoach();
+      match /{allSubcollections=**} {
+        allow read: if signedIn();
+        allow write: if isAdmin() || isCoach();
+      }
+    }
+
+    // ─── Courses & Course Posts ───────────────────────────────────────────────────
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      match /posts/{postId} {
+        allow read, create: if signedIn();
+        allow update, delete: if signedIn() &&
+          (request.auth.uid == resource.data.authorId || isAdmin());
+      }
+      match /{document=**} {
+        allow read: if signedIn();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ─── User Progress ────────────────────────────────────────────────────────────
+    match /user_progress/{progressId} {
+      allow read, write: if signedIn();
+    }
+
+    // ─── Marketing Configs ────────────────────────────────────────────────────────
+    match /marketing_configs/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ─── User Marketing Progress ──────────────────────────────────────────────────
+    match /user_marketing_progress/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // ─── Billing: Plans (admin-only CRUD, users never touch this directly) ────────
+    match /plans/{planId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      match /versions/{versionNumber} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ─── Billing: Public Plans (published plans read by clients) ─────────────────
+    // Only admin writes (via plansService.publishPlanVersion); clients can read.
+    match /publicPlans/{planId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ─── Billing: Subscriptions ───────────────────────────────────────────────────
+    // Users can read their own subscription; only admin can write.
+    match /subscriptions/{subscriptionId} {
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─── Billing: Orders (billingOrders) ─────────────────────────────────────────
+    // User can create and read their own orders; admin can read and update any.
+    // User CANNOT update an existing order (prevents tampering with pricing/status).
+    match /billingOrders/{orderId} {
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+      allow create: if isOwner(request.resource.data.uid)
+        // Prevent client from setting sensitive fields
+        && request.resource.data.status == 'pending_review'
+        && !('pricingSnapshot' in request.resource.data);  // service populates this
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ─── Billing: Payments (finalized ledger) ─────────────────────────────────────
+    match /payments/{paymentId} {
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─── Account Access Summary ────────────────────────────────────────────────────
+    // Managed by admin/service only; users can read their own.
+    match /accountAccess/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─── Course Grants (independent course purchases) ──────────────────────────────
+    match /courseGrants/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isAdmin();
+      match /items/{courseId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ─── Billing Settings (bank account info, per audienceTier) ────────────────────
+    match /billingSettings/{doc} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    function owner(uid) { return signedIn() && request.auth.uid == uid; }
+    function admin() {
+      return (request.auth != null && request.auth.token.launchBrand == true) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin']
+        && aiMember();
+    }
+    function aiMember() {
+      let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return (request.auth != null && request.auth.token.launchBrand == true) && profile.role in ['user', 'admin', 'superadmin']
+        && (!('disabled' in profile) || profile.disabled != true)
+        && (!('status' in profile) || !(profile.status is string) || !(profile.status.lower() in ['blocked', 'suspended', 'disabled', 'inactive']))
+        && (!('accountStatus' in profile) || !(profile.accountStatus is string) || !(profile.accountStatus.lower() in ['blocked', 'suspended', 'disabled', 'inactive']));
+    }
+    function aiSettings(data) {
+      return data.provider in ['openai', 'gemini'] && data.model is string && data.model.matches('^[a-zA-Z0-9._-]{1,120}$')
+        && data.systemInstructions is string && data.systemInstructions.size() <= 8000
+        && data.maxOutputTokens is int && data.maxOutputTokens >= 128 && data.maxOutputTokens <= 16384
+        && data.dailyUserLimit is int && data.dailyUserLimit >= 1 && data.dailyUserLimit <= 500
+        && data.dailyGlobalLimit is int && data.dailyGlobalLimit >= 1 && data.dailyGlobalLimit <= 10000
+        && data.status == 'connected' && data.aiPaused is bool
+        && data.keyLast4 is string && data.keyLast4.size() == 4
+        && data.revision is string && data.capabilities is map && data.testedAt == request.time;
+    }
+    function usageCounter(data) {
+      return data.keys().hasOnly(['day', 'minute', 'requests', 'recent', 'dailyLimit', 'updatedAt'])
+        && data.day is string && data.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.minute is int && data.requests is int && data.requests >= 0 && data.requests <= 10000
+        && data.recent is int && data.recent >= 0 && data.recent <= 30
+        && data.dailyLimit is int && data.dailyLimit >= 1 && data.dailyLimit <= 10000
+        && data.updatedAt == request.time;
+    }
+    function pageIds() {
+      return ['vision_journey', 'business_discovery', 'branding', 'template_builder',
+        'dashboard', 'integrations', 'ai_center', 'content_planner', 'marketing', 'deployment'];
+    }
+    function brandImageManifest(assetId, data) {
+      return data.encoding == 'chunked-data-url-v1'
+        && !('parentAssetId' in data)
+        && data.assetId == assetId && data.dataUrl == ''
+        && data.size is int && data.size > 0 && data.size <= 5242880
+        && data.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+        && data.chunkCount is int && data.chunkCount >= 2 && data.chunkCount <= 14
+        && data.encodedLength is int && data.encodedLength <= 6990548
+        && data.encodedLength > (data.chunkCount - 1) * 512000
+        && data.encodedLength <= data.chunkCount * 512000
+        && data.sha256 is string && data.sha256.matches('^[a-f0-9]{64}$');
+    }
+    function brandImageChunk(uid, assetId, data) {
+      let parent = getAfter(/databases/$(database)/documents/users/$(uid)/assets/$(data.parentAssetId)).data;
+      return data.parentAssetId is string && data.parentAssetId.matches('^[a-zA-Z0-9-]{1,100}$')
+        && data.index is int && data.index >= 0 && data.index < 14
+        && assetId == data.parentAssetId + '-part-' + string(data.index)
+        && parent.kind == 'firestore_image' && parent.encoding == 'chunked-data-url-v1'
+        && data.index < parent.chunkCount
+        && data.dataUrl.size() == (data.index == parent.chunkCount - 1
+          ? parent.encodedLength - data.index * 512000 : 512000);
+    }
+    function firestoreBrandImage(uid, assetId, data) {
+      return data.kind == 'firestore_image' && data.dataUrl is string
+        && (('encoding' in data && brandImageManifest(assetId, data))
+          || (!('encoding' in data) && 'parentAssetId' in data && brandImageChunk(uid, assetId, data))
+          || (!('encoding' in data) && !('parentAssetId' in data)
+            && data.dataUrl.size() > 0 && data.dataUrl.size() < 750000
+            && data.dataUrl.matches('data:image/(png|jpeg|webp|svg[+]xml);base64,.*')));
+    }
+    // Spark/browser mode: active members can read the shared provider key.
+    function safeConnection(data) {
+      return data.keys().hasOnly(['provider', 'model', 'models', 'keyLast4', 'status', 'revision', 'capabilities', 'testedAt', 'aiPaused', 'systemInstructions', 'maxOutputTokens', 'dailyUserLimit', 'dailyGlobalLimit']) && aiSettings(data);
+    }
+    match /aiConnections/default {
+      allow read: if aiMember();
+      allow create: if admin() && safeConnection(request.resource.data);
+      allow update: if admin() && (safeConnection(request.resource.data) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aiPaused']) && request.resource.data.aiPaused is bool);
+      allow delete: if admin();
+    }
+    match /tenants/global {
+      allow read: if aiMember();
+      allow create: if admin() && aiSettings(request.resource.data)
+        && request.resource.data.keys().hasOnly(['provider', 'model', 'models', 'keyLast4', 'status', 'revision', 'capabilities', 'testedAt', 'aiPaused', 'systemInstructions', 'maxOutputTokens', 'dailyUserLimit', 'dailyGlobalLimit', 'openaiApiKey', 'geminiApiKey'])
+        && request.resource.data.openaiApiKey is string && request.resource.data.geminiApiKey is string;
+      allow update: if admin() && (aiSettings(request.resource.data)
+        && request.resource.data.keys().hasOnly(['provider', 'model', 'models', 'keyLast4', 'status', 'revision', 'capabilities', 'testedAt', 'aiPaused', 'systemInstructions', 'maxOutputTokens', 'dailyUserLimit', 'dailyGlobalLimit', 'openaiApiKey', 'geminiApiKey'])
+        && request.resource.data.openaiApiKey is string && request.resource.data.geminiApiKey is string
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aiPaused']) && request.resource.data.aiPaused is bool);
+      allow delete: if admin();
+    }
+    match /aiCredentials/{documentId} { allow read, write: if false; }
+    match /aiAdminAudit/{documentId} {
+      allow read: if admin();
+      allow create: if admin() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'action', 'provider', 'model', 'createdAt'])
+        && request.resource.data.action in ['save-platform', 'disconnect-platform', 'pause-platform', 'resume-platform']
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+    match /aiUsage/{documentId} { allow read: if aiMember(); allow create, update: if aiMember() && usageCounter(request.resource.data); allow delete: if false; }
+    function clientAggregate(data) {
+      return data.keys().hasOnly(['day', 'calls', 'success', 'failed', 'unknown', 'unmeasuredCalls', 'inputTokens', 'outputTokens', 'totalTokens', 'cachedTokens', 'reasoningTokens', 'firstTrackedAt', 'updatedAt', 'operation', 'provider', 'source', 'successOperations', 'failedOperations']);
+    }
+    function discoveryCatalogHeader(data) {
+      return data.keys().hasAll(['schemaVersion', 'version', 'niches', 'subNiches', 'templates', 'source'])
+        && data.schemaVersion == 1
+        && data.version is string && data.version.matches('^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}$')
+        && data.niches is list && data.niches.size() > 0 && data.niches.size() <= 100
+        && data.subNiches is list && data.subNiches.size() > 0 && data.subNiches.size() <= 500
+        && data.templates is map && data.templates.keys().hasOnly(['funnels', 'dashboards'])
+        && data.templates.funnels is list && data.templates.funnels.size() <= 500
+        && data.templates.dashboards is list && data.templates.dashboards.size() <= 500
+        && data.source is map && data.source.document is string && data.source.document.size() <= 250
+        && data.source.documentVersion is string && data.source.documentVersion.size() <= 80;
+    }
+    function discoveryPublished(data) {
+      return discoveryCatalogHeader(data)
+        && data.keys().hasOnly(['schemaVersion', 'version', 'niches', 'subNiches', 'templates', 'source', 'publishedAt', 'publishedBy'])
+        && data.publishedAt == request.time && data.publishedBy == request.auth.uid;
+    }
+    // Trusted Super Admin transactions work without paid Cloud Functions.
+    // Each current pointer must match the immutable release created by that transaction.
+    match /discoveryCatalog/current {
+      allow read: if (request.auth != null && request.auth.token.launchBrand == true);
+      allow create, update: if admin() && discoveryPublished(request.resource.data)
+        && getAfter(/databases/$(database)/documents/discoveryCatalogVersions/$(request.resource.data.version)).data == request.resource.data;
+      allow delete: if false;
+    }
+    match /discoveryCatalogDrafts/{draftId} {
+      allow read: if admin();
+      allow create, update: if draftId == 'current' && admin()
+        && discoveryCatalogHeader(request.resource.data)
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'version', 'niches', 'subNiches', 'templates', 'source', 'draftRevision', 'updatedAt', 'updatedBy'])
+        && request.resource.data.draftRevision is string
+        && request.resource.data.draftRevision.matches('^[a-zA-Z0-9-]{1,80}$')
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+    match /discoveryCatalogVersions/{version} {
+      allow read: if (request.auth != null && request.auth.token.launchBrand == true);
+      allow create: if admin() && discoveryPublished(request.resource.data)
+        && request.resource.data.version == version;
+      allow update, delete: if false;
+    }
+    match /discoveryCatalogAudit/{eventId} {
+      allow read: if admin();
+      allow create: if admin()
+        && request.resource.data.keys().hasOnly(['uid', 'action', 'version', 'draftRevision', 'createdAt', 'source'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.action in ['initialize', 'save-draft', 'publish']
+        && request.resource.data.version is string && request.resource.data.version.matches('^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}$')
+        && request.resource.data.draftRevision is string && request.resource.data.draftRevision.matches('^[a-zA-Z0-9-]{1,80}$')
+        && request.resource.data.createdAt == request.time
+        && (!('source' in request.resource.data) || (request.resource.data.source is string && request.resource.data.source.size() <= 120));
+      allow update, delete: if false;
+    }
+    match /discoverySettings/{documentId} {
+      allow read: if (request.auth != null && request.auth.token.launchBrand == true) && (documentId == 'current' || admin());
+      allow create, update: if admin() && documentId in ['draft', 'current']
+        && request.resource.data.schemaVersion == 1 && request.resource.data.revision is string
+        && request.resource.data.version is string && request.resource.data.instruction is string
+        && request.resource.data.instruction.size() <= 6000 && request.resource.data.dailyLimit is int
+        && request.resource.data.dailyLimit >= 1 && request.resource.data.dailyLimit <= 100;
+      allow delete: if false;
+    }
+    match /discoverySettingsVersions/{version} {
+      allow read: if (request.auth != null && request.auth.token.launchBrand == true);
+      allow create: if admin() && request.resource.data.version == version
+        && request.resource.data.schemaVersion == 1 && request.resource.data.publishedBy == request.auth.uid
+        && request.resource.data.publishedAt == request.time;
+      allow update, delete: if false;
+    }
+    match /users/{uid} {
+      match /pages/{pageId} {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid) && pageId in pageIds()
+          && request.resource.data.keys().hasOnly(['pageId', 'pageName', 'schemaVersion', 'parameters', 'revision', 'updatedAt'])
+          && request.resource.data.pageId == pageId
+          && request.resource.data.pageName is string
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.parameters is map
+          && request.resource.data.revision is string
+          && request.resource.data.revision.size() > 0 && request.resource.data.revision.size() <= 128
+          && getAfter(/databases/$(database)/documents/users/$(uid)/brandEngine/draft).data.revision == request.resource.data.revision
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+      match /notifications/{notificationId} {
+        allow read: if owner(uid) || admin();
+        allow create: if owner(uid)
+          && request.resource.data.keys().hasOnly(['id', 'type', 'timestamp', 'pageIds', 'changes', 'read', 'createdAt'])
+          && request.resource.data.id == notificationId
+          && request.resource.data.type == 'saved'
+          && request.resource.data.timestamp is number
+          && request.resource.data.pageIds is list
+          && request.resource.data.pageIds.hasOnly(pageIds())
+          && request.resource.data.changes is list
+          && request.resource.data.changes.size() <= 100
+          && request.resource.data.read == false
+          && request.resource.data.createdAt == request.time;
+        allow update: if owner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+          && request.resource.data.read is bool;
+        allow delete: if false;
+      }
+      match /assets/{assetId} {
+        allow read: if owner(uid) || admin();
+        allow create: if owner(uid) && (firestoreBrandImage(uid, assetId, request.resource.data) ||
+          (request.resource.data.kind == 'storage_image'
+          && request.resource.data.assetId == assetId
+          && request.resource.data.storagePath.matches('users/' + uid + '/brandAssets/' + assetId + '/original[.](png|jpg|webp|svg)')
+          && request.resource.data.contentType in ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+          && request.resource.data.size > 0 && request.resource.data.size <= 5 * 1024 * 1024))
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+      // AI-provider credentials are no longer user-managed. Allow owners to erase
+      // their legacy credential records without allowing them to read or replace them.
+      match /private/{documentId} {
+        allow read, write: if false;
+        allow delete: if owner(uid) && aiMember() && documentId in ['aiCredential-gemini', 'aiCredential-openai'];
+      }
+      match /aiBrowserCredentials/{provider} {
+        allow read, create, update: if false;
+        allow delete: if owner(uid) && aiMember() && provider in ['gemini', 'openai'];
+      }
+      match /aiConnections/{connectionId} {
+        allow read, create, update: if false;
+        allow delete: if owner(uid) && aiMember() && connectionId in ['gemini', 'openai'];
+      }
+      match /aiCenterMessages/{messageId} { allow read: if owner(uid); allow write: if false; }
+      match /aiOperationEvents/{operationId} {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid) && aiMember() && request.resource.data.keys().hasOnly(['requestId', 'operation', 'status', 'startedAt']) && request.resource.data.requestId == operationId && request.resource.data.status in ['complete', 'failed', 'unknown'] && request.resource.data.startedAt is int;
+        allow delete: if false;
+      }
+      match /aiUsageLegacy/{legacyId} {
+        allow read: if owner(uid) || admin();
+        allow create: if owner(uid) && aiMember() && request.resource.data.keys().hasOnly(['day', 'minute', 'requests', 'recent', 'dailyLimit', 'updatedAt', 'capturedAt']);
+        allow update, delete: if false;
+      }
+      match /aiSettings/{documentId} {
+        allow read: if owner(uid);
+        allow create, update: if owner(uid) && aiMember() && documentId == 'default'
+          && request.resource.data.keys().hasOnly(['source', 'dailyUserLimit', 'maxOutputTokens', 'monthlyTokenAlert'])
+          && request.resource.data.source == 'platform'
+          && (!('dailyUserLimit' in request.resource.data) || request.resource.data.dailyUserLimit is int && request.resource.data.dailyUserLimit >= 1 && request.resource.data.dailyUserLimit <= 500)
+          && (!('maxOutputTokens' in request.resource.data) || request.resource.data.maxOutputTokens is int && request.resource.data.maxOutputTokens >= 128 && request.resource.data.maxOutputTokens <= 16384)
+          && (!('monthlyTokenAlert' in request.resource.data) || request.resource.data.monthlyTokenAlert == null || request.resource.data.monthlyTokenAlert is int && request.resource.data.monthlyTokenAlert > 0);
+        allow delete: if false;
+      }
+      match /aiUsageEvents/{callId} {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid) && aiMember()
+          && request.resource.data.keys().hasOnly(['callId', 'requestId', 'operation', 'provider', 'model', 'source', 'startedAt', 'completedAt', 'durationMs', 'status', 'inputTokens', 'outputTokens', 'totalTokens', 'cachedTokens', 'reasoningTokens', 'aggregated'])
+          && request.resource.data.callId == callId && request.resource.data.provider in ['gemini', 'openai']
+          && request.resource.data.source in ['platform', 'personal'] && request.resource.data.startedAt is int
+          && request.resource.data.status in ['pending', 'success', 'failed', 'unknown'];
+        allow delete: if false;
+      }
+      match /aiUsageDaily/{day} { allow read: if owner(uid) || admin(); allow create, update: if owner(uid) && aiMember() && clientAggregate(request.resource.data) && request.resource.data.day == day; allow delete: if false; }
+      match /aiUsageSummary/{summary} { allow read: if owner(uid) || admin(); allow create, update: if owner(uid) && aiMember() && summary == 'lifetime' && clientAggregate(request.resource.data); allow delete: if false; }
+      match /logoGenerationAttempts/{slot} {
+        allow read: if owner(uid) || admin();
+        allow create: if owner(uid) && aiMember() && slot in ['1', '2', '3']
+          && request.resource.data.keys().hasOnly(['requestId', 'createdAt'])
+          && request.resource.data.requestId is string
+          && request.resource.data.requestId.matches('^[a-zA-Z0-9-]{1,80}$')
+          && request.resource.data.createdAt == request.time
+          && getAfter(/databases/$(database)/documents/users/$(uid)/aiJobs/$(request.resource.data.requestId)).data.kind == 'generateBrandElement'
+          && getAfter(/databases/$(database)/documents/users/$(uid)/aiJobs/$(request.resource.data.requestId)).data.status == 'running';
+        allow update, delete: if false;
+      }
+      match /logoGenerationCredits/{slot} {
+        function linkedJob() {
+          return getAfter(/databases/$(database)/documents/users/$(uid)/aiJobs/$(request.resource.data.requestId)).data;
+        }
+        function reservation() {
+          return request.resource.data.status == 'reserved'
+            && request.resource.data.createdAt == request.time
+            // createdAt is server-assigned. expiresAt remains a legacy client hint;
+            // comparing it to request.time rejects valid requests with clock skew.
+            && linkedJob().status == 'running'
+            && linkedJob().lease == request.resource.data.lease;
+        }
+        function validCredit() {
+          return owner(uid) && aiMember() && slot in ['1', '2', '3']
+            && request.resource.data.keys().hasOnly(['requestId', 'createdAt', 'lease', 'status', 'expiresAt'])
+            && request.resource.data.requestId is string
+            && request.resource.data.requestId.matches('^[a-zA-Z0-9-]{1,80}$')
+            && request.resource.data.lease is string
+            && request.resource.data.expiresAt is int
+            && linkedJob().kind == 'generateBrandElement';
+        }
+        allow read: if owner(uid) || admin();
+        allow create: if validCredit() && reservation();
+        allow update: if validCredit() && (
+          ((resource.data.status == 'available' || (resource.data.status == 'reserved'
+            && resource.data.createdAt.toMillis() + 1800000 <= request.time.toMillis())) && reservation())
+          || (resource.data.status == 'reserved'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && linkedJob().lease == resource.data.lease
+            && ((request.resource.data.status == 'complete' && linkedJob().status == 'complete'
+              && linkedJob().result.qualityStatus == 'approved' && linkedJob().result.suggestions.size() > 0)
+              || (request.resource.data.status == 'available'
+                && (linkedJob().status in ['failed', 'unknown']
+                  || (linkedJob().status == 'complete' && linkedJob().result.qualityStatus in ['pending', 'rejected']))))));
+        allow delete: if false;
+      }
+      match /aiJobs/{jobId} {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid) && aiMember()
+          && request.resource.data.keys().hasOnly(['kind', 'lease', 'inputFingerprint', 'status', 'stage', 'startedAt', 'completedAt', 'result'])
+          && request.resource.data.kind is string && request.resource.data.startedAt is int
+          && request.resource.data.status in ['running', 'complete', 'failed', 'unknown'];
+        allow delete: if false;
+      }
+      match /copilotRequests/{requestId} { allow read: if owner(uid) || admin(); allow write: if false; }
+      match /aiUsage/{usageId} { allow read: if owner(uid) || admin(); allow create, update: if owner(uid) && aiMember() && usageCounter(request.resource.data); allow delete: if false; }
+      match /brandEngine/draft {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid)
+          && request.resource.data.keys().hasOnly(['schemaVersion', 'revision', 'pageIds', 'updatedAt'])
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.revision is string
+          && request.resource.data.revision.size() > 0 && request.resource.data.revision.size() <= 128
+          && request.resource.data.pageIds == pageIds()
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+      match /brandEngine/phoenixPreparation {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid)
+          && request.resource.data.keys().hasOnly(['state', 'fingerprint', 'snapshotId', 'error', 'progress', 'stage', 'phoenixUid', 'phoenixOrigin', 'updatedAt'])
+          && request.resource.data.state == 'prepared'
+          && request.resource.data.phoenixUid == uid
+          && request.resource.data.snapshotId is string
+          && request.resource.data.snapshotId == getAfter(/databases/$(database)/documents/users/$(uid)/brandEngine/draft).data.revision
+          && request.resource.data.fingerprint is string
+          && request.resource.data.fingerprint.size() > 0 && request.resource.data.fingerprint.size() <= 900000
+          && request.resource.data.error == null
+          && request.resource.data.progress == 100 && request.resource.data.stage == 'done'
+          && request.resource.data.phoenixOrigin is string
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+      match /brandEngine/gosDeployment {
+        allow read: if owner(uid) || admin();
+        allow create, update: if owner(uid)
+          && request.resource.data.keys().hasOnly(['status', 'revision', 'updatedAt'])
+          && request.resource.data.status == 'prepared'
+          && request.resource.data.revision == get(/databases/$(database)/documents/users/$(uid)/brandEngine/phoenixPreparation).data.snapshotId
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+      match /brandEngine/copilotUsage {
+        allow read: if owner(uid) || admin();
+        allow write: if false;
+      }
+      match /billing/current {
+        allow read: if owner(uid) || admin();
+        allow write: if false;
+      }
+      match /conversations/{conversationId} {
+        allow read: if owner(uid) || admin();
+        allow create: if owner(uid)
+          && request.resource.data.keys().hasOnly(['title', 'createdAt', 'updatedAt'])
+          && request.resource.data.title is string && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 100
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if owner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt'])
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+        match /messages/{messageId} {
+          allow read: if owner(uid) || admin();
+          // Browser-mode replies and user messages are owner-scoped.
+          allow create: if owner(uid)
+            && request.resource.data.keys().hasOnly(['role', 'content', 'attachments', 'createdAt', 'requestId'])
+            && request.resource.data.role in ['user', 'assistant']
+            && request.resource.data.content is string && request.resource.data.content.size() <= 24000
+            && request.resource.data.attachments is list && request.resource.data.attachments.size() <= 3
+            && (request.resource.data.content.size() > 0 || request.resource.data.attachments.size() > 0)
+            && request.resource.data.createdAt == request.time
+            && existsAfter(/databases/$(database)/documents/users/$(uid)/conversations/$(conversationId));
+          allow update, delete: if false;
+        }
+      }
+    }
+    // Existing imported configurations remain owner-readable and immutable.
+    match /users/{uid}/brandEngineImports/{importId} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+      match /{records=**} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+    }
+    match /users/{uid}/brandEngine/current {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+    match /users/{uid}/brandEngineSnapshots/{snapshotId} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+      match /pages/{pageId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+    }
+    match /users/{uid}/brandEngineAssets/{assetId} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+    // Legacy Academy collections retain their existing fallback. The migrated
+    // collections are exclusively controlled by their explicit rules above.
+    // Journey authority and private records are served only by authenticated server DTOs.
+    match /journey/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /bookingReminders/{document=**} {
+      allow read, write: if false;
+    }
+    match /bookingNoShows/{document=**} {
+      allow read, write: if false;
+    }
+    match /bookingConfirmations/{document=**} {
+      allow read, write: if false;
+    }
+    match /bookingScheduleEdits/{document=**} {
+      allow read, write: if false;
+    }
+    match /bookingAdminNotifications/{uid}/items/{notificationId} {
+      // Only the recipient can read and acknowledge server-authored notices.
+      allow read: if signedIn() && request.auth.uid == uid
+        && activeStaff(['admin', 'superadmin', 'coach', 'support']);
+      allow update: if signedIn() && request.auth.uid == uid
+        && activeStaff(['admin', 'superadmin', 'coach', 'support'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read == true;
+      allow create, delete: if false;
+    }
+
+    match /studentDeletions/{uid} {
+      allow read, write: if false;
+    }
+
+    match /{collection}/{document=**} {
+      allow read, write: if signedIn() && !(collection in ['studentDeletions', 'threads', 'accessCodes', 'accessAudit', 'coachingTasks', 'bookingNoShows', 'bookingScheduleEdits', 'bookingConfirmations', 'bookingReminders', 'bookingAdminNotifications', 'contractRecords', 'contractSettings', 'contractLinks', 'bookingSettings', 'coachBookingSettings', 'bookings', 'bookedSlots', 'bookingLocks', 'schedules', 'session_types', 'journey', 'users', 'aiConnections', 'tenants', 'aiCredentials', 'aiAdminAudit', 'aiUsage', 'discoveryCatalog', 'discoveryCatalogDrafts', 'discoveryCatalogVersions', 'discoveryCatalogAudit', 'discoverySettings', 'discoverySettingsVersions'])
+        && request.path != /databases/$(database)/documents/systemConfig/intakeForm
+        && request.path != /databases/$(database)/documents/settings/notifications;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+export type AIProvider = "gemini" | "openai";
+export type AISettings = {
+  source: "platform";
+  dailyUserLimit?: number;
+  maxOutputTokens?: number;
+  monthlyTokenAlert?: number | null;
+};
+export type AIUsageEvent = {
+  callId: string;
+  requestId: string;
+  operation: string;
+  provider: AIProvider;
+  model: string;
+  source: "platform" | "personal";
+  startedAt: number;
+  completedAt: number | null;
+  durationMs: number | null;
+  status: "pending" | "success" | "failed" | "unknown";
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+  cachedTokens: number | null;
+  reasoningTokens: number | null;
+};
+export type UsageAggregate = {
+  calls?: number;
+  successOperations?: number;
+  failedOperations?: number;
+  success?: number;
+  failed?: number;
+  unknown?: number;
+  unmeasuredCalls?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  cachedTokens?: number;
+  reasoningTokens?: number;
+  firstTrackedAt?: number;
+  operation?: Record<string, { calls: number; totalTokens: number; unmeasuredCalls: number }>;
+  provider?: UsageAggregate["operation"];
+  source?: UsageAggregate["operation"];
+};

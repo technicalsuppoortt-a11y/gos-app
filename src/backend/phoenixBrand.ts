@@ -13,6 +13,10 @@ export type PhoenixConfiguration = { uid: string; brand: PhoenixBrand; logo: str
 let configuration: PhoenixConfiguration | null = null;
 let configurationRevision = "";
 const listeners = new Set<() => void>();
+/** Launch Brand live preview (branding/launchBrandPreview.ts): show a brand without saving it. */
+export function previewPhoenixBrand(next: PhoenixConfiguration) {
+  configuration = { ...next, pages: next.pages ?? {} }; configurationRevision = "launch-brand-preview"; listeners.forEach(fn => fn());
+}
 export function clearPhoenixBrand() { configuration = null; configurationRevision = ""; listeners.forEach(fn => fn()); }
 export function getPhoenixBrand() { return configuration; }
 export function usePhoenixBrand() {

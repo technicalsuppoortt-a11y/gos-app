@@ -1,0 +1,525 @@
+import { createBrandTheme, readableBrandForeground, type BrandTheme } from "./brandTheme.ts";
+
+type StudioColorPreset = {
+  id: string;
+  name: string;
+  nameAr: string;
+  primary: string;
+  secondary: string;
+  background: string;
+  mode: "light" | "dark";
+  darkBackground: string;
+  darkPrimary?: string;
+};
+
+// Curated using Radix color-role guidance and Realtime Colors previews.
+// https://www.radix-ui.com/colors/docs/palette-composition/understanding-the-scale
+// https://www.realtimecolors.com/docs/examples/
+// Preserve IDs so existing saved identities remain compatible.
+export const studioColorPresets: StudioColorPreset[] = [
+  {
+    id: "ai-cyber",
+    name: "Cyber Blue",
+    nameAr: "أزرق سيبراني",
+    primary: "#1D4ED8",
+    secondary: "#475569",
+    background: "#F4F7FC",
+    mode: "light",
+    darkBackground: "#101A2B",
+  },
+  {
+    id: "ai-teal",
+    name: "Modern Teal",
+    nameAr: "التايل العصري",
+    primary: "#087F8C",
+    secondary: "#40686B",
+    background: "#F5FAFA",
+    mode: "dark",
+    darkBackground: "#101B2D",
+    darkPrimary: "#66D4C5",
+  },
+  {
+    id: "ai-emerald",
+    name: "Emerald Luxury",
+    nameAr: "الزمردي الملكي",
+    primary: "#16634F",
+    secondary: "#8A7043",
+    background: "#F3F7F1",
+    mode: "light",
+    darkBackground: "#20161B",
+  },
+  {
+    id: "ai-purple",
+    name: "Midnight Purple",
+    nameAr: "الأرجواني الفاخر",
+    primary: "#7252B8",
+    secondary: "#665675",
+    background: "#F9F7FC",
+    mode: "dark",
+    darkBackground: "#191525",
+    darkPrimary: "#C4B5FD",
+  },
+  {
+    id: "ai-sunset",
+    name: "Ruby Rose",
+    nameAr: "الياقوتي الهادئ",
+    primary: "#A6324F",
+    secondary: "#80576A",
+    background: "#FFF4F5",
+    mode: "light",
+    darkBackground: "#211A16",
+  },
+  {
+    id: "studio-navy",
+    name: "Navy & Gold",
+    nameAr: "كحلي وذهبي",
+    primary: "#243E60",
+    secondary: "#9C7D50",
+    background: "#FAF9F6",
+    mode: "dark",
+    darkBackground: "#23171B",
+    darkPrimary: "#A5C8FF",
+  },
+  {
+    id: "studio-ocean",
+    name: "Ocean & Sage",
+    nameAr: "محيطي ومريمي",
+    primary: "#155E75",
+    secondary: "#64836B",
+    background: "#EDF6F7",
+    mode: "light",
+    darkBackground: "#10201E",
+  },
+  {
+    id: "studio-forest",
+    name: "Forest & Sand",
+    nameAr: "غابات ورملي",
+    primary: "#285B47",
+    secondary: "#9A8160",
+    background: "#F9F9F5",
+    mode: "dark",
+    darkBackground: "#10201C",
+    darkPrimary: "#78D6BB",
+  },
+  {
+    id: "studio-plum",
+    name: "Plum & Dusty Rose",
+    nameAr: "برقوقي ووردي هادئ",
+    primary: "#763C68",
+    secondary: "#B38677",
+    background: "#FAF0F6",
+    mode: "light",
+    darkBackground: "#151F29",
+  },
+  {
+    id: "studio-terracotta",
+    name: "Terracotta & Stone",
+    nameAr: "طوبي وحجري",
+    primary: "#A8553B",
+    secondary: "#84766B",
+    background: "#FBF8F5",
+    mode: "dark",
+    darkBackground: "#1B1825",
+    darkPrimary: "#F0AD91",
+  },
+  {
+    id: "studio-graphite",
+    name: "Graphite & Silver",
+    nameAr: "جرافيت وفضي",
+    primary: "#272B33",
+    secondary: "#717B87",
+    background: "#F2F3F5",
+    mode: "light",
+    darkBackground: "#101A2B",
+  },
+  {
+    id: "studio-burgundy",
+    name: "Burgundy & Champagne",
+    nameAr: "عنابي وشامبين",
+    primary: "#843D50",
+    secondary: "#A3896A",
+    background: "#FBF8F6",
+    mode: "dark",
+    darkBackground: "#22171E",
+    darkPrimary: "#E3A8BF",
+  },
+  {
+    id: "studio-cobalt",
+    name: "Cobalt & Soft Copper",
+    nameAr: "كوبالت ونحاسي هادئ",
+    primary: "#234FAA",
+    secondary: "#A46644",
+    background: "#F1F5FD",
+    mode: "light",
+    darkBackground: "#20161B",
+  },
+  {
+    id: "studio-coffee",
+    name: "Coffee & Cream",
+    nameAr: "قهوة وكريمي",
+    primary: "#6B4838",
+    secondary: "#9B8169",
+    background: "#FBF8F4",
+    mode: "dark",
+    darkBackground: "#152031",
+    darkPrimary: "#D6B48F",
+  },
+  {
+    id: "studio-indigo",
+    name: "Indigo & Slate",
+    nameAr: "نيلي ورمادي أزرق",
+    primary: "#433A91",
+    secondary: "#5F7994",
+    background: "#F3F2FA",
+    mode: "light",
+    darkBackground: "#211A16",
+  },
+  {
+    id: "studio-petrol",
+    name: "Petrol & Brass",
+    nameAr: "بترولي ونحاسي ذهبي",
+    primary: "#205563",
+    secondary: "#A28A52",
+    background: "#F8F9F6",
+    mode: "dark",
+    darkBackground: "#201B18",
+    darkPrimary: "#71CCD9",
+  },
+  {
+    id: "studio-olive",
+    name: "Olive & Linen",
+    nameAr: "زيتوني وكتاني",
+    primary: "#4F602F",
+    secondary: "#97723E",
+    background: "#F6F5E9",
+    mode: "light",
+    darkBackground: "#10201E",
+  },
+  {
+    id: "studio-sapphire",
+    name: "Sapphire & Mist",
+    nameAr: "ياقوت أزرق وضبابي",
+    primary: "#24518A",
+    secondary: "#738C9F",
+    background: "#F5F8FC",
+    mode: "dark",
+    darkBackground: "#141A28",
+    darkPrimary: "#9ABEFF",
+  },
+  {
+    id: "studio-aubergine",
+    name: "Aubergine & Antique Gold",
+    nameAr: "باذنجاني وذهبي عتيق",
+    primary: "#553050",
+    secondary: "#99722F",
+    background: "#FAF4EC",
+    mode: "light",
+    darkBackground: "#151F29",
+  },
+  {
+    id: "studio-charcoal",
+    name: "Charcoal & Camel",
+    nameAr: "فحمي وجملي",
+    primary: "#343A40",
+    secondary: "#AA8562",
+    background: "#FAF8F5",
+    mode: "dark",
+    darkBackground: "#211B29",
+    darkPrimary: "#DCC3A4",
+  },
+  {
+    id: "studio-jade",
+    name: "Jade & Pearl",
+    nameAr: "يشمي ولؤلؤي",
+    primary: "#1B6A56",
+    secondary: "#6E8880",
+    background: "#EDF7F2",
+    mode: "light",
+    darkBackground: "#101A2B",
+  },
+  {
+    id: "studio-clay",
+    name: "Clay & Eucalyptus",
+    nameAr: "طيني وكافوري",
+    primary: "#9A5546",
+    secondary: "#718A7A",
+    background: "#FBF8F4",
+    mode: "dark",
+    darkBackground: "#15231F",
+    darkPrimary: "#E9AE99",
+  },
+  {
+    id: "studio-steel",
+    name: "Steel Blue & Taupe",
+    nameAr: "أزرق فولاذي وبني رمادي",
+    primary: "#3E6078",
+    secondary: "#9A7A62",
+    background: "#F1F6FA",
+    mode: "light",
+    darkBackground: "#20161B",
+  },
+  {
+    id: "studio-wine",
+    name: "Wine & Pewter",
+    nameAr: "نبيذي ورمادي معدني",
+    primary: "#752F46",
+    secondary: "#7F8586",
+    background: "#FBF7F8",
+    mode: "dark",
+    darkBackground: "#141D2B",
+    darkPrimary: "#E7A5B8",
+  },
+  {
+    id: "studio-cypress",
+    name: "Cypress & Copper",
+    nameAr: "سرو ونحاسي",
+    primary: "#245441",
+    secondary: "#A16744",
+    background: "#F1F5EE",
+    mode: "light",
+    darkBackground: "#211A16",
+  },
+  {
+    id: "studio-violet",
+    name: "Violet & Lavender",
+    nameAr: "بنفسجي ولافندر",
+    primary: "#634A94",
+    secondary: "#9382AB",
+    background: "#FAF7FD",
+    mode: "dark",
+    darkBackground: "#122622",
+    darkPrimary: "#BFA6F2",
+  },
+  {
+    id: "studio-marine",
+    name: "Marine & Coral",
+    nameAr: "أزرق بحري ومرجاني",
+    primary: "#1F4C72",
+    secondary: "#B46557",
+    background: "#F2F6FC",
+    mode: "light",
+    darkBackground: "#10201E",
+  },
+  {
+    id: "studio-cinnamon",
+    name: "Cinnamon & Oat",
+    nameAr: "قرفة وشوفان",
+    primary: "#8E4D32",
+    secondary: "#AC9472",
+    background: "#FCF8F1",
+    mode: "dark",
+    darkBackground: "#211C16",
+    darkPrimary: "#EDB17D",
+  },
+  {
+    id: "studio-peacock",
+    name: "Peacock & Mauve",
+    nameAr: "طاووسي وموف هادئ",
+    primary: "#116174",
+    secondary: "#96708D",
+    background: "#EFF6F8",
+    mode: "light",
+    darkBackground: "#151F29",
+  },
+  {
+    id: "studio-ink",
+    name: "Ink & Porcelain",
+    nameAr: "حبري وخزفي",
+    primary: "#293347",
+    secondary: "#7B879B",
+    background: "#F6F8FC",
+    mode: "dark",
+    darkBackground: "#171D27",
+    darkPrimary: "#A9BDE1",
+  },
+  {
+    id: "studio-moss",
+    name: "Moss & Ochre",
+    nameAr: "طحلبي ومغرة ذهبية",
+    primary: "#41572F",
+    secondary: "#967232",
+    background: "#F4F4E9",
+    mode: "light",
+    darkBackground: "#101A2B",
+  },
+  {
+    id: "studio-rosewood",
+    name: "Rosewood & Blush",
+    nameAr: "خشب ورد ووردي ناعم",
+    primary: "#804C54",
+    secondary: "#B28D8B",
+    background: "#FCF7F6",
+    mode: "dark",
+    darkBackground: "#201820",
+    darkPrimary: "#E2ADB3",
+  },
+  {
+    id: "studio-atlantic",
+    name: "Atlantic & Driftwood",
+    nameAr: "أطلسي وخشبي",
+    primary: "#25556D",
+    secondary: "#92816A",
+    background: "#EFF5F6",
+    mode: "light",
+    darkBackground: "#20161B",
+  },
+  {
+    id: "studio-cocoa",
+    name: "Cocoa & Sage",
+    nameAr: "كاكاو ومريمي",
+    primary: "#61493F",
+    secondary: "#7E9175",
+    background: "#FAF9F4",
+    mode: "dark",
+    darkBackground: "#13232D",
+    darkPrimary: "#D7BBAB",
+  },
+  {
+    id: "studio-amethyst",
+    name: "Amethyst & Sandstone",
+    nameAr: "جمشتي وحجر رملي",
+    primary: "#6E4686",
+    secondary: "#A38162",
+    background: "#F8F1FA",
+    mode: "light",
+    darkBackground: "#211A16",
+  },
+  {
+    id: "studio-denim",
+    name: "Denim & Honey",
+    nameAr: "أزرق دنيم وعسلي",
+    primary: "#365F8B",
+    secondary: "#AF8A45",
+    background: "#F8FAFC",
+    mode: "dark",
+    darkBackground: "#211817",
+    darkPrimary: "#9FC4F0",
+  },
+  {
+    id: "studio-garnet",
+    name: "Garnet & Warm Stone",
+    nameAr: "عقيقي وحجري دافئ",
+    primary: "#8C343C",
+    secondary: "#8C7967",
+    background: "#FCF1ED",
+    mode: "light",
+    darkBackground: "#10201E",
+  },
+  {
+    id: "studio-baltic",
+    name: "Baltic & Sea Glass",
+    nameAr: "بلطيقي وزجاج بحري",
+    primary: "#285257",
+    secondary: "#7CA29A",
+    background: "#F4F9F8",
+    mode: "dark",
+    darkBackground: "#112526",
+    darkPrimary: "#8ED9CE",
+  },
+  {
+    id: "studio-bronze",
+    name: "Bronze & Midnight",
+    nameAr: "برونزي وكحلي داكن",
+    primary: "#7C542D",
+    secondary: "#46516B",
+    background: "#FAF4E8",
+    mode: "light",
+    darkBackground: "#151F29",
+  },
+  {
+    id: "studio-orchid",
+    name: "Orchid & Ash",
+    nameAr: "أوركيد ورمادي هادئ",
+    primary: "#865481",
+    secondary: "#8B8797",
+    background: "#FBF7FC",
+    mode: "dark",
+    darkBackground: "#211C19",
+    darkPrimary: "#D7ADDF",
+  },
+];
+
+function mix(color: string, neutral: string, amount: number): string {
+  return `#${[1, 3, 5]
+    .map((offset) => {
+      const left = parseInt(color.slice(offset, offset + 2), 16);
+      const right = parseInt(neutral.slice(offset, offset + 2), 16);
+      return Math.round(left * amount + right * (1 - amount))
+        .toString(16)
+        .padStart(2, "0");
+    })
+    .join("")}`.toUpperCase();
+}
+
+export function studioPresetTheme(id: string, base: BrandTheme): BrandTheme {
+  const theme = createBrandTheme("purple", base.typography.heading);
+  const preset = studioColorPresets.find((item) => item.id === id);
+  // GOS dashboard's original --app-indigo and --purple tokens.
+  const primary = preset?.primary ?? "#635BFF";
+  const secondary = preset?.secondary ?? "#7065DE";
+  const common = {
+    primary,
+    secondary,
+    focus: primary,
+    onPrimary: readableBrandForeground(theme.light.buttonBackground),
+  };
+  const dark = preset
+    ? [
+        preset.darkBackground,
+        mix(preset.darkBackground, "#FFFFFF", 0.94),
+        "#F2F4F8",
+        mix(preset.darkBackground, "#FFFFFF", 0.78),
+        mix(preset.darkBackground, "#000000", 0.7),
+      ]
+    : undefined;
+  const darkPrimary = preset ? (preset.darkPrimary ?? mix(primary, "#FFFFFF", 0.45)) : primary;
+  const darkSecondary = preset ? mix(secondary, "#FFFFFF", 0.5) : secondary;
+  return {
+    ...theme,
+    paletteId: preset?.id ?? "dashboard-default",
+    typography: base.typography,
+    buttons: base.buttons,
+    appearance: base.appearance,
+    light: {
+      ...theme.light,
+      ...common,
+      background: preset?.background ?? "#F8F9FD",
+      headerBackground: preset?.background ?? "#F8F9FD",
+      footerBackground: dark?.[4] ?? "#0B1220",
+      ...(preset
+        ? {
+            text: mix(primary, "#20242C", 0.12),
+            mutedText: mix(primary, "#5B626E", 0.08),
+            border: mix(primary, "#DCE1E8", 0.08),
+          }
+        : {}),
+      ...(preset ? {} : { text: "#27263C", mutedText: "#656376", border: "#EDECF3" }),
+    },
+    dark: {
+      ...theme.dark,
+      ...common,
+      primary: darkPrimary,
+      secondary: darkSecondary,
+      focus: darkPrimary,
+      onPrimary: readableBrandForeground(theme.dark.buttonBackground),
+      footerBackground: dark?.[4] ?? "#0B1220",
+      ...(dark
+        ? {
+            background: dark[0]!,
+            headerBackground: dark[0]!,
+            surface: dark[1]!,
+            text: dark[2]!,
+            border: dark[3]!,
+            footerBackground: dark[4]!,
+            mutedText: mix(primary, "#BBC2CF", 0.08),
+          }
+        : {}),
+    },
+  };
+}
+
+/** The swatches represent the appearance applied when choosing this template. */
+export function studioPresetSwatches(preset: StudioColorPreset): string[] {
+  const colors = studioPresetTheme(preset.id, createBrandTheme())[preset.mode];
+  return [colors.primary, colors.secondary, colors.background];
+}

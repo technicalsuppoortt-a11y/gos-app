@@ -1,0 +1,36 @@
+
+@scope (.brand-engine-module) {
+.save-bell{position:relative;display:grid;place-items:center;border:1px solid var(--border);background:var(--card);cursor:pointer}.save-bell-dot{position:absolute;inset-inline-end:4px;top:4px;width:6px;height:6px;border-radius:50%;background:#8B75C9;border:1px solid var(--card)}.save-bell-dot.error{background:#d29135}.save-toast{position:fixed;inset-inline-end:24px;bottom:24px;z-index:150;display:flex;align-items:center;gap:11px;max-width:calc(100vw - 32px);width:320px;padding:13px 14px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--foreground);box-shadow:0 8px 30px #071b3814;animation:save-appear .18s ease-out}.save-toast>div{flex:1;min-width:0}.save-toast strong{display:block;font-size:12px;font-weight:650}.save-toast small{display:block;font-size:10px;color:var(--muted-foreground);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.save-event-icon{display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,#8B75C9 10%,var(--card));color:#8B75C9}.save-toast.error .save-event-icon,.save-event-icon.error{background:#fff3e4;color:#b77723}.save-toast button,.save-notification-panel button{border:0;background:transparent;cursor:pointer;color:var(--muted-foreground);font-size:11px}.save-dismiss{padding:3px}.save-notification-panel{position:fixed;inset-inline-end:24px;z-index:160;width:360px;max-width:calc(100vw - 32px);border:1px solid var(--border);border-radius:16px;background:var(--card);color:var(--foreground);box-shadow:0 15px 50px #071b3826;overflow:hidden;animation:save-appear .15s ease-out}.save-notification-panel header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border)}.save-notification-panel h2{font-size:14px;font-weight:700;margin:0;color:var(--foreground)}.save-current-status{display:flex;align-items:center;gap:8px;padding:11px 18px;font-size:10px;background:var(--muted);color:var(--muted-foreground)}.save-current-status.saved{background:color-mix(in srgb,#8B75C9 6%,var(--card));color:#8B75C9}.save-current-status.error{color:#b77723}.save-current-status button{margin-inline-start:auto;color:inherit;text-decoration:underline}.save-notification-list{max-height:330px;overflow:auto}.save-notification-list article{display:flex;gap:11px;padding:15px 18px;border-bottom:1px solid var(--border)}.save-notification-list article.unread{background:color-mix(in srgb,#8B75C9 3%,var(--card))}.save-notification-list article>div{flex:1;min-width:0}.save-notification-list strong{font-size:11px;font-weight:650}.save-notification-list p{font-size:10px;color:var(--muted-foreground);line-height:1.6;margin:5px 0;overflow-wrap:anywhere}.save-notification-list time{font-size:9px;color:var(--muted-foreground)}.save-notification-list i{height:5px;width:5px;background:#8B75C9;border-radius:50%;margin-top:7px;flex-shrink:0}.save-empty{text-align:center;padding:35px 20px;color:var(--muted-foreground)}.save-empty svg{margin:0 auto 12px;opacity:.45}.save-empty strong{display:block;color:var(--foreground);font-size:12px}.save-empty p{font-size:11px;margin-top:6px}.save-notification-panel footer{padding:11px 18px;text-align:end}.save-toast button:focus-visible,.save-notification-panel button:focus-visible,.save-bell:focus-visible{outline:2px solid #8B75C9;outline-offset:3px}.save-spin{animation:save-spin 1s linear infinite}@keyframes save-spin{to{transform:rotate(360deg)}}@keyframes save-appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}@media(max-width:600px){.save-toast{inset-inline-end:16px;bottom:16px}.save-notification-panel{inset-inline-end:16px}}@media(prefers-reduced-motion:reduce){.save-toast,.save-notification-panel,.save-spin{animation:none}}
+
+.save-history-error { margin: 0; padding: 12px 16px; font-size: 11px; color: var(--muted-foreground); background: var(--muted); }
+.save-toast small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Keep confirmations clear of the Continue actions at the bottom of the workspace. */
+.save-toast {
+  top: calc(80px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+}
+.save-toast.saved {
+  width: 280px;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+.save-toast.saved .save-event-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+}
+.save-toast.saved strong {
+  font-size: 11px;
+}
+.save-toast.saved small {
+  display: block;
+  margin-top: 2px;
+}
+.save-toast.saved .save-dismiss {
+  pointer-events: auto;
+}
+
+}

@@ -1,7 +1,6 @@
 // @ts-check
 
 import { HttpsError } from 'firebase-functions/v2/https';
-import { parseBuffer } from 'music-metadata';
 import { MAX_VOICE_BYTES, VOICE_FORMATS } from './copilot-voice-model.js';
 
 /** @typedef {import('./copilot-voice-model.js').VoiceExtraction} VoiceExtraction */
@@ -70,6 +69,9 @@ function webmDuration(bytes) {
 
 /** @param {ReturnType<typeof voiceAudio>} audio */
 export async function transcriptionMinutes(audio) {
+  // Audio parsers are needed only for a voice request, not for deployment or
+  // unrelated callable cold starts.
+  const { parseBuffer } = await import('music-metadata');
   const metadata = await parseBuffer(audio.bytes, { mimeType: audio.mime }, { duration: true, skipCovers: true }).catch(() => null);
   const frames = audio.format === 'webm' ? (() => { try { return webmDuration(audio.bytes); } catch { return 0; } })() : 0;
   const duration = Math.max(frames, metadata?.format.duration ?? 0);

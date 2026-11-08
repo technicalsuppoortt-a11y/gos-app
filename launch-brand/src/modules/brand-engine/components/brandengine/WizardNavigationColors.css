@@ -1,0 +1,53 @@
+
+@scope (.brand-engine-module) {
+/* Shared navigation colors. */
+.wizard-footer .wizard-actions .bg-gradient-to-r,
+.wizard-footer .architecture-links .bg-gradient-to-r {
+  background-color: #2563eb !important;
+  background-image: none !important;
+}
+
+.wizard-footer .wizard-actions .bg-gradient-to-r:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.wizard-footer .architecture-links > span {
+  color: #2563eb;
+}
+
+:where(:scope).dark .wizard-footer .architecture-links > span {
+  color: #60a5fa;
+}
+
+/* Dashboard width with a compact studio footer to leave room for logo content. */
+@media (min-width: 768px) and (min-height: 520px) {
+  .app-shell .wizard.wizard--brand-studio {
+    --studio-footer-inset: 256px;
+    --studio-footer-height: 52px;
+    grid-template-rows: minmax(0, 1fr) var(--studio-footer-height);
+  }
+
+  .app-shell .wizard.wizard--brand-studio .wizard-footer {
+    width: calc(100% - var(--studio-footer-inset));
+    margin-inline-start: var(--studio-footer-inset);
+    height: var(--studio-footer-height);
+    min-height: var(--studio-footer-height);
+    padding-inline: clamp(22px, 5vw, 70px);
+  }
+
+  .app-shell .wizard.wizard--brand-studio .wizard-footer .wizard-actions {
+    transform: translateX(20px);
+  }
+
+  .app-shell.sidebar-collapsed .wizard.wizard--brand-studio {
+    --studio-footer-inset: 64px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) and (min-height: 520px) {
+  .app-shell.sidebar-expanded .wizard.wizard--brand-studio {
+    --studio-footer-inset: 230px;
+  }
+}
+
+}

@@ -1,19 +1,38 @@
 {
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
+    },
+    {
+      "database": "launch-brand",
+      "rules": "launch-brand/firebase/firestore.rules",
+      "indexes": "launch-brand/firebase/firestore.indexes.json"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
       "codebase": "user-dashboard",
-      "predeploy": ["node scripts/export-agency-landing.mjs"],
+      "predeploy": [
+        "node scripts/export-agency-landing.mjs",
+        "node scripts/prepare-functions-deploy.mjs"
+      ],
       "ignore": [
         "node_modules",
         "*.test.js"
       ]
     }
   ],
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8080 },
+    "functions": { "port": 5001 },
+    "storage": { "port": 9199 },
+    "ui": { "enabled": true, "port": 4000 },
+    "singleProjectMode": true
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
@@ -22,6 +41,10 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/launch-brand{,/**}",
+        "destination": "/launch-brand/index.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"

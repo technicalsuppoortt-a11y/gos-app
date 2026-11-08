@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 .firebase/
+functions/functions.yaml
+functions/.functions-manifest-*.json
 dist
 dist-ssr
 artifacts/localization/

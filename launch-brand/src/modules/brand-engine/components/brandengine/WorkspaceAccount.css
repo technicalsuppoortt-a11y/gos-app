@@ -1,0 +1,126 @@
+
+@scope (.brand-engine-module) {
+.workspace-sidebar .workspace-account {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: auto;
+  min-height: 52px;
+  padding: 8px 4px;
+  text-align: start;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0;
+}
+.workspace-account-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ecc8b3, #cc8d70);
+  box-shadow: 0 0 0 1px #e2e8f0;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+.workspace-account-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.workspace-account-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 18px;
+  font-weight: 650;
+}
+.workspace-account-copy small {
+  color: #94a3b8;
+  font-size: 16px;
+}
+.workspace-account-tier {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 65px;
+  color: #d49a28;
+  font-size: 15px;
+}
+.workspace-account-tier span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.workspace-sidebar .workspace-account-tier svg {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+}
+.workspace-sidebar.force-dark .workspace-account {
+  border-bottom-color: #1a2e35;
+}
+.workspace-sidebar.is-collapsed .workspace-account {
+  width: 40px;
+  padding-inline: 0;
+  justify-content: center;
+}
+.workspace-sidebar.is-collapsed .workspace-account-copy,
+.workspace-sidebar.is-collapsed .workspace-account-tier {
+  display: none;
+}
+.mobile-workspace-drawer .workspace-sidebar .workspace-account {
+  width: 100%;
+  padding: 8px 4px;
+  justify-content: flex-start;
+  align-self: stretch;
+}
+.workspace-account:focus-visible {
+  outline: 2px solid #8b75c9;
+  outline-offset: 2px;
+}
+.workspace-account-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: calc(100vw - 24px);
+  text-align: start;
+  font-size: 13px;
+}
+.workspace-account-menu strong,
+.workspace-account-email {
+  overflow-wrap: anywhere;
+}
+.workspace-account-email {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.workspace-account-menu-tier {
+  color: #8b75c9;
+  font-size: 11px;
+}
+.workspace-account-menu a {
+  margin-top: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  border-radius: 4px;
+}
+.workspace-account-menu a:hover,
+.workspace-account-menu a:focus-visible {
+  background: var(--muted);
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  .app-shell:has(.wizard--brand-studio) .workspace-account {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .app-shell:has(.wizard--brand-studio) .workspace-account-copy,
+  .app-shell:has(.wizard--brand-studio) .workspace-account-tier {
+    display: none;
+  }
+}
+
+}

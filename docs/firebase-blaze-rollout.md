@@ -2,6 +2,46 @@
 
 Project: `gos-app-3c7fb`. Functions: Node.js 22, v2, `us-central1`, codebase `user-dashboard`.
 
+## Full deployment preparation, 8 November 2026
+
+Run `firebase deploy` from the repository root. Its Functions predeploy hooks now
+export the agency landing data and run `scripts/prepare-functions-deploy.mjs`.
+The latter generates `functions/functions.yaml` from the real Functions SDK and
+current source before Firebase reads the deployment specification. The generated
+file is ignored by Git and rebuilt on each deployment; failed preparation removes
+the previous manifest and stops deployment.
+
+Firebase's discovery process does not receive project dotenv values before source
+analysis ([Firebase environment configuration](https://firebase.google.com/docs/functions/config-env#environment_variables)).
+Preparation therefore reads the non-secret boolean switches `DEPLOY_COPILOT`,
+`ENABLE_GOS_METERING_BRIDGE`, `ENABLE_OUTBOX` and `ENABLE_META_WEBHOOK` from
+`functions/.env` and then `functions/.env.gos-app-3c7fb`. Missing switches default
+to `false`; invalid values stop deployment. Provider keys are not copied into the
+manifest. `DEPLOY_COPILOT=false` excludes `OPENAI_API_KEY` from deployment while
+preserving the voice callable's configuration-error response. Explicit activation
+still requires the genuine OpenAI secret. Launch Brand continues to use its
+existing Gemini connection saved by AI Center.
+
+The SDK writes the manifest directly to disk, so the CLI no longer depends on
+local HTTP discovery or `FUNCTIONS_DISCOVERY_TIMEOUT`. Audio metadata parsers load
+only when a transcription request needs them. The existing ticket TTL policy in
+the `launch-brand` database is represented in its index configuration, preserving
+the active policy and removing the deletion prompt.
+
+Verification: all 106 backend tests passed with concurrency 1. Real SDK discovery
+tests block all network connections, verify disabled and explicitly enabled
+Copilot configurations, and reject audio-parser loading during source discovery.
+Before publication, the generated manifest matched all 40 deployed function names
+exactly; `dispatchOutbox` and `metaWebhook` remained disabled.
+
+The full command `firebase deploy --project gos-app-3c7fb --non-interactive`
+completed successfully: all 40 Functions updated, both databases' rules/indexes
+and Storage rules deployed, and Hosting released. No OpenAI secret or discovery
+timeout was required, and the TTL deletion prompt did not appear. The settings
+and embedded console routes serve the current build (HTTP 200); the admin-session
+endpoint rejects missing GOS credentials (HTTP 401). No AI-provider request was
+sent during verification.
+
 ## Verified release, 19 October 2026
 
 Hosting, Firestore rules/indexes and Storage rules are released. Ten functions are deployed: `manageUser`, `queueMessage`, `saveBookings`, `startWorkflow`, `stopFollowUpOnLeadChange`, `pauseFollowUpOnConversationChange`, `processScheduledActions`, `publicBooking`, `settingsService`, and `createCopilotDraft`.

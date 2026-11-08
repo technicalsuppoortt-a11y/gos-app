@@ -15,7 +15,9 @@ import '../theme-controls.css';
 import '../control-polish.css';
 import '../light-contrast.css';
 import '../module-updates.css';
+import { installLaunchBrandPreview } from '../branding/launchBrandPreview';
 
+installLaunchBrandPreview();
 store.dispatch(loginSuccess(demoSession));
 seedAccount();
 const profile = read<any>('settings')?.profile;
