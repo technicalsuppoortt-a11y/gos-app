@@ -1226,7 +1226,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 199,
+      "line": 204,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
