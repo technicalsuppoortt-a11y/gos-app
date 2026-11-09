@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 211,
+      "line": 225,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 222,
+      "line": 236,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 318,
+      "line": 332,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 356,
+      "line": 370,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 358,
+      "line": 372,
       "utility": "text-gray-400"
     },
     {
@@ -1226,7 +1226,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 171,
+      "line": 199,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -3002,7 +3002,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 173,
+      "line": 178,
       "selector": ".layout-brand-copy small",
       "before": "#85899a",
       "after": "#475569",
@@ -3010,7 +3010,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 292,
+      "line": 297,
       "selector": ".layout-nav-icon",
       "before": "#777b8e",
       "after": "#334155",
@@ -3018,7 +3018,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 433,
+      "line": 438,
       "selector": ".layout-profile-copy small",
       "before": "#9295a3",
       "after": "#475569",
@@ -3026,7 +3026,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 491,
+      "line": 496,
       "selector": ".layout-help-card small",
       "before": "#999baa",
       "after": "#475569",
@@ -3034,7 +3034,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 503,
+      "line": 508,
       "selector": ".layout-help-card>button",
       "before": "#9295a3",
       "after": "#334155",
@@ -3042,7 +3042,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 660,
+      "line": 665,
       "selector": ".layout-logout",
       "before": "#777b8b",
       "after": "#334155",
@@ -3050,7 +3050,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 790,
+      "line": 795,
       "selector": ".layout-header-title p",
       "before": "#7c8091",
       "after": "#334155",
@@ -3058,7 +3058,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 804,
+      "line": 809,
       "selector": ".layout-header-breadcrumb>span",
       "before": "#797d8f",
       "after": "#334155",
@@ -3066,7 +3066,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 809,
+      "line": 814,
       "selector": ".layout-header-breadcrumb>i",
       "before": "#b8bac5",
       "after": "#334155",
@@ -3074,7 +3074,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 979,
+      "line": 984,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -3082,7 +3082,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1039,
+      "line": 1044,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -3090,7 +3090,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1119,
+      "line": 1124,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -3098,7 +3098,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1413,
+      "line": 1418,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",
@@ -4747,7 +4747,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -4891,7 +4891,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 340,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
