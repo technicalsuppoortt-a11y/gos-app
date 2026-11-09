@@ -3,7 +3,6 @@ import { Laptop, Maximize2, Smartphone, Tablet } from 'lucide-react';
 import { useAppSelector } from "@/modules/brand-engine/store/hooks";
 import { LandingPreviewBridge } from "./landing-preview/LandingPreviewBridge";
 import { BrandedDashboard } from "./BrandedDashboard";
-import { IsolatedBrandPreview } from "./IsolatedBrandPreview";
 
 export type StudioPreviewSurface = "landing" | "dashboard";
 export type StudioPreviewDevice = "desktop" | "tablet" | "mobile";
@@ -78,9 +77,7 @@ export function StudioPreviewSurface({ surface, device, onSurfaceChange, onDevic
       <div className="studio-preview-device-frame" style={{width: frameSize.width || "100%", height: frameSize.height || "100%"}}>
         {surface === "dashboard" ? <BrandedDashboard readOnly
           {...(expanded && device === "desktop" ? {} : { width, height })} /> :
-          <IsolatedBrandPreview width={width} height={height} fitHeight title={t("Live landing page preview", "معاينة صفحة الهبوط الحالية")}>
-            <LandingPreviewBridge/>
-          </IsolatedBrandPreview>}
+          <LandingPreviewBridge viewport={{ width, height }} title={t("Live landing page preview", "معاينة صفحة الهبوط الحالية")} />}
       </div>
     </div>
     <span className="studio-preview-caption">{width} × {height} · {t("Current draft · preview only", "المسودة الحالية · للمعاينة فقط")}</span>

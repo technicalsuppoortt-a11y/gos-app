@@ -31,7 +31,6 @@ import {
 } from "@/modules/brand-engine/components/ui/dialog";
 import styles from "./ReadySaasMarketplace.module.css";
 import { LandingPreviewBridge } from "./landing-preview/LandingPreviewBridge";
-import { LiveWebsiteViewport } from "./LiveWebsiteViewport";
 
 export type ReadySaasPreviewMode = "landing" | "dashboard";
 
@@ -55,9 +54,7 @@ export function ReadySaasPreview({
 }) {
   if (mode === "landing") return (
     <div className={styles["sharedLanding"]} aria-label={`${brand.name} — ${ar ? "صفحة الهبوط" : "Landing Page"}`}>
-      <LiveWebsiteViewport title={ar ? "معاينة الموقع" : "Website preview"}>
-        <LandingPreviewBridge />
-      </LiveWebsiteViewport>
+      <LandingPreviewBridge title={ar ? "معاينة الموقع" : "Website preview"} />
     </div>
   );
   return (

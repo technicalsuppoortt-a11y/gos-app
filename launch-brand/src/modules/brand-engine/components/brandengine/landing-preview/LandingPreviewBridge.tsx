@@ -6,7 +6,8 @@ import { GosLiveFrame } from "../gos-live/GosLiveFrame";
  * gos-app: shows gos-app's real website page live with this brand applied,
  * instead of the copied landing page used on Joe Academy.
  */
-export function LandingPreviewBridge(_props: { onLanguageChange?: ((language: "ar" | "en") => void) | undefined } = {}) {
+export function LandingPreviewBridge({ title, viewport }: { title?: string; viewport?: { width: number; height: number } }) {
   const configuration = useLiveBrandConfiguration();
-  return <GosLiveFrame path="/" title="Website & Funnel" configuration={configuration} fullPage />;
+  const previewTitle = title ?? (configuration.brand.language === "ar" ? "معاينة الموقع" : "Website preview");
+  return <GosLiveFrame path="/" title={previewTitle} configuration={configuration} viewport={viewport} fullPage />;
 }
