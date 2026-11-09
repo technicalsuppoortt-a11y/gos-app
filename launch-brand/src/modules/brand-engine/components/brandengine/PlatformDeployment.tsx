@@ -1,5 +1,5 @@
 import { openPhoenixAccount } from "@/modules/brand-engine/services/phoenixTransfer";
-import { requestGosPlatform } from '@/services/gosPlatform';
+import { openGosPlatform, requestGosPlatform } from '@/services/gosPlatform';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { preparePhoenixConfiguration } from "@/modules/brand-engine/services/brandDraft";
@@ -41,7 +41,7 @@ const copy = {
     liveTitle: "Your brand and platform are ready",
     liveBody: "Your brand, pages and settings are saved in Gose. Open your platform from Phoenix.",
     liveBodyAr: "تم إنشاء حساب منصتك وحفظ اختياراتك في Gose.",
-    open: "Return to Phoenix",
+    open: "Open your platform",
     reviewWebsite: "Review Website",
     startDeployment: "Start Deployment",
     dashboard: "Go to Dashboard",
@@ -122,7 +122,7 @@ const copy = {
     liveTitle: "تم إنشاء البراند ومنصتك جاهزة",
     liveBody: "تم حفظ هويتك وصفحاتك وإعداداتك في حساب Gose. افتح منصتك من لوحة Phoenix.",
     liveBodyAr: "تم إنشاء حساب منصتك وحفظ اختياراتك في Gose.",
-    open: "الرجوع إلى Phoenix",
+    open: "الدخول إلى المنصة",
     reviewWebsite: "مراجعة الموقع",
     startDeployment: "بدء النشر",
     dashboard: "اذهب إلى لوحة التحكم",
@@ -197,11 +197,13 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
   const text = copy[language];
   const reduceMotion = useReducedMotion();
   const miniSiteViewportRef = useRef<HTMLSpanElement>(null);
-  const [miniSiteScale, setMiniSiteScale] = useState(0.13);
+  const [miniSite, setMiniSite] = useState({ scale: 0.13, height: 780 });
   const [outcomeOpen, setOutcomeOpen] = useState(false);
   const [deploymentAttempted, setDeploymentAttempted] = useState(false);
   const [syncingGos, setSyncingGos] = useState(false);
   const [gosReady, setGosReady] = useState(false);
+  const [platformSignInError, setPlatformSignInError] = useState('');
+  const [platformSigningIn, setPlatformSigningIn] = useState(false);
   const fingerprint = fingerprintBrandPages(brand);
   const deploymentState: DeploymentState = syncingGos || brand.phoenixPreparation.state === "transferring" ? "deploying" :
     gosReady && brand.phoenixPreparation.state === "prepared" && brand.phoenixPreparation.fingerprint === fingerprint ? "success" :
@@ -266,12 +268,14 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
   useEffect(() => {
     const viewport = miniSiteViewportRef.current;
     if (!viewport) return;
-    const updateScale = () => {
-      const width = viewport.clientWidth;
-      if (width > 0) setMiniSiteScale(width / 1280);
+    const updatePreviewSize = () => {
+      const scale = viewport.clientWidth / 1280;
+      if (scale > 0 && viewport.clientHeight > 0) {
+        setMiniSite({ scale, height: Math.ceil(viewport.clientHeight / scale) });
+      }
     };
-    updateScale();
-    const observer = new ResizeObserver(updateScale);
+    updatePreviewSize();
+    const observer = new ResizeObserver(updatePreviewSize);
     observer.observe(viewport);
     return () => observer.disconnect();
   }, []);
@@ -296,10 +300,23 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
       if (auth.currentUser?.uid !== uid) throw new Error('The signed-in account changed.');
       await setDoc(doc(db, 'users', uid, 'brandEngine', 'gosDeployment'), { status: 'prepared', revision: result.snapshotId, updatedAt: serverTimestamp() });
       setGosReady(true);
-      window.location.assign('/dashboard');
     } catch (error) {
       if (auth.currentUser?.uid === deploymentUid) dispatch(actions.setPhoenixPreparation({ ...brand.phoenixPreparation, state: 'failed', error: error instanceof Error ? error.message : 'Could not deploy your platform.' }));
+      return;
+    } finally {
       setSyncingGos(false);
+    }
+    await signInToPlatform();
+  };
+  const signInToPlatform = async () => {
+    if (platformSigningIn) return;
+    setPlatformSigningIn(true);
+    setPlatformSignInError('');
+    try {
+      await openGosPlatform();
+    } catch (error) {
+      setPlatformSignInError(error instanceof Error ? error.message : 'Could not sign in to your platform.');
+      setPlatformSigningIn(false);
     }
   };
   const openCustomerPortal = () => {
@@ -309,7 +326,7 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
 
   const openPlatform = () => {
     if (!showReady) { deployPlatform(); return; }
-    openPhoenixAccount(brand.phoenixPreparation.phoenixOrigin, brand.phoenixPreparation.phoenixUid);
+    void signInToPlatform();
   };
 
   useEffect(() => {
@@ -440,13 +457,14 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
                 </h2>
                 <p>{deploymentState === "failed" ? text.deploymentFailedBody : showReady ? text.liveBody : deploymentState === "idle" ? text.intro : text.deployingBody}</p>
                 {deploymentState === "failed" && <p role="alert">{brand.phoenixPreparation.error}</p>}
+                {platformSignInError && <p role="alert">{platformSignInError}</p>}
                 {showReady && <p className={styles["liveArabic"]}>{text.liveBodyAr}</p>}
                 <div className={styles["actionRow"]}>
                   <Button
                     size="lg"
                     className={styles["primaryAction"]}
                     onClick={showReady ? openPlatform : deployPlatform}
-                    disabled={deploymentState === "deploying"}
+                    disabled={deploymentState === "deploying" || platformSigningIn}
                     aria-label={showReady ? text.open : deploymentState === "failed" ? text.retry : text.startDeployment}
                   >
                     {showReady ? <ExternalLink /> : deploymentState === "failed" ? <CircleAlert /> : <Sparkles />}
@@ -522,7 +540,7 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
                 aria-label={`${text.reviewWebsite}: ${workspaceBrandName}`}
               >
                 <span ref={miniSiteViewportRef} className={styles["miniSiteViewport"]} aria-hidden="true" inert>
-                  <span className={styles["miniSiteCanvas"]} style={{ transform: `scale(${miniSiteScale})` }}>
+                  <span className={styles["miniSiteCanvas"]} style={{ height: miniSite.height, transform: `scale(${miniSite.scale})` }}>
                     <Provider store={previewStore}>
                       <LandingPreviewBridge />
                     </Provider>

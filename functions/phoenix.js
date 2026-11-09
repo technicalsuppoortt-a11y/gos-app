@@ -28,12 +28,34 @@ function getPhoenixBridge() {
 const sourceBase = 'https://firestore.googleapis.com/v1/projects/phoenix-app-8bc7b/databases/(default)/documents';
 const LAUNCH_BRAND_DATABASE = 'launch-brand';
 const TICKET_SECONDS = 60;
+const GOS_DASHBOARD = 'https://gos-app-3c7fb.web.app/dashboard';
 // Fields Launch Brand itself writes on users/{uid}. A newer value there must
 // never be replaced by the older copy on Joe Academy's profile.
 const LAUNCH_BRAND_PROFILE_FIELDS = ['isBrandEngineProvisioned', 'brandEngineProgress', 'brandMetadata'];
 const STAFF_ROLES = ['admin', 'superadmin', 'coach', 'support'];
 const ticketId = ticket => createHash('sha256').update(ticket).digest('hex');
 const allowedOrigins = ['https://academy.mohamedjoe.com', 'https://phoenix-app-8bc7b.web.app', 'https://phoenix-app-8bc7b.firebaseapp.com', 'https://gos-app-3c7fb.web.app', 'https://gos-app-3c7fb.firebaseapp.com', 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'];
+
+async function getDeployedPlatform(db, uid) {
+  const link = (await db.doc(`phoenixAccounts/${uid}`).get()).data();
+  if (!link?.gosUid || !link.tenantId || !link.revision) return null;
+
+  const current = (await db.doc(`users/${link.gosUid}/brandEngine/current`).get()).data();
+  return current?.status === 'prepared' && current.sourceUid === uid &&
+    current.tenantId === link.tenantId ? link : null;
+}
+
+async function isPlatformReady(link, gosAuth) {
+  if (!link) return false;
+  const account = await gosAuth.getUser(link.gosUid).catch(error => {
+    if (error.code === 'auth/user-not-found') return null;
+    throw error;
+  });
+  const deployedAt = (link.deployedAt ?? link.updatedAt)?.toMillis();
+  // Auth's UTC sign-in timestamp has second precision.
+  return Boolean(account && !account.disabled && deployedAt &&
+    Date.parse(account.metadata?.lastSignInTime) >= Math.floor(deployedAt / 1000) * 1000);
+}
 
 export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', timeoutSeconds: 120, memory: '512MiB', maxInstances: 5, cors: allowedOrigins }, async (req, res) => {
   res.set('Cache-Control', 'no-store');
@@ -65,8 +87,19 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
   try {
     const { uid, email } = identity;
     if (!email) throw new Error('Your Phoenix account needs an email address.');
+    if (req.body?.action === 'platform-status') {
+      const link = await getDeployedPlatform(db, uid);
+      res.json({ deployed: Boolean(link), ready: await isPlatformReady(link, getAuth(gos)) });
+      return;
+    }
     if (req.body?.action === 'launch-brand-ticket') {
       if (identity.launchBrand) throw new Error('Open Launch Brand from Joe Academy.');
+      const link = await getDeployedPlatform(db, uid);
+      if (link) {
+        const ready = req.body.redirectToPlatform === true && await isPlatformReady(link, getAuth(gos));
+        res.json(ready ? { platformReady: true } : { url: GOS_DASHBOARD });
+        return;
+      }
       res.json(await createLaunchBrandTicket(identity, bearer, req.body, db));
       return;
     }
@@ -187,7 +220,11 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         transaction.set(db.doc(`users/${account.uid}/brandEngine/current`), { ...pointer, brand });
         transaction.set(db.doc(`users/${account.uid}`), { uid: account.uid, email: account.email, displayName: account.displayName || '', phoenixUid: uid, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
         transaction.set(db.doc(`tenants/${tenantId}`), { ownerUid: account.uid, ...brand, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-        transaction.set(linkRef, { gosUid: account.uid, tenantId, revision, sourcePreparedAt: readTime, updatedAt: FieldValue.serverTimestamp() });
+        transaction.set(linkRef, {
+          gosUid: account.uid, tenantId, revision, sourcePreparedAt: readTime,
+          deployedAt: previous?.deployedAt ?? previous?.updatedAt ?? FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
       });
       link = (await linkRef.get()).data();
     }
@@ -260,6 +297,7 @@ async function exchangeLaunchBrandTicket(req, res, gos, db, launchBrandDb) {
       transaction.delete(ref);
       return data;
     });
+    if (await getDeployedPlatform(db, claim.uid)) { res.json({ platformDeployed: true }); return; }
     const profileRef = launchBrandDb.doc(`users/${claim.uid}`);
     const existing = (await profileRef.get()).data();
     const mirror = { ...claim.profile };

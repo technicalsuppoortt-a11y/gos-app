@@ -1,5 +1,6 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds } from '../bridge.js';
 
 const documents = new Map();
@@ -7,10 +8,15 @@ const source = new Map();
 let validToken = true, verified = false, disabled = false, failWrite = false;
 let accounts = new Map(), signCount = 0, created = 0;
 let syncedPasswords = 0, sourcePasswordUid = 'owner', passwordValid = true;
+let serverTime = Date.parse('2026-10-18T00:01:00Z');
 const firestore = {
   doc: path => ({ path, get: async () => ({ data: () => documents.get(path) }), collection: name => ({ doc: id => firestore.doc(`${path}/${name}/${id}`) }) }),
   bulkWriter: () => ({ set: async (ref, data) => { if (failWrite) throw new Error('Write failed'); documents.set(ref.path, data); }, close: async () => {} }),
-  runTransaction: async callback => callback({ get: async ref => ref.get(), set: (ref, data) => documents.set(ref.path, data) }),
+  runTransaction: async callback => callback({
+    get: async ref => ref.get(),
+    set: (ref, data) => documents.set(ref.path, data),
+    delete: ref => documents.delete(ref.path),
+  }),
 };
 const notFound = () => Object.assign(new Error('Missing'), { code: 'auth/user-not-found' });
 const gosAuth = {
@@ -25,7 +31,10 @@ mock.module('firebase-admin/app', { namedExports: { initializeApp: (_, name) => 
 mock.module('firebase-admin/auth', { namedExports: { getAuth: app => app.name === 'phoenix' ? {
   verifyIdToken: async token => { if (!validToken || token !== 'phoenix-id-token') throw new Error('Invalid token'); return { uid: 'owner', email: 'owner@example.com', email_verified: verified }; },
 } : gosAuth } });
-mock.module('firebase-admin/firestore', { namedExports: { getFirestore: () => firestore, FieldValue: { serverTimestamp: () => 'server-time' } } });
+mock.module('firebase-admin/firestore', { namedExports: { getFirestore: () => firestore, FieldValue: { serverTimestamp: () => {
+  const milliseconds = serverTime;
+  return { toMillis: () => milliseconds };
+} } } });
 mock.module('firebase-functions/v2/https', { namedExports: { onRequest: (options, handler) => { assert(options.cors.includes('http://localhost:5173')); return handler; } } });
 const { phoenixPlatform } = await import('../phoenix.js');
 const encode = value => value === null ? { nullValue: null } : typeof value === 'string' ? { stringValue: value } : typeof value === 'boolean' ? { booleanValue: value } : typeof value === 'number' ? { integerValue: String(value) } : Array.isArray(value) ? { arrayValue: { values: value.map(encode) } } : { mapValue: { fields: Object.fromEntries(Object.entries(value).map(([key, value]) => [key, encode(value)])) } };
@@ -43,6 +52,7 @@ globalThis.fetch = async (url, options) => {
 function reset() {
   documents.clear(); source.clear(); accounts.clear(); validToken = true; verified = false; disabled = false; failWrite = false; created = 0; signCount = 0;
   syncedPasswords = 0; sourcePasswordUid = 'owner'; passwordValid = true;
+  serverTime = Date.parse('2026-10-18T00:01:00Z');
   source.set('users/owner/brandEngine/phoenixPreparation', { state: 'prepared', snapshotId: 'revision-1' });
   source.set('users/owner/brandEngine/draft', { revision: 'revision-1' });
   for (const id of PAGE_IDS) source.set(`users/owner/pages/${id}`, { pageId: id, revision: 'revision-1', schemaVersion: 1, parameters: id === 'branding' ? { brandName: 'Owner Brand', choices: { uploadedLogo: { assetId: 'logo-1' } } } : { choices: { saved: true } } });
@@ -74,6 +84,37 @@ test('opening a deployed platform uses saved Gose data and signs only for the li
   reset(); await request(); source.clear();
   const result = await request('open', { uid: 'victim', email: 'victim@example.com', role: 'SUPER_ADMIN' });
   assert.equal(result.body.customToken, 'signed-phoenix_owner'); assert.equal(signCount, 1);
+});
+
+test('Phoenix opens the platform only after a successful GOS sign-in following deployment', async () => {
+  reset();
+  assert.deepEqual((await request('platform-status')).body, { deployed: false, ready: false });
+  assert.equal(documents.size, 0);
+  await request();
+  assert.deepEqual((await request('platform-status')).body, { deployed: true, ready: false });
+  assert.deepEqual((await request('launch-brand-ticket', { redirectToPlatform: true })).body,
+    { url: 'https://gos-app-3c7fb.web.app/dashboard' });
+  const account = accounts.get('phoenix_owner');
+  account.metadata = { lastSignInTime: new Date(serverTime - 1000).toUTCString() };
+  assert.deepEqual((await request('platform-status')).body, { deployed: true, ready: false });
+  account.metadata.lastSignInTime = new Date(serverTime + 1000).toUTCString();
+  assert.deepEqual((await request('platform-status', { uid: 'another-user' })).body, { deployed: true, ready: true });
+  assert.deepEqual((await request('launch-brand-ticket', { redirectToPlatform: true })).body, { platformReady: true });
+  serverTime += 60000;
+  await request();
+  assert.deepEqual((await request('platform-status')).body, { deployed: true, ready: true });
+  assert.equal(signCount, 0);
+});
+
+test('a Launch Brand ticket issued before deployment cannot reopen the editor afterward', async () => {
+  reset();
+  const ticket = 'old_launch_brand_ticket'.padEnd(43, '_');
+  const ticketPath = `launchBrandTickets/${createHash('sha256').update(ticket).digest('hex')}`;
+  documents.set(ticketPath, { uid: 'owner', expiresAt: { toMillis: () => Date.now() + 60000 } });
+  assert.equal((await request()).statusCode, 200);
+  assert.deepEqual((await request('launch-brand-exchange', { ticket })).body, { platformDeployed: true });
+  assert.equal((await request('launch-brand-exchange', { ticket })).statusCode, 410);
+  assert.equal(signCount, 0);
 });
 
 function saveChangedBrand() {

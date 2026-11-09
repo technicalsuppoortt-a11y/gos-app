@@ -27,5 +27,6 @@ export default function PhoenixSignIn() {
       setError(error instanceof Error ? error.message : 'تعذر تسجيل الدخول.');
     });
   }, [navigate]);
-  return <main className="min-h-screen grid place-content-center gap-5 p-8 text-center" dir="rtl"><h1>{error ? 'تعذر فتح المنصة' : 'جارٍ فتح منصتك…'}</h1>{error && <><p role="alert">{error}</p><a href="https://phoenix-app-8bc7b.web.app/dashboard">الرجوع إلى Phoenix</a><Link to="/auth/login">تسجيل الدخول</Link></>}</main>;
+  if (!error) return null;
+  return <main data-platform-entry-error className="min-h-screen grid place-content-center gap-5 p-8 text-center" dir="rtl"><h1>تعذر فتح المنصة</h1><p role="alert">{error}</p><a href="https://phoenix-app-8bc7b.web.app/dashboard">الرجوع إلى Phoenix</a><Link to="/auth/login">تسجيل الدخول</Link></main>;
 }
