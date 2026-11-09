@@ -74,4 +74,17 @@ document.addEventListener('click', event => {
   // Router links handle themselves; only redirect links that would open a new tab.
   if (link.target && link.target !== '_self') { event.preventDefault(); window.open(url.pathname + url.search + url.hash, '_self'); }
 }, true);
+// Request the selected preview's route chunks alongside the app instead of
+// waiting for each nested Suspense boundary to render. Keep every import in the
+// isolated demo graph and let the router handle retries if a preload fails.
+const params = new URLSearchParams(location.search);
+if (params.get('launch-brand-preview') === '1') {
+  if (/^\/dashboard\/?$/i.test(location.pathname)) {
+    void import('../components/layout/UserLayout.tsx?account-demo').catch(() => undefined);
+    void import('../pages/DashboardPage.tsx?account-demo').catch(() => undefined);
+    void import('../pages/dashboard/HomeDashboard.tsx?account-demo').catch(() => undefined);
+  } else if (location.pathname === '/' && !params.has('oobCode')) {
+    void import('../pages/landing/LandingPage.tsx?account-demo').catch(() => undefined);
+  }
+}
 void import('./app.tsx?account-demo');

@@ -18,6 +18,7 @@ import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
 import { DemoAccountControl } from './DemoAccountControl';
 import { isLive, useSubscription } from '../../backend/billing';
+import { canReturnToLaunchBrandWorkspace, returnToLaunchBrandWorkspace } from '../../branding/launchBrandPreview';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/marketing-tracking': { title: 'Marketing Tracking', description: 'Pixels, events and conversion insights.' },
@@ -47,6 +48,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const ar = useUILanguage().startsWith('ar');
+  const workspaceBackLabel = ar ? 'الرجوع للمساحة' : 'Back to workspace';
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
@@ -179,6 +181,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb min-w-0 flex-1"><span>{translateText("Workspace")}</span><i>/</i><h1 className="min-w-0 truncate" title={translateText(pageTitle)}>{localizeNode(pageTitle)}</h1></div>)}
     </div>
     <div className="layout-header-actions">
+      {canReturnToLaunchBrandWorkspace() && (
+        <button
+          type="button"
+          className="layout-preview-back"
+          onClick={returnToLaunchBrandWorkspace}
+          aria-label={workspaceBackLabel}
+          title={workspaceBackLabel}
+        >
+          <ArrowLeft size={13} aria-hidden="true" />
+          <span>{workspaceBackLabel}</span>
+        </button>
+      )}
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
         <div className="relative" ref={searchContainerRef}>
           <label className="layout-search">

@@ -105,6 +105,34 @@ html.dark .layout-header .layout-header-breadcrumb > h1 {
   padding: 0 3px;
 }
 
+.layout-header .layout-preview-back {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--gp-border, #cbd5e1);
+  border-radius: 7px;
+  background: var(--gp-surface, transparent);
+  color: var(--gp-header-text, inherit);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.layout-header .layout-preview-back:hover {
+  border-color: currentColor;
+}
+
+[dir="rtl"] .layout-preview-back svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 1000px) {
+  .layout-preview-back span { display: none; }
+}
+
 /* Preference Controls & Badges */
 .layout-preference-controls {
   display: flex;

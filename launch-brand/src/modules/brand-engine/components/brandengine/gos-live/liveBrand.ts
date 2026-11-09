@@ -54,7 +54,7 @@ export function useLiveBrandConfiguration(language?: "ar" | "en"): LiveBrandConf
       theme: model.design,
     },
     logo: model.logoUrl,
-    logoHasWordmark: brand.generatedLogo || !brand.logoUrl,
+    logoHasWordmark: brand.generatedLogo || (!brand.logoUrl && !asset?.url),
     pages: {},
   };
 }

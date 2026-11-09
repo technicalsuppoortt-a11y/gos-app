@@ -38,6 +38,7 @@ export function GosLiveFrame({
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: width ?? 0, height: height ?? 0 });
   const message = JSON.stringify(configuration);
+  const back = onBackToWorkspace ?? onExitPreview;
   const sendBrand = (target: Window | null | undefined) => {
     target?.postMessage({ type: "launch-brand:brand", configuration: JSON.parse(message) }, window.location.origin);
   };
@@ -57,12 +58,14 @@ export function GosLiveFrame({
     if (!target) return;
     // The app asks for its brand as soon as it starts, before assets finish loading.
     const onMessage = (event: MessageEvent) => {
-      if (event.source === target && event.origin === window.location.origin && event.data?.type === "launch-brand:ready") sendBrand(target);
+      if (event.source !== target || event.origin !== window.location.origin) return;
+      if (event.data?.type === "launch-brand:ready") sendBrand(target);
+      if (event.data?.type === "launch-brand:back") back?.();
     };
     window.addEventListener("message", onMessage);
     sendBrand(target);
     return () => window.removeEventListener("message", onMessage);
-  }, [message]);
+  }, [back, message]);
 
   const scale = viewport && size.width && size.height
     ? Math.min(1, size.width / viewport.width, size.height / viewport.height)
@@ -70,7 +73,6 @@ export function GosLiveFrame({
   const frameWidth = viewport?.width ?? (scale === 1 ? "100%" : DESKTOP_WIDTH);
   const frameHeight = viewport?.height ?? (scale === 1 ? "100%" : Math.max(size.height / scale, DESKTOP_HEIGHT * 0.6));
   const separator = path.includes("?") ? "&" : "?";
-  const back = onBackToWorkspace ?? onExitPreview;
   const isAr = configuration.brand.language === "ar";
 
   return (
@@ -78,20 +80,11 @@ export function GosLiveFrame({
       ref={box}
       style={{ position: "relative", overflow: "hidden", width: width ?? "100%", height: height ?? "100%" }}
     >
-      {back && (
-        <button
-          type="button"
-          onClick={back}
-          style={{ position: "absolute", zIndex: 2, top: 12, insetInlineStart: 12, borderRadius: 10, padding: "6px 12px", fontSize: 13, fontWeight: 600, background: "rgba(15,23,42,.78)", color: "#fff", border: 0 }}
-        >
-          {isAr ? "الرجوع للمساحة" : "Back to workspace"}
-        </button>
-      )}
       <iframe
         ref={frame}
         name={GOS_DEMO_WINDOW}
         title={title}
-        src={`${path}${separator}launch-brand-preview=1`}
+        src={`${path}${separator}launch-brand-preview=1${back ? "&launch-brand-back=1" : ""}`}
         onLoad={() => sendBrand(frame.current?.contentWindow)}
         style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0 }}
       />
