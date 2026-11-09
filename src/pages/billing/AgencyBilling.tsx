@@ -22,7 +22,7 @@ export function AgencyBilling({ uid, showWalletBalance }: { uid: string; showWal
         {!data.active && <p className="bl-banner warn">{c.t('Ask the Platform Admin to activate billing for paid tools.', 'اطلب من مسؤول المنصة تفعيل الفوترة لاستخدام الأدوات المدفوعة.')}</p>}
         <div className="bl-banner info"><Coins size={17}/><span>{c.t('Available AI credits', 'رصيد الذكاء الاصطناعي المتاح')} <strong>{data.credits.toLocaleString(locale)}</strong></span></div>
         <div className="bl-banner info"><Coins size={17}/><span>{c.t('Available email credits', 'رصيد البريد الإلكتروني المتاح')} <strong>{(data.emailCredits ?? 0).toLocaleString(locale)}</strong></span></div>
-        {showWalletBalance && <div className="bl-banner info"><Wallet size={17}/><span>{c.t('Available communication balance', 'رصيد الاتصالات المتاح')} <strong>{data.communicationBalance.toLocaleString(locale, { style: 'currency', currency: data.currency })}</strong></span></div>}
+        {showWalletBalance && <div className="bl-banner info"><Wallet size={17}/><span>{c.t('Available communication balance', 'رصيد الاتصالات المتاح')} <strong>{c.money(data.communicationBalance, data.currency)}</strong></span></div>}
       </>}
     </div>
   );

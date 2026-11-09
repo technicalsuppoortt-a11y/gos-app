@@ -645,7 +645,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', fontSize: 13, fontWeight: 600 }}>
             <span>{c.pick(plan.name)}</span>
             <span>·</span>
-            <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(finalAmount, plan.currency)}</span>
+            <span style={{ color: 'var(--bl-accent-2)' }}>{c.checkoutMoney(finalAmount, plan.currency)}</span>
           </div>
         </div>
       ) : (
@@ -854,7 +854,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800, color: 'var(--bl-text)', paddingBlockStart: 6, borderBlockStart: '1px dashed var(--bl-border)' }}>
                   <span>{c.t('Total due', 'المبلغ الإجمالي')}</span>
-                  <span style={{ color: 'var(--bl-accent-2)' }}>{c.money(finalAmount, plan.currency)}</span>
+                  <span style={{ color: 'var(--bl-accent-2)' }}>{c.checkoutMoney(finalAmount, plan.currency)}</span>
                 </div>
               </div>
             </div>

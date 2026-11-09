@@ -20,8 +20,8 @@ import { AgencyLandingSeed } from '../../backend/agencyLanding';
 // OnboardingProgress is temporarily disabled with the onboarding cycle.
 
 const userItems: SidebarItem[] = [
-  { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'AI Copilot', href: '/copilot', icon: Sparkles },
+  { name: 'Dashboard', href: '', icon: MessageSquare, end: true },
   { name: 'Funnel & Website', href: '/funnels', icon: Filter, activePaths: ['/dashboard/funnels', '/dashboard/websites', '/dashboard/forms', '/funnels', '/websites', '/forms'] },
   { name: 'Inbox', href: '/inbox', icon: MessageCircle,  },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },

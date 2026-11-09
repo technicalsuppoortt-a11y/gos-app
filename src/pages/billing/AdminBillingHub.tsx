@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import React, { useMemo, useState } from 'react';
 import { 
   Wallet, TrendingUp, DollarSign, ArrowUpRight, ArrowDownLeft, 
@@ -50,6 +51,8 @@ const CHANNEL_COLORS: Record<string, string> = {
 
 export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHubProps) {
   const c = useCopy();
+  const { formatPrice } = useCurrency();
+  const walletAmount = (value: number, precision = 0) => formatPrice(value, WALLET_CURRENCY, precision);
   const { busy, run } = useAction();
   const identity = useBillingIdentity();
 
@@ -399,7 +402,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 </div>
               </div>
               <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">
-                €{analytics?.summary ? analytics.summary.total_customer_charge.toFixed(2) : '0.00'}
+                {walletAmount(analytics?.summary?.total_customer_charge ?? 0)}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 {c.t('Total billed for carrier communications', 'إجمالي الرسوم المحصلة مقابل الرسائل')}
@@ -417,7 +420,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 </div>
               </div>
               <div className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">
-                €{analytics?.summary ? analytics.summary.total_provider_cost.toFixed(2) : '0.00'}
+                {walletAmount(analytics?.summary?.total_provider_cost ?? 0)}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 {c.t('Direct costs paid to Meta, Twilio, gateways', 'التكلفة المدفوعة مباشرة لـ Meta وTwilio')}
@@ -435,7 +438,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 </div>
               </div>
               <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                €{analytics?.summary ? analytics.summary.total_margin.toFixed(2) : '0.00'}
+                {walletAmount(analytics?.summary?.total_margin ?? 0)}
               </div>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
@@ -456,7 +459,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 </div>
               </div>
               <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">
-                €{analytics?.summary ? analytics.summary.total_topups.toFixed(2) : '0.00'}
+                {walletAmount(analytics?.summary?.total_topups ?? 0)}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 {analytics?.summary?.active_accounts_count ?? 0} {c.t('active accounts', 'حسابات نشطة')} · {analytics?.summary?.total_messages ?? 0} {c.t('messages', 'رسالة')}
@@ -495,10 +498,10 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
 
                         <div className="text-end">
                           <div className="text-xs font-bold font-mono text-slate-900 dark:text-slate-100">
-                            €{ch.customer_charge.toFixed(2)}
+                            {walletAmount(ch.customer_charge)}
                           </div>
                           <div className="text-[10px] text-emerald-600 font-semibold font-mono">
-                            +€{ch.margin.toFixed(2)} ({ch.margin_percentage}%)
+                            +{walletAmount(ch.margin)} ({ch.margin_percentage}%)
                           </div>
                         </div>
                       </div>
@@ -508,12 +511,12 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                         <div
                           className="bg-rose-500"
                           style={{ width: `${ch.customer_charge > 0 ? (ch.provider_cost / ch.customer_charge) * 100 : 0}%` }}
-                          title={`Cost: €${ch.provider_cost.toFixed(2)}`}
+                          title={`Cost: ${walletAmount(ch.provider_cost)}`}
                         />
                         <div
                           className="bg-emerald-500"
                           style={{ width: `${ch.customer_charge > 0 ? (ch.margin / ch.customer_charge) * 100 : 0}%` }}
-                          title={`Margin: €${ch.margin.toFixed(2)}`}
+                          title={`Margin: ${walletAmount(ch.margin)}`}
                         />
                       </div>
                     </div>
@@ -555,10 +558,10 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                           {(acc.messages_count ?? 0).toLocaleString()}
                         </td>
                         <td className="py-2.5 text-end font-mono font-bold text-slate-900 dark:text-slate-100">
-                          €{(acc.total_spend ?? 0).toFixed(2)}
+                          {walletAmount(acc.total_spend ?? 0)}
                         </td>
                         <td className="py-2.5 text-end font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                          +€{(acc.margin ?? 0).toFixed(2)}
+                          +{walletAmount(acc.margin ?? 0)}
                         </td>
                       </tr>
                     ))}
@@ -654,10 +657,10 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   <div className="flex items-center gap-4 self-end md:self-center">
                     <div className="text-end">
                       <div className="text-sm font-bold text-slate-900 dark:text-slate-100 font-mono">
-                        €{((req as any).price ?? req.totalAmount ?? 0).toFixed(2)}
+                        {c.money((req as any).price ?? req.totalAmount ?? 0, req.plan?.currency ?? WALLET_CURRENCY)}
                       </div>
                       <div className="text-[11px] text-emerald-600 font-semibold font-mono">
-                        {c.t('Credits:', 'الرصيد:')} €{(req.creditAmount ?? (req as any).credits ?? req.totalAmount ?? 0).toFixed(2)}
+                        {c.t('Credits:', 'الرصيد:')} {walletAmount(req.creditAmount ?? (req as any).credits ?? req.totalAmount ?? 0)}
                       </div>
                     </div>
 
@@ -788,13 +791,13 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                       </span>
                     </td>
                     <td className="py-2.5 text-end font-bold text-slate-900 dark:text-slate-100">
-                      €{(entry.customer_charge ?? 0).toFixed(4)}
+                      {walletAmount(entry.customer_charge ?? 0, 4)}
                     </td>
                     <td className="py-2.5 text-end text-rose-600 dark:text-rose-400">
-                      €{(entry.provider_cost ?? 0).toFixed(4)}
+                      {walletAmount(entry.provider_cost ?? 0, 4)}
                     </td>
                     <td className="py-2.5 text-end font-bold text-emerald-600 dark:text-emerald-400">
-                      +€{(entry.margin ?? 0).toFixed(4)}
+                      +{walletAmount(entry.margin ?? 0, 4)}
                     </td>
                   </tr>
                 ))}
@@ -859,7 +862,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                         )}
                       </button>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        {cpn.type === 'percent' ? `${cpn.value}% OFF` : cpn.type === 'fixed' ? `€${cpn.value} OFF` : `+€${cpn.value} BONUS`}
+                        {cpn.type === 'percent' ? `${cpn.value}% OFF` : cpn.type === 'fixed' ? `${walletAmount(cpn.value)} OFF` : `+${walletAmount(cpn.value)} BONUS`}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         cpn.active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
@@ -1547,8 +1550,8 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                     {viewingCoupon.type === 'percent' 
                       ? `${viewingCoupon.value}% DISCOUNT` 
                       : viewingCoupon.type === 'fixed' 
-                      ? `€${viewingCoupon.value} OFF` 
-                      : `+€${viewingCoupon.value} BONUS`}
+                      ? `${walletAmount(viewingCoupon.value)} OFF`
+                      : `+${walletAmount(viewingCoupon.value)} BONUS`}
                   </span>
                 </div>
 
@@ -1615,10 +1618,10 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   <DollarSign size={15} className="text-amber-600" />
                 </div>
                 <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
-                  €{totalCouponSavings.toFixed(2)}
+                  {walletAmount(totalCouponSavings)}
                 </div>
                 <div className="text-[10px] font-semibold text-emerald-600 mt-1">
-                  {totalCouponBonus > 0 ? `+€${totalCouponBonus.toFixed(2)} ${c.t('bonus', 'رصيد هدية')}` : c.t('Direct discount given', 'توفير مباشر للعملاء')}
+                  {totalCouponBonus > 0 ? `+${walletAmount(totalCouponBonus)} ${c.t('bonus', 'رصيد هدية')}` : c.t('Direct discount given', 'توفير مباشر للعملاء')}
                 </div>
               </div>
 
@@ -1715,9 +1718,9 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
 
                             <td className="py-3 px-3 text-end font-mono font-bold">
                               {discount > 0 ? (
-                                <span className="text-rose-600 dark:text-rose-400">-€{discount.toFixed(2)}</span>
+                                <span className="text-rose-600 dark:text-rose-400">-{walletAmount(discount)}</span>
                               ) : bonus > 0 ? (
-                                <span className="text-emerald-600 dark:text-emerald-400">+€{bonus.toFixed(2)} Bonus</span>
+                                <span className="text-emerald-600 dark:text-emerald-400">+{walletAmount(bonus)} Bonus</span>
                               ) : (
                                 <span className="text-slate-400">—</span>
                               )}

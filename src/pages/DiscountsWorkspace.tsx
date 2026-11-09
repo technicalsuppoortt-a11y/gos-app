@@ -1,3 +1,4 @@
+import { useCurrency } from '../context/CurrencyContext';
 import './commerce/dynamic-checkout.css';
 import './commerce/checkout-requests.css';
 import { QuickDetails } from '../components/ui/QuickDetails';
@@ -53,14 +54,6 @@ type DiscountedOrder = {
   decidedAt?: string;
 };
 
-function formatOrderMoney(amount: number, currency = 'USD') {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
-}
-
 function getInitials(name?: string, email?: string) {
   const src = (name || email || 'U').trim();
   const parts = src.split(/\s+/).filter(Boolean);
@@ -69,6 +62,7 @@ function getInitials(name?: string, email?: string) {
 }
 
 export function DiscountsWorkspace({ notify }: { notify: (message: string) => void }) {
+  const { formatPrice: formatOrderMoney } = useCurrency();
   useUILanguage();
   const navigate = useNavigate();
   const [discounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
@@ -324,7 +318,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                             <span className="dc-type-badge">{localizeNode(d.type)}</span>
                           </td>
                           <td className="text-center dc-value">
-                            {localizeNode(d.type === 'Percentage' ? `${d.value}%` : `€${d.value}`)}
+                            {localizeNode(d.type === 'Percentage' ? `${d.value}%` : formatOrderMoney(d.value, 'EUR'))}
                           </td>
                           <td className="text-start">
                             {localizeNode(d.applies)}
@@ -598,7 +592,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                 <div className="cr-detail-amount">
                   {detailDiscount.type === 'Percentage'
                     ? `${detailDiscount.value}% OFF`
-                    : `€${detailDiscount.value} OFF`}
+                    : `${formatOrderMoney(detailDiscount.value, 'EUR')} OFF`}
                 </div>
                 <div className="cr-detail-product-name">
                   {detailDiscount.description || translateText('Promotional discount coupon')}
@@ -639,7 +633,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                       <strong>
                         {detailDiscount.type === 'Percentage'
                           ? `${detailDiscount.value}%`
-                          : `€${detailDiscount.value}`}
+                          : formatOrderMoney(detailDiscount.value, 'EUR')}
                       </strong>
                     </dd>
                   </div>

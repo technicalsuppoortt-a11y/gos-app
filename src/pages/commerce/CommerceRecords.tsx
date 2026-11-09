@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -32,25 +33,15 @@ import './checkout-requests.css';
 type RecordRow = Record<string, any>;
 const providers = { stripe: 'Stripe', paypal: 'PayPal', applePay: 'Apple Pay', googlePay: 'Google Pay' } as const;
 
-const money = (row: RecordRow) => {
-  const amount = Number(row.total ?? row.amount ?? 0);
-  const currency = row.currency || 'USD';
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
-};
-
-function customerTotals(orders: RecordRow[]) {
+function customerTotals(orders: RecordRow[], formatPrice: (amount: number, currency: string) => string) {
   const totals = new Map<string, number>();
   for (const order of orders) {
     const currency = order.currency || 'USD';
     totals.set(currency, (totals.get(currency) ?? 0) + Number(order.total ?? order.amount ?? 0));
   }
   return totals.size
-    ? [...totals].map(([currency, amount]) => money({ currency, amount })).join(' / ')
-    : money({ amount: 0, currency: 'USD' });
+    ? [...totals].map(([currency, amount]) => formatPrice(amount, currency)).join(' / ')
+    : formatPrice(0, 'USD');
 }
 
 function getInitials(name?: string, email?: string) {
@@ -66,6 +57,8 @@ export function CommerceRecords({ tab, notify }: { tab: string; notify: (message
 }
 
 function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notify: (message: string) => void }) {
+  const { formatPrice } = useCurrency();
+  const money = (row: RecordRow) => formatPrice(Number(row.total ?? row.amount ?? 0), row.currency || 'USD');
   const [quick, setQuick] = useState<RecordRow | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -153,12 +146,12 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
         ...row,
         ordersCount: purchases.length,
         paidCount: paidPurchases.length,
-        lifetimeValue: customerTotals(paidPurchases.length ? paidPurchases : purchases),
+        lifetimeValue: customerTotals(paidPurchases.length ? paidPurchases : purchases, formatPrice),
         purchases,
         status: row.status || 'Active',
       };
     });
-  }, [contacts, orders]);
+  }, [contacts, orders, formatPrice]);
 
   const methodRecords = useMemo(() => {
     return (preferences.paymentMethods || []).map(m => {
@@ -928,7 +921,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
 
               <div className="cr-detail-amount">
                 {tab === 'Customers'
-                  ? quick.lifetimeValue || money({ amount: 0, currency: 'USD' })
+                  ? allCustomerRecords.find(row => row.id === quick.id)?.lifetimeValue || formatPrice(0)
                   : money(quick)}
               </div>
               <div className="cr-detail-product-name">

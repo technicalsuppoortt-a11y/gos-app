@@ -116,7 +116,7 @@ export async function endActivation() {
 }
 
 const resolvedProfileSignatures = new WeakMap<User, string>();
-const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.accountType, value?.allowedTabs]);
+const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.avatar, value?.accountType, value?.allowedTabs]);
 const suspendedStatus = (value: unknown) => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(value).toLowerCase());
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
@@ -298,7 +298,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
       id: user.uid,
       name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User',
       email: user.email || data?.email || '',
-      avatar: data?.avatar,
+      avatar: data?.avatar || user.photoURL || undefined,
       ...(agency ? { accountType: 'agency' } : {}),
       ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}),
       ...(Array.isArray(data?.allowedTabs)

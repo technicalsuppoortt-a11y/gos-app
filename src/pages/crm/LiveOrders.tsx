@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Copy, Mail, MessageCircle, Package, Plus } from 'lucide-react';
@@ -17,6 +18,7 @@ import { linkedToLead, productCheckoutURL } from './recordLinks';
 const date = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString() : value || '';
 
 export function LiveOrders({ lead }: { lead: CanonicalLead }) {
+  const { formatPrice } = useCurrency();
   const orders = useEntities<ApiRecord>('orders').filter(row => linkedToLead(row, lead, 'order'));
   const transactions = useEntities<ApiRecord>('transactions').filter(row => linkedToLead(row, lead, 'order'));
   const products = useEntities<Product>('products');
@@ -47,7 +49,7 @@ export function LiveOrders({ lead }: { lead: CanonicalLead }) {
     </div>
     {rows.length ? <div>{rows.map(row => <div className="crm-feed-item" key={row.id}>
       <Package size={20}/><div><b>{row.productName || row.product_name || row.invoiceNumber || 'Order / payment'}</b><p>{date(row.createdAt || row.created_at || row.at || row.date)}{row.invoiceNumber ? ' · Invoice ' + row.invoiceNumber : ''}</p></div>
-      <span>{row.status} {row.currency} {row.total ?? row.amount ?? ''}</span>
+      <span>{row.status} {formatPrice(Number(row.total ?? row.amount ?? NaN), row.currency || 'USD')}</span>
     </div>)}</div> : <p className="crm-empty">{translateText('No orders recorded for this contact. Attach a product to track interest or share its checkout link.')}</p>}
     {attachments.length > 0 && <div><h3>{translateText('Attached products')}</h3>{attachments.map(attachment => {
       const product = products.find(item => item.id === attachment.productId);

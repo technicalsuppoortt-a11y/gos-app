@@ -17,6 +17,11 @@ import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
 import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
+import { useCurrencyPreference } from '../backend/currencyPreference';
+import { isCurrencyCode } from '../utils/currency';
+import { CurrencyProvider } from './CurrencyContext';
+
+const { currency: _currency, ...inheritAppearance } = inheritWorkspacePreferences;
 
 export function WorkspaceCustomization({ children, publicPage }: { children: ReactNode; publicPage?: boolean }) {
   const state = useWorkspacePreferenceState();
@@ -24,6 +29,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const scope = publicPage ? 'public' : state.scope;
   const values = publicPage ? state.publicValues : state.values;
   const personal = publicPage ? {} : state.personal;
+  const currencyPreference = useCurrencyPreference(publicPage ? '' : uid);
   const [lastTopbarChange, setLastTopbarChange] = useState<{ scope: string; patch: PersonalPreferences }>();
   const phoenix = usePhoenixBrand();
   const dispatch = useDispatch();
@@ -42,10 +48,12 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     language: phoenix.brand.language,
     mode: phoenix.brand.mode,
   } : values ?? preferenceDefaults;
+  const legacyCurrency = isCurrencyCode(personal.currency) ? personal.currency : undefined;
+  const displayCurrency = currencyPreference.value === undefined ? legacyCurrency : currencyPreference.value;
   const effective = {
     ...workspace,
     language: launchBrandPreview ? workspace.language : personal.language ?? workspace.language,
-    currency: personal.currency ?? workspace.currency,
+    currency: displayCurrency ?? workspace.currency,
     mode: launchBrandPreview ? workspace.mode : personal.mode ?? workspace.mode,
     timezone: personal.timezone ?? workspace.timezone,
     dateFormat: personal.dateFormat ?? workspace.dateFormat,
@@ -76,7 +84,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const adminSyncedRef = useRef('');
   useEffect(() => {
     if (publicPage || !canPublish || !tenantId || state.loading || previewValues) return;
-    const desired = sanitizeWorkspacePreferences(effective);
+    const desired = sanitizeWorkspacePreferences({ ...effective, currency: workspace.currency });
     const currentPublic = state.publicValues ? sanitizeWorkspacePreferences(state.publicValues) : null;
     const desiredKey = JSON.stringify({
       name: desired.name,
@@ -100,17 +108,20 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       : '';
     if (desiredKey !== publicKey && adminSyncedRef.current !== desiredKey) {
       adminSyncedRef.current = desiredKey;
-      void saveWorkspacePreferences(tenantId, desired, true, inheritWorkspacePreferences).catch(() => {});
+      void saveWorkspacePreferences(tenantId, desired, true, inheritAppearance).catch(() => {});
     }
   }, [publicPage, canPublish, tenantId, state.loading, state.publicValues, effective, previewValues]);
 
   const setPreference = uid && !publicPage ? (patch: PersonalPreferences) => {
     setLastTopbarChange({ scope, patch });
+    const { currency, ...appearance } = patch;
+    if (currency === null || isCurrencyCode(currency)) currencyPreference.setCurrencyPreference(currency);
+    if (!Object.keys(appearance).length) return;
     if (canPublish && tenantId) {
       const nextWorkspace = sanitizeWorkspacePreferences({
         ...effective,
+        currency: workspace.currency,
         ...(patch.language ? { language: patch.language } : {}),
-        ...(patch.currency ? { currency: patch.currency } : {}),
         ...(patch.mode ? { mode: patch.mode } : {}),
         ...(patch.timezone ? { timezone: patch.timezone } : {}),
       });
@@ -123,12 +134,12 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
         mode: nextWorkspace.mode,
         timezone: nextWorkspace.timezone,
       });
-      void saveWorkspacePreferences(tenantId, nextWorkspace, true, inheritWorkspacePreferences).catch(error =>
+      void saveWorkspacePreferences(tenantId, nextWorkspace, true, inheritAppearance).catch(error =>
         showToast.error(backendError(error))
       );
       return;
     }
-    void savePersonalPreferences(uid, patch).catch(error => showToast.error(backendError(error)));
+    void savePersonalPreferences(uid, appearance).catch(error => showToast.error(backendError(error)));
   } : undefined;
   return (
     <WorkspacePreferencesContext.Provider value={{
@@ -137,7 +148,9 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       themePreview: previewValues?.theme ? previewValues : null,
       hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && values)),
     }}>
-      {children}
+      <CurrencyProvider currency={isCurrencyCode(currency) ? currency : 'USD'} language={language} enabled={!!uid && !publicPage}>
+        {children}
+      </CurrencyProvider>
     </WorkspacePreferencesContext.Provider>
   );
 }

@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useUILanguage, translateText } from '../../i18n/display';
 import { BookingBrandingFooter } from './BookingBrandingFooter';
 
@@ -16,6 +17,7 @@ import { BookingDirectionContext } from './BookingSelect';
 import { InviteeFields } from './InviteeFields';
 
 export function BookingLivePreview({page: draft}:{page:BookingPage}) {
+  const { formatCheckoutPrice } = useCurrency();
   const locale = bookingLocale(useUILanguage(), draft.language);
   const page = { ...draft, language: locale.lang };
   const [device,setDevice] = useState<'desktop'|'mobile'>('desktop');
@@ -164,7 +166,7 @@ export function BookingLivePreview({page: draft}:{page:BookingPage}) {
                   setScreeningError(''); setStep('time');
                 }
               }}/>
-            : step==='done' ? <BookingConfirmationView success={confirmation} page={page} error=""><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></BookingConfirmationView> : <BookingPageView
+            : step==='done' ? <BookingConfirmationView formatPrice={formatCheckoutPrice} success={confirmation} page={page} error=""><button className="bk-button" onClick={()=>setStep('time')}>{translateText("Back to calendar")}</button></BookingConfirmationView> : <BookingPageView formatPrice={formatCheckoutPrice}
               page={page} bookings={bookings} showTroubleshoot={showTroubleshoot} setShowTroubleshoot={setShowTroubleshoot} enabledDates={enabledDates}
               duration={duration} setDuration={setChoice} location={location} setLocation={setMeeting}
               displayTimezone={zone} setTimezone={setTimezone} step={step==='details'?'confirm-form':'select-slot'}

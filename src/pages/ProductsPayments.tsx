@@ -1,3 +1,5 @@
+import { defaultConfig, formatPrice as formatProductPrice } from './commerce/model';
+import { useCurrency } from '../context/CurrencyContext';
 import { thumbnailImageProps } from '../utils/thumbnailImages';
 import { usePaymentMethods } from '../backend/paymentMethods';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
@@ -490,6 +492,7 @@ function ProductCard({
   notify: (message: string) => void;
 }) {
   useUILanguage();
+  const { formatPrice } = useCurrency();
   const [showUsers, setShowUsers] = useState(false);
 
   return (
@@ -543,7 +546,7 @@ function ProductCard({
         >
           {localizeNode(item.name)}
         </button>
-        <b className="pp-price">{localizeNode(item.price)}</b>
+        <b className="pp-price">{localizeNode(formatProductPrice(item.config ?? defaultConfig(item.type, item.price), formatPrice))}</b>
         <div
           className="pp-product-metric"
           role="button"
@@ -644,6 +647,7 @@ function ProductCard({
 
 function TransactionsView({ notify }: { notify?: (s: string) => void }) {
   useUILanguage();
+  const { formatPrice } = useCurrency();
   const transactions = useTransactions();
   const [txnSearch, setTxnSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Pending' | 'Refunded' | 'Rejected'>('All');
@@ -682,8 +686,8 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
     const currency = completed[0]?.currency ?? 'USD';
     // Never mix currencies into one figure.
     const sum = completed.filter(t => t.currency === currency).reduce((total, t) => total + t.amountValue, 0);
-    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(sum); } catch { return `${sum.toFixed(2)} ${currency}`; }
-  }, [transactions]);
+    return formatPrice(sum, currency);
+  }, [transactions, formatPrice]);
   const exportCsv = () => {
     const cell = (value: unknown) => '"' + String(value ?? '').replace(/^[=+@-]/, "'$&").replaceAll('"', '""') + '"';
     const csv = '\uFEFF' + [['Transaction ID', 'Date', 'Product', 'Customer', 'Email', 'Method', 'Amount', 'Currency', 'Status'], ...filteredTxns.map(t => [t.id, t.date, t.productName, t.customerName, t.customerEmail, t.method, t.amountValue, t.currency, t.status])].map(row => row.map(cell).join(',')).join('\r\n');
@@ -829,7 +833,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                           </span>
                         </td>
                         <td>
-                          <strong className="cr-amount">{localizeNode(t.amount)}</strong>
+                          <strong className="cr-amount">{formatPrice(t.amountValue, t.currency)}</strong>
                         </td>
                         <td className="cr-date-cell">{t.date}</td>
                         <td>
@@ -986,7 +990,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                 </div>
                 <div>
                   <dt>{translateText('Amount Settled')}</dt>
-                  <dd><strong>{selectedTxn.amount}</strong></dd>
+                  <dd><strong>{formatPrice(selectedTxn.amountValue, selectedTxn.currency)}</strong></dd>
                 </div>
                 <div>
                   <dt>{translateText('Currency')}</dt>

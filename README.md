@@ -6,24 +6,25 @@
 - dark mode colors
 - develop support
 - Notification
-- payment methods must be different
+- payment methods must be different => done
+- Currency
 ===========================================
 
 # User Dashboad
 - logic of setting in user dashboard => done until test
-  - profile
+  - profile => done
   - Bussiness
-  - Integrations
-  - Tools
-  - Team & roles
-  - Pixel
-  - Security
-- Product and checkout 
+  - Integrations => done
+  - Tools => done
+  - Team & roles => done
+  - Pixel => done
+  - Security => done
+- Product and checkout => done 
 - Booking Questions => done
-
+- Analysis Conversition filter => done
+- Integration and guideline how to connected
 ## hesham and Abbas 
-- Analysis Conversition filter
-- Loading of Crm
+- Loading of Crm and lead take many times
 - AI Follow-Up
   - Flow and trigers (many chat refrence) => knwoldege base
     - 2 cycle => connect and live with meta
@@ -32,8 +33,9 @@
     - From Bookings
     - From Products and services
     - From Funnel / webiste / form
-    - From Meta => add Lead Manual
+    - From Meta => add Lead Manual (Instagram , FaceBook , WhatsApp , Website Chat)
     - Form Ai Copliot
+  - Website Chat
 - Automation and Campagin tab and remove Automation from ai follow up
   - Settings
   - Templetes
@@ -42,15 +44,14 @@
   - Settings
 - Ai Copilot
   - from record to text
-  - apply all type of data
-  - Handled fast answers like questions
+  - apply all type of data => text , record , attachment 
+  - Handled fast answers like questions and templets
   - Handle :
     - Booking
     - Products
     - Funnel / website / Form
     - Crm Lead
 - Inbox
-  - Integration and guideline how to connected
   - Can support multi connection => lead have more than number or email
   - تصنفيات الواتس
   /* hesham and Abbas */
@@ -61,7 +62,7 @@
 - Plans and Subscription  and remove wallet=> done
   - Control of creidets => done
 - Agency User Cycle
-  - ADD or Auto Created
+  - ADD or Auto Created => done
   - Funnel and website => done
   - Bussiness assets => done
   - credites and wallets => done
@@ -77,7 +78,9 @@
   - Team Management => done
   - System Settings
     - Providers
-  - Integrations
+      - email
+      - AI
+  - Integrations => done
   - Payments => done
   - Payments Logs & Monitoring => done
 - Add Templete Control
@@ -86,9 +89,10 @@
 ======================
 
 # Advanced
-- Move Launch brand in gos
+- Move Launch brand in gos => done
 - Make Upclick Domain
-- Plan and subscription from joe academy
+- Plan and subscription from joe academy => option can apply free plan
+- Upload Vercel to VPS Server
 ===================
 # Log Later
 - Landing Management

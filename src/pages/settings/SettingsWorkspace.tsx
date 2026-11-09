@@ -3,7 +3,8 @@ import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Check, ChevronRight } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUserProfile } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
 import { ToolsSettingsPanel } from './ToolsPanel';
 import { showToast } from '../../utils/toast';
@@ -48,6 +49,7 @@ function ScopedSettings() {
 }
 function SettingsWorkspaceView() {
   useUILanguage();
+  const dispatch = useDispatch();
   const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
   const [data, setData] = useState<SettingsData>(defaultSettings), [loading, setLoading] = useState(true), [error, setError] = useState('');
@@ -56,14 +58,22 @@ function SettingsWorkspaceView() {
   const agencyUid = user?.accountType === 'agency' && active.slug === 'billing' ? user.id : null;
   const refresh = useCallback(async () => {
     setError('');
-    try { setData(await settingsRequest<SettingsData>('/settings')); } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
+    try {
+      const loaded = await settingsRequest<SettingsData>('/settings');
+      setData(loaded);
+      if (loaded.profile?.photo && !user?.avatar) {
+        dispatch(updateUserProfile({ avatar: loaded.profile.photo }));
+      }
+    } catch (e) { setError(friendlyError(e)); } finally { setLoading(false); }
   }, []);
   useEffect(() => { if (active.slug !== 'domains') void refresh(); }, [refresh, active.slug]);
   async function save(next: SettingsData, personalPreferences?: PersonalPreferences) {
     const result = await settingsRequest<{ profile: SettingsData['profile'] }>('/settings', {
       profile: next.profile, business: next.business, payment: next.payment, personalPreferences,
     }, 'PATCH');
-    setData({ ...next, profile: { ...next.profile, ...result.profile } });
+    const savedProfile = { ...next.profile, ...result.profile };
+    setData({ ...next, profile: savedProfile });
+    dispatch(updateUserProfile({ name: savedProfile.name, avatar: savedProfile.photo ?? '' }));
     showToast.success('Changes saved');
   }
   if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;

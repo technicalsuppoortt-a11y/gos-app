@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useRef, useState } from 'react';
 import { collection, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
 import {
@@ -47,14 +48,6 @@ type RequestRow = {
   discountCode: string;
   receipt: { name: string; type: string; dataUrl?: string; url?: string } | null;
   fields: { label: string; value: string }[];
-};
-
-const money = (amount: number, currency: string) => {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(Number(amount) || 0);
-  } catch {
-    return `$${(Number(amount) || 0).toFixed(2)}`;
-  }
 };
 
 const date = (value: string) => {
@@ -135,6 +128,7 @@ export function CheckoutRequests() {
 }
 
 function RequestsView({ tenantId }: { tenantId: string }) {
+  const { formatPrice: money } = useCurrency();
   useUILanguage();
   const [source, setSource] = useState<{ rows: RequestRow[]; error: string; loading: boolean }>({
     rows: [],
@@ -575,6 +569,7 @@ function RequestDetails({
   focusReject?: boolean;
   close: () => void;
 }) {
+  const { formatPrice: money } = useCurrency();
   const [note, setNote] = useState(request.reviewNote || '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);

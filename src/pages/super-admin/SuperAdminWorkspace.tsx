@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 function Badge({ value }: { value: string }) { return <span className={`saw-badge saw-${value.toLowerCase()}`}>{t(value)}</span>; }
 function Stat({ label, value, note }: { label: string; value: string | number; note: string }) { return <article className="saw-stat"><span>{t(label)}</span><strong>{value}</strong><small>{t(note)}</small></article>; }
 function Modal({ title, children, close }: PropsWithChildren<{ title: string; close: () => void }>) {
@@ -204,7 +205,7 @@ function LiveContent({ sources, children }: PropsWithChildren<{ sources: { loadi
   const error = sources.find(source => source.error)?.error;
   const retry = useContext(RetryContext);
   const { reportSyncing } = useContext(SyncStatusContext);
-  const isHydrating = sources.some(source => source.loading || source.cached);
+  const isHydrating = sources.some(source => source.loading);
 
   useEffect(() => {
     reportSyncing(isHydrating);
@@ -286,7 +287,6 @@ function Heading({ title, description, children, platform }: PropsWithChildren<{
 }
 
 const displayDate = (date: Date | null, timeZone?: string) => date ? date.toLocaleDateString(undefined, { timeZone }) : '—';
-const displayMoney = (amount: number | null, currency: string) => amount === null ? '—' : currency ? new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount) : String(amount);
 const teamLabel: Record<PlatformTeamRole, string> = { SUPER_ADMIN: 'Superadmin', PLATFORM_SUPPORT: 'Support', PLATFORM_FINANCE: 'Finance' };
 
 function Person({ account }: { account: PlatformAccount }) {
@@ -383,6 +383,7 @@ function SubUsersPage({ adminId }: { adminId: string }) {
 }
 
 function Accounts({ team = false }: { team?: boolean }) {
+  const { formatPrice } = useCurrency();
   const { adminId } = useParams<{ adminId?: string }>();
   const navigate = useNavigate();
   const language = useUILanguage();
@@ -476,7 +477,7 @@ function Accounts({ team = false }: { team?: boolean }) {
   return <>
     <Heading title={team ? 'Team Management' : 'All Admins'} description={team ? 'Give your team the access they need to do their best work.' : 'Manage platform admins and their linked users.'}>
       {!team && <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-admins.csv', ['ID', 'Name', 'Email', 'Status'], visible.map(row => [row.id, row.name, row.email, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>}
-      <button className="saw-primary" disabled={source.loading || !!source.error || source.cached} onClick={() => open({ kind: 'create' })}><Plus size={16}/>{t(team ? 'Add team member' : 'Add admin')}</button>
+      <button className="saw-primary" disabled={source.loading || !!source.error} onClick={() => open({ kind: 'create' })}><Plus size={16}/>{t(team ? 'Add team member' : 'Add admin')}</button>
     </Heading>
     {notice && <div className="saw-notice" role="status"><Check size={16}/>{t(notice)}<button aria-label={t('Dismiss notification')} onClick={() => setNotice('')}><X size={16}/></button></div>}
     <LiveContent sources={[source]}>
@@ -525,7 +526,7 @@ function Accounts({ team = false }: { team?: boolean }) {
                   </>
                 )}
                 {(!team || account.id !== currentUserId) && (
-                  <button type="button" className="saw-action-btn" disabled={source.cached} onClick={() => open({ kind: 'edit', id: account.id })}>
+                  <button type="button" className="saw-action-btn" onClick={() => open({ kind: 'edit', id: account.id })}>
                     <Pencil size={13}/>
                     {t('Edit')}
                   </button>
@@ -534,7 +535,7 @@ function Accounts({ team = false }: { team?: boolean }) {
                   <button
                     type="button"
                     className={`saw-action-btn ${account.status === 'Active' ? 'saw-btn-warn' : 'saw-btn-success'}`}
-                    disabled={source.cached}
+
                     onClick={() => open({ kind: 'status', id: account.id, active: account.status !== 'Active' })}
                   >
                     {account.status === 'Active' ? <Ban size={13}/> : <CheckCircle2 size={13}/>}
@@ -545,7 +546,7 @@ function Accounts({ team = false }: { team?: boolean }) {
                   <button
                     type="button"
                     className="saw-action-btn saw-btn-danger"
-                    disabled={source.cached}
+
                     onClick={() => open({ kind: 'delete', id: account.id })}
                   >
                     <Trash2 size={13}/>
@@ -704,7 +705,7 @@ function Accounts({ team = false }: { team?: boolean }) {
           </>
         )}
         {error && <p role="alert" className="saw-warning">{t(error)}</p>}
-        <button className="saw-primary" disabled={busy || source.cached} type="submit">{t(busy ? 'Saving…' : dialog.kind === 'edit' ? 'Save changes' : team ? 'Create team member' : 'Create admin')}</button>
+        <button className="saw-primary" disabled={busy} type="submit">{t(busy ? 'Saving…' : dialog.kind === 'edit' ? 'Save changes' : team ? 'Create team member' : 'Create admin')}</button>
       </form>
     </Modal>}
     {dialog?.kind === 'details' && selected && (
@@ -741,7 +742,7 @@ function Accounts({ team = false }: { team?: boolean }) {
                 <span>{t('Plan Rate')}</span>
                 <b>
                   {selectedSubscription?.price !== null && selectedSubscription?.price !== undefined
-                    ? displayMoney(selectedSubscription.price, selectedSubscription.currency || 'USD')
+                    ? formatPrice(selectedSubscription.price, selectedSubscription.currency || 'USD')
                     : '—'}
                 </b>
               </div>
@@ -846,7 +847,7 @@ function Accounts({ team = false }: { team?: boolean }) {
                   ? 'saw-primary'
                   : 'saw-warn-solid'
               }
-              disabled={busy || source.cached}
+              disabled={busy}
               onClick={() => {
                 if (dialog.kind === 'delete') {
                   void save(
@@ -884,16 +885,17 @@ function Accounts({ team = false }: { team?: boolean }) {
   </>;
 }
 
-function totals(payments: PlatformPayment[]) {
+function totals(payments: PlatformPayment[], formatPrice: (amount: number, currency: string) => string) {
   const amounts = new Map<string, number>();
   for (const row of payments) {
     if (row.amount === null || !row.currency) continue;
     amounts.set(row.currency, (amounts.get(row.currency) ?? 0) + row.amount);
   }
-  return [...amounts].sort(([a], [b]) => a.localeCompare(b)).map(([currency, amount]) => displayMoney(amount, currency)).join(' · ') || '—';
+  return [...amounts].sort(([a], [b]) => a.localeCompare(b)).map(([currency, amount]) => formatPrice(amount, currency)).join(' · ') || '—';
 }
 
 function Growth({ payments, months }: { payments: PlatformPayment[]; months: number }) {
+  const { formatPrice } = useCurrency();
   const currencies = [...new Set(payments.map(row => row.currency).filter(Boolean))].sort();
   const [selectedCurrency, setCurrency] = useState('');
   const currency = currencies.includes(selectedCurrency) ? selectedCurrency : currencies[0] ?? '';
@@ -907,8 +909,8 @@ function Growth({ payments, months }: { payments: PlatformPayment[]; months: num
   const max = Math.max(1, ...periods.map(row => row.value));
   return <section className="saw-panel"><div className="saw-section-head"><div><h2>{t('Revenue growth')}</h2><p>{t('Manually approved platform sales by month')}</p></div>
     {currencies.length > 1 && <DashboardSelect aria-label={t('Revenue currency')} value={currency} onChange={event => setCurrency(event.target.value)}>{currencies.map(value => <option key={value}>{value}</option>)}</DashboardSelect>}
-  </div>{currency ? <div className="saw-chart" role="img" aria-label={periods.map(row => `${row.label} ${displayMoney(row.value, currency)}`).join(', ')}>
-    {periods.map(row => <div className="saw-bar-column" key={row.key}><span>{displayMoney(row.value, currency)}</span><div className="saw-bar-track"><div style={{ height: `${Math.max(0, row.value) / max * 100}%`, minHeight: row.value > 0 ? 6 : 0 }}/></div><small>{row.label}</small></div>)}
+  </div>{currency ? <div className="saw-chart" role="img" aria-label={periods.map(row => `${row.label} ${formatPrice(row.value, currency)}`).join(', ')}>
+    {periods.map(row => <div className="saw-bar-column" key={row.key}><span>{formatPrice(row.value, currency)}</span><div className="saw-bar-track"><div style={{ height: `${Math.max(0, row.value) / max * 100}%`, minHeight: row.value > 0 ? 6 : 0 }}/></div><small>{row.label}</small></div>)}
   </div> : <p className="saw-empty">{t('No approved platform sales recorded.')}</p>}</section>;
 }
 
@@ -917,6 +919,7 @@ function Period({ months, setMonths }: { months: number; setMonths: (value: numb
 }
 
 function Overview() {
+  const { formatPrice } = useCurrency();
   const accounts = usePlatformAccounts(), subscriptions = usePlatformSubscriptions(), payments = usePlatformPayments(false), settings = usePlatformSettings();
   const [months, setMonths] = useState(6);
   const admins = accounts.data.filter(isAdminAccount);
@@ -932,7 +935,7 @@ function Overview() {
     <Heading title="Platform overview" description="Monitor platform accounts, subscriptions and revenue." platform={settings.data.settings.name}/>
     <LiveContent sources={[accounts, subscriptions, payments, settings]}>
       {settings.data.settings.maintenance && <div className="saw-warning" role="status">{t('A maintenance window is recorded in System Settings.')}</div>}
-      <div className="saw-stats"><Stat label="Total admins" value={admins.length} note="Platform admin accounts"/><Stat label="Active admins" value={active} note="Admins with access"/><Stat label="Platform revenue" value={totals(revenue)} note="Manually approved plans and add-ons"/><Stat label="Active subscriptions" value={livePlans.length} note="Current plans and trials"/></div>
+      <div className="saw-stats"><Stat label="Total admins" value={admins.length} note="Platform admin accounts"/><Stat label="Active admins" value={active} note="Admins with access"/><Stat label="Platform revenue" value={totals(revenue, formatPrice)} note="Manually approved plans and add-ons"/><Stat label="Active subscriptions" value={livePlans.length} note="Current plans and trials"/></div>
       <Period months={months} setMonths={setMonths}/>
       <div className="saw-two-column"><Growth payments={revenue} months={months}/><section className="saw-panel"><h2>{t('Plan adoption')}</h2><p>{t('Active subscriptions by plan')}</p>
         {!planCounts.size && <p className="saw-empty">{t('No active subscriptions.')}</p>}
@@ -944,6 +947,7 @@ function Overview() {
 }
 
 function Analytics() {
+  const { formatPrice } = useCurrency();
   const payments = usePlatformPayments(true), usage = usePlatformUsage();
   const [months, setMonths] = useState(6);
   const revenue = payments.data.filter(row => row.platformRevenue);
@@ -956,7 +960,7 @@ function Analytics() {
   return <>
     <Heading title="Usage & Revenue" description="Track recorded credit consumption and billing activity."/>
     <LiveContent sources={[payments, usage]}>
-      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString()} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/></div>
+      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString()} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue, formatPrice)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/></div>
       <Period months={months} setMonths={setMonths}/>
       <div className="saw-two-column"><Growth payments={revenue} months={months}/><section className="saw-panel"><h2>{t('Resource consumption')}</h2><p>{t('Credits consumed by activity')}</p>
         {!byService.size && <p className="saw-empty">{t('No credit usage recorded.')}</p>}
@@ -974,6 +978,7 @@ function Wallet() {
 }
 
 function Payments() {
+  const { formatPrice } = useCurrency();
   const source = usePlatformPayments(true);
   const filters = useFilters();
   const [details, setDetails] = useState('');
@@ -985,12 +990,12 @@ function Payments() {
       <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-payments.csv', ['Invoice', 'Account', 'Source', 'Method', 'Date', 'Amount', 'Currency', 'Status'], visible.map(row => [row.id, row.name, row.scope, row.method, row.date?.toISOString() ?? '', row.amount ?? '', row.currency, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
     </Heading>
     <LiveContent sources={[source]}>
-      <div className="saw-stats"><Stat label="Paid" value={totals(source.data.filter(row => row.status === 'Paid'))} note="Recorded commerce payments"/><Stat label="Pending" value={source.data.filter(row => row.status === 'Pending').length} note="Awaiting payment or review"/><Stat label="Failed" value={source.data.filter(row => row.status === 'Failed').length} note="Reported transaction failures"/><Stat label="Refunded" value={source.data.filter(row => row.status === 'Refunded' || row.status === 'Partially refunded').length} note="Full and partial refunds"/></div>
+      <div className="saw-stats"><Stat label="Paid" value={totals(source.data.filter(row => row.status === 'Paid'), formatPrice)} note="Recorded commerce payments"/><Stat label="Pending" value={source.data.filter(row => row.status === 'Pending').length} note="Awaiting payment or review"/><Stat label="Failed" value={source.data.filter(row => row.status === 'Failed').length} note="Reported transaction failures"/><Stat label="Refunded" value={source.data.filter(row => row.status === 'Refunded' || row.status === 'Partially refunded').length} note="Full and partial refunds"/></div>
       <Filters {...filters} options={['Paid', 'Pending', 'Failed', 'Refunded', 'Partially refunded', 'Approved', 'Unverified', 'Rejected', 'Cancelled', 'Unknown']}/>
-      <Grid columns={['Invoice', 'Account', 'Date', 'Amount', 'Status', 'Actions']} rows={visible.map(row => ({ id: row.key, cells: [<div key="id"><b>{row.id}</b><small>{t(row.scope)}{row.method && ` · ${row.method}`}</small></div>, row.name || '—', displayDate(row.date), displayMoney(row.amount, row.currency), <Badge key="status" value={row.status}/>, <button key="details" onClick={() => setDetails(row.key)}>{t('View details')}</button>] }))}/>
+      <Grid columns={['Invoice', 'Account', 'Date', 'Amount', 'Status', 'Actions']} rows={visible.map(row => ({ id: row.key, cells: [<div key="id"><b>{row.id}</b><small>{t(row.scope)}{row.method && ` · ${row.method}`}</small></div>, row.name || '—', displayDate(row.date), formatPrice(row.amount ?? NaN, row.currency), <Badge key="status" value={row.status}/>, <button key="details" onClick={() => setDetails(row.key)}>{t('View details')}</button>] }))}/>
     </LiveContent>
     {payment && <Modal title="Payment details" close={() => setDetails('')}><div className="saw-detail"><h3>{payment.id}</h3><p>{payment.name || '—'}</p><Badge value={payment.status}/><dl>
-      <div><dt>{t('Source')}</dt><dd>{t(payment.scope)}</dd></div><div><dt>{t('Payment method')}</dt><dd>{payment.method || '—'}</dd></div><div><dt>{t('Amount')}</dt><dd>{displayMoney(payment.amount, payment.currency)}</dd></div><div><dt>{t('Date')}</dt><dd>{displayDate(payment.date)}</dd></div>
+      <div><dt>{t('Source')}</dt><dd>{t(payment.scope)}</dd></div><div><dt>{t('Payment method')}</dt><dd>{payment.method || '—'}</dd></div><div><dt>{t('Amount')}</dt><dd>{formatPrice(payment.amount ?? NaN, payment.currency)}</dd></div><div><dt>{t('Date')}</dt><dd>{displayDate(payment.date)}</dd></div>
     </dl></div></Modal>}
   </>;
 }
@@ -1036,7 +1041,7 @@ function Settings() {
             </div>
           </section>
           <section className="saw-panel"><h2>{t('Security & operations')}</h2>{policies.map(item => <label className="saw-switch-row" key={item.key}><span><b>{t(item.label)}</b><small>{t(item.help)}</small></span><input type="checkbox" role="switch" checked={settings[item.key]} onChange={event => edit(item.key, event.target.checked)} disabled={busy}/></label>)}</section>
-          <div className="saw-actions"><button type="button" disabled={busy || !draft} onClick={() => { setDraft(null); setError(''); setNotice('Unsaved changes discarded.'); }}>{t('Discard changes')}</button><button className="saw-primary" type="submit" disabled={busy || !draft || source.cached}>{t(busy ? 'Saving…' : 'Save changes')}</button></div>
+          <div className="saw-actions"><button type="button" disabled={busy || !draft} onClick={() => { setDraft(null); setError(''); setNotice('Unsaved changes discarded.'); }}>{t('Discard changes')}</button><button className="saw-primary" type="submit" disabled={busy || !draft}>{t(busy ? 'Saving…' : 'Save changes')}</button></div>
         </form>
       </LiveContent>
     </SystemSettingsSections>

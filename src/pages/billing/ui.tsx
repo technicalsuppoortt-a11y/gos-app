@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Lock, Loader2, X } from 'lucide-react';
@@ -12,6 +13,7 @@ export type Copy = ReturnType<typeof useCopy>;
 /** Bilingual copy + locale-aware formatting. */
 export function useCopy() {
   const lang = useUILanguage();
+  const { formatPrice, formatCheckoutPrice } = useCurrency();
   const ar = lang.startsWith('ar');
   const locale = ar ? 'ar-EG' : 'en-US';
   return {
@@ -20,15 +22,8 @@ export function useCopy() {
     t: (en: string, arabic: string) => (ar ? arabic : en),
     pick: (value?: { en: string; ar: string } | null) => (value ? (ar ? value.ar || value.en : value.en || value.ar) : ''),
     num: (value: number) => new Intl.NumberFormat(locale).format(value ?? 0),
-    money: (value: number, currency = 'USD') => {
-      const safeCurrency = (currency && typeof currency === 'string' && currency.trim().length === 3) ? currency.trim().toUpperCase() : 'USD';
-      const safeVal = Number.isFinite(value) ? value : 0;
-      try {
-        return new Intl.NumberFormat(locale, { style: 'currency', currency: safeCurrency, maximumFractionDigits: safeVal % 1 ? 2 : 0 }).format(safeVal);
-      } catch {
-        return `${safeVal.toLocaleString(locale)} ${safeCurrency}`;
-      }
-    },
+    money: formatPrice,
+    checkoutMoney: formatCheckoutPrice,
     date: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso)) : '—'),
     dateTime: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : '—'),
   };

@@ -47,12 +47,10 @@ export function displayDate(value: string, ar = false) {
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date) : value;
 }
-export function displayMoney(amount: string, currency: string, ar = false) {
+export function displayMoney(amount: string, currency: string, formatPrice: (amount: number, currency: string) => string) {
   if (amount === '') return '—';
   const number = Number(amount);
-  if (Number.isFinite(number) && /^[A-Z]{3}$/.test(currency)) {
-    try { return new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US', { style: 'currency', currency, currencyDisplay: 'code', maximumFractionDigits: 2 }).format(number); } catch { /* Preserve the stored price if a legacy currency is unsupported. */ }
-  }
+  if (Number.isFinite(number) && /^[A-Z]{3}$/.test(currency)) return formatPrice(number, currency);
   return `${amount} ${currency}`.trim();
 }
 export function DetailCard({ title, children, wide = false }: { title: string; children: ReactNode; wide?: boolean }) {

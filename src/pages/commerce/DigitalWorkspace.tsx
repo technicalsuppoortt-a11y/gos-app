@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { TagManager } from './TagManager';
 import { DigitalAccessSettings } from './DigitalAccessSettings';
 import { useDigitalFieldError } from './DigitalValidation';
@@ -20,7 +21,8 @@ export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean
     customize({ planEnabled: value === 'Payment plan', recurringEnabled: value === 'Subscription' });
   }
   function amount(value: number) { configure({ amount: value }); customize(c.billing === 'One-time' ? { oneTimeAmount: value } : c.billing === 'Payment plan' ? { installmentAmount: value } : { recurringAmount: value }); }
-  const money = (amount: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: c.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+  const { formatPrice } = useCurrency();
+  const money = (amount: number) => formatPrice(amount, c.currency);
   return <div className="min-w-0"><div className="dw-grid">
     <div className="dw-column dw-left">
       <Card title={translateText("Product Information")} className="dw-information">

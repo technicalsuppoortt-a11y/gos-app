@@ -1,3 +1,4 @@
+import { useCurrency } from '../context/CurrencyContext';
 import { useProducts } from './commerce/repository';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useId } from 'react';
@@ -19,6 +20,7 @@ export function DiscountEditorPage() {
 }
 
 function DiscountEditor({ id }: { id?: string }) {
+  const { formatPrice } = useCurrency();
   useUILanguage();
   const navigate = useNavigate();
   const products = useProducts();
@@ -324,7 +326,7 @@ function DiscountEditor({ id }: { id?: string }) {
                     
                     <div className="flex items-baseline gap-1.5 mb-1">
                       <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                        {localizeNode(form.type === 'Percentage' ? `${form.value}%` : `€${form.value}`)}
+                        {localizeNode(form.type === 'Percentage' ? `${form.value}%` : formatPrice(Number(form.value), 'EUR'))}
                       </span>
                       <span className="text-sm font-medium text-slate-500">{translateText("OFF")}</span>
                     </div>

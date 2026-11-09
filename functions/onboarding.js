@@ -53,7 +53,7 @@ export async function completeUserActivation(request, { db, auth }) {
     // Auto-assign Free Plan if enabled/published by the provider or platform
     let planAssigned = false;
     try {
-      if (profile.role !== 'SUPER_ADMIN' && profile.accountType !== 'agency') {
+      if (profile.role !== 'SUPER_ADMIN' && profile.accountType !== 'agency' && profile.applyFreePlan !== false) {
         const store = transactionStore(db, tx);
         const billingActor = { uid, role: profile.role, name: profile.name, email: profile.email, supportParentId: profile.supportParentId };
         const initResult = await executeBilling('initializeAccountPlan', { subscriberId: uid }, billingActor, store, activatedAt);

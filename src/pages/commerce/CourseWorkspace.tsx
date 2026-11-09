@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { TagManager } from './TagManager';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { useId, useState } from 'react';
@@ -135,6 +136,7 @@ export function CourseAnalytics({ product: p, demo = false }: FormProps & { demo
 
 const trend = [120, 80, 105, 210, 255, 175, 140, 220, 340, 305, 370, 425, 460, 405, 320, 290, 310, 305, 430, 490, 520, 510, 640, 685, 570, 540, 610, 654];
 function CourseSalesChart() {
+  const { formatPrice, formatCompactPrice } = useCurrency();
   useUILanguage();
   const id = useId().replaceAll(':', '');
   const [period, setPeriod] = useState('Last 30 days'), [selected, setSelected] = useState<number | null>(null);
@@ -144,14 +146,14 @@ function CourseSalesChart() {
   const line = points.map((point, i) => `${i ? 'L' : 'M'}${point.x},${point.y}`).join(' ');
   const active = selected === null ? null : points[selected];
   return <Card title={translateText("Sales Overview")} className="course-sales-card" action={<Select value={period} options={['Last 30 days', 'Last 7 days']} onChange={value => { setPeriod(value); setSelected(null); }}/>}>
-    <div className="course-sales-summary">{localizeNode([['€6,540', 'Revenue', '+28%'], ['22', 'New Sales', '+47%'], ['3.8%', 'Conversion Rate', '+1.2%']].map(([value, label, change]) => <div key={label}><b>{localizeNode(value)}</b><div><small>{localizeNode(label)}</small><span className="course-growth">↑ {localizeNode(change)}</span></div></div>))}</div>
+    <div className="course-sales-summary">{localizeNode([[formatPrice(6540, 'EUR'), 'Revenue', '+28%'], ['22', 'New Sales', '+47%'], ['3.8%', 'Conversion Rate', '+1.2%']].map(([value, label, change]) => <div key={label}><b>{localizeNode(value)}</b><div><small>{localizeNode(label)}</small><span className="course-growth">↑ {localizeNode(change)}</span></div></div>))}</div>
     <div className="course-sales-chart"><svg viewBox="0 0 425 148" role="img" aria-label={translateText(`Sample course revenue trend over the ${period.toLowerCase()}`)}>
       <defs><linearGradient id={`course-fill-${id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7C3AED" stopOpacity=".3"/><stop offset="100%" stopColor="#7C3AED" stopOpacity=".04"/></linearGradient></defs>
-      {localizeNode([0, 200, 400, 600, 800].map(value => { const y = bottom - value / 800 * height; return <g key={value}><line x1={left} x2={left + width} y1={y} y2={y} className="course-chart-grid"/><text x={left - 7} y={y + 3} textAnchor="end">€{localizeNode(value)}</text></g>; }))}
+      {localizeNode([0, 200, 400, 600, 800].map(value => { const y = bottom - value / 800 * height; return <g key={value}><line x1={left} x2={left + width} y1={y} y2={y} className="course-chart-grid"/><text x={left - 7} y={y + 3} textAnchor="end">{formatCompactPrice(value, 'EUR')}</text></g>; }))}
       <path d={`${line} L${left + width},${bottom} L${left},${bottom} Z`} fill={`url(#course-fill-${id})`}/><path d={line} fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinejoin="round"/>
       {localizeNode([0, .2, .4, .6, .8, 1].map((fraction, i) => <text key={i} x={left + fraction * width} y={137} textAnchor="middle">{translateText("Oct ")}{localizeNode(period === 'Last 7 days' ? 24 + Math.round(fraction * 6) : 1 + Math.round(fraction * 29))}</text>))}
       {localizeNode(active && <><line x1={active.x} x2={active.x} y1={top} y2={bottom} stroke="#A78BFA" strokeDasharray="3 3"/><circle cx={active.x} cy={active.y} r="3.5" fill="#7C3AED" stroke="white" strokeWidth="1.5"/></>)}
-      {localizeNode(points.map((point, i) => <rect key={i} x={point.x - width / values.length / 2} y={top} width={width / values.length + 2} height={height} fill="transparent" tabIndex={0} aria-label={translateText(`October ${period === 'Last 7 days' ? i + 24 : i + 1}, revenue €${values[i]}`)} onMouseEnter={() => setSelected(i)} onMouseLeave={() => setSelected(null)} onFocus={() => setSelected(i)} onBlur={() => setSelected(null)}/>))}
-    </svg>{localizeNode(selected !== null && <div className="course-chart-tooltip" role="status">{translateText("Oct ")}{localizeNode(period === 'Last 7 days' ? selected + 24 : selected + 1)}, 2025 <b>€{localizeNode(values[selected])}{translateText(" revenue")}</b></div>)}</div>
+      {localizeNode(points.map((point, i) => <rect key={i} x={point.x - width / values.length / 2} y={top} width={width / values.length + 2} height={height} fill="transparent" tabIndex={0} aria-label={translateText(`October ${period === 'Last 7 days' ? i + 24 : i + 1}, revenue ${formatPrice(values[i], 'EUR')}`)} onMouseEnter={() => setSelected(i)} onMouseLeave={() => setSelected(null)} onFocus={() => setSelected(i)} onBlur={() => setSelected(null)}/>))}
+    </svg>{localizeNode(selected !== null && <div className="course-chart-tooltip" role="status">{translateText("Oct ")}{localizeNode(period === 'Last 7 days' ? selected + 24 : selected + 1)}, 2025 <b>{formatPrice(values[selected], 'EUR')}{translateText(" revenue")}</b></div>)}</div>
   </Card>;
 }

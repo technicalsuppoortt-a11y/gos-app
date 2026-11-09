@@ -296,10 +296,12 @@ function SubAccountDetailsModal({
         : sub.data.plan.name)
     : '';
 
+  const isMemberFreePlanEnabled = isFreePlanEnabled && user.applyFreePlan !== false;
+
   const planName =
     subPlanName ||
     (isPending
-      ? isFreePlanEnabled
+      ? isMemberFreePlanEnabled
         ? `${freePlanName || t('Free Plan', 'الخطة المجانية')} (${t('Auto-assigned', 'تلقائي')})`
         : t('Mandatory Plan Selection', 'اختيار خطة إلزامي')
       : t('No Active Plan', 'لا توجد خطة نشطة'));
@@ -469,7 +471,7 @@ function SubAccountDetailsModal({
                 </span>
               ) : isPending ? (
                 <span className="ob-badge amber" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                  {isFreePlanEnabled ? t('Pending Free Auto-Assign', 'بانتظار التعيين التلقائي') : t('Mandatory Checkout', 'دفع إلزامي')}
+                  {isMemberFreePlanEnabled ? t('Pending Free Auto-Assign', 'بانتظار التعيين التلقائي') : t('Mandatory Checkout', 'دفع إلزامي')}
                 </span>
               ) : (
                 <span className="ob-badge" style={{ fontSize: '9px', padding: '2px 6px' }}>
@@ -480,8 +482,8 @@ function SubAccountDetailsModal({
           </div>
           <div className="ob-details-meta-row">
             <span className="ob-details-meta-label">{t('Onboarding Policy', 'سياسة التسجيل')}</span>
-            <span className="ob-details-meta-value" style={{ fontSize: '11px', color: isFreePlanEnabled ? '#059669' : '#d97706' }}>
-              {isFreePlanEnabled ? t('Scenario A: Free Entitlements', 'السيناريو أ: ميزات مجانية') : t('Scenario B: Mandatory Paywall', 'السيناريو ب: دفع إلزامي')}
+            <span className="ob-details-meta-value" style={{ fontSize: '11px', color: isMemberFreePlanEnabled ? '#059669' : '#d97706' }}>
+              {isMemberFreePlanEnabled ? t('Scenario A: Free Entitlements', 'السيناريو أ: ميزات مجانية') : t('Scenario B: Mandatory Paywall', 'السيناريو ب: دفع إلزامي')}
             </span>
           </div>
         </div>
@@ -681,6 +683,7 @@ export function AdminUsers() {
   const [query, setQuery] = React.useState('');
   const [error, setError] = React.useState('');
   const [role, setRole] = React.useState('USER');
+  const [applyFreePlan, setApplyFreePlan] = React.useState(true);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [filter, setFilter] = React.useState('All');
@@ -794,6 +797,7 @@ export function AdminUsers() {
     setSent(null);
     setError('');
     setRole('USER');
+    setApplyFreePlan(isFreePlanEnabled);
     setOpen(true);
   };
 
@@ -1295,16 +1299,16 @@ export function AdminUsers() {
                 gap: '8px',
                 padding: '10px 12px',
                 borderRadius: '10px',
-                background: isFreePlanEnabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                border: isFreePlanEnabled ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(245, 158, 11, 0.25)',
+                background: (isFreePlanEnabled && sent.applyFreePlan !== false) ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                border: (isFreePlanEnabled && sent.applyFreePlan !== false) ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(245, 158, 11, 0.25)',
                 fontSize: '11px',
-                color: isFreePlanEnabled ? '#065f46' : '#92400e',
+                color: (isFreePlanEnabled && sent.applyFreePlan !== false) ? '#065f46' : '#92400e',
                 margin: '12px 0',
               }}
             >
-              {isFreePlanEnabled ? <Sparkles size={15} style={{ color: '#059669', flexShrink: 0 }} /> : <AlertCircle size={15} style={{ color: '#d97706', flexShrink: 0 }} />}
+              {(isFreePlanEnabled && sent.applyFreePlan !== false) ? <Sparkles size={15} style={{ color: '#059669', flexShrink: 0 }} /> : <AlertCircle size={15} style={{ color: '#d97706', flexShrink: 0 }} />}
               <span style={{ fontWeight: 500 }}>
-                {isFreePlanEnabled
+                {(isFreePlanEnabled && sent.applyFreePlan !== false)
                   ? t(`Scenario A Active: Enrolled into Free Plan ("${freePlanName || 'Free Tier'}") automatically upon activation.`, `السيناريو أ مفعّل: سيتم إدراجه تلقائياً في الخطة المجانية ("${freePlanName || 'الخطة المجانية'}") عند التفعيل.`)
                   : t('Scenario B Active: Mandatory subscription flow. User will select a paid plan on initial sign-in.', 'السيناريو ب مفعّل: مسار اشتراك إلزامي. سيُطلب من المستخدم اختيار خطة مدفوعة عند تسجيل الدخول.')}
               </span>
@@ -1525,6 +1529,7 @@ export function AdminUsers() {
                   return;
                 }
               }
+              const shouldApplyFreePlan = isFreePlanEnabled && applyFreePlan;
               const invite: Invite = {
                 id: crypto.randomUUID(),
                 name: name || email.split('@')[0],
@@ -1533,6 +1538,7 @@ export function AdminUsers() {
                 status: 'Pending',
                 created: new Date().toISOString(),
                 mfa: false,
+                applyFreePlan: shouldApplyFreePlan,
               };
               setBusy(true);
               try {
@@ -1546,7 +1552,7 @@ export function AdminUsers() {
                   showToast.success(t('Agency user account created and active. Sign in with it, or switch to it from the accounts list.', 'تم إنشاء حساب مستخدم الوكالة وتفعيله. سجّل الدخول به أو بدّل إليه من قائمة الحسابات.'));
                   return;
                 }
-                const result = await manageAccount('create', { email, name: invite.name, role });
+                const result = await manageAccount('create', { email, name: invite.name, role, applyFreePlan: shouldApplyFreePlan });
                 const createdId = result?.id || invite.id;
                 setSent({ ...invite, id: createdId, status: result?.status || 'Pending', tenantId: result?.tenantId });
                 form.reset();
@@ -1573,7 +1579,7 @@ export function AdminUsers() {
               : t('They’ll get a personal activation link and a guided workspace setup.', 'سيحصل المستخدم على رابط تفعيل شخصي وخطوات لإعداد المساحة.')}</p>
 
             {/* Dynamic Plan Onboarding Information Box */}
-            {!isAgency && (isFreePlanEnabled ? (
+            {!isAgency && ((isFreePlanEnabled && applyFreePlan) ? (
               <div
                 style={{
                   display: 'flex',
@@ -1622,16 +1628,23 @@ export function AdminUsers() {
                     {t('Scenario B: Mandatory Plan Selection & Checkout', 'السيناريو ب: اختيار ودفع اشتراك إلزامي')}
                   </b>
                   <span style={{ color: 'var(--ob-secondary, #475569)', lineHeight: 1.5 }}>
-                    {t(
-                      'No Free Plan is enabled for your workspace. This invited sub-account will be directed into a mandatory plan subscription flow upon login, locking standard dashboard features until a plan is selected.',
-                      'لا توجد خطة مجانية مفعلة لمساحة عملك. سيتم توجيه الحساب الفرعي المدعو لمسار اشتراك إلزامي عند تسجيل الدخول، مع حظر أدوات لوحة التحكم حتى اختيار خطة ودفعها.'
-                    )}
+                    {isFreePlanEnabled
+                      ? t(
+                          'Free Plan auto-assignment is turned off for this member. Upon login, they will be directed to select and subscribe to a paid plan before unlocking dashboard features.',
+                          'تم إيقاف التعيين التلقائي للخطة المجانية لهذا العضو. عند تسجيل الدخول، سيُطلب منه اختيار خطة مدفوعة والاشتراك بها قبل فتح أدوات لوحة التحكم.'
+                        )
+                      : t(
+                          'No Free Plan is enabled for your workspace. This invited sub-account will be directed into a mandatory plan subscription flow upon login, locking standard dashboard features until a plan is selected.',
+                          'لا توجد خطة مجانية مفعلة لمساحة عملك. سيتم توجيه الحساب الفرعي المدعو لمسار اشتراك إلزامي عند تسجيل الدخول، مع حظر أدوات لوحة التحكم حتى اختيار خطة ودفعها.'
+                        )}
                   </span>
-                  <div style={{ marginTop: '5px' }}>
-                    <Link to="/admin/plans" style={{ color: '#7C3AED', fontWeight: 600, textDecoration: 'underline' }}>
-                      {t('Configure Free Plan in Plans Management →', 'إعداد خطة مجانية في إدارة الخطط ←')}
-                    </Link>
-                  </div>
+                  {!isFreePlanEnabled && (
+                    <div style={{ marginTop: '5px' }}>
+                      <Link to="/admin/plans" style={{ color: '#7C3AED', fontWeight: 600, textDecoration: 'underline' }}>
+                        {t('Configure Free Plan in Plans Management →', 'إعداد خطة مجانية في إدارة الخطط ←')}
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -1656,6 +1669,47 @@ export function AdminUsers() {
                 portal={false}
               />
             </label>
+            {!isAgency && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--ob-soft, #f8fafc)',
+                  border: '1px solid var(--ob-border, #e2e8f0)',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ob-ink, #1e293b)' }}>
+                    {t('Apply Free Plan to this member', 'تطبيق الخطة المجانية على هذا العضو')}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--ob-muted, #64748b)', marginTop: '2px' }}>
+                    {applyFreePlan && isFreePlanEnabled
+                      ? t(`Auto-enroll in "${freePlanName || 'Free trial'}" upon activation`, `إدراج تلقائي في "${freePlanName || 'الخطة المجانية'}" عند التفعيل`)
+                      : t('Require member to choose a paid plan on sign-in', 'مطلوب من العضو اختيار خطة مدفوعة عند تسجيل الدخول')}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={applyFreePlan && isFreePlanEnabled}
+                  aria-label={t('Apply Free Plan to this member', 'تطبيق الخطة المجانية على هذا العضو')}
+                  disabled={!isFreePlanEnabled}
+                  onClick={() => setApplyFreePlan(v => !v)}
+                  className={`ob-toggle ${applyFreePlan && isFreePlanEnabled ? 'on' : ''}`}
+                  style={{
+                    cursor: isFreePlanEnabled ? 'pointer' : 'not-allowed',
+                    opacity: isFreePlanEnabled ? 1 : 0.5,
+                  }}
+                >
+                  <span />
+                </button>
+              </div>
+            )}
             {isAgency && (
               <>
                 <label className="ob-field">

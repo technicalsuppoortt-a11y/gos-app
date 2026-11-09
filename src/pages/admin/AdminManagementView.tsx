@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useMemo, useRef, useState } from 'react';
 import { Activity, ArrowUpDown, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Download, Eye, EyeOff, FileText, Globe2, Layers3, LayoutTemplate, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -30,6 +31,7 @@ type Row = ReturnType<typeof managementRow>;
 type Column = keyof Row;
 
 export function AdminManagementView({ moduleId }: { moduleId: string }) {
+  const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
   const [params, setParams] = useSearchParams();
   const view = views[moduleId], isTemplates = moduleId === 'templates';
@@ -97,7 +99,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     if (key === 'tenant') return <span className="alm-attribution"><strong>{row.tenant}</strong><small dir="ltr" title={row.workspaceId}>{row.workspaceId}</small></span>;
     if (key === 'owner') return <span className="alm-owner"><span className="alm-owner-avatar">{row.owner.slice(0, 1).toUpperCase()}</span><span className="alm-attribution"><strong>{row.owner}</strong><small dir="ltr" title={row.ownerId}>{row.ownerId || t('Owner not assigned', 'لم يحدد المالك')}</small></span></span>;
     if (key === 'type') return <span className="alm-type">{row.type}</span>;
-    if (key === 'amount') return <strong className="alm-money" dir="auto">{displayMoney(row.amount, row.currency, ar)}</strong>;
+    if (key === 'amount') return <strong className="alm-money" dir="auto">{displayMoney(row.amount, row.currency, formatPrice)}</strong>;
     if (key === 'date') return <span className="alm-date">{displayDate(row.date, ar)}</span>;
     if (key === 'source') return <span className="alm-source"><i/>{row.source || '—'}</span>;
     return row[key] || '—';

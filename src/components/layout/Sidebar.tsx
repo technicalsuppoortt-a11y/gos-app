@@ -272,7 +272,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           className="layout-profile"
           title={collapsed ? (currentUser?.name || translateText("Mohamed Joe")) : undefined}
         >
-          <span className="layout-profile-avatar">{(currentUser?.name || 'MJ').slice(0, 2).toUpperCase()}</span>
+          {currentUser?.avatar ? (
+            <img src={currentUser.avatar} alt={currentUser.name || ''} className="layout-profile-avatar object-cover" />
+          ) : (
+            <span className="layout-profile-avatar">{(currentUser?.name || 'MJ').slice(0, 2).toUpperCase()}</span>
+          )}
           <span className="layout-profile-copy">
             <b>{currentUser?.name || translateText("Mohamed Joe")}</b>
             <small

@@ -1,3 +1,4 @@
+import { currencyOptions } from '../../utils/currency';
 import { logoutFirebase } from '../../backend/session';
 import { showToast as authToast, showToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
@@ -18,20 +19,11 @@ import { PanelHeading } from './kit';
 import { ChangePasswordCard } from './ChangePasswordCard';
 import { inheritWorkspacePreferences, preferenceDefaults, useWorkspacePreferences, uploadProfilePhoto, type PersonalPreferences } from '../../backend/workspacePreferences';
 
-const CURRENCY_SELECT_OPTIONS = [
-  { value: 'USD', label: '$ · USD (US Dollar)' },
-  { value: 'EUR', label: '€ · EUR (Euro)' },
-  { value: 'EGP', label: 'E£ · EGP (Egyptian Pound)' },
-  { value: 'GBP', label: '£ · GBP (British Pound)' },
-  { value: 'AED', label: 'د.إ · AED (UAE Dirham)' },
-  { value: 'SAR', label: '﷼ · SAR (Saudi Riyal)' },
-];
-
 export function ProfilePanel({ data, save }: {
   data: SettingsData;
   save: (data: SettingsData, preferences: PersonalPreferences) => Promise<void>;
 }) {
-  useUILanguage();
+  const language = useUILanguage();
   const file = useRef<HTMLInputElement>(null), navigate = useNavigate();
   const theme = useSelector((s: RootState) => s.ui.theme);
   const { effective, values, setPreference, uid, loading, error: preferencesError } = useWorkspacePreferences();
@@ -135,7 +127,7 @@ export function ProfilePanel({ data, save }: {
             <Field label="Email Address"><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
             <Field label="Phone Number"><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
             <Field label="Language"><Select value={draft.language} onChange={value => updateRegional('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
-            <Field label="Currency"><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={CURRENCY_SELECT_OPTIONS} /></Field>
+            <Field label="Currency"><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={currencyOptions(language)} /></Field>
             <Field label="Timezone"><TimezoneSelect value={draft.timezone} onChange={value => updatePreference('timezone', value)}/></Field>
             <Field label="Date Format"><Select value={draft.dateFormat || 'DD / MM / YYYY'} onChange={value => updatePreference('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>
           </div>

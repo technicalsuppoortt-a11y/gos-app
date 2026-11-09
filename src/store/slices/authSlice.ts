@@ -43,10 +43,15 @@ const authSlice = createSlice({
       Object.assign(state, state.impersonation);
       state.impersonation = null;
     },
+    updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
+    },
   },
 });
 
-export const { loginSuccess, logout, startImpersonation, stopImpersonation } = authSlice.actions;
+export const { loginSuccess, logout, startImpersonation, stopImpersonation, updateUserProfile } = authSlice.actions;
 export type { AuthState, Role, Tenant, User };
 export { AUTH_STORAGE_KEY };
 export default authSlice.reducer;

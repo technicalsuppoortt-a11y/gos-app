@@ -239,7 +239,7 @@ export const manageUser = onCall(async request => {
     try {
       await auth.setCustomUserClaims(account.uid, { role, tenantId, ...(agency ? { accountType: 'agency' } : {}) });
       const batch = db.batch();
-      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId, status, created: createdAt, mfa: false, ...(agency ? { accountType: 'agency', activatedAt: createdAt, createdBy: user.uid, billingOwnerId: user.uid, tenantName: workspaceName } : {}) });
+      batch.create(db.doc(`users/${account.uid}`), { id: account.uid, email: account.email, name: account.displayName, role, tenantId, supportParentId, status, created: createdAt, mfa: false, ...(agency ? { accountType: 'agency', activatedAt: createdAt, createdBy: user.uid, billingOwnerId: user.uid, tenantName: workspaceName } : { applyFreePlan: request.data?.applyFreePlan !== false }) });
       const root = db.doc(`tenants/${tenantId}`);
       batch.create(root, { name: workspaceName, ownerId: account.uid, ...(agency ? { accountType: 'agency', billingOwnerId: user.uid, agencyLandingSeeded: true } : {}) });
       batch.create(db.doc(`tenants/${tenantId}/members/${account.uid}`), { name: account.displayName, email: account.email, role: 'Owner', status, active: agency, permissions: ['*'], ...(agency ? { activatedAt: createdAt } : {}) });

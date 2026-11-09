@@ -299,7 +299,11 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           onClick={() => setProfileOpen(!profileOpen)}
           aria-expanded={profileOpen}
         >
-          <span className="layout-profile-avatar">{initials}</span>
+          {currentUser?.avatar ? (
+            <img src={currentUser.avatar} alt={currentUser.name || ''} className="layout-profile-avatar object-cover" />
+          ) : (
+            <span className="layout-profile-avatar">{initials}</span>
+          )}
           <span>
             <b>{currentUser?.name || translateText("Mohamed Joe")}</b>
             <small>
@@ -326,7 +330,11 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
             >
               <div className="p-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 font-bold dark:bg-indigo-500/20 dark:text-indigo-400">{initials}</span>
+                  {currentUser?.avatar ? (
+                    <img src={currentUser.avatar} alt={currentUser.name || ''} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 font-bold dark:bg-indigo-500/20 dark:text-indigo-400">{initials}</span>
+                  )}
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{currentUser?.name || translateText("Mohamed Joe")}</span>
                     <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{currentUser?.email}</span>

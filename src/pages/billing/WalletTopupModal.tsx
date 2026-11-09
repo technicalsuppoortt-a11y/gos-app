@@ -437,8 +437,8 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                   <>
                     <span>
                       {selectedMethod?.type === 'gateway'
-                        ? c.t(`Pay €${totalToPay.toFixed(2)} & Activate`, `دفع €${totalToPay.toFixed(2)} والتفعيل الفوري`)
-                        : c.t(`Submit Request (€${totalToPay.toFixed(2)})`, `إرسال الطلب (€${totalToPay.toFixed(2)})`)}
+                        ? c.t(`Pay ${c.checkoutMoney(totalToPay, currency)} & Activate`, `دفع ${c.checkoutMoney(totalToPay, currency)} والتفعيل الفوري`)
+                        : c.t(`Submit Request (${c.checkoutMoney(totalToPay, currency)})`, `إرسال الطلب (${c.checkoutMoney(totalToPay, currency)})`)}
                     </span>
                     <ArrowRight size={15} />
                   </>
@@ -464,11 +464,11 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
             <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 max-w-sm mx-auto text-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-slate-500">{c.t('Amount Paid:', 'المبلغ المدفوع:')}</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">€{completed.amountPaid.toFixed(2)}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{c.checkoutMoney(completed.amountPaid, currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">{c.t('Credits Added:', 'الرصيد المضاف:')}</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">€{completed.creditsReceived.toFixed(2)}</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">{c.money(completed.creditsReceived, currency)}</span>
               </div>
             </div>
           </div>
@@ -488,8 +488,8 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                   </div>
                   <p className="text-slate-700 dark:text-slate-300">
                     {c.t(
-                      `You already have a pending top-up request for €${(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0).toFixed(2)} submitted on ${new Date(pendingTopup.createdAt).toLocaleDateString()} via ${pendingTopup.paymentMethod || 'Manual Transfer'}. You cannot send another top-up request until your previous request is approved or rejected by an administrator.`,
-                      `لديك بالفعل طلب شحن بقيمة €${(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0).toFixed(2)} تم إرساله بتاريخ ${new Date(pendingTopup.createdAt).toLocaleDateString()} عبر ${pendingTopup.paymentMethod || 'التحويل اليدوي'}. لا يمكنك إرسال طلب شحن آخر حتى يتم اعتماد أو رفض طلبك السابق من قِبل الإدارة.`
+                      `You already have a pending top-up request for ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} submitted on ${new Date(pendingTopup.createdAt).toLocaleDateString()} via ${pendingTopup.paymentMethod || 'Manual Transfer'}. You cannot send another top-up request until your previous request is approved or rejected by an administrator.`,
+                      `لديك بالفعل طلب شحن بقيمة ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} تم إرساله بتاريخ ${new Date(pendingTopup.createdAt).toLocaleDateString()} عبر ${pendingTopup.paymentMethod || 'التحويل اليدوي'}. لا يمكنك إرسال طلب شحن آخر حتى يتم اعتماد أو رفض طلبك السابق من قِبل الإدارة.`
                     )}
                   </p>
                 </div>
@@ -578,13 +578,13 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                           {couponState.coupon.type === 'percent'
                             ? c.t(`${couponState.coupon.value}% discount applied`, `تم تطبيق خصم ${couponState.coupon.value}%`)
                             : couponState.coupon.type === 'fixed'
-                            ? c.t(`€${couponState.coupon.value} discount applied`, `تم تطبيق خصم €${couponState.coupon.value}`)
-                            : c.t(`+€${couponState.coupon.value} bonus credits!`, `+€${couponState.coupon.value} رصيد إضافي هدية!`)}
+                            ? c.t(`${c.money(couponState.coupon.value, currency)} discount applied`, `تم تطبيق خصم ${c.money(couponState.coupon.value, currency)}`)
+                            : c.t(`+${c.money(couponState.coupon.value, currency)} bonus credits!`, `+${c.money(couponState.coupon.value, currency)} رصيد إضافي هدية!`)}
                         </div>
                       </div>
                     </div>
                     <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      {couponState.discount > 0 ? `-€${couponState.discount.toFixed(2)}` : `+€${couponState.creditBonus.toFixed(2)}`}
+                      {couponState.discount > 0 ? `-${c.money(couponState.discount, currency)}` : `+${c.money(couponState.creditBonus, currency)}`}
                     </span>
                   </div>
                 ) : (
@@ -875,7 +875,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                     <span>{c.t('Credit Top-Up Subtotal', 'قيمة الرصيد المطلوب')}</span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100">€{subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">{c.money(subtotal, currency)}</span>
                   </div>
 
                   {discount > 0 && (
@@ -884,7 +884,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                         <Tag size={13} />
                         {c.t('Coupon Discount', 'خصم الكوبون')}
                       </span>
-                      <span className="font-semibold">-€{discount.toFixed(2)}</span>
+                      <span className="font-semibold">-{c.money(discount, currency)}</span>
                     </div>
                   )}
 
@@ -894,14 +894,14 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                         <Sparkles size={13} />
                         {c.t('Bonus Credits Added', 'رصيد إضافي مجاني')}
                       </span>
-                      <span className="font-semibold">+€{creditBonus.toFixed(2)}</span>
+                      <span className="font-semibold">+{c.money(creditBonus, currency)}</span>
                     </div>
                   )}
 
                   <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-baseline">
                     <span className="font-bold text-slate-900 dark:text-slate-100">{c.t('Total To Pay', 'الإجمالي للدفع')}</span>
                     <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">
-                      €{totalToPay.toFixed(2)}
+                      {c.checkoutMoney(totalToPay, currency)}
                     </span>
                   </div>
 
@@ -910,7 +910,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                       {c.t('Wallet Credits Added:', 'الرصيد المضاف للمحفظة:')}
                     </span>
                     <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                      €{totalCreditsReceived.toFixed(2)}
+                      {c.money(totalCreditsReceived, currency)}
                     </span>
                   </div>
                 </div>

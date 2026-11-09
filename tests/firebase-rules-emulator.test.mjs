@@ -30,6 +30,13 @@ async function client(role, tenantId, permissions = ['*'], claims = {}) {
 try {
   const tenantA = `rules-a-${run}`, tenantB = `rules-b-${run}`;
   const owner = await client('USER', tenantA), other = await client('USER', tenantB), admin = await client('ADMIN', tenantA), superAdmin = await client('SUPER_ADMIN', tenantA), limited = await client('USER', tenantA, ['inbox']);
+  const ownerProfile = doc(owner.db, 'users', owner.account.uid);
+  await updateDoc(ownerProfile, { preferredCurrency: 'KWD' });
+  assert.equal((await getDoc(ownerProfile)).data().preferredCurrency, 'KWD');
+  await denied(() => updateDoc(ownerProfile, { preferredCurrency: 'ZZZ' }));
+  await denied(() => updateDoc(ownerProfile, { preferredCurrency: 'SAR', role: 'ADMIN' }));
+  await denied(() => updateDoc(doc(other.db, 'users', owner.account.uid), { preferredCurrency: 'SAR' }));
+  await updateDoc(ownerProfile, { preferredCurrency: null });
   const preferences = { values: { name: 'Tenant A', logoUrl: 'https://example.com/logo.png', theme: 'emerald', language: 'ar', currency: 'SAR', mode: 'system', timezone: 'Africa/Cairo', supportEmail: '' }, updatedBy: owner.account.uid, updatedAt: '2026-11-03' };
   await setDoc(doc(owner.db, 'tenants', tenantA, 'preferences', 'general'), preferences);
   await getDoc(doc(limited.db, 'tenants', tenantA, 'preferences', 'general'));

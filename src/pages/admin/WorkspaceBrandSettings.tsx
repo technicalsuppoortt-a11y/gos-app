@@ -1,3 +1,4 @@
+import { currencyOptions } from '../../utils/currency';
 import { useEffect, useRef, useState } from 'react';
 import { Check, Globe, Info, Loader2, Palette, RotateCcw, Sparkles } from 'lucide-react';
 import { backendError } from '../../backend/firebase';
@@ -60,13 +61,12 @@ export function WorkspaceBrandSettings() {
   useEffect(() => {
     if (!topbarChange || previousTopbarChange.current === topbarChange) return;
     previousTopbarChange.current = topbarChange;
-    const { language, currency, mode } = topbarChange;
-    if (!language && !currency && !mode) return;
+    const { language, mode } = topbarChange;
+    if (!language && !mode) return;
     // The Topbar saves a personal choice. Saving this draft publishes it to the workspace.
     setEdits(current => ({
       ...current,
       ...(language && { language }),
-      ...(currency && { currency }),
       ...(mode && { mode }),
     }));
     setSaved(false);
@@ -377,9 +377,9 @@ export function WorkspaceBrandSettings() {
                     {ar ? 'العملة' : 'Currency'}
                     <Select
                       label={ar ? 'العملة' : 'Currency'}
-                      value={resetting ? preferenceDefaults.currency : edits.currency ?? effective.currency}
+                      value={draft.currency}
                       onChange={value => update('currency', value)}
-                      options={['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP']}
+                      options={currencyOptions(ar ? 'ar' : 'en')}
                     />
                   </label>
                   <label>

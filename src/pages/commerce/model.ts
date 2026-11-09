@@ -144,8 +144,8 @@ export function hydrateProduct(product: Product): Product {
 export function newProduct(): Product {
   return { id: '', name: '', type: 'Digital Product', price: '', stats: [['sales', '0 sales']], status: 'Draft', sales: '0', revenue: '€0', art: 'templates', tag: 'Digital Product', description: '', config: defaultConfig('Digital Product') };
 }
-export function formatPrice(config: CommerceConfig) {
-  const amount = new Intl.NumberFormat('en-IE', { style: 'currency', currency: config.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(config.amount);
+export function formatPrice(config: CommerceConfig, format?: (amount: number, currency: string) => string) {
+  const amount = format ? format(config.amount, config.currency) : new Intl.NumberFormat('en-IE', { style: 'currency', currency: config.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(config.amount);
   return `${amount}${config.billing === 'Subscription' ? ` / ${config.frequency.toLowerCase().replace('monthly', 'month').replace('quarterly', 'quarter').replace('yearly', 'year')}` : config.billing === 'Payment plan' ? ` × ${config.installments}` : ''}`;
 }
 export function validateProduct(product: Product, publish = false): string[] {

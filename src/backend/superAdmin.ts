@@ -527,10 +527,10 @@ function useRows<T>(source: Query<DocumentData>, map: (record: QueryDocumentSnap
   });
   useEffect(() => {
     if (!enabled) return;
-    return onSnapshot(source, snapshot => {
+    return onSnapshot(source, { includeMetadataChanges: true }, snapshot => {
       const mapped = snapshot.docs.map(map);
-      liveRowsMemoryCache.set(source, { data: mapped, cached: snapshot.metadata.fromCache, fallback: false });
-      setState({ data: mapped, loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
+      liveRowsMemoryCache.set(source, { data: mapped, cached: false, fallback: false });
+      setState({ data: mapped, loading: false, error: '', cached: false, fallback: false });
     }, error => {
       if (isPermissionError(error) && isPlatformTeamRole(store.getState().auth.role)) {
         liveRowsMemoryCache.set(source, { data: emptyRows, cached: false, fallback: true });
@@ -554,10 +554,10 @@ function useRecord<T>(source: DocumentReference, map: (data: DocumentData) => T,
   });
   useEffect(() => {
     if (!enabled) return;
-    return onSnapshot(source, snapshot => {
+    return onSnapshot(source, { includeMetadataChanges: true }, snapshot => {
       const mapped = map(snapshot.data() ?? {});
-      liveDocMemoryCache.set(source, { data: mapped, cached: snapshot.metadata.fromCache, fallback: false });
-      setState({ data: mapped, loading: false, error: '', cached: snapshot.metadata.fromCache, fallback: false });
+      liveDocMemoryCache.set(source, { data: mapped, cached: false, fallback: false });
+      setState({ data: mapped, loading: false, error: '', cached: false, fallback: false });
     }, error => {
       if (isPermissionError(error) && isPlatformTeamRole(store.getState().auth.role)) {
         const emptyMapped = map({});

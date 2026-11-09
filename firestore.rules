@@ -343,6 +343,10 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.uid == userId
         && resource.data.status == 'Active'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'activatedAt', 'tempAuthKey']);
+      allow update: if signedIn() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preferredCurrency'])
+        && 'preferredCurrency' in request.resource.data
+        && request.resource.data.preferredCurrency in [null, 'USD', 'EUR', 'EGP', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'BHD', 'OMR', 'JOD', 'LBP', 'MAD', 'TND', 'DZD', 'IQD'];
     }
     match /tenants/{tenantId} {
       // Admin reads do not depend on membership documents in each client workspace.

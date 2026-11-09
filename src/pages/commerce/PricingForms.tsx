@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useCheckoutMethods } from '../../backend/paymentMethods';
 import { CustomFieldsEditor, PageSelector } from './DynamicCheckoutControls';
 import { ProductAdvancedAction } from './ProductAdvancedAction';
@@ -11,7 +12,6 @@ import type { FormProps } from './TypeForms';
 import { Card, Field, Select, Toggle } from './primitives';
 import { Combobox } from '../../components/ui/Combobox';
 import { currencyOptions } from '../onboarding/localization-data';
-function money(amount: number, currency: string) { return new Intl.NumberFormat('en-IE', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount); }
 function currencySymbol(currency: string) { return new Intl.NumberFormat('en-IE', { style: 'currency', currency }).formatToParts(0).find(part => part.type === 'currency')?.value ?? currency; }
 function intervalUnit(interval: string) { return interval === 'Yearly' ? 'year' : interval === 'Quarterly' ? 'quarter' : 'month'; }
 export function CardSwitch({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: (value: boolean) => void; disabled: boolean }) {
@@ -34,6 +34,7 @@ export function PricingForm(props: FormProps) {
 }
 export function CheckoutPreview({ product: p, config: c, experience: e, onCheckout, showOptionalOffers = false }: FormProps & { onCheckout: (billing: Billing) => void; showOptionalOffers?: boolean }) {
   useUILanguage();
+  const { formatPrice: money } = useCurrency();
   const [choice, setChoice] = React.useState<Billing | null>(null);
   const group = React.useId();
   const kind = productKind(p.type);

@@ -37,6 +37,8 @@ export type Invite = {
   credits?: number;
   /** Set for directly provisioned Agency user accounts (role USER, no invitation). */
   accountType?: 'agency';
+  /** Whether to auto-assign the workspace Free Plan upon activation (defaults to true when workspace Free Plan is active). */
+  applyFreePlan?: boolean;
 };
 
 export const INITIAL_MOCK_USERS: Invite[] = [];

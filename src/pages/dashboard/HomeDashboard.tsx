@@ -449,7 +449,6 @@ const RANGES = {
 } as const;
 type RangeKey = keyof typeof RANGES;
 
-const eur = (n: number) => `€${n.toLocaleString("en-US")}`;
 
 /* ------------------------------------------------------------------ */
 /* Small building blocks                                               */
@@ -1107,7 +1106,7 @@ function RevenueOverview() {
                 className="absolute end-0 leading-none -translate-y-1/2 text-right"
                 style={{ top: `${(i / (ticks.length - 1)) * 100}%` }}
               >
-                {localizeNode(t === 0 ? "0" : `${t / 1000}K`)}
+                {m.compactMoney(t)}
               </span>
             )))}
           </div>
@@ -1129,7 +1128,7 @@ function RevenueOverview() {
                 <button
                   key={d.label}
                   type="button"
-                  aria-label={translateText(`${d.label}: ${eur(d.value)}`)}
+                  aria-label={translateText(`${d.label}: ${m.money(d.value)}`)}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                   className="relative flex items-end flex-1 h-full group focus:outline-none"

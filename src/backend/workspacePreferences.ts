@@ -3,7 +3,9 @@ import { useSelector } from 'react-redux';
 import { doc, onSnapshot, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, primaryDb, storage, backendError } from './firebase';
-import type { RootState } from '../store';
+import { store, type RootState } from '../store';
+import { updateUserProfile } from '../store/slices/authSlice';
+import { isCurrencyCode } from '../utils/currency';
 
 export const DEFAULT_BRAND_NAME = 'Upclick';
 export const DEFAULT_BRAND_LOGO_URL = '/upclick-logo.svg';
@@ -66,10 +68,7 @@ export function sanitizeWorkspacePreferences(
   const rawLang: 'en' | 'ar' = obj.language === 'en' ? 'en' : 'ar';
   const rawMode: 'light' | 'dark' | 'system' =
     obj.mode === 'light' || obj.mode === 'dark' || obj.mode === 'system' ? obj.mode : 'light';
-  const rawCurr =
-    typeof obj.currency === 'string' && ['USD', 'SAR', 'EUR', 'EGP', 'AED', 'GBP'].includes(obj.currency)
-      ? obj.currency
-      : 'USD';
+  const rawCurr = isCurrencyCode(obj.currency) ? obj.currency : preferenceDefaults.currency;
   const rawTz = validTimezone(obj.timezone) ? obj.timezone : preferenceDefaults.timezone;
 
   return {
@@ -259,6 +258,12 @@ export function useWorkspacePreferenceState() {
         pending.add('legacy');
         stopLegacy = onSnapshot(profileSettingsRef(profileTenant, uid, workspaceDb), settings => {
           const saved = settings.data()?.value?.profile;
+          if (typeof saved?.photo === 'string') {
+            const currentAvatar = store.getState().auth.user?.avatar;
+            if (saved.photo && saved.photo !== currentAvatar) {
+              store.dispatch(updateUserProfile({ avatar: saved.photo }));
+            }
+          }
           legacy = saved?.hasUserOverrides === true ? readPersonal({
             ...saved,
             language: saved.language === 'Arabic' ? 'ar' : saved.language === 'English' ? 'en' : undefined,

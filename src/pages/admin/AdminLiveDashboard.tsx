@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -31,6 +32,7 @@ const resources = [
 const healthy = (status: unknown) =>
   /^(connected|active|healthy|operational)$/i.test(String(status));
 export function AdminDashboard() {
+  const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith("ar");
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const [reload, setReload] = useState(0),
@@ -101,7 +103,7 @@ export function AdminDashboard() {
         ? revenue
             .map(
               ([currency, amount]) =>
-                `${currency} ${amount.toLocaleString(ar ? "ar-EG" : "en-US")}`,
+                formatPrice(amount, currency),
             )
             .join(" · ")
         : t("No completed payments", "لا توجد مدفوعات مكتملة"),

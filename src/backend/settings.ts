@@ -2,6 +2,7 @@ import { EmailAuthProvider, multiFactor, reauthenticateWithCredential, updatePas
 import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, setDoc, writeBatch } from 'firebase/firestore';
 import { auth, backendError, db, provisionTeamMemberAuth } from './firebase';
 import { store } from '../store';
+import { updateUserProfile } from '../store/slices/authSlice';
 import { personalPreferencesRef, profileSettingsRef, type PersonalPreferences } from './workspacePreferences';
 import { showToast } from '../utils/toast';
 import { buildTabPermissionsMap, modulePermissions } from '../pages/settings/localState';
@@ -149,13 +150,19 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       }
       const batch = writeBatch(db);
       batch.set(ref, { key, value: { profile: nextProfile, business: data.business, ...(data.payment ? { payment: data.payment } : {}) }, updatedAt: new Date().toISOString(), updatedBy: user.uid }, { merge: true });
-      batch.update(doc(db, 'users', user.uid), { name: nextProfile.name, ...(typeof nextProfile.photo === 'string' ? { avatar: nextProfile.photo } : {}) });
+      batch.set(doc(db, 'users', user.uid), { name: nextProfile.name, ...(typeof nextProfile.photo === 'string' ? { avatar: nextProfile.photo } : {}) }, { merge: true });
       if (data.personalPreferences && Object.keys(data.personalPreferences).length) {
         batch.set(personalPreferencesRef(user.uid), data.personalPreferences, { merge: true });
       }
       await batch.commit();
+      store.dispatch(
+        updateUserProfile({
+          name: nextProfile.name as string,
+          ...(typeof nextProfile.photo === 'string' ? { avatar: nextProfile.photo } : {}),
+        }),
+      );
       // Firestore is authoritative: an Auth display-name refresh cannot undo a saved profile.
-      try { await updateProfile(user, { displayName: nextProfile.name as string }); } catch { /* Retry on a later profile save. */ }
+      try { await updateProfile(user, { displayName: nextProfile.name as string, ...(typeof nextProfile.photo === 'string' ? { photoURL: nextProfile.photo } : {}) }); } catch { /* Retry on a later profile save. */ }
       return { success: true, profile: nextProfile } as T;
     }
 

@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { CRMRouting } from '../CRMRouting';
 import { TagManager } from './TagManager';
 import { PageSelector } from './DynamicCheckoutControls';
@@ -140,6 +141,7 @@ export function ProductWorkspace({ mode, defaultTab }: { mode: 'create' | 'edit'
   return <ProductWorkspaceView key={`${scope}:${mode}:${id || 'new'}`} mode={mode} defaultTab={defaultTab}/>;
 }
 function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 'detail'; defaultTab?: WorkspaceTab }) {
+  const { formatPrice: money } = useCurrency();
   useUILanguage();
   const products = useProducts(), { id } = useParams(), navigate = useNavigate();
   const [activePipelineStep, setActivePipelineStep] = React.useState(0);
@@ -256,7 +258,7 @@ function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 
   }
   function salesPage() { if (c.salesTemplate === 'external' && /^https?:\/\//i.test(c.salesUrl)) window.open(c.salesUrl, '_blank', 'noopener,noreferrer'); else if (productPreview.prepare()) window.open(productPreview.href, '_blank', 'noopener,noreferrer'); }
   function book() { if (/^https?:\/\//i.test(c.bookingUrl)) window.open(c.bookingUrl, '_blank', 'noopener,noreferrer'); else { tab('booking'); if (!editing) showToast.error('A booking calendar has not been connected yet.'); } }
-  const props: FormProps = { product: { ...p, price: editing ? formatPrice(c) : p.price, config: viewConfig, sales: String(viewConfig.orders?.filter(order => order.status === 'Paid').length || 0), revenue: new Intl.NumberFormat(undefined, { style: 'currency', currency: c.currency }).format(viewConfig.orders?.filter(order => order.status === 'Paid' && order.currency === c.currency).reduce((sum, order) => sum + order.amount, 0) || 0) }, products, config: viewConfig, experience: { ...e, activeStudents: viewConfig.students?.filter(student => student.status === 'Active').length || 0 }, editing, update, configure, customize, error, busy: value => setPendingUploads(count => Math.max(0, count + (value ? 1 : -1))) };
+  const props: FormProps = { product: { ...p, price: formatPrice(c, money), config: viewConfig, sales: String(viewConfig.orders?.filter(order => order.status === 'Paid').length || 0), revenue: money(viewConfig.orders?.filter(order => order.status === 'Paid' && order.currency === c.currency).reduce((sum, order) => sum + order.amount, 0) || 0, c.currency) }, products, config: viewConfig, experience: { ...e, activeStudents: viewConfig.students?.filter(student => student.status === 'Active').length || 0 }, editing, update, configure, customize, error, busy: value => setPendingUploads(count => Math.max(0, count + (value ? 1 : -1))) };
   const productPreview = useProductPreview(p, error);
   if (mode !== 'create' && !existing) return <div className="cw-page cw-not-found"><Package size={40}/><h1>{translateText("Product not found")}</h1><p>{translateText("This product is unavailable in your catalog.")}</p><Link className="cw-button primary" to={base}><ArrowLeft size={16}/>{translateText(" Back to Products")}</Link></div>;
   const disabled = saving || pendingUploads > 0;
@@ -398,7 +400,7 @@ function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 
       </aside>
     </div> : <>
       {localizeNode(mode === 'create' && kind !== 'service' && !digitalOverview && <div className="tw-create-type"><span>{translateText("Creating a ")}{localizeNode(view.title)}</span><CommerceSelect label="Change product type" value={kind} onChange={value => selectType(value as ProductKind)} options={types.map(type => ({ value: type.kind, label: type.label }))}/></div>)}
-      {localizeNode(!editing && kind !== 'service' && !digitalOverview && !courseLayout && active === 'information' && <div className="tw-top-metrics">{localizeNode([[Tag, p.price, 'Price'], [ShoppingCart, p.sales, 'Total Sales'], [CreditCard, p.revenue, 'Total Revenue'], [Users, kind === 'course' ? e.studentLimit ? String(e.studentLimit) : 'Unlimited' : kind === 'digital' ? String(c.assets.length) : String(c.components.length), kind === 'course' ? 'Student Capacity' : kind === 'digital' ? 'Digital Files' : 'Component Items']].map(([Icon, value, label], index) => { const MetricIcon = Icon as React.ElementType; return <div key={String(label)} className={`metric-${index}`}><span><MetricIcon size={19}/></span><div><b>{localizeNode(String(value))}</b><small>{localizeNode(String(label))}</small></div></div>; }))}</div>)}
+      {localizeNode(!editing && kind !== 'service' && !digitalOverview && !courseLayout && active === 'information' && <div className="tw-top-metrics">{localizeNode([[Tag, props.product.price, 'Price'], [ShoppingCart, p.sales, 'Total Sales'], [CreditCard, props.product.revenue, 'Total Revenue'], [Users, kind === 'course' ? e.studentLimit ? String(e.studentLimit) : 'Unlimited' : kind === 'digital' ? String(c.assets.length) : String(c.components.length), kind === 'course' ? 'Student Capacity' : kind === 'digital' ? 'Digital Files' : 'Component Items']].map(([Icon, value, label], index) => { const MetricIcon = Icon as React.ElementType; return <div key={String(label)} className={`metric-${index}`}><span><MetricIcon size={19}/></span><div><b>{localizeNode(String(value))}</b><small>{localizeNode(String(label))}</small></div></div>; }))}</div>)}
       {localizeNode(courseLayout && !editing && active !== 'information' && <CourseMetrics {...props}/>)}
       <nav className="cw-tabs tw-tabs" aria-label={translateText(`${view.title} navigation`)}>{localizeNode(navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => tab(target)}><Icon size={14}/>{localizeNode(label)}</button>))}</nav>
       {localizeNode(errors.length > 0 && <div className="cw-errors" role="alert"><b>{translateText("Please review these fields")}</b><ul className="dv-error-links">{localizeNode(errors.map(message => <li key={message}><button type="button" onClick={() => focusError(message)}>{localizeNode(message)}</button></li>))}</ul></div>)}

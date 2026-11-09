@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Check, Copy, CreditCard, Landmark, Loader2, LockKeyhole, Tag, UploadCloud } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
@@ -109,6 +110,7 @@ function PreviewCheckout({ product, billing }: { product: Product; billing?: Bil
 
 function CheckoutForm({ product, preview, tenantId }: { product: Product; preview?: Preview; tenantId?: string }) {
   const locale = useUILanguage();
+  const { formatCheckoutPrice } = useCurrency();
   const config = product.config!, experience = config.experience ?? defaultExperience();
   const promoId = useId(), paymentGroup = useId(), title = useId();
   const submission = useRef('');
@@ -177,7 +179,10 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
   const method = methods.find(option => option.id === methodId) ?? methods[0];
   const paymentDue = (totals?.dueToday ?? 0) > 0;
   const needsReceipt = !!method?.account && (paymentDue || !!preview);
-  const money = (value: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: totals?.currency || config.currency }).format(value);
+  const currency = totals?.currency || config.currency;
+  const money = (value: number) => preview
+    ? formatCheckoutPrice(value, currency)
+    : new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
   const ready = !!quote && !loading && !quoteError && !preview?.loading && !preview?.error && !busy;
   const orderAction = productKind(product.type) === 'course' ? 'Complete Enrollment' : productKind(product.type) === 'service' ? 'Complete Booking' : 'Complete Purchase';
 

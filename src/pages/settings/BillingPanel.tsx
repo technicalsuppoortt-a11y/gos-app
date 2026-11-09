@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { ArrowRight, CalendarDays, ChartNoAxesCombined, Check, Clock, CreditCard, Layers, FileText, Landmark, Mail, MessageCircle, MoreHorizontal, Plus, Receipt, RefreshCw, Search, Sparkles, Wallet } from 'lucide-react';
@@ -17,11 +18,9 @@ import { WalletTopupModal } from '../billing/WalletTopupModal';
 import { billing, useBillingIdentity, useCommunicationLedger, useCommunicationWallet, useRequests, WALLET_CURRENCY, type WalletLedgerRow } from '../../backend/billing';
 import { auth } from '../../backend/firebase';
 
-const CURRENCY_SYMBOLS: Record<string, string> = { EUR: '€', USD: '$', EGP: 'E£', SAR: 'SAR ', AED: 'AED ' };
 const META_CHANNELS = new Set(['whatsapp', 'facebook', 'instagram', 'messenger']);
 const CHANNEL_LABELS: Record<string, string> = { whatsapp: 'WhatsApp', email: 'Email', sms: 'SMS', instagram: 'Instagram', facebook: 'Facebook', messenger: 'Messenger', webchat: 'Web Chat' };
 const ENTRY_TYPES: Record<string, string> = { wallet_topup: 'Top Up', manual_adjustment: 'Adjustment', refund_reversal: 'Refund', transfer_out: 'Transfer' };
-const money = (amount: number, symbol = '€') => `${symbol}${amount !== 0 && Math.abs(amount) < 0.01 ? amount.toFixed(4) : amount.toFixed(2)}`;
 const serviceIcon = (name: string) => name === 'WhatsApp' ? MessageCircle : name === 'Email' ? Mail : name === 'AI Follow-Up' ? Sparkles : MoreHorizontal;
 const serviceColor = (name: string) => name === 'WhatsApp' ? 'green' : name === 'Email' ? 'blue' : name === 'AI Follow-Up' ? 'purple' : 'neutral';
 const billingTabs = [
@@ -63,6 +62,7 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
   agencyUid: string | null;
 }) {
   const language = useUILanguage();
+  const { formatPrice } = useCurrency();
   const managed = !useSelector(canViewCashWallet);
   const [params, setParams] = useSearchParams();
   const urlTab = params.get('tab');
@@ -86,8 +86,8 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
     return (userRequests || []).find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
   }, [userRequests]);
   const [notice, setNotice] = useState('');
-  const symbol = CURRENCY_SYMBOLS[wallet?.currency ?? WALLET_CURRENCY] ?? '€';
-  const fmt = (value: number) => money(value, symbol);
+  const walletCurrency = wallet?.currency ?? WALLET_CURRENCY;
+  const fmt = (value: number) => formatPrice(value, walletCurrency, Math.abs(value) < 0.01 ? 4 : 0);
   const balance = live ? (wallet ? Math.round((wallet.balance - (wallet.held ?? 0)) * 10000) / 10000 : 0) : data.balance;
   const allTransactions = useMemo(() => live ? ledger.map(row => ledgerToTransaction(row, wallet?.balance ?? 0)) : data.transactions, [live, ledger, wallet?.balance, data.transactions]);
   const { usageRows, usagePeriod } = useMemo(() => live ? summarizeUsage(ledger) : { usageRows: data.usage, usagePeriod: data.usagePeriod }, [live, ledger, data.usage, data.usagePeriod]);
@@ -99,7 +99,7 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
   function table() {
     return <Card className="st-transactions" title={translateText('Transactions')} description="All wallet transactions, usage and top-ups.">
       {localizeNode(<div className="st-table-filters"><label className="st-search"><Search size={15}/><input aria-label={translateText("Search transactions")} value={query} placeholder={translateText("Search transactions…")} onChange={e => setQuery(e.target.value)}/></label><Select label="Transaction type" value={type} onChange={value => setType(value)} options={['All', 'Usage', 'Top Up']} /></div>)}
-      <div className="st-table-scroll"><table><thead><tr>{localizeNode(['Date', 'Type', 'Description', 'Service', 'Amount', ...(!managed ? ['Balance'] : [])].map(c => <th key={c} className={['Date', 'Amount', 'Balance'].includes(c) ? 'text-center' : 'text-start'}>{localizeNode(c)}</th>))}</tr></thead><tbody>{localizeNode(transactions.map(t => <TransactionRow key={t.id} transaction={t} symbol={symbol} showBalance={!managed}/>))}</tbody></table></div>{localizeNode(!transactions.length && <div className="st-empty"><Receipt size={25}/><p>{translateText("No transactions to show.")}</p></div>)}
+      <div className="st-table-scroll"><table><thead><tr>{localizeNode(['Date', 'Type', 'Description', 'Service', 'Amount', ...(!managed ? ['Balance'] : [])].map(c => <th key={c} className={['Date', 'Amount', 'Balance'].includes(c) ? 'text-center' : 'text-start'}>{localizeNode(c)}</th>))}</tr></thead><tbody>{localizeNode(transactions.map(t => <TransactionRow key={t.id} transaction={t} formatAmount={fmt} showBalance={!managed}/>))}</tbody></table></div>{localizeNode(!transactions.length && <div className="st-empty"><Receipt size={25}/><p>{translateText("No transactions to show.")}</p></div>)}
     </Card>;
   }
   function usage(metaOnly = false) {
@@ -152,7 +152,7 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
     )}
     {!managed && <div><Card className="st-balance-card"><span className="st-wallet-orb"><Wallet size={31}/></span><div><small>{translateText("Wallet Balance")}</small><strong>{localizeNode(fmt(balance))}</strong><p>{translateText("Funds available for supported communication services.")}</p></div><div className="st-balance-actions"><button className="st-primary" disabled={!!pendingTopup} title={pendingTopup ? translateText('Top-up request awaiting approval') : undefined} onClick={() => { if (pendingTopup) return; setShowTopup(true); }}>{pendingTopup ? <><Clock size={14}/>{translateText("Top-Up In Review…")}</> : <><Plus size={15}/>{translateText("Top Up")}</>}</button><div className="st-balance-recharge"><button className="st-link" onClick={() => rechargeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><RefreshCw size={13}/>{translateText("Auto Recharge")}</button><Toggle label="Auto Recharge" checked={recharge.enabled} onChange={enabled => setRecharge({ ...recharge, enabled })}/></div></div></Card></div>}
     <div className={managed ? "st-wallet-main" : "st-wallet-grid"}><div className="st-wallet-main">{usage()}{table()}</div>{!managed && <aside className="st-wallet-side">
-      <section ref={creditsRef}><Card title={translateText("Top Up")} description="Top up your wallet to fund supported communication services."><div className="st-credit-amounts">{localizeNode([10, 25, 50, 100].map(n => <button key={n} className={n === amount ? 'active' : ''} aria-pressed={n === amount} disabled={!!pendingTopup} onClick={() => setAmount(n)}>€{localizeNode(n)}</button>))}</div><button className="st-primary st-full" disabled={!!pendingTopup} title={pendingTopup ? translateText('Top-up request awaiting approval') : undefined} onClick={() => { if (pendingTopup) return; setShowTopup(true); }}>{pendingTopup ? translateText('Awaiting Admin Approval') : `${translateText("Add €")}${amount}${translateText(" Credits ")}`}{!pendingTopup && <ArrowRight size={15}/>}</button></Card></section>
+      <section ref={creditsRef}><Card title={translateText("Top Up")} description="Top up your wallet to fund supported communication services."><div className="st-credit-amounts">{localizeNode([10, 25, 50, 100].map(n => <button key={n} className={n === amount ? 'active' : ''} aria-pressed={n === amount} disabled={!!pendingTopup} onClick={() => setAmount(n)}>{fmt(n)}</button>))}</div><button className="st-primary st-full" disabled={!!pendingTopup} title={pendingTopup ? translateText('Top-up request awaiting approval') : undefined} onClick={() => { if (pendingTopup) return; setShowTopup(true); }}>{pendingTopup ? translateText('Awaiting Admin Approval') : `${translateText('Top Up')} ${fmt(amount)}`}{!pendingTopup && <ArrowRight size={15}/>}</button></Card></section>
       <section ref={rechargeRef}><Card title={translateText("Auto Recharge")} description="Automatically add credits when your balance is low." action={<Toggle label="Enable Auto Recharge" checked={recharge.enabled} onChange={enabled => setRecharge({ ...recharge, enabled })}/>}><div className="st-recharge-fields"><Field label="When balance is below"><Select disabled={!recharge.enabled} value={String(recharge.below)} onChange={value => setRecharge({ ...recharge, below: value })} options={[5, 10, 20, 50].map(n => ({ value: String(n), label: `€${n}` }))} /></Field><Field label="Add this amount"><Select disabled={!recharge.enabled} value={String(recharge.amount)} onChange={value => setRecharge({ ...recharge, amount: value })} options={[10, 25, 50, 100].map(n => ({ value: String(n), label: `€${n}` }))} /></Field><Field label="Payment method"><Select disabled={!recharge.enabled} value={String(recharge.method)} onChange={value => setRecharge({ ...recharge, method: value })} options={data.paymentMethods.filter(m => m.kind !== 'bank').map(m => ({ value: String(m.id), label: `${m.name}${m.kind === 'card' ? ' •••• 4242' : ''}` }))} /></Field></div><button className="st-soft-button st-full" disabled={busy} onClick={async () => { setBusy(true); setError(''); setNotice(''); try { if (live) { const result = await billing<{ wallet?: { autoRecharge?: typeof recharge } }>('saveWalletSettings', { autoRecharge: recharge }); if (result.wallet?.autoRecharge) setRecharge(result.wallet.autoRecharge); setNotice('Wallet settings saved.'); } else if (settingsApiEnabled) { await settingsRequest('/billing/recharge', recharge, 'PATCH'); await refresh(); } else { await saveLocal({ ...data, recharge }); } } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>{localizeNode(busy ? 'Saving…' : 'Save Settings')}</button></Card></section>
     </aside>}</div>
     </>}
@@ -175,8 +175,8 @@ export function BillingPanel({ data, integrations, refresh, saveLocal, agencyUid
     </>}
   </div>;
 }
-function TransactionRow({ transaction: t, symbol = '€', showBalance }: { transaction: Transaction; symbol?: string; showBalance: boolean }) {
+function TransactionRow({ transaction: t, formatAmount, showBalance }: { transaction: Transaction; formatAmount: (amount: number) => string; showBalance: boolean }) {
   useUILanguage();
   const Icon = serviceIcon(t.service);
-  return <tr><td className="text-center">{localizeNode(t.date)}</td><td className="text-start"><span className="st-transaction-type"><span className={`st-service-icon ${t.amount > 0 ? 'green' : 'purple'}`}>{localizeNode(t.amount > 0 ? <Plus size={13}/> : <FileText size={13}/>)}</span>{localizeNode(t.type)}</span></td><td className="text-start">{localizeNode(t.description)}</td><td className="text-start"><span className="st-transaction-service">{localizeNode(t.service !== '—' && <Icon size={13} className={serviceColor(t.service)}/>)} {localizeNode(t.service)}</span></td><td className={`text-center ${t.amount > 0 ? 'st-amount-positive' : 'st-amount-negative'}`}>{localizeNode(t.amount > 0 ? '+' : '-')}{localizeNode(money(Math.abs(t.amount), symbol))}</td>{showBalance && <td className="text-center">{localizeNode(money(t.balance, symbol))}</td>}</tr>;
+  return <tr><td className="text-center">{localizeNode(t.date)}</td><td className="text-start"><span className="st-transaction-type"><span className={`st-service-icon ${t.amount > 0 ? 'green' : 'purple'}`}>{localizeNode(t.amount > 0 ? <Plus size={13}/> : <FileText size={13}/>)}</span>{localizeNode(t.type)}</span></td><td className="text-start">{localizeNode(t.description)}</td><td className="text-start"><span className="st-transaction-service">{localizeNode(t.service !== '—' && <Icon size={13} className={serviceColor(t.service)}/>)} {localizeNode(t.service)}</span></td><td className={`text-center ${t.amount > 0 ? 'st-amount-positive' : 'st-amount-negative'}`}>{localizeNode(t.amount > 0 ? '+' : '-')}{localizeNode(formatAmount(Math.abs(t.amount)))}</td>{showBalance && <td className="text-center">{localizeNode(formatAmount(t.balance))}</td>}</tr>;
 }

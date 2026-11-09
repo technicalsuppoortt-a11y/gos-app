@@ -26,7 +26,7 @@ export function ProductPublicPreview() {
   const product = withReviews(state.product, live || state.product), checkout = params.get('view') === 'checkout';
   return <div className={`cp-preview lp-page cx-sales-${product.config!.salesTemplate}`}>
     <nav className="lp-nav"><b>{product.name}</b><button className="cw-button" onClick={() => setParams({ workspace: tenantId, ...(checkout ? {} : { view: 'checkout' }) })}>{translateText(checkout ? 'Back to product' : 'View checkout')}</button></nav>
-    {checkout ? <CheckoutScreen product={product} tenantId={tenantId}/> : product.config!.salesTemplate === 'external' ? <ExternalPagePreview url={product.config!.salesUrl} title={translateText('Sales page')}/> : <ProductSalesPage product={product} buy={() => setParams({ workspace: tenantId, view: 'checkout' })}/>}
+    {checkout ? <CheckoutScreen product={product} tenantId={tenantId}/> : product.config!.salesTemplate === 'external' ? <ExternalPagePreview url={product.config!.salesUrl} title={translateText('Sales page')}/> : <ProductSalesPage published product={product} buy={() => setParams({ workspace: tenantId, view: 'checkout' })}/>}
     {!checkout && <ProductReviews key={key} tenantId={tenantId} product={product} onSubmitted={summary => setState(current => current?.product ? { ...current, product: { ...current.product, ...summary } } : current)}/>}
   </div>;
 }

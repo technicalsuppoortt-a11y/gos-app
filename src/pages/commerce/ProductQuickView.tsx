@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -53,16 +54,6 @@ const initials = (name: string) =>
     .map(part => part[0]?.toUpperCase() || '')
     .join('') || 'U';
 
-const formatMoney = (amount: number, currency = 'USD') => {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(
-      Number(amount) || 0
-    );
-  } catch {
-    return `$${(Number(amount) || 0).toFixed(2)}`;
-  }
-};
-
 const formatDate = (value?: string) => {
   if (!value) return '—';
   const parsed = new Date(value);
@@ -81,6 +72,7 @@ export function ProductQuickView({
   defaultTab?: 'users' | 'overview';
 }) {
   useUILanguage();
+  const { formatPrice: formatMoney } = useCurrency();
   const [activeTab, setActiveTab] = useState<'users' | 'overview'>(defaultTab);
   const [userSearch, setUserSearch] = useState('');
   const config = product.config ?? defaultConfig(product.type, product.price);
@@ -129,6 +121,12 @@ export function ProductQuickView({
   }
 
   const paidRows = buyerRows.filter(o => /^(paid|completed|succeeded|approved)$/i.test(String(o.status || '')));
+  const recordedRevenue = config.orders?.filter(order => order.status === 'Paid' && order.currency === config.currency);
+  const paidInCurrency = paidRows.filter(order => (order.currency || config.currency) === config.currency);
+  const legacyRevenue = product.revenue?.match(/-?[\d,.]+/)?.[0];
+  const revenue = recordedRevenue?.length ? recordedRevenue.reduce((sum, order) => sum + order.amount, 0)
+    : paidInCurrency.length ? paidInCurrency.reduce((sum, order) => sum + (order.total ?? order.amount ?? 0), 0)
+    : Number(legacyRevenue?.replaceAll(',', '') ?? 0);
   const q = userSearch.trim().toLowerCase();
   const filteredBuyers = buyerRows.filter(o => {
     if (!q) return true;
@@ -159,12 +157,12 @@ export function ProductQuickView({
           <div className="cr-detail-hero-main">
             <div>
               <span className="cr-detail-hero-label">{t('Selling Price')}</span>
-              <strong className="cr-detail-hero-amount">{formatPrice(config)}</strong>
+              <strong className="cr-detail-hero-amount">{formatPrice(config, formatMoney)}</strong>
             </div>
             <div style={{ textAlign: 'end' }}>
               <span className="cr-detail-hero-label">{t('Total Sales & Revenue')}</span>
               <strong style={{ fontSize: 15, color: '#047857' }}>
-                {paidRows.length} {t('sales')} · {product.revenue || formatMoney(0, config.currency)}
+                {paidRows.length} {t('sales')} · {formatMoney(revenue, config.currency)}
               </strong>
             </div>
           </div>
@@ -391,7 +389,7 @@ export function ProductQuickView({
               <dl className="cr-detail-dl">
                 <div>
                   <dt>{t('Price')}</dt>
-                  <dd>{formatPrice(config)}</dd>
+                  <dd>{formatPrice(config, formatMoney)}</dd>
                 </div>
                 <div>
                   <dt>{t('Billing')}</dt>

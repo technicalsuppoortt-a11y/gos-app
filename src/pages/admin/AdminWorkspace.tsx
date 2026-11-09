@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { AdminDashboard } from './AdminDashboard';
 import { WorkspaceBrandSettings } from './WorkspaceBrandSettings';
 import { AdminOperations } from './AdminOperations';
@@ -38,6 +39,7 @@ export function AdminWorkspace() {
 }
 
 function Workspace({ module }: { module: typeof modules[number] }) {
+  const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar');
   const t = (en: string, arabic: string) => ar ? arabic : en;
   const display = (value: string) => ar ? labels[value] ?? value : value;
@@ -167,8 +169,8 @@ function Workspace({ module }: { module: typeof modules[number] }) {
             <Metric label={t('Healthy / complete', 'نشطة أو مكتملة')} value={String(scopedRows.filter(r => ['Active', 'Completed', 'Published', 'Connected', 'Verified', 'Confirmed', 'Won', 'Resolved'].includes(r.status)).length)} icon={<Check size={19} />} />
             <Metric label={t('Needs attention', 'تحتاج متابعة')} value={String(rows.filter(r => ['Failed', 'Pending', 'Blocked', 'Expired', 'Disconnected'].includes(r.status)).length)} icon={<Activity size={19} />} />
             <Metric
-              label={total ? t('Value (USD)', 'القيمة (دولار)') : t('Workspaces', 'مساحات العمل')}
-              value={total ? new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(total) : String(new Set(scopedRows.map(r => r.tenant)).size)}
+              label={total ? t('Value', 'القيمة') : t('Workspaces', 'مساحات العمل')}
+              value={total ? formatPrice(total) : String(new Set(scopedRows.map(r => r.tenant)).size)}
               icon={<CreditCard size={19} />}
             />
           </div>
@@ -516,6 +518,7 @@ function Metric({ label, value, icon, detail }: { label: string; value: string; 
 }
 
 function AnalyticsOverview() {
+  const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar');
   const t = (en: string, arabic: string) => ar ? arabic : en;
   const [range, setRange] = useState<'month' | 'week' | '90d'>('month');
@@ -536,7 +539,6 @@ function AnalyticsOverview() {
   const conversionRate = leads.length ? Math.round((wonLeads / leads.length) * 100) : 0;
   const activeTenants = subscriptions.filter(r => r.status === 'Active').length;
 
-  const money = new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
   const points = range === 'week' ? [18, 26, 21, 35, 42, 38, 54] : range === '90d' ? [12, 16, 20, 24, 22, 30, 36, 44, 48, 56, 62, 78] : [14, 22, 18, 32, 29, 42, 38, 51, 47, 62, 58, 74];
   const pointLabels = range === 'week'
@@ -585,7 +587,7 @@ function AnalyticsOverview() {
       <div className="adm-metrics">
         <Metric
           label={t('Revenue Volume', 'حجم الإيرادات')}
-          value={money.format(revenue)}
+          value={formatPrice(revenue)}
           icon={<CreditCard size={19} />}
           detail={`+18.2% ${t('vs previous cycle', 'مقارنة بالدورة السابقة')}`}
         />
@@ -615,14 +617,14 @@ function AnalyticsOverview() {
           <div className="adm-panel-heading">
             <div>
               <h2>{t('Revenue Trend', 'اتجاه الإيرادات')}</h2>
-              <p>{t('Historical ledger revenue volume · USD', 'حجم الإيرادات التاريخية في السجل · دولار')}</p>
+              <p>{t('Historical ledger revenue volume', 'حجم الإيرادات التاريخية في السجل')}</p>
             </div>
             <span className="adm-badge success"><ArrowUpRight size={13} />+18.2%</span>
           </div>
           <div className="adm-bar-chart" role="img" aria-label={t('Revenue trend chart', 'رسم توضيحي لاتجاه الإيرادات')}>
             {points.map((v, i) => (
               <div key={i}>
-                <b style={{ height: `${v * 1.05}px` }} title={`$${v * 100}`} />
+                <b style={{ height: `${v * 1.05}px` }} title={formatPrice(v * 100)} />
                 <span>{pointLabels[i]}</span>
               </div>
             ))}
