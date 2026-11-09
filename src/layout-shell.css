@@ -169,6 +169,11 @@ body.layout-locked #root {
   overflow: hidden;
 }
 
+.layout-sidebar-content:not(.is-collapsed) .layout-brand.is-launch-brand-preview .layout-brand-wordmark b {
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
 .layout-brand-copy small {
   color: #85899a;
   font-size: 9px;

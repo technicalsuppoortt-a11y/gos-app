@@ -766,9 +766,7 @@
   left: 0;
   display: block;
   width: 1280px;
-  min-height: 780px;
   pointer-events: none;
-  transform: scale(0.13);
   transform-origin: top left;
 }
 .miniSiteCanvas :global(.be-canvas-stage.preview),

@@ -1,0 +1,98 @@
+.lp-preview-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--lp-ink);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.lp-preview-brand-mark img {
+  display: block;
+  width: auto;
+  height: 38px;
+  max-width: 128px;
+  object-fit: contain;
+}
+
+.lp-preview-brand-mark bdi {
+  max-width: min(160px, 34vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-mock__logo .lp-preview-brand-mark {
+  gap: 4px;
+  font-size: 12px;
+}
+
+.lp-mock__logo .lp-preview-brand-mark img {
+  height: 27px;
+  max-width: min(84px, 100%);
+}
+
+/* Preview colors use the active Launch Brand palette exposed by ThemeProvider. */
+html[data-theme] body .lp[data-launch-brand][dir] {
+  --lp-primary: var(--gp-primary) !important;
+  --lp-primary-600: var(--gp-primary) !important;
+  --lp-primary-700: var(--gp-primary) !important;
+  --lp-secondary: var(--gp-secondary);
+  --lp-bg: var(--gp-background) !important;
+  --lp-surface: var(--gp-surface) !important;
+  --lp-ink: var(--gp-text) !important;
+  --lp-text: var(--gp-text) !important;
+  --lp-muted: var(--gp-muted-text) !important;
+  --lp-faint: var(--gp-muted-text);
+  --lp-border: var(--gp-border) !important;
+  --lp-primary-50: color-mix(in srgb, var(--lp-primary) 8%, var(--lp-surface)) !important;
+  --lp-primary-100: color-mix(in srgb, var(--lp-primary) 15%, var(--lp-surface)) !important;
+  --lp-primary-200: color-mix(in srgb, var(--lp-primary) 26%, var(--lp-surface)) !important;
+  --lp-soft: var(--lp-primary-50) !important;
+  --lp-grad: linear-gradient(92deg, var(--lp-primary), var(--lp-secondary));
+  --lp-hero-start: 85%;
+  --lp-hero-end: 5%;
+  background: var(--lp-bg) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir='rtl'] {
+  --lp-hero-start: 15%;
+  --lp-hero-end: 95%;
+}
+
+/* Keep these page colors above the generated workspace color overrides. */
+html[data-theme] body .lp[data-launch-brand][dir] .lp-hero {
+  background:
+    radial-gradient(60% 70% at var(--lp-hero-start) 10%, color-mix(in srgb, var(--lp-primary) 14%, transparent), transparent 65%),
+    radial-gradient(40% 50% at var(--lp-hero-end) 0%, color-mix(in srgb, var(--lp-secondary) 9%, transparent), transparent 70%),
+    var(--lp-bg) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-gradient-text {
+  background-image: var(--lp-grad) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-btn--primary {
+  background: linear-gradient(135deg, var(--gp-button-background), color-mix(in srgb, var(--gp-button-background) 88%, var(--lp-secondary))) !important;
+  color: var(--gp-on-primary) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-header {
+  background: color-mix(in srgb, var(--gp-header-background) 92%, transparent) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-header :is(.lp-preview-brand-mark, .lp-header__nav a, .lp-lang, .lp-header__menu) {
+  color: var(--gp-header-text) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-cms-footer {
+  background: var(--gp-footer-background);
+  color: var(--gp-footer-text);
+}
+
+.lp[data-launch-brand] .lp-native-preview {
+  --ws-accent: var(--lp-primary);
+  --ws-hover: var(--lp-secondary);
+  --ws-soft: var(--lp-primary-50);
+}

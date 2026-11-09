@@ -15,8 +15,11 @@ import i18n from '../../i18n/i18n';
 import { type LandingCopy } from './landing-content';
 import { cmsEvent, readCMS } from './cms';
 import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/workspacePreferences';
+import { usePhoenixBrand, type PhoenixConfiguration } from '../../backend/phoenixBrand';
+import { isLaunchBrandPreview } from '../../branding/launchBrandPreview';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
+import './launch-brand-preview.css';
 import { NativeDashboardPreview } from './NativeDashboardPreview';
 
 
@@ -34,11 +37,24 @@ const prefersReducedMotion = () => typeof window !== 'undefined' && window.match
 
 /* ---------- Small shared pieces ---------- */
 
-function Logo({ inverted = false }: { inverted?: boolean }) {
+type PreviewBrand = Pick<PhoenixConfiguration, 'brand' | 'logo' | 'logoHasWordmark'>;
+
+function PreviewBrandMark({ brand }: { brand: PreviewBrand }) {
+  const name = brand.brand.name;
+  return (
+    <div className="lp-preview-brand-mark">
+      {brand.logo && <img src={brand.logo} alt={brand.logoHasWordmark ? name : ''} />}
+      {(!brand.logo || !brand.logoHasWordmark) && <bdi>{name}</bdi>}
+    </div>
+  );
+}
+
+function Logo({ brand }: { brand: PreviewBrand | null }) {
   const { effective: { name, logoUrl } } = useWorkspacePreferences();
+  if (brand) return <PreviewBrandMark brand={brand} />;
   if (!isDefaultBrandLogo(logoUrl)) return <img className="lp-logo-image" src={logoUrl} alt={name}/>;
   return (
-    <span className={`lp-logo${inverted ? ' is-inverted' : ''}`} aria-label={name}>
+    <span className="lp-logo" aria-label={name}>
       <img src="/upclick-mark.svg" alt="" width="36" height="38"/>
       <span className="lp-logo__wordmark">{name}</span>
     </span>
@@ -97,7 +113,7 @@ function useInView<T extends Element>(threshold = 0.35) {
 
 /* ---------- Header ---------- */
 
-function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; language: Language; onLanguage: () => void; activeId: string }) {
+function Header({ copy, language, onLanguage, activeId, brand }: { copy: LandingCopy; language: Language; onLanguage: () => void; activeId: string; brand: PreviewBrand | null }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -117,7 +133,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
   return (
     <header className={`lp-header${scrolled ? ' is-scrolled' : ''}${open ? ' is-open' : ''}`}>
       <div className="lp-container lp-header__inner">
-        <a href="#top" className="lp-header__brand" onClick={event => go(event, 'top')}><Logo /></a>
+        <a href="#top" className="lp-header__brand" onClick={event => go(event, 'top')}><Logo brand={brand} /></a>
         <nav className="lp-header__nav" aria-label="Primary">
           {copy.nav.links.map(link => (
             <a key={link.id} id={`lp-nav-${link.id}`} href={`#${link.id}`} className={activeId === link.id ? 'is-active' : ''} onClick={event => go(event, link.id)}>{link.label}</a>
@@ -150,7 +166,7 @@ function Header({ copy, language, onLanguage, activeId }: { copy: LandingCopy; l
 
 /* ---------- Hero ---------- */
 
-function HeroMock({ copy }: { copy: LandingCopy }) {
+function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }) {
   const [ref] = useInView<HTMLDivElement>(0.2);
   // Local, self-contained tab state: switching tabs swaps the inner view, never the route.
   const [activeTab, setActiveTab] = useState(0);
@@ -191,8 +207,14 @@ function HeroMock({ copy }: { copy: LandingCopy }) {
 
       <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
         <aside className="lp-mock__side">
-          <div className="lp-mock__logo" role="img" aria-label="Upclick"><img className="lp-preview-logo lp-preview-logo-dark" src="/upclick-logo.svg" width="84" height="27" alt=""/><img className="lp-preview-logo lp-preview-logo-light" src="/upclick-logo-light.svg" width="84" height="27" alt=""/><span>WORKSPACE</span></div>
-          <ul role="tablist" aria-orientation="vertical" aria-label="Upclick">
+          <div className="lp-mock__logo" role="img" aria-label={brand?.brand.name ?? 'Upclick'}>
+            {brand ? <PreviewBrandMark brand={brand} /> : <>
+              <img className="lp-preview-logo lp-preview-logo-dark" src="/upclick-logo.svg" width="84" height="27" alt=""/>
+              <img className="lp-preview-logo lp-preview-logo-light" src="/upclick-logo-light.svg" width="84" height="27" alt=""/>
+            </>}
+            <span>WORKSPACE</span>
+          </div>
+          <ul role="tablist" aria-orientation="vertical" aria-label={brand?.brand.name ?? 'Upclick'}>
             {navItems.map(({ label: item, Icon }, index) => {
               const selected = activeTab === index;
               return (
@@ -235,7 +257,7 @@ function HeroMock({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function Hero({ copy, onVideo }: { copy: LandingCopy; onVideo: () => void }) {
+function Hero({ copy, onVideo, brand }: { copy: LandingCopy; onVideo: () => void; brand: PreviewBrand | null }) {
   return (
     <section className="lp-hero" id="top" aria-labelledby="lp-hero-title">
       <div className="lp-container lp-hero__grid">
@@ -254,7 +276,7 @@ function Hero({ copy, onVideo }: { copy: LandingCopy; onVideo: () => void }) {
           </div>
           <p className="lp-hero__note"><ShieldCheck size={13} aria-hidden="true" />{copy.hero.note}</p>
         </div>
-        <HeroMock copy={copy} />
+        <HeroMock copy={copy} brand={brand} />
       </div>
 
       <div className="lp-container lp-business lp-reveal">
@@ -844,14 +866,22 @@ function VideoModal({ copy, onClose }: { copy: LandingCopy; onClose: () => void 
 export const LandingPage: React.FC = () => {
   const dispatch = useDispatch();
   const { setPreference } = useWorkspacePreferences();
+  const phoenix = usePhoenixBrand();
+  const brand = isLaunchBrandPreview() ? phoenix : null;
+  const brandName = brand?.brand.name;
   const language = useSelector((state: RootState) => state.ui.language);
   const preview = new URLSearchParams(window.location.search).get('cms-preview') === '1';
   const [cms, setCMS] = useState(() => readCMS(preview));
   useEffect(() => { const refresh = () => setCMS(readCMS(preview)); window.addEventListener(cmsEvent, refresh); window.addEventListener('storage', refresh); return () => { window.removeEventListener(cmsEvent, refresh); window.removeEventListener('storage', refresh); }; }, [preview]);
   const copy = useMemo(() => {
-    const content = cms[language] ?? cms.en;
+    const original = cms[language] ?? cms.en;
+    const content: LandingCopy = brandName ? JSON.parse(JSON.stringify(original), (key, value) =>
+      typeof value === 'string' && key !== 'id' && !/^(?:https?:|\/)/i.test(value)
+        ? value.replace(/\bUpclick\b/gi, () => brandName)
+        : value,
+    ) : original;
     return { ...content, nav: { ...content.nav, links: content.nav.links.filter(link => link.id !== 'pricing') } };
-  }, [cms, language]);
+  }, [cms, language, brandName]);
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
@@ -902,11 +932,11 @@ export const LandingPage: React.FC = () => {
   const closeVideo = useCallback(() => setVideoOpen(false), []);
 
   return (
-    <div ref={rootRef} className="lp" dir={dir} lang={language}>
-      <Header copy={copy} language={language} onLanguage={toggleLanguage} activeId={activeId} />
+    <div ref={rootRef} className="lp" dir={dir} lang={language} data-launch-brand={brand?.brand.theme ? '' : undefined}>
+      <Header copy={copy} language={language} onLanguage={toggleLanguage} activeId={activeId} brand={brand} />
       <main>
         {preview && <div className="lp-cms-preview">{language === 'ar' ? 'معاينة المسودة — لم ينشر هذا المحتوى بعد' : 'Draft preview — this content has not been published'}</div>}
-        <Hero copy={copy} onVideo={openVideo} />
+        <Hero copy={copy} onVideo={openVideo} brand={brand} />
         <Problem copy={copy} />
         <Solution copy={copy} />
         <Demo copy={copy} />

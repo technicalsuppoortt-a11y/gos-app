@@ -40,6 +40,11 @@ function clearDemoNamespace(storage: Storage | null) {
 }
 
 export function isDemoSessionActive(): boolean {
+  // The preview URL selects the local graph before any live auth modules load.
+  // The frame name also keeps the demo active after navigating within it.
+  const { pathname, search } = window.location;
+  if ((pathname === '/' || /^\/dashboard\/?$/i.test(pathname)) &&
+      new URLSearchParams(search).get('launch-brand-preview') === '1') return true;
   try { if (nativeSession()?.getItem(FLAG) === '1') return true; } catch { /* Fall through to the window.name fallback. */ }
   return window.name === WINDOW_NAME_FLAG;
 }

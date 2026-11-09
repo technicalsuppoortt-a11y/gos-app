@@ -21,7 +21,6 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
   const { mode, language, activeStep } = useAppSelector((s) => s.brand);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
-  const [websiteLanguage, setWebsiteLanguage] = useState<"ar" | "en" | null>(null);
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();
   const exitDashboard = useCallback(
@@ -81,7 +80,7 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
               {mode === "wizard" ? (
                 <WizardPage />
               ) : mode === "builder" ? (
-                <BuilderPage onLanguageChange={setWebsiteLanguage} />
+                <BuilderPage />
               ) : (
                 <DashboardPage onExitPreview={exitDashboard} onBackToWorkspace={backToWorkspace} />
               )}
@@ -92,7 +91,7 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
       {mode === "builder" && (
         <button
           className="landing-preview-exit"
-          dir={(websiteLanguage || language) === "ar" ? "rtl" : "ltr"}
+          dir={language === "ar" ? "rtl" : "ltr"}
           type="button"
           onClick={() => {
             dispatch(actions.setStep(18));

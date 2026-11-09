@@ -50,5 +50,5 @@ export function WorkspaceLoading() {
 }
 
 export function WorkspaceAccessError({ message, onRetry, retryLabel = 'Try again' }: { message: string; onRetry: () => void; retryLabel?: string }) {
-  return <div className="grid h-full min-h-0 place-items-center p-6" role="alert"><div><p>{message}</p><button type="button" className="mt-3 rounded-lg border px-4 py-2" onClick={onRetry}>{retryLabel}</button></div></div>;
+  return <div data-platform-entry-error className="grid h-full min-h-0 place-items-center p-6" role="alert"><div><p>{message}</p><button type="button" className="mt-3 rounded-lg border px-4 py-2" onClick={onRetry}>{retryLabel}</button></div></div>;
 }

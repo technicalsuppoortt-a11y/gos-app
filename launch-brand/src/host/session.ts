@@ -4,6 +4,7 @@ import { auth, db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { normalizeRole } from '../shared/permissions';
 import { PLATFORM_ENDPOINT } from './config';
+import { requestGosPlatform } from '../services/gosPlatform';
 
 // Launch Brand opens only from Joe Academy's "Build brand" button. Joe Academy
 // asks gos-app for a one-time ticket (60 seconds, single use) and opens
@@ -31,6 +32,7 @@ async function exchangeTicket(ticket: string) {
     signal: AbortSignal.timeout(60000),
   });
   const result = await response.json().catch(() => ({}));
+  if (response.ok && result.platformDeployed === true) return { platformDeployed: true } as const;
   if (!response.ok || !result.customToken) {
     const error = new Error(result.error || 'Could not open Launch Brand.');
     (error as Error & { code?: string }).code = result.code;
@@ -59,10 +61,24 @@ export function startLaunchBrandSession() {
   const ticket = params.get('ticket');
   if (ticket) window.history.replaceState(null, '', window.location.pathname + window.location.search);
 
+  // Restoring from the back-forward cache skips auth initialization.
+  window.addEventListener('pagehide', event => {
+    if (event.persisted) document.documentElement.style.visibility = 'hidden';
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) window.location.reload();
+  });
+
+  let leavingForPlatform = false;
+  const leaveForPlatform = () => {
+    leavingForPlatform = true;
+    window.location.replace('/dashboard');
+  };
   const signIn = (async () => {
     await setPersistence(auth, browserSessionPersistence);
     if (!ticket) return;
     const result = await exchangeTicket(ticket);
+    if ('platformDeployed' in result) { leaveForPlatform(); return; }
     if (result.language === 'ar' || result.language === 'en') useStore.getState().setLanguage(result.language);
     if (result.theme === 'light' || result.theme === 'dark') useStore.getState().setTheme(result.theme);
     await signInWithCustomToken(auth, result.customToken);
@@ -73,6 +89,7 @@ export function startLaunchBrandSession() {
     setSessionError((error as { code?: string }).code === 'launch-brand/ticket-invalid' ? 'expired' : 'failed');
     await signOut(auth).catch(() => undefined);
   }).finally(() => {
+    if (leavingForPlatform) return;
     onAuthStateChanged(auth, async user => {
       const state = useStore.getState();
       if (!user) {
@@ -86,6 +103,10 @@ export function startLaunchBrandSession() {
       try {
         const claims = (await user.getIdTokenResult()).claims as Record<string, unknown>;
         if (claims.launchBrand !== true) throw new Error('Not a Launch Brand session.');
+        const { deployed } = await requestGosPlatform('platform-status');
+        if (auth.currentUser?.uid !== user.uid) return;
+        if (deployed === true) { leaveForPlatform(); return; }
+        if (deployed !== false) throw new Error('Could not verify Launch Brand access.');
         const profile = (await getDoc(doc(db, 'users', user.uid))).data() ?? null;
         state.setUser(accountUser(user, claims, profile));
         state.setUserProfile(profile ? { id: user.uid, ...profile } : null);
