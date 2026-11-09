@@ -1,7 +1,7 @@
 .launch-brand-settings { min-width: 0; }
-.launch-brand-settings h1 { font-size: 20px; font-weight: 600; margin: 0 0 16px; }
-.launch-brand-settings .adm-group-nav { flex-wrap: wrap; margin-bottom: 12px; }
+.saw-workspace .launch-brand-settings h2 { font-size: 20px; margin-block-end: 16px; }
+.launch-brand-settings .adm-group-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .launch-brand-settings .adm-group-nav button { border: 0; border-radius: 8px; padding: 10px 14px; font: inherit; font-size: 13px; cursor: pointer; background: var(--surface, #fff); color: inherit; }
 .launch-brand-settings .adm-group-nav button.active { background: #eee8ff; color: #7444ed; }
 .launch-brand-settings iframe { display: block; width: 100%; min-height: 820px; height: calc(100dvh - 260px); border: 0; border-radius: 12px; }
-.lb-settings-retry { display: block; margin: 0 0 12px auto; background: transparent; color: inherit; border: 1px solid var(--line, #ddd); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.lb-settings-retry { display: block; margin-block-end: 12px; margin-inline-start: auto; background: transparent; color: inherit; border: 1px solid var(--line, #ddd); border-radius: 8px; padding: 6px 10px; cursor: pointer; }

@@ -161,6 +161,7 @@ import { AlertTriangle, ArrowDownToLine, ArrowLeft, Ban, Check, CheckCircle2, Ch
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
+import { SystemSettingsSections } from './LaunchBrandSettings';
 import { ManagedMetaWalletPanel } from '../settings/MetaWalletPanel';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { backendError } from '../../backend/firebase';
@@ -1021,22 +1022,24 @@ function Settings() {
   }
   return <>
     <Heading title="System Settings" description="Manage global platform preferences, security and operational policies."/>
-    <LiveContent sources={[source]}>
-      {notice && <div className="saw-notice" role="status"><Check size={16}/>{t(notice)}</div>}
-      {error && <div className="saw-warning" role="alert">{t(error)}</div>}
-      <form className="saw-settings" onSubmit={save}>
-        <section className="saw-panel"><h2>{t('General configuration')}</h2><p>{t('Platform identity and default account preferences.')}</p>
-          <div className="saw-form-grid">
-            <label>{t('Platform name')}<input required maxLength={60} value={settings.name} onChange={event => edit('name', event.target.value)} disabled={busy}/></label>
-            <label>{t('Operations email')}<input required type="email" maxLength={160} value={settings.email} onChange={event => edit('email', event.target.value)} disabled={busy}/></label>
-            <label>{t('Default timezone')}<DashboardSelect value={settings.timezone} onChange={event => edit('timezone', event.target.value)} disabled={busy}>{platformTimezones.map(zone => <option key={zone}>{zone}</option>)}</DashboardSelect></label>
-            <label>{t('Trial duration (days)')}<input type="number" required min={1} max={90} value={settings.trialDays || ''} onChange={event => edit('trialDays', Number(event.target.value))} disabled={busy}/></label>
-          </div>
-        </section>
-        <section className="saw-panel"><h2>{t('Security & operations')}</h2>{policies.map(item => <label className="saw-switch-row" key={item.key}><span><b>{t(item.label)}</b><small>{t(item.help)}</small></span><input type="checkbox" role="switch" checked={settings[item.key]} onChange={event => edit(item.key, event.target.checked)} disabled={busy}/></label>)}</section>
-        <div className="saw-actions"><button type="button" disabled={busy || !draft} onClick={() => { setDraft(null); setError(''); setNotice('Unsaved changes discarded.'); }}>{t('Discard changes')}</button><button className="saw-primary" type="submit" disabled={busy || !draft || source.cached}>{t(busy ? 'Saving…' : 'Save changes')}</button></div>
-      </form>
-    </LiveContent>
+    <SystemSettingsSections>
+      <LiveContent sources={[source]}>
+        {notice && <div className="saw-notice" role="status"><Check size={16}/>{t(notice)}</div>}
+        {error && <div className="saw-warning" role="alert">{t(error)}</div>}
+        <form className="saw-settings" onSubmit={save}>
+          <section className="saw-panel"><h2>{t('General configuration')}</h2><p>{t('Platform identity and default account preferences.')}</p>
+            <div className="saw-form-grid">
+              <label>{t('Platform name')}<input required maxLength={60} value={settings.name} onChange={event => edit('name', event.target.value)} disabled={busy}/></label>
+              <label>{t('Operations email')}<input required type="email" maxLength={160} value={settings.email} onChange={event => edit('email', event.target.value)} disabled={busy}/></label>
+              <label>{t('Default timezone')}<DashboardSelect value={settings.timezone} onChange={event => edit('timezone', event.target.value)} disabled={busy}>{platformTimezones.map(zone => <option key={zone}>{zone}</option>)}</DashboardSelect></label>
+              <label>{t('Trial duration (days)')}<input type="number" required min={1} max={90} value={settings.trialDays || ''} onChange={event => edit('trialDays', Number(event.target.value))} disabled={busy}/></label>
+            </div>
+          </section>
+          <section className="saw-panel"><h2>{t('Security & operations')}</h2>{policies.map(item => <label className="saw-switch-row" key={item.key}><span><b>{t(item.label)}</b><small>{t(item.help)}</small></span><input type="checkbox" role="switch" checked={settings[item.key]} onChange={event => edit(item.key, event.target.checked)} disabled={busy}/></label>)}</section>
+          <div className="saw-actions"><button type="button" disabled={busy || !draft} onClick={() => { setDraft(null); setError(''); setNotice('Unsaved changes discarded.'); }}>{t('Discard changes')}</button><button className="saw-primary" type="submit" disabled={busy || !draft || source.cached}>{t(busy ? 'Saving…' : 'Save changes')}</button></div>
+        </form>
+      </LiveContent>
+    </SystemSettingsSections>
   </>;
 }
 
@@ -1119,7 +1122,7 @@ export function SuperAdminWorkspace() {
     <RetryContext.Provider value={() => setAttempt(value => value + 1)}>
       <SyncStatusContext.Provider value={{ phase: syncPhase, reportSyncing }}>
         <div className="saw-workspace">
-          <Screen key={`${uid}:${pathname}:${search}:${attempt}`} />
+          <Screen key={`${uid}:${pathname}:${Screen === Settings ? '' : search}:${attempt}`} />
         </div>
       </SyncStatusContext.Provider>
     </RetryContext.Provider>

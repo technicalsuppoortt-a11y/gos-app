@@ -12,11 +12,19 @@ await writeFile(path.join(fixtureDirectory, 'index.html'), '<div id="root"></div
 await writeFile(path.join(fixtureDirectory, 'fixture.tsx'), `
   import React from 'react'; import {createRoot} from 'react-dom/client';
   import {Provider} from 'react-redux'; import {BrowserRouter} from 'react-router-dom';
-  import {store} from '/src/store/index.ts'; import '/src/i18n/i18n.ts';
+  import {configureStore} from '@reduxjs/toolkit'; import '/src/i18n/i18n.ts';
   import {AdminGroupNav} from '/src/pages/admin/AdminGroups.tsx';
-  import {LaunchBrandSettings} from '/src/pages/admin/LaunchBrandSettings.tsx';
+  import {SystemSettingsSections} from '/src/pages/super-admin/LaunchBrandSettings.tsx';
   import '/src/pages/admin/admin-workspace.css';
-  createRoot(document.getElementById('root')).render(<Provider store={store}><BrowserRouter><AdminGroupNav group="settings"/><LaunchBrandSettings/></BrowserRouter></Provider>);
+  import '/src/pages/super-admin/admin-workspace.css';
+  const role = new URLSearchParams(location.search).get('role') || 'SUPER_ADMIN';
+  const store = configureStore({ reducer: () => ({ auth: { role }, ui: { theme: 'light' } }) });
+  createRoot(document.getElementById('root')).render(<Provider store={store}><BrowserRouter>
+    {role === 'ADMIN' ? <AdminGroupNav group="settings"/> : <main className="saw-workspace">
+      <h1>System Settings</h1>
+      <SystemSettingsSections><h2>General configuration</h2></SystemSettingsSections>
+    </main>}
+  </BrowserRouter></Provider>);
 `);
 const server = process.env.GOS_TEST_ORIGIN ? null : await createServer({ configFile: false, cacheDir: fixtureDirectory + '/cache', plugins: [react()], optimizeDeps: { entries: [fixtureDirectory + '/index.html'], include: ['react', 'react-dom/client', 'react-redux', 'react-router-dom'] }, server: { host: '127.0.0.1', port: 5196, strictPort: true, hmr: false } });
 await server?.listen();
@@ -38,15 +46,30 @@ try {
   const errors = [];
   page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
   page.on('console', message => { if (message.type() === 'error') console.error(message.text()); });
-  await page.goto(base + '/' + fixtureDirectory + '/index.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  const fixture = base + '/' + fixtureDirectory + '/index.html';
+  await page.goto(fixture + '?role=ADMIN', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('navigation', { name: 'Settings', exact: true }).waitFor();
+  assert.deepEqual(await page.locator('.adm-group-nav').getByRole('link').allTextContents(), ['General', 'Integrations & Webhooks', 'AI Models & Usage', 'Transactions']);
+  await page.goto(fixture + '?role=PLATFORM_SUPPORT&section=launch-brand&tab=business-discovery', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('heading', { name: 'General configuration' }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Launch Brand Settings' }).count(), 0);
+  assert.equal(await page.locator('iframe').count(), 0);
+  await page.goto(fixture, { waitUntil: 'domcontentloaded' });
+  await page.getByRole('heading', { name: 'System Settings' }).waitFor();
+  assert.equal(await page.locator('iframe').count(), 0);
+  await page.getByRole('button', { name: 'Launch Brand Settings' }).click();
+  assert.match(page.url(), /section=launch-brand/);
   await page.getByRole('heading', { name: 'Launch Brand Settings' }).waitFor();
-  assert.deepEqual(await page.locator('.adm-group-nav').first().getByRole('link').allTextContents(), ['General', 'Integrations & Webhooks', 'AI Models & Usage', 'Transactions', 'Launch Brand Settings']);
   await page.frameLocator('iframe').locator('body').filter({ hasText: 'en light' }).waitFor();
   await page.getByRole('button', { name: 'Business Discovery', exact: true }).click();
   assert.match(page.url(), /tab=business-discovery/);
   assert.match(await page.locator('iframe').getAttribute('src'), /tab=business-discovery/);
   await page.getByRole('button', { name: 'AI Center', exact: true }).click();
   assert.match(page.url(), /tab=ai-center/);
+  await page.getByRole('button', { name: 'General', exact: true }).click();
+  await page.getByRole('heading', { name: 'General configuration' }).waitFor();
+  assert.equal(await page.locator('iframe').count(), 0);
+  await page.getByRole('button', { name: 'Launch Brand Settings' }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   assert.deepEqual(errors, []);
