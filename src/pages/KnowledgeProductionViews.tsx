@@ -31,32 +31,66 @@ export function ProductionKnowledgeOrb({ progress = 0, active = false, label, ca
   </div>;
 }
 
+type ChannelLink = { channel: string; status?: string; enabled?: boolean; external_id?: string | null; name?: string | null };
+
+function readChannelLinks(payload: unknown): ChannelLink[] {
+  if (Array.isArray(payload)) {
+    return payload.flatMap(row => row && typeof row === 'object' && 'channel' in row && typeof row.channel === 'string'
+      ? [{ channel: row.channel, status: typeof row.status === 'string' ? row.status : undefined, enabled: Boolean(row.enabled), external_id: typeof row.external_id === 'string' ? row.external_id : null, name: typeof row.name === 'string' ? row.name : null }]
+      : []);
+  }
+  if (!payload || typeof payload !== 'object') return [];
+  return Object.entries(payload).map(([channel, value]) => {
+    if (typeof value === 'boolean') return { channel, enabled: value };
+    const row = value && typeof value === 'object' ? value as ChannelLink : {};
+    return { channel, status: row.status, enabled: Boolean(row.enabled), external_id: row.external_id ?? null, name: row.name ?? null };
+  });
+}
+
 export function ProductionChannelNetwork({ assistant, assistantName, disabled, updateChannel, onManage }: {
   assistant: GosAssistant; assistantName: string; disabled: boolean;
-  updateChannel: (channel: string, enabled: boolean) => Promise<void>; onManage: () => void;
+  updateChannel: (channel: string, enabled: boolean) => Promise<void>; onManage: (channel?: string) => void;
 }) {
-  const [pending, setPending] = useState(false);
+  const [pendingId, setPendingId] = useState('');
+  const [links, setLinks] = useState<ChannelLink[]>([]);
+  const [burst, setBurst] = useState('');
   const mutation = useRef(false);
-  const locked = disabled || pending;
-  async function toggle(id: string) {
+  const locked = disabled || !!pendingId;
+  useEffect(() => {
+    const controller = new AbortController();
+    gosApi.channels(controller.signal).then(result => { if (!controller.signal.aborted) setLinks(readChannelLinks(result.channels)); }).catch(() => {});
+    return () => controller.abort();
+  }, [assistant.channels, assistant.live_enabled]);
+  async function press(id: string) {
     if (mutation.current || disabled) return;
-    mutation.current = true; setPending(true);
-    try { await updateChannel(id, !assistant.channels[id]); }
-    finally { mutation.current = false; setPending(false); }
+    const link = links.find(item => item.channel === id);
+    const linked = id === 'webchat' || Boolean(link?.external_id);
+    if (!linked) { onManage(id); return; }
+    const next = !assistant.channels[id];
+    mutation.current = true; setPendingId(id);
+    try {
+      await updateChannel(id, next);
+      if (next) { setBurst(id); window.setTimeout(() => setBurst(current => current === id ? '' : current), 900); }
+    } finally { mutation.current = false; setPendingId(''); }
   }
+  const listening = channelDefinitions.filter(channel => assistant.channels[channel.id]).length;
   return <section className="kp-connect">
-    <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('CONNECT')}</span><h3>{t('Meet customers where they are')}</h3></div><button type="button" className="kw-button secondary" disabled={locked} onClick={onManage}>{t('Manage channels')}<ArrowRight size={14}/></button></header>
-    <div className="kp-network">
+    <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('CONNECT')}</span><h3>{t('Meet customers where they are')}</h3><p className="kp-lead">{t('Web chat turns on here. WhatsApp, Messenger and Instagram open the real account connection.')}</p></div><button type="button" className="kw-button secondary" disabled={locked} onClick={() => onManage()}>{t('Manage channels')}<ArrowRight size={14}/></button></header>
+    <div className={`kp-network ${listening ? 'is-awake' : ''}`}>
       <svg viewBox="0 0 600 430" preserveAspectRatio="none" className="kp-node-wires" aria-hidden="true">{['M300 215 L120 60', 'M300 215 L480 60', 'M300 215 L120 370', 'M300 215 L480 370'].map((d, index) => <g key={d} className={assistant.channels[channelDefinitions[index].id] ? 'connected' : ''}><path d={d} className="kp-wire-base"/><path d={d} className="kp-wire-pulse"/></g>)}</svg>
-      <div className="kp-network-hub"><ProductionKnowledgeOrb network active={assistant.live_enabled} label={assistantName} caption={t('YOUR AI')}/></div>
+      <div className="kp-network-hub"><ProductionKnowledgeOrb network active={listening > 0 || assistant.live_enabled} label={assistantName} caption={t('YOUR AI')}/></div>
       {channelDefinitions.map((channel, index) => {
         const enabled = !!assistant.channels[channel.id];
-        return <button key={channel.id} type="button" className={`kp-network-card kp-position-${index} ${enabled ? 'connected' : ''}`} aria-label={`${t(enabled ? 'Pause' : 'Enable')} ${channel.label}`} aria-pressed={enabled} disabled={locked} onClick={() => void toggle(channel.id)}>
-          <ProductionChannelMark channel={channel.id}/><b>{channel.label}</b><span><i/>{t(enabled ? 'ENABLED' : 'PAUSED')}</span>
+        const link = links.find(item => item.channel === channel.id);
+        const linked = channel.id === 'webchat' || Boolean(link?.external_id);
+        const account = link?.name || (link?.external_id ? link.external_id : '');
+        const label = !linked ? 'CONNECT' : enabled ? 'LISTENING' : 'PAUSED';
+        return <button key={channel.id} type="button" className={`kp-network-card kp-position-${index} ${enabled ? 'connected' : ''} ${burst === channel.id ? 'kp-burst' : ''} ${pendingId === channel.id ? 'is-pending' : ''}`} style={{ animationDelay: `${index * 80}ms` }} aria-label={linked ? `${t(enabled ? 'Pause' : 'Enable')} ${channel.label}` : `${t('Connect')} ${channel.label}`} aria-pressed={linked ? enabled : undefined} disabled={locked} onClick={() => void press(channel.id)}>
+          <ProductionChannelMark channel={channel.id}/><span className="kp-card-copy"><b>{channel.label}</b><small>{account || t(channel.id === 'webchat' ? 'Ready on your site' : linked ? 'Account linked' : 'Needs an account')}</small></span><span><i/>{t(label)}</span>
         </button>;
       })}
     </div>
-    <p className="kp-connection-note"><ShieldCheck size={14}/>{t('Channel changes are saved to your active assistant.')}</p>
+    <p className="kp-connection-note"><ShieldCheck size={14}/>{listening ? `${listening} ${t('channels are listening for customers.')}` : t('Turn on web chat, or connect a Meta account, before you go live.')}</p>
   </section>;
 }
 
@@ -65,10 +99,10 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
 }) {
   const connected = Object.values(assistant.channels).filter(Boolean).length;
   const [message, setMessage] = useState('');
-  const [channel, setChannel] = useState('');
+  const [channel, setChannel] = useState('webchat');
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState('');
   const [sendError, setSendError] = useState('');
+  const [turns, setTurns] = useState<{ id: string; role: 'customer' | 'assistant' | 'note'; text: string }[]>([]);
   const [liveThreads, setLiveThreads] = useState<Conversation[]>([]);
   const [summaryCounts, setSummaryCounts] = useState<{ today: number; needed: number } | null>(null);
   const activeConversations = conversations.length ? conversations : liveThreads;
@@ -99,17 +133,20 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
   async function sendCustomerMessage(event: React.FormEvent) {
     event.preventDefault();
     if (sendingRef.current || !message.trim() || !assistant.live_enabled || !selectedChannel) return;
-    sendingRef.current = true; setSending(true); setSendError(''); setResult('');
+    sendingRef.current = true; setSending(true); setSendError('');
     // Retain the event ID after a network failure so retrying cannot duplicate ingestion.
     messageId.current ??= crypto.randomUUID();
     try {
-      const response = await gosApi.receiveMessage({ channel: selectedChannel, external_thread_id: threadId.current, external_message_id: messageId.current, customer_name: 'Knowledge studio test customer', body: message.trim() });
       const sentText = message.trim();
-      const actionLabel = response.action?.label || response.conversation?.last_action?.label;
-      setResult(`${actionLabel ? `${actionLabel} · ` : ''}${response.outcome}${typeof response.reply?.body === 'string' ? ` · ${response.reply.body}` : ''}`);
+      setTurns(previous => [...previous, { id: crypto.randomUUID(), role: 'customer', text: sentText }]);
+      const response = await gosApi.simulateCustomer({ channel: selectedChannel, external_thread_id: threadId.current, external_message_id: messageId.current, customer_name: 'Studio visitor', body: sentText });
+      const reply = typeof response.reply?.body === 'string' ? response.reply.body : '';
+      const note = response.outcome === 'answered' ? '' : response.outcome === 'handoff' ? t('A teammate should take this one.') : response.outcome === 'paused' ? t('Go live, and keep this channel listening, before the assistant can reply.') : response.outcome === 'knowledge_not_ready' ? t('The knowledge base is not ready yet.') : response.outcome;
+      setTurns(previous => [...previous, ...(reply ? [{ id: crypto.randomUUID(), role: 'assistant' as const, text: reply }] : []), ...(note ? [{ id: crypto.randomUUID(), role: 'note' as const, text: note }] : [])]);
       if (!conversations.length) {
         const convId = String(response.conversation?.id || threadId.current);
         const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const actionLabel = response.action?.label || response.conversation?.last_action?.label;
         const stageLabel = String(actionLabel || (response.outcome === 'handoff' ? 'NEEDED YOUR TEAM' : response.outcome === 'answered' ? 'AI ANSWERED' : response.outcome.toUpperCase()));
         setLiveThreads(prev => {
           const existing = prev.find(item => item.id === convId);
@@ -122,17 +159,23 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
     } catch (e) { setSendError((e as Error).message); }
     finally { sendingRef.current = false; setSending(false); }
   }
-  return <section className="kp-live">
-    <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('LIVE MONITOR')}</span><h3>{t(assistant.live_enabled ? 'Your assistant is live' : 'Ready when you are')}</h3></div><button type="button" className="kw-button primary" disabled={disabled} onClick={onToggle}><Radio size={14}/>{t(assistant.live_enabled ? 'Pause assistant' : 'Go live')}</button></header>
+  const readyToLaunch = connected > 0 && readySources > 0;
+  return <section className={`kp-live ${assistant.live_enabled ? 'is-live' : ''}`}>
+    <header className="kp-view-heading"><div><span className="kp-eyebrow">{t('LIVE MONITOR')}</span><h3>{t(assistant.live_enabled ? 'Your assistant is live' : 'Ready when you are')}</h3><p className="kp-lead">{t(assistant.live_enabled ? 'Customers on listening channels get answers from this knowledge.' : 'Go live after a channel is listening and the knowledge is ready.')}</p></div><button type="button" className={`kw-button primary kp-launch ${assistant.live_enabled ? 'is-on' : ''}`} disabled={disabled || (!assistant.live_enabled && !readyToLaunch)} onClick={onToggle}><Radio size={14}/>{t(assistant.live_enabled ? 'Pause assistant' : 'Go live')}</button></header>
+    <ol className="kp-checklist">{[[readySources > 0, `${readySources} ${t('sources ready')}`], [connected > 0, connected ? `${connected} ${t('channels listening')}` : t('No channel is listening yet')], [assistant.live_enabled, t(assistant.live_enabled ? 'Assistant is answering' : 'Assistant is paused')]].map(([done, label]) => <li key={String(label)} className={done ? 'done' : ''}><i/>{label}</li>)}</ol>
     <div className={`kp-signal-bar ${assistant.live_enabled ? 'active' : ''}`}><span><i/>{t(assistant.live_enabled ? 'LIVE' : 'PAUSED')} · {activeConversations.length} {t('CONVERSATIONS')}</span><b>{connected} {t('CHANNELS ENABLED')}</b></div>
-    <form className="kp-customer-form" onSubmit={event => void sendCustomerMessage(event)}>
-      <label htmlFor="kp-live-channel">{t('Test customer channel')}</label>
-      <select id="kp-live-channel" value={selectedChannel} disabled={sending} onChange={event => { setChannel(event.target.value); messageId.current = null; }}>{enabledChannels.map(key => <option key={key} value={key}>{key}</option>)}</select>
-      <label htmlFor="kp-live-message">{t('Simulate a live customer')}</label>
-      <textarea id="kp-live-message" value={message} disabled={sending} onChange={event => { setMessage(event.target.value); messageId.current = null; }} required maxLength={10000} rows={3}/>
-      <small>{t('Sends a real customer message to your workspace inbox.')}</small>
-      <button type="submit" className="kw-button primary" disabled={disabled || sending || !assistant.live_enabled || !selectedChannel || !message.trim()}>{t(sending ? 'Sending…' : 'Send customer message')}</button>
-      {result && <p role="status">{result}</p>}{sendError && <p role="alert" className="kw-error-text">{sendError}</p>}
+    <form className="kp-customer-form kp-console" onSubmit={event => void sendCustomerMessage(event)}>
+      <div className="kp-console-head"><label htmlFor="kp-live-channel">{t('Talk to the assistant as a customer')}</label><select id="kp-live-channel" value={selectedChannel} disabled={sending || !enabledChannels.length} onChange={event => { setChannel(event.target.value); messageId.current = null; threadId.current = `knowledge-test-${crypto.randomUUID()}`; setTurns([]); }}>{enabledChannels.map(key => <option key={key} value={key}>{key}</option>)}{!enabledChannels.length && <option value="">{t('Choose a channel first')}</option>}</select></div>
+      <div className="kp-thread" aria-live="polite">
+        {!turns.length && !sending && <p className="kp-thread-empty">{t('Send a question. The reply is saved in your inbox.')}</p>}
+        {turns.map(turn => <p key={turn.id} className={turn.role}>{turn.text}</p>)}
+        {sending && <p className="assistant kp-typing" aria-label={t('Assistant is replying')}><i/><i/><i/></p>}
+      </div>
+      <div className="kp-composer">
+        <textarea id="kp-live-message" value={message} disabled={sending} placeholder={t('Ask something a customer would ask…')} onChange={event => { setMessage(event.target.value); messageId.current = null; }} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} maxLength={4000} rows={2}/>
+        <button type="submit" className="kw-button primary" disabled={disabled || sending || !assistant.live_enabled || !selectedChannel || !message.trim()}>{t(sending ? 'Replying…' : 'Send')}</button>
+      </div>
+      {sendError && <p role="alert" className="kw-error-text">{sendError}</p>}
     </form>
     <div className="kp-live-streams">
       {!activeConversations.length && <div className="kp-monitor-empty"><MessageSquare size={30}/><h4>{t('Your conversation monitor is ready')}</h4><p>{t('Customer conversations will appear here as they reach your workspace.')}</p></div>}
