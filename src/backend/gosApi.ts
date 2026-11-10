@@ -56,14 +56,15 @@ export const gosApi = {
   sources: (signal?: AbortSignal) => gosRequest<{ sources: GosSource[] }>('/ai/sources', { signal }),
   source: (sourceId: string, signal?: AbortSignal) => gosRequest<{ source: GosSource }>(`/ai/sources/${id(sourceId)}`, { signal }),
   createSource,
+  uploadSource: (input: GosSourceInput | FormData) => gosRequest<{ source: GosSource }>('/ai/sources', { method: 'POST', body: input }),
   training: (signal?: AbortSignal) => gosRequest<GosTraining & { training?: GosTraining }>('/ai/training', { signal }),
   channels: (signal?: AbortSignal) => gosRequest<{ channels: Record<string, boolean | { enabled: boolean; status?: string; external_id?: string | null }> | { channel: string; enabled: boolean; status?: string; external_id?: string | null }[] }>('/ai/channels', { signal }),
   updateChannel: (channel: string, enabled: boolean, credentials?: { external_id?: string; access_token?: string }) => gosRequest<unknown>(`/ai/channels/${id(channel)}`, { method: 'PUT', body: { enabled, ...credentials } }),
   deleteSource: (sourceId: string) => gosRequest(`/ai/sources/${id(sourceId)}`, { method: 'DELETE' }),
+  clearSources: () => gosRequest<{ deleted: number }>('/ai/sources', { method: 'DELETE', body: { confirm: true } }),
   assistant: (signal?: AbortSignal) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { signal }),
-  updateAssistant: (body: Partial<GosAssistant>) => body.live_enabled === true
-    ? meteredRequest<{ assistant: GosAssistant }>({ action: 'liveEnable', payload: { ...body, live_enabled: true } })
-    : gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
+  updateAssistant: (body: Partial<GosAssistant>) => gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
+  simulateCustomer: (body: InboxSimulationInput) => gosRequest<{ outcome: string; conversation: ApiRecord; inbound?: ApiRecord; reply: ApiRecord | null; action?: { type: string; label: string; detail?: string; lead_id?: string | null } | null }>('/inbox/messages', { method: 'POST', body }),
   playground: (signal?: AbortSignal) => gosRequest<{ tests: PlaygroundTest[] }>('/ai/playground', { signal }),
   ask: (question: string, context: PlaygroundContext = {}) => meteredRequest<{ test: PlaygroundTest; session_id?: string; source_id?: string }>({ action: 'playground', payload: { question, ...context } }),
   smartReply: (question: string) => meteredRequest<{ test: PlaygroundTest }>({ action: 'inboxSmartReply', payload: { question } }),

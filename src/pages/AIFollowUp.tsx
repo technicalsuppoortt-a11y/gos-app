@@ -9,6 +9,8 @@ import { useGosAI } from '../backend/useGosAI';
 import { useAgentConfiguration } from '../backend/useAgentConfiguration';
 import { GosPlayground } from './GosPlayground';
 import { KnowledgeWorkflow } from './KnowledgeWorkflow';
+import { api as channelApi, type Channel as LiveChannel, type MetaPage } from './flow-builder/api';
+import { metaConnectWindow } from './flow-builder/metaSdk';
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -277,6 +279,7 @@ const MenuSelect = ({
               ),
               width: placement.width,
               transform: placement.upward ? "translateY(-100%)" : undefined,
+              zIndex: 100010,
             }}
           >
             {localizeNode(options.map((option) => (
@@ -709,7 +712,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const api = useGosAI();
   const channelsOn: Record<string, boolean> = { ...api.assistant.channels, website: api.assistant.channels.webchat };
   const changeChannel = async (channel: string, enabled: boolean) => {
-    await api.updateAssistant({ channels: { ...api.assistant.channels, [channel === 'website' ? 'webchat' : channel]: enabled } });
+    return api.updateAssistant({ channels: { ...api.assistant.channels, [channel === 'website' ? 'webchat' : channel]: enabled } });
   };
   const [workflows, setWorkflows] = useCloudState<Workflow[]>(WORKFLOWS_KEY, []);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -774,10 +777,104 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         autoEscalation: true,
       }),
     );
+  const [channelPolicies, setChannelPolicies] = useCloudState<Record<string, string>>('gos.ai-followup.channel-policies.v1', {});
   const [channelPolicy, setChannelPolicy] = React.useState(
     "Require explicit opt-in",
   );
+  const [channelAccount, setChannelAccount] = React.useState<LiveChannel | null>(null);
+  const [channelAccountState, setChannelAccountState] = React.useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [channelAccountError, setChannelAccountError] = React.useState('');
+  const [channelBusy, setChannelBusy] = React.useState(false);
+  const [metaPages, setMetaPages] = React.useState<{ channel: 'messenger' | 'instagram'; pages: MetaPage[] } | null>(null);
   const [selectedChannel, setSelectedChannel] = React.useState("whatsapp");
+  const apiChannelId = (channel: string) => channel === 'website' ? 'webchat' : channel;
+  const metaTarget = (channel: string): 'whatsapp' | 'instagram' | 'messenger' | null =>
+    channel === 'whatsapp' || channel === 'instagram' || channel === 'messenger' ? channel : null;
+  React.useEffect(() => {
+    if (modal !== 'channel') return;
+    setChannelPolicy(channelPolicies[selectedChannel] || 'Require explicit opt-in');
+    let cancel = false;
+    setChannelAccount(null);
+    setChannelAccountError('');
+    setMetaPages(null);
+    setChannelAccountState('loading');
+    channelApi.channels().then(list => {
+      if (cancel) return;
+      setChannelAccount(list.find(item => item.channel === apiChannelId(selectedChannel)) ?? null);
+      setChannelAccountState('ready');
+    }).catch(error => {
+      if (cancel) return;
+      setChannelAccountError(error instanceof Error ? error.message : 'Could not load this channel.');
+      setChannelAccountState('error');
+    });
+    return () => { cancel = true; };
+  }, [modal, selectedChannel]);
+  const connectLiveChannel = async (target: 'whatsapp' | 'instagram' | 'messenger') => {
+    setChannelBusy(true);
+    setChannelAccountError('');
+    const popup = window.open('about:blank', 'meta-connect', 'width=640,height=760');
+    if (!popup) {
+      setChannelBusy(false);
+      setChannelAccountError('The browser blocked the Facebook window. Allow popups, then try again.');
+      return;
+    }
+    try {
+      const config = await channelApi.metaConfig();
+      if (!config.channels[target]) throw new Error('This channel is not available yet. Add the Meta app credentials on the API first.');
+      const claim = await metaConnectWindow(popup, await channelApi.metaLoginUrl(target));
+      const result = await channelApi.metaClaim(claim);
+      if (result.channel) {
+        setChannelAccount(result.channel);
+        await changeChannel(target, true);
+        tell('The Meta account is linked. Replies can use it now.');
+        return;
+      }
+      if (target === 'whatsapp') throw new Error('Meta finished without a WhatsApp number. Try connecting again.');
+      const pages = result.pages ?? [];
+      setMetaPages({ channel: target, pages: target === 'instagram' ? pages.filter(page => page.instagram) : pages });
+    } catch (error) {
+      popup.close();
+      setChannelAccountError(error instanceof Error ? error.message : 'Meta did not finish connecting.');
+    } finally {
+      setChannelBusy(false);
+    }
+  };
+  const pickMetaPage = async (page: MetaPage) => {
+    if (!metaPages) return;
+    setChannelBusy(true);
+    setChannelAccountError('');
+    try {
+      const linked = await channelApi.metaConnect(metaPages.channel, page.id);
+      setChannelAccount(linked);
+      setMetaPages(null);
+      await changeChannel(metaPages.channel, true);
+      tell('The Meta account is linked. Replies can use it now.');
+    } catch (error) {
+      setChannelAccountError(error instanceof Error ? error.message : 'Could not connect that page.');
+    } finally {
+      setChannelBusy(false);
+    }
+  };
+  const setReplyStatus = async (listening: boolean) => {
+    const id = apiChannelId(selectedChannel);
+    const linked = id === 'webchat' || Boolean(channelAccount?.external_id);
+    if (listening && !linked) {
+      setChannelAccountError('Connect the account before turning replies on.');
+      return;
+    }
+    setChannelBusy(true);
+    setChannelAccountError('');
+    try {
+      if (listening) await gosApi.updateChannel(id, true);
+      const saved = await changeChannel(selectedChannel, listening);
+      if (saved === false) return;
+      setChannelAccount(current => current ? { ...current, enabled: listening, status: listening ? 'connected' : 'idle' } : current);
+    } catch (error) {
+      setChannelAccountError(error instanceof Error ? error.message : 'Could not update this channel.');
+    } finally {
+      setChannelBusy(false);
+    }
+  };
   const [messageText, setMessageText] = React.useState("");
   const [generating, setGenerating] = React.useState(false);
   const generation = React.useRef(false);
@@ -863,6 +960,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
             ? "instagram"
             : null;
   const queueFollowUpMessage = async (lead: CanonicalLead, requested: string) => {
+    const policy = channelPolicies[requested] || 'Require explicit opt-in';
+    if (policy === 'Disabled') { showToast.error('This channel is turned off by its consent policy.'); return false; }
+    if (policy === 'Require explicit opt-in' && !consentFor(lead, requested)) { showToast.error('This contact has not opted in on this channel.'); return false; }
     const thread = conversationRecords.find(item => item.leadId === lead.id && item.channel === requested);
     if (!thread) { showToast.error('No conversation exists for this contact and channel.'); return false; }
     try { await callBackend('queueMessage', { conversationId: (thread as FollowUpConversation & { id: string }).id, text: messageText, requestId: crypto.randomUUID() }); showToast.info('Message queued for delivery'); return true; }
@@ -1594,7 +1694,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       updateAssistant={api.updateAssistant}
       assistantName={assistantProfile.name} conversations={metrics.conversations}
       onTest={() => setModal('test')}
-      onConnect={() => { setSelectedChannel('whatsapp'); setModal('channel'); }}
+      onConnect={(channel) => { setSelectedChannel(channel || 'whatsapp'); setModal('channel'); }}
     />
   );
   const renderTemplatesTab = () => (
@@ -2703,16 +2803,47 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           ))}
           {localizeNode(modal === "channel" && (
             <div className="af-modal-form">
-              <p className="af-modal-copy">{translateText("These preferences control automation. Authorize your messaging accounts in Settings → Integrations.")}</p>
-              <label>{translateText("Channel status")}<MenuSelect
-                  value={channelsOn[selectedChannel] ? "Connected" : "Paused"}
-                  onChange={(value) => void changeChannel(selectedChannel, value === "Connected")}
-                  options={["Connected", "Paused"].map((item) => ({
-                    value: item,
-                    label: item,
-                  }))}
-                />
-              </label>
+              <p className="af-modal-copy">{translateText(channelAccount?.external_id
+                ? `Linked account: ${channelAccount.name || channelAccount.external_id}. Pausing keeps this account connected.`
+                : apiChannelId(selectedChannel) === 'webchat'
+                  ? 'Web chat is part of this workspace. Turn replies on when you want the assistant to answer on your site.'
+                  : metaTarget(selectedChannel)
+                    ? 'This channel is not linked to a Meta account. Connect it before replies can be sent or received.'
+                    : 'Facebook messages use a linked Messenger page.')}</p>
+              {channelAccountState === 'loading' && <p className="af-modal-copy">{translateText('Checking the live account…')}</p>}
+              {channelAccountError && <p className="af-channel-error" role="alert">{channelAccountError}</p>}
+              {(apiChannelId(selectedChannel) === 'webchat' || channelAccount?.external_id) && (
+                <label>{translateText("Reply status")}<MenuSelect
+                    value={channelsOn[selectedChannel] ? "Listening" : "Paused"}
+                    onChange={(value) => void setReplyStatus(value === "Listening")}
+                    options={["Listening", "Paused"].map((item) => ({
+                      value: item,
+                      label: item,
+                    }))}
+                  />
+                </label>
+              )}
+              {metaTarget(selectedChannel) && !channelAccount?.external_id && channelAccountState === 'ready' && (
+                <button type="button" className="af-button-primary" disabled={channelBusy} onClick={() => void connectLiveChannel(metaTarget(selectedChannel)!)}>
+                  {channelBusy ? translateText('Opening Meta…') : translateText('Connect with Meta')}
+                </button>
+              )}
+              {selectedChannel === 'facebook' && (
+                <button type="button" className="af-button-secondary" disabled={channelBusy} onClick={() => void connectLiveChannel('messenger')}>
+                  {translateText('Connect Messenger')}
+                </button>
+              )}
+              {metaPages && (
+                <div className="af-modal-copy">
+                  <p>{translateText(metaPages.channel === 'instagram' ? 'Choose an Instagram account' : 'Choose a page')}</p>
+                  {metaPages.pages.length === 0 && <p>{translateText('No pages were returned. Allow the page in the Meta window, then try again.')}</p>}
+                  {metaPages.pages.map(page => (
+                    <button key={page.id} type="button" className="af-button-secondary" disabled={channelBusy} onClick={() => void pickMetaPage(page)}>
+                      {metaPages.channel === 'instagram' ? `@${page.instagram?.username} · ${page.name}` : page.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <label>{translateText("Consent policy")}<MenuSelect
                   value={channelPolicy}
                   onChange={setChannelPolicy}
@@ -2723,9 +2854,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   ].map((item) => ({ value: item, label: item }))}
                 />
               </label>
+              <p className="af-modal-copy">{translateText('Require explicit opt-in blocks a send until the contact has consent. Transactional only allows it. Disabled blocks this channel.')}</p>
               <button
                 className="af-button-primary"
+                disabled={channelBusy}
                 onClick={() => {
+                  setChannelPolicies(current => ({ ...current, [selectedChannel]: channelPolicy }));
                   setModal("");
                   tell("Channel preferences saved.");
                 }}

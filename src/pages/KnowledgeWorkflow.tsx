@@ -16,7 +16,7 @@ type Props = {
   sources: GosSource[]; loading: boolean; error: string; refresh: () => void;
   assistant: GosAssistant; saving: boolean;
   updateAssistant: (changes: Partial<GosAssistant>) => Promise<boolean>;
-  onTest: () => void; onConnect: () => void;
+  onTest: () => void; onConnect: (channel?: string) => void;
   assistantName?: string; conversations?: readonly Conversation[];
 };
 type PendingSource = { id: string; name: string; file?: File; url?: string; content?: string; kind?: 'text' | 'instructions'; error?: string };
@@ -26,8 +26,8 @@ const categoryOf = (name: string) => /^\[([^\]]+)\] /.exec(name)?.[1] || 'Genera
 const displayName = (name: string) => name.replace(/^\[[^\]]+\] /, '');
 const isPending = (source: GosSource) => ['queued', 'processing'].includes(source.status);
 
-/** Source creation is additive. Categories are persisted in the source name so
- * they survive reloads without claiming unsupported vector/model isolation. */
+/** Categories are stored in the source name. New training replaces the workspace
+ * library; update training adds sources to the sources already indexed. */
 export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant, saving, updateAssistant, onTest, onConnect, assistantName = 'Your AI', conversations = [] }: Props) {
   const [step, setStep] = useState(0);
   const [demo, setDemo] = useState(false);
@@ -44,7 +44,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState('');
   const [choice, setChoice] = useState(false);
-  const [mode, setMode] = useState<'new' | 'append'>('append');
+  const [mode, setMode] = useState<'replace' | 'append'>('append');
+  const [confirmReplace, setConfirmReplace] = useState(false);
   const [category, setCategory] = useState('');
   const [target, setTarget] = useState('General');
   const [filter, setFilter] = useState('All categories');
@@ -60,7 +61,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   const choiceTrigger = useRef<HTMLButtonElement>(null);
   const mutation = useRef(false);
   const categories = Array.from(new Set(['General', ...sources.map(s => categoryOf(s.name))]));
-  const selectedCategory = mode === 'new' ? category.trim() || 'General' : target;
+  const selectedCategory = (mode === 'replace' ? category.trim() : target) || 'General';
+  const replacingLibrary = mode === 'replace' && sources.length > 0;
   const optimisticSources: GosSource[] = busy ? pending.map(item => ({ id: item.id, name: selectedCategory === 'General' ? item.name : `[${selectedCategory}] ${item.name}`, type: item.url ? 'url' : item.file ? 'file' : (item.kind || 'text'), status: 'processing', progress_percent: Math.max(1, smoothProgress) })) : [];
   const liveBatch = batch.map(source => sources.find(s => s.id === source.id) || source);
   const baseTrainingSources = liveBatch.length || busy ? [...liveBatch, ...optimisticSources] : sources;
@@ -156,7 +158,8 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
 
   async function updateChannel(channel: string, enabled: boolean) {
     try {
-      await gosApi.updateChannel(channel, enabled);
+      if (enabled) await gosApi.updateChannel(channel, true);
+      else await gosApi.updateAssistant({ channels: { [channel]: false } });
       setChannelFlags(previous => ({ ...(previous ?? assistant.channels), [channel]: enabled }));
       setCycleError('');
     } catch (e) { setCycleError((e as Error).message); }
@@ -165,6 +168,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
   useEffect(() => {
     if (choice && dialog.current && !dialog.current.open) dialog.current.showModal();
     if (!choice && dialog.current?.open) dialog.current.close();
+    if (!choice) setConfirmReplace(false);
   }, [choice]);
 
   function addFiles(files: FileList | File[]) {
@@ -197,11 +201,23 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
 
   async function train() {
     if (mutation.current || loading || error || !pending.length) return;
-    const selected = mode === 'new' ? category.trim() : target;
+    const selected = (mode === 'replace' ? category.trim() : target) || 'General';
     if (!selected || /[\[\]\r\n]/.test(selected) || selected.length > 60) { showToast.error(t('Enter a category name of up to 60 characters without brackets.')); return; }
-    if (mode === 'new' && categories.some(c => c.toLowerCase() === selected.toLowerCase())) { showToast.error(t('This category already exists. Choose append or use a new name.')); return; }
+    if (mode === 'replace' && sources.length > 0 && !confirmReplace) { showToast.error(t('Confirm that the current knowledge will be deleted.')); return; }
     mutation.current = true; setBusy(true); setChoice(false); setStep(1); setSmoothProgress(0);
-    setBatch(previous => previous.filter(s => categoryOf(s.name) === selected));
+    if (mode === 'replace') {
+      try {
+        await gosApi.clearSources();
+        setBatch([]);
+        refresh();
+      } catch (e) {
+        setBusy(false); mutation.current = false; setChoice(true);
+        showToast.error((e as Error).message || t('The current knowledge could not be removed.'));
+        return;
+      }
+    } else {
+      setBatch(previous => previous.filter(s => categoryOf(s.name) === selected));
+    }
     const failures: PendingSource[] = [];
     const created: GosSource[] = [];
     // Upload sequentially so individual failures can be retried without duplicating
@@ -214,7 +230,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
           body = new FormData(); body.append('name', name); body.append('type', 'file'); body.append('file', item.file);
         } else body = item.url ? { name, type: 'url', url: item.url } : { name, type: 'text', content: item.content || '' };
         const uploadSlow = setTimeout(() => setAnimateProgress(true), 40);
-        const result = await gosApi.createSource(body).finally(() => clearTimeout(uploadSlow));
+        const result = await gosApi.uploadSource(body).finally(() => clearTimeout(uploadSlow));
         if (!result.source?.id) throw new Error(t('The server did not confirm this source. Refresh sources before retrying.'));
         created.push(result.source);
         setBatch(previous => [...previous.filter(s => s.id !== result.source.id), result.source]);
@@ -284,7 +300,7 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
       </div>
       <form className="kw-url-form" onSubmit={addUrl}><Globe2 size={18}/><label className="sr-only" htmlFor="kw-url">{t('Website URL')}</label><input id="kw-url" type="text" inputMode="url" placeholder="https://your-website.com" value={url} onChange={e => setUrl(e.target.value)} disabled={busy} required/><button type="submit" className="kw-button secondary" disabled={busy || !url.trim()}><Plus size={14}/>{t('Add website')}</button></form>
       <p className="kw-helper">{t('Website crawling and document extraction depend on server support. Unsupported sources show an error and can be retried.')}</p>
-      <div className="kw-upload-footer"><span><Layers size={14}/>{t('Existing knowledge stays intact with every upload.')}</span><button className="kw-text-button" type="button" onClick={() => setTextOpen(value => !value)} aria-expanded={textOpen} aria-controls="kw-text-form">{t('Add text or instructions')}<ArrowRight size={13}/></button></div>
+      <div className="kw-upload-footer"><span><Layers size={14}/>{t('Choose add or replace before training starts.')}</span><button className="kw-text-button" type="button" onClick={() => setTextOpen(value => !value)} aria-expanded={textOpen} aria-controls="kw-text-form">{t('Add text or instructions')}<ArrowRight size={13}/></button></div>
       {textOpen && <form id="kw-text-form" className="kw-text-form" onSubmit={e => {
         e.preventDefault();
         if (busy || !textContent.trim()) return;
@@ -345,6 +361,6 @@ export function KnowledgeWorkflow({ sources, loading, error, refresh, assistant,
 
     </div>
 
-    {choice && createPortal(<dialog ref={dialog} className="kw-dialog text-slate-900 dark:text-slate-100" onCancel={() => { setChoice(false); choiceTrigger.current?.focus(); }} aria-labelledby="kw-choice-title"><form onSubmit={e => { e.preventDefault(); void train(); }}><div className="kw-dialog-heading"><span className="kw-upload-icon"><Sparkles size={24}/></span><button type="button" className="kw-delete" aria-label={t('Close training options')} onClick={() => setChoice(false)}><X size={20}/></button></div><span className="kw-eyebrow">{pending.length} {t('SOURCES SELECTED')}</span><h2 id="kw-choice-title">{t('How should your AI learn?')}</h2><p className="kw-muted">{t('Choose a new category or build on the knowledge you already have.')}</p><div className="kw-mode-options" role="radiogroup" aria-label={t('Training mode')}><label className={`kw-mode ${mode === 'new' ? 'selected' : ''}`}><input type="radio" name="training-mode" value="new" checked={mode === 'new'} onChange={() => setMode('new')}/><Plus size={21}/><span><b>{t('Train on Something New')}</b><small lang="ar" dir="rtl">تدريب على حاجة جديدة</small><p>{t('Organize these sources in a distinct, named category.')}</p></span></label><label className={`kw-mode ${mode === 'append' ? 'selected' : ''}`}><input type="radio" name="training-mode" value="append" checked={mode === 'append'} onChange={() => setMode('append')}/><Layers size={21}/><span><b>{t('Enhance / Append to Existing Data')}</b><small lang="ar" dir="rtl">تعزيز أو زيادة داتا على القديم</small><p>{t('Add sources to an existing category. Previous sources are preserved.')}</p></span></label></div><label className="kw-field-label" htmlFor="kw-category">{t(mode === 'new' ? 'New category name' : 'Append to category')}</label>{mode === 'new' ? <input id="kw-category" className="kw-category-input" value={category} onChange={e => setCategory(e.target.value)} maxLength={60} placeholder={t('e.g. Product launch')} required/> : <Select id="kw-category" label="Append to category" value={target} onChange={setTarget} options={categories}/>}<p className="kw-helper">{t('Categories organize sources in the shared assistant knowledge base.')}</p><div className="kw-dialog-actions"><button type="button" className="kw-button secondary" onClick={() => setChoice(false)}>{t('Review sources')}</button><button type="submit" className="kw-button primary" disabled={busy || loading || !!error || !pending.length || (mode === 'new' && !category.trim())}>{t('Start training')}<ArrowRight size={14}/></button></div></form></dialog>, document.body)}
+    {choice && createPortal(<dialog ref={dialog} className="kw-dialog text-slate-900 dark:text-slate-100" onCancel={() => { setChoice(false); choiceTrigger.current?.focus(); }} aria-labelledby="kw-choice-title"><form onSubmit={e => { e.preventDefault(); void train(); }}><div className="kw-dialog-heading"><span className="kw-upload-icon"><Sparkles size={24}/></span><button type="button" className="kw-delete" aria-label={t('Close training options')} onClick={() => setChoice(false)}><X size={20}/></button></div><span className="kw-eyebrow">{pending.length} {t('SOURCES SELECTED')}</span><h2 id="kw-choice-title">{t('How should your AI learn?')}</h2><p className="kw-muted">{t('Add these sources to the current knowledge, or replace that knowledge with a new training.')}</p><div className="kw-mode-options" role="radiogroup" aria-label={t('Training mode')}><label className={`kw-mode ${mode === 'replace' ? 'selected' : ''}`}><input type="radio" name="training-mode" value="replace" checked={mode === 'replace'} onChange={() => setMode('replace')}/><Plus size={21}/><span><b>{t('New Training')}</b><small lang="ar" dir="rtl">تدريب جديد</small><p>{t('Deletes every current source, then trains only on what you upload now.')}</p></span></label><label className={`kw-mode ${mode === 'append' ? 'selected' : ''}`}><input type="radio" name="training-mode" value="append" checked={mode === 'append'} onChange={() => { setMode('append'); setConfirmReplace(false); }}/><Layers size={21}/><span><b>{t('Update Existing Training')}</b><small lang="ar" dir="rtl">تحديث التدريب الحالي</small><p>{t('Adds these sources on top of the knowledge you already have.')}</p></span></label></div>{mode === 'replace' && <div className="kw-replace-warning" role="alert"><b>{t('The current knowledge will be deleted.')}</b><p>{sources.length ? `${sources.length} ${t('existing sources will be removed before training starts. This cannot be undone.')}` : t('There is no existing knowledge to remove. Training will use only these sources.')}</p>{replacingLibrary && <label><input type="checkbox" checked={confirmReplace} onChange={e => setConfirmReplace(e.target.checked)}/>{t('I understand the current knowledge will be deleted.')}</label>}</div>}<label className="kw-field-label" htmlFor="kw-category">{t(mode === 'replace' ? 'Category for the new knowledge' : 'Add to category')}</label>{mode === 'replace' ? <input id="kw-category" className="kw-category-input" value={category} onChange={e => setCategory(e.target.value)} maxLength={60} placeholder={t('e.g. Product launch')}/> : <Select id="kw-category" label="Add to category" value={target} onChange={setTarget} options={categories}/>}<p className="kw-helper">{t('The category is a label on the new sources. It does not keep a separate knowledge base.')}</p><div className="kw-dialog-actions"><button type="button" className="kw-button secondary" onClick={() => setChoice(false)}>{t('Review sources')}</button><button type="submit" className={`kw-button ${mode === 'replace' ? 'danger' : 'primary'}`} disabled={busy || loading || !!error || !pending.length || (replacingLibrary && !confirmReplace)}>{t(mode === 'replace' ? 'Delete existing knowledge and train' : 'Add to existing knowledge')}<ArrowRight size={14}/></button></div></form></dialog>, document.body)}
   </section>;
 }

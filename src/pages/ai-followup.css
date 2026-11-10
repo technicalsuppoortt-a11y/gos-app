@@ -1807,3 +1807,14 @@ html.dark .af-empty-bot-icon {
   z-index: 100000 !important;
   box-shadow: 0 25px 80px rgba(15, 23, 42, 0.45) !important;
 }
+
+.af-select-popover {
+  z-index: 100010 !important;
+}
+
+.af-channel-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.45;
+}
