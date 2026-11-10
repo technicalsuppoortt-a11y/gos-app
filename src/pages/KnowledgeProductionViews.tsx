@@ -42,7 +42,7 @@ function readChannelLinks(payload: unknown): ChannelLink[] {
   if (!payload || typeof payload !== 'object') return [];
   return Object.entries(payload).map(([channel, value]) => {
     if (typeof value === 'boolean') return { channel, enabled: value };
-    const row = value && typeof value === 'object' ? value as ChannelLink : {};
+    const row: Partial<ChannelLink> = value && typeof value === 'object' ? value as Partial<ChannelLink> : {};
     return { channel, status: row.status, enabled: Boolean(row.enabled), external_id: row.external_id ?? null, name: row.name ?? null };
   });
 }
