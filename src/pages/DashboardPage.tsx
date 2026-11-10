@@ -28,7 +28,7 @@ const BookingTemplates = React.lazy(() => retryImport(() => import('./booking/Bo
 const TemplatesWorkspace = React.lazy(() => retryImport(() => import('./TemplatesWorkspace')).then(module => ({ default: module.TemplatesWorkspace })));
 const Analytics = React.lazy(() => retryImport(() => import('./Analytics')).then(module => ({ default: module.Analytics })));
 
-type PageKey='home'|'copilot'|'funnels'|'crm'|'contacts'|'inbox'|'follow-up'|'booking'|'products'|'analytics'|'knowledge';
+type PageKey='home'|'copilot'|'funnels'|'crm'|'contacts'|'inbox'|'follow-up'|'automation'|'booking'|'products'|'analytics'|'knowledge';
 function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{eyebrow?:string;title:string;description?:string;action?:string;actionIcon?:React.ElementType}){
   useUILanguage();return <div className="page-heading"><div>{localizeNode(eyebrow&&<div className="eyebrow">{localizeNode(eyebrow)}</div>)}<h1>{localizeNode(title)}</h1>{localizeNode(description&&<p>{localizeNode(description)}</p>)}</div>{localizeNode(action&&<button className="button-primary"><Icon size={16}/>{localizeNode(action)}</button>)}</div>}
 function Pill({children,tone='neutral'}:{children:React.ReactNode;tone?:string}){
@@ -57,6 +57,7 @@ const DashboardContent:React.FC<{page:PageKey}>=({page})=>{
  case 'contacts':return <CRMLeads notify={notify} isContactsPage/>;
  case 'inbox':return <Inbox selected={selected} activeChannel={activeChannel} setActiveChannel={setActiveChannel} activeConversation={activeConversation} setActiveConversation={setActiveConversation} aiMode={aiMode} setAiMode={setAiMode} sent={sent} setSent={setSent}/>;
  case 'follow-up':return <AIFollowUp notify={notify}/>;
+ case 'automation':return <AIFollowUp notify={notify} section="automation"/>;
  case 'booking':return <BookingCalendar createRequested={showModal} clearCreateRequest={()=>setShowModal(false)} notify={notify}/>;
  case 'funnels':return <FunnelBuilder/>;
  case 'products':return <ProductsPayments showModal={showModal} setShowModal={setShowModal} notify={notify}/>;

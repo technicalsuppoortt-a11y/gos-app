@@ -143,6 +143,7 @@ export const router = createBrowserRouter([
       { path: 'contacts/opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
       { path: 'crm-leads/contacts', element: <Navigate to="/dashboard/contacts" replace/> },
       { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
+      { path: 'automation', element: <Suspended><DashboardPage page="automation"/></Suspended> },
       { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'ai-followup', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
       { path: 'booking/new', element: <Suspended><BookingEditorPage/></Suspended> },
