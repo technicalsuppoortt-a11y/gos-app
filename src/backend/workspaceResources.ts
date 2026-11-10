@@ -3,7 +3,7 @@
  */
 export function workspaceResources(pathname: string, allowed: readonly string[]): string[] {
   if (/^\/(?:dashboard\/)?(crm|contacts)(?:\/(?:pipeline|contacts|activities|tasks|overview|templates))?\/?$/.test(pathname)) {
-    const needed = new Set(['workspaceState', 'members', 'leads', 'pipelines', 'contacts', 'userTemplates']);
+    const needed = new Set(['workspaceState', 'members', 'leads', 'pipelines', 'contacts', 'userTemplates', 'products', 'orders', 'transactions']);
     return allowed.filter(resource => needed.has(resource));
   }
   return [...allowed];

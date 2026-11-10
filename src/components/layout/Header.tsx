@@ -16,6 +16,7 @@ import { NotificationCenter } from './NotificationCenter';
 import './product-header.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
+import { WalletBadge } from './WalletBadge';
 import { DemoAccountControl } from './DemoAccountControl';
 import { isLive, useSubscription } from '../../backend/billing';
 import { canReturnToLaunchBrandWorkspace, returnToLaunchBrandWorkspace } from '../../branding/launchBrandPreview';
@@ -51,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const workspaceBackLabel = ar ? 'الرجوع للمساحة' : 'Back to workspace';
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const role = useSelector((state: RootState) => state.auth.role);
 
   const agency = currentUser?.accountType === 'agency';
   const subOwnerId = currentUser?.ownerId || currentUser?.id || null;
@@ -252,7 +254,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       </button>
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
-      <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/></div>
+      <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
       {localizeNode(
         isTeamMember && ownerDisplayName && (
           <div
@@ -290,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           </div>
         ),
       )}
-      <button type="button" onClick={() => navigate(agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans')} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
+      <button type="button" onClick={() => navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans'))} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef}>

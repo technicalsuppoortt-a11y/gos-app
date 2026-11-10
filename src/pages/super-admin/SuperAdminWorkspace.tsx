@@ -286,7 +286,7 @@ function Heading({ title, description, children, platform }: PropsWithChildren<{
   );
 }
 
-const displayDate = (date: Date | null, timeZone?: string) => date ? date.toLocaleDateString(undefined, { timeZone }) : '—';
+const displayDate = (date: Date | null, timeZone?: string) => date ? date.toLocaleDateString('en-US', { timeZone }) : '—';
 const teamLabel: Record<PlatformTeamRole, string> = { SUPER_ADMIN: 'Superadmin', PLATFORM_SUPPORT: 'Support', PLATFORM_FINANCE: 'Finance' };
 
 function Person({ account }: { account: PlatformAccount }) {
@@ -904,7 +904,7 @@ function Growth({ payments, months }: { payments: PlatformPayment[]; months: num
     const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - months + i + 1, 1));
     const key = date.toISOString().slice(0, 7);
     const value = payments.filter(row => row.currency === currency && row.date?.toISOString().startsWith(key)).reduce((sum, row) => sum + (row.amount ?? 0), 0);
-    return { key, label: date.toLocaleDateString(undefined, { month: 'short', timeZone: 'UTC' }), value };
+    return { key, label: date.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }), value };
   });
   const max = Math.max(1, ...periods.map(row => row.value));
   return <section className="saw-panel"><div className="saw-section-head"><div><h2>{t('Revenue growth')}</h2><p>{t('Manually approved platform sales by month')}</p></div>
@@ -960,11 +960,11 @@ function Analytics() {
   return <>
     <Heading title="Usage & Revenue" description="Track recorded credit consumption and billing activity."/>
     <LiveContent sources={[payments, usage]}>
-      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString()} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue, formatPrice)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/></div>
+      <div className="saw-stats"><Stat label="Credits consumed" value={credits.toLocaleString('en-US')} note="Recorded credit ledger usage"/><Stat label="Platform revenue" value={totals(revenue, formatPrice)} note="Manually approved plans and add-ons"/><Stat label="Active transactions" value={payments.data.filter(row => row.status === 'Pending' || row.status === 'Unverified').length} note="Awaiting payment or review"/></div>
       <Period months={months} setMonths={setMonths}/>
       <div className="saw-two-column"><Growth payments={revenue} months={months}/><section className="saw-panel"><h2>{t('Resource consumption')}</h2><p>{t('Credits consumed by activity')}</p>
         {!byService.size && <p className="saw-empty">{t('No credit usage recorded.')}</p>}
-        {[...byService].sort(([, a], [, b]) => b - a).slice(0, 8).map(([service, count]) => <div className="saw-adoption" key={service}><div><span>{service}</span><b>{count.toLocaleString()}</b></div><progress aria-label={service} max={Math.max(1, credits)} value={count}/></div>)}
+        {[...byService].sort(([, a], [, b]) => b - a).slice(0, 8).map(([service, count]) => <div className="saw-adoption" key={service}><div><span>{service}</span><b dir="ltr">{count.toLocaleString('en-US')}</b></div><progress aria-label={service} max={Math.max(1, credits)} value={count}/></div>)}
       </section></div>
     </LiveContent>
   </>;

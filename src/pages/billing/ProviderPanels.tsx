@@ -4,12 +4,12 @@ import { createPortal } from 'react-dom';
 import { 
   ArrowDownLeft, ArrowUpRight, Check, Coins, Eye, FileText, Gem, History, 
   Inbox, Package, RefreshCw, Search, SlidersHorizontal, Users, X, Download,
-  ExternalLink, AlertCircle, Copy as CopyIcon, Info, CheckCheck, Maximize2, Upload
+  ExternalLink, AlertCircle, Copy as CopyIcon, Info, CheckCheck, Maximize2, Upload, Wallet, Zap
 } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../backend/firebase';
-import { billing, effectiveStatus, useLedger, type BillingPlan, type BillingRequest, type BillingSubscription, type BillingWallet, type LedgerEntry } from '../../backend/billing';
-import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, downloadCsv, initials, useAction, useCopy, type Copy } from './ui';
+import { billing, effectiveStatus, PLATFORM, useBillingIdentity, useLedger, useProviderCommunicationWallets, WALLET_CURRENCY, type BillingPlan, type BillingRequest, type BillingSubscription, type BillingWallet, type LedgerEntry } from '../../backend/billing';
+import { Empty, Modal, Spinner, StatusPill, Tabs, Toggle, billingLabel, downloadCsv, initials, useAction, useCopy, type Copy } from './ui';
 
 const typeLabel = (request: BillingRequest, c: Copy) => request.type === 'wallet_topup' ? c.t('Wallet top-up', 'شحن المحفظة') : request.type === 'addon' ? c.t('Add-on', 'إضافة') : request.type === 'renewal' ? c.t('Renewal', 'تجديد') : c.t('New plan', 'باقة جديدة');
 
@@ -982,25 +982,71 @@ export function RequestsPanel({ requests, mode, title }: { requests: BillingRequ
 export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, title }: { subscribers: BillingSubscription[]; wallets: BillingWallet[]; plans: BillingPlan[]; isPlatform: boolean; title: string }) {
   const c = useCopy();
   const { busy, run } = useAction();
+  const identity = useBillingIdentity();
+  const { data: commWallets } = useProviderCommunicationWallets(isPlatform ? PLATFORM : identity.uid);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
-  const [dialog, setDialog] = useState<{ type: 'assign' | 'credits' | 'ledger'; sub: BillingSubscription } | null>(null);
+  const [dialog, setDialog] = useState<{ type: 'assign' | 'credits' | 'ledger' | 'automation'; sub: BillingSubscription } | null>(null);
   const [planId, setPlanId] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [bucket, setBucket] = useState<'ai' | 'email'>('ai');
+  const [autoRenewVal, setAutoRenewVal] = useState(false);
+  const [autoRechargeVal, setAutoRechargeVal] = useState(false);
+  const [belowCreditsVal, setBelowCreditsVal] = useState('100');
+  const [addCreditsVal, setAddCreditsVal] = useState('500');
+  const [walletDelta, setWalletDelta] = useState('');
+  const [walletReason, setWalletReason] = useState('');
+
   const balance = (id: string, kind: 'ai' | 'email' = 'ai') => wallets.find(wallet => wallet.id === id)?.[kind === 'email' ? 'emailCredits' : 'balance'] ?? 0;
+  const cashWalletOf = (id: string) => commWallets.find(item => item.id === id);
+  const openAutomation = (sub: BillingSubscription) => {
+    const cw = cashWalletOf(sub.id);
+    setAutoRenewVal(Boolean(sub.autoRenew ?? cw?.autoRenew));
+    setAutoRechargeVal(Boolean(cw?.creditAutoRecharge?.enabled || cw?.autoRecharge?.enabled));
+    setBelowCreditsVal(String(cw?.creditAutoRecharge?.belowCredits ?? 100));
+    setAddCreditsVal(String(cw?.creditAutoRecharge?.addCredits ?? 500));
+    setWalletDelta('');
+    setWalletReason('');
+    setDialog({ type: 'automation', sub });
+  };
   const rows = useMemo(() => subscribers
     .filter(sub => status === 'all' || effectiveStatus(sub) === status)
     .filter(sub => `${sub.subscriberName} ${sub.subscriberEmail} ${sub.plan?.name?.en}`.toLowerCase().includes(search.trim().toLowerCase()))
     .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')), [subscribers, status, search]);
   const assignable = plans.filter(plan => plan.kind !== 'trial');
-  const close = () => { setDialog(null); setPlanId(''); setAmount(''); setReason(''); setBucket('ai'); };
+  const close = () => { setDialog(null); setPlanId(''); setAmount(''); setReason(''); setBucket('ai'); setWalletDelta(''); setWalletReason(''); };
 
   const submit = () => {
     if (!dialog) return;
     if (dialog.type === 'assign') return run('dialog', () => billing('assignPlan', { subscriberId: dialog.sub.id, planId }), c.t('Plan assigned.', 'تم تعيين الباقة.')).then(ok => ok && close());
     if (dialog.type === 'credits') return run('dialog', () => billing(isPlatform ? 'adjustCredits' : 'transferCredits', { subscriberId: dialog.sub.id, amount: Number(amount), reason, bucket }), isPlatform ? c.t('Credits adjusted.', 'تم تعديل الرصيد.') : c.t('Credits transferred from your wallet.', 'تم تحويل الرصيد من محفظتك.')).then(ok => ok && close());
+    if (dialog.type === 'automation') {
+      return run('dialog', async () => {
+        await billing('saveWalletSettings', {
+          subscriberId: dialog.sub.id,
+          autoRenew: autoRenewVal,
+          autoRecharge: {
+            enabled: autoRechargeVal,
+            below: '10',
+            amount: '25',
+            method: 'wallet',
+          },
+          creditAutoRecharge: {
+            enabled: autoRechargeVal,
+            belowCredits: Math.max(10, Number(belowCreditsVal) || 100),
+            addCredits: Math.max(50, Number(addCreditsVal) || 500),
+          },
+        });
+        if (isPlatform && Number(walletDelta) !== 0 && walletReason.trim()) {
+          await billing('adjustWallet', {
+            subscriberId: dialog.sub.id,
+            amount: Number(walletDelta),
+            reason: walletReason.trim(),
+          });
+        }
+      }, c.t('Wallet & auto-renewal settings updated.', 'تم تحديث إعدادات المحفظة والتجديد التلقائي.')).then(ok => ok && close());
+    }
   };
 
   return (
@@ -1028,9 +1074,16 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
                   <td><b>{c.pick(sub.plan?.name)}</b><div style={{ color: 'var(--bl-muted)', fontSize: 11.5 }}>{sub.plan ? billingLabel(sub.plan, c) : ''}{sub.extraSeats ? ` · +${c.num(sub.extraSeats)} ${c.t('seats', 'مقاعد')}` : ''}</div></td>
                   <td><StatusPill status={effectiveStatus(sub)} c={c} />{sub.creditBlocked && <div><span className="bl-pill amber plain" style={{ marginBlockStart: 4 }}>{c.t('Credits blocked', 'الرصيد متوقف')}</span></div>}</td>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--bl-muted)' }}>{sub.currentPeriodEnd ? c.date(sub.currentPeriodEnd) : c.t('Never (lifetime)', 'لا ينتهي')}</td>
-                  <td className="bl-credits">{c.num(balance(sub.id))} {c.t('AI', 'ذكاء اصطناعي')} · {c.num(balance(sub.id, 'email'))} {c.t('email', 'بريد')}</td>
+                  <td className="bl-credits">
+                    <div>{c.num(balance(sub.id))} {c.t('AI', 'ذكاء اصطناعي')} · {c.num(balance(sub.id, 'email'))} {c.t('email', 'بريد')}</div>
+                    <small style={{ color: 'var(--bl-muted)', fontSize: 11 }}>
+                      {c.t('Wallet:', 'المحفظة:')} {c.money(Math.max(0, (cashWalletOf(sub.id)?.balance ?? 0) - (cashWalletOf(sub.id)?.held ?? 0)), cashWalletOf(sub.id)?.currency || WALLET_CURRENCY)}
+                      {(sub.autoRenew ?? cashWalletOf(sub.id)?.autoRenew) ? ` · ${c.t('Auto-Renew ON', 'تجديد تلقائي')}` : ''}
+                    </small>
+                  </td>
                   <td><div className="bl-actions">
                     <button type="button" className="bl-btn sm" onClick={() => setDialog({ type: 'ledger', sub })}><History size={13} />{c.t('History', 'السجل')}</button>
+                    <button type="button" className="bl-btn sm" onClick={() => openAutomation(sub)}><Wallet size={13} />{c.t('Auto-Renew', 'تجديد المحفظة')}</button>
                     <button type="button" className="bl-btn sm" onClick={() => setDialog({ type: 'credits', sub })}>{isPlatform ? <SlidersHorizontal size={13} /> : <Coins size={13} />}{isPlatform ? c.t('Adjust', 'تعديل') : c.t('Send credits', 'إرسال رصيد')}</button>
                     <button type="button" className="bl-btn sm success" onClick={() => setDialog({ type: 'assign', sub })}><Gem size={13} />{c.t('Assign', 'تعيين')}</button>
                   </div></td>
@@ -1044,13 +1097,28 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
       {dialog?.type === 'ledger' && <LedgerModal walletId={dialog.sub.id} name={dialog.sub.subscriberName} onClose={close} />}
       {dialog && dialog.type !== 'ledger' && (
         <Modal
-          title={dialog.type === 'assign' ? c.t('Assign plan or add-on', 'تعيين باقة أو إضافة') : isPlatform ? c.t('Adjust credits', 'تعديل الرصيد') : c.t('Send credits from your wallet', 'إرسال رصيد من محفظتك')}
+          title={
+            dialog.type === 'assign'
+              ? c.t('Assign plan or add-on', 'تعيين باقة أو إضافة')
+              : dialog.type === 'automation'
+              ? c.t('Wallet Auto-Renewal & Auto-Recharge', 'التجديد والشحن التلقائي عبر المحفظة')
+              : isPlatform
+              ? c.t('Adjust credits', 'تعديل الرصيد')
+              : c.t('Send credits from your wallet', 'إرسال رصيد من محفظتك')
+          }
           subtitle={dialog.sub.subscriberName || dialog.sub.subscriberEmail}
-          icon={dialog.type === 'assign' ? <Gem size={18} /> : <Coins size={18} />}
+          icon={dialog.type === 'assign' ? <Gem size={18} /> : dialog.type === 'automation' ? <Wallet size={18} /> : <Coins size={18} />}
           onClose={close}
           footer={<>
             <button type="button" className="bl-btn" onClick={close}>{c.t('Cancel', 'إلغاء')}</button>
-            <button type="button" className="bl-btn primary" disabled={!!busy || (dialog.type === 'assign' ? !planId : !Number(amount))} onClick={submit}>{busy ? <Spinner /> : <Check size={15} />}{c.t('Confirm', 'تأكيد')}</button>
+            <button
+              type="button"
+              className="bl-btn primary"
+              disabled={!!busy || (dialog.type === 'assign' ? !planId : dialog.type === 'credits' ? !Number(amount) : (isPlatform && Number(walletDelta) !== 0 && !walletReason.trim()))}
+              onClick={submit}
+            >
+              {busy ? <Spinner /> : <Check size={15} />}{c.t('Confirm', 'تأكيد')}
+            </button>
           </>}
         >
           {dialog.type === 'assign' ? (
@@ -1062,6 +1130,63 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
                 </DashboardSelect>
               </label>
               <div className="bl-banner info"><RefreshCw size={16} /><p>{c.t('Use this after receiving an offline payment. A new plan starts a new period and resets credits (unused credits expire). Re-assigning the current plan extends it.', 'استخدمها بعد استلام دفع خارجي. الباقة الجديدة تبدأ فترة جديدة وتعيد ضبط الرصيد (الرصيد غير المستخدم ينتهي). تعيين نفس الباقة يمدد مدتها.')}{!isPlatform && ' ' + c.t('Plan credits are deducted from your wallet.', 'رصيد الباقة يُخصم من محفظتك.')}</p></div>
+            </div>
+          ) : dialog.type === 'automation' ? (
+            <div className="bl-form">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', gap: 12 }}>
+                <div>
+                  <b style={{ display: 'block', fontSize: 13.5 }}>{c.t('Wallet Balance', 'رصيد المحفظة')}</b>
+                  <small style={{ color: 'var(--bl-muted)' }}>{c.t('Available for automatic renewals & low-balance recharges', 'المتاح للتجديد التلقائي والشحن عند انخفاض الرصيد')}</small>
+                </div>
+                <strong style={{ fontSize: 16, fontFamily: 'monospace', color: '#059669' }}>
+                  {c.money(Math.max(0, (cashWalletOf(dialog.sub.id)?.balance ?? 0) - (cashWalletOf(dialog.sub.id)?.held ?? 0)), cashWalletOf(dialog.sub.id)?.currency || WALLET_CURRENCY)}
+                </strong>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--bl-surface)', border: '1px solid var(--bl-border)', gap: 12 }}>
+                <div>
+                  <b style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><RefreshCw size={14} />{c.t('Automatic Subscription Renewal', 'التجديد التلقائي للاشتراك')}</b>
+                  <small style={{ color: 'var(--bl-muted)' }}>{c.t('Renew subscription automatically at period end when sufficient wallet funds exist.', 'تجديد الاشتراك تلقائيًا عند انتهاء الفترة متى ما توفر رصيد كافٍ في المحفظة.')}</small>
+                </div>
+                <Toggle checked={autoRenewVal} onChange={setAutoRenewVal} label={c.t('Auto-renew via Wallet', 'تجديد تلقائي عبر المحفظة')} />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--bl-surface)', border: '1px solid var(--bl-border)', gap: 12 }}>
+                <div>
+                  <b style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><Zap size={14} />{c.t('Low-Balance Credit Auto-Recharge', 'الشحن التلقائي عند انخفاض الرصيد')}</b>
+                  <small style={{ color: 'var(--bl-muted)' }}>{c.t('Automatically add AI credits from Wallet when balance drops low.', 'إضافة رصيد ذكاء اصطناعي تلقائيًا من المحفظة عند انخفاض الرصيد.')}</small>
+                </div>
+                <Toggle checked={autoRechargeVal} onChange={setAutoRechargeVal} label={c.t('Low-balance auto-recharge', 'شحن تلقائي عند انخفاض الرصيد')} />
+              </div>
+
+              {autoRechargeVal && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <label className="bl-field">
+                    <span>{c.t('Trigger Below (Credits)', 'عند انخفاض الرصيد تحت')}</span>
+                    <input className="bl-input" type="number" min={10} step={10} value={belowCreditsVal} onChange={e => setBelowCreditsVal(e.target.value)} />
+                  </label>
+                  <label className="bl-field">
+                    <span>{c.t('Auto-Add (Credits)', 'إضافة رصيد تلقائي')}</span>
+                    <input className="bl-input" type="number" min={50} step={50} value={addCreditsVal} onChange={e => setAddCreditsVal(e.target.value)} />
+                  </label>
+                </div>
+              )}
+
+              {isPlatform && (
+                <div style={{ borderTop: '1px solid var(--bl-border)', paddingTop: 12, display: 'grid', gap: 10 }}>
+                  <b style={{ fontSize: 12.5 }}>{c.t('Optional: Adjust Admin Cash Wallet (EUR)', 'اختياري: تعديل محفظة الأدمن النقدية (EUR)')}</b>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 10 }}>
+                    <label className="bl-field">
+                      <span>{c.t('Amount (+/- EUR)', 'المبلغ (+/- EUR)')}</span>
+                      <input className="bl-input" type="number" step="0.01" value={walletDelta} onChange={e => setWalletDelta(e.target.value)} placeholder="e.g. 50 or -10" />
+                    </label>
+                    <label className="bl-field">
+                      <span>{c.t('Audit Reason', 'سبب التسوية')}</span>
+                      <input className="bl-input" maxLength={200} value={walletReason} onChange={e => setWalletReason(e.target.value)} placeholder={c.t('Required if adjusting wallet', 'مطلوب عند تعديل الرصيد')} />
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bl-form">

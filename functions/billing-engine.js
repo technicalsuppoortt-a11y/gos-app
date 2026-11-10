@@ -29,12 +29,29 @@ export const AI_CAPABILITIES = ['ai'];
 export const COMMUNICATION_CHANNELS = ['whatsapp', 'messenger', 'instagram', 'email', 'sms', 'webchat'];
 export const WALLET_CURRENCY = 'EUR';
 export const round4 = value => Math.round(Number(value) * 10000) / 10000;
+export const EXCHANGE_RATES = {
+  USD: 1, EUR: 0.897, EGP: 54.03, GBP: 0.748, AED: 3.6725, SAR: 3.75,
+  KWD: 0.31, QAR: 3.64, BHD: 0.376, OMR: 0.3845, JOD: 0.709, MAD: 9.76, TND: 2.988,
+};
+export function convertMoney(value, fromCurrency = 'USD', toCurrency = WALLET_CURRENCY) {
+  const num = Number(value) || 0;
+  if (num <= 0 || fromCurrency === toCurrency) return Math.round(num * 100) / 100;
+  const fromRate = EXCHANGE_RATES[fromCurrency] || 1;
+  const toRate = EXCHANGE_RATES[toCurrency] || 1;
+  return Math.round(((num / fromRate) * toRate) * 100) / 100;
+}
 /**
  * Communication Wallet (pay-as-you-go) — independent from plan credits in `billingWallets`.
  * `balance` is money in `currency`; `held` is reserved for sends awaiting carrier confirmation.
  */
 export function newCommunicationWallet(uid, role, providerId, now, currency = WALLET_CURRENCY) {
-  return { id: uid, ownerId: uid, role, providerId, currency, balance: 0, held: 0, lifetimeTopup: 0, lifetimeSpent: 0, lowBalanceThreshold: 0, lowBalance: false, autoRecharge: { enabled: false, below: '', amount: '', method: '' }, createdAt: now, updatedAt: now };
+  return {
+    id: uid, ownerId: uid, role, providerId, currency, balance: 0, held: 0, lifetimeTopup: 0, lifetimeSpent: 0,
+    lowBalanceThreshold: 0, lowBalance: false, autoRenew: false,
+    autoRecharge: { enabled: false, below: '', amount: '', method: '' },
+    creditAutoRecharge: { enabled: false, belowCredits: 100, addCredits: 500 },
+    createdAt: now, updatedAt: now,
+  };
 }
 export const BILLING_TYPES = ['monthly', 'annual', 'fixed', 'lifetime'];
 export const PLAN_KINDS = ['plan', 'trial', 'addon'];
@@ -505,6 +522,131 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     return wallet;
   }
 
+  async function debitCommunicationWallet(account, providerId, walletCharge, usageType, description, extra = {}) {
+    const wallet = await commWallet(account.uid, account.role, providerId);
+    const available = round4(wallet.balance - (wallet.held ?? 0));
+    const charge = round4(Math.max(0, Number(walletCharge) || 0));
+    if (charge > 0 && available < charge) {
+      fail('failed-precondition', `Insufficient wallet balance: ${charge.toFixed(2)} ${wallet.currency} required, ${Math.max(0, available).toFixed(2)} ${wallet.currency} available.`);
+    }
+    if (charge > 0) {
+      wallet.balance = round4(wallet.balance - charge);
+      wallet.lifetimeSpent = round4((wallet.lifetimeSpent ?? 0) + charge);
+      wallet.lowBalance = round4(wallet.balance - (wallet.held ?? 0)) < (wallet.lowBalanceThreshold ?? 0);
+      commEntry(wallet, { usage_type: usageType, direction: 'debit', amount: -charge, balance_after: wallet.balance, description, counterparty_id: providerId, ...extra });
+      saveCommWallet(wallet);
+    }
+    return wallet;
+  }
+
+  function formatInvoiceNumber(seedId, timestamp = now) {
+    const day = String(timestamp || now).slice(0, 10).replace(/-/g, '') || '20260101';
+    const suffix = String(seedId || '').replace(/[^a-zA-Z0-9]/g, '').slice(-5).toUpperCase().padStart(5, '0');
+    return `INV-${day}-${suffix}`;
+  }
+
+  async function resolveIssuerBrand(providerId, subscriberId) {
+    if (providerId && providerId !== PLATFORM) {
+      const brandDoc = await store.get(`dashboardBrands/${providerId}`);
+      const adminPref = (await store.get(`tenants/admin-${providerId}/preferences/general`)) || (await store.get(`tenants/workspace-${providerId}/preferences/general`));
+      const adminUser = await store.get(`users/${providerId}`);
+      const values = brandDoc?.values || adminPref?.values || {};
+      const brandName = values.name || adminUser?.businessName || adminUser?.name || 'Upclick';
+      const logoUrl = values.logoUrl || adminUser?.logoUrl || '/upclick-logo.svg';
+      const email = values.supportEmail || adminUser?.email || 'support@upclick.app';
+      return { id: providerId, role: 'ADMIN', name: adminUser?.name || brandName, brandName, logoUrl, email };
+    }
+    const opsDoc = await store.get('settings/platformOperations');
+    const subProfile = subscriberId ? await store.get(`users/${subscriberId}`) : null;
+    const parentId = subProfile?.supportParentId || '';
+    const parentUser = parentId ? await store.get(`users/${parentId}`) : null;
+    const saBrand = parentUser?.role === 'SUPER_ADMIN' ? await store.get(`dashboardBrands/${parentId}`) : null;
+    const brandName = saBrand?.values?.name || opsDoc?.settings?.name || 'Upclick';
+    const logoUrl = saBrand?.values?.logoUrl || '/upclick-logo.svg';
+    const email = saBrand?.values?.supportEmail || opsDoc?.settings?.email || 'ops@upclick.app';
+    return { id: PLATFORM, role: 'SUPER_ADMIN', name: brandName, brandName, logoUrl, email };
+  }
+
+  async function writeInvoiceForRequest(request, statusOverride = null) {
+    const invoiceId = request.invoiceId || `inv_${request.id}`;
+    const invoiceNumber = request.invoiceNumber || formatInvoiceNumber(request.id, request.createdAt || now);
+    const existing = await store.get(`billingInvoices/${invoiceId}`);
+    const issuer = existing?.issuer || await resolveIssuerBrand(request.providerId, request.requesterId);
+    const status = statusOverride || (request.status === 'approved' ? 'paid' : request.status === 'rejected' ? 'rejected' : request.status === 'cancelled' ? 'cancelled' : 'pending');
+    const currency = request.currency || request.plan?.currency || 'USD';
+    const items = [];
+    if (request.type === 'wallet_topup') {
+      items.push({
+        description: request.plan?.name || { en: 'Wallet Top-Up', ar: 'شحن المحفظة' },
+        quantity: 1,
+        unitPrice: request.subtotal ?? request.total ?? 0,
+        total: request.subtotal ?? request.total ?? 0,
+        credits: 0,
+      });
+    } else {
+      if (request.type !== 'addon' || !(request.addons && request.addons.length)) {
+        const qty = request.quantity ?? 1;
+        const baseTotal = request.type === 'addon' ? (request.plan?.price ?? 0) * qty : (request.mainPlanPrice ?? (request.plan?.price ?? 0) * qty);
+        items.push({
+          description: request.plan?.name || { en: 'Subscription Plan', ar: 'باقة اشتراك' },
+          quantity: qty,
+          unitPrice: request.plan?.price ?? baseTotal,
+          total: round2(baseTotal),
+          credits: (request.plan?.credits ?? 0) * qty,
+          emailCredits: (request.plan?.emailCredits ?? 0) * qty,
+        });
+      }
+      for (const addon of request.addons || []) {
+        const lineName = typeof addon.name === 'string' ? { en: addon.name, ar: addon.name } : (addon.name || { en: 'Add-on', ar: 'إضافة' });
+        const lineTotal = addon.type === 'unit' ? addon.price : round2((addon.price ?? 0) * (addon.qty ?? 1));
+        items.push({
+          description: lineName,
+          quantity: addon.type === 'unit' ? 1 : (addon.qty ?? 1),
+          unitPrice: addon.price ?? 0,
+          total: lineTotal,
+          credits: addon.credits ?? 0,
+          emailCredits: addon.emailCredits ?? 0,
+        });
+      }
+    }
+    const subtotal = round2(request.subtotal ?? items.reduce((s, item) => s + (item.total || 0), 0));
+    const discount = round2(request.discount ?? request.coupon?.discount ?? 0);
+    const total = round2(request.totalAmount ?? request.total ?? Math.max(0, subtotal - discount));
+    const invoice = {
+      id: invoiceId,
+      invoiceNumber,
+      requestId: request.id,
+      subscriberId: request.requesterId,
+      subscriberRole: request.requesterRole || 'USER',
+      providerId: request.providerId,
+      type: request.type,
+      status,
+      currency,
+      subtotal,
+      discount,
+      total,
+      ...(request.walletCharged !== undefined ? { walletCharged: request.walletCharged, walletCurrency: request.walletCurrency || WALLET_CURRENCY } : {}),
+      paymentType: request.paymentType || 'manual',
+      paymentMethod: request.paymentMethod || (request.paymentType === 'wallet' ? 'From Wallet' : request.paymentType === 'gateway' ? 'Gateway' : 'Manual Transfer'),
+      transactionId: request.transactionId || '',
+      couponCode: request.coupon?.code || null,
+      issuer,
+      customer: {
+        id: request.requesterId,
+        role: request.requesterRole || 'USER',
+        name: request.requesterName || '',
+        email: request.requesterEmail || '',
+      },
+      items,
+      issuedAt: existing?.issuedAt || request.createdAt || now,
+      paidAt: status === 'paid' ? (existing?.paidAt || request.decidedAt || now) : null,
+      updatedAt: now,
+      note: request.note || '',
+    };
+    store.set(`billingInvoices/${invoiceId}`, invoice);
+    return invoice;
+  }
+
   function expireBalance(wallet, reason) {
     for (const bucket of ['ai', 'email']) {
       const leftover = creditBalance(wallet, bucket);
@@ -540,13 +682,153 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     if (pw) saveWallet(pw);
   }
 
-  /** Apply lazy lifecycle transitions: period expiry and monthly credit cycles (no rollover). */
+  /** Automatically recharge AI credits from the Cash Wallet when low and sufficient funds exist. */
+  async function tryAutoRechargeCredits(uid, sub, existingWallet, minRequiredCredits = null) {
+    if (!sub || !isLive(sub, now)) return { wallet: existingWallet, recharged: false };
+    const cw = await store.get(`communicationWallets/${uid}`);
+    const creditAuto = cw?.creditAutoRecharge;
+    const cashAuto = cw?.autoRecharge;
+    const enabled = Boolean(creditAuto?.enabled || (cashAuto?.enabled && (!cashAuto.method || cashAuto.method === 'wallet')));
+    if (!cw || !enabled) return { wallet: existingWallet, recharged: false };
+
+    const settings = await store.get(`billingSettings/${sub.providerId}`);
+    const unitRate = settings?.unitRate || DEFAULT_BILLING_SETTINGS.unitRate;
+    const creditsPerUnit = Math.max(1, Number(unitRate.creditsPerUnit) || 100);
+    const unitPriceWallet = Math.max(0.01, convertMoney(unitRate.pricePerUnit ?? 5, unitRate.currency || 'USD', cw.currency || WALLET_CURRENCY));
+
+    const belowCredits = creditAuto?.enabled && Number(creditAuto.belowCredits) > 0
+      ? Number(creditAuto.belowCredits)
+      : Math.max(20, Math.round(((Number(cashAuto?.below) || 5) / unitPriceWallet) * creditsPerUnit));
+
+    const currentCredits = creditBalance(existingWallet, 'ai');
+    const needsRecharge = minRequiredCredits !== null ? currentCredits < minRequiredCredits : currentCredits <= belowCredits;
+    if (!needsRecharge) return { wallet: existingWallet, recharged: false };
+
+    let targetUnits = 1;
+    if (creditAuto?.enabled && Number(creditAuto.addCredits) > 0) {
+      targetUnits = Math.max(1, Math.ceil(Number(creditAuto.addCredits) / creditsPerUnit));
+    } else if (Number(cashAuto?.amount) > 0) {
+      targetUnits = Math.max(1, Math.round(Number(cashAuto.amount) / unitPriceWallet));
+    }
+    if (minRequiredCredits !== null && currentCredits + targetUnits * creditsPerUnit < minRequiredCredits) {
+      targetUnits = Math.max(targetUnits, Math.ceil((minRequiredCredits - currentCredits) / creditsPerUnit));
+    }
+
+    const addCredits = targetUnits * creditsPerUnit;
+    const walletCharge = round2(targetUnits * unitPriceWallet);
+    const availableFunds = round4((cw.balance ?? 0) - (cw.held ?? 0));
+    if (availableFunds < walletCharge) return { wallet: existingWallet, recharged: false };
+
+    const wallet = existingWallet ?? newWallet(uid, sub.subscriberRole, sub.providerId);
+    const reqId = `autorecharge_${uid}_${store.id()}`;
+    try {
+      await transfer(wallet, sub.providerId, addCredits, 'topup', `Auto-recharge from Wallet · ${addCredits.toLocaleString()} credits`, { refType: 'auto_recharge', refId: reqId });
+    } catch (error) {
+      if (error instanceof BillingError) return { wallet: existingWallet, recharged: false };
+      throw error;
+    }
+
+    cw.balance = round4(cw.balance - walletCharge);
+    cw.lifetimeSpent = round4((cw.lifetimeSpent ?? 0) + walletCharge);
+    cw.lowBalance = round4(cw.balance - (cw.held ?? 0)) < (cw.lowBalanceThreshold ?? 0);
+    commEntry(cw, { usage_type: 'auto_recharge', direction: 'debit', amount: -walletCharge, balance_after: cw.balance, description: `Auto-recharge · ${addCredits.toLocaleString()} AI credits`, counterparty_id: sub.providerId, ref_type: 'auto_recharge', ref_id: reqId });
+    saveCommWallet(cw);
+    saveWallet(wallet);
+
+    const invoiceNumber = formatInvoiceNumber(reqId, now);
+    const invoiceId = `inv_${reqId}`;
+    const autoReq = {
+      id: reqId, invoiceId, invoiceNumber, requesterId: uid, requesterRole: sub.subscriberRole || 'USER',
+      requesterName: sub.subscriberName || '', requesterEmail: sub.subscriberEmail || '',
+      providerId: sub.providerId, type: 'addon', planId: 'dynamic_units', quantity: targetUnits,
+      plan: { name: { en: `Wallet Auto-Recharge · ${addCredits.toLocaleString()} Credits`, ar: `شحن تلقائي من المحفظة · ${addCredits.toLocaleString()} رصيد` }, kind: 'addon', price: round2((unitRate.pricePerUnit ?? 5) * targetUnits), currency: unitRate.currency || 'USD', credits: addCredits, billingType: 'once', addonType: 'credits' },
+      mainPlanPrice: 0, addons: [], subtotal: round2((unitRate.pricePerUnit ?? 5) * targetUnits), discount: 0,
+      totalAmount: round2((unitRate.pricePerUnit ?? 5) * targetUnits), total: round2((unitRate.pricePerUnit ?? 5) * targetUnits),
+      currency: unitRate.currency || 'USD', walletCharged: walletCharge, walletCurrency: cw.currency || WALLET_CURRENCY,
+      note: 'Automatic low-balance recharge from Wallet', status: 'approved', createdAt: now, decidedAt: now, decidedBy: 'wallet-auto-recharge',
+      paymentMethod: 'Wallet Auto-Recharge', paymentType: 'wallet', receiptUrl: '', receiptName: '', transactionId: reqId,
+    };
+    writeRequest(reqId, autoReq);
+    await writeInvoiceForRequest(autoReq, 'paid');
+    return { wallet, recharged: true };
+  }
+
+  /** Apply lazy lifecycle transitions: period expiry, wallet auto-renewal, monthly credit cycles, and low-balance auto-recharge. */
   async function freshen(uid) {
     const sub = await store.get(`billingSubscriptions/${uid}`);
     let wallet = await store.get(`billingWallets/${uid}`);
     if (wallet) wallet.balance = wallet.balance ?? wallet.aiCredits ?? 0;
     if (!sub) return { sub, wallet };
     if (['active', 'trialing'].includes(sub.status) && sub.currentPeriodEnd && sub.currentPeriodEnd <= now) {
+      const cw = await store.get(`communicationWallets/${uid}`);
+      const wantsAutoRenew = Boolean(sub.autoRenew ?? cw?.autoRenew);
+      if (wantsAutoRenew && sub.plan?.kind === 'plan') {
+        const storedPlan = await store.get(`billingPlans/${sub.planId}`);
+        const renewPlan = storedPlan && storedPlan.status === 'active' ? storedPlan : sub.plan;
+        const walletCurrency = cw?.currency || WALLET_CURRENCY;
+        const walletCharge = convertMoney(renewPlan.price ?? 0, renewPlan.currency || 'USD', walletCurrency);
+        const availableFunds = cw ? round4((cw.balance ?? 0) - (cw.held ?? 0)) : 0;
+        if (availableFunds >= walletCharge || walletCharge === 0) {
+          const nextWallet = wallet ?? newWallet(uid, sub.subscriberRole, sub.providerId);
+          expireBalance(nextWallet, 'Subscription period ended · auto-renewing via Wallet');
+          const reqId = `autorenew_${uid}_${store.id()}`;
+          let granted = false;
+          try {
+            await transfer(nextWallet, sub.providerId, renewPlan.aiCredits ?? renewPlan.credits ?? 0, 'grant', `Auto-renewal credits · ${renewPlan.name?.en ?? 'Plan'}`, { refType: 'auto_renewal', refId: reqId }, renewPlan.emailCredits ?? 0);
+            granted = true;
+          } catch (error) {
+            if (!(error instanceof BillingError)) throw error;
+            sub.autoRenewError = 'provider_credits_unavailable';
+          }
+          if (granted) {
+            if (walletCharge > 0 && cw) {
+              cw.balance = round4(cw.balance - walletCharge);
+              cw.lifetimeSpent = round4((cw.lifetimeSpent ?? 0) + walletCharge);
+              cw.lowBalance = round4(cw.balance - (cw.held ?? 0)) < (cw.lowBalanceThreshold ?? 0);
+              commEntry(cw, { usage_type: 'auto_renewal', direction: 'debit', amount: -walletCharge, balance_after: cw.balance, description: `Auto-renewal · ${renewPlan.name?.en ?? 'Plan'}`, counterparty_id: sub.providerId, ref_type: 'auto_renewal', ref_id: reqId });
+              saveCommWallet(cw);
+            }
+            let baseStart = sub.currentPeriodEnd;
+            let nextEnd = periodEndFor(renewPlan, baseStart);
+            while (nextEnd && nextEnd <= now) {
+              baseStart = nextEnd;
+              nextEnd = periodEndFor(renewPlan, baseStart);
+            }
+            sub.plan = planSnapshot(renewPlan);
+            sub.status = 'active';
+            sub.currentPeriodStart = baseStart;
+            sub.currentPeriodEnd = nextEnd;
+            sub.creditCycleStart = baseStart;
+            sub.creditCycleEnd = cycleEndFrom(baseStart, nextEnd);
+            sub.renewals = (sub.renewals ?? 0) + 1;
+            sub.creditBlocked = false;
+            sub.lastAutoRenewedAt = now;
+            sub.autoRenewError = null;
+            wallet = nextWallet;
+            saveWallet(wallet);
+            saveSub(sub);
+
+            const invoiceNumber = formatInvoiceNumber(reqId, now);
+            const invoiceId = `inv_${reqId}`;
+            const renewReq = {
+              id: reqId, invoiceId, invoiceNumber, requesterId: uid, requesterRole: sub.subscriberRole || 'USER',
+              requesterName: sub.subscriberName || '', requesterEmail: sub.subscriberEmail || '',
+              providerId: sub.providerId, type: 'renewal', planId: sub.planId, quantity: 1,
+              plan: { name: renewPlan.name, kind: 'plan', price: renewPlan.price ?? 0, currency: renewPlan.currency || 'USD', credits: renewPlan.credits ?? 0, emailCredits: renewPlan.emailCredits ?? 0, billingType: renewPlan.billingType, addonType: null },
+              mainPlanPrice: renewPlan.price ?? 0, addons: [], subtotal: renewPlan.price ?? 0, discount: 0,
+              totalAmount: renewPlan.price ?? 0, total: renewPlan.price ?? 0, currency: renewPlan.currency || 'USD',
+              walletCharged: walletCharge, walletCurrency,
+              note: 'Automatic subscription renewal paid from Wallet', status: 'approved', createdAt: now, decidedAt: now, decidedBy: 'wallet-auto-renew',
+              paymentMethod: 'Wallet Auto-Renewal', paymentType: 'wallet', receiptUrl: '', receiptName: '', transactionId: reqId,
+            };
+            writeRequest(reqId, renewReq);
+            await writeInvoiceForRequest(renewReq, 'paid');
+            return { sub, wallet };
+          }
+        } else {
+          sub.autoRenewError = 'insufficient_wallet_funds';
+        }
+      }
       sub.status = 'expired';
       if (wallet) { expireBalance(wallet, 'Subscription period ended'); saveWallet(wallet); }
       saveSub(sub);
@@ -567,6 +849,10 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         sub.creditBlocked = true;
       }
       saveWallet(wallet); saveSub(sub);
+    }
+    if (isLive(sub, now)) {
+      const recharged = await tryAutoRechargeCredits(uid, sub, wallet, null);
+      if (recharged.recharged) wallet = recharged.wallet;
     }
     return { sub, wallet };
   }
@@ -590,6 +876,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       previous.plan = planSnapshot(plan);
       previous.renewals = (previous.renewals ?? 0) + 1;
       previous.status = 'active';
+      previous.autoRenewError = null;
       saveSub(previous);
       return previous;
     }
@@ -598,6 +885,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     wallet.providerId = providerId;
     expireBalance(wallet, 'Plan changed · previous credits expired');
     const end = periodEndFor(plan, now);
+    const cw = await store.get(`communicationWallets/${account.uid}`);
     const sub = {
       id: account.uid, subscriberId: account.uid, subscriberRole: account.role,
       subscriberName: account.name ?? '', subscriberEmail: account.email ?? '',
@@ -606,6 +894,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       startedAt: previous?.startedAt ?? now, currentPeriodStart: now, currentPeriodEnd: end,
       creditCycleStart: now, creditCycleEnd: cycleEndFrom(now, end),
       trialUsedAt: kind === 'trial' ? now : previous?.trialUsedAt ?? null,
+      autoRenew: Boolean(previous?.autoRenew ?? cw?.autoRenew ?? false),
       extraSeats: 0, extraTools: [], renewals: 0, creditBlocked: false, createdAt: previous?.createdAt ?? now,
     };
     await transfer(wallet, providerId, plan.aiCredits ?? plan.credits ?? 0, 'grant', `${kind === 'trial' ? 'Free trial' : 'Plan'} credits · ${plan.name.en}`, ref, plan.emailCredits ?? 0);
@@ -963,7 +1252,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (!request || request.requesterId !== actor.uid) fail('not-found', 'Request not found.');
       if (request.status !== 'pending') fail('failed-precondition', 'Only pending requests can be cancelled.');
       await releaseCoupon(request);
-      writeRequest(request.id, { ...request, status: 'cancelled', decidedAt: now, decidedBy: actor.uid });
+      const cancelled = { ...request, status: 'cancelled', decidedAt: now, decidedBy: actor.uid };
+      writeRequest(request.id, cancelled);
+      await writeInvoiceForRequest(cancelled, 'cancelled');
       return { success: true };
     },
 
@@ -1007,7 +1298,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (isReject) {
         const reason = text(data.reason, 300, 'Rejection reason', true);
         await releaseCoupon(request);
-        writeRequest(request.id, { ...request, status: 'rejected', reason, decidedAt: now, decidedBy: actor.uid });
+        const rejected = { ...request, status: 'rejected', reason, decidedAt: now, decidedBy: actor.uid };
+        writeRequest(request.id, rejected);
+        await writeInvoiceForRequest(rejected, 'rejected');
         return { success: true };
       }
       if (!isApprove) fail('invalid-argument', 'Choose approve or reject.');
@@ -1019,7 +1312,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         const topupAccount = { uid: request.requesterId, role: request.requesterRole, name: request.requesterName || target?.name, email: request.requesterEmail };
         // The customer pays `total` (after any coupon discount) and receives `creditAmount` (face value + bonus).
         await creditCommunicationWallet(topupAccount, request.providerId, request.creditAmount ?? request.total, request.currency ?? request.plan?.currency ?? WALLET_CURRENCY, 'Wallet top-up', { ref_type: 'request', ref_id: request.id, payment_method: request.paymentMethod ?? 'manual', ...(request.coupon?.code ? { coupon_code: request.coupon.code } : {}) });
-        writeRequest(request.id, { ...request, status: 'approved', reason, decidedAt: now, decidedBy: actor.uid });
+        const approvedTopup = { ...request, status: 'approved', reason, decidedAt: now, decidedBy: actor.uid };
+        writeRequest(request.id, approvedTopup);
+        await writeInvoiceForRequest(approvedTopup, 'paid');
         return { success: true };
       }
       const isDynamic = request.planId === 'dynamic_units';
@@ -1040,7 +1335,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         await startPeriod(account, request.providerId, plan, 'plan', ref);
       }
       await grantCouponBonus(account, request.providerId, request, ref);
-      writeRequest(request.id, { ...request, status: 'approved', reason, decidedAt: now, decidedBy: actor.uid });
+      const approved = { ...request, status: 'approved', reason, decidedAt: now, decidedBy: actor.uid };
+      writeRequest(request.id, approved);
+      await writeInvoiceForRequest(approved, 'paid');
       return { success: true };
     },
 
@@ -1110,17 +1407,30 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       const rule = action ? creditRule(action, settings?.rules) : null;
       if (rule && !rule.enabled) fail('failed-precondition', `${CREDIT_ACTIONS[action][2]} is disabled by your billing administrator.`);
       const credits = rule ? rule.weight * int(data.quantity ?? 1, 'Usage quantity', 1, 10000) : int(data.amount, 'Credits', 1, 1000000);
-      const available = creditBalance(wallet, bucket);
+      let activeWallet = wallet;
+      let available = creditBalance(activeWallet, bucket);
+      if (bucket === 'ai' && available < credits && !checkOnly && isLive(sub, now)) {
+        const recharged = await tryAutoRechargeCredits(payer.uid, sub, activeWallet, credits);
+        if (recharged.recharged) {
+          activeWallet = recharged.wallet;
+          available = creditBalance(activeWallet, bucket);
+        }
+      }
       if (available < credits) fail('resource-exhausted', action
         ? `Not enough ${bucket === 'email' ? 'email' : 'AI'} credits. ${agency ? 'Ask your billing administrator to top up or upgrade.' : 'Upgrade your plan or request a credit add-on to continue.'}`
         : 'Not enough credits. Request a credit add-on to continue.', action ? { creditBucket: bucket, shared: agency, accountRole: account.role } : undefined);
       if (checkOnly) return { balance: available };
-      const chargedWallet = wallet ?? newWallet(payer.uid, payer.role, sub?.providerId ?? PLATFORM);
+      const chargedWallet = activeWallet ?? newWallet(payer.uid, payer.role, sub?.providerId ?? PLATFORM);
       chargedWallet[creditField(bucket)] = available - credits;
       const description = action ? CREDIT_ACTIONS[action][2] : text(data.description, 200, 'Description') || 'Service usage';
       entry(chargedWallet, 'usage', -credits, description, { entryId, refType: 'usage', refId: eventId, usageType: action ? bucket : text(data.usageType, 40, 'Usage type'), ...(action ? { action, bucket, pricingProviderId: providerId, cycleStart: sub?.creditCycleStart ?? null } : {}), ...(agency ? { subscriberId, workspaceId: account.tenantId ?? null } : {}) });
       saveWallet(chargedWallet);
-      return action ? { balance: available - credits, entryId } : { balance: available - credits };
+      let finalBalance = available - credits;
+      if (bucket === 'ai' && isLive(sub, now)) {
+        const postRecharge = await tryAutoRechargeCredits(payer.uid, sub, chargedWallet, null);
+        if (postRecharge.recharged) finalBalance = creditBalance(postRecharge.wallet, bucket);
+      }
+      return action ? { balance: finalBalance, entryId } : { balance: finalBalance };
     },
 
     async refundEmailUsage() {
@@ -1204,8 +1514,10 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       const receiptUrl = cleanReceipt(data.receiptUrl || data.receipt || '');
       const receiptName = text(data.receiptName, 200, 'Receipt file name') || '';
       const label = `${value.toFixed(2)} ${currency}`;
+      const invoiceId = `inv_${id}`;
+      const invoiceNumber = formatInvoiceNumber(id, now);
       const request = {
-        id, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
+        id, invoiceId, invoiceNumber, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
         providerId, type: 'wallet_topup', planId: 'wallet_topup', quantity: 1,
         plan: { name: { en: `Wallet top-up · ${label}`, ar: `شحن المحفظة · ${label}` }, kind: 'addon', price: payable, currency, credits: 0, billingType: 'once', addonType: null },
         mainPlanPrice: 0, addons: [], subtotal: value, discount: resolved?.discount ?? 0, totalAmount: payable, total: payable, creditAmount, currency,
@@ -1220,6 +1532,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         await creditCommunicationWallet(actor, providerId, creditAmount, currency, 'Wallet top-up', { ref_type: 'gateway_payment', ref_id: id, payment_method: paymentMethod, ...(request.coupon ? { coupon_code: request.coupon.code } : {}) });
       }
       writeRequest(id, request);
+      await writeInvoiceForRequest(request, isGatewayInstant ? 'paid' : 'pending');
       return { request };
     },
 
@@ -1238,15 +1551,69 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       return { wallet };
     },
 
-    /** Low-balance threshold and auto-recharge preferences for the caller's own Communication Wallet. */
+    /** Toggle automatic subscription renewal paid from the Communication Wallet. */
+    async setAutoRenew() {
+      let targetAccount = actor;
+      let targetProviderId = providerOf(actor);
+      if (data.subscriberId && data.subscriberId !== actor.uid) {
+        if (!MANAGERS.includes(role)) fail('permission-denied', 'Only administrators can manage client auto-renewal.');
+        const managed = await managedAccount(data.subscriberId);
+        targetAccount = managed.account;
+        targetProviderId = managed.providerId;
+      } else {
+        requireIndependentBilling(actor);
+      }
+      const enabled = Boolean(data.enabled);
+      const wallet = await commWallet(targetAccount.uid, targetAccount.role, targetProviderId);
+      wallet.autoRenew = enabled;
+      saveCommWallet(wallet);
+      const sub = await store.get(`billingSubscriptions/${targetAccount.uid}`);
+      if (sub) {
+        sub.autoRenew = enabled;
+        if (!enabled) sub.autoRenewError = null;
+        saveSub(sub);
+      }
+      return { autoRenew: enabled, wallet, subscription: sub ?? null };
+    },
+
+    /** Low-balance threshold and auto-recharge preferences for the Communication Wallet (self or managed client). */
     async saveWalletSettings() {
-      const providerId = providerOf(actor);
+      let targetAccount = actor;
+      let providerId = providerOf(actor);
+      if (data.subscriberId && data.subscriberId !== actor.uid) {
+        if (!MANAGERS.includes(role)) fail('permission-denied', 'Only administrators can manage client wallet settings.');
+        const managed = await managedAccount(data.subscriberId);
+        targetAccount = managed.account;
+        providerId = managed.providerId;
+      }
       const recharge = data.autoRecharge ?? {};
       const below = recharge.below === '' || recharge.below === undefined ? '' : String(amount(recharge.below, 'Low-balance threshold'));
       const topup = recharge.amount === '' || recharge.amount === undefined ? '' : String(amount(recharge.amount, 'Recharge amount'));
-      if (recharge.enabled === true) fail('failed-precondition', 'Connect a payment gateway before enabling automatic recharge.');
-      const wallet = await commWallet(actor.uid, actor.role, providerId);
-      wallet.autoRecharge = { enabled: false, below, amount: topup, method: text(recharge.method, 80, 'Payment method') };
+      const creditAutoInput = data.creditAutoRecharge && typeof data.creditAutoRecharge === 'object' ? data.creditAutoRecharge : null;
+      const creditAuto = creditAutoInput ? {
+        enabled: Boolean(creditAutoInput.enabled),
+        belowCredits: int(creditAutoInput.belowCredits ?? 100, 'Credit threshold', 1, 10000000),
+        addCredits: int(creditAutoInput.addCredits ?? 500, 'Recharge credits', 1, 10000000),
+      } : null;
+      if (recharge.enabled === true && (!below || Number(below) <= 0 || !topup || Number(topup) <= 0) && !creditAuto?.enabled) {
+        fail('failed-precondition', 'Specify a low-balance threshold and recharge amount before enabling automatic recharge.');
+      }
+      const wallet = await commWallet(targetAccount.uid, targetAccount.role, providerId);
+      wallet.autoRecharge = {
+        enabled: Boolean(recharge.enabled),
+        below,
+        amount: topup,
+        method: text(recharge.method, 80, 'Payment method') || 'wallet',
+      };
+      if (creditAuto) wallet.creditAutoRecharge = creditAuto;
+      if (typeof data.autoRenew === 'boolean') {
+        wallet.autoRenew = data.autoRenew;
+        const sub = await store.get(`billingSubscriptions/${targetAccount.uid}`);
+        if (sub) {
+          sub.autoRenew = data.autoRenew;
+          saveSub(sub);
+        }
+      }
       wallet.lowBalanceThreshold = below ? Number(below) : 0;
       wallet.lowBalance = round4(wallet.balance - (wallet.held ?? 0)) < wallet.lowBalanceThreshold;
       saveCommWallet(wallet);
@@ -1380,8 +1747,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const addonsTotal = cleanedAddons.reduce((sum, item) => sum + (item.price * (item.type === 'unit' ? 1 : item.qty)), 0);
     const totalAmount = Math.round((type === 'addon' && !cleanedAddons.length ? (plan.price * quantity) : (mainPlanPrice + addonsTotal)) * 100) / 100;
 
+    const isWalletPayment = data.paymentType === 'wallet';
     const open = (await store.query('billingRequests', 'requesterId', actor.uid)).find(item => item.status === 'pending' && item.planId === plan.id);
-    if (open) {
+    if (open && !isWalletPayment) {
       if (receiptUrl || data.transactionId) {
         const updated = {
           ...open,
@@ -1401,15 +1769,79 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
           updatedAt: now,
         };
         writeRequest(open.id, updated);
+        await writeInvoiceForRequest(updated, 'pending');
         return updated;
       }
       fail('already-exists', 'You already have a pending request for this item.');
     }
+    if (open && isWalletPayment) {
+      await releaseCoupon(open);
+      const superseded = { ...open, status: 'cancelled', decidedAt: now, decidedBy: actor.uid, reason: 'Paid from Wallet instead' };
+      writeRequest(open.id, superseded);
+      await writeInvoiceForRequest(superseded, 'cancelled');
+    }
+
     const id = store.id();
+    const invoiceId = `inv_${id}`;
+    const invoiceNumber = formatInvoiceNumber(id, now);
     const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, type === 'addon' ? 'addon' : 'plan', totalAmount, plan.currency) : null;
     const payable = resolved ? resolved.payable : totalAmount;
+
+    if (isWalletPayment) {
+      const cw = await commWallet(actor.uid, actor.role, providerId);
+      const walletCharge = convertMoney(payable, plan.currency, cw.currency);
+      const available = round4((cw.balance ?? 0) - (cw.held ?? 0));
+      if (walletCharge > 0 && available < walletCharge) {
+        fail('failed-precondition', `Insufficient wallet balance: ${walletCharge.toFixed(2)} ${cw.currency} required, ${Math.max(0, available).toFixed(2)} ${cw.currency} available. Top up your wallet or choose Pay Now.`);
+      }
+      const redeemedCoupon = resolved ? redeemCoupon(resolved, id) : null;
+      const usageType = type === 'addon' ? 'addon_purchase' : type === 'renewal' ? 'subscription_renewal' : 'plan_payment';
+      const descLabel = type === 'addon' ? 'Add-on purchase' : type === 'renewal' ? 'Subscription renewal' : 'Plan subscription';
+      await debitCommunicationWallet(actor, providerId, walletCharge, usageType, `${descLabel} · ${plan.name?.en ?? 'Plan'}`, { ref_type: 'request', ref_id: id, payment_method: 'From Wallet', ...(redeemedCoupon ? { coupon_code: redeemedCoupon.code } : {}) });
+      const account = { uid: actor.uid, role: actor.role, name: actor.name ?? '', email: actor.email ?? '' };
+      const ref = { refType: 'request', refId: id };
+      if (cleanedAddons.length > 0) {
+        if (type !== 'addon') await startPeriod(account, providerId, plan, 'plan', ref);
+        for (const addon of cleanedAddons) await applyAddonItem(account, providerId, addon, ref);
+      } else if (type === 'addon') {
+        await applyAddon(account, providerId, plan, quantity, ref);
+      } else {
+        await startPeriod(account, providerId, plan, 'plan', ref);
+      }
+      const request = {
+        id, invoiceId, invoiceNumber, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
+        providerId, type, planId: plan.id, quantity,
+        plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, emailCredits: plan.emailCredits ?? 0, billingType: plan.billingType, addonType: plan.addonType ?? null },
+        mainPlanPrice,
+        addons: cleanedAddons,
+        totalAmount: payable,
+        total: payable,
+        walletCharged: walletCharge,
+        walletCurrency: cw.currency,
+        ...(resolved ? { subtotal: totalAmount, discount: resolved.discount, coupon: redeemedCoupon } : {}),
+        note: text(data.note, 300, 'Note'),
+        status: 'approved',
+        createdAt: now,
+        decidedAt: now,
+        decidedBy: 'wallet-instant',
+        paymentMethod: text(data.paymentMethod, 60, 'Payment method') || 'From Wallet',
+        paymentType: 'wallet',
+        receiptUrl: '',
+        receiptPath: '',
+        imageUrl: '',
+        fileUrl: '',
+        receiptName: '',
+        fileName: '',
+        transactionId: `WALLET-${id.slice(-8).toUpperCase()}`,
+      };
+      if (redeemedCoupon) await grantCouponBonus(account, providerId, request, ref);
+      writeRequest(id, request);
+      await writeInvoiceForRequest(request, 'paid');
+      return request;
+    }
+
     const request = {
-      id, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
+      id, invoiceId, invoiceNumber, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
       providerId, type, planId: plan.id, quantity,
       plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, emailCredits: plan.emailCredits ?? 0, billingType: plan.billingType, addonType: plan.addonType ?? null },
       mainPlanPrice,
@@ -1431,6 +1863,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       transactionId: text(data.transactionId, 120, 'Transaction ID') || '',
     };
     writeRequest(id, request);
+    await writeInvoiceForRequest(request, 'pending');
     return request;
   }
 

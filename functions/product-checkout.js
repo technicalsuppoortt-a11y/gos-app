@@ -158,7 +158,9 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
   const removeUnusedReceipt = () => object?.delete({ ignoreNotFound: true }).catch(error => console.error('Could not remove unused checkout receipt', id, error));
   const committed = await db.runTransaction(async tx => {
     if ((await tx.get(ref)).exists) return false;
-    const [limit, contacts] = await Promise.all([tx.get(limitRef), tx.get(contactQuery)]);
+    const leadId = 'lead-order-' + hash(customer.email).slice(0, 24);
+    const leadRef = root.collection('leads').doc(leadId);
+    const [limit, contacts, existingLeadSnap] = await Promise.all([tx.get(limitRef), tx.get(contactQuery), tx.get(leadRef)]);
     const previous = limit.data();
     const sameWindow = previous && at - previous.at < 60000;
     if (sameWindow && previous.count >= 8) throw new HttpsError('resource-exhausted', 'Too many submissions. Please wait a minute and try again.');
@@ -184,6 +186,46 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
     });
     tx.set(root.collection('orders').doc(id), record);
     if (method) tx.set(root.collection('transactions').doc(id), record);
+    const prevLead = existingLeadSnap.data();
+    const isFreeInstant = quote.totals.dueToday === 0;
+    const rawProdType = String(product.type || '').trim().toLowerCase();
+    const prodTypeLabel = rawProdType.includes('course')
+      ? 'Course'
+      : rawProdType.includes('service') || rawProdType.includes('booking') || rawProdType.includes('consult')
+        ? 'Service'
+        : 'Digital Product';
+    const prevAttached = Array.isArray(prevLead?.attachedProducts) ? prevLead.attachedProducts : [];
+    const nextAttached = prevAttached.some(item => item?.productId === data.productId)
+      ? prevAttached
+      : [...prevAttached, { productId: data.productId, productName: product.name, productType: prodTypeLabel, attachedAt: createdAt }];
+    const prevActivities = Array.isArray(prevLead?.activities) ? prevLead.activities : [];
+    const nextActivities = prevActivities.some(item => item?.id === `act-checkout-${id}`)
+      ? prevActivities
+      : [{ id: `act-checkout-${id}`, type: 'payment', title: isFreeInstant ? `${prodTypeLabel} enrolled` : 'Order submitted', detail: `${prodTypeLabel}: ${product.name} · ${quote.totals.currency} ${Number(quote.totals.dueToday).toFixed(2)}`, at: createdAt }, ...prevActivities];
+    const prevTags = Array.isArray(prevLead?.tags)
+      ? prevLead.tags.filter(t => !/^checkout$/i.test(String(t || '').trim()))
+      : [];
+    tx.set(leadRef, {
+      ...(prevLead || { id: leadId, owner: 'Unassigned', company: '', notes: [], createdAt }),
+      id: leadId,
+      name: customer.name || prevLead?.name || customer.email,
+      email: customer.email,
+      phone: customer.phone || prevLead?.phone || '',
+      source: (!prevLead?.source || /^(checkout|service|services)$/i.test(String(prevLead.source))) ? 'Services' : prevLead.source,
+      pipelineId: prevLead?.pipelineId || product.config?.crmRouting?.pipelineId || 'main',
+      stage: isFreeInstant ? (product.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED') : (prevLead?.stage || 'CONTACT_CREATED'),
+      lifecycleStage: isFreeInstant ? (product.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED') : (prevLead?.lifecycleStage || 'CONTACT_CREATED'),
+      value: Math.max(Number(prevLead?.value || 0), Number(quote.totals.total || quote.totals.dueToday || 0)),
+      currency: quote.totals.currency || prevLead?.currency || 'USD',
+      interest: prevLead?.interest || `${prodTypeLabel}: ${product.name}`,
+      orderId: id,
+      qualificationStatus: isFreeInstant ? 'Qualified' : (prevLead?.qualificationStatus || 'Pending'),
+      followUpState: isFreeInstant ? 'CUSTOMER' : (prevLead?.followUpState || 'CONTACTED'),
+      tags: [...new Set([prodTypeLabel, product.name, ...(isFreeInstant ? ['Customer'] : []), ...prevTags])],
+      attachedProducts: nextAttached,
+      activities: nextActivities,
+      lastActivity: createdAt,
+    }, { merge: true });
     if (promo?.counterRef) tx.set(promo.counterRef, { uses: promo.uses + 1 }, { merge: true });
     if (promo?.claimRef) tx.set(promo.claimRef, { requestId: id });
     tx.set(limitRef, { at: sameWindow ? previous.at : at, count: sameWindow ? previous.count + 1 : 1 });
@@ -224,16 +266,64 @@ async function reviewCheckout(request, { db, workspace, bucket, now }) {
     if (record.status !== 'Pending') throw new HttpsError('failed-precondition', 'This request has already been reviewed.');
     const counterRef = decision === 'reject' && record.couponCounter ? db.doc(record.couponCounter) : null;
     const counter = counterRef ? await tx.get(counterRef) : null;
-    const product = decision === 'reject' ? (await tx.get(root.collection('products').doc(record.productId))).data() : null;
+    const product = (await tx.get(root.collection('products').doc(record.productId))).data();
+    const buyerEmail = String(record.customerEmail || '').trim().toLowerCase();
+    const leadId = buyerEmail ? 'lead-order-' + hash(buyerEmail).slice(0, 24) : '';
+    const leadRef = leadId ? root.collection('leads').doc(leadId) : null;
+    const existingLeadSnap = leadRef ? await tx.get(leadRef) : null;
     const decidedAt = new Date(now()).toISOString();
     const review = { status, reviewNote, decidedAt, decidedBy: user.uid };
     tx.update(ref, review);
     const payment = { ...review, status: decision === 'approve' ? 'Paid' : 'Rejected' };
-    tx.update(root.collection('orders').doc(id), payment);
-    if (record.amount > 0) tx.update(root.collection('transactions').doc(id), payment);
+    tx.set(root.collection('orders').doc(id), { ...record, ...payment }, { merge: true });
+    if (record.amount > 0) tx.set(root.collection('transactions').doc(id), { ...record, ...payment }, { merge: true });
+    if (decision === 'approve' && leadRef) {
+      const prevLead = existingLeadSnap?.data();
+      const targetStage = product?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED';
+      const crmTag = product?.config?.automations?.crmTag;
+      const prodName = record.productName || product?.name || 'Product';
+      const rawProdType = String(product?.type || '').trim().toLowerCase();
+      const prodTypeLabel = rawProdType.includes('course')
+        ? 'Course'
+        : rawProdType.includes('service') || rawProdType.includes('booking') || rawProdType.includes('consult')
+          ? 'Service'
+          : 'Digital Product';
+      const prevTags = Array.isArray(prevLead?.tags)
+        ? prevLead.tags.filter(t => !/^checkout$/i.test(String(t || '').trim()))
+        : [];
+      const prevAttached = Array.isArray(prevLead?.attachedProducts) ? prevLead.attachedProducts : [];
+      const nextAttached = prevAttached.some(item => item?.productId === record.productId)
+        ? prevAttached
+        : [...prevAttached, { productId: record.productId, productName: prodName, productType: prodTypeLabel, attachedAt: decidedAt }];
+      const prevActivities = Array.isArray(prevLead?.activities) ? prevLead.activities : [];
+      const nextActivities = prevActivities.some(item => item?.id === `act-paid-${id}`)
+        ? prevActivities
+        : [{ id: `act-paid-${id}`, type: 'payment', title: 'Payment approved', detail: `${prodTypeLabel}: ${prodName} · ${record.currency || 'USD'} ${Number(record.amount || 0).toFixed(2)}`, at: decidedAt }, ...prevActivities];
+      tx.set(leadRef, {
+        ...(prevLead || { id: leadId, owner: 'Unassigned', company: '', notes: [], createdAt: record.createdAt || decidedAt }),
+        id: leadId,
+        name: record.customerName || prevLead?.name || buyerEmail,
+        email: buyerEmail,
+        phone: record.customerPhone || prevLead?.phone || '',
+        source: (!prevLead?.source || /^(checkout|service|services)$/i.test(String(prevLead.source))) ? 'Services' : prevLead.source,
+        pipelineId: product?.config?.crmRouting?.pipelineId || prevLead?.pipelineId || 'main',
+        stage: targetStage,
+        lifecycleStage: targetStage,
+        value: Math.max(Number(prevLead?.value || 0), Number(record.amount ?? record.total ?? 0)),
+        currency: record.currency || prevLead?.currency || 'USD',
+        interest: prevLead?.interest || `${prodTypeLabel}: ${prodName}`,
+        orderId: id,
+        qualificationStatus: 'Qualified',
+        followUpState: 'CUSTOMER',
+        tags: [...new Set([prodTypeLabel, prodName, 'Customer', ...(crmTag ? [crmTag] : []), ...prevTags])],
+        attachedProducts: nextAttached,
+        activities: nextActivities,
+        lastActivity: decidedAt,
+      }, { merge: true });
+    }
     if (counter?.exists) tx.update(counterRef, { uses: Math.max(0, (Number(counter.data().uses) || 0) - 1) });
     if (decision === 'reject' && record.couponClaim) tx.delete(db.doc(record.couponClaim));
-    if (product?.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutRejected', decidedAt);
+    if (decision === 'reject' && product?.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutRejected', decidedAt);
     return { status };
   });
 }

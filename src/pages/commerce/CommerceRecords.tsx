@@ -295,30 +295,73 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
         setPreferences(next);
       } else if (tab === 'Customers') {
         const current = readCloud<RecordRow[]>('entity:contacts', []);
-        if (current.some(row => row.email?.trim().toLowerCase() === draft.email.trim().toLowerCase())) {
+        const normalizedEmail = draft.email.trim().toLowerCase();
+        if (current.some(row => row.email?.trim().toLowerCase() === normalizedEmail)) {
           throw new Error('A customer with this email already exists.');
         }
+        const createdAt = new Date().toISOString();
+        const contactId = crypto.randomUUID();
         await cloudStorage.setItem(
           'entity:contacts',
           JSON.stringify([
             {
-              id: crypto.randomUUID(),
+              id: contactId,
               name: draft.name.trim(),
               email: draft.email.trim(),
               phone: draft.phone.trim(),
               status: 'Active',
-              createdAt: new Date().toISOString(),
+              createdAt,
             },
             ...current,
           ]),
         );
+        try {
+          const existingLeads = readCloud<Record<string, any>[]>('entity:leads', []);
+          if (!existingLeads.some(l => String(l.email || '').trim().toLowerCase() === normalizedEmail)) {
+            const leadId = `lead-customer-${contactId.slice(0, 12)}`;
+            await cloudStorage.setItem(
+              'entity:leads',
+              JSON.stringify([
+                {
+                  id: leadId,
+                  name: draft.name.trim(),
+                  email: draft.email.trim(),
+                  phone: draft.phone.trim(),
+                  company: '',
+                  source: 'Services',
+                  owner: 'Unassigned',
+                  pipelineId: 'main',
+                  stage: 'CONTACT_CREATED',
+                  lifecycleStage: 'CONTACT_CREATED',
+                  value: 0,
+                  currency: 'USD',
+                  qualificationStatus: 'Qualified',
+                  bookingStatus: 'Not Scheduled',
+                  followUpState: 'CUSTOMER',
+                  hasWhatsAppConsent: Boolean(draft.phone.trim()),
+                  hasMessagingConsent: true,
+                  hasEmailConsent: Boolean(normalizedEmail),
+                  tags: ['Customer'],
+                  activities: [{ id: `act-${contactId}`, type: 'capture', title: 'Customer added in Products', detail: draft.email.trim(), at: createdAt }],
+                  notes: [],
+                  createdAt,
+                  lastActivity: createdAt,
+                },
+                ...existingLeads,
+              ]),
+              { silent: true },
+            );
+          }
+        } catch { /* ignore if CRM leads resource not yet initialized */ }
       } else {
         const product = products.find(row => row.id === draft.productId);
         if (!product) throw new Error('Select a product for this order.');
+        const createdAt = new Date().toISOString();
+        const orderId = `draft-${crypto.randomUUID()}`;
         const current = readCloud<RecordRow[]>(`${scope}:order-drafts`, []);
         const next = [
           {
-            id: `draft-${crypto.randomUUID()}`,
+            id: orderId,
             customerName: draft.name.trim(),
             customerEmail: draft.email.trim(),
             productId: product.id,
@@ -326,12 +369,82 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
             amount: product.config?.amount ?? 0,
             currency: product.config?.currency ?? 'USD',
             status: 'Draft',
-            createdAt: new Date().toISOString(),
+            createdAt,
           },
           ...current,
         ];
         await cloudStorage.setItem(`${scope}:order-drafts`, JSON.stringify(next));
         setDraftOrders(next);
+        try {
+          const normalizedEmail = draft.email.trim().toLowerCase();
+          if (normalizedEmail) {
+            const existingLeads = readCloud<Record<string, any>[]>('entity:leads', []);
+            const matchIdx = existingLeads.findIndex(l => String(l.email || '').trim().toLowerCase() === normalizedEmail);
+            const orderValue = Number(product.config?.amount ?? 0);
+            const orderCurrency = product.config?.currency ?? 'USD';
+            if (matchIdx >= 0) {
+              const prev = existingLeads[matchIdx];
+              const prevAttached = Array.isArray(prev.attachedProducts) ? prev.attachedProducts : [];
+              const updated = {
+                ...prev,
+                value: Math.max(Number(prev.value || 0), orderValue),
+                currency: prev.currency || orderCurrency,
+                interest: prev.interest || product.name,
+                orderId,
+                attachedProducts: prevAttached.some((p: any) => p?.productId === product.id)
+                  ? prevAttached
+                  : [...prevAttached, { productId: product.id, productName: product.name, attachedAt: createdAt }],
+                lastActivity: createdAt,
+              };
+              const nextLeads = [...existingLeads];
+              nextLeads[matchIdx] = updated;
+              await cloudStorage.setItem('entity:leads', JSON.stringify(nextLeads), { silent: true });
+            } else {
+              const leadId = `lead-order-${orderId.replace(/[^a-z0-9]/gi, '').slice(0, 20)}`;
+              const rawProdType = String(product.type || '').trim().toLowerCase();
+              const prodTypeLabel: 'Course' | 'Digital Product' | 'Service' = rawProdType.includes('course')
+                ? 'Course'
+                : rawProdType.includes('service') || rawProdType.includes('booking') || rawProdType.includes('consult')
+                  ? 'Service'
+                  : 'Digital Product';
+              await cloudStorage.setItem(
+                'entity:leads',
+                JSON.stringify([
+                  {
+                    id: leadId,
+                    name: draft.name.trim() || normalizedEmail.split('@')[0],
+                    email: draft.email.trim(),
+                    phone: draft.phone.trim(),
+                    company: '',
+                    source: 'Services',
+                    owner: 'Unassigned',
+                    pipelineId: product.config?.crmRouting?.pipelineId || 'main',
+                    stage: 'CONTACT_CREATED',
+                    lifecycleStage: 'CONTACT_CREATED',
+                    value: orderValue,
+                    currency: orderCurrency,
+                    interest: `${prodTypeLabel}: ${product.name}`,
+                    orderId,
+                    qualificationStatus: 'Pending',
+                    bookingStatus: 'Not Scheduled',
+                    followUpState: 'CONTACTED',
+                    hasWhatsAppConsent: Boolean(draft.phone.trim()),
+                    hasMessagingConsent: true,
+                    hasEmailConsent: true,
+                    tags: [prodTypeLabel, product.name],
+                    attachedProducts: [{ productId: product.id, productName: product.name, productType: prodTypeLabel, attachedAt: createdAt }],
+                    activities: [{ id: `act-${orderId}`, type: 'payment', title: 'Order created in Products', detail: `${prodTypeLabel}: ${product.name} · ${orderCurrency} ${orderValue.toFixed(2)}`, at: createdAt }],
+                    notes: [],
+                    createdAt,
+                    lastActivity: createdAt,
+                  },
+                  ...existingLeads,
+                ]),
+                { silent: true },
+              );
+            }
+          }
+        } catch { /* ignore if CRM leads resource not yet initialized */ }
       }
       setOpen(false);
       notify('Changes saved');

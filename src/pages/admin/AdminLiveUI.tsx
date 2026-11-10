@@ -45,7 +45,7 @@ export function navigateAdminTabs(event: KeyboardEvent<HTMLDivElement>) {
 export function displayDate(value: string, ar = false) {
   if (!value) return '—';
   const date = new Date(value);
-  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date) : value;
+  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date) : value;
 }
 export function displayMoney(amount: string, currency: string, formatPrice: (amount: number, currency: string) => string) {
   if (amount === '') return '—';

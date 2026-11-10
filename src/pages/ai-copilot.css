@@ -119,3 +119,199 @@ html.dark .ai-voice-error { color: #fca5a5; }
 .ai-transcribe-button:disabled { cursor: default; opacity: .7; }
 html.dark .ai-attachment-preview > .ai-transcribe-button { background: #29233f; border-color: #544179; color: #ddd6fe; }
 html.dark .ai-attachment-preview > .ai-transcribe-button:hover:not(:disabled) { background: #382b56; }
+
+/* Thinking Level Selector (Low / Medium / High) */
+.ai-tool-group { flex-wrap: wrap; }
+.ai-thinking-selector { position: relative; display: inline-flex; align-items: center; }
+.ai-thinking-trigger {
+  height: 29px;
+  padding: 0 10px;
+  border: 1px solid #eceaf8;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fbfaff 0%, #f5f2ff 100%);
+  color: #4b4f6b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease, color .16s ease;
+}
+.ai-thinking-trigger:hover:not(:disabled),
+.ai-thinking-trigger.open {
+  border-color: #d8ceff;
+  background: #f4efff;
+  color: #6d28d9;
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.1);
+}
+.ai-thinking-trigger:disabled { opacity: 0.55; cursor: not-allowed; }
+.ai-thinking-trigger .ai-thinking-icon { color: #7c3aed; flex: none; }
+.ai-thinking-trigger.level-low .ai-thinking-icon { color: #0ea5e9; }
+.ai-thinking-trigger.level-high .ai-thinking-icon { color: #7c3aed; }
+.ai-thinking-label { white-space: nowrap; color: #646a86; font-weight: 500; }
+.ai-thinking-label b { color: #262945; font-weight: 700; }
+.ai-thinking-trigger.open .ai-thinking-label b,
+.ai-thinking-trigger:hover:not(:disabled) .ai-thinking-label b { color: #6d28d9; }
+.ai-thinking-chevron { color: #8c92ab; transition: transform .18s ease; flex: none; }
+.ai-thinking-trigger.open .ai-thinking-chevron { transform: rotate(180deg); color: #7c3aed; }
+
+.ai-thinking-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+  padding-inline: 1px;
+}
+.ai-thinking-bars i {
+  display: block;
+  width: 2.5px;
+  border-radius: 2px;
+  background: #dcd9ee;
+  transition: background .16s ease;
+}
+.ai-thinking-bars i:nth-child(1) { height: 4px; }
+.ai-thinking-bars i:nth-child(2) { height: 7px; }
+.ai-thinking-bars i:nth-child(3) { height: 11px; }
+.ai-thinking-bars i.active { background: #7c3aed; }
+.level-low .ai-thinking-bars i.active { background: #0ea5e9; }
+.level-medium .ai-thinking-bars i.active { background: #7c3aed; }
+.level-high .ai-thinking-bars i.active { background: #6d28d9; }
+
+.ai-thinking-popover {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  inset-inline-start: 0;
+  z-index: 45;
+  width: 268px;
+  padding: 10px;
+  border: 1px solid #e7e4f5;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 44px rgba(24, 21, 56, 0.15), 0 2px 8px rgba(124, 58, 237, 0.06);
+  text-align: start;
+}
+.ai-thinking-popover-head {
+  padding: 2px 4px 8px;
+  border-bottom: 1px solid #f1eff8;
+  margin-bottom: 6px;
+}
+.ai-thinking-popover-head > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7c3aed;
+}
+.ai-thinking-popover-head b {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1f223d;
+}
+.ai-thinking-popover-head small {
+  display: block;
+  margin-top: 2px;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: #858ba3;
+}
+.ai-thinking-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ai-thinking-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.ai-thinking-option:hover {
+  background: #f8f6ff;
+  border-color: #efeafd;
+}
+.ai-thinking-option.selected {
+  background: linear-gradient(135deg, #f6f2ff 0%, #fcfaff 100%);
+  border-color: #ded4ff;
+}
+.ai-thinking-option-badge {
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: #f3f0ff;
+  color: #7c3aed;
+}
+.ai-thinking-option.level-low .ai-thinking-option-badge { background: #e8f6fe; color: #0284c7; }
+.ai-thinking-option.level-medium .ai-thinking-option-badge { background: #f2eeff; color: #7c3aed; }
+.ai-thinking-option.level-high .ai-thinking-option-badge { background: #ede6ff; color: #5b21b6; }
+.ai-thinking-option-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ai-thinking-option-copy b {
+  font-size: 11px;
+  font-weight: 700;
+  color: #232642;
+}
+.ai-thinking-option-copy small {
+  font-size: 9.5px;
+  color: #7f859e;
+  line-height: 1.3;
+}
+.ai-thinking-option-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.ai-thinking-check { color: #7c3aed; }
+
+html.dark .ai-thinking-trigger {
+  background: linear-gradient(135deg, #1b1e31 0%, #211d38 100%);
+  border-color: #323650;
+  color: #dcdaf0;
+}
+html.dark .ai-thinking-trigger:hover:not(:disabled),
+html.dark .ai-thinking-trigger.open {
+  background: #282244;
+  border-color: #554288;
+  color: #ddd6fe;
+}
+html.dark .ai-thinking-label { color: #a7acc4; }
+html.dark .ai-thinking-label b,
+html.dark .ai-thinking-trigger.open .ai-thinking-label b { color: #f3f0ff; }
+html.dark .ai-thinking-bars i { background: #373b54; }
+html.dark .ai-thinking-bars i.active { background: #a78bfa; }
+html.dark .level-low .ai-thinking-bars i.active { background: #38bdf8; }
+html.dark .ai-thinking-popover {
+  background: rgba(23, 26, 42, 0.98);
+  border-color: #32364d;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+html.dark .ai-thinking-popover-head { border-color: #2b2f45; }
+html.dark .ai-thinking-popover-head b,
+html.dark .ai-thinking-option-copy b { color: #f2f0ff; }
+html.dark .ai-thinking-popover-head small,
+html.dark .ai-thinking-option-copy small { color: #9ea3bc; }
+html.dark .ai-thinking-option:hover { background: #22253a; border-color: #343852; }
+html.dark .ai-thinking-option.selected { background: #272142; border-color: #54417d; }
+html.dark .ai-thinking-option-badge { background: #262241; color: #c4b5fd; }
+html.dark .ai-thinking-option.level-low .ai-thinking-option-badge { background: #162c3d; color: #38bdf8; }
+
+@media(max-width:560px) {
+  .ai-thinking-trigger { height: 28px; padding: 0 8px; font-size: 9px; gap: 4px; }
+  .ai-thinking-popover { width: min(252px, calc(100vw - 36px)); }
+}

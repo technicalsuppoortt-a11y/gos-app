@@ -559,7 +559,7 @@ function SubAccountDetailsModal({
               <b style={{ color: 'var(--ob-ink)' }}>{user.accountType === 'agency' ? t('Account Created', 'تم إنشاء الحساب') : t('Invitation Created', 'تم إنشاء الدعوة')}</b>
               <div style={{ color: 'var(--ob-muted)', fontSize: '10px' }}>
                 {createdDate
-                  ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(createdDate)
+                  ? new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(createdDate)
                   : t('N/A', 'غير متاح')}
               </div>
             </div>
@@ -572,7 +572,7 @@ function SubAccountDetailsModal({
               </b>
               <div style={{ color: 'var(--ob-muted)', fontSize: '10px' }}>
                 {activatedDate
-                  ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(activatedDate)
+                  ? new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(activatedDate)
                   : t('User has received activation link and password reset instructions', 'المستخدم استلم رابط التفعيل وتعليمات تعيين كلمة المرور')}
               </div>
             </div>
@@ -1062,7 +1062,7 @@ export function AdminUsers() {
                     </td>
                     <td>
                       <time dateTime={created?.toISOString()}>
-                        {created ? new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', {
+                        {created ? new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', {
                           timeZone: 'Africa/Cairo',
                           day: 'numeric',
                           month: 'short',

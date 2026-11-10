@@ -91,7 +91,7 @@ export function useBusinessMetrics(filter: number | MetricsFilter = 30) {
     const key = date.toISOString().slice(0, 10);
     return {
       date: key,
-      label: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       revenue: paid.filter(transaction => transaction.currency === currency && toIsoDateString(transaction.createdAt ?? transaction.date).slice(0, 10) === key).reduce((sum, transaction) => sum + (typeof transaction.amount === 'number' ? transaction.amount : 0), 0),
       events: recentEvents.filter(event => toIsoDateString(event.createdAt).slice(0, 10) === key).length,
     };

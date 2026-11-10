@@ -165,7 +165,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
       ) : (
         <>
           <div className="adm-metrics">
-            <Metric label={t('Total records', 'إجمالي السجلات')} value={scopedRows.length.toLocaleString(ar ? 'ar-EG' : 'en-US')} icon={<Building2 size={19} />} />
+            <Metric label={t('Total records', 'إجمالي السجلات')} value={scopedRows.length.toLocaleString('en-US')} icon={<Building2 size={19} />} />
             <Metric label={t('Healthy / complete', 'نشطة أو مكتملة')} value={String(scopedRows.filter(r => ['Active', 'Completed', 'Published', 'Connected', 'Verified', 'Confirmed', 'Won', 'Resolved'].includes(r.status)).length)} icon={<Check size={19} />} />
             <Metric label={t('Needs attention', 'تحتاج متابعة')} value={String(rows.filter(r => ['Failed', 'Pending', 'Blocked', 'Expired', 'Disconnected'].includes(r.status)).length)} icon={<Activity size={19} />} />
             <Metric
@@ -605,7 +605,7 @@ function AnalyticsOverview() {
         />
         <Metric
           label={t('AI Tokens Consumed', 'رموز الذكاء المستهلكة')}
-          value={new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US', { notation: 'compact' }).format(tokens)}
+          value={new Intl.NumberFormat('en-US', { notation: 'compact' }).format(tokens)}
           icon={<Bot size={19} />}
           detail={`${models.length} ${t('model allocations', 'توزيعات نماذج')}`}
         />
@@ -698,7 +698,7 @@ function AnalyticsOverview() {
                     <b>{pct}%</b>
                   </span>
                   <progress max={budget} value={used} />
-                  <small>{Number(used).toLocaleString(ar ? 'ar-EG' : 'en-US')} / {Number(budget).toLocaleString(ar ? 'ar-EG' : 'en-US')} tokens ({r.model})</small>
+                  <small dir="ltr">{Number(used).toLocaleString('en-US')} / {Number(budget).toLocaleString('en-US')} tokens ({r.model})</small>
                 </div>
               );
             })}

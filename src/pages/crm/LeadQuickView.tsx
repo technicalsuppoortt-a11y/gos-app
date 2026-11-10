@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useCurrency } from '../../context/CurrencyContext';
 import type { RootState } from '../../store';
 import type { CanonicalLead } from '../../store/slices/crmSlice';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { CRMRouting, type CRMRoute } from '../CRMRouting';
 
 export function LeadQuickView({ lead, close, save, fullRecord, busy }: { lead: CanonicalLead; close: () => void; save: (changes: Partial<CanonicalLead>) => Promise<unknown>; fullRecord: () => void; busy: boolean }) {
+  const { formatPrice } = useCurrency();
   const [note, setNote] = useState('');
   const [route, setRoute] = useState<CRMRoute>({ pipelineId: lead.pipelineId || 'main', stageId: lead.stage });
   const [saving, setSaving] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('');
@@ -20,7 +22,7 @@ export function LeadQuickView({ lead, close, save, fullRecord, busy }: { lead: C
     finally { setSaving(false); }
   };
   return <QuickDetails title={lead.name || 'Lead details'} close={close}>
-    <section><h3>Contact info</h3><dl>{Object.entries({ Email: lead.email, Phone: lead.phone, Company: lead.company, Source: lead.source, Owner: lead.owner, Value: lead.value, Created: lead.createdAt }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{String(value ?? '—')}</dd></div>)}</dl></section>
+    <section><h3>Contact info</h3><dl>{Object.entries({ Email: lead.email, Phone: lead.phone, Company: lead.company, Source: /^(checkout|service|services)$/i.test(String(lead.source || '')) ? 'Services' : lead.source, ...(lead.interest ? { Purchased: lead.interest } : {}), Owner: lead.owner, Value: formatPrice(lead.value || 0, (lead as { currency?: string }).currency || 'EUR'), Created: lead.createdAt }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{String(value ?? '—')}</dd></div>)}</dl></section>
     <section><h3>Pipeline routing</h3><p className="detail-muted">Transfer this lead to an active pipeline and choose its destination stage.</p><CRMRouting disabled={busy || saving} value={route} onChange={next => { setRoute(next); setMessage(''); setError(''); }}/><button type="button" className="detail-primary" disabled={busy || saving || !changed || !target?.stages.some(s => s.id === route.stageId)} onClick={() => void persist({ pipelineId: target!.id, stage: route.stageId as CanonicalLead['stage'], lifecycleStage: route.stageId as CanonicalLead['stage'] }, 'Pipeline routing saved.')}>{saving ? 'Saving…' : 'Save pipeline routing'}</button></section>
     {error && <p role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     <section><h3>Custom fields</h3>{Object.keys(fields.customFields ?? {}).length ? <dl>{Object.entries(fields.customFields ?? {}).map(([key, value]) => <div key={key}><dt>{fields.customFieldLabels?.[key] || key}</dt><dd>{String(value)}</dd></div>)}</dl> : <p className="detail-muted">No custom fields added.</p>}</section>

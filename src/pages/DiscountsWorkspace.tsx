@@ -933,7 +933,7 @@ function PerformanceChart({ range, orders }: { range: string; orders: Discounted
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   const label = new Intl.DateTimeFormat(
-    language,
+    language.startsWith('ar') ? 'ar-EG-u-nu-latn' : 'en-US',
     daily ? { month: 'short', day: 'numeric' } : { month: 'short' },
   );
   const buckets = Array.from({ length: count }, (_, index) => {

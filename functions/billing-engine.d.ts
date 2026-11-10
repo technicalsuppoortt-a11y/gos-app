@@ -63,6 +63,9 @@ export interface BillingSubscription {
   extraTools: string[];
   renewals: number;
   creditBlocked: boolean;
+  autoRenew?: boolean;
+  lastAutoRenewedAt?: string;
+  autoRenewError?: string | null;
   addons?: AddonItem[];
   updatedAt: string;
 }
@@ -108,7 +111,9 @@ export interface CommunicationWallet {
   id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; currency: Currency;
   balance: number; held: number; lifetimeTopup: number; lifetimeSpent: number;
   lowBalanceThreshold: number; lowBalance: boolean;
+  autoRenew?: boolean;
   autoRecharge: { enabled: boolean; below: string; amount: string; method: string };
+  creditAutoRecharge?: { enabled: boolean; belowCredits: number; addCredits: number };
   createdAt: string; updatedAt: string;
 }
 
@@ -195,6 +200,7 @@ export interface WalletAnalyticsReport {
 
 export interface BillingRequest {
   id: string; requesterId: string; requesterRole: 'ADMIN' | 'USER'; requesterName: string; requesterEmail: string;
+  invoiceId?: string; invoiceNumber?: string;
   providerId: string; type: 'plan' | 'renewal' | 'addon' | 'wallet_topup'; planId: string; quantity: number; currency?: Currency;
   plan: { name: LocalizedText; kind: PlanKind; price: number; currency: Currency; credits: number; emailCredits?: number; billingType: BillingPlan['billingType']; addonType: AddonType | null };
   mainPlanPrice?: number;
@@ -204,12 +210,60 @@ export interface BillingRequest {
   totalAmount?: number;
   total: number;
   creditAmount?: number;
+  walletCharged?: number;
+  walletCurrency?: Currency;
   coupon?: { id: string; code: string; type: CouponType; value: number; discount: number; bonus: number } | null;
   note: string; status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   createdAt: string; decidedAt?: string; decidedBy?: string; reason?: string;
-  paymentMethod?: string; paymentType?: 'manual' | 'gateway';
+  paymentMethod?: string; paymentType?: 'wallet' | 'manual' | 'gateway';
   receiptUrl?: string; receiptPath?: string; imageUrl?: string; fileUrl?: string;
   receiptName?: string; fileName?: string; transactionId?: string;
+}
+
+export interface InvoiceParty {
+  id: string;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  name: string;
+  brandName?: string;
+  logoUrl?: string;
+  email?: string;
+}
+
+export interface InvoiceLineItem {
+  description: LocalizedText;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  credits?: number;
+  emailCredits?: number;
+}
+
+export interface BillingInvoice {
+  id: string;
+  invoiceNumber: string;
+  requestId: string;
+  subscriberId: string;
+  subscriberRole: 'ADMIN' | 'USER';
+  providerId: string;
+  type: 'plan' | 'renewal' | 'addon' | 'wallet_topup';
+  status: 'paid' | 'pending' | 'rejected' | 'cancelled';
+  currency: Currency;
+  subtotal: number;
+  discount: number;
+  total: number;
+  walletCharged?: number;
+  walletCurrency?: Currency;
+  paymentType: 'wallet' | 'manual' | 'gateway';
+  paymentMethod: string;
+  transactionId?: string;
+  couponCode?: string | null;
+  issuer: InvoiceParty;
+  customer: InvoiceParty;
+  items: InvoiceLineItem[];
+  issuedAt: string;
+  paidAt: string | null;
+  updatedAt: string;
+  note?: string;
 }
 
 export interface BillingActor { uid: string; role: string; name?: string; email?: string; supportParentId?: string; accountType?: 'agency'; status?: string; billingOwnerId?: string; createdBy?: string }
@@ -227,6 +281,8 @@ export const CHANNEL_IDS: readonly ['ai', 'whatsapp', 'messenger', 'instagram', 
 export const AI_CAPABILITIES: readonly ['ai'];
 export const COMMUNICATION_CHANNELS: readonly ['whatsapp', 'messenger', 'instagram', 'email', 'sms', 'webchat'];
 export const WALLET_CURRENCY: 'EUR';
+export const EXCHANGE_RATES: Record<string, number>;
+export function convertMoney(value: number, fromCurrency?: string, toCurrency?: string): number;
 export const COUPON_TYPES: readonly ['percent', 'fixed', 'credit_bonus'];
 export const COUPON_SCOPES: readonly ['wallet_topup', 'plan', 'addon'];
 export function normalizeCouponCode(value: string): string;

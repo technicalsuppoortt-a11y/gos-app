@@ -294,7 +294,7 @@ export function AdminAIUsage({
           </span>
           <div className="aiu-kpi-meta">
             <span>{t('Total Tokens Consumed', 'إجمالي الرموز المستهلكة')}</span>
-            <strong>{loading ? '…' : totalTokens.toLocaleString(ar ? 'ar-EG' : 'en-US')}</strong>
+            <strong dir="ltr">{loading ? '…' : totalTokens.toLocaleString('en-US')}</strong>
             <small>{t('Across all connected LLMs & Copilot sessions', 'عبر جميع نماذج LLM وجلسات Copilot')}</small>
           </div>
         </div>
@@ -595,14 +595,14 @@ export function AdminAIUsage({
                       </div>
                     </td>
                     <td>
-                      <span className="aiu-token-count">
-                        {row.tokens.toLocaleString(ar ? 'ar-EG' : 'en-US')}
+                      <span className="aiu-token-count" dir="ltr">
+                        {row.tokens.toLocaleString('en-US')}
                       </span>
                     </td>
                     <td>
-                      <span style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
+                      <span dir="ltr" style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
                         {row.budget !== null
-                          ? `${row.budget.toLocaleString(ar ? 'ar-EG' : 'en-US')} Tokens`
+                          ? `${row.budget.toLocaleString('en-US')} Tokens`
                           : `${policy.budget} Tokens (Default)`}
                       </span>
                     </td>

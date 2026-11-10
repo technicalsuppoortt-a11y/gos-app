@@ -53,7 +53,7 @@ type RequestRow = {
 const date = (value: string) => {
   if (!value) return '—';
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString('en-US');
 };
 
 const initials = (name: string) =>
@@ -84,12 +84,114 @@ async function applyRequestDecision(
   } catch {
     // Persist directly to Firestore when the request was created in scoped/preview mode
   }
-  await Promise.allSettled([
+  const orderStatus = decision === 'approve' ? 'Paid' : 'Rejected';
+  const reqAmount = Number(request.totals?.dueToday ?? request.totals?.price ?? 0);
+  const orderPatch = {
+    ...request,
+    id: request.id,
+    orderId: request.id,
+    amount: reqAmount,
+    total: reqAmount,
+    status: orderStatus,
+    reviewNote: trimmedNote,
+    decidedAt,
+  };
+  const emailLower = String(request.customerEmail || '').trim().toLowerCase();
+  const emailSlug = (emailLower || request.id).replace(/[^a-z0-9]/g, '').slice(0, 24) || request.id.slice(0, 16);
+  const leadId = `lead-order-${emailSlug}`;
+  const writes: Promise<unknown>[] = [
     setDoc(doc(db, 'settings', `checkoutRequests_${tenantId}`, 'items', request.id), updatedRequest, { merge: true }),
     setDoc(doc(db, 'tenants', tenantId, 'checkoutRequests', request.id), updatedRequest, { merge: true }),
-  ]);
+    setDoc(doc(db, 'tenants', tenantId, 'orders', request.id), orderPatch, { merge: true }),
+  ];
+  if (decision === 'approve' || reqAmount > 0) {
+    writes.push(setDoc(doc(db, 'tenants', tenantId, 'transactions', request.id), { ...orderPatch, date: request.createdAt || decidedAt }, { merge: true }));
+  }
+  if (decision === 'approve') {
+    const products = readCloud<Record<string, any>[]>('entity:products', []);
+    const matchedProduct = products.find(
+      p => p.id === (request.productId || request.items?.[0]?.productId) || String(p.name || '').trim().toLowerCase() === String(request.productName || '').trim().toLowerCase()
+    );
+    const targetStage = matchedProduct?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED';
+    const targetPipeline = matchedProduct?.config?.crmRouting?.pipelineId || 'main';
+    const crmTag = matchedProduct?.config?.automations?.crmTag;
+    const existingLeads = readCloud<Record<string, any>[]>('entity:leads', []);
+    const prevLead = existingLeads.find(
+      l => l.id === leadId || (emailLower && String(l.email || '').trim().toLowerCase() === emailLower)
+    );
+    const resolvedLeadId = prevLead?.id || leadId;
+    const prevTags = Array.isArray(prevLead?.tags)
+      ? prevLead.tags.filter((t: string) => !/^checkout$/i.test(String(t || '').trim()))
+      : [];
+    const prevAttached = Array.isArray(prevLead?.attachedProducts) ? prevLead.attachedProducts : [];
+    const prodId = request.productId || request.items?.[0]?.productId || matchedProduct?.id || 'product';
+    const prodName = request.productName || request.items?.[0]?.productName || matchedProduct?.name || 'Product';
+    const rawType = String(matchedProduct?.type || '').trim().toLowerCase();
+    const prodTypeLabel: 'Course' | 'Digital Product' | 'Service' = rawType.includes('course')
+      ? 'Course'
+      : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
+        ? 'Service'
+        : /course|academy|masterclass|bootcamp/i.test(prodName)
+          ? 'Course'
+          : /service|consult|coaching|session/i.test(prodName)
+            ? 'Service'
+            : 'Digital Product';
+    const nextAttached = prevAttached.some((item: any) => item?.productId === prodId)
+      ? prevAttached.map((item: any) => (item?.productId === prodId && !item?.productType ? { ...item, productType: prodTypeLabel } : item))
+      : [...prevAttached, { productId: prodId, productName: prodName, productType: prodTypeLabel, attachedAt: decidedAt }];
+    const prevActivities = Array.isArray(prevLead?.activities) ? prevLead.activities : [];
+    const actId = `act-paid-${request.id}`;
+    const nextActivities = prevActivities.some((item: any) => item?.id === actId)
+      ? prevActivities
+      : [
+          {
+            id: actId,
+            type: 'payment',
+            title: `${prodTypeLabel} purchased`,
+            detail: `${prodTypeLabel}: ${prodName} · ${request.currency || 'USD'} ${reqAmount.toFixed(2)}`,
+            at: decidedAt,
+          },
+          ...prevActivities,
+        ];
+    const resolvedSource =
+      !prevLead?.source || /^(checkout|service|services)$/i.test(String(prevLead.source).trim())
+        ? 'Services'
+        : prevLead.source;
+    const approvedLead = {
+      ...(prevLead || {
+        id: resolvedLeadId,
+        company: '',
+        owner: 'Unassigned',
+        bookingStatus: 'Not Scheduled',
+        hasWhatsAppConsent: Boolean(request.customerPhone && request.customerPhone !== '—'),
+        hasMessagingConsent: true,
+        hasEmailConsent: Boolean(emailLower),
+        notes: [],
+        createdAt: request.createdAt || decidedAt,
+      }),
+      id: resolvedLeadId,
+      name: request.customerName || prevLead?.name || emailLower.split('@')[0] || 'Customer',
+      email: request.customerEmail || prevLead?.email || '',
+      phone: request.customerPhone && request.customerPhone !== '—' ? request.customerPhone : (prevLead?.phone || ''),
+      source: resolvedSource,
+      pipelineId: prevLead?.pipelineId || targetPipeline,
+      stage: targetStage,
+      lifecycleStage: targetStage,
+      value: Math.max(Number(prevLead?.value || 0), reqAmount),
+      currency: request.currency || prevLead?.currency || 'USD',
+      interest: prevLead?.interest && prevLead.interest !== prodName ? prevLead.interest : `${prodTypeLabel}: ${prodName}`,
+      orderId: request.id,
+      qualificationStatus: 'Qualified',
+      followUpState: 'CUSTOMER',
+      tags: [...new Set([prodTypeLabel, prodName, 'Customer', ...(crmTag ? [crmTag] : []), ...prevTags])],
+      attachedProducts: nextAttached,
+      activities: nextActivities,
+      lastActivity: decidedAt,
+    };
+    writes.push(setDoc(doc(db, 'tenants', tenantId, 'leads', resolvedLeadId), approvedLead, { merge: true }));
+  }
+  await Promise.allSettled(writes);
   try {
-    const emailLower = String(request.customerEmail || '').trim().toLowerCase();
     if (emailLower) {
       const contacts = readCloud<Record<string, any>[]>('entity:contacts', []);
       if (!contacts.some(row => String(row.email ?? '').trim().toLowerCase() === emailLower)) {
@@ -102,7 +204,7 @@ async function applyRequestDecision(
               email: request.customerEmail,
               phone: request.customerPhone && request.customerPhone !== '—' ? request.customerPhone : '',
               status: 'Active',
-              source: 'Checkout',
+              source: 'Services',
               createdAt: request.createdAt || decidedAt,
             },
             ...contacts,

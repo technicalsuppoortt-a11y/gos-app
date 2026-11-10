@@ -17,6 +17,7 @@ import '../../pages/admin/admin-workspace.css';
 import './super-admin.css';
 import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
+import { WalletBadge } from './WalletBadge';
 import { PlatformAccountSwitcher } from './PlatformAccountSwitcher';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
@@ -189,7 +190,7 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           )}
         </div>
-        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <CreditBadge/>}
+        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <div className="inline-flex items-center gap-1.5 shrink-0"><CreditBadge/><WalletBadge/></div>}
         {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink>}
         {canOpen('/super-admin/logs') && <button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate('/super-admin/logs')}><Bell size={17}/><i/></button>}
         <button className="sa-account" onClick={() => navigate('/super-admin/users')} disabled={!canOpen('/super-admin/users')}><span>{name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><b>{name}</b></button>

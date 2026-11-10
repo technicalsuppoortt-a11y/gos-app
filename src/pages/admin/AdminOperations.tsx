@@ -92,7 +92,7 @@ function formatPrettyDate(iso: string, ar: boolean): { day: string; time: string
   if (!iso || iso === '—') return null;
   const parsed = new Date(iso);
   if (!Number.isFinite(parsed.getTime())) return null;
-  const locale = ar ? 'ar-EG' : 'en-US';
+  const locale = ar ? 'ar-EG-u-nu-latn' : 'en-US';
   return {
     day: parsed.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }),
     time: parsed.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),

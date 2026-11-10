@@ -884,7 +884,7 @@ function KpiRow() {
               {localizeNode(k.label)}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className={`whitespace-nowrap text-[24px] font-extrabold tracking-tight leading-none ${H}`}>
+              <span dir="ltr" className={`whitespace-nowrap text-[24px] font-extrabold tracking-tight leading-none tabular-nums ${H}`}>
                 {localizeNode(k.value)}
               </span>
               <span className="inline-flex items-center gap-0.5 font-semibold text-[10px] text-emerald-600 dark:text-emerald-400 leading-none">
@@ -1023,7 +1023,8 @@ function RevenueOverview() {
           <h2 className={`text-xs font-bold leading-none ${H}`}>{translateText("Revenue Overview")}</h2>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
             <span
-              className={`text-xl font-extrabold tracking-tight leading-none ${H}`}
+              dir="ltr"
+              className={`text-xl font-extrabold tracking-tight leading-none tabular-nums ${H}`}
             >
               {localizeNode(m.money(total))}
             </span>
@@ -1082,7 +1083,7 @@ function RevenueOverview() {
       {/* Chart canvas: balanced h-36 / max-h-40 container matching ToolsGrid height */}
       <div className="analytics-chart mt-2 flex h-36 max-h-40 flex-1 gap-2 [direction:ltr] min-h-0">
         {/* Y axis */}
-        <div className="relative w-7 shrink-0 text-[10px] font-medium text-slate-400">
+        <div className="relative w-8 shrink-0 text-[10px] font-medium text-slate-400 tabular-nums">
           <div className="absolute inset-x-0 bottom-[18px] top-1.5">
             {localizeNode(ticks.map((t, i) => (
               <span
@@ -1187,7 +1188,7 @@ function RevenueOverview() {
 
 function RecentActivity() {
   const m = useBusinessMetrics();
-  const ACTIVITY = withUniqueListIds([...m.events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt))).map(event => ({ id: event.id, text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString(), icon: IcZap, tone: 'purple' as Tone }));
+  const ACTIVITY = withUniqueListIds([...m.events].sort((a,b) => parseTimestampMs(b.createdAt) - parseTimestampMs(a.createdAt))).map(event => ({ id: event.id, text: eventLabel(event.type) + ' · ' + resourceLabel(event.resource), time: new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString('en-US'), icon: IcZap, tone: 'purple' as Tone }));
   useUILanguage();
   const navigate = useNavigate();
   return (

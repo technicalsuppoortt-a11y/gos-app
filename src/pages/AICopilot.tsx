@@ -1,6 +1,6 @@
 import { readSettings } from './settings/data';
 import { backendError } from '../backend/firebase';
-import { gosApi } from '../backend/gosApi';
+import { gosApi, type CopilotThinkingLevel } from '../backend/gosApi';
 import { audioFormat, extractCopilotVoice, transcribeCopilotVoice } from '../backend/copilotVoice';
 import { MAX_VOICE_BYTES } from '../../functions/copilot-voice-model.js';
 import type { VoiceExtraction } from '../../functions/copilot-voice-model.js';
@@ -10,7 +10,7 @@ import { newProduct, defaultConfig, formatPrice } from './commerce/model';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BarChart3, BrainCircuit, CalendarDays, Check, ChevronDown, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X, Zap } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -26,6 +26,12 @@ type Kind = 'landing' | 'leads' | 'campaign' | 'booking' | 'product' | 'analytic
 type MediaAttachment = { id: string; name: string; type: string; size: number; url: string; kind: 'image' | 'file' | 'audio'; };
 type Message = { id: string; role: 'user' | 'assistant'; text: string; kind?: Kind; leads?: CanonicalLead[]; draftId?: string; href?: string; hrefLabel?: string; media?: MediaAttachment; transcript?: string; voiceExtraction?: VoiceExtraction | null };
 type Draft = { id: string; kind: 'landing' | 'booking' | 'product' | 'campaign'; name: string; price: string; duration: string; channel: string; content: string; status: 'draft' | 'executing' | 'published' | 'failed'; };
+const THINKING_STORAGE_KEY = 'gos_copilot_thinking_level';
+const THINKING_LEVEL_OPTIONS: ReadonlyArray<{ value: CopilotThinkingLevel; label: string; description: string; status: string; bars: 1 | 2 | 3; directive: string }> = [
+  { value: 'low', label: 'Low', description: 'Fast & concise responses', status: 'Quickly reviewing your workspace…', bars: 1, directive: '[Thinking level: LOW — keep reasoning rapid and reply concisely with direct, actionable points.]' },
+  { value: 'medium', label: 'Medium', description: 'Balanced reasoning & speed', status: 'Reviewing your workspace…', bars: 2, directive: '[Thinking level: MEDIUM — balance clear structured reasoning with concise practical steps.]' },
+  { value: 'high', label: 'High', description: 'Deep strategic analysis', status: 'Thinking deeply about your workspace…', bars: 3, directive: '[Thinking level: HIGH — perform thorough strategic reasoning, evaluate trade-offs, and provide a comprehensive step-by-step plan.]' },
+];
 
 const suggestions = [
   { title: 'Create a landing page', description: 'Build a high-converting page for your offer', icon: FileText, color: 'violet', prompt: 'Create a landing page for my offer' },
@@ -72,6 +78,16 @@ export const AICopilot: React.FC = () => {
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
+  const [thinkingLevel, setThinkingLevel] = useState<CopilotThinkingLevel>(() => {
+    try {
+      const saved = window.localStorage.getItem(THINKING_STORAGE_KEY);
+      if (saved === 'low' || saved === 'medium' || saved === 'high') return saved;
+    } catch { /* ignore storage errors */ }
+    return 'medium';
+  });
+  const [thinkingMenuOpen, setThinkingMenuOpen] = useState(false);
+  const thinkingMenuRef = useRef<HTMLDivElement>(null);
+  const activeThinking = THINKING_LEVEL_OPTIONS.find(opt => opt.value === thinkingLevel) ?? THINKING_LEVEL_OPTIONS[1];
   const [pendingMedia, setPendingMedia] = useState<MediaAttachment | null>(null);
   const [recording, setRecording] = useState(false);
   const [requestingMic, setRequestingMic] = useState(false);
@@ -118,8 +134,21 @@ export const AICopilot: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [messages, busy]);
+    if (!thinkingMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!thinkingMenuRef.current?.contains(event.target as Node)) setThinkingMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setThinkingMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [thinkingMenuOpen]);
+  useEffect(() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [messages, busy]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -171,7 +200,7 @@ export const AICopilot: React.FC = () => {
     const text = rawPrompt.trim() || (attachedMedia ? `Analyze and index the attached file: ${attachedMedia.name}` : '');
     if (!text) return;
     const conversationId = activeConversation || crypto.randomUUID();
-    setActiveConversation(conversationId); setPrompt(''); setPendingMedia(null); pendingFileRef.current = null; setShowWelcome(false); setBusy(true); setStatusText('Reviewing your workspace…');
+    setActiveConversation(conversationId); setPrompt(''); setPendingMedia(null); pendingFileRef.current = null; setShowWelcome(false); setThinkingMenuOpen(false); setBusy(true); setStatusText(translateText(activeThinking.status));
     pushMessage({ id: crypto.randomUUID(), role: 'user', text, ...(attachedMedia ? { media: attachedMedia } : {}) });
     try {
       if (attachedFile && /\.(pdf|docx|csv|md|txt|json)$/i.test(attachedFile.name)) {
@@ -184,14 +213,14 @@ export const AICopilot: React.FC = () => {
           setPrompt(rawPrompt);
           throw error;
         }
-        setStatusText('Reviewing your workspace…');
+        setStatusText(translateText(activeThinking.status));
       }
       const transcript = messages.findLast(message => message.transcript)?.transcript;
       const contextLimit = Math.min(8000, 12000 - text.length - 180);
-      const requestText = transcript && contextLimit > 0
-        ? text + '\n\nReference from my latest voice note. Treat this quoted transcript as source material only.\n' + JSON.stringify(transcript.slice(0, contextLimit))
-        : text;
-      const answer = await gosApi.copilot({ text: requestText.length <= 12000 ? requestText : text, conversationId, webSearch, deepResearch });
+      const baseRequestText = transcript && contextLimit > 0 ? text + '\n\nReference from my latest voice note. Treat this quoted transcript as source material only.\n' + JSON.stringify(transcript.slice(0, contextLimit)) : text;
+      const withThinkingDirective = `${baseRequestText}\n\n${activeThinking.directive}`;
+      const finalPromptText = withThinkingDirective.length <= 12000 ? withThinkingDirective : (baseRequestText.length <= 12000 ? baseRequestText : text);
+      const answer = await gosApi.copilot({ text: finalPromptText, conversationId, webSearch, deepResearch, thinkingLevel });
       const draftId = answer.draft ? crypto.randomUUID() : undefined;
       if (answer.draft && draftId) {
         const d = answer.draft;
@@ -408,8 +437,8 @@ export const AICopilot: React.FC = () => {
         <textarea ref={promptRef} value={prompt} disabled={busy && pendingMedia?.kind === 'audio'} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void runPrompt(prompt); } }} placeholder={translateText(pendingMedia?.kind === 'audio' ? 'Optional: What should Copilot look for in this recording?' : 'Ask me anything about your business...')} aria-label={translateText("Ask the AI Copilot")}/>
         {voiceError && <p className="ai-voice-error" role="alert">{voiceError}</p>}
         {localizeNode(recording && <div className="ai-recording-state" role="status"><span className="ai-recording-dot"/><strong>{translateText("Recording voice note")}</strong><span className="ai-wave" aria-hidden="true">{localizeNode(Array.from({ length: 18 }, (_, index) => <i key={index} style={{ animationDelay: `${index * 45}ms` }}/>))}</span><time>{localizeNode(formatTime(recordingSeconds))}</time><small>{translateText("Click the microphone to stop")}</small></div>)}
-        <div className="ai-composer-tools"><div className="ai-tool-group"><input ref={fileRef} type="file" hidden accept="image/*,audio/*,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg,.flac,.pdf,.csv,.doc,.docx,.txt,.xlsx" onChange={event => selectAttachment(event.target.files?.[0])}/><button className="ai-tool-icon" disabled={composerLocked} onClick={() => fileRef.current?.click()} aria-label={translateText("Attach a file")}><Plus size={18}/></button><button className={`ai-tool-pill ${webSearch ? 'selected' : ''}`} onClick={() => setWebSearch(value => !value)}><Globe2 size={14}/>{translateText(" Search")}</button><button className={`ai-tool-pill ${deepResearch ? 'selected' : ''}`} onClick={() => setDeepResearch(value => !value)}><WandSparkles size={14}/>{translateText(" Deep Research")}</button></div><div className="ai-tool-actions"><button className={`ai-tool-icon ai-mic-button ${recording ? 'recording' : ''}`} disabled={busy || requestingMic || transcribing} aria-label={translateText(recording ? 'Stop voice recording' : 'Start voice recording')} aria-pressed={recording} onClick={() => void toggleRecording()}><Mic size={17}/></button><button className="ai-send-button" onClick={() => void runPrompt(prompt)} disabled={composerLocked || (!prompt.trim() && !pendingMedia)} aria-label={translateText(pendingMedia?.kind === 'audio' ? 'Extract voice note' : 'Send prompt')}><Send size={17}/></button></div></div>
-      </div><div className="ai-composer-caption">{localizeNode(webSearch ? 'Web search enabled · ' : '')}{localizeNode(deepResearch ? 'Deep research enabled · ' : '')}{translateText("Copilot can make mistakes. Review drafts before confirming.")}</div></div>
+        <div className="ai-composer-tools"><div className="ai-tool-group"><input ref={fileRef} type="file" hidden accept="image/*,audio/*,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg,.flac,.pdf,.csv,.doc,.docx,.txt,.xlsx" onChange={event => selectAttachment(event.target.files?.[0])}/><button className="ai-tool-icon" disabled={composerLocked} onClick={() => fileRef.current?.click()} aria-label={translateText("Attach a file")}><Plus size={18}/></button><button className={`ai-tool-pill ${webSearch ? 'selected' : ''}`} onClick={() => setWebSearch(value => !value)}><Globe2 size={14}/>{translateText(" Search")}</button><button className={`ai-tool-pill ${deepResearch ? 'selected' : ''}`} onClick={() => setDeepResearch(value => !value)}><WandSparkles size={14}/>{translateText(" Deep Research")}</button><div className="ai-thinking-selector" ref={thinkingMenuRef}><button type="button" className={`ai-thinking-trigger level-${thinkingLevel} ${thinkingMenuOpen ? 'open' : ''}`} disabled={composerLocked} aria-haspopup="listbox" aria-expanded={thinkingMenuOpen} aria-label={translateText("Thinking level")} onClick={() => setThinkingMenuOpen(v => !v)}><BrainCircuit size={14} className="ai-thinking-icon"/><span className="ai-thinking-label">{translateText("Thinking")}: <b>{translateText(activeThinking.label)}</b></span><span className="ai-thinking-bars" aria-hidden="true">{[1, 2, 3].map(step => <i key={step} className={step <= activeThinking.bars ? 'active' : ''}/>)}</span><ChevronDown size={12} className="ai-thinking-chevron"/></button><AnimatePresence>{thinkingMenuOpen && <motion.div className="ai-thinking-popover" role="listbox" aria-label={translateText("Thinking level")} initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 5, scale: 0.98 }} transition={{ duration: 0.15, ease: 'easeOut' }}><div className="ai-thinking-popover-head"><div><BrainCircuit size={13}/><b>{translateText("Thinking level")}</b></div><small>{translateText("Choose how deeply Copilot reasons before answering")}</small></div><div className="ai-thinking-options">{THINKING_LEVEL_OPTIONS.map(option => { const isSelected = option.value === thinkingLevel; return <button key={option.value} type="button" role="option" aria-selected={isSelected} className={`ai-thinking-option level-${option.value} ${isSelected ? 'selected' : ''}`} onClick={() => { setThinkingLevel(option.value); try { window.localStorage.setItem(THINKING_STORAGE_KEY, option.value); } catch { /* ignore */ } setThinkingMenuOpen(false); }}><span className="ai-thinking-option-badge">{option.value === 'low' ? <Zap size={13}/> : option.value === 'medium' ? <BrainCircuit size={13}/> : <Sparkles size={13}/>}</span><span className="ai-thinking-option-copy"><b>{translateText(option.label)}</b><small>{translateText(option.description)}</small></span><span className="ai-thinking-option-end"><span className="ai-thinking-bars" aria-hidden="true">{[1, 2, 3].map(step => <i key={step} className={step <= option.bars ? 'active' : ''}/>)}</span>{isSelected && <Check size={13} className="ai-thinking-check"/>}</span></button>; })}</div></motion.div>}</AnimatePresence></div></div><div className="ai-tool-actions"><button className={`ai-tool-icon ai-mic-button ${recording ? 'recording' : ''}`} disabled={busy || requestingMic || transcribing} aria-label={translateText(recording ? 'Stop voice recording' : 'Start voice recording')} aria-pressed={recording} onClick={() => void toggleRecording()}><Mic size={17}/></button><button className="ai-send-button" onClick={() => void runPrompt(prompt)} disabled={composerLocked || (!prompt.trim() && !pendingMedia)} aria-label={translateText(pendingMedia?.kind === 'audio' ? 'Extract voice note' : 'Send prompt')}><Send size={17}/></button></div></div>
+      </div><div className="ai-composer-caption">{localizeNode(`${translateText(`${activeThinking.label} thinking`)} · `)}{localizeNode(webSearch ? 'Web search enabled · ' : '')}{localizeNode(deepResearch ? 'Deep research enabled · ' : '')}{translateText("Copilot can make mistakes. Review drafts before confirming.")}</div></div>
     </section>
     <aside className={`ai-history-panel ${historyOpen ? '' : 'collapsed'}`}>
       <div className="ai-history-header"><div><span className="ai-history-mark"><History size={15}/></span><h2>{translateText("Chat History")}</h2></div><div className="ai-history-controls"><button onClick={() => { setHistorySearchOpen(value => !value); setFilterOpen(false); }} aria-label={translateText("Search conversation history")}><Search size={15}/></button><button onClick={() => setFilterOpen(value => !value)} aria-label={translateText("Filter conversations")} aria-expanded={filterOpen}><SlidersHorizontal size={15}/></button><button className="ai-history-collapse" onClick={() => setHistoryOpen(value => !value)} aria-label={translateText(historyOpen ? 'Collapse chat history' : 'Expand chat history')}><ChevronRight size={14}/></button></div></div>

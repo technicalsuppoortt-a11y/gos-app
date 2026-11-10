@@ -15,7 +15,7 @@ import { Dialog } from './CRMDialogs';
 import { CustomSelect } from './CRMPrimitives';
 import { linkedToLead, productCheckoutURL } from './recordLinks';
 
-const date = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString() : value || '';
+const date = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('en-US') : value || '';
 
 export function LiveOrders({ lead }: { lead: CanonicalLead }) {
   const { formatPrice } = useCurrency();
@@ -47,13 +47,37 @@ export function LiveOrders({ lead }: { lead: CanonicalLead }) {
       <p className="crm-muted">{translateText('Purchases and payments linked by contact, email or phone.')}</p>
       <button type="button" className="crm2-btn-primary" onClick={() => { setProductId(''); setOpen(true); }}><Plus size={14}/>{translateText('Attach Product')}</button>
     </div>
-    {rows.length ? <div>{rows.map(row => <div className="crm-feed-item" key={row.id}>
-      <Package size={20}/><div><b>{row.productName || row.product_name || row.invoiceNumber || 'Order / payment'}</b><p>{date(row.createdAt || row.created_at || row.at || row.date)}{row.invoiceNumber ? ' · Invoice ' + row.invoiceNumber : ''}</p></div>
-      <span>{row.status} {formatPrice(Number(row.total ?? row.amount ?? NaN), row.currency || 'USD')}</span>
-    </div>)}</div> : <p className="crm-empty">{translateText('No orders recorded for this contact. Attach a product to track interest or share its checkout link.')}</p>}
+    {rows.length ? <div>{rows.map(row => {
+      const matchedProd = products.find(p => p.id === (row.productId || row.product_id) || (row.productName && p.name.toLowerCase() === String(row.productName).toLowerCase()));
+      const rawType = String(row.productType || matchedProd?.type || '').toLowerCase();
+      const typeLabel = rawType.includes('course')
+        ? 'Course'
+        : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
+          ? 'Service'
+          : /course|academy|masterclass/i.test(String(row.productName || row.product_name || ''))
+            ? 'Course'
+            : /service|consult|coaching|session/i.test(String(row.productName || row.product_name || ''))
+              ? 'Service'
+              : 'Digital Product';
+      return <div className="crm-feed-item" key={row.id}>
+        <Package size={20}/><div><b>{row.productName || row.product_name || row.invoiceNumber || 'Order / payment'}</b><p>{translateText(typeLabel)} · {date(row.createdAt || row.created_at || row.at || row.date)}{row.invoiceNumber ? ' · Invoice ' + row.invoiceNumber : ''}</p></div>
+        <span>{row.status} {formatPrice(Number(row.total ?? row.amount ?? NaN), row.currency || 'USD')}</span>
+      </div>;
+    })}</div> : <p className="crm-empty">{translateText('No orders recorded for this contact. Attach a product to track interest or share its checkout link.')}</p>}
     {attachments.length > 0 && <div><h3>{translateText('Attached products')}</h3>{attachments.map(attachment => {
       const product = products.find(item => item.id === attachment.productId);
-      return <article className="crm-note" key={attachment.productId}><b>{product?.name || attachment.productName}</b><p className="crm-muted">{translateText('Attached')} {date(attachment.attachedAt)} · {translateText('Purchase not recorded')}</p>{product && share(product)}</article>;
+      const hasOrder = rows.some(r => (r.productId || r.product_id) === attachment.productId || (attachment.productName && String(r.productName || r.product_name || '').toLowerCase() === String(attachment.productName).toLowerCase()));
+      const rawType = String((attachment as { productType?: string }).productType || product?.type || '').toLowerCase();
+      const typeLabel = rawType.includes('course')
+        ? 'Course'
+        : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
+          ? 'Service'
+          : /course|academy|masterclass/i.test(String(product?.name || attachment.productName || ''))
+            ? 'Course'
+            : /service|consult|coaching|session/i.test(String(product?.name || attachment.productName || ''))
+              ? 'Service'
+              : 'Digital Product';
+      return <article className="crm-note" key={attachment.productId}><b>{product?.name || attachment.productName}</b><p className="crm-muted">{translateText(typeLabel)} · {translateText('Attached')} {date(attachment.attachedAt)} · {translateText(hasOrder ? 'Purchased' : 'Purchase not recorded')}</p>{product && share(product)}</article>;
     })}</div>}
     {open && <Dialog title="Attach product to contact" close={() => { if (!actions.busy) setOpen(false); }}>
       <form onSubmit={event => {

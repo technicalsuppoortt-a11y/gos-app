@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type 
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { workspaceResources } from './workspaceResources';
-import { collection, doc, onSnapshot, query, where, writeBatch } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, setDoc, where, writeBatch } from 'firebase/firestore';
 import { db, backendError, callBackend } from './firebase';
 import { forceSignOut, SessionError } from './session';
 import { store, type RootState } from '../store';
@@ -46,11 +46,13 @@ const initializedResources = new Set<string>();
 const revisions = new Map<string, number>();
 const rawEntitySnapshots = new Map<string, Record<string, any>[]>();
 const rawCheckoutRequests = new Map<'tenant' | 'mirror', Record<string, any>[]>();
-const commerceResources = new Set(['products', 'orders', 'transactions', 'contacts', 'discounts']);
+const commerceResources = new Set(['products', 'orders', 'transactions', 'contacts', 'discounts', 'leads']);
+const syncedCommerceLeadSignatures = new Map<string, string>();
 
 function resetRawCommerceCache() {
   rawEntitySnapshots.clear();
   rawCheckoutRequests.clear();
+  syncedCommerceLeadSignatures.clear();
 }
 
 function reconcileCommerceFromRequests() {
@@ -295,13 +297,13 @@ function reconcileCommerceFromRequests() {
       let revenueStr = product.revenue || '$0';
       if (paidProdOrders.length > 0) {
         try {
-          revenueStr = new Intl.NumberFormat(undefined, {
+          revenueStr = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency,
             maximumFractionDigits: 2,
-          }).format(revenueSum);
+          }).format(revenueSum).replace(/\u00A0/g, ' ');
         } catch {
-          revenueStr = `${revenueSum.toFixed(2)} ${currency}`;
+          revenueStr = `${currency} ${revenueSum.toFixed(2)}`;
         }
       }
       const prevStats = Array.isArray(product.stats) ? product.stats : [['sales', '0 sales']];
@@ -355,6 +357,453 @@ function reconcileCommerceFromRequests() {
   }
 
   cache.set('gos_purchased_product_ids', JSON.stringify([...purchasedSet]));
+
+  // 6. CRM Leads & Contacts Sync from Product Purchases & Orders
+  const productsForCrm = readEntityList('products');
+  const productByIdOrName = (prodId?: string, prodName?: string): Record<string, any> | undefined => {
+    const idStr = String(prodId || '').trim();
+    const nameLower = String(prodName || '').trim().toLowerCase();
+    return productsForCrm.find(
+      p =>
+        (idStr && p?.id === idStr) ||
+        (nameLower && String(p?.name || '').trim().toLowerCase() === nameLower)
+    );
+  };
+
+  const normalizePurchasedProductType = (
+    rawType?: string,
+    rawName?: string
+  ): 'Course' | 'Digital Product' | 'Service' => {
+    const t = String(rawType || '').trim().toLowerCase();
+    if (t.includes('course')) return 'Course';
+    if (t.includes('service') || t.includes('booking') || t.includes('consult') || t.includes('session')) {
+      return 'Service';
+    }
+    if (t.includes('digital')) return 'Digital Product';
+    const n = String(rawName || '').trim().toLowerCase();
+    if (/course|academy|masterclass|bootcamp|cohort|lesson|curriculum/.test(n)) return 'Course';
+    if (/service|consult|coaching|session|retainer|agency|audit/.test(n)) return 'Service';
+    return 'Digital Product';
+  };
+
+  type PurchaseLeadEvent = {
+    id: string;
+    leadId?: string;
+    name: string;
+    email: string;
+    phone: string;
+    productId: string;
+    productName: string;
+    productType: 'Course' | 'Digital Product' | 'Service';
+    amount: number;
+    currency: string;
+    isPaid: boolean;
+    at: string;
+    routingPipeline?: string;
+    routingStage?: string;
+    crmTag?: string;
+  };
+
+  const purchaseEventsById = new Map<string, PurchaseLeadEvent>();
+  const pushPurchaseEvent = (evt: PurchaseLeadEvent) => {
+    if (!evt.id) return;
+    const prev = purchaseEventsById.get(evt.id);
+    if (!prev || (evt.isPaid && !prev.isPaid)) {
+      purchaseEventsById.set(evt.id, evt);
+    }
+  };
+
+  // (a) From ordersList (includes checkoutRequests + entity:orders)
+  for (const o of ordersList) {
+    if (!o || /^rejected$/i.test(String(o.status || ''))) continue;
+    const matchedProd = productByIdOrName(o.productId || o.items?.[0]?.productId, o.productName || o.items?.[0]?.productName);
+    const prodId = String(o.productId || o.items?.[0]?.productId || matchedProd?.id || '').trim();
+    const prodName = String(o.productName || o.items?.[0]?.productName || matchedProd?.name || 'Product').trim();
+    const prodType = normalizePurchasedProductType(o.productType || o.items?.[0]?.productType || matchedProd?.type, prodName);
+    const isPaid = /^(paid|completed|succeeded|approved)$/i.test(String(o.status || ''));
+    pushPurchaseEvent({
+      id: String(o.id || o.orderId),
+      leadId: typeof o.leadId === 'string' ? o.leadId : undefined,
+      name: String(o.customerName || o.name || '').trim(),
+      email: String(o.customerEmail || o.email || '').trim().toLowerCase(),
+      phone: String(o.customerPhone && o.customerPhone !== '—' ? o.customerPhone : (o.phone || '')).trim(),
+      productId: prodId,
+      productName: prodName,
+      productType: prodType,
+      amount: Number(o.amount ?? o.total ?? matchedProd?.config?.amount ?? 0) || 0,
+      currency: String(o.currency || matchedProd?.config?.currency || 'USD'),
+      isPaid,
+      at: String(o.decidedAt || o.createdAt || new Date().toISOString()),
+      routingPipeline: matchedProd?.config?.crmRouting?.pipelineId,
+      routingStage: matchedProd?.config?.crmRouting?.stageId,
+      crmTag: matchedProd?.config?.automations?.crmTag,
+    });
+  }
+
+  // (b) From txnsList (any product transaction not already covered)
+  for (const t of txnsList) {
+    if (!t || /^rejected$/i.test(String(t.status || ''))) continue;
+    const hasProdRef = Boolean(t.productId || t.productName || (Array.isArray(t.items) && t.items.length > 0));
+    if (!hasProdRef) continue;
+    const matchedProd = productByIdOrName(t.productId || t.items?.[0]?.productId, t.productName || t.items?.[0]?.productName);
+    const prodId = String(t.productId || t.items?.[0]?.productId || matchedProd?.id || '').trim();
+    const prodName = String(t.productName || t.items?.[0]?.productName || matchedProd?.name || 'Product').trim();
+    const prodType = normalizePurchasedProductType(t.productType || t.items?.[0]?.productType || matchedProd?.type, prodName);
+    const isPaid = /^(paid|completed|succeeded|approved)$/i.test(String(t.status || 'Paid'));
+    pushPurchaseEvent({
+      id: String(t.id || t.orderId),
+      leadId: typeof t.leadId === 'string' ? t.leadId : undefined,
+      name: String(t.customerName || t.customer || t.name || '').trim(),
+      email: String(t.customerEmail || t.email || '').trim().toLowerCase(),
+      phone: String(t.customerPhone && t.customerPhone !== '—' ? t.customerPhone : (t.phone || '')).trim(),
+      productId: prodId,
+      productName: prodName,
+      productType: prodType,
+      amount: Number(t.amount ?? t.total ?? matchedProd?.config?.amount ?? 0) || 0,
+      currency: String(t.currency || matchedProd?.config?.currency || 'USD'),
+      isPaid,
+      at: String(t.createdAt || t.date || new Date().toISOString()),
+      routingPipeline: matchedProd?.config?.crmRouting?.pipelineId,
+      routingStage: matchedProd?.config?.crmRouting?.stageId,
+      crmTag: matchedProd?.config?.automations?.crmTag,
+    });
+  }
+
+  // (c) From product.config.orders, product.config.students, and retroactive My Purchases / sales > 0
+  const currentUser = store.getState().auth.user;
+  let synthesizedOrderAdded = false;
+  for (const prod of productsForCrm) {
+    if (!prod || typeof prod.id !== 'string') continue;
+    const prodType = normalizePurchasedProductType(prod.type, prod.name);
+    const prodAmount =
+      Number(prod.config?.amount) ||
+      Number.parseFloat(String(prod.price || '').replace(/[^0-9.]/g, '')) ||
+      0;
+    const prodCurrency = String(prod.config?.currency || 'USD');
+    const configOrders = Array.isArray(prod.config?.orders) ? prod.config.orders : [];
+    for (const co of configOrders) {
+      if (!co || /^rejected$/i.test(String(co.status || ''))) continue;
+      const evtId = String(co.id || `prod-order-${prod.id}-${String(co.email || co.customer || 'buyer').replace(/[^a-z0-9]/gi, '').slice(0, 16)}`);
+      pushPurchaseEvent({
+        id: evtId,
+        name: String(co.customer || co.customerName || co.name || '').trim(),
+        email: String(co.email || co.customerEmail || '').trim().toLowerCase(),
+        phone: String(co.phone || co.customerPhone || '').trim(),
+        productId: prod.id,
+        productName: String(prod.name || 'Product'),
+        productType: prodType,
+        amount: Number(co.amount ?? prodAmount) || 0,
+        currency: String(co.currency || prodCurrency),
+        isPaid: /^(paid|completed|succeeded|approved)$/i.test(String(co.status || 'Paid')),
+        at: String(co.at || co.createdAt || prod.createdAt || new Date().toISOString()),
+        routingPipeline: prod.config?.crmRouting?.pipelineId,
+        routingStage: prod.config?.crmRouting?.stageId,
+        crmTag: prod.config?.automations?.crmTag,
+      });
+    }
+    const configStudents = Array.isArray(prod.config?.students) ? prod.config.students : [];
+    for (const st of configStudents) {
+      if (!st || /^suspended$/i.test(String(st.status || ''))) continue;
+      const stEmail = String(st.email || '').trim().toLowerCase();
+      if (!stEmail && !st.name) continue;
+      const alreadyCovered = [...purchaseEventsById.values()].some(
+        e => e.productId === prod.id && stEmail && e.email === stEmail
+      );
+      if (alreadyCovered) continue;
+      const evtId = String(st.id || `student-${prod.id}-${stEmail.replace(/[^a-z0-9]/g, '').slice(0, 16)}`);
+      pushPurchaseEvent({
+        id: evtId,
+        name: String(st.name || stEmail.split('@')[0] || 'Student').trim(),
+        email: stEmail,
+        phone: String(st.phone || '').trim(),
+        productId: prod.id,
+        productName: String(prod.name || 'Product'),
+        productType: prodType,
+        amount: prodAmount,
+        currency: prodCurrency,
+        isPaid: !/^pending$/i.test(String(st.status || 'Active')),
+        at: String(st.enrolledAt || prod.createdAt || new Date().toISOString()),
+        routingPipeline: prod.config?.crmRouting?.pipelineId,
+        routingStage: prod.config?.crmRouting?.stageId,
+        crmTag: prod.config?.automations?.crmTag,
+      });
+    }
+
+    // (d) Retroactive My Purchases / recorded product sales without an explicit buyer record yet
+    const inPurchasedSet =
+      purchasedSet.has(prod.id) ||
+      (prod.name && purchasedSet.has(String(prod.name))) ||
+      [...purchasedSet].some(
+        k =>
+          k.toLowerCase() === prod.id.toLowerCase() ||
+          (prod.name && k.toLowerCase() === String(prod.name).toLowerCase())
+      );
+    const hasRecordedSale = (Number.parseInt(String(prod.sales || '0'), 10) || 0) > 0;
+    const hasAnyEventForProduct = [...purchaseEventsById.values()].some(
+      e =>
+        e.productId === prod.id ||
+        (prod.name && e.productName.toLowerCase() === String(prod.name).toLowerCase())
+    );
+    if ((inPurchasedSet || hasRecordedSale) && !hasAnyEventForProduct && currentUser) {
+      const fallbackEmail = String(currentUser.email || '').trim().toLowerCase();
+      const fallbackName = String(currentUser.name || fallbackEmail.split('@')[0] || 'Customer').trim();
+      const synthId = `purchase-${prod.id.replace(/[^a-z0-9_-]/gi, '').slice(0, 28)}`;
+      const at = String(prod.updatedAt || prod.createdAt || new Date().toISOString());
+      pushPurchaseEvent({
+        id: synthId,
+        name: fallbackName,
+        email: fallbackEmail,
+        phone: '',
+        productId: prod.id,
+        productName: String(prod.name || 'Product'),
+        productType: prodType,
+        amount: prodAmount,
+        currency: prodCurrency,
+        isPaid: true,
+        at,
+        routingPipeline: prod.config?.crmRouting?.pipelineId,
+        routingStage: prod.config?.crmRouting?.stageId,
+        crmTag: prod.config?.automations?.crmTag,
+      });
+      if (!ordersById.has(synthId)) {
+        const synthOrder = {
+          id: synthId,
+          orderId: synthId,
+          source: 'Services',
+          productId: prod.id,
+          productName: String(prod.name || 'Product'),
+          productType: prodType,
+          items: [{ productId: prod.id, productName: String(prod.name || 'Product'), productType: prodType, amount: prodAmount, quantity: 1 }],
+          customerName: fallbackName,
+          customerEmail: fallbackEmail,
+          customerPhone: '',
+          currency: prodCurrency,
+          amount: prodAmount,
+          total: prodAmount,
+          discount: 0,
+          method: 'Verified purchase',
+          createdAt: at,
+          status: 'Paid',
+        };
+        ordersById.set(synthId, synthOrder);
+        txnsById.set(synthId, { ...synthOrder, date: at });
+        synthesizedOrderAdded = true;
+      }
+    }
+  }
+
+  if (synthesizedOrderAdded) {
+    const updatedOrders = [...ordersById.values()].sort((a, b) =>
+      String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''))
+    );
+    const updatedTxns = [...txnsById.values()].sort((a, b) =>
+      String(b.createdAt ?? b.date ?? '').localeCompare(String(a.createdAt ?? a.date ?? ''))
+    );
+    cache.set('entity:orders', JSON.stringify(updatedOrders));
+    cache.set('entity:transactions', JSON.stringify(updatedTxns));
+  }
+
+  if (
+    purchaseEventsById.size > 0 &&
+    (initializedResources.has('leads') || rawEntitySnapshots.has('leads') || requests.length > 0 || purchasedSet.size > 0)
+  ) {
+    const buyerGroups = new Map<string, PurchaseLeadEvent[]>();
+    for (const evt of purchaseEventsById.values()) {
+      const phoneDigits = evt.phone.replace(/\D/g, '');
+      const buyerKey = evt.email
+        ? `email:${evt.email}`
+        : phoneDigits.length >= 7
+          ? `phone:${phoneDigits}`
+          : evt.name
+            ? `name:${evt.name.toLowerCase()}:${evt.productId}`
+            : `order:${evt.id}`;
+      const list = buyerGroups.get(buyerKey) ?? [];
+      list.push(evt);
+      buyerGroups.set(buyerKey, list);
+    }
+
+    const mergedLeads = [...readEntityList('leads')];
+    const leadsToPersistInFirestore: Record<string, any>[] = [];
+    const earlyStages = new Set(['LEAD_CAPTURED', 'CONTACT_CREATED', 'QUALIFIED', 'BOOKING']);
+
+    for (const [buyerKey, events] of buyerGroups.entries()) {
+      events.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+      const latest = events[0];
+      const slug = buyerKey.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 24) || latest.id.slice(0, 16);
+      const defaultLeadId = latest.leadId || `lead-order-${slug}`;
+      const eventOrderIds = new Set(events.map(e => e.id));
+
+      const existingIdx = mergedLeads.findIndex(lead => {
+        if (!lead || typeof lead.id !== 'string') return false;
+        if (lead.id === defaultLeadId || (latest.leadId && lead.id === latest.leadId)) return true;
+        if (latest.email && String(lead.email || '').trim().toLowerCase() === latest.email) return true;
+        if (lead.orderId && eventOrderIds.has(String(lead.orderId))) return true;
+        const leadPhone = String(lead.phone || '').replace(/\D/g, '');
+        const evtPhone = latest.phone.replace(/\D/g, '');
+        if (evtPhone.length >= 7 && leadPhone === evtPhone) return true;
+        return false;
+      });
+
+      const existing = existingIdx >= 0 ? mergedLeads[existingIdx] : undefined;
+      const paidEvents = events.filter(e => e.isPaid);
+      const hasPaid = paidEvents.length > 0;
+      const primaryEvents = hasPaid ? paidEvents : events;
+      const primaryCurrency = primaryEvents[0]?.currency || existing?.currency || 'USD';
+      const sumValue = primaryEvents.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+      const productNames = [...new Set(events.map(e => e.productName).filter(Boolean))];
+      const productTypes = [...new Set(events.map(e => e.productType).filter(Boolean))];
+      const routingPipeline = paidEvents.find(e => e.routingPipeline)?.routingPipeline || events.find(e => e.routingPipeline)?.routingPipeline;
+      const routingStage = paidEvents.find(e => e.routingStage)?.routingStage || events.find(e => e.routingStage)?.routingStage;
+      const crmTags = [...new Set(events.map(e => e.crmTag).filter((t): t is string => Boolean(t && t.trim())))];
+
+      const resolvedId = existing?.id || defaultLeadId;
+      const resolvedName =
+        existing?.name ||
+        events.find(e => e.name)?.name ||
+        (latest.email ? latest.email.split('@')[0] : 'Customer');
+      const resolvedEmail = existing?.email || latest.email || '';
+      const resolvedPhone = existing?.phone || events.find(e => e.phone)?.phone || '';
+
+      let resolvedStage = existing?.lifecycleStage || existing?.stage || (hasPaid ? (routingStage || 'PAYMENT_COMPLETED') : 'CONTACT_CREATED');
+      if (hasPaid && (!existing || earlyStages.has(String(resolvedStage)))) {
+        resolvedStage = routingStage || 'PAYMENT_COMPLETED';
+      }
+
+      const prevAttached: Record<string, any>[] = Array.isArray(existing?.attachedProducts) ? [...existing.attachedProducts] : [];
+      for (const e of events) {
+        if (!e.productId && !e.productName) continue;
+        const pid = e.productId || `prod-${e.productName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16)}`;
+        const existingIdxAtt = prevAttached.findIndex(
+          item =>
+            item?.productId === pid ||
+            (e.productName && String(item?.productName || '').toLowerCase() === e.productName.toLowerCase())
+        );
+        if (existingIdxAtt < 0) {
+          prevAttached.push({
+            productId: pid,
+            productName: e.productName || 'Product',
+            productType: e.productType,
+            attachedAt: e.at || new Date().toISOString(),
+          });
+        } else if (!prevAttached[existingIdxAtt]?.productType) {
+          prevAttached[existingIdxAtt] = {
+            ...prevAttached[existingIdxAtt],
+            productType: e.productType,
+          };
+        }
+      }
+
+      const prevActivities: Record<string, any>[] = Array.isArray(existing?.activities) ? [...existing.activities] : [];
+      for (const e of events) {
+        const actId = e.isPaid ? `act-paid-${e.id}` : `act-checkout-${e.id}`;
+        const altActId = `act-order-${e.id}`;
+        if (!prevActivities.some(a => a?.id === actId || a?.id === altActId)) {
+          prevActivities.unshift({
+            id: actId,
+            type: 'payment',
+            title: e.isPaid ? `${e.productType} purchased` : 'Order submitted',
+            detail: `${e.productType}: ${e.productName} · ${e.currency} ${Number(e.amount || 0).toFixed(2)}`,
+            at: e.at || new Date().toISOString(),
+          });
+        }
+      }
+
+      const prevTags: string[] = Array.isArray(existing?.tags)
+        ? existing.tags.filter(t => !/^checkout$/i.test(String(t || '').trim()))
+        : [];
+      const nextTags = [
+        ...new Set([
+          ...productTypes,
+          ...(productNames.slice(0, 2)),
+          ...(hasPaid ? ['Customer'] : []),
+          ...crmTags,
+          ...prevTags,
+        ]),
+      ];
+
+      const avatarInitials =
+        existing?.avatar ||
+        resolvedName
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part: string) => part[0])
+          .join('')
+          .toUpperCase() ||
+        'C';
+
+      const resolvedSource =
+        !existing?.source || /^(checkout|service|services)$/i.test(String(existing.source).trim())
+          ? 'Services'
+          : existing.source;
+
+      const typedInterest = events
+        .map(e => `${e.productType}: ${e.productName}`)
+        .filter((v, idx, arr) => arr.indexOf(v) === idx)
+        .join(', ');
+
+      const nextLead: Record<string, any> = {
+        ...(existing || {
+          company: '',
+          owner: 'Unassigned',
+          color: 'mint',
+          bookingStatus: 'Not Scheduled',
+          hasWhatsAppConsent: Boolean(resolvedPhone),
+          hasMessagingConsent: true,
+          hasEmailConsent: Boolean(resolvedEmail),
+          notes: [],
+          createdAt: events[events.length - 1]?.at || new Date().toISOString(),
+        }),
+        id: resolvedId,
+        name: resolvedName,
+        email: resolvedEmail,
+        phone: resolvedPhone,
+        avatar: avatarInitials,
+        source: resolvedSource,
+        pipelineId: existing?.pipelineId || routingPipeline || 'main',
+        stage: resolvedStage,
+        lifecycleStage: resolvedStage,
+        value: Math.max(Number(existing?.value) || 0, sumValue),
+        currency: existing?.currency || primaryCurrency,
+        interest:
+          existing?.interest && !productNames.includes(String(existing.interest).trim())
+            ? existing.interest
+            : typedInterest || productNames.join(', '),
+        orderId: latest.id || existing?.orderId,
+        qualificationStatus: hasPaid ? 'Qualified' : (existing?.qualificationStatus || 'Pending'),
+        followUpState: hasPaid ? 'CUSTOMER' : (existing?.followUpState || 'CONTACTED'),
+        tags: nextTags,
+        attachedProducts: prevAttached,
+        activities: prevActivities,
+        lastActivity: existing?.lastActivity && String(existing.lastActivity) > String(latest.at || '') ? existing.lastActivity : (latest.at || 'Just now'),
+      };
+
+      if (existingIdx >= 0) {
+        if (JSON.stringify(mergedLeads[existingIdx]) !== JSON.stringify(nextLead)) {
+          mergedLeads[existingIdx] = nextLead;
+          leadsToPersistInFirestore.push(nextLead);
+        }
+      } else {
+        mergedLeads.unshift(nextLead);
+        leadsToPersistInFirestore.push(nextLead);
+      }
+    }
+
+    cache.set('entity:leads', JSON.stringify(mergedLeads));
+
+    if (tenantId && initializedResources.has('leads') && leadsToPersistInFirestore.length > 0) {
+      const activeScope = tenantId;
+      for (const lead of leadsToPersistInFirestore) {
+        store.dispatch({ type: 'crm/setLeadBackend', payload: { scope: activeScope, id: lead.id, backend: 'firestore' } });
+        const sigKey = `${activeScope}:${lead.id}`;
+        const sig = JSON.stringify(lead);
+        if (syncedCommerceLeadSignatures.get(sigKey) !== sig) {
+          syncedCommerceLeadSignatures.set(sigKey, sig);
+          void setDoc(doc(db, 'tenants', activeScope, 'leads', lead.id), encodeFirestoreValue(lead), { merge: true }).catch(() => {});
+        }
+      }
+    }
+  }
 }
 const entityCollections = ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'assets', 'domains', 'copilotConversations', 'members', 'userTemplates'] as const;
 function entityFor(key: string): string | undefined {
@@ -588,6 +1037,9 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
                 reconcileCommerceFromRequests();
                 const changed =
                   previous.size !== cache.size || [...cache].some(([k, v]) => previous.get(k) !== v);
+                if (changed && previous.get('entity:leads') !== cache.get('entity:leads') && initializedResources.has('leads') && initializedResources.has('pipelines')) {
+                  hydrate();
+                }
                 if (changed) notify();
               },
               () => {}
@@ -606,6 +1058,9 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
                 reconcileCommerceFromRequests();
                 const changed =
                   previous.size !== cache.size || [...cache].some(([k, v]) => previous.get(k) !== v);
+                if (changed && previous.get('entity:leads') !== cache.get('entity:leads') && initializedResources.has('leads') && initializedResources.has('pipelines')) {
+                  hydrate();
+                }
                 if (changed) notify();
               },
               () => {}
@@ -637,7 +1092,8 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
             initializedResources.add(resource);
             failures.delete(resource);
             const changed = previous.size !== cache.size || [...cache].some(([key, value]) => previous.get(key) !== value);
-            if (changed && (resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
+            const crmEntitiesChanged = previous.get('entity:leads') !== cache.get('entity:leads') || previous.get('entity:pipelines') !== cache.get('entity:pipelines');
+            if ((changed && (resource === 'leads' || resource === 'pipelines') || crmEntitiesChanged) && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
             updateStatus();
             if (changed) notify();
           }, () => {

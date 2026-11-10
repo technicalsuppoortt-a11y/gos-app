@@ -6,10 +6,11 @@ import {
   CreditCard, Landmark, UploadCloud, CheckCircle2, ShieldCheck, 
   Package, Gem, FileText, Lock, X, Copy, Check, Info, AlertCircle, Settings,
   Eye, Trash2, ZoomIn, Image as ImageIcon, Plus, Minus, PackagePlus, Sliders,
-  ChevronDown, ChevronUp, Sparkles, Coins, Tag
+  ChevronDown, ChevronUp, Sparkles, Coins, Tag, Wallet, Zap
 } from 'lucide-react';
-import { billing, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, usePlans, type AddonItem, type BillingPlan, type BillingCoupon, type BillingRequest } from '../../backend/billing';
+import { billing, convertMoney, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, useCommunicationWallet, usePlans, WALLET_CURRENCY, type AddonItem, type BillingPlan, type BillingCoupon, type BillingRequest } from '../../backend/billing';
 import { usePaymentMethods } from '../../backend/paymentMethods';
+import { WalletTopupModal } from './WalletTopupModal';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from '../../backend/firebase';
@@ -18,6 +19,7 @@ interface CheckoutModalProps {
   plan: BillingPlan;
   quantity?: number;
   mode?: 'plan' | 'renewal' | 'addon';
+  initialPaymentSource?: 'wallet' | 'direct';
   onClose: () => void;
   onSuccess: (result: any) => void;
 }
@@ -52,10 +54,13 @@ function PaymentBrandIcon({ provider }: { provider: string }) {
   );
 }
 
-export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', onClose, onSuccess }: CheckoutModalProps) {
+export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', initialPaymentSource, onClose, onSuccess }: CheckoutModalProps) {
   const c = useCopy();
   const { busy, run } = useAction();
   const identity = useBillingIdentity();
+  const { data: commWallet } = useCommunicationWallet(identity.uid);
+  const [paymentSource, setPaymentSource] = useState<'wallet' | 'direct'>(() => initialPaymentSource ?? 'direct');
+  const [showWalletTopup, setShowWalletTopup] = useState(false);
   const providerId = initialPlan?.ownerId || identity.providerId || 'platform';
   const paymentScope = providerId === 'platform' || identity.role === 'ADMIN' ? 'super_admin' : 'admin';
   const { methods: savedMethods, loading: methodsLoading, canManage } = usePaymentMethods({
@@ -382,6 +387,12 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const creditBonus = couponState.status === 'valid' ? couponState.creditBonus : 0;
   const finalCredits = totalCredits + creditBonus;
 
+  const walletCurrency = commWallet?.currency || WALLET_CURRENCY;
+  const walletAvailable = commWallet ? Math.max(0, Math.round(((commWallet.balance ?? 0) - (commWallet.held ?? 0)) * 100) / 100) : 0;
+  const walletCharge = convertMoney(finalAmount, safeCurrency, walletCurrency);
+  const hasSufficientWallet = walletCharge === 0 || walletAvailable >= walletCharge;
+  const walletShortfall = Math.max(0, Math.round((walletCharge - walletAvailable) * 100) / 100);
+
   const copyToClipboard = (text: string) => {
     if (!text) return;
     void navigator.clipboard.writeText(text);
@@ -482,6 +493,41 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
 
   // Process checkout
   const handleSubmit = async () => {
+    if (paymentSource === 'wallet') {
+      if (!hasSufficientWallet) return;
+      await run('checkout', async () => {
+        const op = isAddon ? 'requestAddon' : 'requestPlan';
+        const res = await billing<{ request: BillingRequest }>(op, {
+          planId: plan.id,
+          quantity: isDynamicStandalone ? standaloneDynamicUnits : qty,
+          mainPlanPrice,
+          addons: attachedAddons,
+          totalAmount: finalAmount,
+          note,
+          isDynamic: isDynamicStandalone,
+          credits: isDynamicStandalone ? dynamicStandaloneCredits : (plan.credits ? plan.credits * qty : undefined),
+          price: isDynamicStandalone ? dynamicStandaloneCost : finalAmount,
+          currency: plan.currency,
+          paymentMethod: 'From Wallet',
+          paymentType: 'wallet',
+          couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+          subtotal: totalAmount,
+          discount,
+          creditAmount: finalCredits,
+        });
+
+        setCompleted({
+          type: 'gateway',
+          message: c.t(
+            'Paid instantly from your Wallet! Your subscription and credits are active now, and your paid invoice is available in the Invoices tab.',
+            'تم السداد فوريًا من محفظتك! تم تفعيل اشتراكك ورصيدك الآن، وأصبحت الفاتورة المدفوعة جاهزة في تبويب الفواتير.'
+          ),
+        });
+        onSuccess(res);
+      }, c.t('Activated from Wallet!', 'تم التفعيل من المحفظة!'));
+      return;
+    }
+
     if (!selectedMethod) return;
 
     if (selectedMethod.type === 'manual') {
@@ -618,14 +664,21 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
             <button
               type="button"
               className="bl-btn primary"
-              style={{ minWidth: 160 }}
-              disabled={!!busy || !selectedMethod || (isDynamicStandalone && standaloneIsCreditInvalid) || (includeDynamicUnits && accordionIsCreditInvalid)}
+              style={{ minWidth: 160, background: paymentSource === 'wallet' ? '#059669' : undefined }}
+              disabled={
+                !!busy ||
+                (paymentSource === 'wallet' ? !hasSufficientWallet : !selectedMethod) ||
+                (isDynamicStandalone && standaloneIsCreditInvalid) ||
+                (includeDynamicUnits && accordionIsCreditInvalid)
+              }
               onClick={handleSubmit}
             >
-              {busy ? <Spinner /> : <ShieldCheck size={16} />}
-              {selectedMethod?.type === 'manual'
+              {busy ? <Spinner /> : paymentSource === 'wallet' ? <Wallet size={16} /> : <ShieldCheck size={16} />}
+              {paymentSource === 'wallet'
+                ? c.t('Pay From Wallet · Instant', 'ادفع من المحفظة · تفعيل فوري')
+                : selectedMethod?.type === 'manual'
                 ? c.t('Submit Transfer & Receipt', 'تأكيد التحويل وإرسال الإيصال')
-                : c.t('Submit payment request', 'إرسال طلب الدفع')}
+                : c.t('Pay Now · Submit Request', 'ادفع الآن · إرسال الطلب')}
             </button>
           </div>
         )
@@ -1131,7 +1184,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
             </div>
 
             {/* Dedicated Live Receipt Preview Section (When Manual Transfer is selected) */}
-            {selectedMethod?.type === 'manual' && (
+            {paymentSource === 'direct' && selectedMethod?.type === 'manual' && (
               <div style={{ display: 'grid', gap: 8, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}>
                   <label style={{ fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
@@ -1269,12 +1322,169 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
             </div>
           </div>
 
-          {/* Right Column: Payment Methods Selection & Active Configuration */}
+          {/* Right Column: Dual Payment Gateway (From Wallet vs Pay Now) */}
           <div className="bl-checkout-col">
-            <div style={{ minWidth: 0 }}>
-              <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBlockEnd: 8 }}>
-                {c.t('Choose Payment Method', 'اختر طريقة الدفع')}
+            {/* Dual Payment Source Selector */}
+            <div style={{ display: 'grid', gap: 8, minWidth: 0 }}>
+              <label style={{ fontSize: 13, fontWeight: 700, display: 'block', margin: 0 }}>
+                {c.t('Select Payment Option', 'اختر خيار الدفع')}
               </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setPaymentSource('wallet')}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 4,
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    border: paymentSource === 'wallet' ? '2px solid #10b981' : '1px solid var(--bl-border)',
+                    background: paymentSource === 'wallet' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bl-surface)',
+                    color: 'var(--bl-text)',
+                    cursor: 'pointer',
+                    textAlign: 'start',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 6 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: paymentSource === 'wallet' ? '#059669' : 'var(--bl-text)' }}>
+                      <Wallet size={15} />
+                      {c.t('From Wallet', 'من المحفظة')}
+                    </span>
+                    <span className="bl-pill green plain" style={{ fontSize: 10, padding: '2px 7px' }}>
+                      {c.t('Instant', 'فوري')}
+                    </span>
+                  </div>
+                  <small style={{ fontSize: 11.5, color: 'var(--bl-muted)', fontWeight: 600 }}>
+                    {c.t('Available:', 'المتاح:')} {c.money(walletAvailable, walletCurrency)}
+                  </small>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentSource('direct')}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 4,
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    border: paymentSource === 'direct' ? '2px solid var(--bl-accent)' : '1px solid var(--bl-border)',
+                    background: paymentSource === 'direct' ? 'var(--bl-accent-soft)' : 'var(--bl-surface)',
+                    color: 'var(--bl-text)',
+                    cursor: 'pointer',
+                    textAlign: 'start',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 6 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: paymentSource === 'direct' ? 'var(--bl-accent)' : 'var(--bl-text)' }}>
+                      <CreditCard size={15} />
+                      {c.t('Pay Now', 'ادفع الآن')}
+                    </span>
+                    <span className="bl-pill violet plain" style={{ fontSize: 10, padding: '2px 7px' }}>
+                      {c.t('Direct', 'مباشر')}
+                    </span>
+                  </div>
+                  <small style={{ fontSize: 11.5, color: 'var(--bl-muted)', fontWeight: 600 }}>
+                    {c.t('Gateway / Upload Receipt', 'بوابة دفع / رفع إيصال')}
+                  </small>
+                </button>
+              </div>
+            </div>
+
+            {paymentSource === 'wallet' ? (
+              <div style={{ padding: 16, borderRadius: 14, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', display: 'grid', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(16, 185, 129, 0.14)', color: '#059669', display: 'grid', placeItems: 'center' }}>
+                      <Zap size={17} />
+                    </span>
+                    <div>
+                      <b style={{ fontSize: 13.5, display: 'block' }}>{c.t('Instant Wallet Deduction', 'خصم فوري من المحفظة')}</b>
+                      <small style={{ fontSize: 11.5, color: 'var(--bl-muted)' }}>
+                        {identity.role === 'ADMIN'
+                          ? c.t('Settles directly with Super Admin · Instant activation', 'تسوية فورية مع الإدارة العليا · تفعيل مباشر')
+                          : c.t('Settles directly with your Admin provider · Instant activation', 'تسوية فورية مع مزود الخدمة · تفعيل مباشر')}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gap: 8, padding: 12, borderRadius: 10, background: 'var(--bl-surface)', border: '1px solid var(--bl-border)', fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-muted)' }}>
+                    <span>{c.t('Available Wallet Balance', 'رصيد المحفظة المتاح')}</span>
+                    <b style={{ color: 'var(--bl-text)', fontFamily: 'monospace' }}>{c.money(walletAvailable, walletCurrency)}</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bl-muted)' }}>
+                    <span>{c.t('Order Deduction', 'قيمة الخصم للطلب')}</span>
+                    <b style={{ color: '#059669', fontFamily: 'monospace' }}>-{c.money(walletCharge, walletCurrency)}</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px dashed var(--bl-border)', fontWeight: 700 }}>
+                    <span>{c.t('Remaining Wallet Balance', 'الرصيد المتبقي بعد الشراء')}</span>
+                    <span style={{ color: hasSufficientWallet ? 'var(--bl-text)' : '#ef4444', fontFamily: 'monospace' }}>
+                      {hasSufficientWallet ? c.money(Math.max(0, walletAvailable - walletCharge), walletCurrency) : c.t('Insufficient', 'غير كافٍ')}
+                    </span>
+                  </div>
+                </div>
+
+                {!hasSufficientWallet ? (
+                  <div style={{ padding: 12, borderRadius: 10, background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', display: 'grid', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--bl-text)' }}>
+                      <AlertCircle size={16} color="#d97706" style={{ flexShrink: 0, marginTop: 1 }} />
+                      <div>
+                        <b style={{ display: 'block', marginBottom: 2 }}>
+                          {c.t('Insufficient Wallet Funds', 'رصيد المحفظة غير كافٍ')}
+                        </b>
+                        <span style={{ color: 'var(--bl-muted)' }}>
+                          {c.t(
+                            `You need an additional ${c.money(walletShortfall, walletCurrency)} in your wallet, or switch to "Pay Now" to upload a direct payment receipt.`,
+                            `تحتاج إلى ${c.money(walletShortfall, walletCurrency)} إضافية في المحفظة، أو اختر "ادفع الآن" لرفع إيصال دفع مباشر.`
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="bl-btn primary sm"
+                        style={{ background: '#059669' }}
+                        onClick={() => setShowWalletTopup(true)}
+                      >
+                        <Plus size={14} />
+                        {c.t('Top Up Wallet', 'شحن المحفظة')}
+                      </button>
+                      <button
+                        type="button"
+                        className="bl-btn sm"
+                        onClick={() => setPaymentSource('direct')}
+                      >
+                        <CreditCard size={14} />
+                        {c.t('Switch to Pay Now', 'التحويل إلى ادفع الآن')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', fontSize: 12, color: '#047857', fontWeight: 600 }}>
+                    <CheckCircle2 size={15} style={{ flexShrink: 0 }} />
+                    <span>
+                      {c.t(
+                        'Sufficient wallet balance confirmed. Click "Pay From Wallet" below to activate immediately.',
+                        'رصيد المحفظة كافٍ. اضغط "ادفع من المحفظة" بالأسفل للتفعيل الفوري.'
+                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div style={{ minWidth: 0 }}>
+                  <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBlockEnd: 8 }}>
+                    {c.t('Choose Direct Payment Method', 'اختر وسيلة الدفع المباشر')}
+                  </label>
 
               {methodsLoading ? (
                 <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--bl-muted)' }}>
@@ -1483,8 +1693,18 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                 </div>
               )
             )}
+              </>
+            )}
           </div>
         </div>
+      )}
+
+      {showWalletTopup && (
+        <WalletTopupModal
+          initialAmount={Math.max(10, Math.ceil(walletShortfall || 25))}
+          currency={walletCurrency}
+          onClose={() => setShowWalletTopup(false)}
+        />
       )}
 
       {/* Full Size Receipt Zoom Lightbox */}

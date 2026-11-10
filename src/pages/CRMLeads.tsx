@@ -1,3 +1,4 @@
+import { useCurrency } from '../context/CurrencyContext';
 import { usePipelineTemplateCatalog } from '../backend/nativeTemplateCatalog';
 import { LeadQuickView } from './crm/LeadQuickView';
 import { selectUnifiedCRMLeads } from '../store/crmSelectors';
@@ -47,7 +48,6 @@ import {
   activityTime,
   colors,
   displayStage,
-  euro,
   owners,
   templateStages,
   templates,
@@ -60,7 +60,7 @@ import {
 } from "./crm/CRMDialogs";
 import {
   CRMAvatar,
-  SourceBadge,
+  SourceBadge, TagBadge,
   LeadCard,
   OptionsMenu,
   CustomSelect,
@@ -87,11 +87,11 @@ const tabs = [
   { path: "templates", label: "Templates / Pipeline Presets", icon: BookOpen },
 ];
 
-const sourceGroup = (source: string) => ({ Website: 'Websites', Form: 'Forms', Service: 'Services', Checkout: 'General', Manual: 'General' } as Record<string, string>)[source] || source || 'General';
+const sourceGroup = (source: string) => ({ Website: 'Websites', Form: 'Forms', Service: 'Services', Services: 'Services', Checkout: 'Services', Manual: 'General' } as Record<string, string>)[source] || source || 'General';
 
 export function CRMLeads({ notify, isContactsPage }: { notify: (message: string) => void; isContactsPage?: boolean }) {
   useUILanguage();
-  const api = useGosCRM();
+  const api = useGosCRM(); const { formatPrice, convertAmount, currency: activeCurrency } = useCurrency(); const stageMoney = (list: { value?: number; currency?: string }[]) => formatPrice(list.reduce((sum, item) => sum + convertAmount(item.value || 0, item.currency || 'EUR', activeCurrency), 0), activeCurrency);
   const actions = useCRMActions();
   const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => actions.run(() => dispatchGosCRM(action));
   const navigate = useNavigate();
@@ -544,7 +544,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                         />
                       </div>
                       <small>
-                        {localizeNode(euro(cards.reduce((s, l) => s + l.value, 0)))}
+                        <span dir="ltr">{stageMoney(cards as { value?: number; currency?: string }[])}</span>
                       </small>
                       <button
                         className="crm-stage-add"
@@ -705,7 +705,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                         </td>
                         <td className="text-start">{localizeNode(lead.company || "—")}</td>
                         <td className="text-center">
-                          <SourceBadge source={lead.source} />
+                          <SourceBadge source={lead.source} />{localizeNode((lead.tags || []).filter(t => /^(course|digital product|service)$/i.test(t)).map(t => <TagBadge key={t} tag={t} />))}
                         </td>
                         <td className="text-center">
                           <span
@@ -1113,7 +1113,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                     <small>{translateText(" contacts")}</small>
                   </b>
                   <p>
-                    {localizeNode(euro(records.reduce((s, l) => s + l.value, 0)))}{translateText(" in stage")}</p>
+                    <span dir="ltr">{stageMoney(records as { value?: number; currency?: string }[])}</span>{translateText(" in stage")}</p>
                   <div className="crm-progress">
                     <span
                       style={{

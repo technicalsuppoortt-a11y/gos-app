@@ -8,7 +8,7 @@ import type { CanonicalLead } from '../../store/slices/crmSlice';
 import { translateText } from '../../i18n/display';
 import { linkedToLead } from './recordLinks';
 
-const date = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString() : value || '';
+const date = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('en-US') : value || '';
 
 export function LiveConversations({ lead }: { lead: CanonicalLead }) {
   const local = useEntities<ApiRecord>('conversations').filter(row => linkedToLead(row, lead));

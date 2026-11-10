@@ -1,4 +1,5 @@
 import { useCurrency } from '../../context/CurrencyContext';
+import { toWesternDigits } from '../../utils/currency';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Lock, Loader2, X } from 'lucide-react';
@@ -10,22 +11,25 @@ import './billing.css';
 
 export type Copy = ReturnType<typeof useCopy>;
 
-/** Bilingual copy + locale-aware formatting. */
+/** Bilingual copy + Western-numeral formatting. */
 export function useCopy() {
   const lang = useUILanguage();
   const { formatPrice, formatCheckoutPrice } = useCurrency();
   const ar = lang.startsWith('ar');
-  const locale = ar ? 'ar-EG' : 'en-US';
+  const dateLocale = ar ? 'ar-EG-u-nu-latn' : 'en-US';
   return {
     ar,
     dir: (ar ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
-    t: (en: string, arabic: string) => (ar ? arabic : en),
-    pick: (value?: { en: string; ar: string } | null) => (value ? (ar ? value.ar || value.en : value.en || value.ar) : ''),
-    num: (value: number) => new Intl.NumberFormat(locale).format(value ?? 0),
+    t: (en: string, arabic: string) => toWesternDigits(ar ? arabic : en),
+    pick: (value?: { en: string; ar: string } | null) =>
+      value ? toWesternDigits(ar ? value.ar || value.en : value.en || value.ar) : '',
+    num: (value: number) => new Intl.NumberFormat('en-US').format(value ?? 0),
     money: formatPrice,
     checkoutMoney: formatCheckoutPrice,
-    date: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso)) : '—'),
-    dateTime: (iso?: string | null) => (iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : '—'),
+    date: (iso?: string | null) =>
+      iso ? toWesternDigits(new Intl.DateTimeFormat(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))) : '—',
+    dateTime: (iso?: string | null) =>
+      iso ? toWesternDigits(new Intl.DateTimeFormat(dateLocale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))) : '—',
   };
 }
 

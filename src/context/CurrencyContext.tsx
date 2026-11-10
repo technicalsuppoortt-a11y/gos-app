@@ -88,6 +88,8 @@ function currencyHelpers(currency: CurrencyCode, locale: string, rates: Exchange
   return {
     currency,
     convertPrice: (amountInUSD: number) => amountInUSD * rates[currency],
+    convertAmount: (amount: number, source = 'USD', target: string = currency) =>
+      convertCurrency(amount, source, target, rates) ?? amount,
     formatPrice,
     formatCompactPrice: (amount: number, source = 'USD') => compact.format(convert(amount, source) ?? amount),
     formatCheckoutPrice: (amount: number, source = 'USD') => {
@@ -101,11 +103,11 @@ function currencyHelpers(currency: CurrencyCode, locale: string, rates: Exchange
 const CurrencyContext = createContext(currencyHelpers('USD', 'en-US', fallbackRates, false));
 export const useCurrency = () => useContext(CurrencyContext);
 
-export function CurrencyProvider({ currency, language, enabled, children }: {
+export function CurrencyProvider({ currency, language: _language, enabled, children }: {
   currency: CurrencyCode; language: string; enabled: boolean; children: ReactNode;
 }) {
   const rates = useExchangeRates(enabled);
-  const locale = language === 'ar' ? 'ar-EG' : 'en-US';
+  const locale = 'en-US';
   const value = useMemo(() => currencyHelpers(currency, locale, rates, enabled), [currency, locale, rates, enabled]);
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
 }

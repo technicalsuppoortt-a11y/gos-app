@@ -33,7 +33,7 @@ function normalize(row: StoredTransaction): CommerceTransaction {
   const currency = row.currency || 'USD';
   const amountValue = typeof row.amount === 'number' ? row.amount : Number.parseFloat(String(row.amount ?? '').replace(/[^0-9.-]/g, '')) || 0;
   let amount: string;
-  try { amount = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountValue); }
+  try { amount = new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amountValue).replace(/\u00A0/g, ' '); }
   catch { amount = `${amountValue.toFixed(2)} ${currency}`; }
   return { id: row.id, date: toIsoDateString(row.createdAt ?? row.date).slice(0, 10), productName: row.productName || '—', amount, amountValue, currency, status: normalizeStatus(row.status), customerName: row.customerName, customerEmail: row.customerEmail, method: row.method };
 }

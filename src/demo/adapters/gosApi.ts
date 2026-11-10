@@ -83,10 +83,10 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
         return { success: true, id, resource } as T;
       }
       spendCredits();
-      const text = 'Demo response: I can help you build a follow-up plan, draft a product, or create a landing page. Start with a clear offer, invite interested leads to a discovery call, and send a friendly reminder after 24 hours. All actions here stay in your demo workspace.';
+      const cleanUserText = String(body.text ?? '').replace(/\n\n\[Thinking level: [^\]]+\]$/, ''); const levelNote = body.thinkingLevel === 'low' ? ' (Quick summary)' : body.thinkingLevel === 'high' ? ' (Deep strategic breakdown)' : ''; const text = `Demo response${levelNote}: I can help you build a follow-up plan, draft a product, or create a landing page. Start with a clear offer, invite interested leads to a discovery call, and send a friendly reminder after 24 hours. All actions here stay in your demo workspace.`;
       const before = rows('copilotConversations').find(row => row.id === body.conversationId);
       const convId = body.conversationId || crypto.randomUUID();
-      entityMutation('copilotConversations', convId, { title: before?.title ?? String(body.text ?? '').slice(0, 60), group: 'Today', category: 'Business', time: 'Just now', prompt: body.text, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), { id: crypto.randomUUID(), role: 'user', text: body.text }, { id: crypto.randomUUID(), role: 'assistant', text }] });
+      entityMutation('copilotConversations', convId, { title: before?.title ?? cleanUserText.slice(0, 60), group: 'Today', category: 'Business', time: 'Just now', prompt: cleanUserText, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), { id: crypto.randomUUID(), role: 'user', text: cleanUserText }, { id: crypto.randomUUID(), role: 'assistant', text }] });
       const kind = /landing|funnel|website/i.test(body.text) ? 'landing' : /course|product/i.test(body.text) ? 'product' : /booking|appointment/i.test(body.text) ? 'booking' : /campaign/i.test(body.text) ? 'campaign' : undefined;
       return { text, conversationId: convId, ...(kind ? { draft: { kind, name: 'Demo Growth Offer', price: '99', currency: 'USD', channel: 'WhatsApp', content: 'A personalized demo offer to help customers reach their next milestone.', description: 'Sample demo draft', duration: '30' } } : {}) } as T;
     }

@@ -49,7 +49,7 @@ function NotificationCenterContent() {
   const categoryName = (category: Category) => ({ All: t('All', 'الكل'), Leads: t('Leads', 'العملاء'), Bookings: t('Bookings', 'الحجوزات'), System: t('System', 'النظام') }[category]);
   const timestamp = (date: string) => {
     const ms = parseTimestampMs(date);
-    return new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-GB', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(ms || Date.now()));
+    return new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', { timeZone: 'Africa/Cairo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(ms || Date.now()));
   };
   return <><button ref={trigger} className="layout-notifications nc-trigger" aria-label={t('Notifications', 'الإشعارات')} aria-expanded={open} aria-controls={id} onClick={() => setOpen(o => !o)}><Bell size={18}/>{!!unread && <span className="nc-count">{unread}</span>}</button>
     {open && createPortal(<section ref={panel} id={id} className="nc-popover" role="dialog" aria-label={t('Notification center', 'مركز الإشعارات')} dir={ar ? 'rtl' : 'ltr'} style={position}>

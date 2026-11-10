@@ -1,42 +1,61 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, Crown, Eye, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
-import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useLedger, usePlans, useRequests, useSubscription, useWallet, type BillingPlan } from '../../backend/billing';
+import { useSearchParams } from 'react-router-dom';
+import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, CreditCard, Crown, Eye, FileText, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
+import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useCommunicationWallet, useLedger, usePlans, useRequests, useSubscription, useWallet, WALLET_CURRENCY, type BillingPlan } from '../../backend/billing';
 import { LedgerTable, RequestsPanel } from './ProviderPanels';
 import { CheckoutModal } from './CheckoutModal';
-import { Empty, Modal, Spinner, StatusPill, Tabs, billingLabel, toolName, useAction, useCopy } from './ui';
+import { InvoicesPanel } from './InvoicesPanel';
+import { SubscriberWalletPanel } from './SubscriberWalletPanel';
+import { Empty, Modal, Spinner, StatusPill, Tabs, Toggle, billingLabel, toolName, useAction, useCopy } from './ui';
 
-type View = 'overview' | 'plans' | 'addons' | 'requests' | 'history';
+type View = 'overview' | 'plans' | 'addons' | 'wallet' | 'invoices' | 'requests' | 'history';
 type BillingSection = 'overview' | 'plans' | 'history';
+
+const VALID_VIEWS: View[] = ['overview', 'plans', 'addons', 'wallet', 'invoices', 'requests', 'history'];
 
 /** The subscriber's own subscription: Admins buy from the platform, Users buy from their Admin. */
 export function MySubscription({ audience, section, onSectionChange }: {
   audience: 'admin' | 'user';
   section?: BillingSection;
-  onSectionChange?: (section: 'overview' | 'plans') => void;
+  onSectionChange?: (section: 'overview' | 'plans' | 'wallet' | 'invoices') => void;
 }) {
   const c = useCopy();
+  const [searchParams, setSearchParams] = useSearchParams();
   const identity = useBillingIdentity();
   useBillingRefresh(!!identity.uid && !identity.loading);
   const { data: sub, loading: subLoading } = useSubscription(identity.uid);
   const { data: wallet } = useWallet(identity.uid);
+  const { data: commWallet } = useCommunicationWallet(identity.uid);
   const { data: plans, loading: plansLoading, error: plansError } = usePlans(identity.providerId || null);
   const { data: billingSettings } = useBillingSettings(identity.providerId || null);
   const { data: ledger } = useLedger(identity.uid);
   const { data: requests } = useRequests('requesterId', identity.uid);
   const { busy, run } = useAction();
   const [localView, setLocalView] = useState<View>('overview');
-  const view = section === 'overview' && (localView === 'addons' || localView === 'requests') ? localView : section ?? localView;
+  const urlViewParam = searchParams.get('view') as View | null;
+  const activeUrlView = !section && urlViewParam && VALID_VIEWS.includes(urlViewParam) ? urlViewParam : null;
+  const view: View = section === 'overview' && (localView === 'addons' || localView === 'requests' || localView === 'invoices')
+    ? localView
+    : section ?? activeUrlView ?? localView;
   const setView = (next: View) => {
-    if (section && next === 'plans') {
+    if (section && (next === 'plans' || next === 'wallet' || next === 'invoices')) {
       setLocalView('overview');
-      onSectionChange?.('plans');
-    } else {
-      setLocalView(next);
-      if (section && next === 'requests') onSectionChange?.('overview');
+      onSectionChange?.(next);
+      return;
+    }
+    setLocalView(next);
+    if (!section) {
+      setSearchParams(current => {
+        if (next === 'overview') current.delete('view');
+        else current.set('view', next);
+        return current;
+      }, { replace: true });
+    } else if (next === 'requests') {
+      onSectionChange?.('overview');
     }
   };
   const [cycle, setCycle] = useState<'all' | 'monthly' | 'annual' | 'fixed' | 'lifetime'>('all');
-  const [checkoutTarget, setCheckoutTarget] = useState<{ plan: BillingPlan; quantity: number; mode: 'plan' | 'renewal' | 'addon' } | null>(null);
+  const [checkoutTarget, setCheckoutTarget] = useState<{ plan: BillingPlan; quantity: number; mode: 'plan' | 'renewal' | 'addon'; paymentSource?: 'wallet' | 'direct' } | null>(null);
   const [inspectingToolsPlan, setInspectingToolsPlan] = useState<BillingPlan | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [customSliderUnits, setCustomSliderUnits] = useState<number>(5);
@@ -71,6 +90,16 @@ export function MySubscription({ audience, section, onSectionChange }: {
   const daysLeft = sub?.currentPeriodEnd ? Math.max(0, Math.ceil((new Date(sub.currentPeriodEnd).getTime() - now) / 86400000)) : null;
 
   const startTrial = () => run('trial', () => billing('startTrial'), c.t('Your free trial has started!', 'بدأت تجربتك المجانية!'));
+  const commCurrency = commWallet?.currency || WALLET_CURRENCY;
+  const commAvailable = commWallet ? Math.max(0, (commWallet.balance ?? 0) - (commWallet.held ?? 0)) : 0;
+  const autoRenewEnabled = Boolean(sub?.autoRenew ?? commWallet?.autoRenew);
+  const toggleAutoRenew = (enabled: boolean) => run(
+    'autorenew',
+    () => billing('setAutoRenew', { enabled }),
+    enabled
+      ? c.t('Auto-renewal via Wallet enabled.', 'تم تفعيل التجديد التلقائي من المحفظة.')
+      : c.t('Auto-renewal disabled.', 'تم إيقاف التجديد التلقائي.'),
+  );
 
   if (!identity.uid || identity.loading || subLoading) return <div className="bl"><div className="bl-skeleton" style={{ minHeight: 220 }} /><div className="bl-skeleton" /></div>;
 
@@ -84,9 +113,24 @@ export function MySubscription({ audience, section, onSectionChange }: {
         { id: 'overview', label: c.t('Overview', 'نظرة عامة'), icon: <LayoutGrid size={14} /> },
         ...(!section ? [{ id: 'plans' as const, label: c.t('Plans', 'الباقات'), icon: <Gem size={14} />, count: plans.filter(plan => plan.kind === 'plan').length }] : []),
         { id: 'addons', label: c.t('Add-ons', 'الإضافات'), icon: <Package size={14} />, count: addons.length },
+        ...(!section ? [{ id: 'wallet' as const, label: c.t('Wallet', 'المحفظة'), icon: <Wallet size={14} /> }] : []),
+        { id: 'invoices', label: c.t('Invoices', 'الفواتير'), icon: <FileText size={14} /> },
         { id: 'requests', label: c.t('My requests', 'طلباتي'), icon: <Inbox size={14} />, count: pending.length },
-        ...(!section ? [{ id: 'history' as const, label: c.t('Credit history', 'سجل الرصيد'), icon: <History size={14} /> }] : []),
       ]} />}
+
+      {sub?.autoRenewError === 'insufficient_wallet_funds' && (
+        <div className="bl-banner warn">
+          <AlertTriangle size={17} />
+          <div>
+            <b>{c.t('Auto-renewal paused: insufficient Wallet balance', 'توقّف التجديد التلقائي لعدم كفاية رصيد المحفظة')}</b>
+            <p>{c.t('Top up your wallet and renew your subscription to restore uninterrupted access.', 'يرجى شحن المحفظة وتجديد الاشتراك لاستعادة الوصول الكامل.')}</p>
+          </div>
+          <button type="button" className="bl-btn sm primary" onClick={() => setView('wallet')}>
+            <Wallet size={13} />
+            {c.t('Open Wallet', 'فتح المحفظة')}
+          </button>
+        </div>
+      )}
 
       {noProvider && <div className="bl-banner warn"><AlertTriangle size={17} /><div><b>{c.t('No provider linked', 'لا يوجد مزود مرتبط')}</b><p>{c.t('Your account is not linked to an admin yet, so no plans are available. Contact support.', 'حسابك غير مرتبط بأدمن بعد، لذلك لا توجد باقات متاحة. تواصل مع الدعم.')}</p></div></div>}
       {plansError && <div className="bl-banner danger"><AlertTriangle size={17} /><p>{plansError}</p></div>}
@@ -177,7 +221,36 @@ export function MySubscription({ audience, section, onSectionChange }: {
               </div>
               {sub.currentPeriodEnd ? <div className="bl-progress" aria-label={c.t('Period progress', 'تقدم الفترة')}><b style={{ width: `${periodPct}%` }} /></div> : <div className="bl-hero-meta"><span><InfinityIcon size={14} />{c.t('Lifetime access', 'وصول مدى الحياة')}</span></div>}
               <div className="bl-hero-actions">
-                {sub.plan?.kind === 'plan' && sub.currentPeriodEnd && <button type="button" className="bl-btn solid" disabled={isPending(sub.planId)} onClick={() => { const plan = plans.find(item => item.id === sub.planId); if (plan) setCheckoutTarget({ plan, quantity: 1, mode: 'renewal' }); else setView('plans'); }}><RefreshCw size={14} />{isPending(sub.planId) ? c.t('Renewal requested', 'تم طلب التجديد') : c.t('Renew plan', 'تجديد الباقة')}</button>}
+                {sub.plan?.kind === 'plan' && sub.currentPeriodEnd && (
+                  <>
+                    <button
+                      type="button"
+                      className="bl-btn solid"
+                      disabled={isPending(sub.planId)}
+                      onClick={() => {
+                        const plan = plans.find(item => item.id === sub.planId);
+                        if (plan) setCheckoutTarget({ plan, quantity: 1, mode: 'renewal', paymentSource: 'wallet' });
+                        else setView('plans');
+                      }}
+                    >
+                      <Wallet size={14} />
+                      {isPending(sub.planId) ? c.t('Renewal requested', 'تم طلب التجديد') : c.t('Renew · From Wallet', 'تجديد · من المحفظة')}
+                    </button>
+                    <button
+                      type="button"
+                      className="bl-btn"
+                      disabled={isPending(sub.planId)}
+                      onClick={() => {
+                        const plan = plans.find(item => item.id === sub.planId);
+                        if (plan) setCheckoutTarget({ plan, quantity: 1, mode: 'renewal', paymentSource: 'direct' });
+                        else setView('plans');
+                      }}
+                    >
+                      <CreditCard size={14} />
+                      {c.t('Renew · Pay Now', 'تجديد · ادفع الآن')}
+                    </button>
+                  </>
+                )}
                 <button type="button" className="bl-btn" onClick={() => setView('plans')}><Sparkles size={14} />{sub.plan?.kind === 'trial' ? c.t('Upgrade to paid', 'الترقية لباقة مدفوعة') : c.t('Change plan', 'تغيير الباقة')}</button>
                 <button type="button" className="bl-btn" onClick={() => setView('addons')}><Plus size={14} />{c.t('Add-ons', 'الإضافات')}</button>
               </div>
@@ -197,11 +270,18 @@ export function MySubscription({ audience, section, onSectionChange }: {
             </div>
             <div className="bl-meter" aria-label={c.t('Remaining credits', 'الرصيد المتبقي')}><b style={{ width: `${usedPct}%` }} /></div>
             <div className="bl-kv">
+              <div><span>{c.t('Wallet balance', 'رصيد المحفظة')}</span><b>{c.money(commAvailable, commCurrency)}</b></div>
               <div><span>{c.t('Email credit balance', 'رصيد البريد الإلكتروني')}</span><b>{c.num(wallet?.emailCredits ?? 0)} / {c.num(sub?.plan?.emailCredits ?? 0)}</b></div>
               <div><span>{c.t('Cycle resets', 'تجديد الدورة')}</span><b>{live && sub?.creditCycleEnd ? c.date(sub.creditCycleEnd) : '—'}</b></div>
-              <div><span>{c.t('Rollover', 'ترحيل الرصيد')}</span><b>{c.t('No · unused credits expire', 'لا · الرصيد غير المستخدم ينتهي')}</b></div>
+              <div style={{ alignItems: 'center' }}>
+                <span>{c.t('Auto-renew via Wallet', 'تجديد تلقائي من المحفظة')}</span>
+                <Toggle checked={autoRenewEnabled} onChange={toggleAutoRenew} label={c.t('Auto-renew subscription from Wallet', 'التجديد التلقائي من المحفظة')} />
+              </div>
             </div>
-            <button type="button" className="bl-btn primary block" disabled={!live} onClick={() => setView('addons')}><Coins size={15} />{c.t('Request more credits', 'طلب رصيد إضافي')}</button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <button type="button" className="bl-btn" onClick={() => setView('wallet')}><Wallet size={14} />{c.t('Wallet', 'المحفظة')}</button>
+              <button type="button" className="bl-btn primary" disabled={!live} onClick={() => setView('addons')}><Coins size={15} />{c.t('Add Credits', 'رصيد إضافي')}</button>
+            </div>
           </section>
         </div>
 
@@ -255,25 +335,43 @@ export function MySubscription({ audience, section, onSectionChange }: {
                     <span>{c.num(plan.credits)} {c.t('AI', 'ذكاء اصطناعي')} · {c.num(plan.emailCredits ?? 0)} {c.t('email credits / month', 'رصيد بريد شهريًا')}</span>
                   </div>
 
-                  {/* Main Action Button */}
-                  <button
-                    type="button"
-                    className={`bl-ref-cta-btn ${current ? 'current' : 'upgrade'}`}
-                    disabled={isPending(plan.id) || (current && !sub?.currentPeriodEnd) || noProvider}
-                    onClick={() => setCheckoutTarget({ plan, quantity: 1, mode: current ? 'renewal' : 'plan' })}
-                  >
-                    {isPending(plan.id) ? (
-                      <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
-                    ) : current ? (
-                      sub?.currentPeriodEnd ? (
-                        <><RefreshCw size={15} />{c.t('Renew Plan', 'تجديد الباقة')}</>
+                  {/* Dual Payment Gateway Buttons (From Wallet vs Pay Now) */}
+                  {(current && !sub?.currentPeriodEnd) || isPending(plan.id) ? (
+                    <button
+                      type="button"
+                      className={`bl-ref-cta-btn ${current ? 'current' : 'upgrade'}`}
+                      disabled
+                    >
+                      {isPending(plan.id) ? (
+                        <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
                       ) : (
                         <><Check size={15} />{c.t('Current Plan', 'باقتك الحالية')}</>
-                      )
-                    ) : (
-                      <><Sparkles size={15} />{live ? c.t('Upgrade Now', 'ترقية الآن') : c.t('Subscribe', 'اشترك الآن')}</>
-                    )}
-                  </button>
+                      )}
+                    </button>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBlockEnd: 16 }}>
+                      <button
+                        type="button"
+                        className="bl-ref-cta-btn wallet-pay"
+                        style={{ margin: 0, padding: '10px 10px', fontSize: 12.5, background: '#059669', color: '#ffffff', border: '1px solid #047857' }}
+                        disabled={noProvider}
+                        onClick={() => setCheckoutTarget({ plan, quantity: 1, mode: current ? 'renewal' : 'plan', paymentSource: 'wallet' })}
+                      >
+                        <Wallet size={14} />
+                        <span>{c.t('From Wallet', 'من المحفظة')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="bl-ref-cta-btn upgrade"
+                        style={{ margin: 0, padding: '10px 10px', fontSize: 12.5 }}
+                        disabled={noProvider}
+                        onClick={() => setCheckoutTarget({ plan, quantity: 1, mode: current ? 'renewal' : 'plan', paymentSource: 'direct' })}
+                      >
+                        <CreditCard size={14} />
+                        <span>{c.t('Pay Now', 'ادفع الآن')}</span>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Features List */}
                   <ul className="bl-ref-features">
@@ -545,16 +643,28 @@ export function MySubscription({ audience, section, onSectionChange }: {
                         </button>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      className="bl-btn primary"
-                      disabled={!live || isCreditInvalid}
-                      onClick={() => setCheckoutTarget({ plan: dynamicPlan, quantity: 1, mode: 'addon' })}
-                      style={{ padding: '8px 20px', fontWeight: 700 }}
-                    >
-                      <Sparkles size={14} />
-                      {c.t('Purchase Custom Credits', 'شحن هذا الرصيد الآن')}
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="bl-btn primary"
+                        disabled={!live || isCreditInvalid}
+                        onClick={() => setCheckoutTarget({ plan: dynamicPlan, quantity: 1, mode: 'addon', paymentSource: 'wallet' })}
+                        style={{ padding: '8px 16px', fontWeight: 700, background: '#059669' }}
+                      >
+                        <Wallet size={14} />
+                        {c.t('From Wallet', 'من المحفظة')}
+                      </button>
+                      <button
+                        type="button"
+                        className="bl-btn primary"
+                        disabled={!live || isCreditInvalid}
+                        onClick={() => setCheckoutTarget({ plan: dynamicPlan, quantity: 1, mode: 'addon', paymentSource: 'direct' })}
+                        style={{ padding: '8px 16px', fontWeight: 700 }}
+                      >
+                        <CreditCard size={14} />
+                        {c.t('Pay Now', 'ادفع الآن')}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -700,21 +810,43 @@ export function MySubscription({ audience, section, onSectionChange }: {
                             <div style={{ height: 38 }} aria-hidden="true" />
                           )}
 
-                          <button
-                            type="button"
-                            className={`bl-ref-cta-btn ${owned ? 'current' : 'upgrade'}`}
-                            style={{ margin: 0, height: 40 }}
-                            disabled={!live || owned || isPending(plan.id)}
-                            onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon' })}
-                          >
-                            {owned ? (
-                              <><Check size={15} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</>
-                            ) : isPending(plan.id) ? (
-                              <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
-                            ) : (
-                              <><Sparkles size={15} />{c.t('Request Add-on', 'طلب الإضافة الآن')}</>
-                            )}
-                          </button>
+                          {owned || isPending(plan.id) ? (
+                            <button
+                              type="button"
+                              className={`bl-ref-cta-btn ${owned ? 'current' : 'upgrade'}`}
+                              style={{ margin: 0, height: 40 }}
+                              disabled
+                            >
+                              {owned ? (
+                                <><Check size={15} />{c.t('Already unlocked', 'مفتوحة بالفعل')}</>
+                              ) : (
+                                <><Inbox size={15} />{c.t('Request pending', 'الطلب قيد المراجعة')}</>
+                              )}
+                            </button>
+                          ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                              <button
+                                type="button"
+                                className="bl-ref-cta-btn wallet-pay"
+                                style={{ margin: 0, height: 40, fontSize: 12, padding: '0 8px', background: '#059669', color: '#ffffff', border: '1px solid #047857' }}
+                                disabled={!live}
+                                onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon', paymentSource: 'wallet' })}
+                              >
+                                <Wallet size={14} />
+                                {c.t('From Wallet', 'من المحفظة')}
+                              </button>
+                              <button
+                                type="button"
+                                className="bl-ref-cta-btn upgrade"
+                                style={{ margin: 0, height: 40, fontSize: 12, padding: '0 8px' }}
+                                disabled={!live}
+                                onClick={() => setCheckoutTarget({ plan, quantity: plan.addonType === 'tool' ? 1 : quantity, mode: 'addon', paymentSource: 'direct' })}
+                              >
+                                <CreditCard size={14} />
+                                {c.t('Pay Now', 'ادفع الآن')}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </article>
                     );
@@ -725,6 +857,10 @@ export function MySubscription({ audience, section, onSectionChange }: {
           </>
         );
       })()}
+
+      {view === 'wallet' && <SubscriberWalletPanel audience={audience} />}
+
+      {view === 'invoices' && <InvoicesPanel mode="subscriber" audience={audience} />}
 
       {view === 'requests' && <RequestsPanel requests={requests} mode="outgoing" />}
 
@@ -778,10 +914,12 @@ export function MySubscription({ audience, section, onSectionChange }: {
           plan={checkoutTarget.plan}
           quantity={checkoutTarget.quantity}
           mode={checkoutTarget.mode}
+          initialPaymentSource={checkoutTarget.paymentSource}
           onClose={() => setCheckoutTarget(null)}
-          onSuccess={() => {
+          onSuccess={res => {
+            const wasWallet = res?.request?.paymentType === 'wallet' || res?.paymentType === 'wallet' || checkoutTarget.paymentSource === 'wallet';
             setCheckoutTarget(null);
-            setView('requests');
+            setView(wasWallet ? 'invoices' : 'requests');
           }}
         />
       )}

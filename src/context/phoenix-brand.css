@@ -88,3 +88,44 @@ html[data-gp-workspace][data-workspace-theme] .crm2-subnav-btn.active:not([data-
 html[data-gp-workspace][data-gp-brand="true"] .st-profile .st-card:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
   background: var(--gp-surface) !important;
 }
+
+
+/* Preserve high-contrast Current Plan hero & billing action readability across Phoenix and Workspace themes. */
+html[data-gp-brand="true"] .bl .bl-plan-hero:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero.empty:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: radial-gradient(120% 140% at 0% 0%, #334155 0%, #1e293b 60%, #0f172a 100%) !important;
+  color: #ffffff !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero.expired:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: radial-gradient(120% 140% at 0% 0%, #9f1239 0%, #7f1d1d 60%, #450a0a 100%) !important;
+  color: #ffffff !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero :is(small, h2, p, .bl-hero-meta, .bl-hero-meta span, .bl-pill):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  color: #ffffff !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero .bl-hero-actions .bl-btn:not(.solid):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero .bl-hero-actions .bl-btn.solid:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #ffffff !important;
+}
+html[data-gp-brand="true"] .bl :is(.bl-ref-ribbon, .bl-ref-cta-btn.wallet-pay):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  color: #ffffff !important;
+}
+html[data-gp-brand="true"]:not(.dark) .bl .bl-ref-cta-btn.current:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #047857 !important;
+  border-color: rgba(5, 150, 105, 0.42) !important;
+}
+html[data-gp-brand="true"].dark .bl .bl-ref-cta-btn.current:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  border-color: rgba(52, 211, 153, 0.42) !important;
+}

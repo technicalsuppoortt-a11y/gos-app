@@ -1,10 +1,10 @@
 {
   "scannedStylesheets": 92,
-  "correctedDeclarations": 865,
+  "correctedDeclarations": 868,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 216,
+  "utilityOccurrences": 250,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 225,
+      "line": 227,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 236,
+      "line": 238,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 340,
+      "line": 342,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 378,
+      "line": 380,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 380,
+      "line": 382,
       "utility": "text-gray-400"
     },
     {
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 175,
+      "line": 176,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 183,
+      "line": 184,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 186,
+      "line": 187,
       "utility": "text-slate-400"
     },
     {
@@ -163,7 +163,7 @@
     },
     {
       "file": "src/components/ui/CurrencySelector.tsx",
-      "line": 68,
+      "line": 74,
       "utility": "text-slate-400"
     },
     {
@@ -617,73 +617,228 @@
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 466,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 329,
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 470,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 336,
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 503,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 346,
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 530,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 355,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 361,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 368,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 374,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 381,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 394,
       "utility": "text-slate-400"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 553,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 478,
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 622,
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 493,
       "utility": "text-slate-500"
     },
     {
-      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 508,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 523,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 538,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 583,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 617,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 631,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 650,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/InvoicesPanel.tsx",
+      "line": 670,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 249,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 258,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 264,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 272,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 275,
+      "utility": "text-slate-200"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 281,
+      "utility": "text-slate-300"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 389,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 433,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 532,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 563,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 582,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
       "line": 645,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 679,
+      "line": 471,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 731,
+      "line": 475,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 745,
+      "line": 508,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 769,
+      "line": 536,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 773,
+      "line": 559,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 870,
+      "line": 628,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 918,
+      "line": 651,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 685,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 737,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 751,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 775,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 779,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 876,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/billing/WalletTopupModal.tsx",
+      "line": 924,
       "utility": "text-slate-500"
     },
     {
@@ -773,47 +928,47 @@
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1085,
+      "line": 1086,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1160,
+      "line": 1161,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1172,
+      "line": 1173,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1201,
+      "line": 1202,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1207,
+      "line": 1208,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1221,
+      "line": 1222,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1242,
+      "line": 1243,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1268,
+      "line": 1269,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1301,
+      "line": 1302,
       "utility": "text-slate-500"
     },
     {
@@ -1048,7 +1203,22 @@
     },
     {
       "file": "src/pages/settings/BillingPanel.tsx",
-      "line": 139,
+      "line": 549,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/settings/BillingPanel.tsx",
+      "line": 664,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/settings/BillingPanel.tsx",
+      "line": 725,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/settings/BillingPanel.tsx",
+      "line": 745,
       "utility": "text-slate-500"
     },
     {
@@ -3527,6 +3697,30 @@
       "contrastOnWhite": 3.9
     },
     {
+      "file": "src/pages/ai-copilot.css",
+      "line": 156,
+      "selector": ".ai-thinking-chevron",
+      "before": "#8c92ab",
+      "after": "#334155",
+      "contrastOnWhite": 3.08
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 216,
+      "selector": ".ai-thinking-popover-head small",
+      "before": "#858ba3",
+      "after": "#475569",
+      "contrastOnWhite": 3.38
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 271,
+      "selector": ".ai-thinking-option-copy small",
+      "before": "#7f859e",
+      "after": "#475569",
+      "contrastOnWhite": 3.65
+    },
+    {
       "file": "src/pages/ai-followup.css",
       "line": 1,
       "selector": ".af-disconnected",
@@ -4304,7 +4498,7 @@
     },
     {
       "file": "src/pages/billing/billing.css",
-      "line": 970,
+      "line": 1005,
       "selector": ".bl-receipt-zoom-caption",
       "before": "#e2e8f0",
       "after": "#334155",

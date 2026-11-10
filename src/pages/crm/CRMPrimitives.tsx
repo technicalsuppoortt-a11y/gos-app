@@ -1,3 +1,4 @@
+import { useCurrency } from '../../context/CurrencyContext';
 import { useCRMBusy } from './useCRMActions';
 import { useSelectPortal } from '../../components/ui/select-layer';
 import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
@@ -8,7 +9,7 @@ import { BadgeCheck, Clock3, Flame, Globe, Mail, MessageCircle, MoreHorizontal, 
 import { InstagramLogo as Instagram, LinkedinLogo as Linkedin } from '@phosphor-icons/react';
 import type { CanonicalLead } from '../../store/slices/crmSlice';
 import type { LeadStage } from '../../types/business';
-import { displayStage, euro, type Pipeline } from './model';
+import { displayStage, type Pipeline } from './model';
 import sarah from '../../assets/inbox/sarah.jpg';
 import marcus from '../../assets/inbox/omar.jpg';
 import priya from '../../assets/inbox/lina.jpg';
@@ -43,7 +44,7 @@ export function SourceBadge({ source }: { source?: string }) {
     : normalized.includes('linkedin') ? { tone: 'linkedin', label: 'LinkedIn', icon: Linkedin }
     : normalized.includes('call') ? { tone: 'call', label: 'Call', icon: Phone }
     : normalized.includes('referral') ? { tone: 'referral', label: 'Referral', icon: BadgeCheck }
-    : { tone: 'website', label: /website|funnel|landing/i.test(safeSource) ? 'Website' : safeSource, icon: Globe };
+    : { tone: 'website', label: /^(checkout|service|services)$/i.test(safeSource) ? 'Services' : /website|funnel|landing/i.test(safeSource) ? 'Website' : safeSource, icon: Globe };
   return <span className={`crm-source crm-source-${channel.tone}`}><span className="crm-source-symbol"><channel.icon size={10} strokeWidth={2}/></span>{localizeNode(channel.label)}</span>;
 }
 
@@ -53,7 +54,7 @@ export function TagBadge({ tag }: { tag: string }) {
   const tone = /high.?intent|qualified|priority/.test(text) && !text.includes('unqualified') ? 'green'
     : /interested|warm/.test(text) ? 'orange'
     : /hot|unqualified/.test(text) ? 'red'
-    : /coaching|consultation/.test(text) ? 'purple' : 'neutral';
+    : /coaching|consultation|course|digital product|service/.test(text) ? 'purple' : 'neutral';
   return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {localizeNode(tag)}</span>;
 }
 
@@ -98,7 +99,7 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   onDragStart: (id: string) => void; onDragEnd: () => void; onMove: (id: string, stage: LeadStage) => void;
 }) {
   useUILanguage();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { formatPrice } = useCurrency(); const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const status = followUp(lead);
   useEffect(() => {
@@ -114,8 +115,8 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
     <button className="crm-card-link" type="button" onClick={onOpen} aria-label={translateText(`Quick details for ${lead.name || 'contact'}`)}/>
     <div className="crm-card-content">
       <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name || 'Unnamed contact')}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
-      <div className="crm-card-tags">{localizeNode((lead.tags || []).slice(0, 2).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
-      <div className="crm-card-bottom"><strong>{localizeNode(euro(lead.value || 0))}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
+      <div className="crm-card-tags">{localizeNode((lead.tags || []).slice(0, 3).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
+      <div className="crm-card-bottom"><strong dir="ltr">{formatPrice(lead.value || 0, (lead as { currency?: string }).currency || 'EUR')}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
       <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{localizeNode(compactActivity(lead.lastActivity))}</small><span className={`crm-followup crm-followup-${status.tone}`} title={translateText(lead.nextFollowUp)}>{localizeNode(status.label)}</span></div>
     </div>
     <div className="crm-card-options" ref={menuRef}>

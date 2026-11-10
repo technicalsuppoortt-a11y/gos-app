@@ -86,7 +86,12 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
     return Number.isFinite(num) && num > 0 ? Math.round(num * 100) / 100 : 0;
   }, [customInput]);
 
-  const isAmountValid = parsedAmount >= 5;
+  const isAmountValid = parsedAmount >= 1 && parsedAmount <= 100000;
+
+  useEffect(() => {
+    setCustomInput(String(initialAmount));
+    setSelectedPreset(PRESET_AMOUNTS.includes(initialAmount) ? initialAmount : null);
+  }, [initialAmount]);
 
   const handleSelectPreset = (val: number) => {
     setSelectedPreset(val);
@@ -298,7 +303,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
     if (pendingTopup) return;
     if (!selectedMethod) return;
     if (!isAmountValid) {
-      alert(c.t('Please enter a valid amount (minimum €5.00).', 'يرجى إدخال مبلغ صالح (الحد الأدنى 5.00 يورو).'));
+      alert(c.t('Please enter a valid amount (minimum €1.00).', 'يرجى إدخال مبلغ صالح (الحد الأدنى 1.00 يورو).'));
       return;
     }
 
@@ -488,8 +493,8 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                   </div>
                   <p className="text-slate-700 dark:text-slate-300">
                     {c.t(
-                      `You already have a pending top-up request for ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} submitted on ${new Date(pendingTopup.createdAt).toLocaleDateString()} via ${pendingTopup.paymentMethod || 'Manual Transfer'}. You cannot send another top-up request until your previous request is approved or rejected by an administrator.`,
-                      `لديك بالفعل طلب شحن بقيمة ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} تم إرساله بتاريخ ${new Date(pendingTopup.createdAt).toLocaleDateString()} عبر ${pendingTopup.paymentMethod || 'التحويل اليدوي'}. لا يمكنك إرسال طلب شحن آخر حتى يتم اعتماد أو رفض طلبك السابق من قِبل الإدارة.`
+                      `You already have a pending top-up request for ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} submitted on ${c.date(pendingTopup.createdAt)} via ${pendingTopup.paymentMethod || 'Manual Transfer'}. You cannot send another top-up request until your previous request is approved or rejected by an administrator.`,
+                      `لديك بالفعل طلب شحن بقيمة ${c.checkoutMoney(pendingTopup.totalAmount ?? pendingTopup.subtotal ?? 0, pendingTopup.plan?.currency ?? currency)} تم إرساله بتاريخ ${c.date(pendingTopup.createdAt)} عبر ${pendingTopup.paymentMethod || 'التحويل اليدوي'}. لا يمكنك إرسال طلب شحن آخر حتى يتم اعتماد أو رفض طلبك السابق من قِبل الإدارة.`
                     )}
                   </p>
                 </div>
@@ -501,7 +506,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
               {/* Amount Selection */}
               <div className="bg-white dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                  {c.t('1. Choose or Enter Credit Amount (€)', '١. اختر أو اكتب قيمة الرصيد باليورو (€)')}
+                  {c.t(`1. Choose or Enter Credit Amount (${currency})`, `1. اختر أو اكتب قيمة الرصيد (${currency})`)}
                 </label>
                 
                 {/* Preset Pills */}
@@ -513,22 +518,23 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                         key={preset}
                         type="button"
                         onClick={() => handleSelectPreset(preset)}
-                        className={`py-2 px-1 text-sm font-semibold rounded-xl border transition-all text-center ${
+                        dir="ltr"
+                        className={`py-2 px-1 text-sm font-semibold rounded-xl border transition-all text-center tabular-nums ${
                           active
                             ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/20'
                             : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:border-emerald-400'
                         }`}
                       >
-                        €{preset}
+                        {currency === 'EUR' ? `€${preset}` : `${currency} ${preset}`}
                       </button>
                     );
                   })}
                 </div>
 
                 {/* Custom Numeric Input */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none text-slate-400 font-semibold">
-                    €
+                <div className="relative" dir="ltr">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-semibold text-xs">
+                    {currency === 'EUR' ? '€' : currency}
                   </div>
                   <input
                     type="text"
@@ -536,13 +542,13 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                     value={customInput}
                     onChange={handleCustomInputChange}
                     placeholder={c.t('Enter custom amount…', 'أدخل مبلغًا مخصصًا…')}
-                    className="w-full ps-8 pe-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                    className={`w-full ${currency === 'EUR' ? 'pl-8' : 'pl-12'} pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all`}
                   />
                 </div>
                 {!isAmountValid && (
                   <p className="text-xs text-rose-500 mt-1.5 flex items-center gap-1">
                     <AlertCircle size={12} />
-                    {c.t('Minimum top-up amount is €5.00', 'الحد الأدنى لشحن المحفظة هو 5.00 يورو')}
+                    {c.t(`Enter an amount between ${currency} 1.00 and ${currency} 100,000`, `أدخل مبلغًا بين ${currency} 1.00 و ${currency} 100,000`)}
                   </p>
                 )}
               </div>
@@ -552,7 +558,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                     <Tag size={13} className="text-indigo-500" />
-                    {c.t('2. Have a Coupon or Promo Code?', '٢. هل لديك كود خصم أو برومو؟')}
+                    {c.t('2. Have a Coupon or Promo Code?', '2. هل لديك كود خصم أو برومو؟')}
                   </label>
                   {couponState.status === 'valid' && (
                     <button
@@ -620,7 +626,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
               {/* Payment Method Selector */}
               <div className="bg-white dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                  {c.t('3. Select Payment Method', '٣. اختر طريقة الدفع')}
+                  {c.t('3. Select Payment Method', '3. اختر طريقة الدفع')}
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4">

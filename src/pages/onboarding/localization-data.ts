@@ -18,16 +18,17 @@ export function countryOptions(language: string): ComboOption[] {
   }).sort((a, b) => a.label.localeCompare(b.label, language));
 }
 
-export function currencyOptions(language: string): ComboOption[] {
+export function currencyOptions(_language?: string): ComboOption[] {
   const intl = Intl as typeof Intl & { supportedValuesOf?: (type: string) => string[] };
-  const names = new Intl.DisplayNames([language], { type: 'currency' });
+  const names = new Intl.DisplayNames(['en'], { type: 'currency' });
   return (intl.supportedValuesOf?.('currency') || ['AED', 'EGP', 'EUR', 'GBP', 'SAR', 'USD']).map(code => {
-    const symbol = code === 'EGP' ? 'E£' : new Intl.NumberFormat('en', { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' }).formatToParts(0).find(p => p.type === 'currency')?.value || code;
+    const rawSymbol = new Intl.NumberFormat('en-US', { style: 'currency', currency: code, currencyDisplay: 'symbol' }).formatToParts(0).find(p => p.type === 'currency')?.value || code;
+    const symbol = /^[\x20-\x7E€£¥]+$/.test(rawSymbol) ? rawSymbol : code;
     const name = names.of(code) || code;
     return {
       value: code,
       badge: code,
-      label: `${name} (${symbol})`,
+      label: symbol === code ? `${code} (${name})` : `${code} — ${name} (${symbol})`,
       search: `${code} ${name} ${symbol}`,
     };
   });

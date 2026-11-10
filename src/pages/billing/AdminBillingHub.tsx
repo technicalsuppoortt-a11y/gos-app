@@ -374,9 +374,9 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
               value={String(days)}
               onChange={val => setDays(Number(val))}
               options={[
-                { value: '7', label: c.t('Last 7 Days', 'آخر ٧ أيام') },
-                { value: '30', label: c.t('Last 30 Days', 'آخر ٣٠ يومًا') },
-                { value: '90', label: c.t('Last 90 Days', 'آخر ٩٠ يومًا') },
+                { value: '7', label: c.t('Last 7 Days', 'آخر 7 أيام') },
+                { value: '30', label: c.t('Last 30 Days', 'آخر 30 يومًا') },
+                { value: '90', label: c.t('Last 90 Days', 'آخر 90 يومًا') },
                 { value: '365', label: c.t('All Time (1 Year)', 'سنة كاملة') },
               ]}
             />
@@ -1296,7 +1296,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                   <span className="text-rose-500 ms-0.5">*</span>
                 </label>
                 <span className="text-xs text-slate-500">
-                  {newCouponType === 'percent' ? c.t('Max: 100%', 'الحد الأقصى: 100%') : c.t('Euros (€)', 'يورو (€)')}
+                  {newCouponType === 'percent' ? c.t('Max: 100%', 'الحد الأقصى: 100%') : c.t('EUR (€)', 'EUR (€)')}
                 </span>
               </div>
 

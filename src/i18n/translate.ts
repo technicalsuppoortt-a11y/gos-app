@@ -32,8 +32,13 @@ const templates=Object.entries(patterns).sort(([a],[b])=>b.replace(/\{\{\d+\}\}/
   return {regex:new RegExp('^'+regex+'$'),arabic,indexes};
 });
 
+const CURRENCY_CODE_OR_AMOUNT_RE = /^(?:≈\s*)?(?:[+−\-]?\s*)?(?:[$€£]|USD|EUR|EGP|GBP|AED|SAR|KWD|QAR|BHD|OMR|JOD|LBP|MAD|TND|DZD|IQD)(?:\s*[\d,.]+(?:[KMB])?(?:\s*\([^)]+\))?)?$/i;
+
 /** Limited, reviewed grammatical patterns; no word-by-word machine translation. */
 export function resolveDisplayTranslation(text: string): string | undefined {
+  if (CURRENCY_CODE_OR_AMOUNT_RE.test(text.trim()) || /^[+−\-]?\d[\d,.]*(?:[KMB%])?$/i.test(text.trim())) {
+    return undefined;
+  }
   const direct = dictionary[text] ?? normalized.get(text.toLocaleLowerCase('en'));
   if (direct !== undefined) return direct;
   const clock=text.match(/^(\d{1,2}:\d{2}) (AM|PM)$/);

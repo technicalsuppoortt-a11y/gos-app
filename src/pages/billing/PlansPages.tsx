@@ -1,7 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
-import { AlertTriangle, Coins, Crown, Gem, Gift, Inbox, Layers, Package, Sparkles, Store, Users, Wallet } from 'lucide-react';
-import { entitledTools, isLive, PLATFORM, useBillingIdentity, useBillingRefresh, usePlans, useProviderWallets, useRequests, useSubscribers, useSubscription, useWallet } from '../../backend/billing';
+import { AlertTriangle, Coins, Crown, FileText, Gem, Gift, Inbox, Layers, Package, Sparkles, Store, Users, Wallet } from 'lucide-react';
+import { entitledTools, isLive, PLATFORM, useBillingIdentity, useBillingRefresh, useCommunicationWallet, usePlans, useProviderWallets, useRequests, useSubscribers, useSubscription, useWallet, WALLET_CURRENCY } from '../../backend/billing';
 import { MySubscription } from './MySubscription';
+import { InvoicesPanel } from './InvoicesPanel';
 import { PlanCatalog } from './PlanCatalog';
 import { RequestsPanel, SubscribersPanel } from './ProviderPanels';
 import { TrialSettings } from './TrialSettings';
@@ -9,7 +10,7 @@ import { AdminBillingHub } from './AdminBillingHub';
 import { AICreditSettings } from './AICreditSettings';
 import { Stat, Tabs, useCopy } from './ui';
 
-type ProviderTab = 'plans' | 'trial' | 'addons' | 'requests' | 'subscribers' | 'wallet' | 'ai-settings';
+type ProviderTab = 'plans' | 'trial' | 'addons' | 'requests' | 'invoices' | 'subscribers' | 'wallet' | 'ai-settings';
 
 export function UserPlansPage() {
   const c = useCopy();
@@ -27,7 +28,7 @@ export function UserPlansPage() {
 function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerId: string; isPlatform: boolean; allowedTools?: string[] | null; locked?: boolean }) {
   const c = useCopy();
   const [params, setParams] = useSearchParams();
-  const tab = (['plans', 'trial', 'addons', 'requests', 'subscribers', 'wallet', 'ai-settings'].includes(params.get('tab') ?? '') ? params.get('tab') : 'plans') as ProviderTab;
+  const tab = (['plans', 'trial', 'addons', 'requests', 'invoices', 'subscribers', 'wallet', 'ai-settings'].includes(params.get('tab') ?? '') ? params.get('tab') : 'plans') as ProviderTab;
   const setTab = (next: ProviderTab) => setParams(current => { current.set('tab', next); return current; }, { replace: true });
   const { data: plans } = usePlans(ownerId, true);
   const { data: subscribers } = useSubscribers(ownerId);
@@ -52,6 +53,7 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
         { id: 'trial', label: c.t('Free trial', 'التجربة المجانية'), icon: <Gift size={14} /> },
         { id: 'addons', label: c.t('Add-ons', 'الإضافات'), icon: <Package size={14} /> },
         { id: 'requests', label: c.t('Requests', 'الطلبات'), icon: <Inbox size={14} />, count: pending, hot: true },
+        { id: 'invoices', label: c.t('Invoices', 'الفواتير'), icon: <FileText size={14} /> },
         { id: 'subscribers', label: isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد'), icon: <Users size={14} /> },
         { id: 'ai-settings', label: c.t('AI Settings', 'إعدادات الذكاء الاصطناعي'), icon: <Sparkles size={14} /> },
         { id: 'wallet', label: c.t('Meta Advertising & API Wallet', 'محفظة إعلانات Meta وواجهات API'), icon: <Wallet size={14} /> },
@@ -60,6 +62,7 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
       {tab === 'addons' && <PlanCatalog kind="addon" plans={plans} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} ownerId={ownerId} />}
       {tab === 'trial' && <TrialSettings trial={plans.find(plan => plan.kind === 'trial')} subscribers={subscribers} isPlatform={isPlatform} allowedTools={allowedTools} locked={locked} />}
       {tab === 'requests' && <RequestsPanel requests={requests} mode="incoming" title={isPlatform ? c.t('Requests from admins', 'طلبات الأدمن') : c.t('Requests from your clients', 'طلبات عملائك')} />}
+      {tab === 'invoices' && <InvoicesPanel mode="provider" audience={isPlatform ? 'super_admin' : 'admin'} ownerId={ownerId} />}
       {tab === 'subscribers' && <SubscribersPanel subscribers={subscribers} wallets={wallets} plans={plans} isPlatform={isPlatform} title={isPlatform ? c.t('Admins & credits', 'الأدمن والرصيد') : c.t('Clients & credits', 'العملاء والرصيد')} />}
       {tab === 'wallet' && <AdminBillingHub ownerId={ownerId} isPlatform={isPlatform} />}
       {tab === 'ai-settings' && <AICreditSettings key={ownerId} isPlatform={isPlatform} />}
@@ -91,9 +94,12 @@ export function AdminPlansPage() {
   const area = params.get('area') === 'mine' ? 'mine' : 'clients';
   const { data: sub } = useSubscription(identity.uid);
   const { data: wallet } = useWallet(identity.uid);
+  const { data: commWallet } = useCommunicationWallet(identity.uid);
   if (identity.role === 'SUPER_ADMIN') return <SuperAdminPlansPage />;
   const live = isLive(sub);
   const allowed = entitledTools(sub);
+  const cashAvail = commWallet ? Math.max(0, (commWallet.balance ?? 0) - (commWallet.held ?? 0)) : 0;
+  const cashCurrency = commWallet?.currency || WALLET_CURRENCY;
   const switchArea = (next: 'mine' | 'clients') => setParams(next === 'mine' ? { area: 'mine' } : {}, { replace: true });
 
   return (
@@ -106,13 +112,13 @@ export function AdminPlansPage() {
         </div>
         <div className="bl-switch" role="tablist" aria-label={c.t('Area', 'القسم')}>
           <button type="button" role="tab" aria-selected={area === 'clients'} onClick={() => switchArea('clients')}><Users size={16} /><span>{c.t('Plans for my clients', 'باقات عملائي')}<small>{c.t('What you sell', 'ما تبيعه')}</small></span></button>
-          <button type="button" role="tab" aria-selected={area === 'mine'} onClick={() => switchArea('mine')}><Crown size={16} /><span>{c.t('My platform subscription', 'اشتراكي مع المنصة')}<small>{live ? c.t(`${(wallet?.balance ?? 0).toLocaleString()} credits left`, `متبقي ${new Intl.NumberFormat('ar-EG').format(wallet?.balance ?? 0)} رصيد`) : c.t('Renew / upgrade', 'تجديد / ترقية')}</small></span></button>
+          <button type="button" role="tab" aria-selected={area === 'mine'} onClick={() => switchArea('mine')}><Crown size={16} /><span>{c.t('My platform subscription', 'اشتراكي مع المنصة')}<small>{live ? c.t(`${new Intl.NumberFormat('en-US').format(wallet?.balance ?? 0)} credits · ${c.money(cashAvail, cashCurrency)} wallet`, `متبقي ${new Intl.NumberFormat('en-US').format(wallet?.balance ?? 0)} رصيد · ${c.money(cashAvail, cashCurrency)}`) : c.t('Renew / upgrade', 'تجديد / ترقية')}</small></span></button>
         </div>
       </header>
 
       {area === 'mine' ? <MySubscription audience="admin" /> : <>
         {live ? (
-          <div className="bl-banner info"><Wallet size={17} /><div><b>{c.t(`Your wallet: ${(wallet?.balance ?? 0).toLocaleString()} credits`, `محفظتك: ${new Intl.NumberFormat('ar-EG').format(wallet?.balance ?? 0)} رصيد`)}</b><p>{c.t('Credits you give clients (plans, trials, add-ons, transfers) are deducted from this wallet. Need more? Request a credit add-on from the platform.', 'الرصيد الذي تمنحه لعملائك (باقات، تجارب، إضافات، تحويلات) يُخصم من هذه المحفظة. تحتاج المزيد؟ اطلب إضافة رصيد من المنصة.')}</p></div><button type="button" className="bl-btn sm" onClick={() => setParams({ area: 'mine' }, { replace: true })}><Coins size={13} />{c.t('Get credits', 'طلب رصيد')}</button></div>
+          <div className="bl-banner info"><Wallet size={17} /><div><b>{c.t(`Your wallet: ${new Intl.NumberFormat('en-US').format(wallet?.balance ?? 0)} credits`, `محفظتك: ${new Intl.NumberFormat('en-US').format(wallet?.balance ?? 0)} رصيد`)}</b><p>{c.t('Credits you give clients (plans, trials, add-ons, transfers) are deducted from this wallet. Need more? Request a credit add-on from the platform.', 'الرصيد الذي تمنحه لعملائك (باقات، تجارب، إضافات، تحويلات) يُخصم من هذه المحفظة. تحتاج المزيد؟ اطلب إضافة رصيد من المنصة.')}</p></div><button type="button" className="bl-btn sm" onClick={() => setParams({ area: 'mine' }, { replace: true })}><Coins size={13} />{c.t('Get credits', 'طلب رصيد')}</button></div>
         ) : (
           <div className="bl-banner warn"><AlertTriangle size={17} /><div><b>{c.t('Your platform subscription is not active', 'اشتراكك مع المنصة غير نشط')}</b><p>{c.t('Start the free trial or subscribe to a platform plan to create plans and serve clients.', 'ابدأ التجربة المجانية أو اشترك في باقة لتتمكن من إنشاء الباقات وخدمة العملاء.')}</p></div><button type="button" className="bl-btn sm" onClick={() => setParams({ area: 'mine' }, { replace: true })}><Crown size={13} />{c.t('Activate', 'تفعيل')}</button></div>
         )}

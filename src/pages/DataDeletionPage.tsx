@@ -189,7 +189,7 @@ export function DataDeletionPage() {
     setIsSubmitting(true);
     setTimeout(() => {
       const generatedCode = 'DEL-' + new Date().getFullYear() + '-' + Math.floor(100000 + Math.random() * 900000);
-      const timestamp = new Date().toLocaleString(isRtl ? 'ar-EG' : 'en-US');
+      const timestamp = new Date().toLocaleString(isRtl ? 'ar-EG-u-nu-latn' : 'en-US');
       setConfirmationCode(generatedCode);
       setConfirmationDate(timestamp);
       setIsSubmitting(false);
@@ -207,7 +207,7 @@ export function DataDeletionPage() {
 
     setStatusResult({
       code: query,
-      timestamp: new Date().toLocaleDateString(isRtl ? 'ar-EG' : 'en-US'),
+      timestamp: new Date().toLocaleDateString(isRtl ? 'ar-EG-u-nu-latn' : 'en-US'),
       status: 'VERIFIED_PURGED',
       details: isRtl
         ? 'تم مسح رموز الوصول لـ Meta وإلغاء صلاحيات التطبيق وتطهير البيانات المحددة بنجاح وفق معايير الحماية.'

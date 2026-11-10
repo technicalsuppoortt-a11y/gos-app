@@ -88,10 +88,19 @@ test('server calculates the quote, saves a private receipt and commits request, 
   await assert.rejects(call({ action: 'receipt', id }), { code: 'unauthenticated' });
   await assert.rejects(call({ action: 'receipt', id }, { tenant: 'other' }), { code: 'not-found' });
   assert.ok((await call({ action: 'receipt', id }, staff)).url);
+  const pendingLeadKey = [...rows.keys()].find(key => key.startsWith('tenants/shop/leads/'));
+  assert.ok(pendingLeadKey, 'checkout submit creates a CRM lead immediately');
+  assert.equal(rows.get(pendingLeadKey).stage, 'CONTACT_CREATED');
+  assert.equal(rows.get(pendingLeadKey).orderId, id);
   await call({ action: 'review', id, decision: 'approve' }, staff);
   assert.equal(read('orders/' + id).status, 'Paid');
   assert.equal(read('transactions/' + id).status, 'Paid');
   assert.equal(read('checkoutRequests/' + id).status, 'Approved');
+  assert.equal(rows.get(pendingLeadKey).stage, 'PAYMENT_COMPLETED');
+  assert.equal(rows.get(pendingLeadKey).qualificationStatus, 'Qualified');
+  assert.equal(rows.get(pendingLeadKey).followUpState, 'CUSTOMER');
+  assert.ok(rows.get(pendingLeadKey).tags.includes('Customer'));
+  assert.equal(rows.get(pendingLeadKey).attachedProducts[0].productName, 'Design session');
 });
 
 test('rejection records the reason, releases the coupon and preserves terminal state', async () => {

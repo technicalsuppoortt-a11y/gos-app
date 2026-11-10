@@ -188,6 +188,11 @@ service cloud.firestore {
       allow read: if platformFinance();
       allow write: if false;
     }
+    match /billingInvoices/{invoiceId} {
+      allow read: if signedIn() && (featureAdmin() || billingParty(resource.data.subscriberId, resource.data.providerId));
+      allow read: if platformFinance();
+      allow write: if false;
+    }
     match /billingSettings/{providerId} { allow read: if providerId != 'creditWeights' && signedIn(); allow write: if false; }
     match /billingCoupons/{couponId} {
       allow read: if signedIn() && (

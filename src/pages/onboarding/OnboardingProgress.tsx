@@ -65,7 +65,7 @@ export function OnboardingProgress() {
           <small>
             {t(
               `Onboarding progress · ${count} of 5 setup steps complete`,
-              `تقدم الإعداد · ${count} من ٥ خطوات مكتملة`
+              `تقدم الإعداد · ${count} من 5 خطوات مكتملة`
             )}
           </small>
         </div>

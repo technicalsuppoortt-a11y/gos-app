@@ -131,7 +131,7 @@ function formatTimestamp(value: unknown, ar: boolean): string {
     if (typeof seconds === 'number') date = new Date(seconds * 1000);
   }
   if (!date) return '';
-  return date.toLocaleDateString(ar ? 'ar-EG' : 'en-US', {
+  return date.toLocaleDateString(ar ? 'ar-EG-u-nu-latn' : 'en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

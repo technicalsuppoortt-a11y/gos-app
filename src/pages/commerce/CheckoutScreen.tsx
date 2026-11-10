@@ -109,7 +109,7 @@ function PreviewCheckout({ product, billing }: { product: Product; billing?: Bil
 }
 
 function CheckoutForm({ product, preview, tenantId }: { product: Product; preview?: Preview; tenantId?: string }) {
-  const locale = useUILanguage();
+  useUILanguage();
   const { formatCheckoutPrice } = useCurrency();
   const config = product.config!, experience = config.experience ?? defaultExperience();
   const promoId = useId(), paymentGroup = useId(), title = useId();
@@ -180,9 +180,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
   const paymentDue = (totals?.dueToday ?? 0) > 0;
   const needsReceipt = !!method?.account && (paymentDue || !!preview);
   const currency = totals?.currency || config.currency;
-  const money = (value: number) => preview
-    ? formatCheckoutPrice(value, currency)
-    : new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
+  const money = (value: number) => formatCheckoutPrice(value, currency);
   const ready = !!quote && !loading && !quoteError && !preview?.loading && !preview?.error && !busy;
   const orderAction = productKind(product.type) === 'course' ? 'Complete Enrollment' : productKind(product.type) === 'service' ? 'Complete Booking' : 'Complete Purchase';
 
@@ -319,9 +317,57 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
         note: note.trim(),
       };
 
+      const emailSlug = (customerEmail || reqId).replace(/[^a-z0-9]/g, '').slice(0, 24) || reqId.slice(0, 16);
+      const leadId = `lead-order-${emailSlug}`;
+      const isInstantFree = totals.dueToday === 0;
+      const rawType = String(product.type || '').trim().toLowerCase();
+      const prodTypeLabel: 'Course' | 'Digital Product' | 'Service' = rawType.includes('course')
+        ? 'Course'
+        : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
+          ? 'Service'
+          : 'Digital Product';
+      const checkoutLeadRecord = {
+        id: leadId,
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone === '—' ? '' : customerPhone,
+        company: '',
+        source: 'Services',
+        owner: 'Unassigned',
+        pipelineId: config.crmRouting?.pipelineId || 'main',
+        stage: isInstantFree ? (config.crmRouting?.stageId || 'PAYMENT_COMPLETED') : 'CONTACT_CREATED',
+        lifecycleStage: isInstantFree ? (config.crmRouting?.stageId || 'PAYMENT_COMPLETED') : 'CONTACT_CREATED',
+        value: totals.total || totals.dueToday || 0,
+        currency: totals.currency,
+        interest: `${prodTypeLabel}: ${product.name}`,
+        orderId: reqId,
+        qualificationStatus: isInstantFree ? 'Qualified' : 'Pending',
+        bookingStatus: 'Not Scheduled',
+        followUpState: isInstantFree ? 'CUSTOMER' : 'CONTACTED',
+        hasWhatsAppConsent: Boolean(customerPhone && customerPhone !== '—'),
+        hasMessagingConsent: true,
+        hasEmailConsent: Boolean(customerEmail),
+        tags: isInstantFree ? [prodTypeLabel, product.name, 'Customer'] : [prodTypeLabel, product.name],
+        attachedProducts: items.map(it => ({ productId: it.productId, productName: it.productName, productType: prodTypeLabel, attachedAt: createdAt })),
+        activities: [
+          {
+            id: `act-checkout-${reqId}`,
+            type: 'payment',
+            title: isInstantFree ? `${prodTypeLabel} enrolled` : 'Order submitted',
+            detail: `${prodTypeLabel}: ${product.name} · ${totals.currency} ${Number(totals.dueToday).toFixed(2)}`,
+            at: createdAt,
+          },
+        ],
+        notes: note.trim() ? [note.trim()] : [],
+        createdAt,
+        lastActivity: createdAt,
+      };
+
       await Promise.allSettled([
         setDoc(doc(db, 'settings', `checkoutRequests_${ownerTenantId}`, 'items', reqId), requestRecord),
         setDoc(doc(db, 'tenants', ownerTenantId, 'checkoutRequests', reqId), requestRecord),
+        setDoc(doc(db, 'tenants', ownerTenantId, 'orders', reqId), orderRecord, { merge: true }),
+        setDoc(doc(db, 'tenants', ownerTenantId, 'leads', leadId), checkoutLeadRecord, { merge: true }),
       ]);
 
       try {

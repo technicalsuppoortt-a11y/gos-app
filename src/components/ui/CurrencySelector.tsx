@@ -56,10 +56,16 @@ export const CurrencySelector: React.FC<{
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${translateText('Select Currency')} (${activeCode})`}
-        title={`${ar ? activeItem.ar : activeItem.name} (${activeCode})`}
+        title={`${activeItem.name} (${activeCode})`}
       >
-        <span className="global-currency-symbol">{activeItem.symbol}</span>
-        <span className="global-currency-code">{activeItem.code}</span>
+        <span className="global-currency-symbol">
+          {activeItem.symbol.length <= 2 ? (
+            activeItem.symbol
+          ) : (
+            <img className="global-currency-flag" alt="" src={new URL(`../../assets/currency-flags/${activeItem.flag}.svg`, import.meta.url).href}/>
+          )}
+        </span>
+        <span className="global-currency-code" dir="ltr">{activeItem.code}</span>
         <ChevronDown size={12} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -78,12 +84,12 @@ export const CurrencySelector: React.FC<{
                 className={`global-currency-item ${item.code === activeCode ? 'active' : ''}`}
                 onClick={() => handleSelect(item.code)}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" dir="ltr">
                   <span className="global-currency-symbol">
                     <img className="global-currency-flag" alt="" src={new URL(`../../assets/currency-flags/${item.flag}.svg`, import.meta.url).href}/>
                   </span>
                   <span className="font-semibold">{item.code}</span>
-                  <span className="text-[10px] opacity-75 font-normal">· {ar ? item.ar : item.name}</span>
+                  <span className="text-[10px] opacity-75 font-normal">· {item.name}</span>
                 </div>
                 {item.code === activeCode && <Check size={14} className="text-[var(--ws-accent)] shrink-0" />}
               </button>

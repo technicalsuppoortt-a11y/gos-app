@@ -298,6 +298,29 @@ test('the GOS callable charges a standard user before forwarding multipart and g
   assert.equal(db.rows.get('billingWallets/owner').aiCredits, 8);
 });
 
+test('copilot metered requests forward thinkingLevel (low/medium/high) and reject unsupported values before charging', async () => {
+  const db = outboxDb(0);
+  let forwarded = null;
+  const config = {
+    db,
+    workspace: async () => ({ user: { uid: 'owner' } }),
+    baseUrl: 'https://gos.example',
+    gatewaySecret: 'trusted-worker',
+    fetcher: async (_url, options) => {
+      forwarded = JSON.parse(options.body);
+      return Response.json({ success: true, data: { text: 'Strategic plan ready.' } });
+    },
+  };
+  const call = payload => meteredGosRequest({
+    data: { action: 'copilot', payload },
+    rawRequest: { headers: { authorization: 'Bearer user-token' } },
+  }, config);
+  await assert.rejects(call({ text: 'Plan launch', thinkingLevel: 'invalid' }), { code: 'invalid-argument' });
+  assert.equal(db.rows.get('billingWallets/owner').aiCredits, undefined);
+  assert.deepEqual(await call({ text: 'Plan launch', conversationId: 'conv-1', thinkingLevel: 'high' }), { text: 'Strategic plan ready.' });
+  assert.equal(forwarded.thinkingLevel, 'high');
+});
+
 // ── Instant Gateway Top-ups & Coupon Codes ──
 test('instant gateway wallet top-up approves immediately and credits the wallet', async () => {
   const rows = new Map([

@@ -27,10 +27,10 @@ import './settings.css';
 const CURRENCY_SELECT_OPTIONS = [
   { value: 'USD', label: '$ · USD (US Dollar)' },
   { value: 'EUR', label: '€ · EUR (Euro)' },
-  { value: 'EGP', label: 'E£ · EGP (Egyptian Pound)' },
+  { value: 'EGP', label: 'EGP (Egyptian Pound)' },
   { value: 'GBP', label: '£ · GBP (British Pound)' },
-  { value: 'AED', label: 'د.إ · AED (UAE Dirham)' },
-  { value: 'SAR', label: '﷼ · SAR (Saudi Riyal)' },
+  { value: 'AED', label: 'AED (UAE Dirham)' },
+  { value: 'SAR', label: 'SAR (Saudi Riyal)' },
 ];
 
 export function SettingsWorkspace() {
