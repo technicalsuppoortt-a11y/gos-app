@@ -375,12 +375,6 @@ const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
       tone: "indigo",
       to: "/dashboard/booking?tab=bookings&action=new",
     },
-    {
-      label: "More Tools",
-      icon: IcEllipsis,
-      tone: "slate",
-      to: "/dashboard/templates",
-    },
   ];
 
 const TOOLS: {
@@ -920,7 +914,7 @@ function QuickActions() {
           <span className={`text-xs font-bold whitespace-nowrap ${H}`}>{translateText("Quick Actions")}</span>
           <span className="text-slate-300 dark:text-slate-700">|</span>
         </div>
-        <div className="grid grid-cols-2 gap-1.5 flex-1 sm:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-1.5 flex-1 sm:grid-cols-3 lg:grid-cols-6">
           {localizeNode(QUICK_ACTIONS.map((a) => {
             const t = TONES[a.tone];
             return (
@@ -941,14 +935,6 @@ function QuickActions() {
             );
           }))}
         </div>
-        <button
-          type="button"
-          onClick={() => navigate("/dashboard/settings/tools")}
-          className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold text-[#7C3AED] transition hover:text-purple-700 xl:inline-flex"
-        >
-          {translateText("All Tools")}
-          <ArrowRight size={11} />
-        </button>
       </div>
     </section>
   );
@@ -962,8 +948,6 @@ function ToolsGrid() {
       <SectionHeader
         title={translateText("Your Tools & Products")}
         subtitle="Access and manage all your business tools in one place."
-        action="View All"
-        onAction={() => navigate("/dashboard/settings/tools")}
       />
       <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-2.5 mt-2.5 auto-rows-fr min-h-0">
         {localizeNode(TOOLS.map((t) => (

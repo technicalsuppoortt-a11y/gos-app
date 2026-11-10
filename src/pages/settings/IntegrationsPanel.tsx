@@ -1,7 +1,25 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AlertCircle, ArrowRight, CalendarDays, CheckCircle2, ChevronRight, ExternalLink, Globe2, Mail, MessageCircle, Plug, Search, ShieldCheck, Sparkles, Unplug, Video, Webhook } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  ExternalLink,
+  HelpCircle,
+  Info,
+  Mail,
+  MessageCircle,
+  Plug,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Unplug,
+} from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { InstagramIcon, FacebookIcon } from '../inbox/ChannelIcons';
@@ -11,75 +29,1000 @@ import type { IntegrationState, SettingsData } from './data';
 import { PanelHeading } from './kit';
 import { localDemoEnabled, useDemoState } from '../../backend/localDemo';
 
+type GuideStep = {
+  step: string;
+  title: string;
+  detail: string;
+};
+
 const providers = [
-  { id: 'meta', name: 'Facebook & Instagram', category: 'Communication', description: 'Manage Facebook and Instagram conversations in your unified inbox.', scopes: ['Read connected pages and business accounts', 'Receive and reply to customer messages'], icon: FacebookIcon, color: 'blue', status: 'https://metastatus.com/' },
-  { id: 'whatsapp', name: 'WhatsApp Business', category: 'Communication', description: 'Connect WhatsApp for customer messaging and automated follow-ups.', scopes: ['Access your WhatsApp Business account', 'Send approved messages and receive replies'], icon: MessageCircle, color: 'green', status: 'https://metastatus.com/' },
-  { id: 'gmail', name: 'Gmail', category: 'Communication', description: 'Send and receive customer emails from your connected Gmail account.', scopes: ['Read and send business emails', 'Identify the connected email account'], icon: Mail, color: 'red', status: 'https://www.google.com/appsstatus/dashboard/' },
-  { id: 'outlook-email', name: 'Outlook Email', category: 'Communication', description: 'Bring Microsoft email conversations into your Upclick inbox.', scopes: ['Read and send business emails', 'Identify your Microsoft account'], icon: Mail, color: 'blue', status: 'https://status.cloud.microsoft/' },
-  { id: 'google-calendar', name: 'Google Calendar', category: 'Scheduling', description: 'Sync bookings, check availability and prevent double bookings.', scopes: ['Read calendar availability', 'Create and update booking events'], icon: CalendarDays, color: 'blue', status: 'https://www.google.com/appsstatus/dashboard/' },
-  { id: 'outlook-calendar', name: 'Microsoft Calendar', category: 'Scheduling', description: 'Keep your Outlook calendar and Upclick appointments in sync.', scopes: ['Read calendar availability', 'Create and update booking events'], icon: CalendarDays, color: 'blue', status: 'https://status.cloud.microsoft/' },
-  { id: 'zoom', name: 'Zoom', category: 'Scheduling', description: 'Automatically create meeting links for your booked calls.', scopes: ['Create and manage scheduled meetings', 'Read your connected account profile'], icon: Video, color: 'blue', status: 'https://status.zoom.us/' },
-  { id: 'stripe', name: 'Stripe', category: 'Payments', description: 'Accept payments for products, services and paid bookings.', scopes: ['Read connected account onboarding status', 'Create payments and access payout information'], icon: ShieldCheck, color: 'purple', status: 'https://status.stripe.com/' },
-  { id: 'domains', name: 'Domains & DNS', category: 'Infrastructure', description: 'Connect your custom domain to published websites and funnels.', scopes: ['Verify domain ownership', 'Read DNS and SSL provisioning status'], icon: Globe2, color: 'orange', status: '' },
-  { id: 'ai', name: 'AI Provider', category: 'Infrastructure', description: 'Configure the AI provider used by your workspace assistants.', scopes: ['Run approved AI requests', 'Read model availability and usage'], icon: Sparkles, color: 'purple', status: '' },
-  { id: 'webhooks', name: 'Webhooks & API', category: 'Infrastructure', description: 'Connect your workflows using authenticated events and APIs.', scopes: ['Deliver selected workspace events', 'Access only the API scopes you approve'], icon: Webhook, color: 'purple', status: '' },
+  {
+    id: 'meta',
+    name: 'Facebook & Instagram',
+    category: 'Communication',
+    setupTime: '~2 min setup',
+    accountLabel: 'Connected Facebook Page / Instagram Handle',
+    accountPlaceholder: 'e.g. Upclick Official Page · @upclick.app',
+    description: 'Manage Facebook Page messages and Instagram Business DMs in your unified inbox.',
+    capabilities: ['Unified Inbox DMs', 'Story & Comment Replies', 'AI Auto-Responder'],
+    scopes: [
+      'Read connected Facebook Pages and linked Instagram Business accounts',
+      'Receive and reply to customer direct messages and comments in real time',
+    ],
+    prerequisites: [
+      'Admin access to a Facebook Business Page',
+      'An Instagram Professional (Business or Creator) account linked to your Facebook Page',
+      'Message control ("Allow access to messages") enabled in Instagram Advanced Messaging settings',
+    ],
+    guideSteps: [
+      {
+        step: '01',
+        title: 'Link Instagram to Your Facebook Page',
+        detail: 'Open your Facebook Page Settings → Linked Accounts → Instagram and ensure your Instagram Business profile is connected.',
+      },
+      {
+        step: '02',
+        title: 'Enable Connected Tools in Instagram',
+        detail: 'In the Instagram mobile app, go to Settings & Privacy → Messages and story replies → Message controls and turn on "Allow access to messages".',
+      },
+      {
+        step: '03',
+        title: 'Authorize via Meta Business Login',
+        detail: 'Click "Connect" below, sign in with your Facebook Admin account, and select the exact Business Page and Instagram account you want to sync.',
+      },
+      {
+        step: '04',
+        title: 'Test & Enable Automatic Sync',
+        detail: 'Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new DMs appear in your Inbox immediately.',
+      },
+    ] as GuideStep[],
+    proTip: 'Always grant permissions for all listed Pages during the Meta popup flow—deselecting permissions can interrupt Instagram DM webhook delivery.',
+    icon: FacebookIcon,
+    color: 'blue',
+    status: 'https://metastatus.com/',
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Business',
+    category: 'Communication',
+    setupTime: '~3 min setup',
+    accountLabel: 'WhatsApp Business Phone Number / WABA Name',
+    accountPlaceholder: 'e.g. +20 100 000 0000 · Upclick Support',
+    description: 'Connect WhatsApp Cloud API for customer messaging, broadcasts, and automated AI follow-ups.',
+    capabilities: ['WhatsApp Cloud API', 'Automated Follow-ups', 'Approved Templates'],
+    scopes: [
+      'Access your verified WhatsApp Business Account (WABA) and phone number',
+      'Send approved template messages and receive customer replies in real time',
+    ],
+    prerequisites: [
+      'A Meta Business Portfolio (Business Manager) account',
+      'A dedicated phone number able to receive an SMS or voice verification code (not currently active on personal WhatsApp)',
+      'Your legal business name and website URL ready for Meta Embedded Signup',
+    ],
+    guideSteps: [
+      {
+        step: '01',
+        title: 'Prepare Your Dedicated Phone Number',
+        detail: 'Ensure the phone number you want to use is not registered on the standard WhatsApp Messenger app (or delete the personal account from the app first).',
+      },
+      {
+        step: '02',
+        title: 'Launch WhatsApp Embedded Signup',
+        detail: 'Click "Connect" on the WhatsApp Business card and log in to your Meta Business Portfolio when prompted.',
+      },
+      {
+        step: '03',
+        title: 'Create or Select Your WhatsApp Business Profile',
+        detail: 'Enter your display name, business category, and verify your phone number via the 6-digit SMS or voice call code.',
+      },
+      {
+        step: '04',
+        title: 'Verify Webhook & Activate AI Follow-Up',
+        detail: 'Click "Test Connection" to confirm your WhatsApp number is operational, then save your connection to sync with Inbox and AI Follow-Up.',
+      },
+    ] as GuideStep[],
+    proTip: 'Use a clean phone number dedicated to your business so customer conversations, automated sequences, and 24-hour service windows stay uninterrupted.',
+    icon: MessageCircle,
+    color: 'green',
+    status: 'https://metastatus.com/',
+  },
+  {
+    id: 'gmail',
+    name: 'Gmail',
+    category: 'Communication',
+    setupTime: '~1 min setup',
+    accountLabel: 'Connected Gmail / Google Workspace Address',
+    accountPlaceholder: 'e.g. support@yourbusiness.com',
+    description: 'Send and receive customer emails directly from your connected Gmail or Google Workspace account.',
+    capabilities: ['2-Way Email Sync', 'Follow-Up Sequences', 'Custom Sender Identity'],
+    scopes: [
+      'Read and send business emails on behalf of your connected address',
+      'Identify the connected Google Workspace or Gmail account profile',
+    ],
+    prerequisites: [
+      'An active Gmail or Google Workspace business email account',
+      'Pop-ups allowed in your browser for Google OAuth sign-in',
+      'Admin approval for third-party OAuth apps if using a restricted Google Workspace organization',
+    ],
+    guideSteps: [
+      {
+        step: '01',
+        title: 'Click Connect on the Gmail Card',
+        detail: 'Open the Gmail connection modal and review the email read/send permissions required for unified inbox syncing.',
+      },
+      {
+        step: '02',
+        title: 'Select Your Google Account',
+        detail: 'Choose your preferred business Gmail or Google Workspace address in the secure Google sign-in window.',
+      },
+      {
+        step: '03',
+        title: 'Approve Gmail Workspace Scopes',
+        detail: 'Check the permission boxes to allow Upclick to send follow-up emails and sync incoming customer replies.',
+      },
+      {
+        step: '04',
+        title: 'Confirm Sender Address & Sync',
+        detail: 'Run the connection test to verify SMTP/API readiness and save your preferences to start emailing leads from CRM and Inbox.',
+      },
+    ] as GuideStep[],
+    proTip: 'Connecting a custom domain Google Workspace address (e.g., hello@yourdomain.com) significantly improves email deliverability and customer trust.',
+    icon: Mail,
+    color: 'red',
+    status: 'https://www.google.com/appsstatus/dashboard/',
+  },
+  {
+    id: 'google-calendar',
+    name: 'Google Calendar',
+    category: 'Scheduling',
+    setupTime: '~1 min setup',
+    accountLabel: 'Connected Google Calendar Account',
+    accountPlaceholder: 'e.g. bookings@yourbusiness.com (Primary Calendar)',
+    description: 'Sync bookings in real time, check live availability, and prevent double bookings automatically.',
+    capabilities: ['Real-Time Availability', 'Two-Way Event Sync', 'Conflict Prevention'],
+    scopes: [
+      'Read calendar busy/free availability blocks in real time',
+      'Create, reschedule, and cancel booking events automatically',
+    ],
+    prerequisites: [
+      'A Google account with Google Calendar active',
+      'Your primary calendar timezone configured to match your business operating hours',
+      'Edit permissions ("Make changes to events") on the target calendar',
+    ],
+    guideSteps: [
+      {
+        step: '01',
+        title: 'Open the Google Calendar Connection Flow',
+        detail: 'Click "Connect" on the Google Calendar card to start linking your scheduling calendar.',
+      },
+      {
+        step: '02',
+        title: 'Sign In with Your Google Account',
+        detail: 'Select the Google account that hosts the main calendar where you manage your daily appointments.',
+      },
+      {
+        step: '03',
+        title: 'Grant Calendar Read & Write Access',
+        detail: 'Approve calendar availability and event creation permissions so Upclick can block busy slots and add new client bookings.',
+      },
+      {
+        step: '04',
+        title: 'Verify Two-Way Sync',
+        detail: 'Click "Test Connection" and enable "Automatic sync" so every appointment booked on your Booking Pages appears on your calendar instantly.',
+      },
+    ] as GuideStep[],
+    proTip: 'Mark personal appointments as "Busy" in your Google Calendar—Upclick automatically hides those time slots on your public booking pages.',
+    icon: CalendarDays,
+    color: 'blue',
+    status: 'https://www.google.com/appsstatus/dashboard/',
+  },
 ];
+
 type Provider = typeof providers[number];
+
 export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refresh: () => Promise<void> }) {
   useUILanguage();
   const [demoConnections] = useDemoState<Record<string, IntegrationState>>('integrations', {});
   if (localDemoEnabled) data = { ...data, integrations: { ...data.integrations, ...demoConnections } };
-  const [category, setCategory] = useState('All integrations'), [search, setSearch] = useState(''), [params, setParams] = useSearchParams();
+
+  const [category, setCategory] = useState('All integrations');
+  const [search, setSearch] = useState('');
+  const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<Provider | null>(providers.find(p => p.id === params.get('provider')) ?? null);
-  const [logs, setLogs] = useState<string[] | null>(null), [logError, setLogError] = useState('');
+  const [activeGuideId, setActiveGuideId] = useState<string>(providers[0].id);
+  const [logs, setLogs] = useState<string[] | null>(null);
+  const [logError, setLogError] = useState('');
+  const guideRef = useRef<HTMLDivElement>(null);
   const role = useSelector((s: RootState) => s.auth.role);
-  const close = useCallback(() => { setSelected(null); setParams(p => { p.delete('provider'); p.delete('connection'); return p; }, { replace: true }); }, [setParams]);
-  const list = providers.filter(p => (category === 'All integrations' || p.category === category) && `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase()));
-  return <><PanelHeading title={translateText("Integrations")} description="Connect your favorite tools and keep your business in sync."/>
-    {localDemoEnabled && <p className="st-note" role="status">{translateText('Local demo: connections are simulated and saved in this browser.')}</p>}
-    <div className="st-integration-toolbar"><div className="st-category-tabs" aria-label={translateText("Integration categories")}>{localizeNode(['All integrations', 'Communication', 'Scheduling', 'Payments', 'Infrastructure'].map(c => <button key={c} aria-pressed={category === c} className={category === c ? 'active' : ''} onClick={() => setCategory(c)}>{localizeNode(c)}</button>))}</div><label className="st-search"><Search size={15}/><input aria-label={translateText("Search integrations")} placeholder={translateText("Search integrations…")} value={search} onChange={e => setSearch(e.target.value)}/></label></div>
-    <div className="st-integration-grid">{localizeNode(list.map(p => { const state = data.integrations[p.id] ?? { status: 'Not Connected' }; return <Card key={p.id} className="st-integration-card"><div className="st-integration-top"><span className={`st-service-icon ${p.color}`}>{localizeNode(p.id === 'stripe' ? <b className="st-stripe-logo">{translateText("stripe")}</b> : p.id === 'meta' ? <span className="st-meta-icons"><FacebookIcon size={21}/><InstagramIcon size={21}/></span> : <p.icon size={25}/>)}</span><Badge tone={state.status === 'Connected' ? 'green' : state.status === 'Needs Attention' ? 'orange' : 'neutral'}>{localizeNode(state.status)}</Badge></div><h3>{localizeNode(p.name)}</h3><p>{localizeNode(p.description)}</p>{localizeNode(state.status === 'Needs Attention' && <div className="st-integration-problem"><AlertCircle size={15}/><span>{localizeNode(state.problem || 'Your access needs to be renewed. Reconnect to resume syncing.')}</span></div>)}<div className="st-integration-bottom"><small><i className={state.providerStatus === 'outage' ? 'outage' : ''}/>{localizeNode(state.providerStatus === 'outage' ? 'Provider disruption' : state.providerStatus === 'operational' ? 'Provider operational' : 'Status not checked')}</small><button className={state.status === 'Needs Attention' ? 'st-primary' : 'st-secondary'} onClick={() => setSelected(p)}>{localizeNode(state.status === 'Connected' ? 'Manage' : state.status === 'Needs Attention' ? 'Fix connection' : 'Connect')}<ChevronRight size={14}/></button></div></Card>; }))}</div>
-    {localizeNode(!list.length && <div className="st-empty"><Search size={30}/><h3>{translateText("No integrations found")}</h3><p>{translateText("Try a different search or category.")}</p><button className="st-secondary" onClick={() => { setSearch(''); setCategory('All integrations'); }}>{translateText("Clear filters")}</button></div>)}
-    <div className="st-integration-note"><ShieldCheck size={18}/><p>{translateText("You control what you connect. Disconnecting a tool preserves your historical workspace data.")}</p>{localizeNode((role === 'ADMIN' || role === 'SUPER_ADMIN') && <button className="st-link" onClick={async () => { setLogs([]); setLogError(''); try { const result = await settingsRequest<{ entries: string[] }>('/integrations/logs'); setLogs(result.entries); } catch (e) { setLogError(friendlyError(e)); } }}>{translateText("Admin logs ")}<ArrowRight size={14}/></button>)}</div>
-    {localizeNode(selected && <ConnectionModal provider={selected} state={data.integrations[selected.id]} returned={params.get('connection') === 'return'} close={close} refresh={refresh}/>)}
-    {localizeNode(logs && <Modal title={translateText("Integration activity logs")} close={() => setLogs(null)}>{localizeNode(logError ? <p className="st-error" role="alert">{localizeNode(logError)}</p> : logs.length ? <ul className="st-log-list">{localizeNode(logs.map((l, i) => <li key={i}>{localizeNode(l)}</li>))}</ul> : <p>{translateText("No activity has been recorded.")}</p>)}</Modal>)}
-  </>;
+
+  const close = useCallback(() => {
+    setSelected(null);
+    setParams(p => {
+      p.delete('provider');
+      p.delete('connection');
+      return p;
+    }, { replace: true });
+  }, [setParams]);
+
+  const list = providers.filter(
+    p =>
+      (category === 'All integrations' || p.category === category) &&
+      `${p.name} ${p.description} ${p.capabilities.join(' ')}`.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const connectedCount = providers.filter(p => data.integrations[p.id]?.status === 'Connected').length;
+  const activeGuide = providers.find(p => p.id === activeGuideId) ?? providers[0];
+  const activeGuideState = data.integrations[activeGuide.id] ?? { status: 'Not Connected' };
+
+  const openProviderGuide = (providerId: string) => {
+    setActiveGuideId(providerId);
+    guideRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const renderProviderIcon = (p: Provider, size = 24) =>
+    p.id === 'meta' ? (
+      <span className="st-meta-icons">
+        <FacebookIcon size={size - 3} />
+        <InstagramIcon size={size - 3} />
+      </span>
+    ) : (
+      <p.icon size={size} />
+    );
+
+  return (
+    <>
+      <PanelHeading
+        title={translateText('Integrations')}
+        description="Connect your core communication and scheduling channels with real-time Firebase workspace sync."
+      />
+
+      {/* Summary & Filter Toolbar */}
+      <div className="st-integration-toolbar">
+        <div className="st-category-tabs" aria-label={translateText('Integration categories')}>
+          {localizeNode(
+            ['All integrations', 'Communication', 'Scheduling'].map(c => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={category === c}
+                className={category === c ? 'active' : ''}
+                onClick={() => setCategory(c)}
+              >
+                {localizeNode(c)}
+              </button>
+            )),
+          )}
+        </div>
+        <div className="st-integration-toolbar-right">
+          <span className="st-integration-summary-pill">
+            <CheckCircle2 size={13} />
+            <span>
+              {localizeNode(connectedCount)} / {providers.length} {translateText('Connected')}
+            </span>
+          </span>
+          <label className="st-search">
+            <Search size={15} />
+            <input
+              aria-label={translateText('Search integrations')}
+              placeholder={translateText('Search integrations…')}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* 4 Core Integration Cards Grid */}
+      <div className="st-integration-grid st-integration-grid-four">
+        {localizeNode(
+          list.map(p => {
+            const state = data.integrations[p.id] ?? { status: 'Not Connected' };
+            const isConnected = state.status === 'Connected';
+            return (
+              <Card key={p.id} className={`st-integration-card${isConnected ? ' is-connected' : ''}`}>
+                <div className="st-integration-top">
+                  <span className={`st-service-icon ${p.color}`}>
+                    {localizeNode(renderProviderIcon(p, 25))}
+                  </span>
+                  <div className="st-integration-badges">
+                    <span className="st-integration-time-pill">
+                      <Clock3 size={11} />
+                      {localizeNode(p.setupTime)}
+                    </span>
+                    <Badge
+                      tone={
+                        state.status === 'Connected'
+                          ? 'green'
+                          : state.status === 'Needs Attention'
+                          ? 'orange'
+                          : 'neutral'
+                      }
+                    >
+                      {localizeNode(state.status)}
+                    </Badge>
+                  </div>
+                </div>
+
+                <h3>{localizeNode(p.name)}</h3>
+                <p>{localizeNode(p.description)}</p>
+
+                <div className="st-integration-capabilities">
+                  {p.capabilities.map(cap => (
+                    <span key={cap} className="st-capability-chip">
+                      {localizeNode(cap)}
+                    </span>
+                  ))}
+                </div>
+
+                {localizeNode(
+                  isConnected && state.account && (
+                    <div className="st-integration-connected-account">
+                      <CheckCircle2 size={14} />
+                      <span className="truncate">{localizeNode(state.account)}</span>
+                    </div>
+                  ),
+                )}
+
+                {localizeNode(
+                  state.status === 'Needs Attention' && (
+                    <div className="st-integration-problem">
+                      <AlertCircle size={15} />
+                      <span>
+                        {localizeNode(
+                          state.problem || 'Your access needs to be renewed. Reconnect to resume syncing.',
+                        )}
+                      </span>
+                    </div>
+                  ),
+                )}
+
+                <div className="st-integration-bottom">
+                  <small>
+                    <i className={state.providerStatus === 'outage' ? 'outage' : isConnected ? 'online' : ''} />
+                    {localizeNode(
+                      state.providerStatus === 'outage'
+                        ? 'Provider disruption'
+                        : state.providerStatus === 'operational' || isConnected
+                        ? 'Provider operational'
+                        : 'Ready to connect',
+                    )}
+                  </small>
+                  <div className="st-integration-actions">
+                    <button
+                      type="button"
+                      className="st-guide-trigger"
+                      onClick={() => openProviderGuide(p.id)}
+                    >
+                      <BookOpen size={13} />
+                      {translateText('How to connect')}
+                    </button>
+                    <button
+                      type="button"
+                      className={state.status === 'Needs Attention' || !isConnected ? 'st-primary' : 'st-secondary'}
+                      onClick={() => setSelected(p)}
+                    >
+                      {localizeNode(
+                        state.status === 'Connected'
+                          ? 'Manage'
+                          : state.status === 'Needs Attention'
+                          ? 'Fix connection'
+                          : 'Connect',
+                      )}
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            );
+          }),
+        )}
+      </div>
+
+      {localizeNode(
+        !list.length && (
+          <div className="st-empty">
+            <Search size={30} />
+            <h3>{translateText('No integrations found')}</h3>
+            <p>{translateText('Try a different search or category.')}</p>
+            <button
+              type="button"
+              className="st-secondary"
+              onClick={() => {
+                setSearch('');
+                setCategory('All integrations');
+              }}
+            >
+              {translateText('Clear filters')}
+            </button>
+          </div>
+        ),
+      )}
+
+      {/* Professional Step-by-Step Connection Guideline Section */}
+      <div ref={guideRef} className="st-guideline-section">
+        <Card className="st-guideline-card">
+          <div className="st-guideline-header">
+            <div className="st-guideline-title-wrap">
+              <span className="st-guideline-icon">
+                <BookOpen size={20} />
+              </span>
+              <div>
+                <div className="st-guideline-eyebrow">
+                  <Sparkles size={12} />
+                  <span>{translateText('STEP-BY-STEP CONNECTION GUIDE')}</span>
+                </div>
+                <h3>{translateText('How to Connect Your Channels Professionally')}</h3>
+                <p>
+                  {translateText(
+                    'Select a channel below to view its required prerequisites, step-by-step setup instructions, and security permissions.',
+                  )}
+                </p>
+              </div>
+            </div>
+            <Badge tone="purple">{translateText('Firebase Cloud Synced')}</Badge>
+          </div>
+
+          {/* Channel Selector Tabs inside Guideline */}
+          <div className="st-guideline-tabs" role="tablist" aria-label={translateText('Channel connection guides')}>
+            {providers.map(p => {
+              const isSelected = p.id === activeGuide.id;
+              const pState = data.integrations[p.id]?.status === 'Connected';
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  className={`st-guideline-tab${isSelected ? ' is-active' : ''}`}
+                  onClick={() => setActiveGuideId(p.id)}
+                >
+                  <span className={`st-guideline-tab-icon ${p.color}`}>
+                    {localizeNode(renderProviderIcon(p, 16))}
+                  </span>
+                  <span className="st-guideline-tab-name">{localizeNode(p.name)}</span>
+                  {pState && <CheckCircle2 size={13} className="st-guideline-tab-check" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Provider Guideline Content */}
+          <div className="st-guideline-body">
+            {/* Left column: Prerequisites & Scopes */}
+            <div className="st-guideline-meta-col">
+              <div className="st-guideline-box">
+                <h4>
+                  <CheckCircle2 size={15} />
+                  <span>{translateText('Before You Begin (Prerequisites)')}</span>
+                </h4>
+                <ul className="st-guideline-checklist">
+                  {activeGuide.prerequisites.map(item => (
+                    <li key={item}>
+                      <span className="st-check-bullet" aria-hidden="true">✓</span>
+                      <span>{localizeNode(item)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="st-guideline-box">
+                <h4>
+                  <ShieldCheck size={15} />
+                  <span>{translateText('Permissions & Data Sync')}</span>
+                </h4>
+                <ul className="st-guideline-Checklist-scopes">
+                  {activeGuide.scopes.map(scope => (
+                    <li key={scope}>
+                      <ShieldCheck size={14} />
+                      <span>{localizeNode(scope)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Right column: 4-Step Visual Walkthrough */}
+            <div className="st-guideline-steps-col">
+              <div className="st-guideline-steps-grid">
+                {activeGuide.guideSteps.map(gs => (
+                  <div key={gs.step} className="st-guideline-step-card">
+                    <div className="st-guideline-step-top">
+                      <span className="st-guideline-step-num">{gs.step}</span>
+                      <b>{localizeNode(gs.title)}</b>
+                    </div>
+                    <p>{localizeNode(gs.detail)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="st-guideline-pro-tip">
+                <div className="st-guideline-pro-tip-content">
+                  <Info size={16} />
+                  <div>
+                    <b>{translateText('Pro Tip for ')}{localizeNode(activeGuide.name)}</b>
+                    <p>{localizeNode(activeGuide.proTip)}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="st-primary"
+                  onClick={() => setSelected(activeGuide)}
+                >
+                  {localizeNode(
+                    activeGuideState.status === 'Connected'
+                      ? `Manage ${activeGuide.name}`
+                      : `Connect ${activeGuide.name}`,
+                  )}
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="st-integration-note">
+        <ShieldCheck size={18} />
+        <p>
+          {translateText(
+            'You control what you connect. All integration states are securely synced with your Firebase workspace, and disconnecting a tool preserves your historical data.',
+          )}
+        </p>
+        {localizeNode(
+          (role === 'ADMIN' || role === 'SUPER_ADMIN') && (
+            <button
+              type="button"
+              className="st-link"
+              onClick={async () => {
+                setLogs([]);
+                setLogError('');
+                try {
+                  const result = await settingsRequest<{ entries: string[] }>('/integrations/logs');
+                  setLogs(result.entries);
+                } catch (e) {
+                  setLogError(friendlyError(e));
+                }
+              }}
+            >
+              {translateText('Admin logs ')}
+              <ArrowRight size={14} />
+            </button>
+          ),
+        )}
+      </div>
+
+      {localizeNode(
+        selected && (
+          <ConnectionModal
+            provider={selected}
+            state={data.integrations[selected.id]}
+            returned={params.get('connection') === 'return'}
+            close={close}
+            refresh={refresh}
+          />
+        ),
+      )}
+
+      {localizeNode(
+        logs && (
+          <Modal title={translateText('Integration activity logs')} close={() => setLogs(null)}>
+            {localizeNode(
+              logError ? (
+                <p className="st-error" role="alert">
+                  {localizeNode(logError)}
+                </p>
+              ) : logs.length ? (
+                <ul className="st-log-list">
+                  {localizeNode(logs.map((l, i) => <li key={i}>{localizeNode(l)}</li>))}
+                </ul>
+              ) : (
+                <p>{translateText('No activity has been recorded.')}</p>
+              ),
+            )}
+          </Modal>
+        ),
+      )}
+    </>
+  );
 }
-function ConnectionModal({ provider, state, returned, close, refresh }: { provider: Provider; state?: IntegrationState; returned: boolean; close: () => void; refresh: () => Promise<void> }) {
+
+function ConnectionModal({
+  provider,
+  state,
+  returned,
+  close,
+  refresh,
+}: {
+  provider: Provider;
+  state?: IntegrationState;
+  returned: boolean;
+  close: () => void;
+  refresh: () => Promise<void>;
+}) {
   useUILanguage();
-  const [step, setStep] = useState(state?.status === 'Connected' || returned ? 1 : 0), [connection, setConnection] = useState(state), [busy, setBusy] = useState(false), [error, setError] = useState(''), [tested, setTested] = useState(false), [sync, setSync] = useState(state?.sync ?? true), [disconnect, setDisconnect] = useState(false);
+  const userEmail = useSelector((s: RootState) => s.auth.user?.email ?? '');
+  const [step, setStep] = useState(state?.status === 'Connected' || returned ? 1 : 0);
+  const [connection, setConnection] = useState(state);
+  const [accountInput, setAccountInput] = useState(state?.account ?? userEmail);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [tested, setTested] = useState(false);
+  const [sync, setSync] = useState(state?.sync ?? true);
+  const [disconnect, setDisconnect] = useState(false);
+
   const validate = useCallback(async () => {
-    setBusy(true); setError('');
-    try { const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}`); if (result.status !== 'Connected') throw new Error(result.problem || 'Authorization is not complete. Return to the provider and approve the requested access.'); setConnection(result); setStep(1); await refresh(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); }
+    setBusy(true);
+    setError('');
+    try {
+      const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}`);
+      if (result.status !== 'Connected') {
+        throw new Error(
+          result.problem ||
+            'Authorization is not complete. Return to the provider and approve the requested access.',
+        );
+      }
+      setConnection(result);
+      if (result.account) setAccountInput(result.account);
+      setStep(1);
+      await refresh();
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally {
+      setBusy(false);
+    }
   }, [provider.id, refresh]);
-  useEffect(() => { if (returned) void validate(); }, [returned, validate]);
+
+  useEffect(() => {
+    if (returned) void validate();
+  }, [returned, validate]);
+
   // Clicking Connect in local development completes a simulated authorization immediately.
   useEffect(() => {
     if (!localDemoEnabled || returned || state?.status === 'Connected') return;
     let cancelled = false;
-    void settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {}).then(result => {
-      if (!cancelled) { setConnection(result); setStep(1); }
-    }).catch(e => { if (!cancelled) setError(friendlyError(e)); });
-    return () => { cancelled = true; };
-  }, [provider.id]);
+    void settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {})
+      .then(result => {
+        if (!cancelled) {
+          setConnection(result);
+          if (result.account) setAccountInput(result.account);
+          setStep(1);
+        }
+      })
+      .catch(e => {
+        if (!cancelled) setError(friendlyError(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [provider.id, returned, state?.status]);
+
   async function authorize() {
-    setBusy(true); setError('');
+    setBusy(true);
+    setError('');
     try {
-      if (localDemoEnabled) {
-        const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {});
-        setConnection(result); setStep(1); setBusy(false);
+      const payload = {
+        ...(accountInput.trim() ? { account: accountInput.trim() } : {}),
+        returnUrl: `${window.location.origin}/dashboard/settings/integrations?provider=${provider.id}&connection=return`,
+      };
+      const result = await settingsRequest<IntegrationState & { authorizeUrl?: string }>(
+        `/integrations/${provider.id}/authorize`,
+        payload,
+      );
+      if (result && typeof result.authorizeUrl === 'string' && result.authorizeUrl) {
+        window.location.assign(safeExternalUrl(result.authorizeUrl));
         return;
       }
-      const result = await settingsRequest<{ authorizeUrl: string }>(`/integrations/${provider.id}/authorize`, { returnUrl: `${window.location.origin}/dashboard/settings/integrations?provider=${provider.id}&connection=return` });
-      window.location.assign(safeExternalUrl(result.authorizeUrl));
-    } catch (e) { setError(friendlyError(e)); setBusy(false); }
+      setConnection(result);
+      if (result?.account) setAccountInput(result.account);
+      setStep(1);
+      await refresh();
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally {
+      setBusy(false);
+    }
   }
-  return <Modal title={translateText(`Connect ${provider.name}`)} close={close}><ol className="st-steps">{localizeNode(['Permissions', 'Validate connection', 'Preferences'].map((s, i) => <li className={i <= step ? 'active' : ''} key={s}><span>{localizeNode(i < step ? <CheckCircle2 size={14}/> : i + 1)}</span>{localizeNode(s)}</li>))}</ol>
-    {localizeNode(step === 0 && <><div className="st-empty compact"><span className={`st-service-icon ${provider.color}`}><provider.icon size={29}/></span><h3>{translateText("Bring ")}{localizeNode(provider.name)}{translateText(" into your workspace")}</h3><p>{localizeNode(provider.description)}</p></div><h3>{translateText("Permissions you’ll review")}</h3><ul className="st-scope-list">{localizeNode(provider.scopes.map(s => <li key={s}><ShieldCheck size={17}/>{localizeNode(s)}</li>))}</ul><p className="st-note">{translateText("You’ll authorize access securely with the provider, then return here for validation. You can disconnect at any time.")}</p><button className="st-primary st-full" disabled={busy} onClick={() => void authorize()}><ExternalLink size={16}/>{localizeNode(busy ? 'Opening provider…' : 'Connect / Authorize')}</button></>)}
-    {localizeNode(step === 1 && <><div className="st-connection-account"><CheckCircle2 size={25}/><div><b>{localizeNode(connection?.status === 'Connected' ? 'Connected account' : 'Validate your connection')}</b><p>{localizeNode(connection?.account || 'We’ll verify your authorization with the provider.')}</p></div>{localizeNode(connection?.status === 'Connected' && <Badge>{translateText("Connected")}</Badge>)}</div><p>{translateText("Test your connection before enabling automatic syncing.")}</p>{localizeNode(tested && <p className="st-success" role="status"><CheckCircle2 size={17}/>{translateText("Connection test passed.")}</p>)}<div className="st-modal-actions"><button className="st-secondary" disabled={busy} onClick={async () => { setBusy(true); setTested(false); setError(''); try { const result = await settingsRequest<{ ok: boolean; problem?: string }>(`/integrations/${provider.id}/test`, {}); if (!result.ok) throw new Error(result.problem || 'The provider could not complete the test. Reauthorize access and try again.'); setTested(true); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}><Plug size={15}/>{localizeNode(busy ? 'Testing…' : 'Test Connection')}</button><button className="st-primary" disabled={connection?.status !== 'Connected' || busy} onClick={() => setStep(2)}>{translateText("Continue ")}<ArrowRight size={15}/></button></div><button className="st-link" disabled={busy} onClick={() => void validate()}>{translateText("Validate authorization again")}</button></>)}
-    {localizeNode(step === 2 && <><h3>{translateText("Connection preferences")}</h3><div className="st-preference"><span><b>{translateText("Automatic sync")}</b><small>{translateText("Keep your connected account and Upclick up to date.")}</small></span><Toggle label="Automatic sync" checked={sync} onChange={setSync}/></div><Field label="Connected account"><input readOnly value={connection?.account ?? ''}/></Field><div className="st-modal-actions"><button className="st-danger" onClick={() => setDisconnect(true)} disabled={busy}><Unplug size={15}/>{translateText("Disconnect")}</button><button className="st-primary" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await settingsRequest(`/integrations/${provider.id}/settings`, { sync }, 'PATCH'); await refresh(); close(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>{localizeNode(busy ? 'Saving…' : 'Save connection')}</button></div></>)}
-    {localizeNode(disconnect && <div className="st-disconnect-confirm"><p>{translateText("Disconnect ")}{localizeNode(provider.name)}{translateText("? Syncing will stop. Your historical records will be kept.")}</p><div className="st-modal-actions"><button className="st-secondary" onClick={() => setDisconnect(false)}>{translateText("Keep connected")}</button><button className="st-danger" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await settingsRequest(`/integrations/${provider.id}`, undefined, 'DELETE'); await refresh(); close(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>{translateText("Confirm disconnect")}</button></div></div>)}
-    {localizeNode(error && <div className="st-error-box" role="alert"><AlertCircle size={18}/><div><b>{translateText("Connection needs attention")}</b><p>{localizeNode(error)}</p><button className="st-link" disabled={busy} onClick={() => { setError(''); setStep(0); }}>{translateText("Fix: review connection setup ")}<ArrowRight size={14}/></button>{localizeNode(provider.status && <a href={provider.status} target="_blank" rel="noreferrer">{translateText("Check provider status ")}<ExternalLink size={13}/></a>)}</div></div>)}
-    {localizeNode(!settingsApiEnabled && <p className="st-note">{translateText("Provider connections will be available once your workspace administrator connects the integration service.")}</p>)}
-  </Modal>;
+
+  return (
+    <Modal title={translateText(`Connect ${provider.name}`)} close={close}>
+      <ol className="st-steps">
+        {localizeNode(
+          ['Permissions', 'Validate connection', 'Preferences'].map((s, i) => (
+            <li className={i <= step ? 'active' : ''} key={s}>
+              <span>{localizeNode(i < step ? <CheckCircle2 size={14} /> : i + 1)}</span>
+              {localizeNode(s)}
+            </li>
+          )),
+        )}
+      </ol>
+
+      {localizeNode(
+        step === 0 && (
+          <>
+            <div className="st-empty compact">
+              <span className={`st-service-icon ${provider.color}`}>
+                {provider.id === 'meta' ? (
+                  <span className="st-meta-icons">
+                    <FacebookIcon size={22} />
+                    <InstagramIcon size={22} />
+                  </span>
+                ) : (
+                  <provider.icon size={29} />
+                )}
+              </span>
+              <h3>
+                {translateText('Bring ')}
+                {localizeNode(provider.name)}
+                {translateText(' into your workspace')}
+              </h3>
+              <p>{localizeNode(provider.description)}</p>
+            </div>
+
+            <div className="st-modal-guide-box">
+              <h4>
+                <HelpCircle size={14} />
+                <span>{translateText('Quick Connection Steps')}</span>
+              </h4>
+              <ol className="st-modal-guide-list">
+                {provider.guideSteps.map(gs => (
+                  <li key={gs.step}>
+                    <b>{localizeNode(gs.title)}:</b> {localizeNode(gs.detail)}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <Field label={provider.accountLabel}>
+              <input
+                value={accountInput}
+                onChange={e => setAccountInput(e.target.value)}
+                placeholder={translateText(provider.accountPlaceholder)}
+              />
+            </Field>
+
+            <h3 style={{ marginTop: 16 }}>{translateText('Permissions you’ll review')}</h3>
+            <ul className="st-scope-list">
+              {localizeNode(
+                provider.scopes.map(s => (
+                  <li key={s}>
+                    <ShieldCheck size={17} />
+                    {localizeNode(s)}
+                  </li>
+                )),
+              )}
+            </ul>
+            <p className="st-note">
+              {translateText(
+                'You’ll authorize access securely and sync your connection state with Firebase. You can disconnect at any time.',
+              )}
+            </p>
+            <button
+              type="button"
+              className="st-primary st-full"
+              disabled={busy}
+              onClick={() => void authorize()}
+            >
+              <ExternalLink size={16} />
+              {localizeNode(busy ? 'Connecting…' : 'Connect / Authorize')}
+            </button>
+          </>
+        ),
+      )}
+
+      {localizeNode(
+        step === 1 && (
+          <>
+            <div className="st-connection-account">
+              <CheckCircle2 size={25} />
+              <div>
+                <b>
+                  {localizeNode(
+                    connection?.status === 'Connected' ? 'Connected account' : 'Validate your connection',
+                  )}
+                </b>
+                <p>
+                  {localizeNode(
+                    connection?.account || 'We’ll verify your authorization with the provider.',
+                  )}
+                </p>
+              </div>
+              {localizeNode(
+                connection?.status === 'Connected' && <Badge>{translateText('Connected')}</Badge>,
+              )}
+            </div>
+            <p>{translateText('Test your connection before enabling automatic syncing.')}</p>
+            {localizeNode(
+              tested && (
+                <p className="st-success" role="status">
+                  <CheckCircle2 size={17} />
+                  {translateText('Connection test passed.')}
+                </p>
+              ),
+            )}
+            <div className="st-modal-actions">
+              <button
+                type="button"
+                className="st-secondary"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  setTested(false);
+                  setError('');
+                  try {
+                    const result = await settingsRequest<{ ok: boolean; problem?: string }>(
+                      `/integrations/${provider.id}/test`,
+                      {},
+                    );
+                    if (!result.ok) {
+                      throw new Error(
+                        result.problem ||
+                          'The provider could not complete the test. Reauthorize access and try again.',
+                      );
+                    }
+                    setTested(true);
+                  } catch (e) {
+                    setError(friendlyError(e));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                <Plug size={15} />
+                {localizeNode(busy ? 'Testing…' : 'Test Connection')}
+              </button>
+              <button
+                type="button"
+                className="st-primary"
+                disabled={connection?.status !== 'Connected' || busy}
+                onClick={() => setStep(2)}
+              >
+                {translateText('Continue ')}
+                <ArrowRight size={15} />
+              </button>
+            </div>
+            <button type="button" className="st-link" disabled={busy} onClick={() => void validate()}>
+              {translateText('Validate authorization again')}
+            </button>
+          </>
+        ),
+      )}
+
+      {localizeNode(
+        step === 2 && (
+          <>
+            <h3>{translateText('Connection preferences')}</h3>
+            <div className="st-preference">
+              <span>
+                <b>{translateText('Automatic sync')}</b>
+                <small>{translateText('Keep your connected account and Upclick up to date.')}</small>
+              </span>
+              <Toggle label="Automatic sync" checked={sync} onChange={setSync} />
+            </div>
+            <Field label="Connected account">
+              <input
+                value={accountInput || (connection?.account ?? '')}
+                onChange={e => setAccountInput(e.target.value)}
+                placeholder={translateText(provider.accountPlaceholder)}
+              />
+            </Field>
+            <div className="st-modal-actions">
+              <button
+                type="button"
+                className="st-danger"
+                onClick={() => setDisconnect(true)}
+                disabled={busy}
+              >
+                <Unplug size={15} />
+                {translateText('Disconnect')}
+              </button>
+              <button
+                type="button"
+                className="st-primary"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  setError('');
+                  try {
+                    const trimmedAccount = accountInput.trim() || connection?.account;
+                    await settingsRequest(
+                      `/integrations/${provider.id}/settings`,
+                      { sync, ...(trimmedAccount ? { account: trimmedAccount } : {}) },
+                      'PATCH',
+                    );
+                    await refresh();
+                    close();
+                  } catch (e) {
+                    setError(friendlyError(e));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                {localizeNode(busy ? 'Saving…' : 'Save connection')}
+              </button>
+            </div>
+          </>
+        ),
+      )}
+
+      {localizeNode(
+        disconnect && (
+          <div className="st-disconnect-confirm">
+            <p>
+              {translateText('Disconnect ')}
+              {localizeNode(provider.name)}
+              {translateText('? Syncing will stop. Your historical records will be kept.')}
+            </p>
+            <div className="st-modal-actions">
+              <button type="button" className="st-secondary" onClick={() => setDisconnect(false)}>
+                {translateText('Keep connected')}
+              </button>
+              <button
+                type="button"
+                className="st-danger"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  setError('');
+                  try {
+                    await settingsRequest(`/integrations/${provider.id}`, undefined, 'DELETE');
+                    await refresh();
+                    close();
+                  } catch (e) {
+                    setError(friendlyError(e));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                {translateText('Confirm disconnect')}
+              </button>
+            </div>
+          </div>
+        ),
+      )}
+
+      {localizeNode(
+        error && (
+          <div className="st-error-box" role="alert">
+            <AlertCircle size={18} />
+            <div>
+              <b>{translateText('Connection needs attention')}</b>
+              <p>{localizeNode(error)}</p>
+              <button
+                type="button"
+                className="st-link"
+                disabled={busy}
+                onClick={() => {
+                  setError('');
+                  setStep(0);
+                }}
+              >
+                {translateText('Fix: review connection setup ')}
+                <ArrowRight size={14} />
+              </button>
+              {localizeNode(
+                provider.status && (
+                  <a href={provider.status} target="_blank" rel="noreferrer">
+                    {translateText('Check provider status ')}
+                    <ExternalLink size={13} />
+                  </a>
+                ),
+              )}
+            </div>
+          </div>
+        ),
+      )}
+
+      {localizeNode(
+        !settingsApiEnabled && (
+          <p className="st-note">
+            {translateText(
+              'Provider connections will be available once your workspace administrator connects the integration service.',
+            )}
+          </p>
+        ),
+      )}
+    </Modal>
+  );
 }

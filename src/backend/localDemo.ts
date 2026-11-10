@@ -65,10 +65,12 @@ export function demoIntegrationRequest(path: string, body: unknown, method: stri
   if (action === 'authorize' && method === 'POST' && state.status === 'Connected') return state;
   if (action === 'test') return { ok: state.status === 'Connected', problem: state.status === 'Connected' ? undefined : 'Connect this demo channel first.' };
   let next: IntegrationState;
-  if (action === 'authorize' && method === 'POST') next = { status: 'Connected', account: `${provider} · Local demo account`, providerStatus: 'operational', sync: true };
+  const rawBody = (body && typeof body === 'object' ? body : {}) as { sync?: boolean; account?: string };
+  const customAccount = typeof rawBody.account === 'string' && rawBody.account.trim() ? rawBody.account.trim() : undefined;
+  if (action === 'authorize' && method === 'POST') next = { status: 'Connected', account: customAccount || `${provider} · Local demo account`, providerStatus: 'operational', sync: true };
   else if (action === 'settings' && method === 'PATCH') {
     if (state.status !== 'Connected') throw new Error('Connect this demo channel first.');
-    next = { ...state, sync: (body as { sync?: boolean })?.sync === true };
+    next = { ...state, ...(customAccount ? { account: customAccount } : {}), sync: rawBody.sync === true };
   } else if (!action && method === 'DELETE') next = { status: 'Not Connected', sync: false };
   else return undefined;
   writeDemo('integrations', { ...connections, [provider]: next });

@@ -7,7 +7,7 @@ export function validateGatewayConfiguration(provider, input, previous = {}) {
   if (provider === 'paytabs' && !paytabsRegions.includes(input.region)) throw new HttpsError('invalid-argument', 'Choose a valid PayTabs region.');
   const result = { mode: input.mode, ...(provider === 'paytabs' ? { region: input.region } : {}) };
   // Secrets may be retained only for the same environment and merchant identity.
-  const identityChanged = previous.mode !== input.mode || provider === 'paytabs' && previous.region !== input.region || gatewayFields[provider].some(f => !f.secret && previous[f.key] !== input[f.key]?.trim());
+  const identityChanged = previous.mode !== input.mode || provider === 'paytabs' && previous.region !== input.region || gatewayFields[provider].some(f => !f.secret && !f.link && previous[f.key] !== input[f.key]?.trim());
   for (const field of gatewayFields[provider]) {
     const value = input[field.key];
     if (value !== undefined && (typeof value !== 'string' || value.length > 4096)) throw new HttpsError('invalid-argument', `Invalid ${field.label}.`);
@@ -20,6 +20,9 @@ export function validateGatewayConfiguration(provider, input, previous = {}) {
     if (!new RegExp(`^pk_${mode}_[A-Za-z0-9]+$`).test(result.publishableKey)) throw new HttpsError('invalid-argument', 'Publishable Key must match the selected Stripe mode.');
     if (!new RegExp(`^(sk|rk)_${mode}_[A-Za-z0-9]+$`).test(result.secretKey)) throw new HttpsError('invalid-argument', 'Secret Key must match the selected Stripe mode.');
     if (result.webhookSecret && !/^whsec_[A-Za-z0-9]+$/.test(result.webhookSecret)) throw new HttpsError('invalid-argument', 'Enter a valid Webhook Secret.');
+    for (const key of ['paymentLink', 'paymentLinkAnnual']) {
+      if (result[key] && !/^https:\/\/[^\s]+$/.test(result[key])) throw new HttpsError('invalid-argument', 'Payment links must be secure https:// URLs (for example https://buy.stripe.com/...).');
+    }
   }
   if (provider === 'paymob') {
     if (!/^\d+(\s*,\s*\d+)*$/.test(result.integrationIds)) throw new HttpsError('invalid-argument', 'Enter numeric Paymob integration IDs separated by commas.');

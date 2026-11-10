@@ -7,6 +7,7 @@ import { createSupportCallable } from './support.js';
 import { isSuspended, superAdminRequest } from './super-admin.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
+import { stripeGatewayRequest, createStripeWebhookHandler } from './stripe-gateway.js';
 import { billingServiceRequest, executeUsage, toHttpsError } from './billing-service.js';
 import { chargeAction, meteredGosRequest } from './gos-metering.js';
 import { copilotAction } from './credit-actions.js';
@@ -67,6 +68,10 @@ export const auditPlatformIntegrations = onDocumentWritten('settings/{id}', asyn
 });
 export const adminDashboardStatus = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => adminDashboardStatusRequest(request, { actor, db, apiBase: gosApiBase.value() }));
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
+// Stripe (multi-tenant): credential test, Checkout Session creation and return verification.
+export const stripeGateway = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => stripeGatewayRequest(request, { actor, db }));
+// Register in Stripe Dashboard → Developers → Webhooks (event: checkout.session.completed).
+export const stripeWebhook = onRequest({ timeoutSeconds: 30 }, (req, res) => createStripeWebhookHandler({ db })(req, res));
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));

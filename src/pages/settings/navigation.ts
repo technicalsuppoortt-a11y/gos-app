@@ -1,4 +1,4 @@
-import { Globe, Landmark, Radio, Blocks, Building2, Link2, ShieldAlert, ShieldCheck, UserRound, Users, Wallet } from 'lucide-react';
+import { Globe, Landmark, Radio, Building2, Link2, ShieldAlert, ShieldCheck, UserRound, Users, Wallet } from 'lucide-react';
 
 export const settingsTabs = [
   { slug: 'profile', name: 'Profile', icon: UserRound },
@@ -7,7 +7,6 @@ export const settingsTabs = [
   { slug: 'billing', name: 'Plans & Billing', icon: Wallet },
   { slug: 'payment-methods', name: 'Payment Methods', icon: Landmark },
   { slug: 'integrations', name: 'Integrations', icon: Link2 },
-  { slug: 'tools', name: 'Tools', icon: Blocks },
   { slug: 'team', name: 'Team & roles', icon: Users },
   { slug: 'pixel', name: 'Pixel', icon: Radio },
   { slug: 'security', name: 'Security', icon: ShieldCheck },

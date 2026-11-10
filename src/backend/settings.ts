@@ -137,8 +137,11 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
           }),
         ]);
         const savedData = saved?.data()?.value ?? {};
+        const savedIntegrations = Object.fromEntries(
+          Object.entries((savedData.integrations ?? {}) as Record<string, Record<string, unknown>>).map(([id, item]) => [id, integrationState(item ?? {})]),
+        );
         const connectionMap = Object.fromEntries((connections?.docs ?? []).map(item => [item.id, integrationState(item.data())]));
-        return { ...savedData, integrations: connectionMap, hasSavedProfile: Boolean(savedData.profile) } as T;
+        return { ...savedData, integrations: { ...savedIntegrations, ...connectionMap }, hasSavedProfile: Boolean(savedData.profile) } as T;
       }
       if (!['PATCH', 'POST'].includes(method)) throw new Error('This settings action is not supported.');
       const data = body as { profile?: Record<string, unknown>; business?: Record<string, unknown>; payment?: Record<string, unknown>; personalPreferences?: PersonalPreferences };
@@ -505,8 +508,107 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         return { entries: [] } as T;
       }
     }
-    if (/^\/integrations\/[^/]+$/.test(path) && method === 'GET') {
-      return integrationState((await getDoc(doc(integrations, path.split('/')[2]))).data() ?? {}) as T;
+    const integrationMatch = /^\/integrations\/([\w-]+)(?:\/(authorize|test|settings))?$/.exec(path);
+    if (integrationMatch) {
+      const [, provider, action] = integrationMatch;
+      const supportedUserProviders = new Set(['meta', 'whatsapp', 'gmail', 'google-calendar']);
+      if (!action && method === 'GET') {
+        const [directSnap, savedSnap] = await Promise.all([
+          getDoc(doc(integrations, provider)).catch(() => null),
+          getDoc(ref).catch(() => null),
+        ]);
+        const directData = directSnap?.exists?.() ? directSnap.data() : undefined;
+        const savedProviderData = savedSnap?.data?.()?.value?.integrations?.[provider];
+        return integrationState((directData ?? savedProviderData ?? {}) as Record<string, unknown>) as T;
+      }
+      if (supportedUserProviders.has(provider)) {
+        const [directSnap, savedSnap] = await Promise.all([
+          getDoc(doc(integrations, provider)).catch(() => null),
+          getDoc(ref).catch(() => null),
+        ]);
+        const currentRaw = (directSnap?.exists?.() ? directSnap.data() : savedSnap?.data?.()?.value?.integrations?.[provider]) ?? {};
+        const current = integrationState(currentRaw as Record<string, unknown>);
+        const rawBody = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
+        const nowIso = new Date().toISOString();
+
+        if (action === 'test' && method === 'POST') {
+          const isConnected = current.status === 'Connected';
+          return {
+            ok: isConnected,
+            ...(isConnected ? {} : { problem: 'Connect and authorize this channel before running a connection test.' }),
+          } as T;
+        }
+
+        let nextRecord: Record<string, unknown> | null = null;
+        if (action === 'authorize' && method === 'POST') {
+          const customAccount = typeof rawBody.account === 'string' && rawBody.account.trim()
+            ? rawBody.account.trim()
+            : typeof current.account === 'string' && current.account.trim()
+            ? current.account.trim()
+            : user.email || `${provider} · Connected workspace`;
+          nextRecord = {
+            ...currentRaw,
+            provider,
+            status: 'CONNECTED',
+            account: customAccount,
+            providerStatus: 'operational',
+            sync: typeof rawBody.sync === 'boolean' ? rawBody.sync : true,
+            updatedAt: nowIso,
+            updatedBy: user.uid,
+          };
+        } else if (action === 'settings' && method === 'PATCH') {
+          if (current.status !== 'Connected') {
+            throw new Error('Connect this channel first before updating its sync preferences.');
+          }
+          const customAccount = typeof rawBody.account === 'string' && rawBody.account.trim()
+            ? rawBody.account.trim()
+            : current.account || user.email || `${provider} · Connected workspace`;
+          nextRecord = {
+            ...currentRaw,
+            provider,
+            status: 'CONNECTED',
+            account: customAccount,
+            providerStatus: 'operational',
+            sync: rawBody.sync === true,
+            updatedAt: nowIso,
+            updatedBy: user.uid,
+          };
+        } else if (!action && method === 'DELETE') {
+          nextRecord = {
+            provider,
+            status: 'NOT_CONNECTED',
+            sync: false,
+            updatedAt: nowIso,
+            updatedBy: user.uid,
+          };
+        }
+
+        if (nextRecord) {
+          await Promise.all([
+            setDoc(doc(integrations, provider), nextRecord, { merge: true }).catch(() => null),
+            setDoc(
+              ref,
+              {
+                key,
+                value: { integrations: { [provider]: nextRecord } },
+                updatedAt: nowIso,
+                updatedBy: user.uid,
+              },
+              { merge: true },
+            ),
+          ]);
+          const auditId = `audit-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          const statusLabel = nextRecord.status === 'CONNECTED' ? 'Connected' : 'Disconnected';
+          await setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), {
+            id: auditId,
+            type: `integration.${provider}`,
+            description: `${statusLabel} integration: ${provider}${nextRecord.account ? ` (${nextRecord.account})` : ''}`,
+            actorId: user.uid,
+            createdAt: new Date().toLocaleString('en-GB'),
+          }).catch(() => null);
+          return integrationState(nextRecord) as T;
+        }
+      }
     }
     if (path === '/billing/recharge' && method === 'PATCH') {
       const data = body as { enabled?: boolean };
@@ -524,5 +626,5 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
 
 function integrationState(data: Record<string, unknown>) {
   const status = String(data.status ?? '').toUpperCase().replaceAll(' ', '_');
-  return { status: status === 'CONNECTED' ? 'Connected' : status === 'NEEDS_ATTENTION' ? 'Needs Attention' : 'Not Connected', ...(typeof data.account === 'string' ? { account: data.account } : {}), ...(typeof data.problem === 'string' ? { problem: data.problem } : {}), sync: data.sync === true };
+  return { status: status === 'CONNECTED' ? 'Connected' : status === 'NEEDS_ATTENTION' ? 'Needs Attention' : 'Not Connected', ...(typeof data.account === 'string' ? { account: data.account } : {}), ...(typeof data.problem === 'string' ? { problem: data.problem } : {}), ...(typeof data.providerStatus === 'string' ? { providerStatus: data.providerStatus } : {}), sync: data.sync === true };
 }

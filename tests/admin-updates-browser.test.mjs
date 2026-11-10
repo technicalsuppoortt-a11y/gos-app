@@ -104,13 +104,16 @@ try {
   assert.equal(await page.locator('.pm-brand-logo').count(), 5);
   await page.waitForFunction(() => [...document.querySelectorAll('.pm-brand-logo')].every(img => img.complete && img.naturalWidth > 0));
   await page.screenshot({ path: 'artifacts/admin-updates/payments-light.png' });
-  for (const provider of ['Paddle', 'Paymob']) {
+  for (const provider of ['Paddle', 'Fawry / Kashier', 'Paymob']) {
     const card = page.locator('.pm-gateway-card').filter({ has: page.getByText(provider, { exact: true }) });
-    await card.getByRole('button', { name: 'Configure Account' }).click();
-    await page.getByRole('dialog').waitFor();
-    assert.ok(await page.getByRole('dialog').locator('input[type=password]').count() >= 2);
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+    assert.ok(await card.getByText('Coming Soon').first().isVisible());
+    assert.ok(await card.getByRole('button', { name: 'Coming Soon' }).isDisabled());
   }
+  const stripeCard = page.locator('.pm-gateway-card').filter({ has: page.getByText('Stripe', { exact: true }) });
+  await stripeCard.getByRole('button', { name: 'Configure Account' }).click();
+  await page.getByRole('dialog').waitFor();
+  assert.ok(await page.getByRole('dialog').locator('input[type=password]').count() >= 2);
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.getByRole('button', { name: 'Open quick support chat' }).click();
   await page.getByRole('dialog', { name: 'Quick Support' }).waitFor();
   await page.getByRole('dialog', { name: 'Quick Support' }).getByRole('button', { name: 'Close dialog', exact: true }).click();

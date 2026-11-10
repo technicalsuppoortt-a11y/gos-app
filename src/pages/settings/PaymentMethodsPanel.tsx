@@ -1,11 +1,14 @@
 import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { 
-  BookOpen, CheckCircle2, ChevronDown, ChevronUp, CreditCard, 
-  Eye, EyeOff, Landmark, Loader2, Pencil, Plus, Power, Trash2 
+  BookOpen, Check, CheckCircle2, ChevronDown, ChevronUp, Copy, CreditCard, 
+  Eye, EyeOff, Landmark, Loader2, Pencil, Plug, Plus, Power, Trash2 
 } from 'lucide-react';
 import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration, type PaymentScope } from '../../backend/paymentMethods';
+import { stripeWebhookUrl, syncStripePublicConfig, testStripeConnection } from '../../backend/stripeService';
 import { gatewayFields, paytabsRegions, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
+import type { RootState } from '../../store';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { Card, Field, Modal, PanelHeading, Toggle, Badge } from './kit';
 import { showToast } from '../../utils/toast';
@@ -34,8 +37,16 @@ const gatewayGuides: Record<string, GatewayGuideInfo> = {
         ar: 'انسخ المفتاح العام Publishable Key واكشف وانسخ المفتاح السري Secret Key.',
       },
       {
-        en: 'To get the Webhook Secret (optional), go to Developers > Webhooks, add your endpoint, and copy the Signing Secret (whsec_...).',
-        ar: 'للحصول على Webhook Secret (اختياري)، توجه إلى Developers > Webhooks، أضف الرابط وانسخ Signing Secret.',
+        en: 'To get the Webhook Secret (optional), go to Developers > Webhooks, add the Webhook endpoint shown below for the "checkout.session.completed" event, and copy the Signing Secret (whsec_...).',
+        ar: 'للحصول على Webhook Secret (اختياري)، توجه إلى Developers > Webhooks، أضف رابط الويب هوك الموضح بالأسفل لحدث checkout.session.completed وانسخ Signing Secret.',
+      },
+      {
+        en: 'Optional: add static Payment Links (https://buy.stripe.com/...) used as a fallback if a Checkout Session cannot be created.',
+        ar: 'اختياري: أضف روابط دفع ثابتة (https://buy.stripe.com/...) تُستخدم كبديل إذا تعذر إنشاء جلسة الدفع.',
+      },
+      {
+        en: 'For production: disable Test Mode in Stripe, select Live mode here and use pk_live_ / sk_live_ keys, then click "Test Connection".',
+        ar: 'للتشغيل الفعلي: أوقف وضع الاختبار في Stripe واختر وضع Live هنا واستخدم مفاتيح pk_live_ / sk_live_ ثم اضغط "اختبار الاتصال".',
       },
     ],
   },
@@ -189,11 +200,12 @@ function GatewaySetupGuide({ provider }: { provider: string }) {
 
 const manualProviders = paymentProviders.filter(([, , type]) => type === 'manual');
 const gateways = [
-  { ids: ['stripe'], name: 'Stripe', description: 'International payments via Visa & Mastercard' },
-  { ids: ['paddle'], name: 'Paddle', description: 'Subscriptions and global payments' },
-  { ids: ['fawry', 'kashier'], name: 'Fawry / Kashier', description: 'Local Egyptian payments and cards' },
-  { ids: ['paymob'], name: 'Paymob', description: 'Cards and mobile wallets in Egypt and the Middle East' },
+  { ids: ['stripe'], name: 'Stripe', description: 'International payments via Visa & Mastercard', comingSoon: false },
+  { ids: ['paddle'], name: 'Paddle', description: 'Subscriptions and global payments', comingSoon: true },
+  { ids: ['fawry', 'kashier'], name: 'Fawry / Kashier', description: 'Local Egyptian payments and cards', comingSoon: true },
+  { ids: ['paymob'], name: 'Paymob', description: 'Cards and mobile wallets in Egypt and the Middle East', comingSoon: true },
 ];
+const comingSoonProviders = new Set(gateways.filter(gateway => gateway.comingSoon).flatMap(gateway => gateway.ids));
 const brandAssets: Record<string, string> = { vodafone: 'vodafone.svg', instapay: 'instapay.png', etisalat: 'etisalat.ico', orange: 'orange.svg', stc: 'stc.svg' };
 const ManualIcon = ({ provider }: { provider: string }) => provider === 'bank' ? <Landmark size={24}/> : <span className={`pm-brand-frame ${provider}`}><img className="pm-brand-logo" src={`/payment-brands/${brandAssets[provider]}`} alt="" aria-hidden="true"/></span>;
 
@@ -201,13 +213,16 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
   useUILanguage();
   const source = usePaymentMethods(scope ? { scope } : undefined);
   const { methods, loading, error, save, canManage: admin } = source;
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [draft, setDraft] = useState<PaymentMethod | null>(null), [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState('');
   const [gateway, setGateway] = useState<GatewayConfiguration | null>(null);
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [gatewayLoading, setGatewayLoading] = useState(false);
   const [visibleSecrets, setVisibleSecrets] = useState<Record<string, boolean>>({});
-  const close = useCallback(() => { if (!busy) { setDraft(null); setCredentials({}); setGateway(null); setVisibleSecrets({}); } }, [busy]);
+  const [testing, setTesting] = useState(false), [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [webhookCopied, setWebhookCopied] = useState(false);
+  const close = useCallback(() => { if (!busy && !testing) { setDraft(null); setCredentials({}); setGateway(null); setVisibleSecrets({}); setTestResult(null); } }, [busy, testing]);
   const gatewayProvider = draft?.type === 'gateway' ? draft.provider as GatewayProvider : null;
   const { getGateway } = source;
   useEffect(() => {
@@ -219,13 +234,15 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
       .finally(() => { if (active) setGatewayLoading(false); });
     return () => { active = false; };
   }, [gatewayProvider, getGateway]);
-  const identityChanged = !!gatewayProvider && !!gateway && (credentials.mode !== gateway.mode || gatewayProvider === 'paytabs' && credentials.region !== gateway.region || gatewayFields[gatewayProvider].some(field => !field.secret && credentials[field.key]?.trim() !== gateway.fields[field.key]));
-  const added = methods.filter(method => method.type === 'manual');
+  const identityChanged = !!gatewayProvider && !!gateway && (credentials.mode !== gateway.mode || gatewayProvider === 'paytabs' && credentials.region !== gateway.region || gatewayFields[gatewayProvider].some(field => !field.secret && !field.link && credentials[field.key]?.trim() !== gateway.fields[field.key]));
+  const added = methods;
+  const enabledCount = methods.filter(method => method.enabled).length;
   const disabled = busy || loading || !admin || !!error;
+  const webhookUrl = stripeWebhookUrl(source.scope, source.tenantId);
   function configure(id: string) {
     const provider = paymentProviders.find(([key]) => key === id);
-    if (!provider || disabled) return;
-    setSelected(id); setFailure('');
+    if (!provider || disabled || comingSoonProviders.has(id)) return;
+    setSelected(id); setFailure(''); setTestResult(null); setWebhookCopied(false);
     setGateway(null); setCredentials({}); setVisibleSecrets({}); setGatewayLoading(provider[2] === 'gateway');
     setDraft(methods.find(method => method.provider === id) ?? { id, provider: id, name: provider[1], type: provider[2], account: '', instructions: '', enabled: true, status: 'Configured' });
   }
@@ -236,12 +253,46 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
     catch (error) { setFailure(error instanceof Error ? error.message : 'Could not save payment methods.'); }
     finally { setBusy(false); }
   }
+  /** Stripe: verify credentials (entered or saved) against Stripe, like the reference "Test" tab. */
+  async function runStripeTest(configuration: Record<string, string>) {
+    const result = await testStripeConnection({ scope: source.scope, tenantId: source.tenantId, configuration });
+    return result.ok;
+  }
+  async function testStripe() {
+    if (!draft || gatewayProvider !== 'stripe' || testing) return;
+    setTesting(true); setTestResult(null);
+    try {
+      await runStripeTest({ mode: credentials.mode, secretKey: credentials.secretKey ?? '' });
+      setTestResult({ ok: true, message: 'Stripe credentials verified successfully.' });
+    } catch (error) {
+      setTestResult({ ok: false, message: error instanceof Error ? error.message : 'Stripe did not confirm these credentials.' });
+    } finally { setTesting(false); }
+  }
   async function persistGateway() {
     if (!draft || !gatewayProvider || !gateway || busy || gatewayLoading) return;
     setBusy(true); setFailure('');
     try {
       await source.saveGateway(gatewayProvider, draft.account, draft.enabled, credentials, gateway.gatewayRevision);
-      setDraft(null); setCredentials({}); setGateway(null); setSelected(''); showToast.success('Payment methods saved');
+      if (gatewayProvider === 'stripe') {
+        // Public-only Stripe settings are synchronized for checkout; secrets stay private.
+        await syncStripePublicConfig(source.scope, source.tenantId, {
+          enabled: draft.enabled,
+          publishableKey: credentials.publishableKey?.trim() ?? '',
+          paymentLink: credentials.paymentLink?.trim() ?? '',
+          paymentLinkAnnual: credentials.paymentLinkAnnual?.trim() ?? '',
+          mode: credentials.mode === 'live' ? 'live' : 'sandbox',
+        }, userId).catch(() => undefined);
+        // Checkout is enabled only after Stripe confirms the saved credentials.
+        let verified: boolean | null = null;
+        try { verified = await runStripeTest({ mode: credentials.mode, secretKey: credentials.secretKey ?? '' }); }
+        catch (testError) {
+          const rejectedByStripe = /(failed-precondition|permission-denied)$/.test(String((testError as { code?: string })?.code ?? ''));
+          verified = rejectedByStripe || credentials.secretKey?.trim() || identityChanged ? false : null;
+        }
+        if (verified !== null) await source.setGatewayStatus('stripe', verified ? 'Connected' : 'Configured').catch(() => undefined);
+        if (verified === false) showToast.error(t('Stripe settings saved, but the connection could not be verified. Check your keys and mode.'));
+      }
+      setDraft(null); setCredentials({}); setGateway(null); setSelected(''); setTestResult(null); showToast.success('Payment methods saved');
     } catch (error) { setFailure(error instanceof Error ? error.message : 'Could not save payment methods.'); }
     finally { setBusy(false); }
   }
@@ -261,6 +312,40 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
       </div>
     )}
     {!loading && !admin && <p className="st-note">{t('Contact your administrator to configure payment methods.')}</p>}
+    <section aria-labelledby="pm-active-title" className="pm-section">
+      <h3 id="pm-active-title">{t('Active Methods')}</h3>
+      <p className="pm-description">{t('Payment methods currently available to your customers at checkout.')}{methods.length > 0 && ` · ${enabledCount}/${methods.length} ${t('enabled')}`}</p>
+      <Card className="pm-manual-container">
+        <div className="pm-added-list">
+          {added.map(method => {
+            const soon = comingSoonProviders.has(method.provider);
+            return <div className="pm-added-row" key={method.id}>
+              <span className="st-service-icon purple">{method.type === 'gateway' ? <CreditCard size={20}/> : <ManualIcon provider={method.provider}/>}</span>
+              <div className="pm-account"><b>{t(method.name)}</b><span>{method.account}</span>{method.instructions && <small>{method.instructions}</small>}{method.type === 'gateway' && <small>{t(soon ? 'Coming Soon' : method.status === 'Connected' ? 'Connected · verified with provider' : 'Configured · verification pending')}</small>}</div>
+              <Badge tone={method.enabled ? 'green' : 'neutral'}>{t(method.enabled ? 'Enabled' : 'Disabled')}</Badge>
+              {admin && <div className="pm-row-actions"><button type="button" className="st-icon-button" title={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} aria-label={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.map(item => item.id === method.id ? { ...item, enabled: !item.enabled } : item))}><Power size={14}/></button>{!soon && <button type="button" className="st-icon-button" aria-label={t(`Edit ${method.name}`)} disabled={disabled} onClick={() => configure(method.provider)}><Pencil size={14}/></button>}<button type="button" className="st-icon-button" aria-label={t(`Remove ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.filter(item => item.id !== method.id))}><Trash2 size={14}/></button></div>}
+            </div>;
+          })}
+          {!added.length && !loading && <p className="st-note">{t('No payment methods added yet. Connect a gateway or add a transfer method below.')}</p>}
+        </div>
+      </Card>
+    </section>
+    <section aria-labelledby="pm-gateway-title" className="pm-section">
+      <h3 id="pm-gateway-title">{t('Professional Payment Gateways')}</h3>
+      <p className="pm-description">{t('Connect a payment gateway for local or international card payments.')}</p>
+      <div className="pm-gateway-grid">{gateways.map(gateway => {
+        const configured = methods.filter(method => gateway.ids.includes(method.provider));
+        const connected = configured.some(method => method.enabled && method.status === 'Connected');
+        return <Card key={gateway.name} className="pm-gateway-card">
+          <div className="pm-gateway-heading"><CreditCard size={18}/><b>{gateway.name}</b>{gateway.comingSoon ? <Badge tone="purple">{t('Coming Soon')}</Badge> : <Badge tone={connected ? 'green' : configured.length ? 'orange' : 'neutral'}>{t(connected ? 'Connected' : configured.length ? 'Configured' : 'Disconnected')}</Badge>}</div>
+          <p className="st-note">{t(gateway.description)}</p>
+          {!gateway.comingSoon && configured.length > 0 && <small className="pm-gateway-accounts">{configured.map(method => `${method.name} · ${t(method.status)}`).join(' / ')}</small>}
+          {admin && (gateway.comingSoon
+            ? <button type="button" className="st-secondary small" disabled aria-disabled="true">{t('Coming Soon')}</button>
+            : <button type="button" className="st-secondary small" disabled={disabled} onClick={() => configure(configured[0]?.provider ?? gateway.ids[0])}>{t(configured.length ? 'Manage Account' : 'Configure Account')}</button>)}
+        </Card>;
+      })}</div>
+    </section>
     <section aria-labelledby="pm-manual-title" className="pm-section">
       <h3 id="pm-manual-title">{t('Manual Transfer Methods')}</h3>
       <p className="pm-description">{t('Configure wallet or bank transfer details for your customers.')}</p>
@@ -271,34 +356,10 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
             <ManualIcon provider={id}/><span>{t(name)}</span>{methods.some(method => method.provider === id) && <CheckCircle2 className="pm-added-mark" size={13}/>}
           </button>)}
         </div>
-        <h4 className="pm-added-heading">{t('Currently Added Methods')}</h4>
-        <div className="pm-added-list">
-          {added.map(method => <div className="pm-added-row" key={method.id}>
-            <span className="st-service-icon purple"><ManualIcon provider={method.provider}/></span>
-            <div className="pm-account"><b>{t(method.name)}</b><span>{method.account}</span>{method.instructions && <small>{method.instructions}</small>}</div>
-            <Badge tone={method.enabled ? 'green' : 'neutral'}>{t(method.enabled ? 'Enabled' : 'Disabled')}</Badge>
-            {admin && <div className="pm-row-actions"><button type="button" className="st-icon-button" title={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} aria-label={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.map(item => item.id === method.id ? { ...item, enabled: !item.enabled } : item))}><Power size={14}/></button><button type="button" className="st-icon-button" aria-label={t(`Edit ${method.name}`)} disabled={disabled} onClick={() => configure(method.provider)}><Pencil size={14}/></button><button type="button" className="st-icon-button" aria-label={t(`Remove ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.filter(item => item.id !== method.id))}><Trash2 size={14}/></button></div>}
-          </div>)}
-          {!added.length && <p className="st-note">{t('No transfer methods added yet.')}</p>}
-        </div>
         {admin && <button type="button" className="st-secondary small pm-add-transfer" disabled={disabled} onClick={() => configure(manualProviders.find(([id]) => !methods.some(method => method.provider === id))?.[0] ?? 'bank')}><Plus size={13}/>{t('Add a transfer method')}</button>}
       </Card>
     </section>
-    <section aria-labelledby="pm-gateway-title" className="pm-section">
-      <h3 id="pm-gateway-title">{t('Professional Payment Gateways')}</h3>
-      <p className="pm-description">{t('Connect a payment gateway for local or international card payments.')}</p>
-      <div className="pm-gateway-grid">{gateways.map(gateway => {
-        const configured = methods.filter(method => gateway.ids.includes(method.provider));
-        const connected = configured.some(method => method.enabled && method.status === 'Connected');
-        return <Card key={gateway.name} className="pm-gateway-card">
-          <div className="pm-gateway-heading"><CreditCard size={18}/><b>{gateway.name}</b><Badge tone={connected ? 'green' : configured.length ? 'orange' : 'neutral'}>{t(connected ? 'Connected' : configured.length ? 'Configured' : 'Disconnected')}</Badge></div>
-          <p className="st-note">{t(gateway.description)}</p>
-          {configured.length > 0 && <small className="pm-gateway-accounts">{configured.map(method => `${method.name} · ${t(method.status)}`).join(' / ')}</small>}
-          {admin && <button type="button" className="st-secondary small" disabled={disabled} onClick={() => configure(configured[0]?.provider ?? gateway.ids[0])}>{t(configured.length ? 'Manage Account' : 'Configure Account')}</button>}
-        </Card>;
-      })}</div>
-    </section>
-    {draft && <Modal title={t(`Configure ${draft.name}`)} close={close} disableBackdropClose={busy} disableEscapeClose={busy}>
+    {draft && <Modal title={t(`Configure ${draft.name}`)} close={close} disableBackdropClose={busy || testing} disableEscapeClose={busy || testing}>
       <form autoComplete="off" onSubmit={event => { event.preventDefault(); if (draft.type === 'gateway') void persistGateway(); else void persist([...methods.filter(method => method.id !== draft.id), draft]); }}>
         <fieldset disabled={busy}>
           {['fawry', 'kashier'].includes(draft.provider) && <Field label="Provider"><DashboardSelect aria-label={t('Provider')} value={draft.provider} onChange={event => configure(event.target.value)}><option value="fawry">Fawry</option><option value="kashier">Kashier</option></DashboardSelect></Field>}
@@ -308,6 +369,20 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
           </> : <>
             <Field label="Account label"><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
             {gatewayProvider && <GatewaySetupGuide provider={gatewayProvider} />}
+            {gatewayProvider === 'stripe' && <Field label="Webhook endpoint (checkout.session.completed)">
+              <div className="st-password-wrap">
+                <input type="text" readOnly spellCheck={false} value={webhookUrl} onFocus={event => event.currentTarget.select()}/>
+                <button
+                  type="button"
+                  className="st-password-toggle"
+                  aria-label={t(webhookCopied ? 'Copied' : 'Copy webhook URL')}
+                  title={t(webhookCopied ? 'Copied' : 'Copy webhook URL')}
+                  onClick={() => { void navigator.clipboard?.writeText(webhookUrl).then(() => { setWebhookCopied(true); showToast.success(t('Webhook URL copied')); window.setTimeout(() => setWebhookCopied(false), 1800); }); }}
+                >
+                  {webhookCopied ? <Check size={15} /> : <Copy size={15} />}
+                </button>
+              </div>
+            </Field>}
             {gatewayLoading && <p className="st-note" role="status">{t('Loading gateway configuration…')}</p>}
             {gateway && gatewayProvider && <>
               <Field label="Mode"><DashboardSelect aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></DashboardSelect></Field>
@@ -337,16 +412,26 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
                   </div>
                 ) : (
                   <input 
-                    type="text" 
+                    type={field.link ? 'url' : 'text'} 
                     autoComplete="off" 
                     spellCheck={false} 
                     required={!field.optional} 
                     maxLength={4096} 
+                    placeholder={field.link ? 'https://buy.stripe.com/...' : undefined}
                     value={credentials[field.key] ?? ''} 
                     onChange={event => setCredentials({ ...credentials, [field.key]: event.target.value })}
                   />
                 )}
               </Field>)}
+              {gatewayProvider === 'stripe' && <div className="st-preference">
+                <span>{t('Verify these Stripe keys before enabling checkout.')}</span>
+                <button type="button" className="st-secondary small" disabled={testing || busy} onClick={() => void testStripe()}>
+                  {testing ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />}{t(testing ? 'Testing…' : 'Test Connection')}
+                </button>
+              </div>}
+              {testResult && (testResult.ok
+                ? <p className="st-success" role="status"><CheckCircle2 size={15}/>{t(testResult.message)}</p>
+                : <p className="st-error" role="alert">{t(testResult.message)}</p>)}
               <p className="st-note">{t('Secrets are stored privately and never shown again. Changing the account, mode or region requires new secrets. Checkout is enabled after the provider connection is verified.')}</p>
             </>}
           </>}

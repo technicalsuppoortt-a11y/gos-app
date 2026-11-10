@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { isPlatformTeamRole } from '../router/platformAccess';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db, callBackend, backendError } from './firebase';
 import { isDemoAccount } from './demoContext';
@@ -112,7 +112,7 @@ function validateGatewayConfiguration(
   const identityChanged =
     previous.mode !== input.mode ||
     (provider === 'paytabs' && previous.region !== input.region) ||
-    gatewayFields[provider].some(f => !f.secret && previous[f.key] !== input[f.key]?.trim());
+    gatewayFields[provider].some(f => !f.secret && !f.link && previous[f.key] !== input[f.key]?.trim());
   for (const field of gatewayFields[provider]) {
     const value = input[field.key];
     if (value !== undefined && (typeof value !== 'string' || value.length > 4096)) {
@@ -136,6 +136,11 @@ function validateGatewayConfiguration(
     }
     if (result.webhookSecret && !/^whsec_[A-Za-z0-9]+$/.test(result.webhookSecret)) {
       throw new Error('Enter a valid Webhook Secret.');
+    }
+    for (const key of ['paymentLink', 'paymentLinkAnnual']) {
+      if (result[key] && !/^https:\/\/[^\s]+$/.test(result[key])) {
+        throw new Error('Payment links must be secure https:// URLs (for example https://buy.stripe.com/...).');
+      }
     }
   }
   if (provider === 'paymob') {
@@ -570,6 +575,11 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
   const currentRevision = state.scopeKey === scopeKey ? state.revision : 0;
   const currentLoading = state.scopeKey === scopeKey ? state.loading : true;
   const currentError = state.scopeKey === scopeKey ? state.error : '';
+  // Latest committed list, so follow-up writes right after a save never use a stale closure.
+  const latestRef = useRef({ scopeKey, methods: currentMethods, revision: currentRevision });
+  if (latestRef.current.scopeKey !== scopeKey || latestRef.current.revision <= currentRevision) {
+    latestRef.current = { scopeKey, methods: currentMethods, revision: currentRevision };
+  }
 
   const getGateway = useCallback(
     async (provider: GatewayProvider): Promise<GatewayConfiguration> => {
@@ -681,6 +691,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
             loading: false,
             error: '',
           });
+          latestRef.current = { scopeKey, methods: backendRes.methods, revision: backendRes.revision };
           return backendRes;
         } catch (err) {
           if (typeof (window as any).__publicPayments === 'function' || (window as any).__saveFail) {
@@ -727,6 +738,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         loading: false,
         error: '',
       });
+      latestRef.current = { scopeKey, methods: nextMethods, revision: nextRevision };
       return result;
     },
     [descriptor, currentMethods, currentRevision, scopeKey, user?.id]
@@ -814,6 +826,52 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
     [descriptor, currentMethods, currentRevision, scopeKey, user?.id]
   );
 
+  /**
+   * Records the verified connection state of a gateway (e.g. after a successful Stripe
+   * credential test) across every synchronized payment-methods document for this scope.
+   */
+  const setGatewayStatus = useCallback(
+    async (provider: string, status: PaymentMethod['status']) => {
+      if (!descriptor.canManage) {
+        throw new Error('You do not have permission to configure payment gateways.');
+      }
+      const latest = latestRef.current.scopeKey === scopeKey ? latestRef.current : { methods: currentMethods, revision: currentRevision };
+      const target = latest.methods.find(m => m.provider === provider && m.type === 'gateway');
+      if (!target || target.status === status) return;
+      const nextMethods = latest.methods.map(m => (m.provider === provider ? { ...m, status } : m));
+      const nextRevision = latest.revision + 1;
+      const payload = {
+        methods: nextMethods,
+        revision: nextRevision,
+        scope: descriptor.scope,
+        tenantId: descriptor.primaryId,
+        updatedBy: user?.id ?? 'system',
+        updatedAt: new Date().toISOString(),
+      };
+      const writeResults = await Promise.allSettled(
+        descriptor.paths.map(segments =>
+          setDoc(doc(db, ...(segments as [string, ...string[]])), payload)
+        )
+      );
+      if (writeResults.every(r => r.status === 'rejected')) {
+        throw (writeResults[0] as PromiseRejectedResult).reason;
+      }
+      if (!isTestTransportActive()) {
+        paymentScopeCache.set(scopeKey, { methods: nextMethods, revision: nextRevision });
+      }
+      setState({
+        scopeKey,
+        methods: nextMethods,
+        revision: nextRevision,
+        canManage: true,
+        loading: false,
+        error: '',
+      });
+      latestRef.current = { scopeKey, methods: nextMethods, revision: nextRevision };
+    },
+    [descriptor, currentMethods, currentRevision, scopeKey, user?.id]
+  );
+
   return {
     methods: currentMethods,
     revision: currentRevision,
@@ -825,6 +883,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
     canManage: descriptor.canManage,
     getGateway,
     saveGateway,
+    setGatewayStatus,
     save,
   };
 }

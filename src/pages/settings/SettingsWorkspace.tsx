@@ -6,7 +6,6 @@ import { Check, ChevronRight } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserProfile } from '../../store/slices/authSlice';
 import type { RootState } from '../../store';
-import { ToolsSettingsPanel } from './ToolsPanel';
 import { showToast } from '../../utils/toast';
 import { Card, Field, PanelHeading, Toggle } from './kit';
 import { Select } from '../../components/ui/Select';
@@ -21,9 +20,7 @@ import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
 import { DomainsSettingsPanel } from './DomainsSettingsPanel';
-import { BrandLogoUploader } from './BrandLogoUploader';
-import { uploadBrandFile, type PersonalPreferences } from '../../backend/workspacePreferences';
-import { TimezoneSelect } from '../../components/ui/TimezoneSelect';
+import { type PersonalPreferences } from '../../backend/workspacePreferences';
 import './settings-controls.css';
 import './settings.css';
 
@@ -76,7 +73,7 @@ function SettingsWorkspaceView() {
     dispatch(updateUserProfile({ name: savedProfile.name, avatar: savedProfile.photo ?? '' }));
     showToast.success('Changes saved');
   }
-  if (segment === 'general' || segment === 'business-assets') return <Navigate to="/dashboard/settings/profile" replace />;
+  if (segment === 'general' || segment === 'business-assets' || segment === 'tools') return <Navigate to="/dashboard/settings/profile" replace />;
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
   if (active.slug === 'payment-methods') return <PaymentMethodsPanel scope="user"/>;
   if (active.slug === 'billing' && segment !== 'billing') {
@@ -99,7 +96,6 @@ function SettingsWorkspaceView() {
           {localizeNode(active.slug === 'business' && <BusinessPanel data={data} save={save}/>)}
           {localizeNode(active.slug === 'team' && <TeamPanel/>)}
           {localizeNode(active.slug === 'security' && <SecurityPanel/>)}
-          {localizeNode(active.slug === 'tools' && <><PanelHeading title={translateText("Tools")} description="Access and manage all your business tools, products, and features."/><ToolsSettingsPanel/></>)}
           {localizeNode(active.slug === 'knowledge' && <KnowledgePanel/>)}
           {localizeNode(active.slug === 'privacy' && <PrivacyPolicyPanel/>)}
         </>)}
@@ -110,7 +106,6 @@ function SettingsWorkspaceView() {
 
 function BusinessPanel({ data, save }: { data: SettingsData; save: (data: SettingsData) => Promise<void> }) {
   useUILanguage();
-  const tenantId = useSelector((s: RootState) => s.auth.tenant?.id);
   const [draft, setDraft] = useState(data.business), [busy, setBusy] = useState(false), [error, setError] = useState('');
   useEffect(() => {
     setDraft(data.business);
@@ -125,30 +120,8 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
           <Field label="Business type"><Select value={draft.type} onChange={value => update('type', value)} options={['Creative services', 'Consulting', 'Education', 'Retail', 'Other']} /></Field>
           <Field label="Business email"><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
           <Field label="Phone number"><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
-          <Field label="Business address"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
-          <Field label="Brand color"><input type="color" value={draft.color} onChange={e => update('color', e.target.value)}/></Field>
-          <div className="full-span">
-            <BrandLogoUploader
-              logoUrl={draft.logo}
-              brandName={draft.name}
-              busy={busy}
-              onChangeUrl={nextUrl => update('logo', nextUrl)}
-              onUploadFile={tenantId ? async file => {
-                setBusy(true); setError('');
-                try {
-                  const uploaded = await uploadBrandFile(tenantId, file, true);
-                  update('logo', uploaded.url);
-                } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); }
-              } : undefined}
-            />
-          </div>
+          <Field label="Business address" className="full-span"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
           <Field label="Public description" className="full-span"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
-        </div>
-      </Card>
-      <Card title={translateText("Regional defaults")} description="Used for dates, payments and customer experiences." className="w-full">
-        <div className="st-form-grid two">
-          <Field label="Default currency"><Select value={draft.currency} onChange={value => update('currency', value)} options={CURRENCY_SELECT_OPTIONS} /></Field>
-          <Field label="Default timezone"><TimezoneSelect label="Default timezone" value={draft.timezone} onChange={value => update('timezone', value)}/></Field>
         </div>
       </Card>
       {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}

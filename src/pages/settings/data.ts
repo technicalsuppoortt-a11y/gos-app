@@ -99,7 +99,12 @@ export function readSettings(): SettingsData {
 }
 export async function settingsRequest<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {
   const demo = demoIntegrationRequest(path, body, method);
-  if (demo !== undefined) return demo as T;
+  if (demo !== undefined) {
+    if (method !== 'GET') {
+      void firebaseSettingsRequest(path, body, method).catch(() => {});
+    }
+    return demo as T;
+  }
   const result = await firebaseSettingsRequest<T>(path, body, method);
   if (path === '/settings' && method === 'GET') {
     const defaults = defaultSettings();
