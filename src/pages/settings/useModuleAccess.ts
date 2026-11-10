@@ -186,6 +186,7 @@ export function moduleForPath(path: string): string {
   const section = clean.split('/')[0] || '';
   if (section === 'marketing-tracking') return 'settings';
   if (section === 'knowledge') return 'copilot';
+  if (section === 'automation') return 'follow-up';
   if (section === 'contacts') return 'contacts';
   if (section === 'websites' || section === 'forms') return 'funnels';
   if (section === 'domains') return 'settings';

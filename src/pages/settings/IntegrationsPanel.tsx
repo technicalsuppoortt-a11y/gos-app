@@ -38,12 +38,13 @@ type GuideStep = {
 const providers = [
   {
     id: 'meta',
-    name: 'Facebook & Instagram',
+    connectionId: 'meta',
+    name: 'Facebook Messenger',
     category: 'Communication',
     setupTime: '~2 min setup',
-    accountLabel: 'Connected Facebook Page / Instagram Handle',
-    accountPlaceholder: 'e.g. Upclick Official Page · @upclick.app',
-    description: 'Manage Facebook Page messages and Instagram Business DMs in your unified inbox.',
+    accountLabel: 'Connected Facebook Page',
+    accountPlaceholder: 'e.g. Upclick Official Page',
+    description: 'Manage Facebook Page messages in your unified inbox and automations.',
     capabilities: ['Unified Inbox DMs', 'Story & Comment Replies', 'AI Auto-Responder'],
     scopes: [
       'Read connected Facebook Pages and linked Instagram Business accounts',
@@ -82,7 +83,37 @@ const providers = [
     status: 'https://metastatus.com/',
   },
   {
+    id: 'instagram',
+    // Instagram connects through the same Meta login as Messenger, so it shares that connection.
+    connectionId: 'meta',
+    name: 'Instagram',
+    category: 'Communication',
+    setupTime: '~2 min setup',
+    accountLabel: 'Connected Instagram Handle',
+    accountPlaceholder: 'e.g. @upclick.app',
+    description: 'Manage Instagram Business DMs, story and comment replies in your unified inbox.',
+    capabilities: ['Instagram DMs', 'Story & Comment Replies', 'AI Auto-Responder'],
+    scopes: [
+      'Read linked Instagram Business accounts',
+      'Receive and reply to Instagram direct messages and comments in real time',
+    ],
+    prerequisites: [
+      'An Instagram Professional (Business or Creator) account linked to your Facebook Page',
+      'Message control ("Allow access to messages") enabled in Instagram Advanced Messaging settings',
+    ],
+    guideSteps: [
+      { step: '01', title: 'Link Instagram to Your Facebook Page', detail: 'Open your Facebook Page Settings → Linked Accounts → Instagram and ensure your Instagram Business profile is connected.' },
+      { step: '02', title: 'Enable Connected Tools in Instagram', detail: 'In the Instagram mobile app, go to Settings & Privacy → Messages and story replies → Message controls and turn on "Allow access to messages".' },
+      { step: '03', title: 'Authorize via Meta Business Login', detail: 'Click "Connect" below, sign in with your Facebook Admin account, and select the Instagram account you want to sync.' },
+    ] as GuideStep[],
+    proTip: 'Instagram uses the same Meta login as Facebook Messenger; connecting either one connects both.',
+    icon: InstagramIcon,
+    color: 'pink',
+    status: 'https://metastatus.com/',
+  },
+  {
     id: 'whatsapp',
+    connectionId: 'whatsapp',
     name: 'WhatsApp Business',
     category: 'Communication',
     setupTime: '~3 min setup',
@@ -128,6 +159,7 @@ const providers = [
   },
   {
     id: 'gmail',
+    connectionId: 'gmail',
     name: 'Gmail',
     category: 'Communication',
     setupTime: '~1 min setup',
@@ -173,6 +205,7 @@ const providers = [
   },
   {
     id: 'google-calendar',
+    connectionId: 'google-calendar',
     name: 'Google Calendar',
     category: 'Scheduling',
     setupTime: '~1 min setup',
@@ -250,9 +283,9 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
       `${p.name} ${p.description} ${p.capabilities.join(' ')}`.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const connectedCount = providers.filter(p => data.integrations[p.id]?.status === 'Connected').length;
+  const connectedCount = providers.filter(p => data.integrations[p.connectionId]?.status === 'Connected').length;
   const activeGuide = providers.find(p => p.id === activeGuideId) ?? providers[0];
-  const activeGuideState = data.integrations[activeGuide.id] ?? { status: 'Not Connected' };
+  const activeGuideState = data.integrations[activeGuide.connectionId] ?? { status: 'Not Connected' };
 
   const openProviderGuide = (providerId: string) => {
     setActiveGuideId(providerId);
@@ -260,14 +293,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
   };
 
   const renderProviderIcon = (p: Provider, size = 24) =>
-    p.id === 'meta' ? (
-      <span className="st-meta-icons">
-        <FacebookIcon size={size - 3} />
-        <InstagramIcon size={size - 3} />
-      </span>
-    ) : (
-      <p.icon size={size} />
-    );
+    <p.icon size={size} />;
 
   return (
     <>
@@ -316,7 +342,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
       <div className="st-integration-grid st-integration-grid-four">
         {localizeNode(
           list.map(p => {
-            const state = data.integrations[p.id] ?? { status: 'Not Connected' };
+            const state = data.integrations[p.connectionId] ?? { status: 'Not Connected' };
             const isConnected = state.status === 'Connected';
             return (
               <Card key={p.id} className={`st-integration-card${isConnected ? ' is-connected' : ''}`}>
@@ -466,7 +492,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
           <div className="st-guideline-tabs" role="tablist" aria-label={translateText('Channel connection guides')}>
             {providers.map(p => {
               const isSelected = p.id === activeGuide.id;
-              const pState = data.integrations[p.id]?.status === 'Connected';
+              const pState = data.integrations[p.connectionId]?.status === 'Connected';
               return (
                 <button
                   key={p.id}
@@ -595,7 +621,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
         selected && (
           <ConnectionModal
             provider={selected}
-            state={data.integrations[selected.id]}
+            state={data.integrations[selected.connectionId]}
             returned={params.get('connection') === 'return'}
             close={close}
             refresh={refresh}
@@ -654,7 +680,7 @@ function ConnectionModal({
     setBusy(true);
     setError('');
     try {
-      const result = await settingsRequest<IntegrationState>(`/integrations/${provider.id}`);
+      const result = await settingsRequest<IntegrationState>(`/integrations/${provider.connectionId}`);
       if (result.status !== 'Connected') {
         throw new Error(
           result.problem ||
@@ -670,7 +696,7 @@ function ConnectionModal({
     } finally {
       setBusy(false);
     }
-  }, [provider.id, refresh]);
+  }, [provider.connectionId, refresh]);
 
   useEffect(() => {
     if (returned) void validate();
@@ -680,7 +706,7 @@ function ConnectionModal({
   useEffect(() => {
     if (!localDemoEnabled || returned || state?.status === 'Connected') return;
     let cancelled = false;
-    void settingsRequest<IntegrationState>(`/integrations/${provider.id}/authorize`, {})
+    void settingsRequest<IntegrationState>(`/integrations/${provider.connectionId}/authorize`, {})
       .then(result => {
         if (!cancelled) {
           setConnection(result);
@@ -694,7 +720,7 @@ function ConnectionModal({
     return () => {
       cancelled = true;
     };
-  }, [provider.id, returned, state?.status]);
+  }, [provider.connectionId, returned, state?.status]);
 
   async function authorize() {
     setBusy(true);
@@ -705,7 +731,7 @@ function ConnectionModal({
         returnUrl: `${window.location.origin}/dashboard/settings/integrations?provider=${provider.id}&connection=return`,
       };
       const result = await settingsRequest<IntegrationState & { authorizeUrl?: string }>(
-        `/integrations/${provider.id}/authorize`,
+        `/integrations/${provider.connectionId}/authorize`,
         payload,
       );
       if (result && typeof result.authorizeUrl === 'string' && result.authorizeUrl) {
@@ -741,14 +767,7 @@ function ConnectionModal({
           <>
             <div className="st-empty compact">
               <span className={`st-service-icon ${provider.color}`}>
-                {provider.id === 'meta' ? (
-                  <span className="st-meta-icons">
-                    <FacebookIcon size={22} />
-                    <InstagramIcon size={22} />
-                  </span>
-                ) : (
-                  <provider.icon size={29} />
-                )}
+                <provider.icon size={29} />
               </span>
               <h3>
                 {translateText('Bring ')}
@@ -850,7 +869,7 @@ function ConnectionModal({
                   setError('');
                   try {
                     const result = await settingsRequest<{ ok: boolean; problem?: string }>(
-                      `/integrations/${provider.id}/test`,
+                      `/integrations/${provider.connectionId}/test`,
                       {},
                     );
                     if (!result.ok) {
@@ -925,7 +944,7 @@ function ConnectionModal({
                   try {
                     const trimmedAccount = accountInput.trim() || connection?.account;
                     await settingsRequest(
-                      `/integrations/${provider.id}/settings`,
+                      `/integrations/${provider.connectionId}/settings`,
                       { sync, ...(trimmedAccount ? { account: trimmedAccount } : {}) },
                       'PATCH',
                     );
@@ -965,7 +984,7 @@ function ConnectionModal({
                   setBusy(true);
                   setError('');
                   try {
-                    await settingsRequest(`/integrations/${provider.id}`, undefined, 'DELETE');
+                    await settingsRequest(`/integrations/${provider.connectionId}`, undefined, 'DELETE');
                     await refresh();
                     close();
                   } catch (e) {
