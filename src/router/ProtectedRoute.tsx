@@ -13,6 +13,7 @@ export function routeForRole(role: Role | null, allowedTabs?: readonly string[] 
   if (isPlatformTeamRole(role)) return platformHome(role, allowedTabs);
   if (role === 'ADMIN') return '/admin';
   if (role === 'USER') return '/dashboard';
+  if (role === 'CUSTOMER') return '/portal';
   return '/auth/login';
 }
 
@@ -41,6 +42,6 @@ export const DefaultRedirect: React.FC = () => {
 
 export const RouteLoading: React.FC = () => {
   const { pathname } = useLocation();
-  const dashboard = /^\/(dashboard|admin|super-admin|crm)(\/|$)/.test(pathname);
+  const dashboard = /^\/(dashboard|admin|super-admin|crm|portal)(\/|$)/.test(pathname);
   return dashboard ? <WorkspaceLoading/> : <WorkspaceSkeleton variant="spinner" fullScreen/>;
 };

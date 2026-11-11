@@ -6,7 +6,7 @@ import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, BarChart3, Bell, CreditCard, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle, Wallet } from 'lucide-react';
+import { Activity, BarChart3, Bell, CreditCard, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { canOpenPlatformPage, isPlatformTeamRole, platformHome } from '../../router/platformAccess';
@@ -16,8 +16,6 @@ import { ThemeToggle } from '../ui/ThemeToggle';
 import '../../pages/admin/admin-workspace.css';
 import './super-admin.css';
 import { GetAppButton } from './GetAppButton';
-import { CreditBadge } from './CreditBadge';
-import { WalletBadge } from './WalletBadge';
 import { PlatformAccountSwitcher } from './PlatformAccountSwitcher';
 
 const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutDashboard; end?: boolean }[] = [
@@ -26,7 +24,6 @@ const navigation: { label: string; ar?: string; to: string; icon: typeof LayoutD
   { label: 'Plans & Credits', ar: 'الباقات والرصيد', to: '/super-admin/plans', icon: Layers },
   { label: 'Templates', ar: 'القوالب', to: '/super-admin/dashboard-management', icon: Grid2X2 },
   { label: 'Usage & Revenue', to: '/super-admin/analytics', icon: BarChart3 },
-  { label: 'Meta Wallet', to: '/super-admin/wallet', icon: Wallet },
   { label: 'Team Management', to: '/super-admin/users', icon: ShieldCheck },
   { label: 'System Settings', to: '/super-admin/settings', icon: Settings },
   { label: 'Integrations', to: '/super-admin/integrations', icon: Puzzle },
@@ -156,17 +153,17 @@ export const SuperAdminLayout: React.FC = () => {
         <div className="relative" ref={saSearchRef}>
           <label className="sa-search">
             <Search size={14}/>
-            <input 
+            <input
               placeholder={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections…' : 'Search sections…')}
               aria-label={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections' : 'Search sections')}
               value={saSearch}
               onChange={e => { setSaSearch(e.target.value); setSaSearchOpen(true); }}
               onFocus={() => { if (saSearch.trim()) setSaSearchOpen(true); }}
-              onKeyDown={event => { 
-                if (event.key === "Enter") { 
+              onKeyDown={event => {
+                if (event.key === "Enter") {
                   event.preventDefault();
                   handleSaSearchSubmit();
-                } 
+                }
               }}
             />
             <kbd>Enter</kbd>
@@ -190,7 +187,7 @@ export const SuperAdminLayout: React.FC = () => {
             </div>
           )}
         </div>
-        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>{role === 'SUPER_ADMIN' && <div className="inline-flex items-center gap-1.5 shrink-0"><CreditBadge/><WalletBadge/></div>}
+        {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>
         {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink>}
         {canOpen('/super-admin/logs') && <button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate('/super-admin/logs')}><Bell size={17}/><i/></button>}
         <button className="sa-account" onClick={() => navigate('/super-admin/users')} disabled={!canOpen('/super-admin/users')}><span>{name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><b>{name}</b></button>

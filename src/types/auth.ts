@@ -1,5 +1,5 @@
 export type PlatformTeamRole = 'SUPER_ADMIN' | 'PLATFORM_SUPPORT' | 'PLATFORM_FINANCE';
-export type Role = 'USER' | 'ADMIN' | PlatformTeamRole;
+export type Role = 'USER' | 'ADMIN' | 'CUSTOMER' | PlatformTeamRole;
 
 export interface User {
   id: string;

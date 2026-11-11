@@ -13,6 +13,7 @@ import { PolicyPreviewLink } from './PolicyPreview';
 import { checkoutFieldList, defaultExperience, productKind, type Billing, type CheckoutField, type Product } from './model';
 import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
 import { storageKey, useProducts } from './repository';
+import { provisionCustomerPurchase, type CustomerProvisionResult } from '../../backend/customerPortal';
 import './dynamic-checkout.css';
 import './product-checkout.css';
 
@@ -123,6 +124,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
   const [remote, setRemote] = useState<Quote>(), [loading, setLoading] = useState(!!tenantId);
   const [quoteError, setQuoteError] = useState(''), [submitError, setSubmitError] = useState('');
   const [reload, setReload] = useState(0), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState('');
+  const [portalAccess, setPortalAccess] = useState<CustomerProvisionResult | null>(null);
   const [discountEmail, setDiscountEmail] = useState('');
   const tenantPayments = usePaymentMethods(tenantId ? { scope: 'user', tenantId } : { scope: 'user' });
 
@@ -246,9 +248,25 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
             fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
             ...(encodedReceipt ? { receipt: encodedReceipt } : {}),
           }, 90000);
+          if (!preview && totals.dueToday === 0 && config.delivery !== 'After approval') {
+            const provisioned = await provisionCustomerPurchase({
+              tenantId: ownerTenantId,
+              product,
+              productId: product.id,
+              productName: product.name,
+              productType: product.type,
+              orderId: result.id,
+              customerName: name.trim() || email.trim().split('@')[0] || 'Customer',
+              customerEmail: email.trim().toLowerCase(),
+              customerPhone: phone.trim(),
+              amount: 0,
+              currency: totals.currency,
+            }).catch(() => null);
+            if (provisioned) setPortalAccess(provisioned);
+          }
           setConfirmation(result.id);
           setReceipt(undefined);
-          showToast.success(t('Order request submitted successfully!'));
+          showToast.success(t(totals.dueToday === 0 && !preview ? 'Enrollment complete! Login credentials sent to your email.' : 'Order request submitted successfully!'));
           track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
           return;
         } catch {
@@ -363,12 +381,34 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
         lastActivity: createdAt,
       };
 
+      const instantGrant = !preview && totals.dueToday === 0 && config.delivery !== 'After approval';
+      if (instantGrant) {
+        (orderRecord as { status: string }).status = 'Paid';
+        (requestRecord as { status: string }).status = 'Approved';
+      }
       await Promise.allSettled([
         setDoc(doc(db, 'settings', `checkoutRequests_${ownerTenantId}`, 'items', reqId), requestRecord),
         setDoc(doc(db, 'tenants', ownerTenantId, 'checkoutRequests', reqId), requestRecord),
         setDoc(doc(db, 'tenants', ownerTenantId, 'orders', reqId), orderRecord, { merge: true }),
         setDoc(doc(db, 'tenants', ownerTenantId, 'leads', leadId), checkoutLeadRecord, { merge: true }),
       ]);
+
+      if (instantGrant && customerEmail) {
+        const provisioned = await provisionCustomerPurchase({
+          tenantId: ownerTenantId,
+          product,
+          productId: product.id,
+          productName: product.name,
+          productType: product.type,
+          orderId: reqId,
+          customerName,
+          customerEmail,
+          customerPhone,
+          amount: totals.dueToday,
+          currency: totals.currency,
+        }).catch(() => null);
+        if (provisioned) setPortalAccess(provisioned);
+      }
 
       try {
         if (customerEmail) {
@@ -414,7 +454,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
       <h1 id={title}>{t(preview ? 'Checkout Preview' : 'Secure Checkout')}</h1>
       <p>{preview ? t('Preview the customer experience. No payments are collected.') : product.name}</p>
     </div></header>
-    {confirmation ? <div className="pco-confirmation" role="status"><Check size={26}/><h2>{t('Request submitted')}</h2><p>{t('Your request is pending review.')}</p><small>{t('Reference')} <b>{confirmation.slice(0, 12).toUpperCase()}</b></small></div> :
+    {confirmation ? <div className="pco-confirmation" role="status"><Check size={26}/><h2>{t(portalAccess ? 'Access Activated' : 'Request submitted')}</h2><p>{t(portalAccess ? `Your Customer Portal account is ready. Login details have been dispatched to ${portalAccess.email}.` : 'Your request is pending review. Once approved, your Customer Portal login link and password will be emailed automatically.')}</p>{portalAccess && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 10 }}><a className="pco-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10 }} href={portalAccess.loginUrl}>{t('Sign In to Customer Portal')}</a></div>}<small>{t('Reference')} <b>{confirmation.slice(0, 12).toUpperCase()}</b></small></div> :
       <form onSubmit={submit}>
         <fieldset disabled={busy} className="pco-columns">
           <div className="pco-column">

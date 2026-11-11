@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useRef, useState } from 'react';
-import { collection, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -24,6 +24,9 @@ import { cloudStorage, readCloud } from '../../backend/workspace';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
+import { provisionCustomerPurchase } from '../../backend/customerPortal';
+import { decodeFirestoreValue } from '../../backend/firestoreCodec';
+import { normalizeFirestoreData } from '../../backend/workspace';
 import type { RootState } from '../../store';
 import './checkout-requests.css';
 
@@ -189,6 +192,28 @@ async function applyRequestDecision(
       lastActivity: decidedAt,
     };
     writes.push(setDoc(doc(db, 'tenants', tenantId, 'leads', resolvedLeadId), approvedLead, { merge: true }));
+    if (emailLower) {
+      let resolvedProductRecord: Record<string, any> | undefined = matchedProduct;
+      if (!resolvedProductRecord && prodId) {
+        const remoteProdSnap = await getDoc(doc(db, 'tenants', tenantId, 'products', prodId)).catch(() => null);
+        if (remoteProdSnap?.exists()) {
+          resolvedProductRecord = decodeFirestoreValue(normalizeFirestoreData({ ...remoteProdSnap.data(), id: remoteProdSnap.id }));
+        }
+      }
+      await provisionCustomerPurchase({
+        tenantId,
+        product: resolvedProductRecord,
+        productId: prodId,
+        productName: prodName,
+        productType: prodTypeLabel,
+        orderId: request.id,
+        customerName: request.customerName || emailLower.split('@')[0] || 'Customer',
+        customerEmail: emailLower,
+        customerPhone: request.customerPhone,
+        amount: reqAmount,
+        currency: request.currency || 'USD',
+      }).catch(() => null);
+    }
   }
   await Promise.allSettled(writes);
   try {
@@ -718,7 +743,7 @@ function RequestDetails({
     setError('');
     try {
       await applyRequestDecision(tenantId, request, decision, note);
-      showToast.success(t(decision === 'approve' ? 'Checkout request approved.' : 'Checkout request rejected.'));
+      showToast.success(t(decision === 'approve' ? 'Checkout request approved · Customer portal access & login email sent.' : 'Checkout request rejected.'));
     } catch (cause) {
       setError(backendError(cause));
     } finally {

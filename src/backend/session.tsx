@@ -137,10 +137,12 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     } catch { /* treated as missing below */ }
   }
 
+  const emailLower = (user.email || data?.email || '').trim().toLowerCase();
+  const emailKey = emailLower ? emailLower.replace(/[^a-z0-9@._-]/g, '_') : '';
+
   // Check workspace team member lookup documents (by UID or email)
+  let hasTeamMembership = false;
   try {
-    const emailLower = (user.email || data?.email || '').trim().toLowerCase();
-    const emailKey = emailLower ? emailLower.replace(/[^a-z0-9@._-]/g, '_') : '';
     const [uidLookupSnap, emailLookupSnap] = await Promise.all([
       getDoc(doc(db, 'settings', `teamMemberUid_${user.uid}`)).catch(() => null),
       emailKey ? getDoc(doc(db, 'settings', `teamMember_${emailKey}`)).catch(() => null) : Promise.resolve(null),
@@ -162,6 +164,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     }
 
     if (teamRecord) {
+      hasTeamMembership = true;
       const isSelfOwner =
         Boolean(teamRecord.isOwner) ||
         String(teamRecord.role || '').toLowerCase() === 'owner' ||
@@ -228,8 +231,34 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     if (err instanceof SessionError) throw err;
   }
 
+  // Check Customer Portal account lookup if user does not already own/belong to a business workspace
+  if (!data && !hasTeamMembership) {
+    try {
+      const [custUidSnap, custEmailSnap] = await Promise.all([
+        getDoc(doc(db, 'settings', `customerAccountUid_${user.uid}`)).catch(() => null),
+        emailKey ? getDoc(doc(db, 'settings', `customerAccount_${emailKey}`)).catch(() => null) : Promise.resolve(null),
+      ]);
+      const customerRecord = (custUidSnap?.exists() ? custUidSnap.data() : null) ?? (custEmailSnap?.exists() ? custEmailSnap.data() : null);
+      if (customerRecord) {
+        if (customerRecord.deleted === true || customerRecord.active === false || suspendedStatus(customerRecord.status)) {
+          throw new SessionError('DEACTIVATED');
+        }
+        data = {
+          name: String(customerRecord.name || user.displayName || emailLower.split('@')[0] || 'Customer').trim(),
+          email: String(customerRecord.email || emailLower).trim(),
+          role: 'CUSTOMER',
+          status: 'Active',
+          tenantId: String(customerRecord.tenantId || 'customer-portal').trim(),
+          tenantName: String(customerRecord.brandName || 'Customer Portal').trim(),
+        };
+      }
+    } catch (err) {
+      if (err instanceof SessionError) throw err;
+    }
+  }
+
   const rawClaimRole = typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role.toUpperCase() : undefined;
-  const claimRole = isPlatformTeamRole(rawClaimRole) || rawClaimRole === 'ADMIN' || rawClaimRole === 'USER' ? rawClaimRole : undefined;
+  const claimRole = isPlatformTeamRole(rawClaimRole) || rawClaimRole === 'ADMIN' || rawClaimRole === 'USER' || rawClaimRole === 'CUSTOMER' ? rawClaimRole : undefined;
   const claimTenantId = typeof tokenResult.claims.tenantId === 'string' ? tokenResult.claims.tenantId : undefined;
 
   if (suspendedStatus(data?.status)) throw new SessionError('DEACTIVATED');
@@ -266,6 +295,8 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     ? rawDataRole
     : ['ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawDataRole)
     ? 'ADMIN'
+    : rawDataRole === 'CUSTOMER'
+    ? 'CUSTOMER'
     : 'USER';
 
   // Cryptographically verified custom claims from the ID token take precedence; fall back to Firestore profile or USER.
@@ -317,7 +348,9 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
         : {}),
     },
     role,
-    tenant: { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
+    tenant: role === 'CUSTOMER'
+      ? null
+      : { id: tenantId, name: phoenix?.brand.name || data?.tenantName || (isPlatformTeamRole(role) ? 'Platform Management' : 'Your workspace'), logo: phoenix?.logo },
     token: tokenResult.token,
   };
 }
@@ -330,9 +363,9 @@ export async function login(email: string, password: string) {
     const cleanEmail = email.trim().toLowerCase();
     let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(async error => {
       if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error.code)) throw error;
+      const emailKey = cleanEmail.replace(/[^a-z0-9@._-]/g, '_');
       // Check if this is an invited workspace team member whose Firebase Auth account needs lazy initialization
       try {
-        const emailKey = cleanEmail.replace(/[^a-z0-9@._-]/g, '_');
         const teamSnap = await getDoc(doc(db, 'settings', `teamMember_${emailKey}`));
         if (teamSnap.exists()) {
           const teamData = teamSnap.data();
@@ -346,15 +379,30 @@ export async function login(email: string, password: string) {
           }
         }
       } catch {
-        // Proceed to Phoenix fallback if team lookup or creation fails
+        // Proceed to customer portal / Phoenix fallback if team lookup fails
+      }
+      // Check if this is a provisioned customer account whose Firebase Auth user needs lazy initialization
+      try {
+        const custSnap = await getDoc(doc(db, 'settings', `customerAccount_${emailKey}`));
+        if (custSnap.exists()) {
+          const custData = custSnap.data();
+          if (
+            !custData?.deleted &&
+            custData?.active !== false &&
+            typeof custData?.tempPassword === 'string' &&
+            custData.tempPassword === password
+          ) {
+            return await createUserWithEmailAndPassword(auth, cleanEmail, password);
+          }
+        }
+      } catch {
+        // Proceed to Phoenix fallback if customer lookup fails
       }
       usedPhoenix = true;
       return loginWithPhoenix(email, password);
     });
     try {
       const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
-      // Linked accounts refresh saved Phoenix changes even when their Upclick
-      // password already works, so manual login matches Open Platform.
       if (profile?.phoenixUid && !usedPhoenix
           && !(await getDoc(doc(db, 'users', credential.user.uid, 'preferences', 'passwordPolicy'))).data()?.localPassword) {
         credential = await loginWithPhoenix(email, password);
@@ -394,12 +442,9 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
           const value = snapshot.data();
           if (suspendedStatus(value?.status)) { await forceSignOut(new SessionError('DEACTIVATED')); return; }
           if (value?.status && value.status !== 'Active' && value.status !== 'Activated') return;
-          // Compare source profiles. Display-name fallbacks and authoritative token
-          // claims may differ from Firestore without indicating a profile change.
           if (!refreshingProfile && profileSignature(value) !== resolvedProfile) {
             refreshingProfile = true;
             try {
-              // The refresh triggers onIdTokenChanged, which resolves and commits once.
               await user.getIdToken(true);
             } catch { /* ignore transient token refresh error */ }
           }

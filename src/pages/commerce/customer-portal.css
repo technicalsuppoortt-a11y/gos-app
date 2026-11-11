@@ -1,0 +1,957 @@
+/* ==========================================================================
+   Dedicated Customer Delivery Portal — Courses, Digital Products & Services
+   ========================================================================== */
+
+.cportal-shell {
+  --cp-bg: #f6f7fb;
+  --cp-surface: #ffffff;
+  --cp-surface-alt: #f8fafc;
+  --cp-border: #e2e8f0;
+  --cp-border-subtle: #edf2f7;
+  --cp-ink: #0f172a;
+  --cp-muted: #64748b;
+  --cp-accent: var(--ws-accent, #7c3aed);
+  --cp-accent-soft: rgba(124, 58, 237, 0.1);
+  --cp-emerald: #10b981;
+  --cp-emerald-soft: rgba(16, 185, 129, 0.12);
+  min-height: 100dvh;
+  background: var(--cp-bg);
+  color: var(--cp-ink);
+  font-family: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+}
+
+html.dark .cportal-shell {
+  --cp-bg: #0c101b;
+  --cp-surface: #141a29;
+  --cp-surface-alt: #1a2235;
+  --cp-border: #263148;
+  --cp-border-subtle: #1e283c;
+  --cp-ink: #f8fafc;
+  --cp-muted: #94a3b8;
+  --cp-accent-soft: rgba(167, 139, 250, 0.15);
+  --cp-emerald-soft: rgba(16, 185, 129, 0.18);
+}
+
+/* Sticky Glassmorphic Topbar */
+.cportal-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 64px;
+  padding: 10px clamp(16px, 3vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: color-mix(in srgb, var(--cp-surface) 88%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.cportal-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cportal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--cp-ink);
+  cursor: pointer;
+  padding: 0;
+  text-align: start;
+}
+
+.cportal-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+  flex-shrink: 0;
+}
+
+.cportal-brand-copy b {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cportal-brand-copy small {
+  display: block;
+  font-size: 11px;
+  color: var(--cp-muted);
+}
+
+.cportal-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-alt);
+  color: var(--cp-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  white-space: nowrap;
+}
+
+.cportal-back-pill:hover {
+  border-color: var(--cp-accent);
+  color: var(--cp-accent);
+  transform: translateY(-1px);
+}
+
+.cportal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cportal-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-alt);
+  font-size: 12px;
+}
+
+.cportal-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.cportal-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.cportal-logout-btn:hover {
+  border-color: #f43f5e;
+  color: #e11d48;
+}
+
+/* Main Container */
+.cportal-main {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(20px, 3vw, 36px) clamp(16px, 3vw, 40px) 56px;
+  flex: 1;
+  animation: cpFadeUp 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes cpFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Banner */
+.cportal-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: clamp(22px, 3vw, 32px);
+  background: linear-gradient(130deg, #1e1b4b 0%, #312e81 52%, #4c1d95 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  box-shadow: 0 16px 40px rgba(30, 27, 75, 0.18);
+  margin-bottom: 24px;
+}
+
+.cportal-hero-copy {
+  max-width: 620px;
+}
+
+.cportal-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.cportal-hero h1 {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+}
+
+.cportal-hero p {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.cportal-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(105px, 1fr));
+  gap: 10px;
+}
+
+.cportal-kpi {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.cportal-kpi b {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cportal-kpi span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Filter Toolbar */
+.cportal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.cportal-search {
+  flex: 1 1 260px;
+  max-width: 400px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border-radius: 12px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-muted);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cportal-search:focus-within {
+  border-color: var(--cp-accent);
+  box-shadow: 0 0 0 3px var(--cp-accent-soft);
+}
+
+.cportal-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--cp-ink);
+  font-size: 13px;
+}
+
+.cportal-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cportal-filter-pill {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.cportal-filter-pill:hover {
+  border-color: var(--cp-accent);
+  color: var(--cp-ink);
+}
+
+.cportal-filter-pill.active {
+  background: var(--cp-accent);
+  border-color: var(--cp-accent);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+}
+
+/* Library Grid */
+.cportal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.cportal-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.cportal-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--cp-accent) 55%, var(--cp-border));
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.1);
+}
+
+.cportal-card-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, #1e1b4b, #4c1d95);
+  overflow: hidden;
+}
+
+.cportal-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.cportal-card:hover .cportal-card-cover img {
+  transform: scale(1.04);
+}
+
+.cportal-card-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, #312e81 0%, #6d28d9 100%);
+}
+
+.cportal-card-badges {
+  position: absolute;
+  top: 12px;
+  inset-inline: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cportal-type-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.76);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cportal-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.9);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.cportal-card-body {
+  padding: 18px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cportal-card-body h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--cp-ink);
+  line-height: 1.35;
+}
+
+.cportal-card-body p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cp-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cportal-progress-wrap {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.cportal-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--cp-muted);
+  margin-bottom: 6px;
+}
+
+.cportal-progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--cp-surface-alt);
+  border: 1px solid var(--cp-border-subtle);
+  overflow: hidden;
+}
+
+.cportal-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #10b981);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cportal-card-cta {
+  margin-top: 8px;
+  height: 38px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.cportal-card-cta:hover {
+  filter: brightness(1.06);
+}
+
+/* Empty State */
+.cportal-empty {
+  border-radius: 20px;
+  border: 1px dashed var(--cp-border);
+  background: var(--cp-surface);
+  padding: 56px 24px;
+  text-align: center;
+  max-width: 540px;
+  margin: 32px auto;
+}
+
+.cportal-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+
+.cportal-empty h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.cportal-empty p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--cp-muted);
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Delivery Workspace (Course Player / Digital Vault / Service Tracker)
+   ========================================================================== */
+
+.cportal-delivery-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.cportal-delivery-title h1 {
+  margin: 6px 0 4px;
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cportal-delivery-title p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--cp-muted);
+  max-width: 720px;
+}
+
+.cportal-course-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+}
+
+.cportal-stage-card,
+.cportal-panel-card {
+  border-radius: 18px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  overflow: hidden;
+}
+
+.cportal-player-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #090d16;
+  display: grid;
+  place-items: center;
+}
+
+.cportal-player-frame iframe,
+.cportal-player-frame video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.cportal-lesson-placeholder {
+  padding: 32px;
+  text-align: center;
+  color: #f8fafc;
+  max-width: 480px;
+}
+
+.cportal-lesson-placeholder-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.28);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  color: #c4b5fd;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+
+.cportal-lesson-placeholder h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.cportal-lesson-placeholder p {
+  margin: 0;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.cportal-stage-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cportal-stage-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cportal-stage-bar h2 {
+  margin: 4px 0 0;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.cportal-stage-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cportal-btn-secondary,
+.cportal-btn-primary,
+.cportal-btn-emerald {
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  text-decoration: none;
+}
+
+.cportal-btn-secondary {
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-alt);
+  color: var(--cp-ink);
+}
+
+.cportal-btn-secondary:hover:not(:disabled) {
+  border-color: var(--cp-accent);
+  color: var(--cp-accent);
+}
+
+.cportal-btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cportal-btn-primary {
+  border: 0;
+  background: var(--cp-accent);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.24);
+}
+
+.cportal-btn-primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.cportal-btn-emerald {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--cp-emerald-soft);
+  color: #059669;
+}
+
+html.dark .cportal-btn-emerald {
+  color: #34d399;
+}
+
+/* Curriculum Sidebar */
+.cportal-curriculum-head {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.cportal-module {
+  border-bottom: 1px solid var(--cp-border-subtle);
+}
+
+.cportal-module-btn {
+  width: 100%;
+  padding: 13px 18px;
+  border: 0;
+  background: var(--cp-surface-alt);
+  color: var(--cp-ink);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  text-align: start;
+}
+
+.cportal-lesson-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cportal-lesson-item {
+  width: 100%;
+  padding: 11px 18px;
+  border: 0;
+  border-inline-start: 3px solid transparent;
+  background: transparent;
+  color: var(--cp-ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: start;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.cportal-lesson-item:hover {
+  background: var(--cp-surface-alt);
+}
+
+.cportal-lesson-item.active {
+  background: var(--cp-accent-soft);
+  border-inline-start-color: var(--cp-accent);
+}
+
+.cportal-lesson-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cp-border);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: transparent;
+}
+
+.cportal-lesson-check.done {
+  background: var(--cp-emerald);
+  border-color: var(--cp-emerald);
+  color: #ffffff;
+}
+
+.cportal-lesson-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.cportal-lesson-copy b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cportal-lesson-copy small {
+  font-size: 11px;
+  color: var(--cp-muted);
+}
+
+/* Certificate Banner */
+.cportal-certificate {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(124, 58, 237, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Digital Product Vault & Service Tracker */
+.cportal-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.cportal-vault-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.cportal-asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-alt);
+  flex-wrap: wrap;
+}
+
+.cportal-asset-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cportal-asset-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.cportal-asset-info b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.cportal-asset-info small {
+  font-size: 11.5px;
+  color: var(--cp-muted);
+}
+
+/* Service Stepper */
+.cportal-stepper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 20px;
+}
+
+.cportal-step {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.cportal-step.done,
+.cportal-step.current {
+  border-color: var(--cp-emerald);
+  background: var(--cp-emerald-soft);
+}
+
+.cportal-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cp-border);
+  color: var(--cp-ink);
+  font-size: 11px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.cportal-step.done .cportal-step-num,
+.cportal-step.current .cportal-step-num {
+  background: var(--cp-emerald);
+  color: #ffffff;
+}
+
+.cportal-info-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cportal-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cp-border-subtle);
+}
+
+.cportal-info-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.cportal-info-row span {
+  color: var(--cp-muted);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .cportal-course-layout,
+  .cportal-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .cportal-kpis,
+  .cportal-stepper {
+    grid-template-columns: 1fr;
+  }
+  .cportal-user-pill span {
+    display: none;
+  }
+  .cportal-stage-body {
+    padding: 16px;
+  }
+}

@@ -22,14 +22,22 @@ export const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const searchParams = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const prefilledEmail = searchParams.get('email')?.trim() || '';
+  const isPortalInvite = searchParams.get('portal') === '1' || searchParams.get('portal') === 'true';
+  const requestedReturnTo = searchParams.get('redirect') || '';
   const auth = useSelector((state: RootState) => state.auth);
   const currentLang = useSelector((state: RootState) => state.ui.language);
   const currentTheme = useSelector((state: RootState) => state.ui.theme);
-  const [email, setEmail] = React.useState('');
+  const [email, setEmail] = React.useState(prefilledEmail);
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    if (prefilledEmail && !email) setEmail(prefilledEmail);
+  }, [prefilledEmail]);
 
   // Set English (EN) as default initial language if not explicitly chosen by user
   React.useEffect(() => {
@@ -42,9 +50,6 @@ export const LoginPage: React.FC = () => {
       document.documentElement.lang = 'en';
       if (document.body) document.body.dir = 'ltr';
     }
-    // Pick the login screen's initial language once. Resolving a Phoenix
-    // session can publish its saved language before loginSuccess is dispatched.
-    // Watching currentLang here would overwrite that identity during sign-in.
   }, [dispatch]);
 
   const displayError = React.useMemo(() => {
@@ -106,8 +111,18 @@ export const LoginPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    if (auth.isAuthenticated && auth.role) navigate(routeForRole(auth.role), { replace: true });
-  }, [auth.isAuthenticated, auth.role, navigate]);
+    if (auth.isAuthenticated && auth.role) {
+      if (isPortalInvite && requestedReturnTo.startsWith('/portal')) {
+        navigate(requestedReturnTo, { replace: true });
+        return;
+      }
+      if (isPortalInvite) {
+        navigate('/portal', { replace: true });
+        return;
+      }
+      navigate(routeForRole(auth.role, auth.user?.allowedTabs), { replace: true });
+    }
+  }, [auth.isAuthenticated, auth.role, auth.user?.allowedTabs, isPortalInvite, requestedReturnTo, navigate]);
 
   // Explain why the user landed here after a forced sign-out (pending, deactivated, access denied…).
   React.useEffect(() => {
@@ -173,13 +188,20 @@ export const LoginPage: React.FC = () => {
       }
       showToast.success(currentLang === 'ar' ? `مرحبًا بعودتك، ${session.user.name}!` : `Welcome back, ${session.user.name}!`);
       dispatch(loginSuccess(session));
-      const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      const requestedPath =
+        (requestedReturnTo.startsWith('/portal') ? requestedReturnTo : undefined) ||
+        (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
       const canOpenRequestedPath = isPlatformTeamRole(session.role)
-        ? requestedPath && canOpenPlatformPage(session.role, requestedPath, session.user.allowedTabs)
+        ? requestedPath && (canOpenPlatformPage(session.role, requestedPath, session.user.allowedTabs) || requestedPath.startsWith('/portal'))
         : session.role === 'ADMIN'
-          ? requestedPath?.startsWith('/admin')
-          : requestedPath?.startsWith('/dashboard');
-      navigate(canOpenRequestedPath ? requestedPath! : routeForRole(session.role, session.user.allowedTabs), { replace: true });
+          ? requestedPath?.startsWith('/admin') || requestedPath?.startsWith('/portal')
+          : session.role === 'CUSTOMER'
+            ? requestedPath?.startsWith('/portal')
+            : requestedPath?.startsWith('/dashboard') || requestedPath?.startsWith('/portal');
+      const fallbackRoute = isPortalInvite && !requestedPath
+        ? '/portal'
+        : routeForRole(session.role, session.user.allowedTabs);
+      navigate(canOpenRequestedPath ? requestedPath! : fallbackRoute, { replace: true });
     })();
   };
 
@@ -242,9 +264,9 @@ export const LoginPage: React.FC = () => {
       {/* Main Form Content with clean top spacing without dead space */}
       <motion.div className="login-form-content mx-auto mt-4 sm:mt-6 mb-auto w-full max-w-md py-1" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, ease: 'easeOut' }}>
         <div className="login-heading mb-6">
-          <div className="login-tenant-pill mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>{translateText(" NORTHSTAR STUDIO WORKSPACE")}</div>
-          <h1 className="text-3xl font-bold tracking-[-1.2px] text-slate-900 dark:text-white">{translateText("Welcome back")}</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{translateText("Sign in to keep your business moving.")}</p>
+          <div className="login-tenant-pill mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>{translateText(isPortalInvite ? " CUSTOMER ACCESS PORTAL" : " NORTHSTAR STUDIO WORKSPACE")}</div>
+          <h1 className="text-3xl font-bold tracking-[-1.2px] text-slate-900 dark:text-white">{translateText(isPortalInvite ? "Access your purchases" : "Welcome back")}</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{translateText(isPortalInvite ? "Sign in with your email and temporary password to open your purchased courses, files, and services." : "Sign in to keep your business moving.")}</p>
         </div>
 
         {(location.state as { passwordUpdated?: boolean } | null)?.passwordUpdated && (
@@ -268,7 +290,7 @@ export const LoginPage: React.FC = () => {
         )}
 
         <form onSubmit={submit} className="login-fields space-y-4">
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">{translateText("Work email")}<span className="login-input-wrap mt-1.5 flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 transition dark:border-slate-700 dark:bg-[#191a27]">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">{translateText(isPortalInvite ? "Email address" : "Work email")}<span className="login-input-wrap mt-1.5 flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 transition dark:border-slate-700 dark:bg-[#191a27]">
               <Mail size={17} className="shrink-0 text-slate-400"/><input className="w-full border-0 bg-transparent text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400 dark:text-white" type="email" required autoComplete="username" placeholder={translateText("you@yourbusiness.com")} value={email} onInvalid={handleEmailInvalid} onChange={event => { event.currentTarget.setCustomValidity(''); setEmail(event.target.value); if (errorCode) setErrorCode(null); }}/>
             </span>
           </label>
@@ -287,15 +309,17 @@ export const LoginPage: React.FC = () => {
             </button>
           </div>
           <button className="login-submit flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white transition active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" type="submit" disabled={busy}>
-            {localizeNode(busy ? <><LoaderCircle size={17} className="animate-spin"/>{translateText(" Signing you in…")}</> : <>{translateText("Sign in to your workspace ")}<ArrowRight size={16}/></>)}
+            {localizeNode(busy ? <><LoaderCircle size={17} className="animate-spin"/>{translateText(" Signing you in…")}</> : <>{translateText(isPortalInvite ? "Sign in to Customer Portal " : "Sign in to your workspace ")}<ArrowRight size={16}/></>)}
           </button>
         </form>
 
-        <button type="button" disabled={busy} onClick={() => startDemoSession('/dashboard')} className="login-demo-btn mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition disabled:opacity-80">
-          <ArrowRight size={16}/>{translateText('Try Demo Account')}
-        </button>
+        {!isPortalInvite && (
+          <button type="button" disabled={busy} onClick={() => startDemoSession('/dashboard')} className="login-demo-btn mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition disabled:opacity-80">
+            <ArrowRight size={16}/>{translateText('Try Demo Account')}
+          </button>
+        )}
 
-        <div className="login-trust mt-6 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-300"><BadgeCheck size={15} className="text-emerald-500"/><span>{translateText("Secure access to your workspace")}</span></div>
+        <div className="login-trust mt-6 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-300"><BadgeCheck size={15} className="text-emerald-500"/><span>{translateText(isPortalInvite ? "Encrypted access to your purchased library" : "Secure access to your workspace")}</span></div>
       </motion.div>
 
       <footer className="login-footer flex flex-wrap items-center justify-between gap-y-2 text-[11px] text-slate-400 dark:text-slate-400 mt-6">

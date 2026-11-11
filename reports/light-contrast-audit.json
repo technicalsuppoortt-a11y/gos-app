@@ -4971,7 +4971,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5115,7 +5115,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 340,
-      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56

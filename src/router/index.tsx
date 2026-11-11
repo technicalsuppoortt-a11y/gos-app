@@ -67,6 +67,7 @@ function ProductPreviewRoute() {
   return params.has('workspace') ? <Suspended><ProductPublicPreview/></Suspended> : <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute>;
 }
 const ProductAccess = lazy(() => import('../pages/commerce/ProductAccess').then(module => ({ default: module.ProductAccess })));
+const CustomerPortal = lazy(() => import('../pages/commerce/CustomerPortal').then(module => ({ default: module.CustomerPortal })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
 const crmChildren = [
@@ -90,6 +91,8 @@ export const router = createBrowserRouter([
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
   { path: '/product-preview/:token', element: <ProductPreviewRoute/> },
   { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
+  { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
+  { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage/></Suspended> },
@@ -201,7 +204,7 @@ export const router = createBrowserRouter([
       { path: 'subscriptions', element: <Navigate to="/super-admin" replace/> },
       { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },
       { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'wallet', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'wallet', element: <Navigate to="/super-admin" replace/> },
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace/> },

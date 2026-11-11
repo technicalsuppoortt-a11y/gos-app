@@ -465,6 +465,23 @@ service cloud.firestore {
         );
         allow create: if collectionName == 'events' && (tenant(tenantId) || featureAdmin() || superAdmin()) && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'workspace.updated';
       }
+      match /customerPurchases/{purchaseId} {
+        allow read: if signedIn() && (
+          resource.data.get('customerUid', '') == request.auth.uid ||
+          resource.data.get('customerEmail', '') == request.auth.token.get('email', '') ||
+          tenant(tenantId) || featureAdmin() || superAdmin()
+        );
+        allow create, update: if signedIn() && (
+          request.resource.data.get('customerUid', '') == request.auth.uid ||
+          request.resource.data.get('customerEmail', '') == request.auth.token.get('email', '') ||
+          permit(tenantId, 'products') || tenant(tenantId) || featureAdmin() || superAdmin()
+        );
+        allow delete: if permit(tenantId, 'products') || featureAdmin() || superAdmin();
+      }
+      match /customerPortalEmails/{emailId} {
+        allow read, create, update: if permit(tenantId, 'products') || tenant(tenantId) || featureAdmin() || superAdmin();
+        allow delete: if featureAdmin() || superAdmin();
+      }
       match /paymentMethods/{docId} {
         allow read: if true;
         allow create, update, delete: if featureAdmin() || superAdmin() || permit(tenantId, 'settings') || permit(tenantId, 'products') || tenant(tenantId);

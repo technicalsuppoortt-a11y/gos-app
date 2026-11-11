@@ -95,9 +95,7 @@ try {
   assert.equal(await page.evaluate(() => window.lastOperation), 'createMember');
   await page.evaluate(() => window.loginAs('PLATFORM_FINANCE'));
   await nav('clients', 'Usage & Revenue');
-  assert.deepEqual(await sidebar.getByRole('link').allTextContents(), ['Usage & Revenue', 'Wallet', 'Payments']);
-  await nav('wallet', 'Wallet');
-  await page.getByText('Available balance', { exact: true }).waitFor();
+  assert.deepEqual(await sidebar.getByRole('link').allTextContents(), ['Usage & Revenue', 'Payments']);
   await page.evaluate(() => window.loginAs('PLATFORM_SUPPORT'));
   await nav('payments', 'Support');
   await sidebar.getByRole('link', { name: 'Logs & Monitoring' }).waitFor();

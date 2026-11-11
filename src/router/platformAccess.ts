@@ -8,7 +8,6 @@ export type PlatformTabKey =
   | 'plans_billing'
   | 'templates'
   | 'usage_revenue'
-  | 'meta_wallet'
   | 'team_management'
   | 'system_settings'
   | 'integrations'
@@ -30,7 +29,6 @@ export const PLATFORM_SIDEBAR_TABS: readonly PlatformTabDefinition[] = [
   { key: 'plans_billing', label: 'Plans & Billing', ar: 'الباقات والفوترة', pages: ['plans', 'subscriptions'], defaultPath: '/super-admin/plans' },
   { key: 'templates', label: 'Templates', ar: 'القوالب', pages: ['dashboard-management', 'templates'], defaultPath: '/super-admin/dashboard-management' },
   { key: 'usage_revenue', label: 'Usage & Revenue', ar: 'الاستخدام والإيرادات', pages: ['analytics'], defaultPath: '/super-admin/analytics' },
-  { key: 'meta_wallet', label: 'Meta Wallet', ar: 'محفظة Meta', pages: ['wallet'], defaultPath: '/super-admin/wallet' },
   { key: 'team_management', label: 'Team Management', ar: 'إدارة الفريق', pages: ['users'], defaultPath: '/super-admin/users' },
   { key: 'system_settings', label: 'System Settings', ar: 'إعدادات النظام', pages: ['settings'], defaultPath: '/super-admin/settings' },
   {
@@ -50,7 +48,7 @@ export const ALL_PLATFORM_TAB_KEYS: PlatformTabKey[] = PLATFORM_SIDEBAR_TABS.map
 const roleDefaultTabKeys: Record<PlatformTeamRole, readonly PlatformTabKey[]> = {
   SUPER_ADMIN: ALL_PLATFORM_TAB_KEYS,
   PLATFORM_SUPPORT: ['support', 'logs_monitoring'],
-  PLATFORM_FINANCE: ['usage_revenue', 'meta_wallet', 'payments'],
+  PLATFORM_FINANCE: ['usage_revenue', 'payments'],
 };
 
 export function defaultTabsForRole(role: PlatformTeamRole): PlatformTabKey[] {

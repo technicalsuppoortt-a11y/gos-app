@@ -31,6 +31,7 @@
 .sa-shell .sa-support-shortcut:focus-visible{outline:2px solid #A78BFA;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.sa-shell .sa-support-shortcut{transition:none}}
 
-.sa-content > .sa-templates{display:block;min-height:0;background:transparent;width:100%}
-.sa-shell .sa-templates .adm-workspace{max-width:none;padding:0}
+.sa-shell{min-height:100vh;overflow-x:clip}.sa-shell .sa-main{min-height:100vh;height:auto;max-height:none;overflow:visible}.sa-shell .sa-topbar{position:sticky;top:0;z-index:20}.sa-shell .sa-content{height:auto;max-height:none;overflow:visible}
+.sa-content > .sa-templates,.sa-shell .sa-templates.adm-shell{display:block!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;background:transparent;width:100%;min-width:0}
+.sa-shell .sa-templates .adm-workspace,.sa-shell .sa-templates .adm-live{max-width:none;padding:0;min-width:0;overflow:visible}
 .sa-content > .support-chat{width:100%;flex:1;min-width:0}

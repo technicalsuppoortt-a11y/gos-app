@@ -2,6 +2,27 @@
    Published Page & Public Forms Professional UI/UX
    ========================================================================== */
 
+.fb-site-frame[data-public-asset] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  scrollbar-gutter: auto;
+}
+.fb-site-frame[data-public-asset] .fb-live-page-body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+.fb-site-frame[data-public-asset] .fb-hero-section {
+  width: 100%;
+  margin: 0;
+  padding: 0 !important;
+  border-radius: 0;
+}
 .fb-site-frame[data-public-asset] .fb-custom-form { width: 100%; max-width: 100%; }
 .fb-site-frame[data-public-asset] .fb-custom-field { color: var(--form-text, #334155); }
 .fb-site-frame[data-public-asset] .fb-field-helper { color: #475569; }

@@ -17,6 +17,7 @@ import { DiscountsWorkspace } from './DiscountsWorkspace';
 
 import { useTransactions } from './commerce/transactions';
 import { usePurchasedProducts } from './commerce/purchases';
+import { useCustomerPortalLibrary, type CustomerPurchaseRecord } from '../backend/customerPortal';
 
 import {
   ArrowRight,
@@ -100,6 +101,19 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   const products = useProducts();
 
   const { isPurchased } = usePurchasedProducts();
+  const { items: portalItems } = useCustomerPortalLibrary();
+
+  const findPortalRecord = React.useCallback(
+    (item: Product): CustomerPurchaseRecord | undefined =>
+      portalItems.find(
+        entry =>
+          entry.purchaseId === item.id ||
+          entry.productId === item.id ||
+          entry.productSnapshot?.id === item.id ||
+          entry.productSnapshot?.name?.toLowerCase() === item.name.toLowerCase()
+      ),
+    [portalItems]
+  );
 
   const rawTab = tabParams.get('tab')?.toLowerCase();
   const selectedTab = useMemo(() => {
@@ -143,8 +157,58 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   // Pre-calculate counts for sub-view tabs
   const allProductsCount = products.length;
   const purchasedProducts = useMemo(() => {
-    return products.filter(p => isPurchased(p));
-  }, [products, isPurchased]);
+    const matched = products.filter(p => isPurchased(p) || Boolean(findPortalRecord(p)));
+    const seenIds = new Set(matched.map(p => p.id.toLowerCase()));
+    const seenNames = new Set(matched.map(p => p.name.toLowerCase()));
+    const extras: Product[] = [];
+
+    for (const entry of portalItems) {
+      const snap = entry.productSnapshot;
+      if (!snap) continue;
+      if (
+        seenIds.has(String(entry.productId || '').toLowerCase()) ||
+        seenIds.has(String(snap.id || '').toLowerCase()) ||
+        seenNames.has(String(snap.name || '').toLowerCase())
+      ) {
+        continue;
+      }
+      const cfg = defaultConfig(snap.type, String(entry.amount || 0));
+      cfg.amount = Number(entry.amount || 0);
+      cfg.currency = entry.currency || 'USD';
+      cfg.duration = snap.duration || 60;
+      cfg.assets = (snap.assets || []).map(asset => ({
+        id: asset.id,
+        name: asset.name,
+        url: asset.url,
+        storageId: asset.storageId,
+        size: asset.size,
+        mime: asset.mime,
+      }));
+      cfg.modules = (snap.modules || []).map(mod => ({
+        id: mod.id,
+        title: mod.title,
+        lessons: mod.lessons,
+      }));
+      extras.push({
+        id: entry.purchaseId,
+        name: snap.name,
+        type: snap.type,
+        price: `${entry.currency || '$'}${entry.amount || 0}`,
+        stats: [],
+        status: 'Active',
+        sales: '1',
+        revenue: '0',
+        art: snap.kind === 'course' ? 'course' : snap.kind === 'service' ? 'service' : 'digital',
+        image: snap.image || undefined,
+        tag: snap.type,
+        description: snap.description || '',
+        config: cfg,
+        createdAt: entry.grantedAt,
+      });
+    }
+
+    return [...matched, ...extras];
+  }, [products, isPurchased, findPortalRecord, portalItems]);
   const purchasedProductsCount = purchasedProducts.length;
 
   // Compute products according to active view
@@ -163,7 +227,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
       .filter(
         p =>
           (type === 'All Types' || p.type === type) &&
-          (status === 'All Status' || p.status === status) &&
+          (activeSubTab === 'purchases' || status === 'All Status' || p.status === status) &&
           `${p.name} ${p.type}`.toLowerCase().includes(search.toLowerCase())
       )
       .sort((a, b) =>
@@ -173,7 +237,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
           ? (a.config?.amount ?? 0) - (b.config?.amount ?? 0)
           : Number(new Date(b.createdAt ?? 0)) - Number(new Date(a.createdAt ?? 0))
       );
-  }, [baseProducts, type, status, search, sort]);
+  }, [baseProducts, type, activeSubTab, status, search, sort]);
 
   const handleTabChange = (name: string) => {
     const slug = name.toLowerCase().replace(' ', '-');
@@ -271,10 +335,29 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                 </div>
 
                 {activeSubTab === 'purchases' && (
-                  <div className="pp-purchases-summary-pill">
-                    <PackageCheck size={14} className="text-emerald-500" />
-                    <span>{translateText('Active in your account:')}</span>
-                    <b>{purchasedProductsCount}</b>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <div className="pp-purchases-summary-pill">
+                      <PackageCheck size={14} className="text-emerald-500" />
+                      <span>{translateText('Active in your account:')}</span>
+                      <b>{purchasedProductsCount}</b>
+                    </div>
+                    <button
+                      type="button"
+                      className="st-secondary"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '6px 13px',
+                        borderRadius: 999,
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                      }}
+                      onClick={() => navigate('/portal')}
+                    >
+                      <span>{translateText('Open Customer Portal')}</span>
+                      <ExternalLink size={13} />
+                    </button>
                   </div>
                 )}
               </div>
@@ -335,11 +418,13 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                       setFilterMetric(v === 'All Types' ? 'All Products' : v);
                     }}
                   />
-                  <ProfessionalSelect
-                    value={status}
-                    options={['All Status', 'Active', 'Draft']}
-                    onChange={setStatus}
-                  />
+                  {activeSubTab !== 'purchases' && (
+                    <ProfessionalSelect
+                      value={status}
+                      options={['All Status', 'Active', 'Draft']}
+                      onChange={setStatus}
+                    />
+                  )}
                   <ProfessionalSelect
                     icon={ArrowUpDown}
                     value={sort}
@@ -435,22 +520,33 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                   )}
 
                   {localizeNode(
-                    displayed.map(item => (
-                      <ProductCard
-                        key={item.id}
-                        item={item}
-
-                        isPurchased={isPurchased(item)}
-
-                        onSelect={() =>
-                          navigate(`/dashboard/products-payments/products/${item.id}/edit`)
-                        }
-                        onEdit={() =>
-                          navigate(`/dashboard/products-payments/products/${item.id}/edit`)
-                        }
-                        notify={notify}
-                      />
-                    ))
+                    displayed.map(item => {
+                      const isCustomerCard = activeSubTab === 'purchases';
+                      const portalRecord = isCustomerCard ? findPortalRecord(item) : undefined;
+                      const portalHref = `/portal/${encodeURIComponent(
+                        portalRecord?.purchaseId || item.id
+                      )}`;
+                      return (
+                        <ProductCard
+                          key={item.id}
+                          item={item}
+                          isPurchased={isCustomerCard || isPurchased(item)}
+                          customerMode={isCustomerCard}
+                          portalRecord={portalRecord}
+                          onSelect={() =>
+                            navigate(
+                              isCustomerCard
+                                ? portalHref
+                                : `/dashboard/products-payments/products/${item.id}/edit`
+                            )
+                          }
+                          onEdit={() =>
+                            navigate(`/dashboard/products-payments/products/${item.id}/edit`)
+                          }
+                          notify={notify}
+                        />
+                      );
+                    })
                   )}
                 </div>
               </section>
@@ -476,17 +572,17 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
 
 function ProductCard({
   item,
-
   isPurchased = false,
-
+  customerMode = false,
+  portalRecord,
   onSelect,
   onEdit,
   notify,
 }: {
   item: Product;
-
   isPurchased?: boolean;
-
+  customerMode?: boolean;
+  portalRecord?: CustomerPurchaseRecord;
   onSelect: () => void;
   onEdit: () => void;
   notify: (message: string) => void;
@@ -494,6 +590,27 @@ function ProductCard({
   useUILanguage();
   const { formatPrice } = useCurrency();
   const [showUsers, setShowUsers] = useState(false);
+
+  const courseLessonsTotal = useMemo(() => {
+    if (portalRecord?.productSnapshot?.modules) {
+      return portalRecord.productSnapshot.modules.reduce(
+        (sum, mod) => sum + (mod.lessons?.length || 0),
+        0
+      );
+    }
+    return (item.config?.modules || []).reduce(
+      (sum, mod) => sum + (mod.lessons?.length || 0),
+      0
+    );
+  }, [portalRecord, item.config?.modules]);
+
+  const courseLessonsDone = portalRecord?.completedLessonIds?.length ?? 0;
+  const courseProgress = portalRecord?.progress ?? 0;
+  const digitalAssetsCount =
+    portalRecord?.productSnapshot?.assets?.length || item.config?.assets?.length || 1;
+  const serviceDuration =
+    portalRecord?.productSnapshot?.duration || item.config?.duration || 60;
+  const serviceStatus = portalRecord?.serviceStatus || 'Order Confirmed';
 
   return (
     <article className="pp-product-card" onClick={onSelect}>
@@ -503,7 +620,11 @@ function ProductCard({
           event.stopPropagation();
           onSelect();
         }}
-        aria-label={translateText(`Edit ${item.name}`)}
+        aria-label={
+          customerMode
+            ? translateText(`Open ${item.name} in Customer Portal`)
+            : translateText(`Edit ${item.name}`)
+        }
       >
         {localizeNode(
           item.image ? (
@@ -519,7 +640,9 @@ function ProductCard({
         )}
       </button>
 
-      <ProductCardActions product={item} onEdit={onEdit} notify={notify} />
+      {!customerMode && (
+        <ProductCardActions product={item} onEdit={onEdit} notify={notify} />
+      )}
 
       <div className="pp-card-info">
         <div className="pp-card-header-tags">
@@ -547,93 +670,189 @@ function ProductCard({
           {localizeNode(item.name)}
         </button>
         <b className="pp-price">{localizeNode(formatProductPrice(item.config ?? defaultConfig(item.type, item.price), formatPrice))}</b>
-        <div
-          className="pp-product-metric"
-          role="button"
-          tabIndex={0}
-          title={translateText('Click to view users who purchased this product')}
-          style={{ cursor: 'pointer', width: 'fit-content' }}
-          onClick={event => {
-            event.stopPropagation();
-            setShowUsers(true);
-          }}
-          onKeyDown={event => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
+
+        {customerMode ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2 }}>
+            <div className="pp-product-metric" style={{ cursor: 'pointer' }}>
+              {item.type === 'Course' ? (
+                <span>
+                  <Users size={12} />
+                  {courseLessonsTotal > 0
+                    ? `${courseLessonsDone}/${courseLessonsTotal} ${translateText('lessons')} · ${courseProgress}%`
+                    : `${courseProgress}% ${translateText('completed')}`}
+                </span>
+              ) : item.type === 'Service' ? (
+                <span>
+                  <CalendarDays size={12} />
+                  {`${serviceDuration} min · ${translateText(serviceStatus)}`}
+                </span>
+              ) : (
+                <span>
+                  <FileText size={12} />
+                  {`${digitalAssetsCount} ${translateText(
+                    digitalAssetsCount === 1 ? 'digital file' : 'digital files'
+                  )} · ${translateText('Instant download')}`}
+                </span>
+              )}
+            </div>
+            {item.type === 'Course' && (
+              <div
+                aria-hidden="true"
+                style={{
+                  width: '100%',
+                  height: 5,
+                  borderRadius: 999,
+                  background: 'rgba(124, 58, 237, 0.12)',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.max(4, Math.min(100, courseProgress))}%`,
+                    height: '100%',
+                    borderRadius: 999,
+                    background: 'linear-gradient(90deg, #7c3aed 0%, #10b981 100%)',
+                    transition: 'width 0.3s ease',
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div
+            className="pp-product-metric"
+            role="button"
+            tabIndex={0}
+            title={translateText('Click to view users who purchased this product')}
+            style={{ cursor: 'pointer', width: 'fit-content' }}
+            onClick={event => {
               event.stopPropagation();
               setShowUsers(true);
-            }
-          }}
-        >
-          {localizeNode(
-            item.stats.map(([kind, text]) => {
-              const StatIcon = statIcons[kind];
-              return (
-                <span key={kind}>
-                  <StatIcon size={12} />
-                  {localizeNode(text)}
-                </span>
-              );
-            })
-          )}
-        </div>
-        <div className="pp-card-footer">
-          <span className={`pp-status ${item.status.toLowerCase()}`}>
-            <span className="pp-status-dot" aria-hidden="true" />
-            {localizeNode(item.status)}
-          </span>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <button
-              type="button"
-              className="pp-open"
-              title={translateText('View Users & Buyers')}
-              aria-label={translateText(`View users of ${item.name}`)}
-              onClick={event => {
+            }}
+            onKeyDown={event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
                 event.stopPropagation();
                 setShowUsers(true);
-              }}
-            >
-              <Users size={15} />
-            </button>
-            <a
-              className="pp-open"
-              href={`/product-preview/${encodeURIComponent(productPreviewToken(item))}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={translateText('View Live Preview')}
-              aria-label={translateText(`Preview ${item.name}`)}
-              onPointerDown={() => {
-                try {
-                  writePreview(productPreviewToken(item), item);
-                } catch {}
-              }}
-              onClick={event => {
-                event.stopPropagation();
-                try {
-                  writePreview(productPreviewToken(item), item);
-                } catch {
-                  event.preventDefault();
-                  notify('Preview could not be opened. Browser storage is unavailable or full.');
-                }
-              }}
-            >
-              <ExternalLink size={15} />
-            </a>
-            <button
-              className="pp-open"
-              title={translateText('Edit product')}
-              aria-label={translateText(`Edit ${item.name}`)}
-              onClick={event => {
-                event.stopPropagation();
-                onSelect();
-              }}
-            >
-              <Pencil size={15} />
-            </button>
+              }
+            }}
+          >
+            {localizeNode(
+              item.stats.map(([kind, text]) => {
+                const StatIcon = statIcons[kind];
+                return (
+                  <span key={kind}>
+                    <StatIcon size={12} />
+                    {localizeNode(text)}
+                  </span>
+                );
+              })
+            )}
           </div>
+        )}
+
+        <div className="pp-card-footer">
+          {customerMode ? (
+            <>
+              <span className="pp-status active">
+                <span className="pp-status-dot" aria-hidden="true" />
+                {translateText('Active Access')}
+              </span>
+              <button
+                type="button"
+                onClick={event => {
+                  event.stopPropagation();
+                  onSelect();
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 12px',
+                  borderRadius: 9,
+                  border: '1px solid rgba(124, 58, 237, 0.24)',
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                  color: '#ffffff',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.18)',
+                  transition: 'transform 0.16s ease, box-shadow 0.16s ease',
+                }}
+              >
+                <span>
+                  {translateText(
+                    item.type === 'Course'
+                      ? 'Start Course'
+                      : item.type === 'Service'
+                      ? 'Manage Service'
+                      : 'Access Files'
+                  )}
+                </span>
+                <ArrowRight size={13} />
+              </button>
+            </>
+          ) : (
+            <>
+              <span className={`pp-status ${item.status.toLowerCase()}`}>
+                <span className="pp-status-dot" aria-hidden="true" />
+                {localizeNode(item.status)}
+              </span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <button
+                  type="button"
+                  className="pp-open"
+                  title={translateText('View Users & Buyers')}
+                  aria-label={translateText(`View users of ${item.name}`)}
+                  onClick={event => {
+                    event.stopPropagation();
+                    setShowUsers(true);
+                  }}
+                >
+                  <Users size={15} />
+                </button>
+                <a
+                  className="pp-open"
+                  href={`/product-preview/${encodeURIComponent(productPreviewToken(item))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={translateText('View Live Preview')}
+                  aria-label={translateText(`Preview ${item.name}`)}
+                  onPointerDown={() => {
+                    try {
+                      writePreview(productPreviewToken(item), item);
+                    } catch {}
+                  }}
+                  onClick={event => {
+                    event.stopPropagation();
+                    try {
+                      writePreview(productPreviewToken(item), item);
+                    } catch {
+                      event.preventDefault();
+                      notify('Preview could not be opened. Browser storage is unavailable or full.');
+                    }
+                  }}
+                >
+                  <ExternalLink size={15} />
+                </a>
+                <button
+                  type="button"
+                  className="pp-open"
+                  title={translateText('Edit product')}
+                  aria-label={translateText(`Edit ${item.name}`)}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onSelect();
+                  }}
+                >
+                  <Pencil size={15} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
-      {showUsers && (
+      {!customerMode && showUsers && (
         <ProductQuickView
           product={item}
           defaultTab="users"

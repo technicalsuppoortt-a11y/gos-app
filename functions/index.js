@@ -19,6 +19,7 @@ import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
+import { customerPortalRequest } from './customer-portal.js';
 import { productCheckoutRequest } from './product-checkout.js';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
@@ -81,8 +82,9 @@ export const productAccess = onCall(async request => {
   if (typeof request.data?.tenantId === 'string' && /^[\w-]{1,150}$/.test(request.data.tenantId)) await checkPlatformTool(db, request.data.tenantId, 'portal');
   return productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] });
 });
-export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
-export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/transactions/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db }));
+export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value() }));
+export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/transactions/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value() }));
+export const customerPortal = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => customerPortalRequest(request, { db, auth, origin: appOrigin.value() }));
 async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
