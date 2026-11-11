@@ -10,6 +10,7 @@ export function GosPreviewBridge({
   width,
   height,
   fullPage,
+  viewport,
   onExitPreview,
   onBackToWorkspace,
   language,
@@ -17,6 +18,7 @@ export function GosPreviewBridge({
   width?: number | undefined;
   height?: number | undefined;
   fullPage?: boolean | undefined;
+  viewport?: { width: number; height: number } | undefined;
   onExitPreview?: (() => void) | undefined;
   onBackToWorkspace?: (() => void) | undefined;
   autoRotate?: boolean;
@@ -31,6 +33,7 @@ export function GosPreviewBridge({
       width={width}
       height={height}
       fullPage={fullPage}
+      viewport={viewport}
       onExitPreview={onExitPreview}
       onBackToWorkspace={onBackToWorkspace}
     />

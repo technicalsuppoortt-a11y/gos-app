@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
 import {
+  DEFAULT_BRAND_NAME,
   inheritWorkspacePreferences,
+  isDefaultBrandLogo,
   preferenceDefaults,
    sanitizeWorkspacePreferences,
   savePersonalPreferences,
@@ -41,12 +43,22 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   // Launch Brand's live preview always shows the brand being designed.
   const launchBrandPreview = isLaunchBrandPreview() && !!phoenix;
   const usePhoenixDefaults = launchBrandPreview || (!publicPage && uid && !values && phoenix);
+  // Platform publishers copy their effective settings to the public site, so only
+  // workspace owners get the deployed brand merged in.
+  const phoenixFill = !publicPage && !launchBrandPreview && !canPublish && uid && phoenix ? phoenix : null;
   const workspace = usePhoenixDefaults && phoenix ? {
     ...preferenceDefaults,
     name: phoenix.brand.name,
     logoUrl: phoenix.logo || preferenceDefaults.logoUrl,
     language: phoenix.brand.language,
     mode: phoenix.brand.mode,
+  } : phoenixFill && values ? {
+    // A deployed Launch Brand fills in whatever the workspace settings still
+    // leave at Upclick's defaults, so an untouched settings document can never
+    // hide the brand name or logo the owner deployed.
+    ...values,
+    name: values.name === DEFAULT_BRAND_NAME && phoenixFill.brand.name.trim() ? phoenixFill.brand.name.trim() : values.name,
+    logoUrl: isDefaultBrandLogo(values.logoUrl) && phoenixFill.logo ? phoenixFill.logo : values.logoUrl,
   } : values ?? preferenceDefaults;
   const legacyCurrency = isCurrencyCode(personal.currency) ? personal.currency : undefined;
   const displayCurrency = currencyPreference.value === undefined ? legacyCurrency : currencyPreference.value;
@@ -80,6 +92,33 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
   }, [scope, mode, publicSync, dispatch]);
+
+  // Browser tab titles follow the workspace brand (the deployed Launch Brand name included).
+  const titleName = launchBrandPreview ? phoenix?.brand.name.trim() : workspace.name !== DEFAULT_BRAND_NAME ? workspace.name : phoenix?.brand.name.trim();
+  useEffect(() => {
+    if (publicPage || !uid || !titleName) return;
+    const previous = document.title;
+    document.title = titleName;
+    return () => { document.title = previous; };
+  }, [publicPage, uid, titleName]);
+
+  const tabLogo = isDefaultBrandLogo(workspace.logoUrl) ? phoenix?.logo : workspace.logoUrl;
+  useEffect(() => {
+    if (publicPage || !uid || !tabLogo) return;
+    const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!icon) return;
+    const previous = { href: icon.getAttribute('href'), type: icon.getAttribute('type'), sizes: icon.getAttribute('sizes') };
+    icon.href = tabLogo;
+    // Let the browser detect the saved logo format, including PNG and SVG.
+    icon.removeAttribute('type');
+    icon.removeAttribute('sizes');
+    return () => {
+      for (const [name, value] of Object.entries(previous)) {
+        if (value === null) icon.removeAttribute(name);
+        else icon.setAttribute(name, value);
+      }
+    };
+  }, [publicPage, uid, tabLogo]);
 
   const adminSyncedRef = useRef('');
   useEffect(() => {
@@ -146,7 +185,8 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       ...state, values: usePhoenixDefaults ? workspace : values, effective, preview, setPreference,
       topbarChange: lastTopbarChange?.scope === scope ? lastTopbarChange.patch : undefined,
       themePreview: previewValues?.theme ? previewValues : null,
-      hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && values)),
+      // The default palette with a deployed brand means "use the brand's colors".
+      hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && values && !(phoenixFill?.brand.theme && values.theme === 'violet'))),
     }}>
       <CurrencyProvider currency={isCurrencyCode(currency) ? currency : 'USD'} language={language} enabled={!!uid && !publicPage}>
         {children}

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { LiveBrandConfiguration } from "./liveBrand";
+import "./gosLive.css";
 
 // gos-app's Demo Account mode starts when the frame's window name is this value
 // (gos-app src/demo/mode.ts). It runs the real gos pages on sample data and
@@ -37,6 +38,7 @@ export function GosLiveFrame({
   const frame = useRef<HTMLIFrameElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: width ?? 0, height: height ?? 0 });
+  const [ready, setReady] = useState(false);
   const message = JSON.stringify(configuration);
   const back = onBackToWorkspace ?? onExitPreview;
   const sendBrand = (target: Window | null | undefined) => {
@@ -59,7 +61,7 @@ export function GosLiveFrame({
     // The app asks for its brand as soon as it starts, before assets finish loading.
     const onMessage = (event: MessageEvent) => {
       if (event.source !== target || event.origin !== window.location.origin) return;
-      if (event.data?.type === "launch-brand:ready") sendBrand(target);
+      if (event.data?.type === "launch-brand:ready") { sendBrand(target); window.setTimeout(() => setReady(true), 250); }
       if (event.data?.type === "launch-brand:back") back?.();
     };
     window.addEventListener("message", onMessage);
@@ -85,9 +87,13 @@ export function GosLiveFrame({
         name={GOS_DEMO_WINDOW}
         title={title}
         src={`${path}${separator}launch-brand-preview=1${back ? "&launch-brand-back=1" : ""}`}
-        onLoad={() => sendBrand(frame.current?.contentWindow)}
+        onLoad={() => { sendBrand(frame.current?.contentWindow); window.setTimeout(() => setReady(true), 4000); }}
         style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0 }}
       />
+      {!ready && <div className="gos-live-loading" role="status" aria-live="polite" dir={isAr ? "rtl" : "ltr"}>
+        <span className="gos-live-spinner" aria-hidden="true" />
+        <span>{isAr ? "جارٍ تجهيز المعاينة…" : "Loading preview…"}</span>
+      </div>}
     </div>
   );
 }

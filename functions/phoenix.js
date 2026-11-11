@@ -212,10 +212,20 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       const preferredLanguage = discovery.choices?.discoverDraft?.profile?.language;
       const brand = { name: branding.brandName || branding.selectedBrandIdentity?.name || 'My platform', tagline: branding.tagline || '', description: branding.brandDescription || discovery.businessDescription || '', business: discovery.business || '', theme: branding.brandTheme || null, logoAssetId: branding.choices?.uploadedLogo?.assetId || branding.logo?.assetId || null, language: (preferredLanguage === 'both' ? discovery.choices.discoverDraft.profile.defaultLanguage : preferredLanguage || vision.language) === 'en' ? 'en' : 'ar', mode: vision.theme === 'light' ? 'light' : 'dark' };
       // Publish the pointer only after every page and asset has been confirmed saved.
+      const preferenceRefs = [db.doc(`tenants/${tenantId}/preferences/general`), db.doc(`dashboardBrands/${account.uid}`)];
       await db.runTransaction(async transaction => {
-        const previous = (await transaction.get(linkRef)).data();
+        const [previousSnapshot, ...preferenceSnapshots] = await Promise.all([linkRef, ...preferenceRefs].map(ref => transaction.get(ref)));
+        const previous = previousSnapshot.data();
         if (previous?.gosUid && previous.gosUid !== account.uid) throw new Error('Account link conflict.');
         if (previous?.sourcePreparedAt > readTime) return;
+        // A deployment is the owner's latest brand decision: saved workspace
+        // appearance settings must not keep showing the old name, logo or palette.
+        // The default logo and palette make the dashboard use the deployed ones.
+        preferenceSnapshots.forEach((snapshot, index) => {
+          const values = snapshot.data()?.values;
+          if (!values || typeof values !== 'object') return;
+          transaction.set(preferenceRefs[index], { values: { ...values, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet' }, updatedAt: FieldValue.serverTimestamp(), updatedBy: account.uid }, { merge: true });
+        });
         transaction.set(snapshotRef, pointer);
         transaction.set(db.doc(`users/${account.uid}/brandEngine/current`), { ...pointer, brand });
         transaction.set(db.doc(`users/${account.uid}`), { uid: account.uid, email: account.email, displayName: account.displayName || '', phoenixUid: uid, updatedAt: FieldValue.serverTimestamp() }, { merge: true });

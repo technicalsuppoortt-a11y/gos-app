@@ -42,7 +42,8 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
     const isCustomBrand = (customWorkspace || design !== workspace) && design.paletteId !== 'dashboard-default';
     if (isCustomBrand) {
       root.dataset.gpBrand = 'true';
-      void import('./phoenix-brand-generated.css');
+      // Browsers with CSS @scope get the same rules in a far smaller, faster stylesheet.
+      void ('CSSScopeRule' in window ? import('./phoenix-brand-scoped.css') : import('./phoenix-brand-generated.css'));
     }
     for (const [key, value] of Object.entries(design[theme])) {
       if (typeof value === 'string' && CSS.supports('color', value)) set(key, value);

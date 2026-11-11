@@ -5,6 +5,7 @@ export function BrandedDashboard({
   width,
   height,
   fullPage,
+  viewport,
   onExitPreview,
   onBackToWorkspace,
 }: {
@@ -13,8 +14,9 @@ export function BrandedDashboard({
   fullPage?: boolean | undefined;
   width?: number | undefined;
   height?: number | undefined;
+  viewport?: { width: number; height: number } | undefined;
   onExitPreview?: (() => void) | undefined;
   onBackToWorkspace?: (() => void) | undefined;
 } = {}) {
-  return <GosPreviewBridge width={width} height={height} fullPage={fullPage} onExitPreview={onExitPreview} onBackToWorkspace={onBackToWorkspace} />;
+  return <GosPreviewBridge width={width} height={height} fullPage={fullPage} viewport={viewport} onExitPreview={onExitPreview} onBackToWorkspace={onBackToWorkspace} />;
 }

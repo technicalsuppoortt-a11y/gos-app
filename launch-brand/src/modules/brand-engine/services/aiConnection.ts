@@ -97,8 +97,8 @@ export function aiError(error: unknown, ar: boolean) {
       "The image model returned an invalid logo image. Previous designs are preserved; retry if attempts remain.",
     ],
     "brand-logo-image-model": [
-      "موديل Gemini Flash Image غير متاح لمفتاح Google الحالي. اطلب من السوبر أدمن مراجعة توفر موديل الصور وصلاحيات مشروع Google.",
-      "Gemini Flash Image is unavailable to the saved Google key. Ask Super Admin to check image-model access for the Google project.",
+      "موديل توليد صور اللوجو غير متاح للمفتاح المحفوظ في AI Center. اطلب من السوبر أدمن مراجعة صلاحيات موديلات الصور (Gemini Flash Image أو OpenAI GPT Image).",
+      "The logo image model is unavailable to the key saved in AI Center. Ask Super Admin to check image-model access (Gemini Flash Image or OpenAI GPT Image).",
     ],
     "brand-logo-image-save": [
       "اتولد اللوجو واجتاز المراجعة، لكن تعذّر حفظ الصورة بعد إعادة محاولة الحفظ. اختياراتك السابقة محفوظة؛ راجع اتصال الحفظ.",

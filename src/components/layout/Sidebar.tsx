@@ -187,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           to={basePath}
           className={`layout-brand${previewBrandName ? ' is-launch-brand-preview' : ''}`}
           onClick={close}
-          title={previewBrandName || (collapsed ? translateText("Upclick") : undefined)}
+          title={previewBrandName || (collapsed ? (brandName === "Upclick" ? translateText("Upclick") : brandName) : undefined)}
         >
           {hasWorkspaceTheme && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <img src={workspaceBrand.logoUrl} alt={`${workspaceBrand.name} logo`} className="workspace-logo"/> : savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
             {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
