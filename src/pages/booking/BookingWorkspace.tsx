@@ -1,27 +1,69 @@
-import { BookingQuickView } from './BookingQuickView';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { cloudStorage } from '../../backend/workspace';
 import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { BookingEmbedModal } from './BookingEmbedModal';
+import { readPendingScreeningLeads } from './pendingLeadSync';
 import { TablePagination } from './TablePagination';
 import { useTablePagination } from './useTablePagination';
 import { BookingSelect } from './BookingSelect';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Code2, CalendarDays, Check, Clock3, Copy, Edit3, ExternalLink, FileText, Link2, Mail, Palette, Plus, Share2, Trash2, Upload, Users, Video, Eye, ChevronDown } from 'lucide-react';
+import {
+  ArrowRight,
+  Bell,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  Clock3,
+  Code2,
+  Copy,
+  Edit3,
+  ExternalLink,
+  Eye,
+  FileText,
+  Link2,
+  Mail,
+  Palette,
+  Plus,
+  Share2,
+  Sparkles,
+  Trash2,
+  Upload,
+  UserPlus,
+  Users,
+  Video,
+} from 'lucide-react';
 import { SystemCalendar } from './SystemCalendar';
 import { Avatar, Empty, Menu, Modal, SearchBox } from './ui';
-import { COLORS, bookingColor, isUpcomingAppointment, formatDay, formatTime, KEYS, load, parseCSV, publicUrl, readAppointments, readContacts, readMembers, readPages, uid, useStored } from './model';
+import {
+  COLORS,
+  bookingColor,
+  formatDay,
+  formatTime,
+  isUpcomingAppointment,
+  KEYS,
+  load,
+  parseCSV,
+  publicUrl,
+  readAppointments,
+  readContacts,
+  readMembers,
+  readPages,
+  uid,
+  useStored,
+} from './model';
 import type { Appointment, BookingPage, Contact, Member } from './model';
 import './booking-workspace.css';
 
 type Props = { notify: (message: string) => void; createRequested?: boolean; clearCreateRequest?: () => void };
 type PageAction = { kind: 'Share' | 'Note' | 'Color' | 'Delete'; page: BookingPage };
+
 export function BookingWorkspace({ notify, createRequested = false, clearCreateRequest }: Props) {
   useUILanguage();
   const workspaceName = useSelector((state: RootState) => state.auth.tenant?.name || 'Your workspace');
-  const [params] = useSearchParams();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
+  const [params, setParams] = useSearchParams();
   const tab = params.get('tab') || 'dashboard';
   const [pages, savePages] = useStored(KEYS.pages, readPages);
   const [bookings, saveBookings] = useStored(KEYS.appointments, readAppointments);
@@ -29,14 +71,15 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
   const [members, saveMembers] = useStored(KEYS.members, readMembers);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
-  const setBuilder = (page:BookingPage|'new')=>navigate(page==='new'?'/dashboard/booking/new':'/dashboard/booking/'+encodeURIComponent(page.id)+'/edit');
+  const setBuilder = (page: BookingPage | 'new') =>
+    navigate(page === 'new' ? '/dashboard/booking/new' : '/dashboard/booking/' + encodeURIComponent(page.id) + '/edit');
   const [embedPage, setEmbedPage] = useState<BookingPage | null>(null);
   const [pageAction, setPageAction] = useState<PageAction | null>(null);
   const openAppointment = (appointment?: Appointment, date?: string, time?: string) => {
-    const query = new URLSearchParams({returnTo:tab === 'bookings' ? 'bookings' : 'calendar'});
-    if(date)query.set('date',date);
-    if(time)query.set('time',time);
-    navigate('/dashboard/booking/appointments/' + (appointment ? encodeURIComponent(appointment.id) + '/edit' : 'new') + '?' + query);
+    const q = new URLSearchParams({ returnTo: tab === 'bookings' ? 'bookings' : 'calendar' });
+    if (date) q.set('date', date);
+    if (time) q.set('time', time);
+    navigate('/dashboard/booking/appointments/' + (appointment ? encodeURIComponent(appointment.id) + '/edit' : 'new') + '?' + q);
   };
   const [contactEditor, setContactEditor] = useState<Contact | 'new' | null>(null);
   const [invite, setInvite] = useState(false);
@@ -47,17 +90,42 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
   const [columns, setColumns] = useState(() => load<string[]>('gos.booking.contact-columns.v1', ['Name', 'Email', 'Phone', 'Company']));
   const inputFile = useRef<HTMLInputElement>(null);
   const queryCreate = params.get('create') === 'link';
-  useEffect(() => { if (createRequested || queryCreate) { clearCreateRequest?.(); navigate('/dashboard/booking/new',{replace:queryCreate}); } }, [createRequested, queryCreate, clearCreateRequest, navigate]);
-  const safely = (work: () => void) => { try { work(); } catch { notify('Could not save changes. Browser storage may be full or unavailable.'); } };
-  const updatePage = (page: BookingPage) => savePages(pages.map(p => p.id === page.id ? page : p));
+
+  useEffect(() => {
+    if (createRequested || queryCreate) {
+      clearCreateRequest?.();
+      navigate('/dashboard/booking/new', { replace: queryCreate });
+    }
+  }, [createRequested, queryCreate, clearCreateRequest, navigate]);
+
+  const safely = (work: () => void) => {
+    try {
+      work();
+    } catch {
+      notify('Could not save changes. Browser storage may be full or unavailable.');
+    }
+  };
+  const updatePage = (page: BookingPage) => savePages(pages.map(p => (p.id === page.id ? page : p)));
   const upcoming = bookings.filter(b => b.status !== 'Canceled' && Date.parse(b.start) > Date.now());
   const visiblePages = pages.filter(p => `${p.name} ${p.slug}`.toLowerCase().includes(query.toLowerCase()));
   const filteredContacts = contacts.filter(c => `${c.name} ${c.email} ${c.phone}`.toLowerCase().includes(query.toLowerCase()));
-  const filteredMembers = members.filter(m => (role === 'All roles' || m.role === role) && `${m.name} ${m.email}`.toLowerCase().includes(memberQuery.toLowerCase()));
+  const filteredMembers = members.filter(
+    m => (role === 'All roles' || m.role === role) && `${m.name} ${m.email}`.toLowerCase().includes(memberQuery.toLowerCase())
+  );
   const contactPagination = useTablePagination(filteredContacts, query);
   const memberPagination = useTablePagination(filteredMembers, JSON.stringify([memberQuery, role]));
   const activeTab = ['bookings', 'calendar', 'contacts', 'workspace'].includes(tab) ? tab : 'dashboard';
-  const title = activeTab === 'dashboard' ? 'Booking pages' : activeTab === 'bookings' ? 'Bookings' : activeTab === 'calendar' ? 'Booking & Calendar' : activeTab === 'contacts' ? 'Contacts' : 'Workspace';
+  const title =
+    activeTab === 'dashboard'
+      ? 'Booking pages'
+      : activeTab === 'bookings'
+        ? 'Bookings'
+        : activeTab === 'calendar'
+          ? 'Booking & Calendar'
+          : activeTab === 'contacts'
+            ? 'Contacts'
+            : 'Workspace';
+
   const importContacts = async (file?: File) => {
     if (!file) return;
     try {
@@ -65,60 +133,1172 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
       const headers = rows.shift()?.map(s => s.replace(/^\uFEFF/, '').toLowerCase()) || [];
       if (!headers.includes('name') || !headers.includes('email')) throw new Error('CSV must include Name and Email headers. Phone and Company are optional.');
       const get = (row: string[], header: string) => row[headers.indexOf(header)] || '';
-      const imported: Contact[] = []; let skipped = 0;
+      const imported: Contact[] = [];
+      let skipped = 0;
       for (const row of rows) {
-        const name = get(row, 'name'); const email = get(row, 'email').toLowerCase();
-        if (!name || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || (email && [...contacts, ...imported].some(c => c.email.toLowerCase() === email))) { skipped++; continue; }
+        const name = get(row, 'name');
+        const email = get(row, 'email').toLowerCase();
+        if (!name || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || (email && [...contacts, ...imported].some(c => c.email.toLowerCase() === email))) {
+          skipped++;
+          continue;
+        }
         imported.push({ id: uid(), name, email, phone: get(row, 'phone'), company: get(row, 'company') });
       }
-      saveContacts([...contacts, ...imported]); notify(`Imported ${imported.length} contacts${skipped ? `; skipped ${skipped} duplicate or invalid rows` : ''}.`);
-    } catch (e) { notify(e instanceof Error ? e.message : 'Could not import this CSV.'); }
-    finally { if (inputFile.current) inputFile.current.value = ''; }
+      saveContacts([...contacts, ...imported]);
+      notify(`Imported ${imported.length} contacts${skipped ? `; skipped ${skipped} duplicate or invalid rows` : ''}.`);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'Could not import this CSV.');
+    } finally {
+      if (inputFile.current) inputFile.current.value = '';
+    }
   };
-  return <main className="bk-workspace h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
-    <header className="bk-page-heading"><div className="bk-heading-icon">{localizeNode(activeTab === 'contacts' || activeTab === 'workspace' ? <Users size={22}/> : <CalendarDays size={22}/>)}</div><div><h1>{localizeNode(title)}{localizeNode(activeTab === 'contacts' && <span className="bk-count">{localizeNode(contacts.length)}</span>)}</h1><p>{localizeNode(activeTab === 'dashboard' ? 'Create a booking page. Share your link. Let your calendar do the rest.' : activeTab === 'bookings' ? 'Every appointment, organized by date and status.' : activeTab === 'calendar' ? 'Manage appointments across your calendars and team.' : activeTab === 'contacts' ? 'Keep your invitees and customer details in one place.' : 'Manage teammates and assign roles across your workspace.')}</p></div>
-      {localizeNode(activeTab === 'dashboard' && <button className="bk-button primary" onClick={() => setBuilder('new')}><Plus size={15}/>{translateText("New booking page")}</button>)}
-      {localizeNode(activeTab === 'contacts' && <><button className="bk-button" onClick={() => inputFile.current?.click()}><Upload size={14}/>{translateText("Import contacts")}</button><button className="bk-button primary" onClick={() => setContactEditor('new')}><Plus size={15}/>{translateText("New contact")}</button><input type="file" ref={inputFile} accept=".csv,text/csv" hidden onChange={e => void importContacts(e.target.files?.[0])}/></>)}
-    </header>
-    {localizeNode(activeTab === 'dashboard' && <><div className="bk-dashboard-toolbar"><div className="bk-team"><Avatar name={workspaceName}/><div><b>{workspaceName}</b><small>{localizeNode(pages.filter(p => p.active).length)}{translateText(" active booking pages · ")}{localizeNode(bookings.length)}{translateText(" bookings")}</small></div></div><SearchBox value={query} onChange={setQuery} placeholder={translateText("Search booking pages...")}/></div><div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar"><div className="bk-page-stack">{localizeNode(visiblePages.map(p => <article className={`bk-booking-card ${p.active ? '' : 'off'}`} style={{ '--booking-color': bookingColor(p.color) } as React.CSSProperties} key={p.id}><div className="bk-booking-card-main"><button className="bk-title-link" onClick={() => setBuilder(p)}>{localizeNode(p.name)}</button><div className="bk-booking-card-meta"><span className="bk-pill"><Users size={12}/>{localizeNode(bookings.filter(b => b.calendarId === p.id).length)}{translateText(" bookings")}</span><span><Clock3 size={13}/>{localizeNode(p.duration)}{translateText(" min")}</span><span className="bk-platform"><Video size={13}/>{localizeNode(p.location)}</span>{localizeNode(!p.active && <span className="bk-pill gray">{translateText("Turned off")}</span>)}{localizeNode(p.note && <span title={translateText(p.note)}><FileText size={13}/>{translateText("Internal note")}</span>)}</div></div><div className="bk-card-actions">{localizeNode(!p.active && <button className="bk-button" onClick={() => safely(() => updatePage({ ...p, active: true }))}>{translateText("Turn On")}</button>)}<button className="bk-button" onClick={() => setPageAction({ kind: 'Share', page: p })}><Share2 size={14}/>{translateText("Share")}</button><a className="bk-button" href={publicUrl(p)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14}/>{translateText("View")}</a><Menu label={p.name + ' actions'}><button role="menuitem" onClick={() => setBuilder(p)}><Edit3 size={14}/>{translateText("Edit")}</button><button role="menuitem" onClick={() => setEmbedPage(p)}><Code2 size={14}/>{translateText("Embed Code")}</button><button role="menuitem" onClick={() => setPageAction({ kind: 'Note', page: p })}><FileText size={14}/>{translateText("Add Internal Note")}</button><button role="menuitem" onClick={() => setPageAction({ kind: 'Color', page: p })}><Palette size={14}/>{translateText("Set Color ")}<i style={{ background: bookingColor(p.color) }}/></button><button role="menuitem" onClick={() => safely(() => { savePages([...pages, { ...structuredClone(p), id: uid(), name: p.name + ' (copy)', slug: p.slug + '-copy-' + uid().slice(0, 6) }]); notify('Booking page cloned.'); })}><Copy size={14}/>{translateText("Clone")}</button><button role="menuitem" onClick={() => safely(() => updatePage({ ...p, active: !p.active }))}><Eye size={14}/>{localizeNode(p.active ? 'Turn Off' : 'Turn On')}</button><button role="menuitem" className="danger" onClick={() => setPageAction({ kind: 'Delete', page: p })}><Trash2 size={14}/>{translateText("Delete")}</button></Menu></div></article>))}
-      {localizeNode(!visiblePages.length && <Empty title={translateText(pages.length ? 'No matching booking pages' : 'Create your first booking page')} detail="Use New booking page to create a shareable appointment link."/>)}</div></div><footer className="bk-tab-footer"><span>{localizeNode(visiblePages.length)}{translateText(" booking pages")}</span><span><Check size={12}/>{translateText("All changes saved in this browser")}</span></footer></>)}
-    {localizeNode(activeTab === 'bookings' && <BookingsList bookings={bookings} pages={pages} onEmbed={setEmbedPage} onEdit={b=>openAppointment(b)} onCancel={b => safely(() => { saveBookings(bookings.map(row => row.id === b.id ? { ...row, status: 'Canceled' } : row)); notify('Appointment canceled.'); })} onApprove={b => safely(() => saveBookings(bookings.map(row => row.id === b.id ? { ...row, status: 'Confirmed' } : row)))} onNew={() => openAppointment()}/>)}
-    {activeTab === 'calendar' && <><div className="bk-metrics">{[{ label: 'Total bookings', value: bookings.length, icon: Link2 }, { label: 'Unique bookers', value: new Set(bookings.map(b => b.email)).size, icon: Users }, { label: 'Upcoming meetings', value: upcoming.length, icon: CalendarDays }, { label: 'Average meeting time', value: Math.round(bookings.reduce((a, b) => a + b.duration, 0) / (bookings.length || 1)) + ' min', icon: Clock3 }].map(m => <article className="bk-card" key={m.label}><span className="bk-metric-icon"><m.icon size={20}/></span><div><small>{localizeNode(m.label)}</small><b>{localizeNode(m.value)}</b></div></article>)}</div><SystemCalendar pages={pages} bookings={bookings} onEdit={b=>openAppointment(b)} onNew={(date,time)=>openAppointment(undefined,date,time)}/></>}
-    {activeTab === 'contacts' && <><div className="bk-tools"><SearchBox value={query} onChange={setQuery} placeholder={translateText("Search by name, email or phone")}/><Menu label="Column visibility" icon={<><Eye size={14}/>{translateText("Columns ")}<ChevronDown size={12}/></>}>{localizeNode(['Name', 'Email', 'Phone', 'Company'].map(c => <button role="menuitemcheckbox" aria-checked={columns.includes(c)} key={c} disabled={c === 'Name'} onClick={() => safely(() => { const next = columns.includes(c) ? columns.filter(s => s !== c) : [...columns, c]; cloudStorage.setItem('gos.booking.contact-columns.v1', JSON.stringify(next)); setColumns(next); })}><span className="bk-menu-check">{localizeNode(columns.includes(c) && <Check size={13}/>)}</span>{localizeNode(c)}</button>))}</Menu><span className="bk-muted bk-tools-count">{localizeNode(filteredContacts.length)}{translateText(" contacts")}</span></div><div className="bk-card bk-table-container flex-1 overflow-y-auto custom-scrollbar"><table className="bk-table"><thead><tr>{localizeNode(['Name', 'Email', 'Phone', 'Company'].filter(c => columns.includes(c)).map(c => <th key={c} className={c === 'Phone' ? 'text-center' : 'text-start'}>{localizeNode(c)}</th>))}<th className="bk-action-cell text-center"><span className="sr-only">{translateText("Actions")}</span></th></tr></thead><tbody>{contactPagination.rows.map(c => <tr key={c.id}>{localizeNode(columns.includes('Name') && <td className="text-start"><button className="bk-name-link" onClick={() => setContactEditor(c)}>{localizeNode(c.name)}</button></td>)}{columns.includes('Email') && <td className="text-start">{c.email || '—'}</td>}{columns.includes('Phone') && <td className="text-center">{c.phone || '—'}</td>}{localizeNode(columns.includes('Company') && <td className="text-start">{localizeNode(c.company || '—')}</td>)}<td className="bk-action-cell text-center"><Menu label={c.name + ' contact actions'}><button role="menuitem" onClick={() => setContactEditor(c)}><Edit3 size={14}/>{translateText("Edit contact")}</button>{c.email && <button role="menuitem" onClick={() => { window.location.href = 'mailto:' + encodeURIComponent(c.email); }}><Mail size={14}/>{translateText("Email contact")}</button>}<button role="menuitem" className="danger" onClick={() => setContactDelete(c)}><Trash2 size={14}/>{translateText("Delete")}</button></Menu></td></tr>)}</tbody></table>{localizeNode(!filteredContacts.length && <Empty title={translateText("No contacts found")} detail="Add a contact or import a CSV with Name, Email, Phone and Company columns."/>)}</div><TablePagination pagination={contactPagination} label="Contacts"/></>}
-    {activeTab === 'workspace' && <div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar"><section className="bk-invite-hero bk-card"><div className="bk-avatar-stack"><Avatar name={workspaceName}/><Avatar name="Jamie Park"/><span className="bk-avatar"><Users size={20}/></span></div><div><h2>{translateText("Invite your teammates")}</h2><p>{translateText("Bring your team together. Manage shared booking pages and give everyone the right role.")}</p><button className="bk-button primary" onClick={() => setInvite(true)}><Users size={14}/>{translateText("Invite teammates")}</button></div><span className="bk-hero-decoration"><CalendarDays size={62}/></span></section><section className="bk-card bk-members"><div className="bk-tools"><SearchBox value={memberQuery} onChange={setMemberQuery} placeholder={translateText("Enter a name or email address")}/><BookingSelect className="bk-filter" value={role} onChange={e => setRole(e.target.value)}>{localizeNode(['All roles', 'Admin', 'Member'].map(r => <option key={r} value={r}>{localizeNode(r)}</option>))}</BookingSelect><button className="bk-button primary" onClick={() => setInvite(true)}><Plus size={14}/>{translateText("Invite teammates")}</button></div><div className="bk-table-container"><table className="bk-table"><thead><tr><th className="text-start">{translateText("Member")}</th><th className="text-center">{translateText("Role")}</th><th className="text-center">{translateText("Status")}</th><th className="bk-action-cell text-center"><span className="sr-only">{translateText("Actions")}</span></th></tr></thead><tbody>{memberPagination.rows.map(m => <tr key={m.id}><td className="text-start"><div className="bk-member-cell"><Avatar name={m.name}/><div><b>{localizeNode(m.name)}{localizeNode(m.id === 'owner' && <small>{translateText(" (you)")}</small>)}</b><small>{m.email}</small></div></div></td><td className="text-center"><span className={`bk-pill ${m.role === 'Admin' ? '' : 'gray'}`}>{localizeNode(m.role)}</span></td><td className="text-center"><span className={`bk-member-status ${m.status === 'Invited' ? 'invited' : ''}`}><i/>{localizeNode(m.status)}</span></td><td className="bk-action-cell text-center"><Menu label={m.name + ' member actions'}><button role="menuitem" disabled={m.id === 'owner'} onClick={() => safely(() => { saveMembers(members.map(item => item.id === m.id ? { ...item, role: m.role === 'Admin' ? 'Member' : 'Admin' } : item)); })}>{translateText("Make ")}{localizeNode(m.role === 'Admin' ? 'Member' : 'Admin')}</button><button role="menuitem" className="danger" disabled={m.id === 'owner'} onClick={() => setMemberDelete(m)}>{translateText("Remove member")}</button></Menu></td></tr>)}</tbody></table>{localizeNode(!filteredMembers.length && <Empty title={translateText("No teammates match your filters")}/>)}</div><TablePagination pagination={memberPagination} label="Workspace members"/></section></div>}
-    {localizeNode(embedPage && <BookingEmbedModal page={embedPage} close={() => setEmbedPage(null)}/>)}
-    {localizeNode(pageAction && <PageActionDialog action={pageAction} close={() => setPageAction(null)} save={p => safely(() => { updatePage(p); setPageAction(null); })} remove={() => safely(() => { savePages(pages.filter(p => p.id !== pageAction.page.id)); setPageAction(null); notify('Booking page deleted. Existing appointment records are retained.'); })}/>)}
-    {localizeNode(contactEditor && <ContactDialog value={contactEditor === 'new' ? undefined : contactEditor} contacts={contacts} close={() => setContactEditor(null)} save={c => safely(() => { saveContacts([...contacts.filter(item => item.id !== c.id), c]); setContactEditor(null); notify('Contact saved.'); })}/>)}
-    {localizeNode(invite && <InviteDialog members={members} close={() => setInvite(false)} save={m => safely(() => { saveMembers([...members, m]); setInvite(false); notify('Invitation recorded. Email delivery requires a connected team service.'); })}/>)}
-    {localizeNode(contactDelete && <ConfirmDelete title={translateText("Delete contact")} name={contactDelete.name} close={() => setContactDelete(null)} confirm={() => safely(() => { saveContacts(contacts.filter(c => c.id !== contactDelete.id)); setContactDelete(null); })}/>)}
-    {localizeNode(memberDelete && <ConfirmDelete title={translateText("Remove teammate")} name={memberDelete.name} close={() => setMemberDelete(null)} confirm={() => safely(() => { saveMembers(members.filter(m => m.id !== memberDelete.id)); setMemberDelete(null); })}/>)}
-  </main>;
+
+  const sidePanel = (
+    <BookingSidePanel
+      workspaceName={workspaceName}
+      currentUser={currentUser}
+      members={members}
+      pages={pages}
+      bookings={bookings}
+      onInvite={() => setInvite(true)}
+      onOpenWorkspace={() => {
+        const next = new URLSearchParams(params);
+        next.set('tab', 'workspace');
+        setParams(next);
+      }}
+      onNavigate={path => navigate(path)}
+    />
+  );
+
+  return (
+    <main className="bk-workspace h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+      <header className={`bk-page-heading ${activeTab === 'dashboard' || activeTab === 'bookings' ? 'bk-constrained-header' : ''}`}>
+        <div className="bk-heading-icon">
+          {localizeNode(activeTab === 'contacts' || activeTab === 'workspace' ? <Users size={22} /> : <CalendarDays size={22} />)}
+        </div>
+        <div>
+          <h1>
+            {localizeNode(title)}
+            {localizeNode(activeTab === 'contacts' && <span className="bk-count">{localizeNode(contacts.length)}</span>)}
+          </h1>
+          <p>
+            {localizeNode(
+              activeTab === 'dashboard'
+                ? 'Create a booking page. Share your link. Let your calendar do the rest.'
+                : activeTab === 'bookings'
+                  ? 'Every appointment, organized by date and status.'
+                  : activeTab === 'calendar'
+                    ? 'Manage appointments across your calendars and team.'
+                    : activeTab === 'contacts'
+                      ? 'Keep your invitees and customer details in one place.'
+                      : 'Manage teammates and assign roles across your workspace.'
+            )}
+          </p>
+        </div>
+        {localizeNode(
+          activeTab === 'dashboard' && (
+            <button className="bk-button primary" onClick={() => setBuilder('new')}>
+              <Plus size={15} />
+              {translateText('New booking page')}
+            </button>
+          )
+        )}
+        {localizeNode(
+          activeTab === 'contacts' && (
+            <>
+              <button className="bk-button" onClick={() => inputFile.current?.click()}>
+                <Upload size={14} />
+                {translateText('Import contacts')}
+              </button>
+              <button className="bk-button primary" onClick={() => setContactEditor('new')}>
+                <Plus size={15} />
+                {translateText('New contact')}
+              </button>
+              <input type="file" ref={inputFile} accept=".csv,text/csv" hidden onChange={e => void importContacts(e.target.files?.[0])} />
+            </>
+          )
+        )}
+      </header>
+
+      {localizeNode(
+        activeTab === 'dashboard' && (
+          <div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar">
+            <div className="bk-koalendar-layout">
+              <div className="bk-koalendar-main">
+                <div className="bk-dashboard-toolbar">
+                  <div className="bk-team">
+                    <Avatar name={workspaceName} />
+                    <div>
+                      <b>{workspaceName}</b>
+                      <small>
+                        {localizeNode(pages.filter(p => p.active).length)}
+                        {translateText(' active booking pages · ')}
+                        {localizeNode(bookings.length)}
+                        {translateText(' bookings')}
+                      </small>
+                    </div>
+                  </div>
+                  <SearchBox value={query} onChange={setQuery} placeholder={translateText('Search booking pages...')} />
+                </div>
+
+                <div className="bk-page-stack">
+                  {localizeNode(
+                    visiblePages.map(p => (
+                      <article
+                        className={`bk-booking-card is-clickable ${p.active ? '' : 'off'}`}
+                        style={{ '--booking-color': bookingColor(p.color) } as React.CSSProperties}
+                        key={p.id}
+                        onClick={e => {
+                          if ((e.target as HTMLElement).closest('.bk-card-actions, a, button, [role="menu"], [role="menuitem"]')) return;
+                          setBuilder(p);
+                        }}
+                      >
+                        <div className="bk-booking-card-main">
+                          <button className="bk-title-link" onClick={() => setBuilder(p)}>
+                            {localizeNode(p.name)}
+                          </button>
+                          <div className="bk-booking-card-meta">
+                            <span className="bk-pill">
+                              <Users size={12} />
+                              {localizeNode(bookings.filter(b => b.calendarId === p.id).length)}
+                              {translateText(' bookings')}
+                            </span>
+                            <span>
+                              <Clock3 size={13} />
+                              {localizeNode(p.duration)}
+                              {translateText(' min')}
+                            </span>
+                            <span className="bk-platform">
+                              <Video size={13} />
+                              {localizeNode(p.location)}
+                            </span>
+                            {localizeNode(!p.active && <span className="bk-pill gray">{translateText('Turned off')}</span>)}
+                            {localizeNode(
+                              p.note && (
+                                <span title={translateText(p.note)}>
+                                  <FileText size={13} />
+                                  {translateText('Internal note')}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        </div>
+                        <div className="bk-card-actions" onClick={e => e.stopPropagation()}>
+                          {localizeNode(
+                            !p.active && (
+                              <button className="bk-button" onClick={() => safely(() => updatePage({ ...p, active: true }))}>
+                                {translateText('Turn On')}
+                              </button>
+                            )
+                          )}
+                          <button className="bk-button" onClick={() => setPageAction({ kind: 'Share', page: p })}>
+                            <Share2 size={14} />
+                            {translateText('Share')}
+                          </button>
+                          <a className="bk-button" href={publicUrl(p)} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink size={14} />
+                            {translateText('View')}
+                          </a>
+                          <Menu label={p.name + ' actions'}>
+                            <button role="menuitem" onClick={() => setBuilder(p)}>
+                              <Edit3 size={14} />
+                              {translateText('Edit')}
+                            </button>
+                            <button role="menuitem" onClick={() => setEmbedPage(p)}>
+                              <Code2 size={14} />
+                              {translateText('Embed Code')}
+                            </button>
+                            <button role="menuitem" onClick={() => setPageAction({ kind: 'Note', page: p })}>
+                              <FileText size={14} />
+                              {translateText('Add Internal Note')}
+                            </button>
+                            <button role="menuitem" onClick={() => setPageAction({ kind: 'Color', page: p })}>
+                              <Palette size={14} />
+                              {translateText('Set Color ')}
+                              <i style={{ background: bookingColor(p.color) }} />
+                            </button>
+                            <button
+                              role="menuitem"
+                              onClick={() =>
+                                safely(() => {
+                                  savePages([
+                                    ...pages,
+                                    { ...structuredClone(p), id: uid(), name: p.name + ' (copy)', slug: p.slug + '-copy-' + uid().slice(0, 6) },
+                                  ]);
+                                  notify('Booking page cloned.');
+                                })
+                              }
+                            >
+                              <Copy size={14} />
+                              {translateText('Clone')}
+                            </button>
+                            <button role="menuitem" onClick={() => safely(() => updatePage({ ...p, active: !p.active }))}>
+                              <Eye size={14} />
+                              {localizeNode(p.active ? 'Turn Off' : 'Turn On')}
+                            </button>
+                            <button role="menuitem" className="danger" onClick={() => setPageAction({ kind: 'Delete', page: p })}>
+                              <Trash2 size={14} />
+                              {translateText('Delete')}
+                            </button>
+                          </Menu>
+                        </div>
+                      </article>
+                    ))
+                  )}
+                  {localizeNode(
+                    !visiblePages.length && (
+                      <Empty
+                        title={translateText(pages.length ? 'No matching booking pages' : 'Create your first booking page')}
+                        detail="Use New booking page to create a shareable appointment link."
+                      />
+                    )
+                  )}
+                </div>
+
+                <footer className="bk-tab-footer">
+                  <span>
+                    {localizeNode(visiblePages.length)}
+                    {translateText(' booking pages')}
+                  </span>
+                  <span>
+                    <Check size={12} />
+                    {translateText('All changes saved in this browser')}
+                  </span>
+                </footer>
+              </div>
+              {sidePanel}
+            </div>
+          </div>
+        )
+      )}
+
+      {localizeNode(
+        activeTab === 'bookings' && (
+          <div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar">
+            <div className="bk-koalendar-layout">
+              <div className="bk-koalendar-main">
+                <BookingsList
+                  bookings={bookings}
+                  pages={pages}
+                  notify={notify}
+                  onEmbed={setEmbedPage}
+                  onEdit={b => openAppointment(b)}
+                  onCancel={b =>
+                    safely(() => {
+                      saveBookings(bookings.map(row => (row.id === b.id ? { ...row, status: 'Canceled' } : row)));
+                      notify('Appointment canceled.');
+                    })
+                  }
+                  onApprove={b => safely(() => saveBookings(bookings.map(row => (row.id === b.id ? { ...row, status: 'Confirmed' } : row))))}
+                  onNew={() => openAppointment()}
+                />
+              </div>
+              {sidePanel}
+            </div>
+          </div>
+        )
+      )}
+
+      {activeTab === 'calendar' && (
+        <>
+          <div className="bk-metrics">
+            {[
+              { label: 'Total bookings', value: bookings.length, icon: Link2 },
+              { label: 'Unique bookers', value: new Set(bookings.map(b => b.email)).size, icon: Users },
+              { label: 'Upcoming meetings', value: upcoming.length, icon: CalendarDays },
+              { label: 'Average meeting time', value: Math.round(bookings.reduce((a, b) => a + b.duration, 0) / (bookings.length || 1)) + ' min', icon: Clock3 },
+            ].map(m => (
+              <article className="bk-card" key={m.label}>
+                <span className="bk-metric-icon">
+                  <m.icon size={20} />
+                </span>
+                <div>
+                  <small>{localizeNode(m.label)}</small>
+                  <b>{localizeNode(m.value)}</b>
+                </div>
+              </article>
+            ))}
+          </div>
+          <SystemCalendar pages={pages} bookings={bookings} onEdit={b => openAppointment(b)} onNew={(date, time) => openAppointment(undefined, date, time)} />
+        </>
+      )}
+
+      {activeTab === 'contacts' && (
+        <>
+          <div className="bk-tools">
+            <SearchBox value={query} onChange={setQuery} placeholder={translateText('Search by name, email or phone')} />
+            <Menu
+              label="Column visibility"
+              icon={
+                <>
+                  <Eye size={14} />
+                  {translateText('Columns ')}
+                  <ChevronDown size={12} />
+                </>
+              }
+            >
+              {localizeNode(
+                ['Name', 'Email', 'Phone', 'Company'].map(c => (
+                  <button
+                    role="menuitemcheckbox"
+                    aria-checked={columns.includes(c)}
+                    key={c}
+                    disabled={c === 'Name'}
+                    onClick={() =>
+                      safely(() => {
+                        const next = columns.includes(c) ? columns.filter(s => s !== c) : [...columns, c];
+                        cloudStorage.setItem('gos.booking.contact-columns.v1', JSON.stringify(next));
+                        setColumns(next);
+                      })
+                    }
+                  >
+                    <span className="bk-menu-check">{localizeNode(columns.includes(c) && <Check size={13} />)}</span>
+                    {localizeNode(c)}
+                  </button>
+                ))
+              )}
+            </Menu>
+            <span className="bk-muted bk-tools-count">
+              {localizeNode(filteredContacts.length)}
+              {translateText(' contacts')}
+            </span>
+          </div>
+          <div className="bk-card bk-table-container flex-1 overflow-y-auto custom-scrollbar">
+            <table className="bk-table">
+              <thead>
+                <tr>
+                  {localizeNode(
+                    ['Name', 'Email', 'Phone', 'Company']
+                      .filter(c => columns.includes(c))
+                      .map(c => (
+                        <th key={c} className={c === 'Phone' ? 'text-center' : 'text-start'}>
+                          {localizeNode(c)}
+                        </th>
+                      ))
+                  )}
+                  <th className="bk-action-cell text-center">
+                    <span className="sr-only">{translateText('Actions')}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {contactPagination.rows.map(c => (
+                  <tr key={c.id}>
+                    {localizeNode(
+                      columns.includes('Name') && (
+                        <td className="text-start">
+                          <button className="bk-name-link" onClick={() => setContactEditor(c)}>
+                            {localizeNode(c.name)}
+                          </button>
+                        </td>
+                      )
+                    )}
+                    {columns.includes('Email') && <td className="text-start">{c.email || '—'}</td>}
+                    {columns.includes('Phone') && <td className="text-center">{c.phone || '—'}</td>}
+                    {localizeNode(columns.includes('Company') && <td className="text-start">{localizeNode(c.company || '—')}</td>)}
+                    <td className="bk-action-cell text-center">
+                      <Menu label={c.name + ' contact actions'}>
+                        <button role="menuitem" onClick={() => setContactEditor(c)}>
+                          <Edit3 size={14} />
+                          {translateText('Edit contact')}
+                        </button>
+                        {c.email && (
+                          <button
+                            role="menuitem"
+                            onClick={() => {
+                              window.location.href = 'mailto:' + encodeURIComponent(c.email);
+                            }}
+                          >
+                            <Mail size={14} />
+                            {translateText('Email contact')}
+                          </button>
+                        )}
+                        <button role="menuitem" className="danger" onClick={() => setContactDelete(c)}>
+                          <Trash2 size={14} />
+                          {translateText('Delete')}
+                        </button>
+                      </Menu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {localizeNode(
+              !filteredContacts.length && (
+                <Empty title={translateText('No contacts found')} detail="Add a contact or import a CSV with Name, Email, Phone and Company columns." />
+              )
+            )}
+          </div>
+          <TablePagination pagination={contactPagination} label="Contacts" />
+        </>
+      )}
+
+      {activeTab === 'workspace' && (
+        <div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar">
+          <section className="bk-invite-hero bk-card">
+            <div className="bk-avatar-stack">
+              <Avatar name={workspaceName} />
+              <Avatar name="Jamie Park" />
+              <span className="bk-avatar">
+                <Users size={20} />
+              </span>
+            </div>
+            <div>
+              <h2>{translateText('Invite your teammates')}</h2>
+              <p>{translateText('Bring your team together. Manage shared booking pages and give everyone the right role.')}</p>
+              <button className="bk-button primary" onClick={() => setInvite(true)}>
+                <Users size={14} />
+                {translateText('Invite teammates')}
+              </button>
+            </div>
+            <span className="bk-hero-decoration">
+              <CalendarDays size={62} />
+            </span>
+          </section>
+          <section className="bk-card bk-members">
+            <div className="bk-tools">
+              <SearchBox value={memberQuery} onChange={setMemberQuery} placeholder={translateText('Enter a name or email address')} />
+              <BookingSelect className="bk-filter" value={role} onChange={e => setRole(e.target.value)}>
+                {localizeNode(
+                  ['All roles', 'Admin', 'Member'].map(r => (
+                    <option key={r} value={r}>
+                      {localizeNode(r)}
+                    </option>
+                  ))
+                )}
+              </BookingSelect>
+              <button className="bk-button primary" onClick={() => setInvite(true)}>
+                <Plus size={14} />
+                {translateText('Invite teammates')}
+              </button>
+            </div>
+            <div className="bk-table-container">
+              <table className="bk-table">
+                <thead>
+                  <tr>
+                    <th className="text-start">{translateText('Member')}</th>
+                    <th className="text-center">{translateText('Role')}</th>
+                    <th className="text-center">{translateText('Status')}</th>
+                    <th className="bk-action-cell text-center">
+                      <span className="sr-only">{translateText('Actions')}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {memberPagination.rows.map(m => (
+                    <tr key={m.id}>
+                      <td className="text-start">
+                        <div className="bk-member-cell">
+                          <Avatar name={m.name} />
+                          <div>
+                            <b>
+                              {localizeNode(m.name)}
+                              {localizeNode(m.id === 'owner' && <small>{translateText(' (you)')}</small>)}
+                            </b>
+                            <small>{m.email}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-center">
+                        <span className={`bk-pill ${m.role === 'Admin' ? '' : 'gray'}`}>{localizeNode(m.role)}</span>
+                      </td>
+                      <td className="text-center">
+                        <span className={`bk-member-status ${m.status === 'Invited' ? 'invited' : ''}`}>
+                          <i />
+                          {localizeNode(m.status)}
+                        </span>
+                      </td>
+                      <td className="bk-action-cell text-center">
+                        <Menu label={m.name + ' member actions'}>
+                          <button
+                            role="menuitem"
+                            disabled={m.id === 'owner'}
+                            onClick={() =>
+                              safely(() => {
+                                saveMembers(members.map(item => (item.id === m.id ? { ...item, role: m.role === 'Admin' ? 'Member' : 'Admin' } : item)));
+                              })
+                            }
+                          >
+                            {translateText('Make ')}
+                            {localizeNode(m.role === 'Admin' ? 'Member' : 'Admin')}
+                          </button>
+                          <button role="menuitem" className="danger" disabled={m.id === 'owner'} onClick={() => setMemberDelete(m)}>
+                            {translateText('Remove member')}
+                          </button>
+                        </Menu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {localizeNode(!filteredMembers.length && <Empty title={translateText('No teammates match your filters')} />)}
+            </div>
+            <TablePagination pagination={memberPagination} label="Workspace members" />
+          </section>
+        </div>
+      )}
+
+      {localizeNode(embedPage && <BookingEmbedModal page={embedPage} close={() => setEmbedPage(null)} />)}
+      {localizeNode(
+        pageAction && (
+          <PageActionDialog
+            action={pageAction}
+            close={() => setPageAction(null)}
+            save={p =>
+              safely(() => {
+                updatePage(p);
+                setPageAction(null);
+              })
+            }
+            remove={() =>
+              safely(() => {
+                savePages(pages.filter(p => p.id !== pageAction.page.id));
+                setPageAction(null);
+                notify('Booking page deleted. Existing appointment records are retained.');
+              })
+            }
+          />
+        )
+      )}
+      {localizeNode(
+        contactEditor && (
+          <ContactDialog
+            value={contactEditor === 'new' ? undefined : contactEditor}
+            contacts={contacts}
+            close={() => setContactEditor(null)}
+            save={c =>
+              safely(() => {
+                saveContacts([...contacts.filter(item => item.id !== c.id), c]);
+                setContactEditor(null);
+                notify('Contact saved.');
+              })
+            }
+          />
+        )
+      )}
+      {localizeNode(
+        invite && (
+          <InviteDialog
+            members={members}
+            close={() => setInvite(false)}
+            save={m =>
+              safely(() => {
+                saveMembers([...members, m]);
+                setInvite(false);
+                notify('Invitation recorded. Email delivery requires a connected team service.');
+              })
+            }
+          />
+        )
+      )}
+      {localizeNode(
+        contactDelete && (
+          <ConfirmDelete
+            title={translateText('Delete contact')}
+            name={contactDelete.name}
+            close={() => setContactDelete(null)}
+            confirm={() =>
+              safely(() => {
+                saveContacts(contacts.filter(c => c.id !== contactDelete.id));
+                setContactDelete(null);
+              })
+            }
+          />
+        )
+      )}
+      {localizeNode(
+        memberDelete && (
+          <ConfirmDelete
+            title={translateText('Remove teammate')}
+            name={memberDelete.name}
+            close={() => setMemberDelete(null)}
+            confirm={() =>
+              safely(() => {
+                saveMembers(members.filter(m => m.id !== memberDelete.id));
+                setMemberDelete(null);
+              })
+            }
+          />
+        )
+      )}
+    </main>
+  );
 }
 
-function BookingsList({ bookings, pages, onEmbed, onEdit, onCancel, onApprove, onNew }: { bookings: Appointment[]; pages: BookingPage[]; onEmbed: (page: BookingPage) => void; onEdit: (b: Appointment) => void; onCancel: (b: Appointment) => void; onApprove: (b: Appointment) => void; onNew: () => void }) {
+function BookingSidePanel({
+  workspaceName,
+  currentUser,
+  members,
+  pages,
+  bookings,
+  onInvite,
+  onOpenWorkspace,
+  onNavigate,
+}: {
+  workspaceName: string;
+  currentUser?: { id?: string; name?: string; email?: string } | null;
+  members: Member[];
+  pages: BookingPage[];
+  bookings: Appointment[];
+  onInvite: () => void;
+  onOpenWorkspace: () => void;
+  onNavigate: (path: string) => void;
+}) {
+  useUILanguage();
+  const admins: Member[] = members.filter(m => m.role === 'Admin');
+  const displayAdmins: Member[] = admins.length
+    ? admins
+    : [
+        {
+          id: 'owner',
+          name: currentUser?.name || workspaceName,
+          email: currentUser?.email || 'workspace@upclick.app',
+          role: 'Admin',
+          status: 'Active',
+        },
+      ];
+  const crmLeads = useSelector((state: RootState) => state.crm.leads);
+  const pendingCount = (() => {
+    const pendingBookingIds = new Set<string>(
+      bookings.filter(b => b.status === 'Pending').map(b => b.id)
+    );
+    for (const lead of crmLeads) {
+      if (lead.bookingStatus === 'Pending Booking') {
+        pendingBookingIds.add(lead.bookingId || lead.id);
+      }
+    }
+    for (const pendingLead of readPendingScreeningLeads()) {
+      pendingBookingIds.add(pendingLead.bookingId || pendingLead.id);
+    }
+    return pendingBookingIds.size;
+  })();
+  const screeningPages = pages.filter(p => p.questions.some(q => q.active !== false && q.isScreening) || (p.qualificationQuestions?.length ?? 0) > 0).length;
+
+  return (
+    <aside className="bk-side-panel" aria-label={translateText('Workspace overview')}>
+      <section className="bk-card bk-side-card">
+        <header className="bk-side-card-head">
+          <h3>{translateText('Workspace')}</h3>
+          <button type="button" className="bk-button primary bk-side-invite-btn" onClick={onInvite}>
+            <UserPlus size={13} />
+            {translateText('Invite teammates')}
+          </button>
+        </header>
+        <p className="bk-side-desc">
+          {translateText('Members can create their own booking pages, and be added to multi-host events. ')}
+          <button type="button" className="bk-inline-link" onClick={onOpenWorkspace}>
+            {translateText('Admins')}
+          </button>
+          {translateText(' can manage booking pages across the workspace.')}
+        </p>
+        <div className="bk-side-divider" />
+        <span className="bk-side-subhead">{translateText('Admins')}</span>
+        <div className="bk-side-admins">
+          {displayAdmins.slice(0, 3).map((admin, index) => (
+            <div className="bk-side-admin-row" key={admin.id || index}>
+              <Avatar name={admin.name} />
+              <div>
+                <b>
+                  {localizeNode(admin.name)}
+                  {localizeNode((admin.id === 'owner' || index === 0) && <small>{translateText(' (you)')}</small>)}
+                </b>
+                <small>{admin.email}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <button
+        type="button"
+        className="bk-card bk-side-banner"
+        onClick={() =>
+          onNavigate(pendingCount > 0 ? '/dashboard/crm?status=pending_booking' : '/dashboard/crm')
+        }
+      >
+        <span className="bk-side-banner-icon">
+          <Users size={15} />
+        </span>
+        <div className="bk-side-banner-copy">
+          <b>{translateText('CRM & Lead Sync')}</b>
+          <small>
+            {localizeNode(pendingCount)} {translateText('pending · ')}
+            {localizeNode(screeningPages)} {translateText('screening pages')}
+          </small>
+        </div>
+        <ArrowRight size={14} className="bk-side-banner-arrow" />
+      </button>
+
+      <section className="bk-card bk-side-card bk-side-features-card">
+        <span className="bk-side-sparkle" aria-hidden="true">
+          <Sparkles size={22} />
+        </span>
+        <h3>{translateText('Smart Booking Suite')}</h3>
+        <p className="bk-side-desc">{translateText('Automate scheduling, lead screening, and landing page conversion:')}</p>
+        <ul className="bk-side-checklist">
+          <li>
+            <span className="bk-side-check">
+              <Check size={11} strokeWidth={3} />
+            </span>
+            {translateText('Prevent no-shows with reminders')}
+          </li>
+          <li>
+            <span className="bk-side-check">
+              <Check size={11} strokeWidth={3} />
+            </span>
+            {translateText('Qualify leads inside Your details')}
+          </li>
+          <li>
+            <span className="bk-side-check">
+              <Check size={11} strokeWidth={3} />
+            </span>
+            {translateText('Sync pending bookings to CRM')}
+          </li>
+          <li>
+            <span className="bk-side-check">
+              <Check size={11} strokeWidth={3} />
+            </span>
+            {translateText('Embed calendars in Landing Pages')}
+          </li>
+        </ul>
+        <button type="button" className="bk-side-soft-btn" onClick={() => onNavigate('/dashboard/booking?tab=templates')}>
+          {translateText('Browse booking templates')}
+        </button>
+      </section>
+    </aside>
+  );
+}
+
+function BookingsList({
+  bookings,
+  pages,
+  notify,
+  onEmbed,
+  onEdit,
+  onCancel,
+  onApprove,
+  onNew,
+}: {
+  bookings: Appointment[];
+  pages: BookingPage[];
+  notify: (message: string) => void;
+  onEmbed: (page: BookingPage) => void;
+  onEdit: (b: Appointment) => void;
+  onCancel: (b: Appointment) => void;
+  onApprove: (b: Appointment) => void;
+  onNew: () => void;
+}) {
   useUILanguage();
   const [params, setParams] = useSearchParams();
   const selectedTab = params.get('status') || 'Upcoming';
-  const [quick, setQuick] = useState<Appointment | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [pageId, setPageId] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const now = Date.now();
-  const matches = (b: Appointment, status: string) => status === 'Pending' ? b.status === 'Pending' : status === 'Canceled' ? b.status === 'Canceled' : status === 'Past' ? b.status === 'Confirmed' && Date.parse(b.start) + b.duration * 60000 <= now : status === 'Date Range' ? (!start || b.date >= start) && (!end || b.date <= end) : isUpcomingAppointment(b, now);
-  const visible = bookings.filter(b => matches(b, selectedTab) && (!pageId || b.calendarId === pageId) && `${b.name} ${b.email}`.toLowerCase().includes(query.toLowerCase())).sort((a, b) => selectedTab === 'Past' ? String(b.start || '').localeCompare(String(a.start || '')) : String(a.start || '').localeCompare(String(b.start || '')));
+  const matches = (b: Appointment, status: string) =>
+    status === 'Pending'
+      ? b.status === 'Pending'
+      : status === 'Canceled'
+        ? b.status === 'Canceled'
+        : status === 'Past'
+          ? b.status === 'Confirmed' && Date.parse(b.start) + b.duration * 60000 <= now
+          : status === 'Date Range'
+            ? (!start || b.date >= start) && (!end || b.date <= end)
+            : isUpcomingAppointment(b, now);
+  const visible = bookings
+    .filter(b => matches(b, selectedTab) && (!pageId || b.calendarId === pageId) && `${b.name} ${b.email}`.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => (selectedTab === 'Past' ? String(b.start || '').localeCompare(String(a.start || '')) : String(a.start || '').localeCompare(String(b.start || ''))));
   const grouped = new Map<string, Appointment[]>();
   for (const b of visible) grouped.set(b.date, [...(grouped.get(b.date) || []), b]);
-  return <>{quick && <BookingQuickView booking={quick} page={pages.find(p => p.id === quick.calendarId)} close={() => setQuick(null)} edit={() => { onEdit(quick); setQuick(null); }}/>}<div className="bk-tools bk-bookings-actions"><BookingSelect className="bk-filter" value={pageId} onChange={e => setPageId(e.target.value)} aria-label={translateText("Booking page filter")}><option value="">{translateText("All booking pages")}</option>{localizeNode(pages.map(p => <option key={p.id} value={p.id}>{localizeNode(p.name)}</option>))}</BookingSelect><SearchBox value={query} onChange={setQuery} placeholder={translateText("Search bookings by name or email...")}/><button className="bk-button primary bk-push-right" onClick={onNew}><Plus size={14}/>{translateText("New booking")}</button></div><nav className="bk-subtabs" aria-label={translateText("Booking statuses")}>{localizeNode(['Upcoming', 'Pending', 'Canceled', 'Past', 'Date Range'].map(t => <button key={t} className={selectedTab === t ? 'active' : ''} onClick={() => { const next = new URLSearchParams(params); next.set('status', t); setParams(next); }}>{localizeNode(t)}{localizeNode(['Upcoming', 'Pending'].includes(t) && <span className="bk-count">{localizeNode(bookings.filter(b => matches(b, t)).length)}</span>)}</button>))}</nav>{localizeNode(selectedTab === 'Date Range' && <div className="bk-date-range"><label>{translateText("From")}<input aria-label={translateText("Start date")} type="date" value={start} onChange={e => setStart(e.target.value)}/></label><label>{translateText("To")}<input aria-label={translateText("End date")} type="date" min={start} value={end} onChange={e => setEnd(e.target.value)}/></label><button className="bk-button" onClick={() => { setStart(''); setEnd(''); }}>{translateText("Clear dates")}</button>{localizeNode(start && end && start > end && <span className="bk-error">{translateText("End date must follow start date.")}</span>)}</div>)}<div className="bk-tab-scroll flex-1 overflow-y-auto custom-scrollbar">{Array.from(grouped.entries()).map(([day, rows]) => <section className="bk-booking-group" key={day}><h3>{localizeNode(formatDay(day))}</h3><div className="bk-card">{rows.map(b => { const p = pages.find(p => p.id === b.calendarId); return <article className="bk-appointment-row" style={{ '--booking-color': b.status === 'Canceled' ? '#a1a8b7' : bookingColor(p?.color || 'violet') } as React.CSSProperties} key={b.id}><div className="bk-time-range"><b>{localizeNode(formatTime(b.start, b.timezone))} – {localizeNode(formatTime(new Date(Date.parse(b.start) + b.duration * 60000), b.timezone))}</b><small>{localizeNode(b.timezone)}</small></div><div className="bk-invitee"><div><button className="bk-title-link" onClick={() => onEdit(b)}>{localizeNode(b.name)}</button><span>·</span><a href={'mailto:' + b.email}>{b.email}</a></div><small>{localizeNode(p?.name || b.serviceName)}</small></div><span className={`bk-pill ${b.status === 'Canceled' ? 'gray' : b.status === 'Pending' ? 'amber' : 'green'}`}>{localizeNode(b.status)}</span><button className="bk-button" onClick={() => setQuick(b)}>View Quick Details</button><Menu label={b.name + ' booking actions'}><button role="menuitem" onClick={() => onEdit(b)}><CalendarDays size={14}/>{translateText("View / Reschedule")}</button>{localizeNode(p && <button role="menuitem" onClick={() => onEmbed(p)}><Code2 size={14}/>{translateText("Embed Code")}</button>)}{localizeNode(b.status === 'Pending' && <button role="menuitem" onClick={() => onApprove(b)}><Check size={14}/>{translateText("Confirm booking")}</button>)}{localizeNode(b.status !== 'Canceled' && <button role="menuitem" className="danger" onClick={() => onCancel(b)}><Trash2 size={14}/>{translateText("Cancel booking")}</button>)}</Menu></article>; })}</div></section>)}{localizeNode(!visible.length && <Empty title={translateText("No bookings here yet")} detail="Try another status, booking page or date range."/>)}</div><footer className="bk-tab-footer">{localizeNode(visible.length)}{translateText(" appointments")}</footer></>;
+
+  const toggleExpand = (id: string) => setExpandedId(prev => (prev === id ? null : id));
+
+  const copyBookingId = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(current => (current === id ? null : current)), 1800);
+    } catch {
+      notify(`Booking ID: ${id}`);
+    }
+  };
+
+  return (
+    <>
+      <div className="bk-tools bk-bookings-actions">
+        <BookingSelect className="bk-filter" value={pageId} onChange={e => setPageId(e.target.value)} aria-label={translateText('Booking page filter')}>
+          <option value="">{translateText('All booking pages')}</option>
+          {localizeNode(pages.map(p => <option key={p.id} value={p.id}>{localizeNode(p.name)}</option>))}
+        </BookingSelect>
+        <SearchBox value={query} onChange={setQuery} placeholder={translateText('Search bookings by name or email...')} />
+        <button className="bk-button primary bk-push-right" onClick={onNew}>
+          <Plus size={14} />
+          {translateText('New booking')}
+        </button>
+      </div>
+
+      <nav className="bk-subtabs" aria-label={translateText('Booking statuses')}>
+        {localizeNode(
+          ['Upcoming', 'Pending', 'Canceled', 'Past', 'Date Range'].map(t => (
+            <button
+              key={t}
+              className={selectedTab === t ? 'active' : ''}
+              onClick={() => {
+                const next = new URLSearchParams(params);
+                next.set('status', t);
+                setParams(next);
+              }}
+            >
+              {localizeNode(t)}
+              {localizeNode(['Upcoming', 'Pending'].includes(t) && <span className="bk-count">{localizeNode(bookings.filter(b => matches(b, t)).length)}</span>)}
+            </button>
+          ))
+        )}
+      </nav>
+
+      {localizeNode(
+        selectedTab === 'Date Range' && (
+          <div className="bk-date-range">
+            <label>
+              {translateText('From')}
+              <input aria-label={translateText('Start date')} type="date" value={start} onChange={e => setStart(e.target.value)} />
+            </label>
+            <label>
+              {translateText('To')}
+              <input aria-label={translateText('End date')} type="date" min={start} value={end} onChange={e => setEnd(e.target.value)} />
+            </label>
+            <button
+              className="bk-button"
+              onClick={() => {
+                setStart('');
+                setEnd('');
+              }}
+            >
+              {translateText('Clear dates')}
+            </button>
+            {localizeNode(start && end && start > end && <span className="bk-error">{translateText('End date must follow start date.')}</span>)}
+          </div>
+        )
+      )}
+
+      <div className="bk-bookings-groups">
+        {Array.from(grouped.entries()).map(([day, rows]) => (
+          <section className="bk-booking-group" key={day}>
+            <h3>{localizeNode(formatDay(day))}</h3>
+            <div className="bk-card">
+              {rows.map(b => {
+                const p = pages.find(page => page.id === b.calendarId);
+                const isExpanded = expandedId === b.id;
+                const answerEntries = new Map<string, { label: string; value: string }>();
+                for (const [key, val] of Object.entries(b.customAnswers || {})) {
+                  const trimmed = String(val ?? '').trim();
+                  if (!trimmed) continue;
+                  const qLabel = p?.questions.find(q => q.id === key)?.label || key;
+                  answerEntries.set(key, { label: qLabel, value: trimmed });
+                }
+                for (const resp of b.qualificationResponses || []) {
+                  if (resp.answer?.trim()) {
+                    answerEntries.set(resp.id, { label: resp.label, value: resp.answer.trim() });
+                  }
+                }
+                const locValue = b.location || p?.location || 'Online';
+                const matchedPageLoc = p?.locations?.find(
+                  loc => loc.label.toLowerCase() === locValue.trim().toLowerCase() || (loc.customLabel && loc.customLabel.toLowerCase() === locValue.trim().toLowerCase()),
+                );
+                const embeddedUrlMatch = locValue.match(/https?:\/\/\S+/i) || matchedPageLoc?.address?.match(/https?:\/\/\S+/i);
+                const locUrl = embeddedUrlMatch ? embeddedUrlMatch[0] : '';
+                const locLabelPrefix = locUrl ? locValue.replace(locUrl, '').replace(/[·|\-–:]+/g, ' ').trim() : '';
+                const locRowTitle = locLabelPrefix || (matchedPageLoc?.label && locUrl ? matchedPageLoc.label : 'Location');
+
+                return (
+                  <div
+                    className={`bk-appointment-item ${isExpanded ? 'is-expanded' : ''}`}
+                    style={{ '--booking-color': b.status === 'Canceled' ? '#a1a8b7' : bookingColor(p?.color || 'violet') } as React.CSSProperties}
+                    key={b.id}
+                  >
+                    <article
+                      className="bk-appointment-row is-collapsible"
+                      onClick={e => {
+                        if ((e.target as HTMLElement).closest('button, a, [role="menu"], [role="menuitem"]')) return;
+                        toggleExpand(b.id);
+                      }}
+                    >
+                      <div className="bk-time-range">
+                        <b>
+                          {localizeNode(formatTime(b.start, b.timezone))} – {localizeNode(formatTime(new Date(Date.parse(b.start) + b.duration * 60000), b.timezone))}
+                        </b>
+                        <small>{localizeNode(b.timezone)}</small>
+                      </div>
+                      <div className="bk-invitee">
+                        <div>
+                          <button
+                            className="bk-title-link"
+                            onClick={e => {
+                              e.stopPropagation();
+                              onEdit(b);
+                            }}
+                          >
+                            {localizeNode(b.name)}
+                          </button>
+                          <span>·</span>
+                          <a href={'mailto:' + b.email} onClick={e => e.stopPropagation()}>
+                            {b.email}
+                          </a>
+                        </div>
+                        <small>{localizeNode(p?.name || b.serviceName)}</small>
+                      </div>
+                      <span className={`bk-pill ${b.status === 'Canceled' ? 'gray' : b.status === 'Pending' ? 'amber' : 'green'}`}>
+                        {localizeNode(b.status)}
+                      </span>
+                      <button
+                        type="button"
+                        className={`bk-button bk-details-toggle ${isExpanded ? 'active' : ''}`}
+                        aria-expanded={isExpanded}
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleExpand(b.id);
+                        }}
+                      >
+                        <span>{translateText('View details')}</span>
+                        <ChevronDown size={13} className={isExpanded ? 'rotated' : ''} />
+                      </button>
+                      <div onClick={e => e.stopPropagation()}>
+                        <Menu label={b.name + ' booking actions'}>
+                          <button role="menuitem" onClick={() => toggleExpand(b.id)}>
+                            <Eye size={14} />
+                            {localizeNode(isExpanded ? 'Hide details' : 'View details')}
+                          </button>
+                          <button role="menuitem" onClick={() => onEdit(b)}>
+                            <CalendarDays size={14} />
+                            {translateText('View / Reschedule')}
+                          </button>
+                          {localizeNode(
+                            p && (
+                              <button role="menuitem" onClick={() => onEmbed(p)}>
+                                <Code2 size={14} />
+                                {translateText('Embed Code')}
+                              </button>
+                            )
+                          )}
+                          {localizeNode(
+                            b.status === 'Pending' && (
+                              <button role="menuitem" onClick={() => onApprove(b)}>
+                                <Check size={14} />
+                                {translateText('Confirm booking')}
+                              </button>
+                            )
+                          )}
+                          {localizeNode(
+                            b.status !== 'Canceled' && (
+                              <button role="menuitem" className="danger" onClick={() => onCancel(b)}>
+                                <Trash2 size={14} />
+                                {translateText('Cancel booking')}
+                              </button>
+                            )
+                          )}
+                        </Menu>
+                      </div>
+                    </article>
+
+                    <div className={`bk-appointment-collapse ${isExpanded ? 'open' : ''}`} aria-hidden={!isExpanded}>
+                      <div className="bk-appointment-collapse-inner">
+                        <div className="bk-collapse-body">
+                          <dl className="bk-collapse-dl">
+                            <div>
+                              <dt>{translateText('Invitee')}</dt>
+                              <dd>
+                                <a href={`mailto:${b.email}`} className="bk-collapse-link">
+                                  {localizeNode(b.name)}
+                                </a>{' '}
+                                <span className="bk-muted">({b.email})</span>
+                                {b.whatsapp ? <span className="bk-muted"> · {b.whatsapp}</span> : null}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>{localizeNode(locRowTitle)}</dt>
+                              <dd>
+                                {locUrl ? (
+                                  <a href={locUrl} target="_blank" rel="noopener noreferrer" className="bk-collapse-link">
+                                    {locUrl}
+                                  </a>
+                                ) : (
+                                  localizeNode(locValue)
+                                )}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>{translateText('Time zone')}</dt>
+                              <dd>
+                                {localizeNode(b.timezone)} · {localizeNode(b.duration)} {translateText('min')}
+                              </dd>
+                            </div>
+                            {b.guests?.length > 0 && (
+                              <div>
+                                <dt>{translateText('Guests')}</dt>
+                                <dd>{b.guests.map(g => `${g.name || 'Guest'} (${g.email})`).join(', ')}</dd>
+                              </div>
+                            )}
+                            {Array.from(answerEntries.entries()).map(([key, item]) => (
+                              <div key={key}>
+                                <dt>{localizeNode(item.label)}</dt>
+                                <dd>{localizeNode(item.value)}</dd>
+                              </div>
+                            ))}
+                            {b.payment && (
+                              <div>
+                                <dt>{translateText('Payment')}</dt>
+                                <dd>
+                                  {b.payment.amount} {b.payment.currency} · {localizeNode(b.payment.status)}
+                                </dd>
+                              </div>
+                            )}
+                            <div className="bk-collapse-meta-row">
+                              <dt>{translateText('Source')}</dt>
+                              <dd className="bk-collapse-meta-dd">
+                                <span>{localizeNode(b.source || 'Booking page')}</span>
+                                <div className="bk-collapse-badges">
+                                  <span className="bk-meta-badge">
+                                    <Bell size={11} />
+                                    {translateText('NOTIFICATIONS ACTIVE')}
+                                  </span>
+                                  <button type="button" className="bk-meta-badge clickable" onClick={() => void copyBookingId(b.id)} title={b.id}>
+                                    {copiedId === b.id ? <Check size={11} /> : <Eye size={11} />}
+                                    {copiedId === b.id ? translateText('ID COPIED') : translateText('BOOKING ID')}
+                                  </button>
+                                </div>
+                              </dd>
+                            </div>
+                          </dl>
+                          <div className="bk-collapse-actions">
+                            <button type="button" className="bk-button" onClick={() => onEdit(b)}>
+                              <Edit3 size={13} />
+                              {translateText('Reschedule / Edit')}
+                            </button>
+                            {b.status === 'Pending' && (
+                              <button type="button" className="bk-button primary" onClick={() => onApprove(b)}>
+                                <Check size={13} />
+                                {translateText('Approve')}
+                              </button>
+                            )}
+                            {b.status !== 'Canceled' && (
+                              <button type="button" className="bk-button danger" onClick={() => onCancel(b)}>
+                                <Trash2 size={13} />
+                                {translateText('Cancel')}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+        {localizeNode(!visible.length && <Empty title={translateText('No bookings here yet')} detail="Try another status, booking page or date range." />)}
+      </div>
+
+      <footer className="bk-tab-footer">
+        {localizeNode(visible.length)}
+        {translateText(' appointments')}
+      </footer>
+    </>
+  );
 }
+
 function PageActionDialog({ action, close, save, remove }: { action: PageAction; close: () => void; save: (p: BookingPage) => void; remove: () => void }) {
   useUILanguage();
   const [note, setNote] = useState(action.page.note);
   const [color, setColor] = useState(action.page.color);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  return <Modal title={translateText(action.kind === 'Note' ? 'Internal note' : action.kind === 'Color' ? 'Set page color' : action.kind + ' booking page')} close={close}><div className="bk-dialog-body bk-form"><p>{localizeNode(action.page.name)}</p>{localizeNode(action.kind === 'Share' && <><p className="bk-muted">{translateText("Share this link so invitees can choose a time.")}</p><label>{translateText("Public booking URL")}<input readOnly value={publicUrl(action.page)} onFocus={e => e.target.select()}/></label><button className="bk-button primary" onClick={async () => { try { await navigator.clipboard.writeText(publicUrl(action.page)); setCopied(true); } catch { setError('Copy is unavailable. Select and copy the URL above.'); } }}>{localizeNode(copied ? <Check size={14}/> : <Copy size={14}/>)} {localizeNode(copied ? 'Copied!' : 'Copy link')}</button><a className="bk-button" href={publicUrl(action.page)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14}/>{translateText("Open booking page")}</a><div className="bk-tip">{translateText("This link previews data stored in this browser. Sharing live pages across devices requires backend publishing.")}</div></>)}{localizeNode(action.kind === 'Note' && <label>{translateText("Visible only in your workspace")}<textarea autoFocus rows={5} value={note} onChange={e => setNote(e.target.value)} placeholder={translateText("Notes for your team...")}/></label>)}{localizeNode(action.kind === 'Color' && <div className="bk-color-picker">{localizeNode(Object.entries(COLORS).map(([key, value]) => <button aria-label={translateText(key)} aria-pressed={color === key} key={key} style={{ background: value }} onClick={() => setColor(key)}>{localizeNode(color === key && <Check size={19}/>)}</button>))}</div>)}{localizeNode(action.kind === 'Delete' && <p>{translateText("Delete this page? Its public link will stop working. Existing booking records will be kept.")}</p>)}{localizeNode(error && <p className="bk-error" role="alert">{localizeNode(error)}</p>)}</div><footer className="bk-dialog-footer"><button className="bk-button" onClick={close}>{localizeNode(action.kind === 'Share' ? 'Done' : 'Cancel')}</button>{localizeNode(['Note', 'Color'].includes(action.kind) && <button className="bk-button primary" onClick={() => save({ ...action.page, note, color })}>{translateText("Save changes")}</button>)}{localizeNode(action.kind === 'Delete' && <button className="bk-button danger" onClick={remove}>{translateText("Delete page")}</button>)}</footer></Modal>;
+  return (
+    <Modal
+      title={translateText(action.kind === 'Note' ? 'Internal note' : action.kind === 'Color' ? 'Set page color' : action.kind + ' booking page')}
+      close={close}
+    >
+      <div className="bk-dialog-body bk-form">
+        <p>{localizeNode(action.page.name)}</p>
+        {localizeNode(
+          action.kind === 'Share' && (
+            <>
+              <p className="bk-muted">{translateText('Share this link so invitees can choose a time.')}</p>
+              <label>
+                {translateText('Public booking URL')}
+                <input readOnly value={publicUrl(action.page)} onFocus={e => e.target.select()} />
+              </label>
+              <button
+                className="bk-button primary"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(publicUrl(action.page));
+                    setCopied(true);
+                  } catch {
+                    setError('Copy is unavailable. Select and copy the URL above.');
+                  }
+                }}
+              >
+                {localizeNode(copied ? <Check size={14} /> : <Copy size={14} />)} {localizeNode(copied ? 'Copied!' : 'Copy link')}
+              </button>
+              <a className="bk-button" href={publicUrl(action.page)} target="_blank" rel="noopener noreferrer">
+                <ExternalLink size={14} />
+                {translateText('Open booking page')}
+              </a>
+              <div className="bk-tip">{translateText('This link previews data stored in this browser. Sharing live pages across devices requires backend publishing.')}</div>
+            </>
+          )
+        )}
+        {localizeNode(
+          action.kind === 'Note' && (
+            <label>
+              {translateText('Visible only in your workspace')}
+              <textarea autoFocus rows={5} value={note} onChange={e => setNote(e.target.value)} placeholder={translateText('Notes for your team...')} />
+            </label>
+          )
+        )}
+        {localizeNode(
+          action.kind === 'Color' && (
+            <div className="bk-color-picker">
+              {localizeNode(
+                Object.entries(COLORS).map(([key, value]) => (
+                  <button aria-label={translateText(key)} aria-pressed={color === key} key={key} style={{ background: value }} onClick={() => setColor(key)}>
+                    {localizeNode(color === key && <Check size={19} />)}
+                  </button>
+                ))
+              )}
+            </div>
+          )
+        )}
+        {localizeNode(action.kind === 'Delete' && <p>{translateText('Delete this page? Its public link will stop working. Existing booking records will be kept.')}</p>)}
+        {localizeNode(error && <p className="bk-error" role="alert">{localizeNode(error)}</p>)}
+      </div>
+      <footer className="bk-dialog-footer">
+        <button className="bk-button" onClick={close}>
+          {localizeNode(action.kind === 'Share' ? 'Done' : 'Cancel')}
+        </button>
+        {localizeNode(
+          ['Note', 'Color'].includes(action.kind) && (
+            <button className="bk-button primary" onClick={() => save({ ...action.page, note, color })}>
+              {translateText('Save changes')}
+            </button>
+          )
+        )}
+        {localizeNode(
+          action.kind === 'Delete' && (
+            <button className="bk-button danger" onClick={remove}>
+              {translateText('Delete page')}
+            </button>
+          )
+        )}
+      </footer>
+    </Modal>
+  );
 }
+
 function ContactDialog({ value, contacts, close, save }: { value?: Contact; contacts: Contact[]; close: () => void; save: (c: Contact) => void }) {
   useUILanguage();
   const [draft, setDraft] = useState<Contact>(value || { id: uid(), name: '', email: '', phone: '', company: '' });
@@ -129,14 +1309,112 @@ function ContactDialog({ value, contacts, close, save }: { value?: Contact; cont
     phone: 'e.g. +1 (555) 234-5678',
     company: 'e.g. Acme Corporation',
   };
-  return <Modal title={translateText(value ? 'Edit contact' : 'New contact')} close={close}><form className="bk-form bk-dialog-body" onSubmit={e => { e.preventDefault(); if (draft.email && contacts.some(c => c.id !== draft.id && c.email.toLowerCase() === draft.email.toLowerCase())) { setError('A contact with this email already exists.'); return; } save({ ...draft, name: draft.name.trim(), email: draft.email.trim().toLowerCase() }); }}>{localizeNode((['name', 'email', 'phone', 'company'] as const).map(key => <label key={key}>{localizeNode(key[0].toUpperCase() + key.slice(1))}<input autoFocus={key === 'name'} type={key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text'} required={key === 'name'} placeholder={translateText(placeholders[key])} value={draft[key]} onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}/></label>))}{localizeNode(error && <p className="bk-error">{localizeNode(error)}</p>)}<div className="bk-dialog-footer"><button type="button" className="bk-button" onClick={close}>{translateText("Cancel")}</button><button className="bk-button primary">{translateText("Save contact")}</button></div></form></Modal>;
+  return (
+    <Modal title={translateText(value ? 'Edit contact' : 'New contact')} close={close}>
+      <form
+        className="bk-form bk-dialog-body"
+        onSubmit={e => {
+          e.preventDefault();
+          if (draft.email && contacts.some(c => c.id !== draft.id && c.email.toLowerCase() === draft.email.toLowerCase())) {
+            setError('A contact with this email already exists.');
+            return;
+          }
+          save({ ...draft, name: draft.name.trim(), email: draft.email.trim().toLowerCase() });
+        }}
+      >
+        {localizeNode(
+          (['name', 'email', 'phone', 'company'] as const).map(key => (
+            <label key={key}>
+              {localizeNode(key[0].toUpperCase() + key.slice(1))}
+              <input
+                autoFocus={key === 'name'}
+                type={key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text'}
+                required={key === 'name'}
+                placeholder={translateText(placeholders[key])}
+                value={draft[key]}
+                onChange={e => setDraft(d => ({ ...d, [key]: e.target.value }))}
+              />
+            </label>
+          ))
+        )}
+        {localizeNode(error && <p className="bk-error">{localizeNode(error)}</p>)}
+        <div className="bk-dialog-footer">
+          <button type="button" className="bk-button" onClick={close}>
+            {translateText('Cancel')}
+          </button>
+          <button className="bk-button primary">{translateText('Save contact')}</button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
+
 function InviteDialog({ members, close, save }: { members: Member[]; close: () => void; save: (m: Member) => void }) {
   useUILanguage();
-  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [role, setRole] = useState<Member['role']>('Member'); const [error, setError] = useState('');
-  return <Modal title={translateText("Invite your teammates")} close={close}><form className="bk-dialog-body bk-form" onSubmit={e => { e.preventDefault(); if (members.some(m => m.email.toLowerCase() === email.trim().toLowerCase())) { setError('This teammate already belongs to the workspace.'); return; } save({ id: uid(), name: name.trim(), email: email.trim().toLowerCase(), role, status: 'Invited' }); }}><label>{translateText("Name")}<input autoFocus required placeholder={translateText("e.g. Alex Morgan")} value={name} onChange={e => setName(e.target.value)}/></label><label>{translateText("Email")}<input required type="email" placeholder={translateText("e.g. alex@company.com")} value={email} onChange={e => setEmail(e.target.value)}/></label><label>{translateText("Role")}<BookingSelect value={role} onChange={e => setRole(e.target.value as Member['role'])}><option value={"Member"}>{translateText("Member")}</option><option value={"Admin"}>{translateText("Admin")}</option></BookingSelect></label><p className="bk-tip">{translateText("Create a pending team invitation. Email delivery will be available when your team service is connected.")}</p>{localizeNode(error && <p className="bk-error">{localizeNode(error)}</p>)}<div className="bk-dialog-footer"><button className="bk-button" type="button" onClick={close}>{translateText("Cancel")}</button><button className="bk-button primary">{translateText("Create invitation")}</button></div></form></Modal>;
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<Member['role']>('Member');
+  const [error, setError] = useState('');
+  return (
+    <Modal title={translateText('Invite your teammates')} close={close}>
+      <form
+        className="bk-dialog-body bk-form"
+        onSubmit={e => {
+          e.preventDefault();
+          if (members.some(m => m.email.toLowerCase() === email.trim().toLowerCase())) {
+            setError('This teammate already belongs to the workspace.');
+            return;
+          }
+          save({ id: uid(), name: name.trim(), email: email.trim().toLowerCase(), role, status: 'Invited' });
+        }}
+      >
+        <label>
+          {translateText('Name')}
+          <input autoFocus required placeholder={translateText('e.g. Alex Morgan')} value={name} onChange={e => setName(e.target.value)} />
+        </label>
+        <label>
+          {translateText('Email')}
+          <input required type="email" placeholder={translateText('e.g. alex@company.com')} value={email} onChange={e => setEmail(e.target.value)} />
+        </label>
+        <label>
+          {translateText('Role')}
+          <BookingSelect value={role} onChange={e => setRole(e.target.value as Member['role'])}>
+            <option value={'Member'}>{translateText('Member')}</option>
+            <option value={'Admin'}>{translateText('Admin')}</option>
+          </BookingSelect>
+        </label>
+        <p className="bk-tip">{translateText('Create a pending team invitation. Email delivery will be available when your team service is connected.')}</p>
+        {localizeNode(error && <p className="bk-error">{localizeNode(error)}</p>)}
+        <div className="bk-dialog-footer">
+          <button className="bk-button" type="button" onClick={close}>
+            {translateText('Cancel')}
+          </button>
+          <button className="bk-button primary">{translateText('Create invitation')}</button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
+
 function ConfirmDelete({ title, name, close, confirm }: { title: string; name: string; close: () => void; confirm: () => void }) {
   useUILanguage();
-  return <Modal title={translateText(title)} close={close}><div className="bk-dialog-body"><p>{translateText("Remove ")}{localizeNode(name)}{translateText(" from this workspace?")}</p></div><footer className="bk-dialog-footer"><button className="bk-button" onClick={close}>{translateText("Cancel")}</button><button className="bk-button danger" onClick={confirm}>{translateText("Remove")}</button></footer></Modal>;
+  return (
+    <Modal title={translateText(title)} close={close}>
+      <div className="bk-dialog-body">
+        <p>
+          {translateText('Remove ')}
+          {localizeNode(name)}
+          {translateText(' from this workspace?')}
+        </p>
+      </div>
+      <footer className="bk-dialog-footer">
+        <button className="bk-button" onClick={close}>
+          {translateText('Cancel')}
+        </button>
+        <button className="bk-button danger" onClick={confirm}>
+          {translateText('Remove')}
+        </button>
+      </footer>
+    </Modal>
+  );
 }

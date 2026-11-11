@@ -4,7 +4,19 @@ import { locationFromLabel, sectionDefaults, weekdayMatches } from './booking-se
 import type { AfterBooking, SectionSettings } from './booking-section-schema';
 import type { QualificationQuestion, ScreeningResponse } from '../../../functions/booking-qualification.js';
 
-export type Question = { id: string; label: string; type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'radio' | 'text-block'; required: boolean; options: string[]; active?: boolean; text?: string };
+export type Question = {
+  id: string;
+  label: string;
+  type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'radio' | 'text-block';
+  required: boolean;
+  options: string[];
+  active?: boolean;
+  text?: string;
+  isScreening?: boolean;
+  screeningType?: 'minimum' | 'choice';
+  minimum?: number;
+  accepted?: string[];
+};
 export type Hours = { day: number; enabled: boolean; start: string; end: string };
 export type BookingPage = {
   crmRouting?: { pipelineId?: string; stageId?: string };
@@ -64,9 +76,54 @@ export function readPages(): BookingPage[] {
   });
 }
 
+export function syncQualificationQuestions(questions: Question[]): QualificationQuestion[] {
+  return questions
+    .filter(q => q.active !== false && q.isScreening && q.type !== 'text-block' && !['name', 'email', 'whatsapp'].includes(q.id))
+    .map(q => {
+      const label = q.label.trim();
+      const isChoice = q.screeningType === 'choice' || q.type === 'select' || q.type === 'radio';
+      if (isChoice) {
+        const options = q.options.map(o => o.trim()).filter(Boolean);
+        const accepted = (q.accepted ?? []).map(o => o.trim()).filter(o => options.includes(o));
+        return { id: q.id, label, type: 'choice' as const, options, accepted };
+      }
+      return { id: q.id, label, type: 'minimum' as const, minimum: Number(q.minimum ?? 0) };
+    });
+}
+
+export function mergeScreeningIntoQuestions(questions: Question[], qualificationQuestions?: QualificationQuestion[]): Question[] {
+  if (!qualificationQuestions?.length) return questions;
+  const next = questions.map(q => ({ ...q }));
+  for (const rule of qualificationQuestions) {
+    const idx = next.findIndex(q => q.id === rule.id);
+    if (idx >= 0) {
+      next[idx] = {
+        ...next[idx],
+        label: rule.label || next[idx].label,
+        required: true,
+        isScreening: true,
+        screeningType: rule.type,
+        ...(rule.type === 'choice'
+          ? { type: ['select', 'radio'].includes(next[idx].type) ? next[idx].type : 'select', options: [...rule.options], accepted: [...rule.accepted] }
+          : { type: next[idx].type === 'text' ? 'number' : next[idx].type, minimum: rule.minimum }),
+      };
+    } else {
+      next.push(
+        rule.type === 'choice'
+          ? { id: rule.id, label: rule.label, type: 'select', required: true, active: true, options: [...rule.options], isScreening: true, screeningType: 'choice', accepted: [...rule.accepted] }
+          : { id: rule.id, label: rule.label, type: 'number', required: true, active: true, options: [], isScreening: true, screeningType: 'minimum', minimum: rule.minimum }
+      );
+    }
+  }
+  return next;
+}
+
 export function normalizeBookingPage(p: Partial<BookingPage>): BookingPage {
     const base = blankPage();
-    return { ...base, ...p, hostName: typeof p.hostName === 'string' ? p.hostName : '', durationOptions: p.durationOptions || [p.duration || 30], locationOptions: p.locationOptions || [p.location || 'Zoom'], afterBooking: { ...base.afterBooking, ...p.afterBooking }, locations: p.locations?.length ? p.locations : (p.locationOptions || [p.location || 'None']).map((label, index) => locationFromLabel(label, 'location-' + index)), formSettings: { ...base.formSettings, ...p.formSettings }, notificationWorkflows: { ...base.notificationWorkflows, ...p.notificationWorkflows }, templateSettings: { ...base.templateSettings, ...p.templateSettings } };
+    const mergedQuestions = mergeScreeningIntoQuestions(p.questions?.length ? p.questions : base.questions, p.qualificationQuestions);
+    const derivedRules = syncQualificationQuestions(mergedQuestions);
+    const qualificationQuestions = derivedRules.length ? derivedRules : p.qualificationQuestions;
+    return { ...base, ...p, questions: mergedQuestions, ...(qualificationQuestions?.length ? { qualificationQuestions } : {}), hostName: typeof p.hostName === 'string' ? p.hostName : '', durationOptions: p.durationOptions || [p.duration || 30], locationOptions: p.locationOptions || [p.location || 'Zoom'], afterBooking: { ...base.afterBooking, ...p.afterBooking }, locations: p.locations?.length ? p.locations : (p.locationOptions || [p.location || 'None']).map((label, index) => locationFromLabel(label, 'location-' + index)), formSettings: { ...base.formSettings, ...p.formSettings }, notificationWorkflows: { ...base.notificationWorkflows, ...p.notificationWorkflows }, templateSettings: { ...base.templateSettings, ...p.templateSettings } };
 }
 
 export function subscribeStored(key: string, refresh: () => void) {

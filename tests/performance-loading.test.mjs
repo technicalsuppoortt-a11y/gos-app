@@ -12,10 +12,27 @@ function load(file, mocks = {}, globals = {}) {
   return exports;
 }
 
-function harness() {
-  let path = '/dashboard/crm', cursor = 0;
+function harness(initialPath = '/dashboard/crm') {
+  let path = initialPath, cursor = 0, eventDepth = 0, screeningReads = 0;
   const hooks = [], effects = [], listeners = [], writes = [], storeListeners = new Set();
-  const state = { auth: { user: { id: 'user-a' }, tenant: { id: 'tenant-a' } }, crm: { leads: [], pipelines: [] } };
+  const timers = new Map(), events = new Map(), errors = [];
+  const state = { auth: { user: { id: 'user-a' }, tenant: { id: 'tenant-a' }, token: 'verified' }, crm: { leads: [], pipelines: [] } };
+  class MockEvent {
+    constructor(type, options) { this.type = type; Object.assign(this, options); }
+  }
+  const window = {
+    localStorage: { getItem() { screeningReads++; return null; } },
+    addEventListener(type, fn) {
+      if (!events.has(type)) events.set(type, new Set());
+      events.get(type).add(fn);
+    },
+    removeEventListener(type, fn) { events.get(type)?.delete(fn); },
+    dispatchEvent(event) {
+      assert.ok(++eventDepth <= 5, 'Workspace notifications must not recurse');
+      try { events.get(event.type)?.forEach(fn => fn(event)); }
+      finally { eventDepth--; }
+    },
+  };
   const store = { getState: () => state, subscribe(fn) { storeListeners.add(fn); return () => storeListeners.delete(fn); }, dispatch(action) {
     state.crm = { ...state.crm, ...action.payload };
     storeListeners.forEach(fn => fn());
@@ -38,23 +55,44 @@ function harness() {
     'firebase/firestore': firestore, './firebase': { db: {}, backendError: error => error.message, callBackend: async () => {} },
     './session': { forceSignOut() {}, SessionError: Error }, '../store': { store }, '../utils/toast': { showToast: { success() {}, error() {} } },
     '../store/slices/crmSlice': { hydrateCRM: payload => ({ payload }) }, './writeStatus': { beginWrite: () => () => {} },
-    '../components/common/WorkspaceLoading': { WorkspaceLoading: 'loading' }, './workspaceResources': resources,
+    '../components/common/WorkspaceLoading': { WorkspaceLoading: 'loading', WorkspaceAccessError: 'load-error' }, './workspaceResources': resources,
     './firestoreCodec': load('../src/backend/firestoreCodec.ts'), './assetPersistence': load('../src/backend/assetPersistence.ts'), '../utils/safeDate': load('../src/utils/safeDate.ts'),
-  }, { window: { dispatchEvent() {} }, StorageEvent: class {}, CustomEvent: class {}, Event: class {} });
+  }, {
+    window, StorageEvent: MockEvent, CustomEvent: MockEvent, Event: MockEvent,
+    console: { error: (...args) => errors.push(args) },
+    setTimeout(fn, delay) { const timer = Symbol(); timers.set(timer, { fn, delay }); return timer; },
+    clearTimeout(timer) { timers.delete(timer); },
+  });
   const render = () => { cursor = 0; const result = module.WorkspaceData({ children: 'ready' }); while (effects.length) effects.shift()(); return result; };
   function emit(resource, rows = [], scope = state.auth.tenant.id) {
     const ref = resource === 'membership' ? `tenants/${scope}/members/user-a` : `tenants/${scope}/${resource}`;
-    const snapshot = resource === 'membership' ? { data: () => rows } : { docs: rows.map(row => ({ id: row.id, data: () => row })), forEach(fn) { this.docs.forEach(fn); } };
+    const snapshot = resource === 'membership' ? { exists: () => rows !== null, data: () => rows } : { docs: rows.map(row => ({ id: row.id, data: () => row })), forEach(fn) { this.docs.forEach(fn); } };
     listeners.filter(listener => listener.active && listener.ref === ref).forEach(listener => listener.next(snapshot));
   }
   const active = () => listeners.filter(listener => listener.active);
-  const collections = () => active().filter(listener => listener.ref.split('/').length === 3).map(listener => listener.ref.split('/').at(-1));
-  return { module, state, writes, listeners, active, collections, render, emit, navigate(next) { path = next; return render(); } };
+  const collections = () => active().map(listener => listener.ref.split('/'))
+    .filter(parts => parts[0] === 'tenants' && parts.length === 3 && parts[2] !== 'checkoutRequests').map(parts => parts[2]);
+  return {
+    module, state, writes, listeners, active, collections, render, emit, errors, timers,
+    navigate(next) { path = next; return render(); },
+    expireLoad() {
+      assert.equal(timers.size, 1);
+      const [id, { fn, delay }] = [...timers][0];
+      assert.equal(delay, 4_000);
+      timers.delete(id);
+      fn();
+    },
+    screeningEvent() {
+      const before = screeningReads;
+      window.dispatchEvent(new MockEvent('storage', { key: 'gos.booking.pending-leads.v1' }));
+      assert.equal(screeningReads - before, 1);
+    },
+  };
 }
 
-test('CRM mounts after its six resources, keeps IDs, and does not write during hydration', () => {
+test('CRM mounts after its required resources, keeps IDs, and does not write during hydration', () => {
   const h = harness(); h.render(); h.emit('membership', { active: true, permissions: ['*'] });
-  assert.deepEqual(h.collections().sort(), ['contacts', 'leads', 'members', 'pipelines', 'userTemplates', 'workspaceState'].sort());
+  assert.deepEqual(h.collections().sort(), ['bookings', 'calendars', 'contacts', 'leads', 'members', 'orders', 'pipelines', 'products', 'transactions', 'userTemplates', 'workspaceState']);
   for (const resource of h.collections().filter(resource => resource !== 'pipelines')) h.emit(resource, resource === 'leads' ? [{ id: 'booking-original', name: 'Customer' }] : []);
   assert.notEqual(h.render(), 'ready');
   h.emit('pipelines', [{ id: 'pipeline-original' }]);
@@ -69,11 +107,11 @@ test('new modules wait for their data, preserve existing listeners and reject pr
   h.collections().forEach(resource => h.emit(resource)); assert.equal(h.render(), 'ready');
   assert.notEqual(h.navigate('/dashboard/products'), 'ready');
   assert.equal(h.collections().length, 21);
-  assert.throws(() => h.module.cloudStorage.setItem('entity:products', '[]'), /still loading/);
+  assert.throws(() => h.module.cloudStorage.setItem('entity:domains', '[]'), /still loading/);
   h.collections().forEach(resource => h.emit(resource)); assert.equal(h.render(), 'ready');
   assert.equal(h.navigate('/dashboard/crm'), 'ready');
   assert.equal(new Set(h.collections()).size, 21);
-  assert.equal(h.listeners.length, 22);
+  assert.equal(h.listeners.length, 25);
 });
 
 test('membership changes clear caches, ignore stale snapshots and honor restricted permissions', () => {
@@ -88,8 +126,52 @@ test('membership changes clear caches, ignore stale snapshots and honor restrict
   h.collections().forEach(resource => h.emit(resource)); assert.equal(h.render(), 'ready');
   h.state.auth.tenant = { id: 'tenant-b' }; assert.notEqual(h.render(), 'ready');
   assert.equal(h.module.cloudStorage.getItem('entity:leads'), null);
-  assert.equal(h.active().length, 1);
-  assert.equal(h.active()[0].ref, 'tenants/tenant-b/members/user-a');
+  assert.deepEqual(h.active().map(listener => listener.ref), ['tenants/tenant-b/members/user-a', 'settings/team_tenant-b/members/user-a']);
+});
+
+test('dashboard snapshots and screening submissions do not recursively notify the workspace', () => {
+  const h = harness('/dashboard');
+  h.render();
+  h.emit('membership', null);
+  h.collections().forEach(resource => h.emit(resource, resource === 'leads' ? [{ id: 'lead-a' }] : []));
+  assert.equal(h.render(), 'ready');
+  h.screeningEvent();
+  assert.equal(h.render(), 'ready');
+  assert.equal(h.errors.length, 0);
+  assert.equal(h.timers.size, 0);
+});
+
+test('dashboard waits for the session token, times out on a missing snapshot, and recovers when it arrives', () => {
+  const h = harness('/dashboard');
+  h.state.auth.token = null;
+  assert.equal(h.render().type, 'loading');
+  assert.equal(h.active().length, 0);
+  h.state.auth.token = 'verified';
+  h.render();
+  h.emit('membership', null);
+  h.collections().filter(resource => resource !== 'assets').forEach(resource => h.emit(resource));
+  h.expireLoad();
+  assert.equal(h.render().type, 'load-error');
+  h.emit('assets', [{ id: 'asset-a' }]);
+  assert.equal(h.render(), 'ready');
+  assert.match(h.module.cloudStorage.getItem('entity:assets'), /asset-a/);
+});
+
+test('dashboard reports listener errors and retry replaces the failed subscriptions', () => {
+  const h = harness('/dashboard');
+  h.render();
+  h.emit('membership', null);
+  const failed = h.active().find(listener => listener.ref.endsWith('/assets'));
+  failed.error({ code: 'unavailable' });
+  const fallback = h.render();
+  assert.equal(fallback.type, 'load-error');
+  assert.equal(h.timers.size, 0);
+  fallback.props.onRetry();
+  assert.equal(h.render().type, 'loading');
+  assert.equal(failed.active, false);
+  h.emit('membership', null);
+  h.collections().forEach(resource => h.emit(resource));
+  assert.equal(h.render(), 'ready');
 });
 
 test('generated responsive thumbnails are much smaller and preserve custom upload URLs', () => {
@@ -120,20 +202,22 @@ test('profile display-name fallbacks and token roles do not cause an endless ref
       'firebase/firestore': { doc: (_db, ...parts) => parts.join('/'), getDoc: async () => { reads++; return { data: () => profile }; }, onSnapshot: (_ref, fn) => { onProfile = fn; return () => {}; } },
       './firebase': { primaryAuth: {}, primaryDb: {} }, './impersonation': { clearImpersonationContext() {} }, '../store': { store },
       '../store/slices/authSlice': { loginSuccess: payload => ({ type: 'login', payload }) }, './sessionState': { SessionReadyContext: { Provider: 'provider' } },
+      '../router/platformAccess': load('../src/router/platformAccess.ts'),
       './phoenixBrand': { clearPhoenixBrand() {} }, '../store/slices/uiSlice': {}, './phoenixLogin': {},
     });
     const tree = FirebaseSession({ children: 'public page' });
     assert.equal(tree.props.children, 'public page', 'public routes mount while auth is pending');
     assert.equal(tree.props.value, false, 'protected routes still receive pending readiness');
     await onToken(user);
+    const initialReads = reads;
     for (let i = 0; i < 3; i++) await onProfile({ exists: () => true, data: () => profile });
     assert.equal(refreshes, 0);
-    assert.equal(reads, 1);
+    assert.equal(reads, initialReads);
     assert.equal(state.auth.role, claims.role);
     assert.equal(state.auth.user.name, 'Display name');
     await onProfile({ exists: () => true, data: () => ({ ...profile, name: 'Updated name' }) });
     assert.equal(refreshes, 1, 'real changes still refresh claims');
-    assert.equal(reads, 1, 'the token observer owns the next resolution');
+    assert.equal(reads, initialReads, 'the token observer owns the next resolution');
   }
 });
 

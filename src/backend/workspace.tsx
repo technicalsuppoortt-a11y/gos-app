@@ -16,6 +16,7 @@ import { createAssetPersistence } from './assetPersistence';
 import { safeDate } from '../utils/safeDate';
 
 const isAuthFailure = (error: unknown) => ['permission-denied', 'unauthenticated'].includes((error as { code?: string })?.code || '');
+const workspaceLoadTimeoutMs = 4_000;
 
 export function normalizeFirestoreData<T>(val: T): T {
   if (val === null || val === undefined) return val;
@@ -46,7 +47,7 @@ const initializedResources = new Set<string>();
 const revisions = new Map<string, number>();
 const rawEntitySnapshots = new Map<string, Record<string, any>[]>();
 const rawCheckoutRequests = new Map<'tenant' | 'mirror', Record<string, any>[]>();
-const commerceResources = new Set(['products', 'orders', 'transactions', 'contacts', 'discounts', 'leads']);
+const commerceResources = new Set(['products', 'orders', 'transactions', 'contacts', 'discounts', 'leads', 'bookings', 'calendars']);
 const syncedCommerceLeadSignatures = new Map<string, string>();
 
 function resetRawCommerceCache() {
@@ -804,6 +805,183 @@ function reconcileCommerceFromRequests() {
       }
     }
   }
+
+  // 7. CRM Leads Sync from Pending Screening Submissions & Bookings
+  let pendingScreeningLeads: Record<string, any>[] = [];
+  if (typeof window !== 'undefined') {
+    try {
+      const rawPending = window.localStorage.getItem('gos.booking.pending-leads.v1');
+      if (rawPending) {
+        const parsedPending = JSON.parse(rawPending);
+        if (Array.isArray(parsedPending)) {
+          pendingScreeningLeads = parsedPending.filter(item => item && typeof item.id === 'string');
+        }
+      }
+    } catch {
+      pendingScreeningLeads = [];
+    }
+  }
+
+  const bookingsList = readEntityList('bookings');
+  if (
+    (pendingScreeningLeads.length > 0 || bookingsList.length > 0) &&
+    (initializedResources.has('leads') || rawEntitySnapshots.has('leads') || pendingScreeningLeads.length > 0)
+  ) {
+    const currentLeads = (() => {
+      try {
+        const parsed = JSON.parse(cache.get('entity:leads') ?? 'null');
+        if (Array.isArray(parsed)) return [...parsed];
+      } catch {}
+      return [...readEntityList('leads')];
+    })();
+    const bookingLeadsToPersist: Record<string, any>[] = [];
+
+    // (a) Reconcile pending screening leads (disqualified screening submissions)
+    for (const pLead of pendingScreeningLeads) {
+      const pEmail = String(pLead.email || '').trim().toLowerCase();
+      const pPhone = String(pLead.phone || '').replace(/\D/g, '');
+      const idx = currentLeads.findIndex(lead => {
+        if (!lead || typeof lead.id !== 'string') return false;
+        if (lead.id === pLead.id) return true;
+        if (pEmail && String(lead.email || '').trim().toLowerCase() === pEmail) return true;
+        if (pPhone.length >= 7 && String(lead.phone || '').replace(/\D/g, '') === pPhone) return true;
+        return false;
+      });
+      if (idx < 0) {
+        currentLeads.unshift(pLead);
+        bookingLeadsToPersist.push(pLead);
+      } else {
+        const existing = currentLeads[idx];
+        const alreadyBooked = existing.bookingStatus === 'Booked' || existing.bookingStatus === 'Completed';
+        const mergedTags = [
+          ...new Set([
+            ...(Array.isArray(existing.tags) ? existing.tags : []),
+            ...(alreadyBooked ? ['Booking'] : Array.isArray(pLead.tags) ? pLead.tags : ['Booking', 'Pending Booking']),
+          ]),
+        ];
+        const mergedNotes = [
+          ...new Set([
+            ...(Array.isArray(pLead.notes) ? pLead.notes : []),
+            ...(Array.isArray(existing.notes) ? existing.notes : []),
+          ]),
+        ];
+        const mergedActivities = [
+          ...(Array.isArray(pLead.activities) ? pLead.activities : []),
+          ...(Array.isArray(existing.activities) ? existing.activities : []).filter(
+            (a: any) => !Array.isArray(pLead.activities) || !pLead.activities.some((pa: any) => pa?.id === a?.id)
+          ),
+        ];
+        const nextLead = {
+          ...existing,
+          name: existing.name || pLead.name,
+          email: existing.email || pLead.email,
+          phone: existing.phone || pLead.phone,
+          source: existing.source || 'Booking',
+          pipelineId: existing.pipelineId || pLead.pipelineId || 'main',
+          stage: existing.stage || pLead.stage || 'LEAD_CAPTURED',
+          lifecycleStage: existing.lifecycleStage || pLead.lifecycleStage || 'LEAD_CAPTURED',
+          bookingStatus: alreadyBooked ? existing.bookingStatus : 'Pending Booking',
+          qualificationStatus: alreadyBooked ? existing.qualificationStatus : 'Unqualified',
+          interest: existing.interest || pLead.interest,
+          tags: mergedTags,
+          notes: mergedNotes,
+          activities: mergedActivities,
+          lastActivity:
+            String(pLead.lastActivity || '') > String(existing.lastActivity || '')
+              ? pLead.lastActivity
+              : existing.lastActivity,
+        };
+        if (JSON.stringify(existing) !== JSON.stringify(nextLead)) {
+          currentLeads[idx] = nextLead;
+          bookingLeadsToPersist.push(nextLead);
+        }
+      }
+    }
+
+    // (b) Reconcile appointments from entity:bookings
+    const calendarsList = readEntityList('calendars');
+    for (const b of bookingsList) {
+      if (!b || typeof b.id !== 'string' || b.status === 'Canceled') continue;
+      const bEmail = String(b.email || '').trim().toLowerCase();
+      const bPhone = String(b.whatsapp || '').replace(/\D/g, '');
+      const cal = calendarsList.find(c => c?.id === b.calendarId);
+      const isPendingApt = b.status === 'Pending';
+      const idx = currentLeads.findIndex(lead => {
+        if (!lead || typeof lead.id !== 'string') return false;
+        if (lead.bookingId === b.id || lead.id === `lead-booking-${b.id}`) return true;
+        if (bEmail && String(lead.email || '').trim().toLowerCase() === bEmail) return true;
+        if (bPhone.length >= 7 && String(lead.phone || '').replace(/\D/g, '') === bPhone) return true;
+        return false;
+      });
+      if (idx < 0 && (bEmail || b.name)) {
+        const fullName = String(b.name || (bEmail ? bEmail.split('@')[0] : 'Invitee')).trim();
+        const stage = isPendingApt
+          ? cal?.crmRouting?.stageId || 'LEAD_CAPTURED'
+          : cal?.crmRouting?.stageId || 'BOOKING';
+        const now = b.createdAt || b.start || new Date().toISOString();
+        const newLead = {
+          id: `lead-booking-${b.id}`,
+          bookingId: b.id,
+          name: fullName,
+          email: bEmail,
+          phone: String(b.whatsapp || '').trim(),
+          company: '',
+          source: 'Booking',
+          owner: 'Unassigned',
+          value: Number(b.payment?.amount || 0) || 0,
+          currency: b.payment?.currency || 'USD',
+          pipelineId: cal?.crmRouting?.pipelineId || 'main',
+          stage,
+          lifecycleStage: stage,
+          bookingStatus: isPendingApt ? 'Pending Booking' : 'Booked',
+          qualificationStatus: isPendingApt ? 'Pending' : 'Qualified',
+          followUpState: isPendingApt ? 'NEW' : 'BOOKED',
+          interest: `${b.serviceName || cal?.name || 'Booking'} (${b.date || ''} ${b.time || ''})`.trim(),
+          avatar:
+            fullName
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part: string) => part[0])
+              .join('')
+              .toUpperCase() || 'B',
+          color: isPendingApt ? 'amber' : 'lilac',
+          hasWhatsAppConsent: Boolean(b.whatsapp),
+          hasMessagingConsent: true,
+          hasEmailConsent: Boolean(bEmail),
+          tags: isPendingApt ? ['Booking', 'Pending Booking'] : ['Booking'],
+          notes: [],
+          activities: [
+            {
+              id: `act-booking-${b.id}`,
+              type: 'booking',
+              title: isPendingApt ? 'Booking request pending' : 'Appointment booked',
+              detail: `${b.serviceName || cal?.name || 'Appointment'} · ${b.date || ''} ${b.time || ''}`.trim(),
+              at: now,
+            },
+          ],
+          lastActivity: now,
+          createdAt: now,
+        };
+        currentLeads.unshift(newLead);
+        bookingLeadsToPersist.push(newLead);
+      }
+    }
+
+    cache.set('entity:leads', JSON.stringify(currentLeads));
+    if (tenantId && initializedResources.has('leads') && bookingLeadsToPersist.length > 0) {
+      const activeScope = tenantId;
+      for (const lead of bookingLeadsToPersist) {
+        store.dispatch({ type: 'crm/setLeadBackend', payload: { scope: activeScope, id: lead.id, backend: 'firestore' } });
+        const sigKey = `${activeScope}:${lead.id}`;
+        const sig = JSON.stringify(lead);
+        if (syncedCommerceLeadSignatures.get(sigKey) !== sig) {
+          syncedCommerceLeadSignatures.set(sigKey, sig);
+          void setDoc(doc(db, 'tenants', activeScope, 'leads', lead.id), encodeFirestoreValue(lead), { merge: true }).catch(() => {});
+        }
+      }
+    }
+  }
 }
 const entityCollections = ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'events', 'assets', 'domains', 'copilotConversations', 'members', 'userTemplates'] as const;
 function entityFor(key: string): string | undefined {
@@ -952,17 +1130,22 @@ export function useEntities<T>(resource: typeof entityCollections[number]): T[] 
 }
 export function WorkspaceData({ children }: { children: ReactNode }) {
   const scope = useSelector((state: RootState) => state.auth.tenant?.id);
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const hasToken = useSelector((state: RootState) => Boolean(state.auth.token));
+  const sessionKey = JSON.stringify([scope, userId, hasToken]);
   const { pathname } = useLocation();
   const pathRef = useRef(pathname); pathRef.current = pathname;
   const requestResources = useRef<() => void>(() => {});
   const allowedResources = useRef<string[]>([]);
-  const [status, setStatus] = useState({ scope: '', ready: false, error: '' });
+  const [status, setStatus] = useState({ sessionKey: '', ready: false, error: '' });
   const [retry, setRetry] = useState(0);
+  const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {
     assetPersistence.reset();
-    cache.clear(); resetRawCommerceCache(); initializedResources.clear(); revisions.clear(); tenantId = scope ?? ''; loaded = false;
+    cache.clear(); resetRawCommerceCache(); initializedResources.clear(); revisions.clear(); tenantId = ''; loaded = false;
     notify();
-    if (!scope) return;
+    if (!scope || !userId || !hasToken) return;
+    tenantId = scope;
     let crmState = store.getState().crm;
     let hydrating = false;
     const unsubscribeCrm = store.subscribe(() => {
@@ -974,15 +1157,31 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     });
     const hydrate = () => {
       hydrating = true;
-      store.dispatch(hydrateCRM({ leads: readCloud<CanonicalLead[]>('gos-crm-leads-v1', []), pipelines: readCloud<Pipeline[]>('gos-crm-pipelines-v1', []), workspaceScope: scope }));
-      crmState = store.getState().crm; hydrating = false;
+      try {
+        store.dispatch(hydrateCRM({ leads: readCloud<CanonicalLead[]>('gos-crm-leads-v1', []), pipelines: readCloud<Pipeline[]>('gos-crm-pipelines-v1', []), workspaceScope: scope }));
+      } finally {
+        crmState = store.getState().crm;
+        hydrating = false;
+      }
     };
     let unsubscribers: (() => void)[] = [];
     let permissionSignature = '';
     let generation = 0;
     let active = true;
+    const isActiveSession = () => {
+      const auth = store.getState().auth;
+      return active && auth.tenant?.id === scope && auth.user?.id === userId && Boolean(auth.token);
+    };
+    const onPendingBookingLeadEvent = (event: StorageEvent) => {
+      // notify() emits generic storage events too. Only screening submissions trigger reconciliation.
+      if (event.key !== 'gos.booking.pending-leads.v1' || !isActiveSession() || !initializedResources.has('leads')) return;
+      reconcileCommerceFromRequests();
+      hydrate();
+      notify();
+    };
+    window.addEventListener('storage', onPendingBookingLeadEvent);
     const applyMembership = (member?: Record<string, any>) => {
-      if (!active) return;
+      if (!isActiveSession()) return;
       const isDeactivated =
         member?.status === 'Deactivated' ||
         member?.status === 'Inactive' ||
@@ -1003,13 +1202,13 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       unsubscribers = [];
       assetPersistence.reset();
       cache.clear(); resetRawCommerceCache(); initializedResources.clear(); loaded = false; hydrate(); notify();
-      setStatus({ scope, ready: false, error: '' });
+      setStatus({ sessionKey, ready: false, error: '' });
       const resources = entityCollections.filter(resource => resource === 'members' || permissions.includes('*') || permissions.includes('analytics') || permissions.includes(resourcePermissions[resource]));
       const allowed = ['workspaceState', ...resources];
       allowedResources.current = allowed;
       const subscribed = new Set<string>();
       const failures = new Map<string, string>();
-      const isCurrent = () => active && current === generation;
+      const isCurrent = () => isActiveSession() && current === generation;
       const required = () => workspaceResources(pathRef.current, allowed);
       const updateStatus = () => {
         if (!isCurrent()) return;
@@ -1017,8 +1216,14 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
         const error = needed.map(resource => failures.get(resource)).find(Boolean) || '';
         const ready = !error && needed.every(resource => initializedResources.has(resource));
         if (ready) loaded = true;
-        setStatus(previous => previous.scope === scope && previous.ready === ready && previous.error === error
-          ? previous : { scope, ready, error });
+        setStatus(previous => previous.sessionKey === sessionKey && previous.ready === ready && previous.error === error
+          ? previous : { sessionKey, ready, error });
+      };
+      const failResource = (resource: string, error: unknown) => {
+        initializedResources.delete(resource);
+        failures.set(resource, 'Workspace data could not be loaded.');
+        console.error(`Could not load workspace resource ${resource}.`, error);
+        updateStatus();
       };
       requestResources.current = () => {
         if (!isCurrent()) return;
@@ -1070,44 +1275,54 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
         for (const resource of required()) {
           if (subscribed.has(resource)) continue;
           subscribed.add(resource);
-          unsubscribers.push(onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', store.getState().auth.user!.id)) : collection(db, 'tenants', scope, resource), snapshot => {
+          unsubscribers.push(onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', userId)) : collection(db, 'tenants', scope, resource), snapshot => {
             if (!isCurrent()) return;
-            const previous = new Map(cache);
-            if (resource === 'workspaceState') {
-              for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
-              snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
-              reconcileCommerceFromRequests();
-            } else {
-              let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
-              if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
-              if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
-              if (commerceResources.has(resource)) {
-                rawEntitySnapshots.set(resource, rows);
-              }
-              cache.set('entity:' + resource, JSON.stringify(rows));
-              if (commerceResources.has(resource)) {
+            try {
+              const previous = new Map(cache);
+              if (resource === 'workspaceState') {
+                for (const key of cache.keys()) if (!key.startsWith('entity:')) cache.delete(key);
+                snapshot.forEach(item => { const data = decodeFirestoreValue(normalizeFirestoreData(item.data())); cache.set(data.key, JSON.stringify(data.value)); });
                 reconcileCommerceFromRequests();
+              } else {
+                let rows = snapshot.docs.map(item => decodeFirestoreValue(normalizeFirestoreData({ ...item.data(), id: item.id })));
+                if (resource === 'assets') rows = rows.map(row => ({ domain: '', ...row }));
+                if (resource === 'assets' || resource === 'domains') rows = assetPersistence.mergeSnapshot(resource, rows);
+                if (commerceResources.has(resource)) {
+                  rawEntitySnapshots.set(resource, rows);
+                }
+                cache.set('entity:' + resource, JSON.stringify(rows));
+                if (commerceResources.has(resource)) {
+                  reconcileCommerceFromRequests();
+                }
               }
+              initializedResources.add(resource);
+              failures.delete(resource);
+              const changed = previous.size !== cache.size || [...cache].some(([key, value]) => previous.get(key) !== value);
+              const crmEntitiesChanged = previous.get('entity:leads') !== cache.get('entity:leads') || previous.get('entity:pipelines') !== cache.get('entity:pipelines');
+              if ((changed && (resource === 'leads' || resource === 'pipelines') || crmEntitiesChanged) && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
+              updateStatus();
+              if (changed) notify();
+            } catch (error) {
+              failResource(resource, error);
             }
-            initializedResources.add(resource);
-            failures.delete(resource);
-            const changed = previous.size !== cache.size || [...cache].some(([key, value]) => previous.get(key) !== value);
-            const crmEntitiesChanged = previous.get('entity:leads') !== cache.get('entity:leads') || previous.get('entity:pipelines') !== cache.get('entity:pipelines');
-            if ((changed && (resource === 'leads' || resource === 'pipelines') || crmEntitiesChanged) && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
-            updateStatus();
-            if (changed) notify();
-          }, () => {
+          }, error => {
             if (!isCurrent()) return;
-            if (resource !== 'workspaceState' && !cache.has('entity:' + resource)) {
-              cache.set('entity:' + resource, '[]');
-              if (commerceResources.has(resource)) {
-                reconcileCommerceFromRequests();
+            // Some optional collections are intentionally unreadable for restricted accounts.
+            if (error.code !== 'permission-denied') { failResource(resource, error); return; }
+            try {
+              if (resource !== 'workspaceState' && !cache.has('entity:' + resource)) {
+                cache.set('entity:' + resource, '[]');
+                if (commerceResources.has(resource)) {
+                  reconcileCommerceFromRequests();
+                }
               }
+              initializedResources.add(resource);
+              failures.delete(resource);
+              if ((resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
+              updateStatus();
+            } catch (error) {
+              failResource(resource, error);
             }
-            initializedResources.add(resource);
-            failures.delete(resource);
-            if ((resource === 'leads' || resource === 'pipelines') && initializedResources.has('leads') && initializedResources.has('pipelines')) hydrate();
-            updateStatus();
           }));
         }
         updateStatus();
@@ -1119,24 +1334,52 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     const syncMergedMembership = () => {
       applyMembership(settingsMemData ?? tenantMemData);
     };
-    const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', store.getState().auth.user!.id), membership => {
-      tenantMemData = membership.exists() ? membership.data() : undefined;
+    const membershipUnsubscribe = onSnapshot(doc(db, 'tenants', scope, 'members', userId), membership => {
+      tenantMemData = typeof membership.exists === 'function' ? (membership.exists() ? membership.data() : undefined) : membership.data?.();
       syncMergedMembership();
     }, () => {
       tenantMemData = undefined;
       syncMergedMembership();
     });
-    const settingsMembershipUnsubscribe = onSnapshot(doc(db, 'settings', `team_${scope}`, 'members', store.getState().auth.user!.id), membership => {
-      settingsMemData = membership.exists() ? membership.data() : undefined;
+    const settingsMembershipUnsubscribe = onSnapshot(doc(db, 'settings', `team_${scope}`, 'members', userId), membership => {
+      settingsMemData = typeof membership.exists === 'function' ? (membership.exists() ? membership.data() : undefined) : membership.data?.();
       if (settingsMemData) syncMergedMembership();
     }, () => {});
-    return () => { active = false; generation++; requestResources.current = () => {}; assetPersistence.reset(); unsubscribeCrm(); membershipUnsubscribe(); settingsMembershipUnsubscribe(); unsubscribers.forEach(unsubscribe => unsubscribe()); cache.clear(); resetRawCommerceCache(); initializedResources.clear(); loaded = false; tenantId = ''; hydrate(); };
-  }, [scope, retry]);
+    return () => {
+      active = false;
+      generation++;
+      requestResources.current = () => {};
+      window.removeEventListener('storage', onPendingBookingLeadEvent);
+      assetPersistence.reset();
+      unsubscribeCrm();
+      membershipUnsubscribe();
+      settingsMembershipUnsubscribe();
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+      cache.clear();
+      resetRawCommerceCache();
+      initializedResources.clear();
+      loaded = false;
+      tenantId = '';
+      hydrate();
+    };
+  }, [scope, userId, hasToken, sessionKey, retry]);
   useEffect(() => { requestResources.current(); }, [pathname]);
   const routeReady = workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));
-  if (status.scope !== scope || !status.ready || !routeReady) {
-    if (status.error && status.scope === scope) return <WorkspaceAccessError message={status.error} onRetry={() => { setStatus({ scope, ready: false, error: '' }); setRetry(value => value + 1); }}/>;
-    return <WorkspaceLoading/>;
+  const ready = status.sessionKey === sessionKey && status.ready && routeReady;
+  const error = status.sessionKey === sessionKey ? status.error : '';
+  useEffect(() => {
+    setTimedOut(false);
+    if (ready || error) return;
+    const timer = setTimeout(() => setTimedOut(true), workspaceLoadTimeoutMs);
+    return () => clearTimeout(timer);
+  }, [sessionKey, pathname, retry, ready, error]);
+  if (ready) return children;
+  if (error || timedOut) {
+    return <WorkspaceAccessError message={error || 'Workspace data is taking longer than expected.'} onRetry={() => {
+      setTimedOut(false);
+      setStatus({ sessionKey, ready: false, error: '' });
+      setRetry(value => value + 1);
+    }}/>;
   }
-  return children;
+  return <WorkspaceLoading/>;
 }

@@ -12,6 +12,6 @@ import '../../src/i18n/i18n';
 import '../../src/index.css';
 import '../../src/pages/admin/admin-workspace.css';
 const params = new URLSearchParams(location.search), view = params.get('view') || 'admin';
-store.dispatch(loginSuccess({ user: { id: 'fixture', name: 'Fixture', email: 'fixture@example.com' }, tenant: { id: 'fixture', name: 'Fixture workspace' }, role: view === 'admin' ? 'ADMIN' : 'USER', token: 'fixture' }));
+store.dispatch(loginSuccess({ user: { id: 'fixture', name: 'Fixture', email: 'fixture@example.com' }, tenant: { id: 'fixture', name: 'Fixture workspace' }, role: view === 'admin' ? 'SUPER_ADMIN' : 'USER', token: 'fixture' }));
 if (params.get('theme') === 'dark') document.documentElement.classList.add('dark');
 createRoot(document.getElementById('root')!).render(<Provider store={store}><MemoryRouter><Routes><Route path="*" element={view === 'admin' ? <div className="adm-shell" style={{ padding: 24, overflow: 'auto', display: 'block' }}><AdminLiveManagement moduleId="templates"/></div> : view === 'booking' ? <BookingTemplates/> : view === 'products' ? <ProductTemplateLibrary/> : <main className="aw-workspace" style={{ padding: 24 }}><PageTemplateLibrary install={template => { (window as any).__installedPage = createPageAsset(template.mode, template.name, template); }}/></main>}/><Route path="/dashboard/booking/:id/edit" element={<h1>Booking copy created</h1>}/><Route path="/dashboard/products-payments/products/:id/edit" element={<h1>Product copy created</h1>}/></Routes></MemoryRouter></Provider>);

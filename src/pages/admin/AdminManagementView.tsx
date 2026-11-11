@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
-import { useMemo, useRef, useState } from 'react';
-import { Activity, ArrowUpDown, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Download, Eye, EyeOff, FileText, Globe2, Layers3, LayoutTemplate, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Activity, ArrowUpDown, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, CloudDownload, Copy, Download, Eye, EyeOff, FileText, Globe2, Layers3, LayoutGrid, LayoutTemplate, List, MoreVertical, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -29,6 +29,7 @@ const views: Record<string, { title: [string, string]; description: [string, str
 };
 type Row = ReturnType<typeof managementRow>;
 type Column = keyof Row;
+const GHL_VISUAL_CATEGORIES = new Set(['Websites', 'Funnels', 'Forms']);
 
 export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const { formatPrice } = useCurrency();
@@ -56,11 +57,24 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const [pipeline, setPipeline] = useState(''), [calendar, setCalendar] = useState('');
   const [page, setPage] = useState(1), [pageSize, setPageSize] = useState(10);
   const [sort, setSort] = useState<{ key: Column; direction: 1 | -1 }>({ key: 'name', direction: 1 });
+  const [viewOverride, setViewOverride] = useState<'grid' | 'table' | null>(null);
+  const [openMenuId, setOpenMenuId] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [editing, setEditing] = useState<ManagedTemplate | null>(null), [deleting, setDeleting] = useState<ManagedTemplate | null>(null);
   const [preview, setPreview] = useState<SitePreview | null>(null);
   const [notice, setNotice] = useState<{ message: string; error?: boolean } | null>(null), [busy, setBusy] = useState(false);
   const lock = useRef(false);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const closeMenu = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement | null)?.closest('.alm-ghl-menu-wrap')) setOpenMenuId('');
+    };
+    window.addEventListener('mousedown', closeMenu);
+    return () => window.removeEventListener('mousedown', closeMenu);
+  }, [openMenuId]);
+
+  const showTemplateGrid = isTemplates && (viewOverride ? viewOverride === 'grid' : GHL_VISUAL_CATEGORIES.has(category));
   const records = live.records.filter(r => r.path.split('/').at(-2) === resource);
   const calendars = live.records.filter(r => r.path.split('/').at(-2) === 'calendars');
   const pipelines = live.records.filter(r => r.path.split('/').at(-2) === 'pipelines');
@@ -69,10 +83,12 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const filtered = workspaceRows.filter(row => (!status || row.status === status) && (!source || row.source === source) && (!category || row.type === category) && (!pipeline || row.pipelineKey === pipeline) && (!calendar || row.calendarKey === calendar) && Object.values(row).join(' ').toLowerCase().includes(search.trim().toLowerCase()));
   const sorted = [...filtered].sort((a, b) => String(a[sort.key]).localeCompare(String(b[sort.key]), ar ? 'ar' : 'en', { numeric: true, sensitivity: 'base' }) * sort.direction);
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize)), current = Math.min(page, pages), start = (current - 1) * pageSize;
+  const visibleRows = sorted.slice(start, start + pageSize);
   const selected = isTemplates ? live.templates.find(item => item.id === selectedId) : records.find(item => item.path === selectedId);
   const columns: Column[] = ['name', ...(!isTemplates ? ['tenant', 'owner'] as const : library === 'client' ? ['owner'] as const : []), ...(resource === 'leads' ? ['pipeline', 'source'] as const : []), ...(resource === 'bookings' ? ['calendar', 'host', 'date'] as const : []), ...(resource === 'calendars' ? ['host'] as const : []), ...(resource === 'products' || isTemplates || resource === 'assets' ? ['type'] as const : []), ...(['products', 'orders', 'transactions'].includes(resource) ? ['amount', ...(['orders', 'transactions'].includes(resource) ? ['date'] as const : [])] as Column[] : []), 'status'];
   const labels: Partial<Record<Column, string>> = { name: t('Name / reference', 'الاسم / المرجع'), tenant: t('Workspace', 'مساحة العمل'), owner: library === 'client' ? t('Admin', 'الأدمن') : t('Owner', 'المالك'), pipeline: t('Pipeline', 'مسار المبيعات'), calendar: t('Calendar', 'التقويم'), source: t('Source', 'المصدر'), host: t('Host', 'المضيف'), date: t('Date / time', 'التاريخ والوقت'), type: t('Type', 'النوع'), amount: resource === 'products' ? t('Price', 'السعر') : t('Amount', 'المبلغ'), status: t('Status', 'الحالة') };
   const filterCount = [search, workspace, status, source, category, pipeline, calendar].filter(Boolean).length;
+
   async function action(fn: () => Promise<void>, success: string): Promise<string | null> {
     if (lock.current) return t('Another action is still saving.', 'لا يزال إجراء آخر قيد الحفظ.');
     lock.current = true; setBusy(true); setNotice(null);
@@ -92,9 +108,24 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   function openPreview(row: Row) {
     window.open(`/admin-preview?${new URLSearchParams(isTemplates ? { template: row.id, ...(library === 'mine' || library === 'client' ? { source: 'admin' } : {}) } : { record: row.id })}`, '_blank', 'noopener');
   }
+  function openCardPreview(row: Row, template?: OwnedTemplate) {
+    if (template?.builderDocument?.pages?.length) {
+      setPreview({
+        document: template.builderDocument,
+        name: template.name,
+        kind: template.category === 'Funnels' ? 'funnel' : 'website',
+        image: template.pageTemplate?.image,
+      });
+      return;
+    }
+    openPreview(row);
+  }
   const select = (label: string, value: string, values: string[], change: (value: string) => void, human = false) => <AdminSelect label={label} value={value} onChange={v => { change(v); setPage(1); }} options={[{ value: '', label }, ...[...new Set(values.filter(Boolean))].sort().map(v => ({ value: v, label: human ? humanLabel(v) : v }))]} />;
   function cell(row: Row, key: Column) {
-    if (key === 'name') return <div className="alm-record-cell"><span className="alm-record-icon">{isTemplates ? <LayoutTemplate size={18}/> : resource === 'assets' ? row.type === 'Forms' ? <FileText size={18}/> : <Globe2 size={18}/> : resource === 'leads' ? <Users size={18}/> : moduleId === 'booking' ? <CalendarDays size={18}/> : <Layers3 size={18}/>}</span><div><button className="alm-name-button" onClick={() => setSelectedId(row.id)}>{row.name}</button><small>{isTemplates ? live.templates.find(item => item.id === row.id)?.description || t('Global system template', 'قالب نظام عام') : row.email || row.domain || row.recordId}</small></div></div>;
+    if (key === 'name') {
+      const tpl = isTemplates ? live.templates.find(item => item.id === row.id) : undefined;
+      return <div className="alm-record-cell">{tpl?.thumbnail ? <img className="alm-row-thumb" src={tpl.thumbnail} alt="" width={38} height={48} loading="lazy" decoding="async" onError={e => { const fallback = `/template-thumbnails/${row.id}.jpg`; if (!e.currentTarget.src.endsWith(fallback)) e.currentTarget.src = fallback; }}/> : <span className="alm-record-icon">{isTemplates ? <LayoutTemplate size={18}/> : resource === 'assets' ? row.type === 'Forms' ? <FileText size={18}/> : <Globe2 size={18}/> : resource === 'leads' ? <Users size={18}/> : moduleId === 'booking' ? <CalendarDays size={18}/> : <Layers3 size={18}/>}</span>}<div><button className="alm-name-button" onClick={() => setSelectedId(row.id)}>{row.name}</button><small>{isTemplates ? tpl?.description || t('Global system template', 'قالب نظام عام') : row.email || row.domain || row.recordId}</small></div></div>;
+    }
     if (key === 'status') return <StatusPill value={row.status}/>;
     if (key === 'tenant') return <span className="alm-attribution"><strong>{row.tenant}</strong><small dir="ltr" title={row.workspaceId}>{row.workspaceId}</small></span>;
     if (key === 'owner') return <span className="alm-owner"><span className="alm-owner-avatar">{row.owner.slice(0, 1).toUpperCase()}</span><span className="alm-attribution"><strong>{row.owner}</strong><small dir="ltr" title={row.ownerId}>{row.ownerId || t('Owner not assigned', 'لم يحدد المالك')}</small></span></span>;
@@ -120,10 +151,10 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     {!live.error && unavailable && <div className="alm-error-inline" role="status"><Activity size={17}/><div><strong>{t('Some sources are unavailable. Showing accessible records.', 'بعض المصادر غير متاحة. تظهر السجلات المسموح بها.')}</strong><details><summary>{t('Unavailable sources', 'المصادر غير المتاحة')}</summary>{Object.entries(live.sourceErrors).map(([source, message]) => <p key={source}>{source}: {message}</p>)}</details></div></div>}
     {notice && <div className={`alm-notice ${notice.error ? 'error' : ''}`} role="status"><span>{notice.error ? <Activity size={17}/> : <Check size={17}/>}</span>{notice.message}<button className="alm-icon-button" aria-label={t('Dismiss', 'إغلاق')} onClick={() => setNotice(null)}><X size={15}/></button></div>}
     {isTemplates && <div className="alm-resource-tabs alm-library-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template libraries', 'مكتبات القوالب')}>{libraries.map(([id, label]) => <button key={id} role="tab" aria-selected={library === id} tabIndex={library === id ? 0 : -1} onClick={() => { setParams({ library: id }); setSelectedId(''); setCategory(''); setStatus(''); setPage(1); }}>{label}</button>)}</div>}
-    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); setPage(1); }}>{item || t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{item[ar ? 1 : 0]}</button>)}</div>}
+    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); setOpenMenuId(''); setPage(1); }}>{item || t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{item[ar ? 1 : 0]}</button>)}</div>}
     <section className="alm-table-panel" aria-label={view.title[ar ? 1 : 0]}>
       <div className="alm-table-heading"><div><h2>{isTemplates ? category || t('Master library', 'المكتبة الرئيسية') : view.tabs[tab]?.[ar ? 1 : 0]}<span>{filtered.length}</span></h2><p>{isTemplates ? (library === 'general' ? t('Templates from the platform library. You can preview, copy, and show or hide them for your users.', 'قوالب مكتبة المنصة. يمكنك معاينتها ونسخها وإظهارها أو إخفاؤها لمستخدميك.') : library === 'mine' ? t('Templates you create are visible only to your users.', 'القوالب التي تنشئها تظهر لمستخدميك فقط.') : library === 'client' ? t('Templates created by admins for their own users · view only.', 'قوالب أنشأها الأدمن لمستخدميهم · للعرض فقط.') : t('Published templates are available to every admin as General templates.', 'القوالب المنشورة متاحة لكل أدمن كقوالب عامة.')) : t('Inspect records while preserving workspace ownership.', 'استعرض السجلات مع الحفاظ على ملكية مساحة العمل.')}</p></div><span className="alm-monitor-label"><ShieldCheck size={14}/>{isTemplates ? t('System managed', 'بإدارة النظام') : t('Monitoring view', 'عرض المراقبة')}</span></div>
-      <div className="alm-filters"><label className="alm-search"><Search size={17}/><input aria-label={t('Search records', 'بحث في السجلات')} placeholder={t('Search name, owner or workspace…', 'ابحث بالاسم أو المالك أو مساحة العمل…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/>{search && <button className="alm-icon-button" onClick={() => { setSearch(''); setPage(1); }} aria-label={t('Clear search', 'مسح البحث')}><X size={14}/></button>}</label><div className="alm-filter-controls">
+      <div className="alm-filters"><label className="alm-search"><Search size={17}/><input aria-label={t('Search records', 'بحث في السجلات')} placeholder={isTemplates ? t('Search by template name or use case…', 'ابحث باسم القالب أو الاستخدام…') : t('Search name, owner or workspace…', 'ابحث بالاسم أو المالك أو مساحة العمل…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/>{search && <button className="alm-icon-button" onClick={() => { setSearch(''); setPage(1); }} aria-label={t('Clear search', 'مسح البحث')}><X size={14}/></button>}</label><div className="alm-filter-controls">
         {!isTemplates && <AdminSelect label={t('Workspace', 'مساحة العمل')} value={workspace} onChange={value => { setWorkspace(value); setPipeline(''); setCalendar(''); setPage(1); }} options={[{ value: '', label: t('All workspaces', 'كل مساحات العمل') }, ...Object.entries(live.tenants).map(([id, data]) => ({ value: id, label: `${data.name || id} · ${id}` }))]}/>}
         {resource === 'assets' && select(t('Asset subtype', 'نوع الأصل'), category, ['Funnels', 'Websites', 'Forms'], setCategory)}
         {resource === 'leads' && <AdminSelect label={t('Pipeline', 'مسار المبيعات')} value={pipeline} onChange={value => { setPipeline(value); setPage(1); }} options={[{ value: '', label: t('All pipelines', 'كل مسارات المبيعات') }, ...relationOptions(pipelines, 'pipelineKey', 'pipeline')]}/>}
@@ -131,11 +162,154 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
         {resource === 'leads' && select(t('All sources', 'كل المصادر'), source, workspaceRows.map(r => r.source), setSource)}
         {resource === 'products' && select(t('Product type', 'نوع المنتج'), category, ['Service', 'Digital Product', 'Course', ...workspaceRows.map(r => r.type)], setCategory)}
         {select(t('All statuses', 'كل الحالات'), status, workspaceRows.map(r => r.status), setStatus, true)}
+        {isTemplates && <div className="alm-view-switch" role="group" aria-label={t('Template layout view', 'طريقة عرض القوالب')}>
+          <button type="button" aria-label={t('Grid view', 'عرض البطاقات')} aria-pressed={showTemplateGrid} onClick={() => setViewOverride('grid')} title={t('Grid view', 'عرض البطاقات')}><LayoutGrid size={15}/></button>
+          <button type="button" aria-label={t('List view', 'عرض الجدول')} aria-pressed={!showTemplateGrid} onClick={() => setViewOverride('table')} title={t('List view', 'عرض الجدول')}><List size={15}/></button>
+        </div>}
       </div></div>
       {!!filterCount && <div className="alm-active-filters"><span>{filterCount} {t('active filters', 'فلاتر نشطة')}</span>{chips.map(([label, value, clear]) => <button key={label} onClick={() => { clear(); setPage(1); }} aria-label={`${t('Remove filter', 'حذف الفلتر')}: ${label}`}><span>{label}: {value}</span><X size={12}/></button>)}<button className="alm-reset" onClick={resetFilters}>{t('Clear all', 'مسح الكل')}</button></div>}
-      <span className="alm-mobile-hint">{t('Swipe to view all columns', 'اسحب لعرض كل الأعمدة')}</span><div className="alm-table-scroll" role="region" tabIndex={0} aria-label={t('Records table', 'جدول السجلات')} aria-busy={live.loading}><table className="alm-table"><thead><tr>{columns.map(key => <th key={key} scope="col" aria-sort={sort.key === key ? sort.direction === 1 ? 'ascending' : 'descending' : 'none'}><button onClick={() => { setSort({ key, direction: sort.key === key && sort.direction === 1 ? -1 : 1 }); setPage(1); }}>{labels[key]}<ArrowUpDown size={12}/></button></th>)}<th scope="col" className="alm-actions-heading">{t('Actions', 'الإجراءات')}</th></tr></thead><tbody>
-        {live.loading && !rows.length ? Array.from({ length: 5 }, (_, index) => <tr key={index} className="alm-skeleton-row" aria-hidden="true">{[...columns, 'actions'].map(key => <td key={key}><span/></td>)}</tr>) : sorted.slice(start, start + pageSize).map(row => <tr key={row.id}>{columns.map(key => <td key={key} data-column={key}>{cell(row, key)}</td>)}<td className="alm-actions-cell"><div className="alm-row-actions"><button className="alm-icon-button" aria-label={t('View details', 'عرض التفاصيل')} title={t('View details', 'عرض التفاصيل')} onClick={() => setSelectedId(row.id)}><Eye size={16}/></button>{(isTemplates || records.find(item => item.path === row.id)?.data.document?.pages?.length > 0) && <button className="alm-icon-button" aria-label={t('Preview', 'معاينة')} title={t('Preview', 'معاينة')} onClick={() => openPreview(row)}><Globe2 size={16}/></button>}{library === 'general' && <><button disabled={busy} className="alm-icon-button" aria-label={t('Duplicate to My templates', 'نسخ إلى قوالبي')} title={t('Duplicate to My templates', 'نسخ إلى قوالبي')} onClick={() => { const template = live.templates.find(item => item.id === row.id)!; void action(async () => { await duplicateToMyTemplates(template); }, t('Copied to My templates as a draft.', 'تم النسخ إلى قوالبي كمسودة.')); }}><Copy size={15}/></button><button disabled={busy || row.status === 'Draft'} className="alm-visibility-button" title={row.status === 'Draft' ? t('Turned off by the super admin', 'معطل من السوبر أدمن') : undefined} onClick={() => { const hide = !hiddenFor(row.id); void action(() => setGeneralTemplateHidden(row.id, hide), hide ? t('Hidden from your users.', 'تم إخفاؤه عن مستخدميك.') : t('Visible to your users.', 'أصبح ظاهراً لمستخدميك.')); }}>{hiddenFor(row.id) ? <><Eye size={14}/>{t('Show to my users', 'إظهار لمستخدميّ')}</> : <><EyeOff size={14}/>{t('Hide from my users', 'إخفاء عن مستخدميّ')}</>}</button></>}{isTemplates && editable && <><button disabled={busy} className="alm-icon-button" aria-label={t('Edit template', 'تعديل القالب')} title={t('Edit template', 'تعديل القالب')} onClick={() => setEditing(structuredClone(live.templates.find(item => item.id === row.id)!))}><Pencil size={15}/></button><button disabled={busy} className="alm-visibility-button" onClick={() => { const template = live.templates.find(item => item.id === row.id)!; void action(() => saveTemplate({ ...template, active: !templateIsActive(template), status: templateIsActive(template) ? 'Draft' : 'Published' }), t('Template visibility updated.', 'تم تحديث ظهور القالب.')); }}>{row.status === 'Published' ? t('Deactivate', 'تعطيل') : t('Activate', 'تفعيل')}</button><button disabled={busy} className="alm-icon-button danger" aria-label={t('Delete template', 'حذف القالب')} title={t('Delete template', 'حذف القالب')} onClick={() => { setNotice(null); setDeleting(live.templates.find(item => item.id === row.id)!); }}><Trash2 size={15}/></button></>}</div></td></tr>)}
-      </tbody></table></div>
+
+      {showTemplateGrid ? (
+        <div className="alm-ghl-gallery" aria-busy={live.loading}>
+          <div className="alm-ghl-section-head">
+            <div>
+              <h3>{t('Recently added', 'أضيف مؤخراً')}</h3>
+              <span>{t('Showing', 'عرض')} {filtered.length} {filtered.length === 1 ? t('template', 'قالب') : t('templates', 'قوالب')}</span>
+            </div>
+            {GHL_VISUAL_CATEGORIES.has(category) && <small>{t('High-converting curated collection · Synced with Firebase', 'مجموعة احترافية عالية التحويل · متزامنة مع Firebase')}</small>}
+          </div>
+          {live.loading && !rows.length ? (
+            <div className="alm-ghl-grid" aria-hidden="true">
+              {Array.from({ length: 3 }, (_, idx) => (
+                <div key={idx} className="alm-ghl-card skeleton">
+                  <div className="alm-ghl-frame" />
+                  <div className="alm-ghl-meta">
+                    <span className="alm-ghl-skel-line title" />
+                    <span className="alm-ghl-skel-line sub" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : visibleRows.length > 0 ? (
+            <div className="alm-ghl-grid">
+              {visibleRows.map(row => {
+                const tpl = live.templates.find(item => item.id === row.id);
+                const isNew = Boolean(tpl?.tags?.some(tag => tag.toLowerCase() === 'new'));
+                const scopeTag = tpl?.tags?.find(tag => /\b(pages|steps|fields)\b/i.test(tag));
+                const menuOpen = openMenuId === row.id;
+                return (
+                  <article key={row.id} className="alm-ghl-card" data-status={row.status}>
+                    <div className="alm-ghl-frame">
+                      {tpl?.thumbnail ? (
+                        <img
+                          className="alm-ghl-thumb"
+                          src={tpl.thumbnail}
+                          alt={row.name}
+                          width={960}
+                          height={1240}
+                          loading="eager"
+                          decoding="async"
+                          onError={e => { const fallback = `/template-thumbnails/${row.id}.jpg`; if (!e.currentTarget.src.endsWith(fallback)) e.currentTarget.src = fallback; }}
+                          onClick={() => openCardPreview(row, tpl)}
+                        />
+                      ) : (
+                        <button type="button" className="alm-ghl-fallback-art" onClick={() => setSelectedId(row.id)} style={{ '--card-accent': tpl?.color || '#7C3AED' } as React.CSSProperties}>
+                          <span>{row.type}</span>
+                          <strong>{tpl?.content?.headline || row.name}</strong>
+                          <small>{tpl?.description}</small>
+                        </button>
+                      )}
+                      <div className={`alm-ghl-overlay ${menuOpen ? 'open' : ''}`}>
+                        <div className="alm-ghl-menu-wrap">
+                          <button
+                            type="button"
+                            className="alm-ghl-more-btn"
+                            aria-label={`${t('Actions for', 'إجراءات')} ${row.name}`}
+                            aria-expanded={menuOpen}
+                            onClick={() => setOpenMenuId(menuOpen ? '' : row.id)}
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                          {menuOpen && (
+                            <div className="alm-ghl-menu" role="menu">
+                              <button type="button" role="menuitem" onClick={() => { setOpenMenuId(''); setSelectedId(row.id); }}>
+                                <Eye size={14} /> {t('View details', 'عرض التفاصيل')}
+                              </button>
+                              <button type="button" role="menuitem" onClick={() => { setOpenMenuId(''); openPreview(row); }}>
+                                <Globe2 size={14} /> {t('Open in new tab', 'فتح في تبويب جديد')}
+                              </button>
+                              {library === 'general' && tpl && (
+                                <>
+                                  <button type="button" role="menuitem" disabled={busy} onClick={() => { setOpenMenuId(''); void action(async () => { await duplicateToMyTemplates(tpl); }, t('Copied to My templates as a draft.', 'تم النسخ إلى قوالبي كمسودة.')); }}>
+                                    <Copy size={14} /> {t('Duplicate to My templates', 'نسخ إلى قوالبي')}
+                                  </button>
+                                  <button type="button" role="menuitem" disabled={busy || row.status === 'Draft'} onClick={() => { setOpenMenuId(''); const hide = !hiddenFor(row.id); void action(() => setGeneralTemplateHidden(row.id, hide), hide ? t('Hidden from your users.', 'تم إخفاؤه عن مستخدميك.') : t('Visible to your users.', 'أصبح ظاهراً لمستخدميك.')); }}>
+                                    {hiddenFor(row.id) ? <><Eye size={14} /> {t('Show to my users', 'إظهار لمستخدميّ')}</> : <><EyeOff size={14} /> {t('Hide from my users', 'إخفاء عن مستخدميّ')}</>}
+                                  </button>
+                                </>
+                              )}
+                              {editable && tpl && (
+                                <>
+                                  <button type="button" role="menuitem" disabled={busy} onClick={() => { setOpenMenuId(''); setEditing(structuredClone(tpl)); }}>
+                                    <Pencil size={14} /> {t('Edit template', 'تعديل القالب')}
+                                  </button>
+                                  <button type="button" role="menuitem" disabled={busy} onClick={() => { setOpenMenuId(''); void action(() => saveTemplate({ ...tpl, active: !templateIsActive(tpl), status: templateIsActive(tpl) ? 'Draft' : 'Published' }), t('Template visibility updated.', 'تم تحديث ظهور القالب.')); }}>
+                                    {row.status === 'Published' ? <><EyeOff size={14} /> {t('Deactivate', 'تعطيل')}</> : <><Check size={14} /> {t('Activate', 'تفعيل')}</>}
+                                  </button>
+                                  <button type="button" role="menuitem" className="danger" disabled={busy} onClick={() => { setOpenMenuId(''); setNotice(null); setDeleting(tpl); }}>
+                                    <Trash2 size={14} /> {t('Delete template', 'حذف القالب')}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="alm-ghl-preview-pill"
+                          onClick={() => openCardPreview(row, tpl)}
+                        >
+                          <Eye size={15} />
+                          <span>{t('Preview', 'معاينة')}</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="alm-ghl-meta">
+                      <div className="alm-ghl-title-row">
+                        <button type="button" className="alm-ghl-title" onClick={() => setSelectedId(row.id)}>
+                          {row.name}
+                        </button>
+                        {row.status === 'Draft' ? (
+                          <span className="alm-ghl-draft-pill"><Pencil size={11} />{t('In draft', 'مسودة')}</span>
+                        ) : row.status === 'Hidden' ? (
+                          <StatusPill value="Hidden" />
+                        ) : null}
+                      </div>
+                      <div className="alm-ghl-stats-row">
+                        <span className="alm-ghl-downloads" title={t('Workspace installs & downloads', 'مرات التثبيت والاستخدام')}>
+                          <CloudDownload size={14} />
+                          {(tpl?.popularity ?? 0).toLocaleString('en-US')}
+                        </span>
+                        {isNew && <span className="alm-ghl-new-badge">{t('New', 'جديد')}</span>}
+                        {scopeTag && <span className="alm-ghl-scope-tag">{scopeTag}</span>}
+                        {!category && <span className="alm-ghl-scope-tag">{row.type}</span>}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <>
+          <span className="alm-mobile-hint">{t('Swipe to view all columns', 'اسحب لعرض كل الأعمدة')}</span>
+          <div className="alm-table-scroll" role="region" tabIndex={0} aria-label={t('Records table', 'جدول السجلات')} aria-busy={live.loading}><table className="alm-table"><thead><tr>{columns.map(key => <th key={key} scope="col" aria-sort={sort.key === key ? sort.direction === 1 ? 'ascending' : 'descending' : 'none'}><button onClick={() => { setSort({ key, direction: sort.key === key && sort.direction === 1 ? -1 : 1 }); setPage(1); }}>{labels[key]}<ArrowUpDown size={12}/></button></th>)}<th scope="col" className="alm-actions-heading">{t('Actions', 'الإجراءات')}</th></tr></thead><tbody>
+            {live.loading && !rows.length ? Array.from({ length: 5 }, (_, index) => <tr key={index} className="alm-skeleton-row" aria-hidden="true">{[...columns, 'actions'].map(key => <td key={key}><span/></td>)}</tr>) : visibleRows.map(row => <tr key={row.id}>{columns.map(key => <td key={key} data-column={key}>{cell(row, key)}</td>)}<td className="alm-actions-cell"><div className="alm-row-actions"><button className="alm-icon-button" aria-label={t('View details', 'عرض التفاصيل')} title={t('View details', 'عرض التفاصيل')} onClick={() => setSelectedId(row.id)}><Eye size={16}/></button>{(isTemplates || records.find(item => item.path === row.id)?.data.document?.pages?.length > 0) && <button className="alm-icon-button" aria-label={t('Preview', 'معاينة')} title={t('Preview', 'معاينة')} onClick={() => openPreview(row)}><Globe2 size={16}/></button>}{library === 'general' && <><button disabled={busy} className="alm-icon-button" aria-label={t('Duplicate to My templates', 'نسخ إلى قوالبي')} title={t('Duplicate to My templates', 'نسخ إلى قوالبي')} onClick={() => { const template = live.templates.find(item => item.id === row.id)!; void action(async () => { await duplicateToMyTemplates(template); }, t('Copied to My templates as a draft.', 'تم النسخ إلى قوالبي كمسودة.')); }}><Copy size={15}/></button><button disabled={busy || row.status === 'Draft'} className="alm-visibility-button" title={row.status === 'Draft' ? t('Turned off by the super admin', 'معطل من السوبر أدمن') : undefined} onClick={() => { const hide = !hiddenFor(row.id); void action(() => setGeneralTemplateHidden(row.id, hide), hide ? t('Hidden from your users.', 'تم إخفاؤه عن مستخدميك.') : t('Visible to your users.', 'أصبح ظاهراً لمستخدميك.')); }}>{hiddenFor(row.id) ? <><Eye size={14}/>{t('Show to my users', 'إظهار لمستخدميّ')}</> : <><EyeOff size={14}/>{t('Hide from my users', 'إخفاء عن مستخدميّ')}</>}</button></>}{isTemplates && editable && <><button disabled={busy} className="alm-icon-button" aria-label={t('Edit template', 'تعديل القالب')} title={t('Edit template', 'تعديل القالب')} onClick={() => setEditing(structuredClone(live.templates.find(item => item.id === row.id)!))}><Pencil size={15}/></button><button disabled={busy} className="alm-visibility-button" onClick={() => { const template = live.templates.find(item => item.id === row.id)!; void action(() => saveTemplate({ ...template, active: !templateIsActive(template), status: templateIsActive(template) ? 'Draft' : 'Published' }), t('Template visibility updated.', 'تم تحديث ظهور القالب.')); }}>{row.status === 'Published' ? t('Deactivate', 'تعطيل') : t('Activate', 'تفعيل')}</button><button disabled={busy} className="alm-icon-button danger" aria-label={t('Delete template', 'حذف القالب')} title={t('Delete template', 'حذف القالب')} onClick={() => { setNotice(null); setDeleting(live.templates.find(item => item.id === row.id)!); }}><Trash2 size={15}/></button></>}</div></td></tr>)}
+          </tbody></table></div>
+        </>
+      )}
+
       {!live.loading && !filtered.length && <div className="alm-empty"><span><Search size={27}/></span><h3>{unavailable ? t('Records are unavailable', 'السجلات غير متاحة') : filterCount ? t('No matching records.', 'لا توجد سجلات مطابقة.') : t('Your library is ready for its first record', 'المكتبة جاهزة لأول سجل')}</h3><p>{unavailable ? t('Check the connection and administrator permissions.', 'تحقق من الاتصال وصلاحيات الإدارة.') : filterCount ? t('Try another search or adjust the filters.', 'جرب بحثاً آخر أو عدل الفلاتر.') : isTemplates ? t('Create a template or start from a system preset.', 'أنشئ قالباً أو ابدأ من إعداد نظام جاهز.') : t('New workspace records appear here automatically.', 'تظهر سجلات مساحات العمل الجديدة هنا تلقائياً.')}</p>{!!filterCount && <button className="alm-button" onClick={resetFilters}>{t('Clear filters', 'مسح الفلاتر')}</button>}</div>}
       <footer className="alm-pagination"><div><span>{filtered.length ? `${start + 1}–${Math.min(start + pageSize, filtered.length)}` : '0'} {t('of', 'من')} {filtered.length} {t('records', 'سجل')}</span><AdminSelect label={t('Rows per page', 'عدد الصفوف')} value={String(pageSize)} options={[10, 25, 50].map(value => ({ value: String(value), label: `${value} / ${t('page', 'صفحة')}` }))} onChange={value => { setPageSize(Number(value)); setPage(1); }}/></div><div><button className="alm-button" aria-label={t('Previous page', 'الصفحة السابقة')} disabled={current <= 1} onClick={() => setPage(current - 1)}><ChevronLeft size={15}/>{t('Previous', 'السابق')}</button><span>{current} / {pages}</span><button className="alm-button" aria-label={t('Next page', 'الصفحة التالية')} disabled={current >= pages} onClick={() => setPage(current + 1)}>{t('Next', 'التالي')}<ChevronRight size={15}/></button></div></footer>
     </section>

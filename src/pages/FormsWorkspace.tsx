@@ -18,6 +18,7 @@ import { generateBuilderDraft } from '../backend/aiBuilders';
 import { BuilderBriefDialog } from './BuilderBriefDialog';
 import { showToast } from '../utils/toast';
 import { pageTemplates, type FormField, type FormFieldType, FORM_BACKGROUND_PRESETS, type FormBackgroundPreset } from './page-template-data';
+import { usePageTemplateCatalog } from '../backend/pageTemplateCatalog';
 import {
   Plus,
   Search,
@@ -563,8 +564,11 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   }, [actionParam]);
 
   // Template Instantiation
+  const catalogPageTemplates = usePageTemplateCatalog();
   const applyTemplate = async (templateId: string) => {
-    const tmpl = pageTemplates.find(t => t.id === templateId && t.mode === 'form');
+    const tmpl =
+      catalogPageTemplates.find(t => t.id === templateId && t.mode === 'form') ||
+      pageTemplates.find(t => t.id === templateId && t.mode === 'form');
     if (!tmpl) return;
     setBusy(true);
     try {

@@ -51,7 +51,25 @@ export function buildSystemTemplateSeed() {
   const { legacyWebTemplateRows, seedRows } = loadTemplateSource('src/pages/admin/catalog.ts');
   const base = (id, name, category, description = '') => ({ id, name, category, description, industry: 'Professional Services', goal: 'Lead Generation', source: 'official', tags: [], color: '#7C3AED', updated: '2026-11-01', popularity: 0, active: true, status: 'Published', content: { headline: name, steps: ['Welcome', 'Explore offer', 'Take action'], settings: { enabled: false, language: 'en' } } });
   const records = MASTER_TEMPLATES.map(t => initializeTemplateAsset({ ...t, active: true, status: 'Published' }));
-  for (const page of pageTemplates) records.push(initializeTemplateAsset({ ...base(`page-${page.id}`, page.name, page.mode === 'funnel' ? 'Funnels' : page.mode === 'form' ? 'Forms' : 'Websites', page.body), industry: page.industry, goal: page.goal, color: page.color, pageTemplate: page, content: { headline: page.title, steps: ['Welcome', 'Take action'], settings: { enabled: false, language: 'en' } } }));
+  for (const page of pageTemplates) {
+    const category = page.mode === 'funnel' ? 'Funnels' : page.mode === 'form' ? 'Forms' : 'Websites';
+    const existing = records.find(t => t.id === page.id || t.id === `page-${page.id}`);
+    const steps = page.builderDocument?.pages?.length ? page.builderDocument.pages.map(p => p.name) : ['Welcome', 'Take action'];
+    const value = initializeTemplateAsset({
+      ...base(existing?.id || page.id, page.name, category, page.description || page.body),
+      ...(existing || {}),
+      industry: page.industry,
+      goal: page.goal,
+      color: page.color,
+      popularity: page.popularity ?? existing?.popularity ?? 0,
+      tags: page.tags ?? existing?.tags ?? [],
+      thumbnail: page.thumbnail ?? existing?.thumbnail,
+      pageTemplate: page,
+      builderDocument: page.builderDocument ?? existing?.builderDocument,
+      content: { headline: page.title, steps, settings: { enabled: true, language: 'en' } },
+    });
+    if (existing) Object.assign(existing, value); else records.push(value);
+  }
   for (const preset of bookingTemplatePresets) {
     const existing = records.find(t => t.category === 'Booking Pages' && t.name === preset.name);
     const value = initializeTemplateAsset({ ...base(existing?.id || `booking-${preset.key}`, preset.name, 'Booking Pages', preset.description), industry: preset.category, bookingPage: createBookingTemplate(preset) });
@@ -69,8 +87,27 @@ export function buildSystemTemplateSeed() {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const records = buildSystemTemplateSeed();
+  const output = path.join(root, 'functions/seed-data/system-templates.json');
+  if (fs.existsSync(output)) {
+    const previous = new Map(JSON.parse(fs.readFileSync(output, 'utf8')).map(item => [item.id, item]));
+    for (const record of records) {
+      const prior = previous.get(record.id);
+      if (prior?.thumbnail?.startsWith('https://firebasestorage.googleapis.com/')) {
+        record.thumbnail = prior.thumbnail;
+        if (record.pageTemplate) record.pageTemplate.thumbnail = prior.thumbnail;
+      }
+      if (prior?.pageTemplate?.image?.startsWith('https://firebasestorage.googleapis.com/') && record.pageTemplate) {
+        record.pageTemplate.image = prior.pageTemplate.image;
+        if (record.builderDocument?.pages) {
+          for (const page of record.builderDocument.pages) {
+            if (page.featuredImage?.startsWith('/template-thumbnails/')) page.featuredImage = prior.pageTemplate.image;
+          }
+        }
+      }
+    }
+  }
   const { validateSystemTemplate } = loadTemplateSource('src/pages/system-template-validation.ts');
   for (const record of records) { const errors = validateSystemTemplate(record); if (errors.length) throw new Error(`${record.id}: ${errors.join(' ')}`); }
-  const output = path.join(root, 'functions/seed-data/system-templates.json'); fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, JSON.stringify(records, null, 2) + '\n');
+  fs.mkdirSync(path.dirname(output), { recursive: true }); fs.writeFileSync(output, JSON.stringify(records, null, 2) + '\n');
   console.log(JSON.stringify({ output, total: records.length, categories: records.reduce((counts, t) => ({ ...counts, [t.category]: (counts[t.category] || 0) + 1 }), {}) }, null, 2));
 }

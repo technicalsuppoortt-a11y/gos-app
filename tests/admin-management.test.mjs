@@ -24,11 +24,13 @@ function harness(role = 'ADMIN', impersonation = null) {
     'firebase/firestore': {
       collection: (_, ...parts) => parts.join('/'), doc: (_, ...parts) => parts.join('/'), where: (...args) => args,
       query: path => path, serverTimestamp: () => 'SERVER_TIME',
-      onSnapshot: (path, next, error) => { watchers.set(path, { next, error }); return () => { stopped.push(path); watchers.delete(path); }; },
+      onSnapshot: (path, ...rest) => { const [next, error] = typeof rest[0] === 'function' ? rest : rest.slice(1); watchers.set(path, { next, error }); return () => { stopped.push(path); watchers.delete(path); }; },
       setDoc: async (path, value) => writes.push({ path, value }), deleteDoc: async path => writes.push({ path, deleted: true }),
     },
-    './firebase': { primaryAuth: auth, primaryDb: {}, backendError: e => e.message }, './firestoreCodec': codec,
+    'firebase/storage': { getDownloadURL: async () => '', getStorage: () => ({}), ref: () => ({}), uploadBytes: async () => ({}) },
+    './firebase': { firebaseApp: {}, primaryAuth: auth, primaryDb: {}, backendError: e => e.message }, './firestoreCodec': codec,
     '../pages/system-template-assets': { initializeTemplateAsset: t => t }, '../pages/system-template-validation': { validateSystemTemplate: () => [] },
+    '../router/platformAccess': { isPlatformTeamRole: r => r === 'SUPER_ADMIN' || r === 'OWNER' },
   });
   const emit = (path, values) => {
     assert.ok(watchers.has(path), `Listener exists for ${path}`);
@@ -71,9 +73,9 @@ test('signout clears data and ignores late callbacks from the previous admin ses
   assert.equal(h.state().records.length, 0); assert.equal(h.watchers.size, 0);
 });
 test('permission errors are surfaced as incomplete data and never fall back to demo rows', () => {
-  const h = harness(); h.api.useAdminManagement(['products']); h.start(); h.emit('tenants', { a: {} });
+  const h = harness(); h.api.useAdminManagement(['products']); h.start(); h.emit('users', {}); h.emit('tenants', { a: {} });
   h.watchers.get('tenants/a/products').error(new Error('Permission denied'));
-  assert.match(h.state().error, /Permission denied/); assert.equal(h.state().loading, false); assert.equal(h.state().records.length, 0);
+  assert.match(h.state().error || Object.values(h.state().sourceErrors || {}).join(' '), /Permission denied/); assert.equal(h.state().loading, false); assert.equal(h.state().records.length, 0);
 });
 test('ownership, booking host joins and product currencies are scoped to the workspace', () => {
   const row = (resource, data, workspaceId = 'a') => ({ id: 'same', workspaceId, path: `tenants/${workspaceId}/${resource}/same`, data });

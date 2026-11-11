@@ -3,135 +3,1292 @@ import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import { ColorPicker, Toggle } from './EditorControls';
 import { EditorAvailability } from './EditorAvailability';
 import { EditorBookingForm } from './EditorBookingForm';
-import { EditorQualification } from './EditorQualification';
 import { validQualificationQuestions } from '../../../functions/booking-qualification.js';
 import { EditorNotifications } from './EditorNotifications';
 import { EditorDurations } from './EditorDurations';
 import { BookingSelect } from './BookingSelect';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, Bell, CalendarDays, Check, ClipboardCheck, Clock3, ExternalLink, FileText, Layers, MapPin, Plus, Sparkles, Trash2, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Bell,
+  CalendarDays,
+  Check,
+  Clock3,
+  ExternalLink,
+  FileText,
+  Globe,
+  Layers,
+  LayoutTemplate,
+  MapPin,
+  Plus,
+  Sparkles,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { generateBuilderDraft } from '../../backend/aiBuilders';
 import { BuilderBriefDialog } from '../BuilderBriefDialog';
-import { blankPage, publicUrl, slugify, bookingColor, uid, TIMEZONES, readMembers } from './model';
+import {
+  blankPage,
+  normalizeBookingPage,
+  publicUrl,
+  slugify,
+  bookingColor,
+  syncQualificationQuestions,
+  uid,
+  TIMEZONES,
+  readMembers,
+} from './model';
 import type { BookingPage } from './model';
 import { LOCATION_TYPES, safeHttpUrl } from './booking-section-schema';
 import type { LocationOption, LocationType } from './booking-section-schema';
 import { BookingLivePreview } from './BookingLivePreview';
+import {
+  applyDesignToTemplateSettings,
+  resolveBookingDesign,
+  syncBookingIntoWorkspaceWebsite,
+  useBookingWebsiteAndTemplateCatalog,
+  type BookingConnectedDesign,
+} from './BookingTemplateShell';
 import type { ReactNode, CSSProperties } from 'react';
 import './booking-editor-reference.css';
 
 const tabs = [
-  { name:'Page',icon:FileText },{ name:'Location',icon:MapPin },{ name:'Duration',icon:Clock3 },{ name:'Group / class',icon:Users },
-  { name:'Availability',icon:CalendarDays },{ name:'Booking form',icon:FileText },{ name:'Lead qualification',icon:ClipboardCheck },{ name:'Notifications',icon:Bell },{ name:'Templates',icon:Layers },{ name:'After booking',icon:Check },
+  { name: 'Page', icon: FileText },
+  { name: 'Location', icon: MapPin },
+  { name: 'Duration', icon: Clock3 },
+  { name: 'Group / class', icon: Users },
+  { name: 'Availability', icon: CalendarDays },
+  { name: 'Booking form', icon: FileText },
+  { name: 'Notifications', icon: Bell },
+  { name: 'Templates', icon: Layers },
+  { name: 'After booking', icon: Check },
 ];
 
-const sectionTitles:Record<string,string> = {Page:'Booking page',Duration:'Appointment types', 'Booking form':'Booking form & questions'};
-function ConfiguratorSection({name,expanded,toggle,children,summary}:{name:string;expanded:boolean;toggle:()=>void;children:ReactNode;summary?:string}) {
+const sectionTitles: Record<string, string> = {
+  Page: 'Booking page',
+  Duration: 'Appointment types',
+  'Booking form': 'Booking form & questions',
+};
+
+function ConfiguratorSection({
+  name,
+  expanded,
+  toggle,
+  children,
+  summary,
+}: {
+  name: string;
+  expanded: boolean;
+  toggle: () => void;
+  children: ReactNode;
+  summary?: string;
+}) {
   useUILanguage();
-  const Icon = tabs.find(t=>t.name===name)?.icon || Users;
-  const sectionId = 'booking-section-'+name.replaceAll(' ','-').replaceAll('/','-');
-  return <section id={sectionId} className={'bk-configurator-card '+(expanded?'expanded':'')}><button type="button" className="bk-configurator-heading" onClick={toggle} aria-expanded={expanded} aria-controls={sectionId+'-body'}><Icon size={16}/><b>{localizeNode(sectionTitles[name]||name)}</b>{localizeNode(!expanded&&summary&&<span className="bk-section-summary">{localizeNode(summary)}</span>)}<ChevronDown size={15} className={`bk-accordion-chevron ${expanded ? 'rotated' : ''}`}/></button><div id={sectionId+'-body'} className={`bk-configurator-body ${expanded ? 'open' : ''}`}><div className="bk-configurator-inner">{localizeNode(children)}</div></div></section>;
+  const Icon = tabs.find(t => t.name === name)?.icon || Users;
+  const sectionId = 'booking-section-' + name.replaceAll(' ', '-').replaceAll('/', '-');
+  return (
+    <section id={sectionId} className={'bk-configurator-card ' + (expanded ? 'expanded' : '')}>
+      <button
+        type="button"
+        className="bk-configurator-heading"
+        onClick={toggle}
+        aria-expanded={expanded}
+        aria-controls={sectionId + '-body'}
+      >
+        <Icon size={16} />
+        <b>{localizeNode(sectionTitles[name] || name)}</b>
+        {localizeNode(!expanded && summary && <span className="bk-section-summary">{localizeNode(summary)}</span>)}
+        <ChevronDown size={15} className={`bk-accordion-chevron ${expanded ? 'rotated' : ''}`} />
+      </button>
+      <div id={sectionId + '-body'} className={`bk-configurator-body ${expanded ? 'open' : ''}`}>
+        <div className="bk-configurator-inner">{localizeNode(children)}</div>
+      </div>
+    </section>
+  );
 }
 
-function NumberInput({ label, value, change, min = 0, max = 10000, step = 1 }: { label:string; value:number; change:(v:number)=>void; min?:number; max?:number; step?:number }) {
+function NumberInput({
+  label,
+  value,
+  change,
+  min = 0,
+  max = 10000,
+  step = 1,
+}: {
+  label: string;
+  value: number;
+  change: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
   useUILanguage();
-  return <label>{localizeNode(label)}<input type="number" min={min} max={max} step={step} value={value} onChange={e=>change(Math.max(min,Math.min(max,(step === 1 ? Math.round(Number(e.target.value)) : Number(e.target.value)))))}/></label>;
+  return (
+    <label>
+      {localizeNode(label)}
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e =>
+          change(
+            Math.max(
+              min,
+              Math.min(max, step === 1 ? Math.round(Number(e.target.value)) : Number(e.target.value))
+            )
+          )
+        }
+      />
+    </label>
+  );
 }
-export function BookingBuilder({ page, pages, save, close, onDraftChange }: { page?:BookingPage; pages:BookingPage[]; save:(page:BookingPage)=>void; close:()=>void; onDraftChange?:(page:BookingPage)=>void }) {
+
+export function BookingBuilder({
+  page,
+  pages,
+  save,
+  close,
+  onDraftChange,
+}: {
+  page?: BookingPage;
+  pages: BookingPage[];
+  save: (page: BookingPage) => void;
+  close: () => void;
+  onDraftChange?: (page: BookingPage) => void;
+}) {
   useUILanguage();
-  const [draft,setDraft] = useState<BookingPage>(()=>structuredClone(page||blankPage()));
-  const draftObserver = useRef(onDraftChange); draftObserver.current = onDraftChange;
-  useEffect(() => { draftObserver.current?.(draft); }, [draft]);
+  const [draft, setDraft] = useState<BookingPage>(() =>
+    normalizeBookingPage(structuredClone(page || blankPage()))
+  );
+  const { workspaceDesigns, templateDesigns, allDesigns, workspace, setWorkspace } =
+    useBookingWebsiteAndTemplateCatalog();
+  const [templateFilter, setTemplateFilter] = useState<'all' | 'websites' | 'templates'>('all');
+
+  const draftObserver = useRef(onDraftChange);
+  draftObserver.current = onDraftChange;
+  useEffect(() => {
+    draftObserver.current?.(draft);
+  }, [draft]);
   useEffect(() => {
     if (!onDraftChange || !page) return;
-    setDraft(current => current.name === page.name && current.description === page.description ? current : { ...current, name: page.name, description: page.description });
+    setDraft(current =>
+      current.name === page.name && current.description === page.description
+        ? current
+        : { ...current, name: page.name, description: page.description }
+    );
   }, [page?.name, page?.description]);
-  const [tab,setTab] = useState('Page');
-  const [openSections,setOpenSections] = useState(['Page']);
-  const toggleSection=(name:string)=>setOpenSections(sections=>sections.includes(name)?[]:[name]);
-  const sectionSummary:Record<string,string> = {
-    Page:draft.titleOverride||draft.name||'Untitled',
-    'Hosts & Resources':draft.hostName,
-    Location:draft.locationOptions.join(' / '),
-    Duration:draft.durationOptions.join(', ')+' min',
-    'Group / class':draft.groupCapacity>1?draft.groupCapacity+' spots':'One-to-one',
-    Availability:draft.hostTimezone,
-    'Booking form':draft.questions.filter(q=>q.active!==false&&q.type!=='text-block').length+' fields',
-    'Lead qualification':draft.qualificationQuestions?.length ? String(draft.qualificationQuestions.length) : 'Off',
-    Notifications:Object.values(draft.notificationWorkflows).filter(w=>w.enabled).length+' workflows',
-    Templates:draft.templateSettings.previewMode==='template'?'Custom template':'Standard Upclick',
-    'After booking':draft.templateSettings.postBookingMode==='standard'?'Confirmation':draft.templateSettings.postBookingMode==='custom_url'?'Redirect':'Template',
+
+  const [tab, setTab] = useState('Page');
+  const [openSections, setOpenSections] = useState(['Page']);
+  const toggleSection = (name: string) =>
+    setOpenSections(sections => (sections.includes(name) ? [] : [name]));
+
+  const activeDesign = resolveBookingDesign(draft, allDesigns);
+
+  const sectionSummary: Record<string, string> = {
+    Page: draft.titleOverride || draft.name || 'Untitled',
+    'Hosts & Resources': draft.hostName,
+    Location: draft.locationOptions.join(' / '),
+    Duration: draft.durationOptions.join(', ') + ' min',
+    'Group / class': draft.groupCapacity > 1 ? draft.groupCapacity + ' spots' : 'One-to-one',
+    Availability: draft.hostTimezone,
+    'Booking form': (() => {
+      const f = draft.questions.filter(q => q.active !== false && q.type !== 'text-block').length;
+      const s = draft.questions.filter(q => q.active !== false && q.isScreening).length;
+      return s ? `${f} fields · ${s} screening` : `${f} fields`;
+    })(),
+    'Lead qualification': draft.qualificationQuestions?.length
+      ? String(draft.qualificationQuestions.length)
+      : 'Off',
+    Notifications:
+      Object.values(draft.notificationWorkflows).filter(w => w.enabled).length + ' workflows',
+    Templates: activeDesign
+      ? activeDesign.name
+      : draft.templateSettings.previewMode === 'template'
+        ? 'Custom template'
+        : 'Standard Upclick',
+    'After booking':
+      draft.templateSettings.postBookingMode === 'standard'
+        ? 'Confirmation'
+        : draft.templateSettings.postBookingMode === 'custom_url'
+          ? 'Redirect'
+          : 'Template',
   };
-  const [error,setError] = useState('');
+
+  const [error, setError] = useState('');
   const [showAiDraft, setShowAiDraft] = useState(false);
-  const [uploading,setUploading] = useState(false);
-  const field = <K extends keyof BookingPage>(key:K,value:BookingPage[K])=>setDraft(d=>({...d,[key]:value}));
-  const patch = (next:Partial<BookingPage>)=>setDraft(d=>({...d,...next}));
-  const after = (next:Partial<BookingPage['afterBooking']>)=>field('afterBooking',{...draft.afterBooking,...next});
-  const templates = (next:Partial<BookingPage['templateSettings']>)=>field('templateSettings',{...draft.templateSettings,...next});
-  const locations = (next:LocationOption[])=>setDraft(d=>({...d,locations:next,locationOptions:next.map(l=>l.label),location:next[0]?.label||'None'}));
+  const [uploading, setUploading] = useState(false);
+  const field = <K extends keyof BookingPage>(key: K, value: BookingPage[K]) =>
+    setDraft(d => ({ ...d, [key]: value }));
+  const patch = (next: Partial<BookingPage>) => setDraft(d => ({ ...d, ...next }));
+  const after = (next: Partial<BookingPage['afterBooking']>) =>
+    field('afterBooking', { ...draft.afterBooking, ...next });
+  const templates = (next: Partial<BookingPage['templateSettings']>) =>
+    field('templateSettings', { ...draft.templateSettings, ...next });
+  const locations = (next: LocationOption[]) =>
+    setDraft(d => ({
+      ...d,
+      locations: next,
+      locationOptions: next.map(l => l.label),
+      location: next[0]?.label || 'None',
+    }));
 
-
-  const fail = (section:string,message:string)=>{setTab(section);setOpenSections(sections=>sections.includes(section)?sections:[...sections,section]);setError(message)};
-  useEffect(()=>{if(error)document.getElementById('booking-section-'+tab.replaceAll(' ','-').replaceAll('/','-'))?.scrollIntoView({block:'start',behavior:'smooth'})},[tab,error]);
-  const submit = ()=>{
-    if (!validQualificationQuestions(draft.qualificationQuestions ?? [])) return fail('Lead qualification', 'Review the screening questions before saving.');
-    const slug = slugify(draft.slug||draft.name).slice(0,50);
-    if(!draft.name.trim()||!slug) return fail('Page','Enter a booking title and a valid booking URL.');
-    if(pages.some(p=>p.id!==draft.id&&p.slug.toLowerCase()===slug.toLowerCase())) return fail('Page','This booking URL is already in use.');
-    if(draft.passwordProtect&&!draft.password.trim()) return fail('Page','Enter a password or turn off password protection.');
-    if(draft.image&&!draft.image.startsWith('data:image/')&&!draft.image.startsWith('data:video/')&&!/^\/(?!\/)/.test(draft.image)&&!safeHttpUrl(draft.image)) return fail('Page','Use an HTTP(S) media URL or upload a media file.');
-    if(!draft.durationOptions.length) return fail('Duration','Add at least one duration.');
-    if(draft.durationOptions.some(n=>!Number.isFinite(n)||n<1||n>1440)) return fail('Duration','Durations must be between 1 and 1440 minutes.');
-    if(draft.locations.length===0||draft.locations.some(l=>!l.label.trim())) return fail('Location','Add at least one meeting location with a label.');
-    if(new Set(draft.locations.map(l=>l.label)).size!==draft.locations.length) return fail('Location','Give each meeting location a unique label.');
-    const intervals=[...draft.availability.filter(h=>h.enabled),...draft.additionalWeekdayAvailability,...draft.specificDateAvailability,...draft.breaks];
-    if(intervals.some(h=>!h.start||!h.end||h.start>=h.end)) return fail('Availability','Every interval must end after it starts.');
-    if(!draft.availability.some(h=>h.enabled)&&!draft.additionalWeekdayAvailability.length&&!draft.specificDateAvailability.length) return fail('Availability','Add at least one weekly interval or date override.');
-    if(draft.specificDateAvailability.some(h=>!h.date)) return fail('Availability','Choose a date for every date override.');
-    if(draft.fixedDateRange.start&&draft.fixedDateRange.end&&draft.fixedDateRange.start>draft.fixedDateRange.end) return fail('Availability','The fixed date range must end after it starts.');
-    if(draft.lookBusy.min>draft.lookBusy.max) return fail('Availability','The look-busy minimum must not exceed its maximum.');
-    if(draft.questions.some(q=>!q.label.trim()||(['radio','select'].includes(q.type)&&!q.options.some(o=>o.trim())))) return fail('Booking form','Give every question a label and provide choices for radio or dropdown questions.');
-    if(draft.formSettings.nameType==='firstlast'&&(!draft.formSettings.firstNameLabel.trim()||!draft.formSettings.lastNameLabel.trim())) return fail('Booking form','Enter labels for both first and last names.');
-    const redirect=draft.templateSettings.redirectUrl||draft.afterBooking.redirectUrl;
-    if(draft.templateSettings.postBookingMode==='custom_url'&&!safeHttpUrl(redirect)) return fail('After booking','Enter a valid HTTP(S) redirect URL.');
-    if(draft.afterBooking.webhookEnabled&&!safeHttpUrl(draft.afterBooking.webhookUrl)) return fail('After booking','Enter a valid HTTP(S) webhook URL.');
-    if(draft.templateSettings.previewMode==='template'&&!draft.templateSettings.previewTemplateId.trim()) return fail('Templates','Enter the booking-page template ID.');
-    if(draft.templateSettings.postBookingMode==='template'&&!draft.templateSettings.thankYouTemplateId.trim()) return fail('After booking','Enter the confirmation template ID.');
-    if(draft.templateSettings.emailNotificationMode==='template'&&!draft.templateSettings.emailTemplateId.trim()) return fail('Templates','Enter the email template ID.');
-    setError('');
-    const durationOptions=[...new Set(draft.durationOptions)];
-    save({...draft,name:draft.name.trim(),slug,duration:durationOptions.includes(draft.duration)?draft.duration:durationOptions[0],durationOptions,location:draft.locations[0].label,locationOptions:draft.locations.map(l=>l.label),questions:draft.questions.map(q=>({...q,label:q.label.trim(),required:q.type==='text-block'?false:q.required,options:q.options.map(o=>o.trim()).filter(Boolean)})),afterBooking:{...draft.afterBooking,redirectUrl:redirect,redirectEnabled:draft.templateSettings.postBookingMode==='custom_url'}});
+  const selectDesign = (design: BookingConnectedDesign | null) => {
+    setDraft(current => ({
+      ...current,
+      color: design?.color || current.color,
+      templateSettings: applyDesignToTemplateSettings(current.templateSettings, design),
+    }));
   };
-  return <main className="bk-editor-page bk-reference-editor overflow-hidden flex flex-col" style={{"--booking-color":bookingColor(draft.color)} as CSSProperties}>
-    <header className="bk-editor-header"><button type="button" className="bk-icon" aria-label={translateText("Back to booking pages")} onClick={close}><ArrowLeft size={19}/></button><div><span className="bk-eyebrow">{translateText("BOOKING WORKSPACE")}</span><h1>{localizeNode(page?'Edit booking page':'New booking page')}</h1></div><span className="bk-pill"><Clock3 size={12}/>{localizeNode(draft.duration)}{translateText(" min")}</span>{localizeNode(page&&<a className="bk-button" href={publicUrl(page)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14}/>{translateText("View page")}</a>)}<button className="bk-button primary" disabled={uploading} onClick={submit}><Check size={15}/>{localizeNode(page?'Save changes':'Create booking page')}</button></header>
-    {showAiDraft && <BuilderBriefDialog title="Draft booking page with AI" placeholder="Describe the appointment, who it is for, and how long it should take." close={() => setShowAiDraft(false)} generate={async brief => {
-      const generated = await generateBuilderDraft('booking', brief);
-      const name = generated.name.slice(0, 120);
-      patch({ name, description: generated.description, duration: generated.duration, durationOptions: [generated.duration], ...(page ? {} : { slug: slugify(name).slice(0, 50) }) });
-      setOpenSections(['Page', 'Duration']);
-    }} />}
-    <div className="bk-editor-split"><div className="bk-editor-configurator custom-scrollbar">{localizeNode(error&&<p className="bk-error" role="alert">{localizeNode(error)}</p>)}
-      <button type="button" className="bk-button" onClick={() => setShowAiDraft(true)}><Sparkles size={15} />{translateText('Draft booking page with AI')}</button>
-      <CRMRouting defaultStage="BOOKING" value={draft.crmRouting} onChange={crmRouting => setDraft(d => ({ ...d, crmRouting }))}/><ConfiguratorSection summary={sectionSummary["Page"]} name="Page" expanded={openSections.includes("Page")} toggle={()=>toggleSection("Page")}> <div className="bk-builder-grid"><section className="bk-card bk-form"><h3>{translateText("Booking page")}</h3><label>{translateText("Booking page title")}<input autoFocus value={draft.name} maxLength={120} onChange={e=>{const val=e.target.value;setDraft(d=>({...d,name:val,...(!page?{slug:slugify(val).slice(0,50)}:{})}))}}/></label><label>{translateText("Booking URL")}<div className="bk-input-prefix"><span>{translateText("/book/")}</span><input value={draft.slug} maxLength={50} onChange={e=>field('slug',slugify(e.target.value))}/></div></label><label>{translateText("Public title override")}<input value={draft.titleOverride} onChange={e=>field('titleOverride',e.target.value)}/></label><label>{translateText("Description")}<textarea rows={4} value={draft.description} onChange={e=>field('description',e.target.value)}/></label><div className="bk-form-grid"><label>{translateText("Page language")}<BookingSelect aria-label={translateText("Page language")} value={draft.language} onChange={e=>field('language',e.target.value as 'en'|'ar')}><option value="en">{translateText("English")}</option><option value="ar">{translateText("Arabic")}</option></BookingSelect></label><ColorPicker value={draft.color} change={v=>field('color',v)}/></div><Toggle label="Display Upclick branding" checked={draft.displayBranding} change={v=>field('displayBranding',v)}/><Toggle label="Booking page is active" checked={draft.active} change={v=>field('active',v)}/></section>
-      <section className="bk-card bk-form"><h3>{translateText("Media & access")}</h3><label>{translateText("Image or video URL")}<input type="url" value={draft.image.startsWith('data:')?'':draft.image} placeholder={translateText("https://...")} onChange={e=>field('image',e.target.value)}/></label><div className="bk-form-grid"><label>{translateText("Media type")}<BookingSelect aria-label={translateText("Media type")} value={draft.mediaType} onChange={e=>field('mediaType',e.target.value as 'image'|'video')}><option value="image">{translateText("Image")}</option><option value="video">{translateText("Video")}</option></BookingSelect></label><label>{translateText("Upload image or video")}<input type="file" accept="image/*,video/*" disabled={uploading} onChange={async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>2*1024*1024){setError('Use a media URL for files larger than 2 MB.');return}setUploading(true);try{const value=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('Could not read this file.'));reader.readAsDataURL(file)});field('image',value);field('mediaType',file.type.startsWith('video/')?'video':'image')}catch(e){setError(e instanceof Error?e.message:'Could not read this file.')}finally{setUploading(false)}}}/></label></div>{localizeNode(draft.image&&<div className="bk-media-preview">{localizeNode(draft.mediaType==='video'?<video src={draft.image} controls playsInline/>:<img src={draft.image} alt={translateText("Booking page media")} style={{borderRadius:draft.imageRound?'50%':12}}/>)}<button className="bk-button" onClick={()=>field('image','')}>{translateText("Remove media")}</button></div>)}<Toggle label="Make media round" checked={draft.imageRound} change={v=>field('imageRound',v)}/><Toggle label="Password protect this preview" checked={draft.passwordProtect} change={v=>field('passwordProtect',v)}/>{localizeNode(draft.passwordProtect&&<label>{translateText("Page password")}<input type="password" autoComplete="new-password" value={draft.password} onChange={e=>field('password',e.target.value)}/><small>{translateText("Live password protection requires a server-published page.")}</small></label>)}</section></div> </ConfiguratorSection>
-<ConfiguratorSection summary={sectionSummary["Hosts & Resources"]} name="Hosts & Resources" expanded={openSections.includes("Hosts & Resources")} toggle={()=>toggleSection("Hosts & Resources")}><section className="bk-card bk-form"><h3>{translateText("Your host")}</h3>{localizeNode(readMembers().length > 0 && <label>{translateText("Select team member")}<BookingSelect value={draft.hostName} onChange={e=>field('hostName',e.target.value)}><option value="">{translateText("Custom host...")}</option>{localizeNode(readMembers().map(m=><option key={m.id} value={m.name}>{localizeNode(m.name)} ({localizeNode(m.role)})</option>))}</BookingSelect></label>)}<label>{translateText("Host name")}<input value={draft.hostName} placeholder={translateText("e.g. Samir Morgan")} onChange={e=>field('hostName',e.target.value)}/></label><label>{translateText("Host timezone")}<BookingSelect aria-label={translateText("Host timezone")} value={draft.hostTimezone} onChange={e=>field('hostTimezone',e.target.value)}>{localizeNode(TIMEZONES.map(z=><option key={z} value={z}>{localizeNode(z)}</option>))}</BookingSelect></label></section></ConfiguratorSection>
 
-      <ConfiguratorSection summary={sectionSummary["Location"]} name="Location" expanded={openSections.includes("Location")} toggle={()=>toggleSection("Location")}> <section className="bk-card bk-form bk-section-form"><h3>{translateText("Meeting locations")}</h3><p>{translateText("Add the places or providers your invitees can choose from.")}</p>{localizeNode(draft.locations.map((l,index)=><div className="bk-question" key={l.id}><div className="bk-form-grid"><label>{translateText("Location type")}<BookingSelect aria-label={translateText("Location type")} value={l.type} onChange={e=>{const type=e.target.value as LocationType;locations(draft.locations.map(v=>v.id===l.id?{...v,type,label:LOCATION_TYPES[type],customLabel:''}:v))}}>{localizeNode(Object.entries(LOCATION_TYPES).map(([key,label])=><option value={key} key={key}>{localizeNode(label)}</option>))}</BookingSelect></label><label>{translateText("Invitee-facing label")}<input value={l.label} onChange={e=>locations(draft.locations.map(v=>v.id===l.id?{...v,label:e.target.value,customLabel:e.target.value}:v))}/></label></div>{localizeNode(['in-person','custom','phone'].includes(l.type)&&<label>{localizeNode(l.type==='phone'?'Host phone number':'Address or meeting details')}<input value={l.address} onChange={e=>locations(draft.locations.map(v=>v.id===l.id?{...v,address:e.target.value}:v))}/></label>)}<div className="bk-question-footer"><span className="bk-muted">{translateText("Location ")}{localizeNode(index+1)}{localizeNode(['zoom','meet','teams'].includes(l.type)?' · Provider connection required':'')}</span><button className="bk-button danger" disabled={draft.locations.length===1} onClick={()=>locations(draft.locations.filter(v=>v.id!==l.id))}><Trash2 size={13}/>{translateText("Remove")}</button></div></div>))}<button className="bk-button" onClick={()=>locations([...draft.locations,{id:uid(),type:'custom',label:'Custom location '+(draft.locations.length+1),customLabel:'',address:'',linked:false}])}><Plus size={14}/>{translateText("Add location")}</button></section> </ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["Duration"]} name="Duration" expanded={openSections.includes("Duration")} toggle={()=>toggleSection("Duration")}> <div className="bk-builder-grid"><EditorDurations page={draft} change={patch}/><section className="bk-card bk-form"><h3>{translateText("Price settings")}</h3><Toggle label="This meeting is free" checked={draft.free} change={v=>field('free',v)}/>{localizeNode(!draft.free&&<><NumberInput label="Price" step={0.01} value={draft.price} change={v=>field('price',v)}/><div className="bk-form-grid"><label>{translateText("Currency")}<BookingSelect aria-label={translateText("Currency")} value={draft.currency} onChange={e=>field('currency',e.target.value)}>{localizeNode(['USD','EUR','GBP','EGP','SAR','AED'].map(c=><option key={c} value={c}>{localizeNode(c)}</option>))}</BookingSelect></label><label>{translateText("Price type")}<BookingSelect aria-label={translateText("Price type")} value={draft.priceType} onChange={e=>field('priceType',e.target.value as BookingPage['priceType'])}><option value="fixed">{translateText("Fixed")}</option><option value="hourly">{translateText("Hourly")}</option><option value="per_attendee">{translateText("Per attendee")}</option></BookingSelect></label></div><p className="bk-tip">{translateText("Paid bookings are recorded as pending payment. Checkout requires a connected payment provider.")}</p></>)}</section></div> </ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["Group / class"]} name="Group / class" expanded={openSections.includes("Group / class")} toggle={()=>toggleSection("Group / class")}> <section className="bk-card bk-form bk-section-form"><h3>{translateText("Group / class")}</h3><NumberInput label="How many people can book the same time?" value={draft.groupCapacity} min={1} max={1000} change={v=>field('groupCapacity',v)}/><NumberInput label="Daily booking limit" value={draft.dailyLimit} min={1} change={v=>field('dailyLimit',v)}/><Toggle label="Show remaining spots" checked={draft.displaySpotsLeft} change={v=>field('displaySpotsLeft',v)}/><Toggle label="Require approval before confirming" checked={draft.requireApproval} change={v=>field('requireApproval',v)}/></section> </ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["Availability"]} name="Availability" expanded={openSections.includes("Availability")} toggle={()=>toggleSection("Availability")}><EditorAvailability page={draft} change={patch}/></ConfiguratorSection>
+  const fail = (section: string, message: string) => {
+    setTab(section);
+    setOpenSections(sections => (sections.includes(section) ? sections : [...sections, section]));
+    setError(message);
+  };
+  useEffect(() => {
+    if (error)
+      document
+        .getElementById('booking-section-' + tab.replaceAll(' ', '-').replaceAll('/', '-'))
+        ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }, [tab, error]);
 
-      <ConfiguratorSection summary={sectionSummary["Booking form"]} name="Booking form" expanded={openSections.includes("Booking form")} toggle={()=>toggleSection("Booking form")}><EditorBookingForm page={draft} change={patch}/></ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["Lead qualification"]} name="Lead qualification" expanded={openSections.includes("Lead qualification")} toggle={()=>toggleSection("Lead qualification")}><EditorQualification questions={draft.qualificationQuestions ?? []} change={qualificationQuestions => field('qualificationQuestions', qualificationQuestions)}/></ConfiguratorSection>
+  const submit = () => {
+    const normalizedQuestions = draft.questions.map(q => ({
+      ...q,
+      label: q.label.trim(),
+      required: q.type === 'text-block' ? false : q.isScreening ? true : q.required,
+      options: q.options.map(o => o.trim()).filter(Boolean),
+    }));
+    const qualificationQuestions = syncQualificationQuestions(normalizedQuestions);
+    if (!validQualificationQuestions(qualificationQuestions))
+      return fail('Booking form', 'Review the screening questions before saving.');
+    const slug = slugify(draft.slug || draft.name).slice(0, 50);
+    if (!draft.name.trim() || !slug)
+      return fail('Page', 'Enter a booking title and a valid booking URL.');
+    if (pages.some(p => p.id !== draft.id && p.slug.toLowerCase() === slug.toLowerCase()))
+      return fail('Page', 'This booking URL is already in use.');
+    if (draft.passwordProtect && !draft.password.trim())
+      return fail('Page', 'Enter a password or turn off password protection.');
+    if (
+      draft.image &&
+      !draft.image.startsWith('data:image/') &&
+      !draft.image.startsWith('data:video/') &&
+      !/^\/(?!\/)/.test(draft.image) &&
+      !safeHttpUrl(draft.image)
+    )
+      return fail('Page', 'Use an HTTP(S) media URL or upload a media file.');
+    if (!draft.durationOptions.length) return fail('Duration', 'Add at least one duration.');
+    if (draft.durationOptions.some(n => !Number.isFinite(n) || n < 1 || n > 1440))
+      return fail('Duration', 'Durations must be between 1 and 1440 minutes.');
+    if (draft.locations.length === 0 || draft.locations.some(l => !l.label.trim()))
+      return fail('Location', 'Add at least one meeting location with a label.');
+    if (new Set(draft.locations.map(l => l.label)).size !== draft.locations.length)
+      return fail('Location', 'Give each meeting location a unique label.');
+    const intervals = [
+      ...draft.availability.filter(h => h.enabled),
+      ...draft.additionalWeekdayAvailability,
+      ...draft.specificDateAvailability,
+      ...draft.breaks,
+    ];
+    if (intervals.some(h => !h.start || !h.end || h.start >= h.end))
+      return fail('Availability', 'Every interval must end after it starts.');
+    if (
+      !draft.availability.some(h => h.enabled) &&
+      !draft.additionalWeekdayAvailability.length &&
+      !draft.specificDateAvailability.length
+    )
+      return fail('Availability', 'Add at least one weekly interval or date override.');
+    if (draft.specificDateAvailability.some(h => !h.date))
+      return fail('Availability', 'Choose a date for every date override.');
+    if (
+      draft.fixedDateRange.start &&
+      draft.fixedDateRange.end &&
+      draft.fixedDateRange.start > draft.fixedDateRange.end
+    )
+      return fail('Availability', 'The fixed date range must end after it starts.');
+    if (draft.lookBusy.min > draft.lookBusy.max)
+      return fail('Availability', 'The look-busy minimum must not exceed its maximum.');
+    if (
+      draft.questions.some(
+        q => !q.label.trim() || (['radio', 'select'].includes(q.type) && !q.options.some(o => o.trim()))
+      )
+    )
+      return fail(
+        'Booking form',
+        'Give every question a label and provide choices for radio or dropdown questions.'
+      );
+    if (
+      draft.formSettings.nameType === 'firstlast' &&
+      (!draft.formSettings.firstNameLabel.trim() || !draft.formSettings.lastNameLabel.trim())
+    )
+      return fail('Booking form', 'Enter labels for both first and last names.');
+    const redirect = draft.templateSettings.redirectUrl || draft.afterBooking.redirectUrl;
+    if (draft.templateSettings.postBookingMode === 'custom_url' && !safeHttpUrl(redirect))
+      return fail('After booking', 'Enter a valid HTTP(S) redirect URL.');
+    if (draft.afterBooking.webhookEnabled && !safeHttpUrl(draft.afterBooking.webhookUrl))
+      return fail('After booking', 'Enter a valid HTTP(S) webhook URL.');
+    if (
+      draft.templateSettings.previewMode === 'template' &&
+      !draft.templateSettings.previewTemplateId.trim()
+    )
+      return fail('Templates', 'Select a website or template from the list.');
+    if (
+      draft.templateSettings.postBookingMode === 'template' &&
+      !draft.templateSettings.thankYouTemplateId.trim()
+    )
+      return fail('After booking', 'Enter the confirmation template ID.');
+    if (
+      draft.templateSettings.emailNotificationMode === 'template' &&
+      !draft.templateSettings.emailTemplateId.trim()
+    )
+      return fail('Templates', 'Enter the email template ID.');
+    setError('');
+    const durationOptions = [...new Set(draft.durationOptions)];
+    const savedPage: BookingPage = {
+      ...draft,
+      name: draft.name.trim(),
+      slug,
+      duration: durationOptions.includes(draft.duration) ? draft.duration : durationOptions[0],
+      durationOptions,
+      location: draft.locations[0].label,
+      locationOptions: draft.locations.map(l => l.label),
+      questions: normalizedQuestions,
+      qualificationQuestions,
+      afterBooking: {
+        ...draft.afterBooking,
+        redirectUrl: redirect,
+        redirectEnabled: draft.templateSettings.postBookingMode === 'custom_url',
+      },
+    };
+    const chosenDesign = resolveBookingDesign(savedPage, allDesigns);
+    if (chosenDesign) {
+      void syncBookingIntoWorkspaceWebsite({
+        design: chosenDesign,
+        bookingPage: savedPage,
+        workspace,
+        setWorkspace,
+      });
+    }
+    save(savedPage);
+  };
 
-      <ConfiguratorSection summary={sectionSummary["Notifications"]} name="Notifications" expanded={openSections.includes("Notifications")} toggle={()=>toggleSection("Notifications")}><EditorNotifications page={draft} change={patch}/></ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["Templates"]} name="Templates" expanded={openSections.includes("Templates")} toggle={()=>toggleSection("Templates")}> <div className="bk-builder-grid"><section className="bk-card bk-form"><h3>{translateText("Booking page template")}</h3><label>{translateText("Public page layout")}<BookingSelect aria-label={translateText("Public page layout")} value={draft.templateSettings.previewMode} onChange={e=>templates({previewMode:e.target.value as 'default'|'template'})}><option value="default">{translateText("Standard Upclick booking page")}</option><option value="template">{translateText("Custom template")}</option></BookingSelect></label>{localizeNode(draft.templateSettings.previewMode==='template'&&<label>{translateText("Booking template ID")}<input value={draft.templateSettings.previewTemplateId} onChange={e=>templates({previewTemplateId:e.target.value})}/></label>)}<p className="bk-tip">{translateText("Template IDs are preserved for your connected template library. This local preview uses the standard Upclick renderer.")}</p></section><section className="bk-card bk-form"><h3>{translateText("Email notification template")}</h3><label>{translateText("Email notification mode")}<BookingSelect aria-label={translateText("Email notification mode")} value={draft.templateSettings.emailNotificationMode} onChange={e=>templates({emailNotificationMode:e.target.value as 'default'|'template'})}><option value="default">{translateText("Default email")}</option><option value="template">{translateText("Custom email template")}</option></BookingSelect></label>{localizeNode(draft.templateSettings.emailNotificationMode==='template'&&<label>{translateText("Email template ID")}<input value={draft.templateSettings.emailTemplateId} onChange={e=>templates({emailTemplateId:e.target.value})}/></label>)}</section></div> </ConfiguratorSection>
-      <ConfiguratorSection summary={sectionSummary["After booking"]} name="After booking" expanded={openSections.includes("After booking")} toggle={()=>toggleSection("After booking")}> <div className="bk-builder-grid"><section className="bk-card bk-form"><h3>{translateText("After-booking action")}</h3><label>{translateText("After-booking action")}<BookingSelect aria-label={translateText("After-booking action")} value={draft.templateSettings.postBookingMode} onChange={e=>templates({postBookingMode:e.target.value as BookingPage['templateSettings']['postBookingMode']})}><option value="standard">{translateText("Standard confirmation page")}</option><option value="template">{translateText("Custom confirmation template")}</option><option value="custom_url">{translateText("Redirect to external URL")}</option></BookingSelect></label>{localizeNode(draft.templateSettings.postBookingMode==='custom_url'&&<label>{translateText("Redirect URL")}<input type="url" placeholder={translateText("https://your-site.com/thank-you")} value={draft.templateSettings.redirectUrl||draft.afterBooking.redirectUrl} onChange={e=>{templates({redirectUrl:e.target.value});after({redirectUrl:e.target.value})}}/></label>)}{localizeNode(draft.templateSettings.postBookingMode==='template'&&<label>{translateText("Confirmation template ID")}<input value={draft.templateSettings.thankYouTemplateId} onChange={e=>templates({thankYouTemplateId:e.target.value})}/></label>)}<label>{translateText("Confirmation message")}<textarea rows={4} value={draft.afterBooking.confirmationBody} onChange={e=>after({confirmationBody:e.target.value})}/></label><Toggle label="Allow self-cancel / reschedule" checked={draft.afterBooking.allowCancelReschedule} change={v=>after({allowCancelReschedule:v})}/><Toggle label="Show Book another button" checked={draft.afterBooking.scheduleAnother} change={v=>after({scheduleAnother:v})}/><Toggle label="Auto-fill returning visitor data" checked={draft.afterBooking.prefill} change={v=>after({prefill:v})}/><Toggle label="Enable webhook" checked={draft.afterBooking.webhookEnabled} change={v=>after({webhookEnabled:v})}/>{localizeNode(draft.afterBooking.webhookEnabled&&<label>{translateText("Webhook URL")}<input type="url" value={draft.afterBooking.webhookUrl} onChange={e=>after({webhookUrl:e.target.value})}/><small>{translateText("Saved for a connected booking service; this preview does not dispatch webhooks.")}</small></label>)}</section><section className="bk-card bk-confirm-preview"><span className="bk-success-orb"><Check size={28}/></span><h3>{localizeNode(draft.requireApproval?'Booking request received':'You’re booked!')}</h3><p>{localizeNode(draft.afterBooking.confirmationBody)}</p><b>{localizeNode(draft.titleOverride||draft.name||'Your meeting title')}</b><small>{localizeNode(draft.duration)}{translateText(" minutes · ")}{localizeNode(draft.locationOptions.join(' / '))}</small></section></div> </ConfiguratorSection>
-    </div><BookingLivePreview key={draft.duration} page={draft}/></div><footer className="bk-editor-footer"><span className="bk-muted">{translateText("Your changes are saved when you create or update this page.")}</span><button className="bk-button" onClick={close}>{translateText("Cancel")}</button><button className="bk-button primary" disabled={uploading} onClick={submit}><Check size={15}/>{localizeNode(page?'Save changes':'Create booking page')}</button></footer>
-  </main>;
+  const visibleCatalogDesigns =
+    templateFilter === 'websites'
+      ? workspaceDesigns
+      : templateFilter === 'templates'
+        ? templateDesigns
+        : allDesigns;
+
+  const layoutDropdownValue =
+    draft.templateSettings.previewMode === 'template'
+      ? activeDesign
+        ? activeDesign.id
+        : 'template'
+      : 'default';
+
+  return (
+    <main
+      className="bk-editor-page bk-reference-editor overflow-hidden flex flex-col"
+      style={{ '--booking-color': bookingColor(draft.color) } as CSSProperties}
+    >
+      <header className="bk-editor-header">
+        <button
+          type="button"
+          className="bk-icon"
+          aria-label={translateText('Back to booking pages')}
+          onClick={close}
+        >
+          <ArrowLeft size={19} />
+        </button>
+        <div>
+          <span className="bk-eyebrow">{translateText('BOOKING WORKSPACE')}</span>
+          <h1>{localizeNode(page ? 'Edit booking page' : 'New booking page')}</h1>
+        </div>
+        <span className="bk-pill">
+          <Clock3 size={12} />
+          {localizeNode(draft.duration)}
+          {translateText(' min')}
+        </span>
+        {localizeNode(
+          page && (
+            <a
+              className="bk-button"
+              href={publicUrl(page)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink size={14} />
+              {translateText('View page')}
+            </a>
+          )
+        )}
+        <button className="bk-button primary" disabled={uploading} onClick={submit}>
+          <Check size={15} />
+          {localizeNode(page ? 'Save changes' : 'Create booking page')}
+        </button>
+      </header>
+      {showAiDraft && (
+        <BuilderBriefDialog
+          title="Draft booking page with AI"
+          placeholder="Describe the appointment, who it is for, and how long it should take."
+          close={() => setShowAiDraft(false)}
+          generate={async brief => {
+            const generated = await generateBuilderDraft('booking', brief);
+            const name = generated.name.slice(0, 120);
+            patch({
+              name,
+              description: generated.description,
+              duration: generated.duration,
+              durationOptions: [generated.duration],
+              ...(page ? {} : { slug: slugify(name).slice(0, 50) }),
+            });
+            setOpenSections(['Page', 'Duration']);
+          }}
+        />
+      )}
+      <div className="bk-editor-split">
+        <div className="bk-editor-configurator custom-scrollbar">
+          {localizeNode(
+            error && (
+              <p className="bk-error" role="alert">
+                {localizeNode(error)}
+              </p>
+            )
+          )}
+          <button type="button" className="bk-button" onClick={() => setShowAiDraft(true)}>
+            <Sparkles size={15} />
+            {translateText('Draft booking page with AI')}
+          </button>
+          <CRMRouting
+            defaultStage="BOOKING"
+            value={draft.crmRouting}
+            onChange={crmRouting => setDraft(d => ({ ...d, crmRouting }))}
+          />
+          <ConfiguratorSection
+            summary={sectionSummary['Page']}
+            name="Page"
+            expanded={openSections.includes('Page')}
+            toggle={() => toggleSection('Page')}
+          >
+            <div className="bk-builder-grid">
+              <section className="bk-card bk-form">
+                <h3>{translateText('Booking page')}</h3>
+                <label>
+                  {translateText('Booking page title')}
+                  <input
+                    autoFocus
+                    value={draft.name}
+                    maxLength={120}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setDraft(d => ({
+                        ...d,
+                        name: val,
+                        ...(!page ? { slug: slugify(val).slice(0, 50) } : {}),
+                      }));
+                    }}
+                  />
+                </label>
+                <label>
+                  {translateText('Booking URL')}
+                  <div className="bk-input-prefix">
+                    <span>{translateText('/book/')}</span>
+                    <input
+                      value={draft.slug}
+                      maxLength={50}
+                      onChange={e => field('slug', slugify(e.target.value))}
+                    />
+                  </div>
+                </label>
+                <label>
+                  {translateText('Public title override')}
+                  <input
+                    value={draft.titleOverride}
+                    onChange={e => field('titleOverride', e.target.value)}
+                  />
+                </label>
+                <label>
+                  {translateText('Description')}
+                  <textarea
+                    rows={4}
+                    value={draft.description}
+                    onChange={e => field('description', e.target.value)}
+                  />
+                </label>
+                <div className="bk-form-grid">
+                  <label>
+                    {translateText('Page language')}
+                    <BookingSelect
+                      aria-label={translateText('Page language')}
+                      value={draft.language}
+                      onChange={e => field('language', e.target.value as 'en' | 'ar')}
+                    >
+                      <option value="en">{translateText('English')}</option>
+                      <option value="ar">{translateText('Arabic')}</option>
+                    </BookingSelect>
+                  </label>
+                  <ColorPicker value={draft.color} change={v => field('color', v)} />
+                </div>
+                <Toggle
+                  label="Display Upclick branding"
+                  checked={draft.displayBranding}
+                  change={v => field('displayBranding', v)}
+                />
+                <Toggle
+                  label="Booking page is active"
+                  checked={draft.active}
+                  change={v => field('active', v)}
+                />
+              </section>
+              <section className="bk-card bk-form">
+                <h3>{translateText('Media & access')}</h3>
+                <label>
+                  {translateText('Image or video URL')}
+                  <input
+                    type="url"
+                    value={draft.image.startsWith('data:') ? '' : draft.image}
+                    placeholder={translateText('https://...')}
+                    onChange={e => field('image', e.target.value)}
+                  />
+                </label>
+                <div className="bk-form-grid">
+                  <label>
+                    {translateText('Media type')}
+                    <BookingSelect
+                      aria-label={translateText('Media type')}
+                      value={draft.mediaType}
+                      onChange={e => field('mediaType', e.target.value as 'image' | 'video')}
+                    >
+                      <option value="image">{translateText('Image')}</option>
+                      <option value="video">{translateText('Video')}</option>
+                    </BookingSelect>
+                  </label>
+                  <label>
+                    {translateText('Upload image or video')}
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      disabled={uploading}
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 2 * 1024 * 1024) {
+                          setError('Use a media URL for files larger than 2 MB.');
+                          return;
+                        }
+                        setUploading(true);
+                        try {
+                          const value = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(String(reader.result));
+                            reader.onerror = () => reject(new Error('Could not read this file.'));
+                            reader.readAsDataURL(file);
+                          });
+                          field('image', value);
+                          field('mediaType', file.type.startsWith('video/') ? 'video' : 'image');
+                        } catch (e) {
+                          setError(e instanceof Error ? e.message : 'Could not read this file.');
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {localizeNode(
+                  draft.image && (
+                    <div className="bk-media-preview">
+                      {localizeNode(
+                        draft.mediaType === 'video' ? (
+                          <video src={draft.image} controls playsInline />
+                        ) : (
+                          <img
+                            src={draft.image}
+                            alt={translateText('Booking page media')}
+                            style={{ borderRadius: draft.imageRound ? '50%' : 12 }}
+                          />
+                        )
+                      )}
+                      <button className="bk-button" onClick={() => field('image', '')}>
+                        {translateText('Remove media')}
+                      </button>
+                    </div>
+                  )
+                )}
+                <Toggle
+                  label="Make media round"
+                  checked={draft.imageRound}
+                  change={v => field('imageRound', v)}
+                />
+                <Toggle
+                  label="Password protect this preview"
+                  checked={draft.passwordProtect}
+                  change={v => field('passwordProtect', v)}
+                />
+                {localizeNode(
+                  draft.passwordProtect && (
+                    <label>
+                      {translateText('Page password')}
+                      <input
+                        type="password"
+                        autoComplete="new-password"
+                        value={draft.password}
+                        onChange={e => field('password', e.target.value)}
+                      />
+                      <small>
+                        {translateText(
+                          'Live password protection requires a server-published page.'
+                        )}
+                      </small>
+                    </label>
+                  )
+                )}
+              </section>
+            </div>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Hosts & Resources']}
+            name="Hosts & Resources"
+            expanded={openSections.includes('Hosts & Resources')}
+            toggle={() => toggleSection('Hosts & Resources')}
+          >
+            <section className="bk-card bk-form">
+              <h3>{translateText('Your host')}</h3>
+              {localizeNode(
+                readMembers().length > 0 && (
+                  <label>
+                    {translateText('Select team member')}
+                    <BookingSelect
+                      value={draft.hostName}
+                      onChange={e => field('hostName', e.target.value)}
+                    >
+                      <option value="">{translateText('Custom host...')}</option>
+                      {localizeNode(
+                        readMembers().map(m => (
+                          <option key={m.id} value={m.name}>
+                            {localizeNode(m.name)} ({localizeNode(m.role)})
+                          </option>
+                        ))
+                      )}
+                    </BookingSelect>
+                  </label>
+                )
+              )}
+              <label>
+                {translateText('Host name')}
+                <input
+                  value={draft.hostName}
+                  placeholder={translateText('e.g. Samir Morgan')}
+                  onChange={e => field('hostName', e.target.value)}
+                />
+              </label>
+              <label>
+                {translateText('Host timezone')}
+                <BookingSelect
+                  aria-label={translateText('Host timezone')}
+                  value={draft.hostTimezone}
+                  onChange={e => field('hostTimezone', e.target.value)}
+                >
+                  {localizeNode(
+                    TIMEZONES.map(z => (
+                      <option key={z} value={z}>
+                        {localizeNode(z)}
+                      </option>
+                    ))
+                  )}
+                </BookingSelect>
+              </label>
+            </section>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Location']}
+            name="Location"
+            expanded={openSections.includes('Location')}
+            toggle={() => toggleSection('Location')}
+          >
+            <section className="bk-card bk-form bk-section-form">
+              <h3>{translateText('Meeting locations')}</h3>
+              <p>{translateText('Add the places or providers your invitees can choose from.')}</p>
+              {localizeNode(
+                draft.locations.map((l, index) => (
+                  <div className="bk-question" key={l.id}>
+                    <div className="bk-form-grid">
+                      <label>
+                        {translateText('Location type')}
+                        <BookingSelect
+                          aria-label={translateText('Location type')}
+                          value={l.type}
+                          onChange={e => {
+                            const type = e.target.value as LocationType;
+                            locations(
+                              draft.locations.map(v =>
+                                v.id === l.id
+                                  ? { ...v, type, label: LOCATION_TYPES[type], customLabel: '' }
+                                  : v
+                              )
+                            );
+                          }}
+                        >
+                          {localizeNode(
+                            Object.entries(LOCATION_TYPES).map(([key, label]) => (
+                              <option value={key} key={key}>
+                                {localizeNode(label)}
+                              </option>
+                            ))
+                          )}
+                        </BookingSelect>
+                      </label>
+                      <label>
+                        {translateText('Invitee-facing label')}
+                        <input
+                          value={l.label}
+                          onChange={e =>
+                            locations(
+                              draft.locations.map(v =>
+                                v.id === l.id
+                                  ? { ...v, label: e.target.value, customLabel: e.target.value }
+                                  : v
+                              )
+                            )
+                          }
+                        />
+                      </label>
+                    </div>
+                    {localizeNode(
+                      ['in-person', 'custom', 'phone'].includes(l.type) && (
+                        <label>
+                          {localizeNode(
+                            l.type === 'phone'
+                              ? 'Host phone number'
+                              : 'Address or meeting details'
+                          )}
+                          <input
+                            value={l.address}
+                            onChange={e =>
+                              locations(
+                                draft.locations.map(v =>
+                                  v.id === l.id ? { ...v, address: e.target.value } : v
+                                )
+                              )
+                            }
+                          />
+                        </label>
+                      )
+                    )}
+                    <div className="bk-question-footer">
+                      <span className="bk-muted">
+                        {translateText('Location ')}
+                        {localizeNode(index + 1)}
+                        {localizeNode(
+                          ['zoom', 'meet', 'teams'].includes(l.type)
+                            ? ' · Provider connection required'
+                            : ''
+                        )}
+                      </span>
+                      <button
+                        className="bk-button danger"
+                        disabled={draft.locations.length === 1}
+                        onClick={() => locations(draft.locations.filter(v => v.id !== l.id))}
+                      >
+                        <Trash2 size={13} />
+                        {translateText('Remove')}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+              <button
+                className="bk-button"
+                onClick={() =>
+                  locations([
+                    ...draft.locations,
+                    {
+                      id: uid(),
+                      type: 'custom',
+                      label: 'Custom location ' + (draft.locations.length + 1),
+                      customLabel: '',
+                      address: '',
+                      linked: false,
+                    },
+                  ])
+                }
+              >
+                <Plus size={14} />
+                {translateText('Add location')}
+              </button>
+            </section>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Duration']}
+            name="Duration"
+            expanded={openSections.includes('Duration')}
+            toggle={() => toggleSection('Duration')}
+          >
+            <div className="bk-builder-grid">
+              <EditorDurations page={draft} change={patch} />
+              <section className="bk-card bk-form">
+                <h3>{translateText('Price settings')}</h3>
+                <Toggle
+                  label="This meeting is free"
+                  checked={draft.free}
+                  change={v => field('free', v)}
+                />
+                {localizeNode(
+                  !draft.free && (
+                    <>
+                      <NumberInput
+                        label="Price"
+                        step={0.01}
+                        value={draft.price}
+                        change={v => field('price', v)}
+                      />
+                      <div className="bk-form-grid">
+                        <label>
+                          {translateText('Currency')}
+                          <BookingSelect
+                            aria-label={translateText('Currency')}
+                            value={draft.currency}
+                            onChange={e => field('currency', e.target.value)}
+                          >
+                            {localizeNode(
+                              ['USD', 'EUR', 'GBP', 'EGP', 'SAR', 'AED'].map(c => (
+                                <option key={c} value={c}>
+                                  {localizeNode(c)}
+                                </option>
+                              ))
+                            )}
+                          </BookingSelect>
+                        </label>
+                        <label>
+                          {translateText('Price type')}
+                          <BookingSelect
+                            aria-label={translateText('Price type')}
+                            value={draft.priceType}
+                            onChange={e =>
+                              field('priceType', e.target.value as BookingPage['priceType'])
+                            }
+                          >
+                            <option value="fixed">{translateText('Fixed')}</option>
+                            <option value="hourly">{translateText('Hourly')}</option>
+                            <option value="per_attendee">{translateText('Per attendee')}</option>
+                          </BookingSelect>
+                        </label>
+                      </div>
+                      <p className="bk-tip">
+                        {translateText(
+                          'Paid bookings are recorded as pending payment. Checkout requires a connected payment provider.'
+                        )}
+                      </p>
+                    </>
+                  )
+                )}
+              </section>
+            </div>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Group / class']}
+            name="Group / class"
+            expanded={openSections.includes('Group / class')}
+            toggle={() => toggleSection('Group / class')}
+          >
+            <section className="bk-card bk-form bk-section-form">
+              <h3>{translateText('Group / class')}</h3>
+              <NumberInput
+                label="How many people can book the same time?"
+                value={draft.groupCapacity}
+                min={1}
+                max={1000}
+                change={v => field('groupCapacity', v)}
+              />
+              <NumberInput
+                label="Daily booking limit"
+                value={draft.dailyLimit}
+                min={1}
+                change={v => field('dailyLimit', v)}
+              />
+              <Toggle
+                label="Show remaining spots"
+                checked={draft.displaySpotsLeft}
+                change={v => field('displaySpotsLeft', v)}
+              />
+              <Toggle
+                label="Require approval before confirming"
+                checked={draft.requireApproval}
+                change={v => field('requireApproval', v)}
+              />
+            </section>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Availability']}
+            name="Availability"
+            expanded={openSections.includes('Availability')}
+            toggle={() => toggleSection('Availability')}
+          >
+            <EditorAvailability page={draft} change={patch} />
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Booking form']}
+            name="Booking form"
+            expanded={openSections.includes('Booking form')}
+            toggle={() => toggleSection('Booking form')}
+          >
+            <EditorBookingForm page={draft} change={patch} />
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Notifications']}
+            name="Notifications"
+            expanded={openSections.includes('Notifications')}
+            toggle={() => toggleSection('Notifications')}
+          >
+            <EditorNotifications page={draft} change={patch} />
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['Templates']}
+            name="Templates"
+            expanded={openSections.includes('Templates')}
+            toggle={() => toggleSection('Templates')}
+          >
+            <div className="bk-builder-grid">
+              <section className="bk-card bk-form">
+                <h3>{translateText('Booking page template')}</h3>
+                <label>
+                  {translateText('Public page layout')}
+                  <BookingSelect
+                    aria-label={translateText('Public page layout')}
+                    value={layoutDropdownValue}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === 'default') {
+                        selectDesign(null);
+                      } else if (val === 'template') {
+                        const fallbackDesign = allDesigns[0] || null;
+                        if (fallbackDesign) {
+                          selectDesign(fallbackDesign);
+                        } else {
+                          templates({ previewMode: 'template' });
+                        }
+                      } else {
+                        const found = allDesigns.find(d => d.id === val) || null;
+                        selectDesign(found);
+                      }
+                    }}
+                  >
+                    <option value="default">{translateText('Standard Upclick booking page')}</option>
+                    {workspaceDesigns.map(design => (
+                      <option key={design.id} value={design.id}>
+                        {`Website · ${design.name} (${design.industry})`}
+                      </option>
+                    ))}
+                    {templateDesigns.map(design => (
+                      <option key={design.id} value={design.id}>
+                        {`Template · ${design.name} (${design.industry})`}
+                      </option>
+                    ))}
+                    <option value="template">{translateText('Custom template ID')}</option>
+                  </BookingSelect>
+                </label>
+
+                <div className="bk-tpl-picker">
+                  <div className="bk-tpl-picker-head">
+                    <span>{translateText('Choose Website or Funnel Template')}</span>
+                    <div className="bk-tpl-filter-pills" role="tablist">
+                      <button
+                        type="button"
+                        className={templateFilter === 'all' ? 'active' : ''}
+                        onClick={() => setTemplateFilter('all')}
+                      >
+                        {translateText('All')} ({allDesigns.length})
+                      </button>
+                      <button
+                        type="button"
+                        className={templateFilter === 'websites' ? 'active' : ''}
+                        onClick={() => setTemplateFilter('websites')}
+                      >
+                        <Globe size={11} />
+                        {translateText('My Websites')} ({workspaceDesigns.length})
+                      </button>
+                      <button
+                        type="button"
+                        className={templateFilter === 'templates' ? 'active' : ''}
+                        onClick={() => setTemplateFilter('templates')}
+                      >
+                        <LayoutTemplate size={11} />
+                        {translateText('Templates')} ({templateDesigns.length})
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bk-tpl-picker-grid custom-scrollbar">
+                    <button
+                      type="button"
+                      className={
+                        'bk-tpl-picker-card ' +
+                        (draft.templateSettings.previewMode === 'default' ? 'is-selected' : '')
+                      }
+                      onClick={() => selectDesign(null)}
+                    >
+                      <div
+                        className="bk-tpl-picker-swatch"
+                        style={{ background: bookingColor(draft.color) }}
+                      >
+                        <CalendarDays size={16} />
+                      </div>
+                      <div className="bk-tpl-picker-meta">
+                        <b>{translateText('Standard Upclick Calendar')}</b>
+                        <small>{translateText('Focused 2-panel Koalendar layout')}</small>
+                      </div>
+                      {draft.templateSettings.previewMode === 'default' && (
+                        <span className="bk-tpl-picker-check">
+                          <Check size={12} />
+                        </span>
+                      )}
+                    </button>
+
+                    {visibleCatalogDesigns.map(design => {
+                      const isSelected =
+                        draft.templateSettings.previewMode === 'template' &&
+                        (draft.templateSettings.previewTemplateId === design.id ||
+                          activeDesign?.id === design.id);
+                      return (
+                        <button
+                          type="button"
+                          key={design.id}
+                          className={'bk-tpl-picker-card ' + (isSelected ? 'is-selected' : '')}
+                          onClick={() => selectDesign(design)}
+                        >
+                          <div
+                            className="bk-tpl-picker-thumb"
+                            style={{
+                              background: design.image
+                                ? `url(${design.image}) center/cover no-repeat`
+                                : design.color,
+                            }}
+                          >
+                            <span
+                              className="bk-tpl-picker-dot"
+                              style={{ background: design.color }}
+                            />
+                          </div>
+                          <div className="bk-tpl-picker-meta">
+                            <div className="bk-tpl-picker-title-row">
+                              <b>{localizeNode(design.name)}</b>
+                              <span className="bk-tpl-picker-badge">
+                                {design.source === 'workspace'
+                                  ? translateText('My Website')
+                                  : localizeNode(design.industry)}
+                              </span>
+                            </div>
+                            <small>{localizeNode(design.title)}</small>
+                          </div>
+                          {isSelected && (
+                            <span className="bk-tpl-picker-check">
+                              <Check size={12} />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {localizeNode(
+                  draft.templateSettings.previewMode === 'template' && (
+                    <label>
+                      {translateText('Booking template ID')}
+                      <input
+                        value={draft.templateSettings.previewTemplateId}
+                        onChange={e => templates({ previewTemplateId: e.target.value })}
+                      />
+                    </label>
+                  )
+                )}
+                <p className="bk-tip">
+                  {activeDesign
+                    ? translateText(
+                        `Connected to "${activeDesign.name}". Saving will style your booking page with this template and sync a Booking section into your Funnel & Website workspace.`
+                      )
+                    : translateText(
+                        'Choose any Website from Funnel & Website or any template from the Templates Library to frame this booking calendar in a matching landing page UI.'
+                      )}
+                </p>
+              </section>
+              <section className="bk-card bk-form">
+                <h3>{translateText('Email notification template')}</h3>
+                <label>
+                  {translateText('Email notification mode')}
+                  <BookingSelect
+                    aria-label={translateText('Email notification mode')}
+                    value={draft.templateSettings.emailNotificationMode}
+                    onChange={e =>
+                      templates({ emailNotificationMode: e.target.value as 'default' | 'template' })
+                    }
+                  >
+                    <option value="default">{translateText('Default email')}</option>
+                    <option value="template">{translateText('Custom email template')}</option>
+                  </BookingSelect>
+                </label>
+                {localizeNode(
+                  draft.templateSettings.emailNotificationMode === 'template' && (
+                    <label>
+                      {translateText('Email template ID')}
+                      <input
+                        value={draft.templateSettings.emailTemplateId}
+                        onChange={e => templates({ emailTemplateId: e.target.value })}
+                      />
+                    </label>
+                  )
+                )}
+              </section>
+            </div>
+          </ConfiguratorSection>
+
+          <ConfiguratorSection
+            summary={sectionSummary['After booking']}
+            name="After booking"
+            expanded={openSections.includes('After booking')}
+            toggle={() => toggleSection('After booking')}
+          >
+            <div className="bk-builder-grid">
+              <section className="bk-card bk-form">
+                <h3>{translateText('After-booking action')}</h3>
+                <label>
+                  {translateText('After-booking action')}
+                  <BookingSelect
+                    aria-label={translateText('After-booking action')}
+                    value={draft.templateSettings.postBookingMode}
+                    onChange={e =>
+                      templates({
+                        postBookingMode: e.target
+                          .value as BookingPage['templateSettings']['postBookingMode'],
+                      })
+                    }
+                  >
+                    <option value="standard">{translateText('Standard confirmation page')}</option>
+                    <option value="template">{translateText('Custom confirmation template')}</option>
+                    <option value="custom_url">{translateText('Redirect to external URL')}</option>
+                  </BookingSelect>
+                </label>
+                {localizeNode(
+                  draft.templateSettings.postBookingMode === 'custom_url' && (
+                    <label>
+                      {translateText('Redirect URL')}
+                      <input
+                        type="url"
+                        placeholder={translateText('https://your-site.com/thank-you')}
+                        value={
+                          draft.templateSettings.redirectUrl || draft.afterBooking.redirectUrl
+                        }
+                        onChange={e => {
+                          templates({ redirectUrl: e.target.value });
+                          after({ redirectUrl: e.target.value });
+                        }}
+                      />
+                    </label>
+                  )
+                )}
+                {localizeNode(
+                  draft.templateSettings.postBookingMode === 'template' && (
+                    <label>
+                      {translateText('Confirmation template ID')}
+                      <input
+                        value={draft.templateSettings.thankYouTemplateId}
+                        onChange={e => templates({ thankYouTemplateId: e.target.value })}
+                      />
+                    </label>
+                  )
+                )}
+                <label>
+                  {translateText('Confirmation message')}
+                  <textarea
+                    rows={4}
+                    value={draft.afterBooking.confirmationBody}
+                    onChange={e => after({ confirmationBody: e.target.value })}
+                  />
+                </label>
+                <Toggle
+                  label="Allow self-cancel / reschedule"
+                  checked={draft.afterBooking.allowCancelReschedule}
+                  change={v => after({ allowCancelReschedule: v })}
+                />
+                <Toggle
+                  label="Show Book another button"
+                  checked={draft.afterBooking.scheduleAnother}
+                  change={v => after({ scheduleAnother: v })}
+                />
+                <Toggle
+                  label="Auto-fill returning visitor data"
+                  checked={draft.afterBooking.prefill}
+                  change={v => after({ prefill: v })}
+                />
+                <Toggle
+                  label="Enable webhook"
+                  checked={draft.afterBooking.webhookEnabled}
+                  change={v => after({ webhookEnabled: v })}
+                />
+                {localizeNode(
+                  draft.afterBooking.webhookEnabled && (
+                    <label>
+                      {translateText('Webhook URL')}
+                      <input
+                        type="url"
+                        value={draft.afterBooking.webhookUrl}
+                        onChange={e => after({ webhookUrl: e.target.value })}
+                      />
+                      <small>
+                        {translateText(
+                          'Saved for a connected booking service; this preview does not dispatch webhooks.'
+                        )}
+                      </small>
+                    </label>
+                  )
+                )}
+              </section>
+              <section className="bk-card bk-confirm-preview">
+                <span className="bk-success-orb">
+                  <Check size={28} />
+                </span>
+                <h3>
+                  {localizeNode(
+                    draft.requireApproval ? 'Booking request received' : 'You’re booked!'
+                  )}
+                </h3>
+                <p>{localizeNode(draft.afterBooking.confirmationBody)}</p>
+                <b>{localizeNode(draft.titleOverride || draft.name || 'Your meeting title')}</b>
+                <small>
+                  {localizeNode(draft.duration)}
+                  {translateText(' minutes · ')}
+                  {localizeNode(draft.locationOptions.join(' / '))}
+                </small>
+              </section>
+            </div>
+          </ConfiguratorSection>
+        </div>
+        <BookingLivePreview key={draft.duration} page={draft} />
+      </div>
+      <footer className="bk-editor-footer">
+        <span className="bk-muted">
+          {translateText('Your changes are saved when you create or update this page.')}
+        </span>
+        <button className="bk-button" onClick={close}>
+          {translateText('Cancel')}
+        </button>
+        <button className="bk-button primary" disabled={uploading} onClick={submit}>
+          <Check size={15} />
+          {localizeNode(page ? 'Save changes' : 'Create booking page')}
+        </button>
+      </footer>
+    </main>
+  );
 }
-
-
-
-

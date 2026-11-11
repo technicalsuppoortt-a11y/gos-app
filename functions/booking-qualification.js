@@ -33,6 +33,51 @@ export function validQualificationQuestions(value) {
   return true;
 }
 
+/**
+ * Extracts qualification rules from either `calendar.qualificationQuestions` or
+ * inline screening questions inside `calendar.questions` (`isScreening: true`).
+ * @param {Record<string, unknown> | undefined} calendar
+ * @returns {unknown}
+ */
+export function extractCalendarQualificationRules(calendar) {
+  if (!isRecord(calendar)) return undefined;
+  const inline = Array.isArray(calendar.questions)
+    ? calendar.questions
+        .filter(q => isRecord(q) && q.active !== false && q.isScreening === true && q.type !== 'text-block' && !['name', 'email', 'whatsapp'].includes(String(q.id || '')))
+        .map(q => {
+          const id = typeof q.id === 'string' ? q.id : '';
+          const label = typeof q.label === 'string' ? q.label.trim() : '';
+          const isChoice = q.screeningType === 'choice' || q.type === 'select' || q.type === 'radio';
+          if (isChoice) {
+            const options = Array.isArray(q.options) ? q.options.map(o => typeof o === 'string' ? o.trim() : o) : [];
+            const accepted = Array.isArray(q.accepted) ? q.accepted.map(o => typeof o === 'string' ? o.trim() : o) : [];
+            return { id, label, type: 'choice', options, accepted };
+          }
+          return { id, label, type: 'minimum', minimum: typeof q.minimum === 'number' ? q.minimum : Number(q.minimum) };
+        })
+    : [];
+  if (Array.isArray(calendar.qualificationQuestions) && calendar.qualificationQuestions.length > 0) {
+    if (!inline.length) return calendar.qualificationQuestions;
+    const byId = new Map(calendar.qualificationQuestions.filter(isRecord).map(q => [q.id, q]));
+    for (const item of inline) if (!byId.has(item.id)) byId.set(item.id, item);
+    return [...byId.values()];
+  }
+  return inline.length ? inline : calendar.qualificationQuestions;
+}
+
+/**
+ * Strips confidential screening criteria (`minimum`, `accepted`) from public form questions.
+ * @param {unknown} questions
+ */
+export function sanitizePublicFormQuestions(questions) {
+  if (!Array.isArray(questions)) return questions;
+  return questions.map(q => {
+    if (!isRecord(q)) return q;
+    const { minimum: _min, accepted: _acc, ...safe } = q;
+    return safe;
+  });
+}
+
 /** @param {QualificationQuestion[]} questions @returns {ScreeningQuestion[]} */
 export function publicScreeningQuestions(questions) {
   return questions.map(q => q.type === 'minimum'
@@ -46,17 +91,17 @@ export function evaluateQualification(questions, answers) {
   let qualifies = true;
   for (const q of questions) {
     const raw = isRecord(answers) && Object.hasOwn(answers, q.id) ? answers[q.id] : undefined;
-    if (typeof raw !== 'string' || raw.length > MAX_SCREENING_CHOICE || !raw.trim()) return { status: 'incomplete' };
+    if (typeof raw !== 'string' || raw.length > MAX_SCREENING_CHOICE || !raw.trim()) return { status: 'incomplete', responses: [] };
     const answer = raw.trim();
     if (q.type === 'minimum') {
       const amount = Number(answer);
-      if (!/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(answer) || !Number.isFinite(amount) || amount < 0) return { status: 'incomplete' };
+      if (!/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(answer) || !Number.isFinite(amount) || amount < 0) return { status: 'incomplete', responses: [] };
       if (amount < q.minimum) qualifies = false;
     } else {
-      if (!q.options.includes(answer)) return { status: 'incomplete' };
+      if (!q.options.includes(answer)) return { status: 'incomplete', responses: [] };
       if (!q.accepted.includes(answer)) qualifies = false;
     }
     responses.push({ id: q.id, label: q.label, answer });
   }
-  return qualifies ? { status: 'qualified', responses } : { status: 'ineligible' };
+  return qualifies ? { status: 'qualified', responses } : { status: 'ineligible', responses };
 }

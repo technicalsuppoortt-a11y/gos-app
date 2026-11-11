@@ -7,9 +7,9 @@ const require = createRequire(import.meta.url), { chromium } = require(process.e
 const fixtures = name => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const server = await createServer({ plugins: [{ name: 'system-template-fixture', enforce: 'pre', resolveId(id, importer) {
   if (!importer?.includes('/src/') && !importer?.includes('\\src\\')) return;
-  if (/\/(?:templateCatalog|adminManagement)$/.test(id)) return fixtures('system-template-catalog.ts');
+  if (/\/(?:templateCatalog|adminManagement|templateOwnership)$/.test(id)) return fixtures('system-template-catalog.ts');
   if (/\/(?:backend\/)?workspace$/.test(id) && /backend\/workspace|\.\/workspace/.test(id)) return fixtures('system-template-workspace.tsx');
-} }], server: { host: '127.0.0.1', port: 0 } });
+} }], cacheDir: 'node_modules/.vite-system-template-test', server: { host: '127.0.0.1', port: 0 } });
 await server.listen(); let browser;
 try {
   browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
@@ -24,8 +24,9 @@ try {
   const open = async view => { await page.goto(`${base}?view=${view}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); };
   const choose = async (label, name) => { await page.getByRole('combobox', { name: label, exact: true }).click(); await page.getByRole('option', { name, exact: true }).click(); };
   await open('admin'); await page.locator('.alm-table').waitFor();
-  assert.equal(await page.locator('.alm-category-tabs [role=tab]').count(), 12);
-  for (const category of ['Forms', 'Booking Pages', 'CRM Pipelines', 'Products', 'Automations', 'AI Assistants']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.ok(await page.locator('tbody tr').count() > 0); }
+  assert.equal(await page.locator('.alm-category-tabs [role=tab]').count(), 8);
+  for (const category of ['Websites', 'Funnels', 'Forms']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.equal(await page.locator('.alm-ghl-card').count(), 3); }
+  for (const category of ['Booking Pages', 'CRM Pipelines', 'Products', 'Automations']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.ok(await page.locator('tbody tr').count() > 0); }
   await page.getByRole('tab', { name: 'All templates', exact: true }).click();
   for (const [category, name] of [['Booking Pages', 'Native booking'], ['Products', 'Native course'], ['CRM Pipelines', 'Native pipeline'], ['Forms', 'Native form']]) {
     await page.getByRole('button', { name: 'Create template', exact: true }).click();

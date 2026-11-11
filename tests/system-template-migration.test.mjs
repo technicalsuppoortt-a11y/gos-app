@@ -9,10 +9,12 @@ const { createBookingTemplate } = loadTemplateSource('src/pages/booking/template
 const { instantiateProductTemplate } = loadTemplateSource('src/pages/commerce/productTemplates.ts');
 const { templateIsActive } = loadTemplateSource('src/pages/admin/managed-template.ts');
 test('migration contains every native preset in all eleven categories and valid asset schemas', () => {
-  assert.equal(catalog.length, 72); assert.equal(new Set(catalog.map(t => t.id)).size, 72);
+  assert.equal(catalog.length, 51); assert.equal(new Set(catalog.map(t => t.id)).size, 51);
   assert.equal(new Set(catalog.map(t => t.category)).size, 11);
   for (const t of catalog) assert.equal(validateSystemTemplate(t).length, 0, `${t.id}: ${validateSystemTemplate(t).join(' ')}`);
-  assert.equal(catalog.filter(t => t.category === 'Forms').length, 10);
+  assert.equal(catalog.filter(t => t.category === 'Websites').length, 3);
+  assert.equal(catalog.filter(t => t.category === 'Funnels').length, 3);
+  assert.equal(catalog.filter(t => t.category === 'Forms').length, 3);
   assert.equal(catalog.filter(t => t.category === 'Booking Pages').length, 3);
   assert.equal(catalog.filter(t => t.category === 'Products').length, 16);
 });

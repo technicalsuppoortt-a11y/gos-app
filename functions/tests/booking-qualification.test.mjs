@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { evaluateQualification, validQualificationQuestions } from '../booking-qualification.js';
+import { evaluateQualification, extractCalendarQualificationRules, sanitizePublicFormQuestions, validQualificationQuestions } from '../booking-qualification.js';
 import { publicBooking } from '../public-booking.js';
 
 const rules = [
@@ -25,6 +25,22 @@ test('requires valid answers to every configured rule and treats the threshold a
   assert.equal(validQualificationQuestions([rules[0], rules[0]]), false);
   assert.equal(validQualificationQuestions([{ ...rules[1], accepted: ['Missing'] }]), false);
   assert.equal(validQualificationQuestions([{ ...rules[0], minimum: Infinity }]), false);
+
+  // Inline screening questions inside `questions` extract and sanitize cleanly
+  const inlineRules = extractCalendarQualificationRules({
+    questions: [
+      { id: 'name', label: 'Name', type: 'text', required: true },
+      { id: 'budget', label: 'Budget in USD', type: 'number', required: true, isScreening: true, screeningType: 'minimum', minimum: 2000 },
+      { id: 'scope', label: 'Project scope', type: 'select', required: true, isScreening: true, screeningType: 'choice', options: ['Strategy', 'Audit'], accepted: ['Strategy'] },
+    ],
+  });
+  assert.ok(validQualificationQuestions(inlineRules));
+  const sanitized = sanitizePublicFormQuestions([
+    { id: 'budget', label: 'Budget in USD', type: 'number', required: true, isScreening: true, minimum: 2000 },
+    { id: 'scope', label: 'Project scope', type: 'select', required: true, isScreening: true, options: ['Strategy', 'Audit'], accepted: ['Strategy'] },
+  ]);
+  assert.equal(sanitized[0].minimum, undefined);
+  assert.equal(sanitized[1].accepted, undefined);
 });
 
 initializeApp({ projectId: 'demo-qualification-tests' });
@@ -61,7 +77,7 @@ const date = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
 const booking = { id: 'request-1', name: 'Visitor', email: 'visitor@example.com', date, start: date + 'T12:00:00Z', duration: 30 };
 const call = data => publicBooking.run({ data: { slug: calendar.slug, token: '1'.repeat(36), ...data } });
 
-test('checks current rules inside create and writes only after qualification passes', async t => {
+test('checks current rules inside create, captures disqualified leads as Pending Booking without booking, and books when qualified', async t => {
   const page = { ...calendar, qualificationQuestions: structuredClone(rules), passwordProtect: true, password: 'secret' };
   const { writes, records } = fakeStore(t, page);
   const request = { operation: 'create', booking, password: 'secret' };
@@ -76,15 +92,24 @@ test('checks current rules inside create and writes only after qualification pas
   assert.deepEqual((await call(request)).qualification, { status: 'incomplete', screeningQuestions: availability.screeningQuestions });
   page.qualificationQuestions[0].minimum = 1600;
   assert.deepEqual(await call({ ...request, screeningAnswers: eligible }), { qualification: { status: 'ineligible' } });
-  assert.deepEqual(writes, []);
+  // No appointment created on disqualification, but lead is synced to CRM as Pending Booking
+  assert.equal(writes.filter(path => path.startsWith('bookings/')).length, 0);
+  const pendingLead = [...records.entries()].find(([key]) => key.startsWith('leads/'))?.[1];
+  assert.ok(pendingLead);
+  assert.equal(pendingLead.bookingStatus, 'Pending Booking');
+  assert.equal(pendingLead.qualificationStatus, 'Unqualified');
+  assert.ok(pendingLead.tags.includes('Pending Booking'));
 
   const saved = await call({ ...request, screeningAnswers: { ...eligible, budget: '1600' } });
   assert.equal(saved.booking.status, 'Confirmed');
   assert.deepEqual(saved.booking.qualificationResponses.map(row => row.answer), ['1600', 'Strategy']);
-  assert.equal([...records.entries()].find(([key]) => key.startsWith('leads/'))[1].qualificationStatus, 'Qualified');
-  assert.equal(writes.filter(path => path.startsWith('events/')).length, 1);
+  const bookedLead = [...records.entries()].find(([key]) => key.startsWith('leads/'))[1];
+  assert.equal(bookedLead.qualificationStatus, 'Qualified');
+  assert.equal(bookedLead.bookingStatus, 'Booked');
+  assert.equal(bookedLead.tags.includes('Pending Booking'), false);
+  assert.equal(writes.filter(path => path.startsWith('bookings/')).length, 1);
   assert.deepEqual(await call(request), saved);
-  assert.equal(writes.filter(path => path.startsWith('events/')).length, 1);
+  assert.equal(writes.filter(path => path.startsWith('bookings/')).length, 1);
 
   page.qualificationQuestions[0].minimum = 10_000;
   const rescheduled = await call({ ...request, operation: 'reschedule', booking: { ...booking, start: date + 'T13:00:00Z' } });

@@ -1,174 +1,285 @@
 [
   {
-    "id": "master-0",
-    "name": "Coaching Discovery Funnel",
-    "description": "Turn warm leads into booked discovery calls.",
-    "category": "Funnels",
-    "industry": "Fitness/Coaching",
-    "goal": "Appointment Booking",
-    "tags": [
-      "coaching",
-      "consultation",
-      "3 steps"
-    ],
-    "source": "official",
-    "updated": "2026-10-07",
-    "popularity": 2400,
-    "color": "#6458c9",
-    "content": {
-      "headline": "Coaching Discovery Funnel",
-      "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
-      ],
-      "settings": {
-        "enabled": false,
-        "language": "en"
-      }
-    }
-  },
-  {
-    "id": "master-1",
-    "name": "Product Launch Funnel",
-    "description": "Build anticipation and convert your next launch.",
-    "category": "Funnels",
-    "industry": "E-commerce",
-    "goal": "Direct Sale",
-    "tags": [
-      "launch",
-      "checkout",
-      "4 steps"
-    ],
-    "source": "official",
-    "updated": "2026-10-06",
-    "popularity": 2353,
-    "color": "#367c73",
-    "content": {
-      "headline": "Product Launch Funnel",
-      "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
-      ],
-      "settings": {
-        "enabled": false,
-        "language": "en"
-      }
-    }
-  },
-  {
-    "id": "master-2",
-    "name": "Property Lead Engine",
-    "description": "Capture and qualify buyers for your listings.",
-    "category": "Funnels",
-    "industry": "Real Estate",
-    "goal": "Lead Generation",
-    "tags": [
-      "property",
-      "buyers",
-      "qualification"
-    ],
-    "source": "official",
-    "updated": "2026-10-05",
-    "popularity": 2306,
-    "color": "#ab6b4c",
-    "content": {
-      "headline": "Property Lead Engine",
-      "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
-      ],
-      "settings": {
-        "enabled": false,
-        "language": "en"
-      }
-    }
-  },
-  {
-    "id": "master-3",
-    "name": "Modern Agency Studio",
-    "description": "A polished home for your services and case studies.",
+    "id": "ghl-website-framing-construction",
+    "name": "Framing Construction",
+    "description": "High-contrast modern construction & structural framing website with service grids, trust stats, and project bid intake.",
     "category": "Websites",
-    "industry": "SaaS/Agency",
+    "industry": "Professional Services",
     "goal": "Lead Generation",
-    "tags": [
-      "portfolio",
-      "agency",
-      "5 pages"
-    ],
     "source": "official",
-    "updated": "2026-10-04",
-    "popularity": 2259,
-    "color": "#485785",
+    "tags": [
+      "construction",
+      "framing",
+      "service grid",
+      "4 pages",
+      "New"
+    ],
+    "updated": "2026-11-11",
+    "popularity": 142,
+    "color": "#EA580C",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-website-framing-construction%2Fcover.jpg?alt=media&token=8ef46539-0dcf-4ad2-ad61-63b120fb0f34",
     "content": {
-      "headline": "Modern Agency Studio",
+      "headline": "Building Strong Foundations for Every Project",
       "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
+        "Home",
+        "Services",
+        "Projects",
+        "Contact"
       ],
       "settings": {
-        "enabled": false,
+        "enabled": true,
         "language": "en"
       }
     }
   },
   {
-    "id": "master-4",
-    "name": "Wellness Clinic",
-    "description": "Introduce your practitioners and grow patient bookings.",
+    "id": "ghl-website-life-insurance",
+    "name": "Life Insurance",
+    "description": "Corporate-grade life insurance & wealth protection website with A+ carrier trust badges, 6-service grid, and rate comparison flow.",
+    "category": "Websites",
+    "industry": "Professional Services",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "insurance",
+      "financial services",
+      "trust badges",
+      "4 pages",
+      "New"
+    ],
+    "updated": "2026-11-11",
+    "popularity": 198,
+    "color": "#072A5E",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-website-life-insurance%2Fcover.jpg?alt=media&token=c20d44e5-7d84-458b-ace9-f19cebe5c184",
+    "content": {
+      "headline": "Secure Your Future With Ease.",
+      "steps": [
+        "Home",
+        "Coverage Plans",
+        "Advisors",
+        "Contact"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-website-pharmacy",
+    "name": "Pharmacy",
+    "description": "Clean minimalist medical & neighborhood pharmacy website with 60-second Rx transfer highlights, immunizations, and free local delivery.",
     "category": "Websites",
     "industry": "Healthcare/Clinic",
     "goal": "Appointment Booking",
+    "source": "official",
     "tags": [
-      "clinic",
-      "care",
+      "healthcare",
+      "pharmacy",
+      "rx transfer",
       "4 pages"
     ],
-    "source": "official",
-    "updated": "2026-10-03",
-    "popularity": 2212,
-    "color": "#8059a0",
+    "updated": "2026-11-10",
+    "popularity": 39,
+    "color": "#0F5132",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-website-pharmacy%2Fcover.jpg?alt=media&token=f22a3cff-f43b-4e4d-bd56-c1a243d9c0ad",
     "content": {
-      "headline": "Wellness Clinic",
+      "headline": "Prescriptions made simple. Care that feels personal.",
       "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
+        "Home",
+        "Pharmacy Services",
+        "Immunizations",
+        "Contact & Hours"
       ],
       "settings": {
-        "enabled": false,
+        "enabled": true,
         "language": "en"
       }
     }
   },
   {
-    "id": "master-5",
-    "name": "Boutique Storefront",
-    "description": "Showcase your collection with a refined storefront.",
-    "category": "Websites",
-    "industry": "E-commerce",
-    "goal": "Direct Sale",
+    "id": "ghl-funnel-mortgage-company",
+    "name": "Mortgage Company",
+    "description": "Step-by-step mortgage & real estate pre-qualification lead funnel with affordability tiers, soft-pull assurance, and loan officer booking.",
+    "category": "Funnels",
+    "industry": "Real Estate",
+    "goal": "Lead Generation",
+    "source": "official",
     "tags": [
-      "shop",
-      "collection",
-      "commerce"
+      "mortgage",
+      "real estate",
+      "pre-qualification",
+      "4 steps"
     ],
-    "source": "team",
-    "updated": "2026-10-02",
-    "popularity": 2165,
-    "color": "#386b9a",
+    "updated": "2026-11-11",
+    "popularity": 219,
+    "color": "#D97706",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-funnel-mortgage-company%2Fcover.jpg?alt=media&token=307f74cc-bff2-4246-b45f-d259f065a9fc",
     "content": {
-      "headline": "Boutique Storefront",
+      "headline": "Get Your Free Mortgage Pre-Qualification.",
       "steps": [
-        "Welcome",
-        "Explore offer",
-        "Take action"
+        "Pre-Qualification Offer",
+        "Buying Power Assessment",
+        "Loan Officer Strategy Call",
+        "Pre-Qualification Summary"
       ],
       "settings": {
-        "enabled": false,
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-funnel-brake-muffler",
+    "name": "Brake & Muffler",
+    "description": "High-converting local auto repair & brake service funnel featuring a $0 multi-point brake check voucher and instant bay booking.",
+    "category": "Funnels",
+    "industry": "Professional Services",
+    "goal": "Appointment Booking",
+    "source": "official",
+    "tags": [
+      "auto service",
+      "brake & muffler",
+      "local booking",
+      "3 steps"
+    ],
+    "updated": "2026-11-10",
+    "popularity": 381,
+    "color": "#DC2626",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-funnel-brake-muffler%2Fcover.jpg?alt=media&token=f246a060-b0a9-4563-9c87-aa62c2857057",
+    "content": {
+      "headline": "FREE BRAKE INSPECTION",
+      "steps": [
+        "Free Brake Inspection Offer",
+        "Reserve Service Bay",
+        "Bay Confirmation & Coupon"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-funnel-locksmith",
+    "name": "Locksmith",
+    "description": "Dark-mode high-urgency 24/7 emergency locksmith conversion funnel with click-to-call dispatch, ~15 min arrival stats, and GPS callback pin.",
+    "category": "Funnels",
+    "industry": "Professional Services",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "locksmith",
+      "emergency dispatch",
+      "click-to-call",
+      "3 steps"
+    ],
+    "updated": "2026-11-11",
+    "popularity": 558,
+    "color": "#FF5A00",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-funnel-locksmith%2Fcover.jpg?alt=media&token=e9a3b1f6-ea7d-402e-a305-b7b95eae4682",
+    "content": {
+      "headline": "Locked out? We'll get you back in — fast.",
+      "steps": [
+        "24/7 Emergency Dispatch",
+        "Instant Technician Pin",
+        "Live ETA Confirmation"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-form-flooring-quote",
+    "name": "Flooring Quote - Classic",
+    "description": "Clean structured residential & commercial flooring estimator form with address capture, material selector, and square-footage scoping.",
+    "category": "Forms",
+    "industry": "Real Estate",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "flooring",
+      "quote estimator",
+      "home services",
+      "11 fields"
+    ],
+    "updated": "2026-11-11",
+    "popularity": 4309,
+    "color": "#1E293B",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-form-flooring-quote%2Fcover.jpg?alt=media&token=c686b27d-7b6f-44e8-a275-67f3f49c77ae",
+    "content": {
+      "headline": "Get Your Free Flooring Quote",
+      "steps": [
+        "Contact & Property Address",
+        "Flooring Material Selection",
+        "Project Scope & Size"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-form-personal-trainer",
+    "name": "Personal Trainer",
+    "description": "High-energy athletic fitness assessment & workout blueprint intake form with goal profiling, injury screening, and SMS compliance opt-ins.",
+    "category": "Forms",
+    "industry": "Fitness/Coaching",
+    "goal": "Appointment Booking",
+    "source": "official",
+    "tags": [
+      "fitness",
+      "personal trainer",
+      "assessment",
+      "8 fields"
+    ],
+    "updated": "2026-11-10",
+    "popularity": 2181,
+    "color": "#EAB308",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-form-personal-trainer%2Fcover.jpg?alt=media&token=cc07cd98-7469-49e6-b552-0d3acaa91ec9",
+    "content": {
+      "headline": "LET'S BUILD YOUR WORKOUT BLUEPRINT.",
+      "steps": [
+        "Athlete Baseline",
+        "Goals & Injury Screen",
+        "Assessment Opt-In"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "ghl-form-architecture-studio",
+    "name": "Architecture Studio",
+    "description": "Sleek editorial architectural & interior studio consultation form featuring project typology, budget range, and timeline selectors.",
+    "category": "Forms",
+    "industry": "Professional Services",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "architecture",
+      "studio consultation",
+      "project scope",
+      "9 fields"
+    ],
+    "updated": "2026-11-11",
+    "popularity": 2588,
+    "color": "#111111",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fghl-form-architecture-studio%2Fcover.jpg?alt=media&token=60596ea9-8818-4046-8047-aef91ce93bcc",
+    "content": {
+      "headline": "Every great space starts with a conversation.",
+      "steps": [
+        "Client & Site Location",
+        "Project Type & Budget",
+        "Vision Brief"
+      ],
+      "settings": {
+        "enabled": true,
         "language": "en"
       }
     }

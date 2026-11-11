@@ -51,11 +51,13 @@ export function SourceBadge({ source }: { source?: string }) {
 export function TagBadge({ tag }: { tag: string }) {
   useUILanguage();
   const text = tag.toLowerCase();
+  const isPendingBooking = /pending.?booking/.test(text);
   const tone = /high.?intent|qualified|priority/.test(text) && !text.includes('unqualified') ? 'green'
+    : isPendingBooking ? 'orange'
     : /interested|warm/.test(text) ? 'orange'
     : /hot|unqualified/.test(text) ? 'red'
     : /coaching|consultation|course|digital product|service/.test(text) ? 'purple' : 'neutral';
-  return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {localizeNode(tag)}</span>;
+  return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(isPendingBooking ? <Calendar size={9}/> : tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {localizeNode(tag)}</span>;
 }
 
 function followUp(lead: CanonicalLead): { label: string; tone: string } {
@@ -115,7 +117,7 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
     <button className="crm-card-link" type="button" onClick={onOpen} aria-label={translateText(`Quick details for ${lead.name || 'contact'}`)}/>
     <div className="crm-card-content">
       <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name || 'Unnamed contact')}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
-      <div className="crm-card-tags">{localizeNode((lead.tags || []).slice(0, 3).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
+      <div className="crm-card-tags">{localizeNode((((lead.bookingStatus === 'Pending Booking' || lead.bookingStatus === 'Pending') && !(lead.tags || []).some(t => /pending.?booking/i.test(t))) ? ['Pending Booking', ...(lead.tags || [])] : (lead.tags || [])).slice(0, 3).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
       <div className="crm-card-bottom"><strong dir="ltr">{formatPrice(lead.value || 0, (lead as { currency?: string }).currency || 'EUR')}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
       <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{localizeNode(compactActivity(lead.lastActivity))}</small><span className={`crm-followup crm-followup-${status.tone}`} title={translateText(lead.nextFollowUp)}>{localizeNode(status.label)}</span></div>
     </div>

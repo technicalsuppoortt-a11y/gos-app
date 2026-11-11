@@ -16,8 +16,8 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
     return (
       <AssetAsyncButton busyText="Creating..." className={`pf-template-card ${isBlank ? 'pf-template-blank-card' : ''}`} key={template.id} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>
         {busy => <>
-          {template.mode === 'form' && !template.thumbnail ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.thumbnail || template.image}>
-            <small>{localizeNode(template.mode==='funnel'?'Funnel · 3 steps':template.mode==='form'?'Form':'Website · 1 page')}</small>
+          {template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
+            <small>{localizeNode(template.mode==='funnel'?`Funnel · ${template.builderDocument?.steps?.length || 3} steps`:`Website · ${template.builderDocument?.pages?.length || 1} ${(template.builderDocument?.pages?.length || 1) === 1 ? 'page' : 'pages'}`)}</small>
             <strong>{localizeNode(template.title)}</strong>
             <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>
           </LazyBackground>}

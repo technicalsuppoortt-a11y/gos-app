@@ -1,6 +1,11 @@
 import { useCurrency } from '../context/CurrencyContext';
 import { usePipelineTemplateCatalog } from '../backend/nativeTemplateCatalog';
 import { LeadQuickView } from './crm/LeadQuickView';
+import { readPendingScreeningLeads } from './booking/pendingLeadSync';
+import { readAppointments as readBookingAppointments } from './booking/model';
+import { store } from '../store';
+import { addLead } from '../store/slices/crmSlice';
+import { makeLead, mergeCRMLeads } from './crm/model';
 import { selectUnifiedCRMLeads } from '../store/crmSelectors';
 import { CRMActionBoundary } from './crm/CRMActions';
 import { useCRMActions } from './crm/useCRMActions';
@@ -99,7 +104,49 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
   const [params, setParams] = useSearchParams();
   const isContactsOnly = Boolean(isContactsPage || /^\/(?:dashboard\/)?contacts(?:\/|$)/.test(location.pathname));
   const { pipelines: storedPipelines } = useSelector((s: RootState) => s.crm);
-  const leads = useSelector(selectUnifiedCRMLeads);
+  const rawLeads = useSelector(selectUnifiedCRMLeads);
+  const [bookingSyncTick, setBookingSyncTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setBookingSyncTick(t => t + 1);
+    window.addEventListener('storage', bump);
+    window.addEventListener('gos-booking-change', bump);
+    return () => {
+      window.removeEventListener('storage', bump);
+      window.removeEventListener('gos-booking-change', bump);
+    };
+  }, []);
+  const leads = (() => {
+    void bookingSyncTick;
+    const pendingScreening = readPendingScreeningLeads();
+    const pendingAppointments = readBookingAppointments()
+      .filter(b => b && b.status === 'Pending' && (b.email || b.name))
+      .map(b => makeLead({
+        id: 'lead-booking-' + b.id,
+        name: b.name || (b.email ? b.email.split('@')[0] : 'Booking Invitee'),
+        email: (b.email || '').toLowerCase(),
+        phone: b.whatsapp || '',
+        source: 'Booking',
+        interest: b.serviceName || 'Pending Appointment',
+        stage: 'LEAD_CAPTURED',
+        lifecycleStage: 'LEAD_CAPTURED',
+        bookingId: b.id,
+        bookingStatus: 'Pending Booking',
+        qualificationStatus: 'Pending',
+        tags: ['Booking', 'Pending Booking'],
+        lastActivity: b.start || 'Just now',
+      }));
+    const localPending = [...pendingScreening, ...pendingAppointments];
+    if (!localPending.length) return rawLeads;
+    return mergeCRMLeads(rawLeads, localPending);
+  })();
+  useEffect(() => {
+    const existingIds = new Set(store.getState().crm.leads.map(l => l.id));
+    for (const item of readPendingScreeningLeads()) {
+      if (item?.id && !existingIds.has(item.id)) {
+        store.dispatch(addLead(item));
+      }
+    }
+  }, [bookingSyncTick]);
   const pipelines = storedPipelines.filter(p => !p.archived);
   const pipeline =
     pipelines.find((p) => p.id === params.get("pipeline")) ?? pipelines[0];
@@ -140,7 +187,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
     source: "",
     tag: "",
     owner: "",
-    status: "",
+    status: params.get("status") || "",
     stage: "",
   });
   const [sort, setSort] = useState("recent");
@@ -225,6 +272,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
             lead.email || "",
             lead.phone ?? "",
             lead.company || "",
+            lead.bookingStatus || "",
             ...(lead.tags || []),
           ].some((v) => (v || "").toLowerCase().includes(q))) &&
         (filters.status === "archived" ? lead.archived : !lead.archived) &&
@@ -233,6 +281,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
         (!filters.owner || lead.owner === filters.owner) &&
         (!filters.stage || displayStage(lead, pipeline) === filters.stage) &&
         (filters.status !== "followup" || Boolean(lead.nextFollowUp || lead.nextFollowUpAt)) &&
+        (filters.status !== "pending_booking" || lead.bookingStatus === "Pending Booking" || lead.bookingStatus === "Pending" || (lead.tags || []).some((t) => /pending.?booking/i.test(t))) &&
         (filters.status !== "qualified" ||
           lead.qualificationStatus === "Qualified")
       );
@@ -315,6 +364,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                 : field === "status"
                   ? [
                       { value: "followup", label: "Needs follow-up" },
+                      { value: "pending_booking", label: "Pending booking" },
                       { value: "qualified", label: "Qualified" },
                       { value: "archived", label: "Archived" },
                     ]

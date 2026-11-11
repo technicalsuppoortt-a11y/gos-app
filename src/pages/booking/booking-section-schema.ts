@@ -31,7 +31,23 @@ export type SectionSettings = {
   };
   notifications: { confirmationEmail: boolean; reminders: number; followUp: boolean };
   notificationWorkflows: Record<string, Workflow>;
-  templateSettings: { previewMode: 'default' | 'template'; previewTemplateId: string; postBookingMode: 'standard' | 'template' | 'custom_url'; redirectUrl: string; thankYouTemplateId: string; emailNotificationMode: 'default' | 'template'; emailTemplateId: string };
+  templateSettings: {
+    previewMode: 'default' | 'template';
+    previewTemplateId: string;
+    postBookingMode: 'standard' | 'template' | 'custom_url';
+    redirectUrl: string;
+    thankYouTemplateId: string;
+    emailNotificationMode: 'default' | 'template';
+    emailTemplateId: string;
+    templateName?: string;
+    templateTitle?: string;
+    templateSubtitle?: string;
+    templateColor?: string;
+    templateImage?: string;
+    templateIndustry?: string;
+    templateKind?: 'website' | 'funnel';
+    templateBenefits?: string[];
+  };
 };
 export function sectionDefaults(): SectionSettings {
   const workflow = (name: string, trigger: Workflow['trigger'], timingValue = 0, timingUnit: Workflow['timingUnit'] = 'minutes'): Workflow => ({

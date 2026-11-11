@@ -3,9 +3,16 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { validateBooking } from './policy.js';
 import { createHash } from 'node:crypto';
-import { evaluateQualification, publicScreeningQuestions, validQualificationQuestions } from './booking-qualification.js';
+import {
+  evaluateQualification,
+  extractCalendarQualificationRules,
+  publicScreeningQuestions,
+  sanitizePublicFormQuestions,
+  validQualificationQuestions,
+} from './booking-qualification.js';
 
-function screeningRules(value) {
+function screeningRules(calendar) {
+  const value = extractCalendarQualificationRules(calendar);
   if (value === undefined) return [];
   if (!validQualificationQuestions(value)) throw new HttpsError('failed-precondition', 'This booking page has an invalid screening configuration. Contact the host.');
   return value;
@@ -13,6 +20,26 @@ function screeningRules(value) {
 
 function publicQualification(result, questions) {
   return result.status === 'incomplete' ? { status: result.status, screeningQuestions: publicScreeningQuestions(questions) } : { status: result.status };
+}
+
+function buildLeadCustomFields(calendar, customAnswers, responses = []) {
+  const fields = {}, labels = {};
+  const questionList = Array.isArray(calendar?.questions) ? calendar.questions : [];
+  if (customAnswers && typeof customAnswers === 'object' && !Array.isArray(customAnswers)) {
+    for (const [key, raw] of Object.entries(customAnswers)) {
+      const val = String(raw ?? '').trim().slice(0, 500);
+      if (!val) continue;
+      fields[key] = val;
+      const match = questionList.find(q => q?.id === key);
+      if (match?.label) labels[key] = String(match.label).slice(0, 160);
+    }
+  }
+  for (const item of responses) {
+    if (!item?.id || !item?.answer) continue;
+    fields[item.id] = String(item.answer).slice(0, 500);
+    if (item.label) labels[item.id] = String(item.label).slice(0, 160);
+  }
+  return { fields, labels };
 }
 
 // Public callers get calendar presentation and anonymous busy intervals only.
@@ -26,12 +53,13 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
   const initial = matches.docs[0].data();
   if (initial.passwordProtect && password !== initial.password) throw new HttpsError('permission-denied', 'Enter the page password.');
   if (operation === 'qualify') {
-    const questions = screeningRules(initial.qualificationQuestions);
+    const questions = screeningRules(initial);
     return publicQualification(evaluateQualification(questions, screeningAnswers), questions);
   }
   if (operation === 'availability') {
-    const { password: hidden, notificationWorkflows, qualificationQuestions, ...page } = initial;
-    const screeningQuestions = publicScreeningQuestions(screeningRules(qualificationQuestions));
+    const { password: hidden, notificationWorkflows, qualificationQuestions: _qq, ...page } = initial;
+    const screeningQuestions = publicScreeningQuestions(screeningRules(initial));
+    page.questions = sanitizePublicFormQuestions(page.questions);
     const records = await root.collection('bookings').where('status', 'in', ['Confirmed', 'Pending']).get();
     page.afterBooking = { ...page.afterBooking, webhookEnabled: false, webhookUrl: '' };
     const bookings = records.docs.map(row => {
@@ -61,9 +89,54 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     if (old && operation === 'create') return { booking: Object.fromEntries(Object.entries(old).filter(([key]) => key !== 'managementTokenHash')) };
     let qualificationResponses = old?.qualificationResponses;
     if (operation === 'create') {
-      const questions = screeningRules(calendar.qualificationQuestions);
-      const result = evaluateQualification(questions, screeningAnswers);
-      if (result.status !== 'qualified') return { qualification: publicQualification(result, questions) };
+      const questions = screeningRules(calendar);
+      const mergedAnswers = Object.assign(
+        Object.create(null),
+        booking.customAnswers && typeof booking.customAnswers === 'object' && !Array.isArray(booking.customAnswers) ? booking.customAnswers : {},
+        screeningAnswers && typeof screeningAnswers === 'object' && !Array.isArray(screeningAnswers) ? screeningAnswers : {},
+      );
+      const result = evaluateQualification(questions, questions.length ? mergedAnswers : screeningAnswers);
+      if (result.status === 'incomplete') return { qualification: publicQualification(result, questions) };
+      if (result.status === 'ineligible') {
+        if (typeof booking.name === 'string' && booking.name.trim() && booking.name.length <= 150 && typeof booking.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.email)) {
+          const email = booking.email.trim().toLowerCase();
+          const name = booking.name.trim();
+          const now = new Date().toISOString();
+          const leadRef = root.collection('leads').doc(createHash('sha256').update(email).digest('hex').slice(0, 32));
+          const lead = (await tx.get(leadRef)).data();
+          const routing = await resolveCRMRoute(tx, root, calendar.crmRouting, 'LEAD_CAPTURED');
+          const { fields, labels } = buildLeadCustomFields(calendar, booking.customAnswers, result.responses);
+          const existingTags = Array.isArray(lead?.tags) ? lead.tags : [];
+          const keepBooked = lead?.bookingStatus === 'Booked' || lead?.bookingStatus === 'Completed';
+          const nextTags = keepBooked ? existingTags : [...new Set(['Pending Booking', ...existingTags.filter(t => t !== 'Booked')])];
+          const activity = {
+            id: `act-${Date.now().toString(36)}`,
+            type: 'booking',
+            title: 'Pending booking (screening)',
+            detail: `${calendar.name || 'Booking page'} · Screening criteria not met${booking.date ? ` (${booking.date}${booking.time ? ` ${booking.time}` : ''})` : ''}`,
+            at: now,
+          };
+          tx.set(leadRef, {
+            ...(lead ?? { id: leadRef.id, source: 'Booking', hasWhatsAppConsent: false, hasMessagingConsent: false, hasEmailConsent: false, createdAt: now }),
+            name,
+            email,
+            phone: String(booking.whatsapp || lead?.phone || '').slice(0, 80),
+            interest: calendar.name || lead?.interest || 'Booking inquiry',
+            ...(!lead || calendar.crmRouting?.pipelineId ? routing : {}),
+            qualificationStatus: 'Unqualified',
+            bookingStatus: keepBooked ? lead.bookingStatus : 'Pending Booking',
+            followUpState: keepBooked ? (lead.followUpState || 'BOOKED') : (lead?.followUpState || 'QUALIFYING'),
+            tags: nextTags,
+            ...(Object.keys(fields).length ? { customFields: { ...(lead?.customFields || {}), ...fields }, customFieldLabels: { ...(lead?.customFieldLabels || {}), ...labels } } : {}),
+            activities: [activity, ...(Array.isArray(lead?.activities) ? lead.activities : [])].slice(0, 50),
+            lastMessage: 'Pending booking — screening criteria not met',
+            lastActivity: now,
+            updatedAt: now,
+          });
+          tx.create(root.collection('events').doc(), { type: 'booking.pending_screening', resourceId: leadRef.id, actorId: 'public', createdAt: FieldValue.serverTimestamp() });
+        }
+        return { qualification: publicQualification(result, questions) };
+      }
       qualificationResponses = result.responses;
     }
     const busy = (await tx.get(root.collection('bookings'))).docs.map(row => ({ ...row.data(), id: row.id }));
@@ -74,7 +147,7 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
       const candidate = { ...booking, calendarId: calendarRef.id };
       const failure = validateBooking(calendar, candidate, busy);
       if (failure) throw new HttpsError('failed-precondition', failure);
-      const missing = (calendar.questions ?? []).find(q => q.active !== false && q.required && q.type !== 'text-block' && !String(booking.customAnswers?.[q.id] ?? '').trim());
+      const missing = (calendar.questions ?? []).find(q => q.active !== false && q.required && q.type !== 'text-block' && !q.isScreening && !String(booking.customAnswers?.[q.id] ?? '').trim());
       if (missing) throw new HttpsError('invalid-argument', `Please answer: ${missing.label}`);
       saved = Object.fromEntries(['id', 'name', 'email', 'whatsapp', 'date', 'time', 'start', 'duration', 'timezone', 'location', 'source', 'fromAd', 'customAnswers', 'guests'].map(key => [key, booking[key] ?? null]));
       saved.calendarId = calendarRef.id; saved.serviceName = calendar.name;
@@ -86,7 +159,26 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     const leadRef = root.collection('leads').doc(createHash('sha256').update(saved.email).digest('hex').slice(0, 32));
     const lead = (await tx.get(leadRef)).data();
     const routing = await resolveCRMRoute(tx, root, calendar.crmRouting, 'BOOKING');
-    if (operation !== 'cancel') tx.set(leadRef, { ...(lead ?? { id: leadRef.id, name: saved.name, email: saved.email, source: 'Booking', hasWhatsAppConsent: false, hasEmailConsent: false }), ...(!lead || calendar.crmRouting?.pipelineId ? routing : {}), ...(qualificationResponses?.length ? { qualificationStatus: 'Qualified' } : {}), bookingStatus: 'Booked', followUpState: 'BOOKED', bookingId: booking.id, lastActivity: new Date().toISOString() });
+    if (operation !== 'cancel') {
+      const now = new Date().toISOString();
+      const { fields, labels } = buildLeadCustomFields(calendar, saved.customAnswers, qualificationResponses);
+      const existingTags = Array.isArray(lead?.tags) ? lead.tags.filter(t => t !== 'Pending Booking') : [];
+      tx.set(leadRef, {
+        ...(lead ?? { id: leadRef.id, name: saved.name, email: saved.email, source: 'Booking', hasWhatsAppConsent: false, hasEmailConsent: false, createdAt: now }),
+        name: saved.name,
+        email: saved.email,
+        phone: String(saved.whatsapp || lead?.phone || '').slice(0, 80),
+        ...(!lead || calendar.crmRouting?.pipelineId ? routing : {}),
+        ...(qualificationResponses?.length ? { qualificationStatus: 'Qualified' } : {}),
+        ...(Object.keys(fields).length ? { customFields: { ...(lead?.customFields || {}), ...fields }, customFieldLabels: { ...(lead?.customFieldLabels || {}), ...labels } } : {}),
+        tags: existingTags,
+        bookingStatus: 'Booked',
+        followUpState: 'BOOKED',
+        bookingId: booking.id,
+        lastActivity: now,
+        updatedAt: now,
+      });
+    }
     tx.set(lock, { version: (lockDoc.data()?.version ?? 0) + 1 });
     tx.set(ref, { ...saved, managementTokenHash: digest });
     tx.create(root.collection('events').doc(), { type: `booking.${operation}`, resourceId: booking.id, actorId: 'public', createdAt: FieldValue.serverTimestamp() });
