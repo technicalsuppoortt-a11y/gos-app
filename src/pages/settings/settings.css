@@ -1116,3 +1116,8 @@ html.dark .st-business .st-field input:focus,html.dark .st-business .st-field se
 }
 
 .st-service-icon.pink{background:#fdecf3;color:#e1306c}
+.st-channel-picker{display:grid;gap:8px;margin-top:14px;padding:12px;border:1px solid var(--st-border);border-radius:8px;background:var(--st-soft)}
+.st-channel-picker h4{margin:0;font-size:12px;font-weight:700}
+.st-channel-picker p{margin:0;font-size:11px}
+.st-channel-picker ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.st-channel-picker li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid var(--st-border);border-radius:6px;background:var(--st-surface);font-size:11px}
