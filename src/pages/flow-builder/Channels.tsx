@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type Channel, type MetaPage } from './api'
 import { metaConnectWindow, type MetaConfig } from './metaSdk'
 
-type MetaChannel = 'messenger' | 'instagram' | 'whatsapp'
+export type MetaChannel = 'messenger' | 'instagram' | 'whatsapp'
 
 const CARDS: { id: MetaChannel; title: string; icon: string; text: string; button: string }[] = [
   { id: 'messenger', title: 'Facebook Messenger', icon: 'm', text: 'Reply to messages sent to your Facebook Page.', button: 'Connect Facebook' },
@@ -16,7 +16,8 @@ const EMPTY_MANUAL = { external_id: '', access_token: '', app_secret: '' }
  * One click per channel, like ManyChat: Meta's popup → (pick a Page) → done.
  * These are the same channels the AI replies on; live flows answer first, the AI answers the rest.
  */
-export function Channels() {
+/** The real channel connections (Meta popup, page picker, WhatsApp manual, disconnect). Used by Channels and Settings › Integrations. */
+export function useMetaChannels() {
   const [channels, setChannels] = useState<Channel[] | null>(null)
   const [config, setConfig] = useState<MetaConfig | null>(null)
   const [picking, setPicking] = useState<{ channel: 'messenger' | 'instagram'; pages: MetaPage[] } | null>(null)
@@ -76,6 +77,11 @@ export function Channels() {
     run(c.channel, async () => update(await api.disconnect(c.channel)))
   }
 
+  return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect }
+}
+
+export function Channels() {
+  const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, pick, disconnect } = useMetaChannels()
   return (
     <main className="fb-list-page">
       <h1>Channels</h1>

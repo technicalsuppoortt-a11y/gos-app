@@ -27,6 +27,7 @@ import { Badge, Card, Field, Modal, Toggle } from './kit';
 import { friendlyError, safeExternalUrl, settingsApiEnabled, settingsRequest } from './data';
 import type { IntegrationState, SettingsData } from './data';
 import { PanelHeading } from './kit';
+import { useMetaChannels, type MetaChannel } from '../flow-builder/Channels';
 import { localDemoEnabled, useDemoState } from '../../backend/localDemo';
 
 type GuideStep = {
@@ -39,6 +40,7 @@ const providers = [
   {
     id: 'meta',
     connectionId: 'meta',
+    channel: 'messenger' as MetaChannel,
     name: 'Facebook Messenger',
     category: 'Communication',
     setupTime: '~2 min setup',
@@ -86,6 +88,7 @@ const providers = [
     id: 'instagram',
     // Instagram connects through the same Meta login as Messenger, so it shares that connection.
     connectionId: 'meta',
+    channel: 'instagram' as MetaChannel,
     name: 'Instagram',
     category: 'Communication',
     setupTime: '~2 min setup',
@@ -114,6 +117,7 @@ const providers = [
   {
     id: 'whatsapp',
     connectionId: 'whatsapp',
+    channel: 'whatsapp' as MetaChannel,
     name: 'WhatsApp Business',
     category: 'Communication',
     setupTime: '~3 min setup',
@@ -283,13 +287,75 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
       `${p.name} ${p.description} ${p.capabilities.join(' ')}`.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const connectedCount = providers.filter(p => data.integrations[p.connectionId]?.status === 'Connected').length;
+  // Messenger, Instagram and WhatsApp use the real channel connection (the same one the AI and flows reply on).
+  const meta = useMetaChannels();
+  const stateOf = (p: Provider): IntegrationState => {
+    if (!p.channel) return data.integrations[p.connectionId] ?? { status: 'Not Connected' };
+    const c = meta.channels?.find(x => x.channel === p.channel);
+    return c?.status === 'connected'
+      ? { status: 'Connected', account: c.name ?? c.external_id ?? undefined, providerStatus: 'operational' }
+      : { status: 'Not Connected' };
+  };
+  const connectedCount = providers.filter(p => stateOf(p).status === 'Connected').length;
   const activeGuide = providers.find(p => p.id === activeGuideId) ?? providers[0];
-  const activeGuideState = data.integrations[activeGuide.connectionId] ?? { status: 'Not Connected' };
+  const activeGuideState = stateOf(activeGuide);
 
   const openProviderGuide = (providerId: string) => {
     setActiveGuideId(providerId);
     guideRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const renderChannelExtras = (p: Provider) => {
+    const isWhatsApp = p.channel === 'whatsapp';
+    const connected = stateOf(p).status === 'Connected';
+    return (
+      <>
+        {meta.error && meta.busy === null && p.channel === 'messenger' && (
+          <p className="st-error" role="alert">{localizeNode(meta.error)}</p>
+        )}
+        {meta.picking && meta.picking.channel === p.channel && (
+          <div className="st-channel-picker">
+            <h4>{translateText(p.channel === 'instagram' ? 'Choose an Instagram account' : 'Choose a page')}</h4>
+            {meta.picking!.pages.length === 0 && (
+              <p>{translateText(p.channel === 'instagram'
+                ? 'No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.'
+                : 'No pages found. You need to manage the page, and allow it in the Meta window.')}</p>
+            )}
+            <ul>
+              {meta.picking!.pages.map(page => (
+                <li key={page.id}>
+                  <span dir="auto">{p.channel === 'instagram' ? `@${page.instagram?.username} · ${page.name}` : page.name}</span>
+                  <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.pick(page)}>
+                    {localizeNode(meta.busy === page.id ? 'Connecting…' : 'Connect')}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="st-guide-trigger" onClick={() => meta.setPicking(null)}>{translateText('Cancel')}</button>
+          </div>
+        )}
+        {isWhatsApp && !connected && !meta.manual && (
+          <button type="button" className="st-guide-trigger" onClick={() => meta.setManual({ external_id: '', access_token: '', app_secret: '' })}>
+            {translateText('Use my own Meta app instead')}
+          </button>
+        )}
+        {isWhatsApp && !connected && meta.manual && (
+          <form className="st-channel-picker" onSubmit={meta.connectManual}>
+            <h4>{translateText('Connect with your own Meta app')}</h4>
+            <p>{translateText('First add this webhook to your app in Meta, and subscribe to the messages field.')}</p>
+            <Field label="Callback URL"><input readOnly value={meta.config?.webhook_url ?? ''} /></Field>
+            <Field label="Verify token"><input readOnly value={meta.config?.verify_token ?? ''} /></Field>
+            <Field label="Phone number ID"><input required inputMode="numeric" value={meta.manual.external_id} onChange={e => meta.setManual({ ...meta.manual!, external_id: e.target.value })} /></Field>
+            <Field label="Permanent access token"><input required type="password" autoComplete="off" value={meta.manual.access_token} onChange={e => meta.setManual({ ...meta.manual!, access_token: e.target.value })} /></Field>
+            <Field label="App Secret"><input required type="password" autoComplete="off" value={meta.manual.app_secret} onChange={e => meta.setManual({ ...meta.manual!, app_secret: e.target.value })} /></Field>
+            <div className="st-modal-actions">
+              <button type="button" className="st-secondary" onClick={() => meta.setManual(null)}>{translateText('Cancel')}</button>
+              <button type="submit" className="st-primary" disabled={meta.busy !== null}>{localizeNode(meta.busy === 'whatsapp' ? 'Connecting…' : 'Connect')}</button>
+            </div>
+          </form>
+        )}
+      </>
+    );
   };
 
   const renderProviderIcon = (p: Provider, size = 24) =>
@@ -342,7 +408,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
       <div className="st-integration-grid st-integration-grid-four">
         {localizeNode(
           list.map(p => {
-            const state = data.integrations[p.connectionId] ?? { status: 'Not Connected' };
+            const state = stateOf(p);
             const isConnected = state.status === 'Connected';
             return (
               <Card key={p.id} className={`st-integration-card${isConnected ? ' is-connected' : ''}`}>
@@ -422,6 +488,20 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                       <BookOpen size={13} />
                       {translateText('How to connect')}
                     </button>
+                    {p.channel ? (
+                      <button
+                        type="button"
+                        className={isConnected ? 'st-secondary' : 'st-primary'}
+                        disabled={meta.busy !== null || meta.channels === null}
+                        onClick={() => {
+                          const c = meta.channels?.find(x => x.channel === p.channel);
+                          if (isConnected && c) meta.disconnect(c, p.name);
+                          else meta.connect(p.channel!);
+                        }}
+                      >
+                        {localizeNode(meta.busy === p.channel ? (isConnected ? 'Disconnecting…' : 'Opening Meta…') : isConnected ? 'Disconnect' : 'Connect')}
+                      </button>
+                    ) : (
                     <button
                       type="button"
                       className={state.status === 'Needs Attention' || !isConnected ? 'st-primary' : 'st-secondary'}
@@ -436,8 +516,10 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                       )}
                       <ChevronRight size={14} />
                     </button>
+                    )}
                   </div>
                 </div>
+                {p.channel && renderChannelExtras(p)}
               </Card>
             );
           }),
@@ -492,7 +574,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
           <div className="st-guideline-tabs" role="tablist" aria-label={translateText('Channel connection guides')}>
             {providers.map(p => {
               const isSelected = p.id === activeGuide.id;
-              const pState = data.integrations[p.connectionId]?.status === 'Connected';
+              const pState = stateOf(p).status === 'Connected';
               return (
                 <button
                   key={p.id}
