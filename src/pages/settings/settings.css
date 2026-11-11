@@ -1114,3 +1114,5 @@ html.dark .st-business .st-field input:focus,html.dark .st-business .st-field se
 .dark .st-scope-list li {
   color: #cbd5e1 !important;
 }
+
+.st-service-icon.pink{background:#fdecf3;color:#e1306c}

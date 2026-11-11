@@ -5,6 +5,7 @@ import { LandingPreviewBridge } from "./landing-preview/LandingPreviewBridge";
 import { BrandedDashboard } from "./BrandedDashboard";
 
 export type StudioPreviewSurface = "landing" | "dashboard";
+const layer = { width: "100%", height: "100%" } as const;
 export type StudioPreviewDevice = "desktop" | "tablet" | "mobile";
 export function StudioPreviewSurface({ surface, device, onSurfaceChange, onDeviceChange,
   expanded = false, onExpand,
@@ -40,6 +41,13 @@ export function StudioPreviewSurface({ surface, device, onSurfaceChange, onDevic
     observer.observe(stage);
     return () => observer.disconnect();
   }, [width, baseHeight, device]);
+  const [mounted, setMounted] = useState<Record<StudioPreviewSurface, boolean>>(() => ({ dashboard: surface === "dashboard", landing: surface === "landing" }));
+  useEffect(() => { setMounted(current => current[surface] ? current : { ...current, [surface]: true }); }, [surface]);
+  // Warm the other preview in the background once the visible one has had time to start.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMounted({ dashboard: true, landing: true }), 6000);
+    return () => window.clearTimeout(timer);
+  }, []);
   const surfaces = ["dashboard", "landing"] as const;
   return <div className={`studio-live-preview${expanded ? " is-expanded" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <div className="studio-preview-controls">
@@ -75,9 +83,13 @@ export function StudioPreviewSurface({ surface, device, onSurfaceChange, onDevic
     <div ref={host} className="studio-preview-stage" data-preview-stage
       id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${surface}`} tabIndex={0}>
       <div className="studio-preview-device-frame" style={{width: frameSize.width || "100%", height: frameSize.height || "100%"}}>
-        {surface === "dashboard" ? <BrandedDashboard readOnly
-          {...(expanded && device === "desktop" ? {} : { width, height })} /> :
-          <LandingPreviewBridge viewport={{ width, height }} title={t("Live landing page preview", "معاينة صفحة الهبوط الحالية")} />}
+        {/* Both previews stay loaded once opened, so switching tabs or devices never reloads them. */}
+        {mounted.dashboard && <div className="studio-preview-layer" hidden={surface !== "dashboard"} style={layer}>
+          <BrandedDashboard readOnly {...(expanded && device === "desktop" ? {} : { viewport: { width, height } })} />
+        </div>}
+        {mounted.landing && <div className="studio-preview-layer" hidden={surface !== "landing"} style={layer}>
+          <LandingPreviewBridge viewport={{ width, height }} title={t("Live landing page preview", "معاينة صفحة الهبوط الحالية")} />
+        </div>}
       </div>
     </div>
     <span className="studio-preview-caption">{width} × {height} · {t("Current draft · preview only", "المسودة الحالية · للمعاينة فقط")}</span>

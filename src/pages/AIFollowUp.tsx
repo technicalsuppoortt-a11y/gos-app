@@ -67,6 +67,8 @@ import {
   Timer,
   BellRing,
   Workflow,
+  Megaphone,
+  LayoutGrid,
 } from "lucide-react";
 import {
   FOLLOW_UP_LIFECYCLE,
@@ -83,7 +85,7 @@ import "./ai-followup.css";
 // Loaded only when the tab opens, so React Flow stays out of the main bundle.
 const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
 
-type Props = { notify?: (message: string) => void };
+type Props = { notify?: (message: string) => void; section?: "follow-up" | "automation" };
 type Tab =
   | "Overview"
   | "Conversations"
@@ -93,7 +95,9 @@ type Tab =
   | "Flow Builder"
   | "Templates"
   | "Analytics"
-  | "Settings";
+  | "Settings"
+  | "Campaign"
+  | "Settings & Analysis";
 type Channel = {
   id: string;
   name: string;
@@ -468,6 +472,17 @@ const tabIcons: Record<Tab, React.ElementType | null> = {
   Templates: BookMarked,
   Analytics: BarChart3,
   Settings: Settings,
+  Campaign: Megaphone,
+  "Settings & Analysis": BarChart3,
+};
+// Automation & Campaign page: same screens, grouped under its own tabs.
+const automationTabs: Tab[] = ["Flow Builder", "Campaign", "Automations", "Templates", "Settings & Analysis"];
+const automationTabMeta: Partial<Record<Tab, { label: string; icon: React.ElementType; bg: string; fg: string }>> = {
+  "Flow Builder": { label: "Automation", icon: Zap, bg: "#FFEDD5", fg: "#EA580C" },
+  Campaign: { label: "Campaign", icon: Megaphone, bg: "#FCE7F3", fg: "#DB2777" },
+  Automations: { label: "Follow Up", icon: Send, bg: "#DCFCE7", fg: "#16A34A" },
+  Templates: { label: "Templates", icon: LayoutGrid, bg: "#EDE9FE", fg: "#7C3AED" },
+  "Settings & Analysis": { label: "Settings & Analysis", icon: BarChart3, bg: "#DBEAFE", fg: "#2563EB" },
 };
 const channelDefinitions: Channel[] = [
   {
@@ -697,7 +712,8 @@ const Modal = ({
   );
 };
 
-export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
+export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "follow-up" }) => {
+  const isAutomation = section === "automation";
   useUILanguage();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -706,7 +722,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
   const conversationRecords = useEntities<FollowUpConversation>('conversations');
   const leads = useSelector((state: RootState) => state.crm.leads);
   // ?tab=flows / ?tab=channels (also where Facebook Login returns) open the Flow Builder tab.
-  const [tab, setTab] = React.useState<Tab>(() => ["flows", "channels"].includes(new URLSearchParams(window.location.search).get("tab") ?? "") ? "Flow Builder" : "Overview");
+  const [tab, setTab] = React.useState<Tab>(() => ["flows", "channels"].includes(new URLSearchParams(window.location.search).get("tab") ?? "") || isAutomation ? "Flow Builder" : "Overview");
   const [dateRange, setDateRange] = React.useState("Last 7 days");
   const [conversationChannel, setConversationChannel] = React.useState("All");
   const api = useGosAI();
@@ -2060,6 +2076,22 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         </React.Suspense>
       );
     if (tab === "Settings") return renderSettingsTab();
+    if (tab === "Campaign")
+      return (
+        <div className="af-panel" style={{ padding: 28, display: "grid", gap: 10, justifyItems: "start" }}>
+          <h2>{translateText("Campaigns")}</h2>
+          <p className="af-muted">{translateText("Send one message to many contacts at once, now or on a schedule.")}</p>
+          <button className="af-button-primary" disabled>{translateText("New campaign (coming soon)")}</button>
+        </div>
+      );
+    if (tab === "Settings & Analysis")
+      return (
+        <div className="af-analytics-page">
+          {localizeNode(renderKpis())}
+          {localizeNode(renderAnalytics())}
+          {renderSettingsTab()}
+        </div>
+      );
     if (tab === "Analytics")
       return (
         <div className="af-analytics-page">
@@ -2100,8 +2132,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
       <div className="af-page-title">
         <div>
           <h1>
-            <Sparkles size={21} />{translateText(" AI Follow-Up")}</h1>
-          <p>{translateText("Conversations, follow up with leads and turn them into customers")}</p>
+            {isAutomation ? <Zap size={21} /> : <Sparkles size={21} />}{translateText(isAutomation ? " Automation & Campaign" : " AI Follow-Up")}</h1>
+          <p>{translateText(isAutomation ? "Automations, campaigns, follow-ups and templates in one place" : "Conversations, follow up with leads and turn them into customers")}</p>
         </div>
         <div className="module-header-actions"><a className="af-button-secondary" href="/dashboard/follow-up?tab=templates">{translateText("Automation templates")} <ArrowRight size={14}/></a>
         {/* Underlying assistant creation handler preserved */}
@@ -2119,11 +2151,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
         */}
         </div>
       </div>
-      <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>
+      {!isAutomation && <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>}
       <div className="af-tabs-row">
         <nav className="af-tabs" aria-label={translateText("AI Follow-Up sections")}>
-          {localizeNode(tabs.map((item) => {
-            const Icon = tabIcons[item];
+          {localizeNode((isAutomation ? automationTabs : tabs).map((item) => {
+            const meta = isAutomation ? automationTabMeta[item] : undefined;
+            const Icon = meta ? null : tabIcons[item];
             return (
               <button
                 key={item}
@@ -2138,8 +2171,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
                   />
                 ))}
                 <span className="relative z-10 flex items-center gap-[6px]">
+                  {localizeNode(meta && <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 8, display: "grid", placeItems: "center", background: meta.bg, color: meta.fg }}><meta.icon size={16} strokeWidth={2} /></span>)}
                   {localizeNode(Icon && <Icon size={16} strokeWidth={1.75} />)}
-                  {localizeNode(item)}
+                  {localizeNode(meta ? meta.label : item)}
                 </span>
               </button>
             );
@@ -2157,7 +2191,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent }) => {
           />
         </div>
       </div>
-      {localizeNode(renderKpis())}
+      {!isAutomation && localizeNode(renderKpis())}
       <div hidden={tab !== 'Knowledge'} className={`w-full ${tab === 'Knowledge' ? 'af-knowledge-tab-wrap min-h-0' : 'flex-1 min-h-0 overflow-y-auto'}`}>
         {renderKnowledgeTab()}
       </div>

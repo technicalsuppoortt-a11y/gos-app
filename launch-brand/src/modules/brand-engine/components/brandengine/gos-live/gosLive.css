@@ -1,0 +1,13 @@
+/* Live previews: kept-alive layers and a loading state while the platform starts. */
+.studio-preview-layer[hidden] { display: none !important; }
+.gos-live-loading {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  font-size: 12px; font-weight: 600; color: #64748b;
+  background: linear-gradient(110deg, #f5f6fa 30%, #ffffff 50%, #f5f6fa 70%); background-size: 220% 100%;
+  animation: gos-live-shimmer 1.4s linear infinite;
+}
+.dark .gos-live-loading { color: #94a3b8; background: linear-gradient(110deg, #111827 30%, #1f2937 50%, #111827 70%); background-size: 220% 100%; }
+.gos-live-spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(124, 58, 237, .18); border-top-color: #7c3aed; animation: gos-live-spin .8s linear infinite; }
+@keyframes gos-live-spin { to { transform: rotate(360deg); } }
+@keyframes gos-live-shimmer { to { background-position: -220% 0; } }
+@media (prefers-reduced-motion: reduce) { .gos-live-loading, .gos-live-spinner { animation: none; } }

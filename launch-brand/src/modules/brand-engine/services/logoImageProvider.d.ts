@@ -1,4 +1,6 @@
 export const logoImageModel: 'gemini-2.5-flash-image';
+export const openAILogoImageModels: readonly ['gpt-image-1.5', 'gpt-image-1', 'dall-e-3'];
+export function logoImageModelFor(provider: string): string;
 export type LogoImageContentType = 'image/png' | 'image/jpeg' | 'image/webp';
 export type LogoImageReferencePart = { text: string } | { inlineData: { mimeType: string; data: string } };
 export type LogoImageConnection = {
@@ -15,7 +17,7 @@ export function generateLogoImage(connection: LogoImageConnection, options: {
 }, fetcher?: typeof fetch): Promise<{
   dataUrl: string;
   contentType: LogoImageContentType;
-  model: typeof logoImageModel;
+  model: string;
   text: string;
   usage: Record<string, unknown>;
 }>;

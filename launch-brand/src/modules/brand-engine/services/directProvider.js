@@ -1,10 +1,18 @@
 import { detectKeyProvider } from "./providerKey.js";
 export const aiFailure = (code, message) => Object.assign(new Error(message), { code: `ai/${code}` });
 const providerFailure = (code, diagnostic) => Object.assign(aiFailure(code, "AI provider request failed."), { diagnostic });
+// Providers answer 500/502/503/504 when a model is briefly overloaded. Those
+// requests produced nothing (and are not billed), so they are retried twice.
+const TRANSIENT_STATUSES = [500, 502, 503, 504];
+const RETRY_DELAYS = [1500, 4000];
 async function providerRequest(url, init, fetcher = fetch) {
   let response;
-  try { response = await fetcher(url, { ...init, signal: AbortSignal.timeout(85000) }); }
-  catch (error) { throw providerFailure("unavailable", error?.name === "TimeoutError" ? "provider-timeout" : "provider-network"); }
+  for (let attempt = 0; ; attempt++) {
+    try { response = await fetcher(url, { ...init, signal: AbortSignal.timeout(85000) }); }
+    catch (error) { throw providerFailure("unavailable", error?.name === "TimeoutError" ? "provider-timeout" : "provider-network"); }
+    if (!TRANSIENT_STATUSES.includes(response.status) || attempt >= RETRY_DELAYS.length) break;
+    await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]));
+  }
   if (!response.ok) {
     // Classify the response locally; never expose the provider's raw message or key.
     const body = typeof response.json === "function" ? await response.json().catch(() => ({})) : {};

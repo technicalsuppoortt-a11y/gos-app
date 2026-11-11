@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { BarChart3, CalendarDays, Contact, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Users, MessageSquare, ArrowLeft, Lock } from 'lucide-react';
+import { BarChart3, CalendarDays, Contact, CreditCard, Filter, LayoutGrid, ListChecks, MessageCircle, Send, Settings, Sparkles, Zap, Users, MessageSquare, ArrowLeft, Lock } from 'lucide-react';
 import { Sidebar, type SidebarItem } from './Sidebar';
 import { Header } from './Header';
 import { useModuleAccess, moduleForPath, isTabAllowed, firstAuthorizedPath } from '../../pages/settings/useModuleAccess';
@@ -26,6 +26,7 @@ const userItems: SidebarItem[] = [
   { name: 'Inbox', href: '/inbox', icon: MessageCircle,  },
   { name: 'CRM & Leads', href: '/crm', icon: Users, end: false, activePaths: ['/crm'] },
   { name: 'Contacts', href: '/contacts', icon: Contact, end: false, activePaths: ['/dashboard/contacts', '/contacts'] },
+  { name: 'Automation & Campaign', href: '/automation', icon: Zap },
   { name: 'AI Follow-Up', href: '/follow-up', icon: Send },
   { name: 'Booking & Calendar', href: '/booking', icon: CalendarDays },
   { name: 'Products & Payments', href: '/products', icon: CreditCard, activePaths: ['/dashboard/products-payments'] },

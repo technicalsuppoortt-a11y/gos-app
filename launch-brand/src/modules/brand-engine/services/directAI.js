@@ -22,7 +22,7 @@ import { logoAttemptLimit, reserveLogoAttempt, finishLogoAttempt } from "./logoA
 import { readLogoHistory } from "./logoHistory.js";
 import { where } from "firebase/firestore";
 import { generateRasterLogo } from "./logoImageWorkflow.js";
-import { logoImageModel } from "./logoImageProvider.js";
+import { logoImageModelFor } from "./logoImageProvider.js";
 import {
   brandBrief,
   brandGenerationFingerprint,
@@ -379,8 +379,8 @@ export async function invokeDirectAI(name, input) {
       async (progress) => {
         await progress("generating");
         const logoReferenceParts = element === "logo" ? await createLogoReferenceParts(brief) : [];
-        if (element === "logo" && connection.provider === "gemini") {
-          const imageConnection = trackedBrowserConnection({ ...connection, model: logoImageModel, request: undefined }, uid,
+        if (element === "logo" && ["gemini", "openai"].includes(connection.provider)) {
+          const imageConnection = trackedBrowserConnection({ ...connection, model: logoImageModelFor(connection.provider), request: undefined }, uid,
             { requestId: input.requestId, operation: "branding" });
           const result = await generateRasterLogo({ uid, requestId: input.requestId, brief, answers,
             imageConnection, reviewConnection: connection, referenceParts: logoReferenceParts,

@@ -16,6 +16,13 @@ await visit('src');
 const excluded = ':where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)';
 const dashboardGuard = `:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(${excluded}):not(${excluded} *)`;
 const output = [];
+// Same rules for browsers with CSS @scope: the exclusions become one scope limit
+// per file instead of ~600 characters of :not() on every selector. That file is
+// a fraction of the size and much cheaper to match. Specificity is kept equal:
+// :scope:is(html) plus four attribute selectors stands for the old html[...] + guard.
+const scopedOutput = [];
+const scopeRoot = 'html[data-gp-brand="true"]';
+const dashboardLimit = excluded.slice(':where('.length, -1).split(',').concat(['[data-form-theme]', '[data-public-asset]']).join(', ');
 for (const file of files.sort()) {
   const input = await fs.readFile(file, 'utf8');
   const landing = file === path.join('src', 'pages', 'landing', 'landing.css');
@@ -24,6 +31,20 @@ for (const file of files.sort()) {
     ? (await postcss([tailwind()]).process(input, { from: file })).root
     : postcss.parse(input);
   root.walkAtRules(rule => { if (!['media', 'supports', 'layer'].includes(rule.name)) rule.remove(); });
+  const scopedRoot = root.clone();
+  const scopedPrefix = landing ? ':scope:is(html)' : ':scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand]';
+  scopedRoot.walkRules(rule => {
+    if (rule.selector.includes('data-gp-')) { rule.remove(); return; }
+    rule.walkDecls(declaration => {
+      if (!/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow|--[\w-]+)$/.test(declaration.prop)) { declaration.remove(); return; }
+      const themed = themeColorValue(declaration.value, declaration.prop);
+      if (themed === declaration.value) declaration.remove();
+      else { declaration.value = themed; declaration.important = true; }
+    });
+    if (!rule.nodes.length) { rule.remove(); return; }
+    rule.selectors = rule.selectors.map(selector => /^(?:html|:root)(?=[\s.:[#]|$)/.test(selector) ? selector.replace(/^(html|:root)/, scopedPrefix)
+      : selector.startsWith('.dark ') ? `${scopedPrefix}.dark ${selector.slice(6)}` : `${scopedPrefix} ${selector}`);
+  });
   root.walkRules(rule => {
     if (rule.selector.includes('data-gp-')) { rule.remove(); return; }
     rule.walkDecls(declaration => {
@@ -52,6 +73,12 @@ for (const file of files.sort()) {
   };
   prune(root);
   output.push(root.toString());
+  scopedRoot.walkComments(comment => comment.remove());
+  scopedRoot.walkRules(rule => { if (!rule.nodes?.length) rule.remove(); });
+  scopedRoot.walkAtRules(rule => { if (!rule.nodes?.length) rule.remove(); });
+  prune(scopedRoot);
+  const css = scopedRoot.toString().trim();
+  if (css) scopedOutput.push(`@scope (${scopeRoot}) to (${landing ? '.lp-native-preview' : dashboardLimit}) {\n${css}\n}`);
 }
 const targetFile = path.join('src', 'context', 'phoenix-brand-generated.css');
 const newContent = `/* Generated from Upclick styles with Phoenix color roles. */\n${output.join('\n')}`;
@@ -93,5 +120,6 @@ async function writeSafely(target, data, maxRetries = 5) {
 }
 
 await writeSafely(targetFile, newContent);
+await writeSafely(path.join('src', 'context', 'phoenix-brand-scoped.css'), `/* Generated from Upclick styles with Phoenix color roles (CSS @scope version). */\n${scopedOutput.join('\n')}`);
 console.log(`Generated Phoenix brand colors for ${files.length} stylesheets.`);
 
