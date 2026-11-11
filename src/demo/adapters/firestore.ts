@@ -2,6 +2,8 @@ import { read, write, remove, entries, rows, entityMutation, subscribe, publish 
 type Ref = { path: string; collection?: boolean; group?: boolean; constraints?: any[] };
 export const doc = (base: unknown, ...parts: string[]): Ref => ({ path: [...((base as Ref)?.path ? [(base as Ref).path] : []), ...parts].join('/') + (parts.length ? '' : '/' + crypto.randomUUID()) });
 export const collection = (base: unknown, ...parts: string[]): Ref => ({ path: [...((base as Ref)?.path ? [(base as Ref).path] : []), ...parts].join('/'), collection: true });
+export const getFirestore = () => ({});
+export const initializeFirestore = () => ({});
 export const collectionGroup = (_db: unknown, name: string): Ref => ({ path: name, collection: true, group: true });
 export const where = (field: string, op: string, value: unknown) => ({ field, op, value });
 export const orderBy = (field: string, direction = 'asc') => ({ sort: field, direction });

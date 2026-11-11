@@ -1,6 +1,6 @@
 {
-  "scannedStylesheets": 93,
-  "correctedDeclarations": 868,
+  "scannedStylesheets": 94,
+  "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 176,
+      "line": 173,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 184,
+      "line": 181,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 187,
+      "line": 184,
       "utility": "text-slate-400"
     },
     {
@@ -268,47 +268,47 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 205,
+      "line": 227,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 217,
+      "line": 239,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 247,
+      "line": 269,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 272,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 276,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 276,
+      "line": 294,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
       "line": 298,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 301,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 310,
+      "line": 298,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 322,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 325,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 334,
       "utility": "text-slate-100"
     },
     {
@@ -5255,6 +5255,22 @@
       "before": "#EDE9FE",
       "after": "#334155",
       "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/commerce/customer-portal.css",
+      "line": 598,
+      "selector": ".cportal-lesson-placeholder",
+      "before": "#f8fafc",
+      "after": "#475569",
+      "contrastOnWhite": 1.05
+    },
+    {
+      "file": "src/pages/commerce/customer-portal.css",
+      "line": 623,
+      "selector": ".cportal-lesson-placeholder p",
+      "before": "#cbd5e1",
+      "after": "#475569",
+      "contrastOnWhite": 1.48
     },
     {
       "file": "src/pages/commerce/digital-workspace.css",

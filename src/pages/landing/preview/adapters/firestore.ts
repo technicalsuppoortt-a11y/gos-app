@@ -2,6 +2,8 @@ import { cloudStorage, readEntity } from './workspace';
 type Ref = { path: string; collection?: boolean };
 export const doc = (_db: unknown, ...parts: string[]): Ref => ({ path: parts.join('/') });
 export const collection = (_db: unknown, ...parts: string[]): Ref => ({ path: parts.join('/'), collection: true });
+export const getFirestore = () => ({});
+export const initializeFirestore = () => ({});
 export const query = (ref: Ref, ..._constraints: unknown[]) => ref;
 export const where = (..._args: unknown[]) => ({});
 export const orderBy = (..._args: unknown[]) => ({});

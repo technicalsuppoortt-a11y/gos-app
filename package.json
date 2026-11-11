@@ -12,7 +12,7 @@
     "test:published-hosting": "node tests/published-hosting-browser.test.mjs",
     "smoke:gos-api": "node scripts/smoke-gos-api.mjs",
     "dev": "node scripts/build-phoenix-brand.mjs && vite",
-    "build": "node scripts/build-light-contrast.mjs && node scripts/build-theme-surfaces.mjs && node scripts/build-phoenix-brand.mjs && tsc -b && node --max-old-space-size=8192 node_modules/vite/bin/vite.js build && npm run build:launch-brand",
+    "build": "node scripts/build-light-contrast.mjs && node scripts/build-theme-surfaces.mjs && node scripts/build-phoenix-brand.mjs && tsc -b && node --max-old-space-size=4096 node_modules/vite/bin/vite.js build && npm run build:launch-brand",
     "deploy:launch-brand": "npm run build && node scripts/deploy-launch-brand.mjs",
     "build:launch-brand": "node -e \"const fs=require('fs'),cp=require('child_process');if(!fs.existsSync('launch-brand/node_modules/zod'))cp.execSync('npm --prefix launch-brand install --no-audit --no-fund',{stdio:'inherit'})\" && npm --prefix launch-brand run build",
     "dev:launch-brand": "npm --prefix launch-brand run dev",
