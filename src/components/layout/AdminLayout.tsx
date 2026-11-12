@@ -33,7 +33,7 @@ export function AdminLayout() {
    }
  }, [isLocked, location.pathname, navigate]);
 
- const active=modules.find(m=>location.pathname.replace(/\/$/,'')===`/admin/${m.id==='funnels-websites'?'funnels':m.id}`||location.pathname.replace(/\/$/,'')===`/admin/${m.id}`)??modules[0];
+ const active=modules.find(m=>(m.id === 'templates' && location.pathname.startsWith('/admin/templates/')) || location.pathname.replace(/\/$/,'')===`/admin/${m.id==='funnels-websites'?'funnels':m.id}`||location.pathname.replace(/\/$/,'')===`/admin/${m.id}`)??modules[0];
  const [collapsed,setCollapsed]=useState(false);
  const sidebarRef=useRef<HTMLElement>(null);
  useEffect(() => {

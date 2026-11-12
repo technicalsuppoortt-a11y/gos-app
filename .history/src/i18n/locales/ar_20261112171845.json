@@ -1,0 +1,23 @@
+{
+  "login": "تسجيل الدخول",
+  "dashboard": "لوحة التحكم",
+  "clients": "العملاء",
+  "subscriptions": "الاشتراكات",
+  "settings": "الإعدادات",
+  "super_admin": "المشرف العام",
+  "admin": "المدير",
+  "user": "المستخدم",
+  "crm": "إدارة العملاء CRM",
+  "inbox": "صندوق الرسائل",
+  "products": "المنتجات",
+  "analytics": "التحليلات",
+  "booking": "حجز المواعيد",
+  "copilot": "AI Agent",
+  "funnel": "الموقع والفانل",
+  "knowledge_center": "مركز المعرفة",
+  "logout": "تسجيل الخروج",
+  "switch_lang": "تغيير اللغة",
+  "welcome": "مرحباً بعودتك",
+  "dark_mode": "الوضع الداكن",
+  "light_mode": "الوضع الفاتح"
+}

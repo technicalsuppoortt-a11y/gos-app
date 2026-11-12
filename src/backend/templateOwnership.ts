@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, deleteDoc, doc, getDoc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { primaryAuth, primaryDb, backendError } from './firebase';
 import { decodeFirestoreValue, encodeFirestoreValue } from './firestoreCodec';
 import type { RootState } from '../store';
 import { isPlatformTeamRole } from '../router/platformAccess';
 import { MASTER_TEMPLATES } from '../pages/system-template-data';
-import type { ManagedTemplate } from '../pages/admin/managed-template';
+import { templateArabicDesign, templateArabicMetadata, type ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
 
@@ -21,6 +22,31 @@ export type OwnedTemplate = ManagedTemplate & { ownerUid?: string; ownerName?: s
 export type TemplateLibraryScope = 'system' | 'general' | 'mine' | 'client';
 
 const decode = (item: { id: string; data: () => Record<string, unknown> }) => ({ ...decodeFirestoreValue(item.data()), id: item.id }) as OwnedTemplate;
+
+export function useManagedTemplatePreview(templateId: string, source: string | null) {
+  const { user, impersonation } = useSelector((state: RootState) => state.auth);
+  const uid = user?.id;
+  const collection = source === 'admin' ? 'adminTemplates' : 'templateCatalog';
+  const validId = !!templateId && !templateId.includes('/') && (!source || source === 'admin' || source === 'catalog');
+  const key = JSON.stringify([uid, !!impersonation, collection, templateId]);
+  const [result, setResult] = useState<{ key: string; template?: ManagedTemplate; error: string }>();
+  useEffect(() => {
+    if (!validId || !uid || impersonation) return;
+    let stop: (() => void) | undefined;
+    const stopAuth = onAuthStateChanged(primaryAuth, account => {
+      stop?.();
+      setResult(undefined);
+      if (account?.uid !== uid) return;
+      stop = onSnapshot(doc(primaryDb, collection, templateId), { includeMetadataChanges: true }, snapshot => {
+        if (snapshot.metadata.fromCache) return;
+        setResult({ key, template: snapshot.exists() ? decode(snapshot) : undefined, error: '' });
+      }, cause => setResult({ key, error: backendError(cause) }));
+    });
+    return () => { stopAuth(); stop?.(); };
+  }, [key, validId, uid, impersonation, collection, templateId]);
+  const current = validId && result?.key === key ? result : undefined;
+  return { key, template: current?.template, loading: validId && !!uid && !impersonation && !current, error: current?.error };
+}
 
 /** Live templates and the admin's hidden list for one admin/super-admin library tab. */
 export function useTemplateLibrary(scope: TemplateLibraryScope | null) {
@@ -84,6 +110,7 @@ export async function duplicateToMyTemplates(template: ManagedTemplate) {
   const { id: _id, ...copy } = structuredClone(template) as OwnedTemplate;
   delete copy.ownerUid; delete copy.ownerName; delete copy.ownerEmail;
   const id = crypto.randomUUID();
-  await saveAdminTemplate({ ...copy, id, name: `${template.name} (copy)`.slice(0, 180), title_en: `${template.title_en || template.name} (copy)`.slice(0, 180), title_ar: template.title_ar ? `${template.title_ar} (نسخة)`.slice(0, 180) : undefined, active: false, status: 'Draft', popularity: 0, pageTemplate: copy.pageTemplate ? { ...copy.pageTemplate, id } : undefined } as ManagedTemplate);
+  const arabic = templateArabicMetadata(template);
+  await saveAdminTemplate({ ...copy, ...arabic, id, name: `${template.name} (copy)`.slice(0, 180), title_en: `${template.title_en || template.name} (copy)`.slice(0, 180), title_ar: arabic.title_ar ? `${arabic.title_ar} (نسخة)`.slice(0, 180) : undefined, builder_document_ar: templateArabicDesign(template), active: false, status: 'Draft', popularity: 0, pageTemplate: copy.pageTemplate ? { ...copy.pageTemplate, id } : undefined } as ManagedTemplate);
   return id;
 }

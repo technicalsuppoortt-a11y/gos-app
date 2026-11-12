@@ -1,10 +1,10 @@
-import { useTemplateCatalogState } from './templateCatalog';
+import { useTemplateCatalogState, type TemplateSource } from './templateCatalog';
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import type { PageTemplate } from '../pages/page-template-data';
 
 const OFFICIAL_PAGE_CATEGORIES = new Set(['Funnels', 'Websites', 'Forms']);
 
-export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string })[]): PageTemplate[] {
+export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string; previewSource?: TemplateSource })[]): PageTemplate[] {
   const seen = new Set<string>();
   return catalog
     .filter(t => {
@@ -20,6 +20,8 @@ export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel
       return {
         ...t.pageTemplate,
         id: t.id,
+        previewSource: t.previewSource,
+        design: t.design,
         name: t.name,
         description: t.description,
         categoryLabel: t.categoryLabel,

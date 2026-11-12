@@ -739,16 +739,8 @@ html:has(main.bk-public),body:has(main.bk-public){height:100%;min-width:0;overfl
 /* Koalendar 2-Column Workspace, Side Panel & Inline Appointment Collapse     */
 /* -------------------------------------------------------------------------- */
 
-.bk-constrained-header {
-  max-width: 1140px;
-  width: 100%;
-  margin-inline: auto;
-}
-
 .bk-koalendar-layout {
-  max-width: 1140px;
   width: 100%;
-  margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
   gap: 22px;

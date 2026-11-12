@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { createRequire } from 'node:module';
+import { translateTemplateCopy } from '../functions/template-arabic.js';
+const require = createRequire(import.meta.url);
 function load(path, modules = {}) {
   const source = fs.readFileSync(new URL(path, import.meta.url), 'utf8');
   const code = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2023, module: ts.ModuleKind.CommonJS } }).outputText;
@@ -11,7 +14,11 @@ function load(path, modules = {}) {
   return exports;
 }
 const model = load('../src/pages/admin/live-model.ts');
-const templates = load('../src/pages/admin/managed-template.ts');
+const templates = load('../src/pages/admin/managed-template.ts', {
+  '../../../functions/seed-data/template-metadata-ar.json': require('../functions/seed-data/template-metadata-ar.json'),
+  '../../../functions/seed-data/template-content-ar.json': require('../functions/seed-data/template-content-ar.json'),
+  '../../../functions/template-arabic.js': { translateTemplateCopy },
+});
 const codec = load('../src/backend/firestoreCodec.ts');
 function harness(role = 'ADMIN', impersonation = null) {
   let state, cleanup, authCallback;

@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 99,
+  "scannedStylesheets": 98,
   "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -843,37 +843,37 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 611,
+      "line": 586,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 614,
+      "line": 589,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 638,
+      "line": 613,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 711,
+      "line": 686,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 711,
+      "line": 686,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 711,
+      "line": 686,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/commerce/ProductWorkspace.tsx",
-      "line": 371,
+      "line": 390,
       "utility": "text-slate-500"
     },
     {

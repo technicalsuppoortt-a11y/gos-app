@@ -18,6 +18,7 @@ body:has(.template-preview-page) { min-width: 0; margin: 0; }
   background: var(--ui-surface-raised, #fff);
 }
 .template-preview-header h1 { margin: 0; font-size: clamp(16px, 2vw, 21px); font-weight: 700; overflow-wrap: anywhere; }
+.template-preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .template-preview-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; }
 .template-preview-controls > :first-child { max-width: 240px; min-width: 0; }
 .template-preview-devices { display: flex; gap: 4px; padding: 4px; border-radius: 9px; background: var(--ui-accent-surface, #f3effc); }

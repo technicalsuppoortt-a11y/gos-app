@@ -1,4 +1,4 @@
-import { defaultConfig, formatPrice, newProduct, type Product, type ProductType, type Lesson, type ProductExperience } from './model';
+import { defaultConfig, formatPrice, lessonData, newProduct, type Product, type ProductType, type Lesson, type ProductExperience } from './model';
 
 export interface ProductTemplate {
   id: string; category: 'Services' | 'Digital Products' | 'Courses'; industry: string; tags: string[];
@@ -57,10 +57,10 @@ export function instantiateProductTemplate(template: ProductTemplate, origin: st
   config.funnelId = ''; config.funnelPageId = ''; config.orders = []; config.students = [];
   config.experience!.upsellId = ''; delete (config.experience as ProductExperience & { downsellId?: string }).downsellId; config.experience!.checkout.bumpProductId = '';
   // Resolve bundled demo resources against the host; saved products require HTTP(S) delivery URLs.
-  config.assets = config.assets.map(asset => ({ ...asset, url: new URL(asset.url, origin).href }));
-  config.modules = config.modules.map(module => ({ ...module, id: crypto.randomUUID(), lessons: module.lessons.map(lesson => {
-    const resource = lesson as Lesson;
-    return { ...resource, id: crypto.randomUUID(), url: new URL(resource.url, origin).href };
+  config.assets = config.assets.map(asset => ({ ...asset, url: asset.url ? new URL(asset.url, origin).href : '' }));
+  config.modules = config.modules.map(module => ({ ...module, id: crypto.randomUUID(), lessons: module.lessons.map((lesson, index) => {
+    const resource = lessonData(lesson, index);
+    return { ...resource, id: crypto.randomUUID(), url: resource.url ? new URL(resource.url, origin).href : '' };
   }) }));
   config.experience!.included = config.experience!.included.map(item => ({ ...item, id: crypto.randomUUID() }));
   if (product.type === 'Service') {

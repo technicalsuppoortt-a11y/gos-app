@@ -172,7 +172,7 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
 
   return (
     <main className="bk-workspace h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
-      <header className={`bk-page-heading ${activeTab === 'dashboard' || activeTab === 'bookings' ? 'bk-constrained-header' : ''}`}>
+      <header className="bk-page-heading">
         <div className="bk-heading-icon">
           {localizeNode(activeTab === 'contacts' || activeTab === 'workspace' ? <Users size={22} /> : <CalendarDays size={22} />)}
         </div>

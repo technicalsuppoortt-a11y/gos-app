@@ -8,10 +8,12 @@ import React from 'react';
 import { ArrowDown, ArrowUp, BookOpen, CalendarDays, Check, Download, FileText, GripVertical, ImagePlus, Layers3, MapPin, MonitorPlay, MoreVertical, Plus, Trash2, UploadCloud, UserRound, Video } from 'lucide-react';
 import type { CommerceConfig, Product, ProductExperience } from './model';
 import { lessonData, productKind } from './model';
-import { downloadFile, uploadDigitalFile } from './files';
+import { downloadFile, uploadDigitalFile, type ProductFileUploader } from './files';
 import { Card, Description, Field, RichDescription, Select, Toggle } from './primitives';
 import { ProviderSelect, ServiceCustomerPreview, ServiceDescription, ServiceGallery, ServiceInformation } from './ServiceWorkspace';
 export interface FormProps {
+  templateEditor?: boolean;
+  uploadFile?: ProductFileUploader;
   product: Product; config: CommerceConfig; experience: ProductExperience; products: Product[]; editing: boolean;
   update: (patch: Partial<Product>) => void; configure: (patch: Partial<CommerceConfig> | ((config: CommerceConfig) => Partial<CommerceConfig>)) => void;
   customize: (patch: Partial<ProductExperience>) => void; error: (message: string) => void; busy: (value: boolean) => void;
@@ -74,7 +76,7 @@ export function InstructorCard({ experience: e, customize, editing, error, busy 
   async function photo(file?: File) { if (!file) return; busy(true); try { customize({ instructor: { ...e.instructor, image: await readImage(file) } }); } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not read image.'); } finally { busy(false); } }
   return <Card title={translateText("Instructor")}><div className="tw-instructor">{localizeNode(e.instructor.image ? <img src={e.instructor.image} alt={translateText(e.instructor.name || 'Instructor')}/> : <div className="tw-instructor-avatar"><UserRound size={24}/></div>)}<div>{localizeNode(editing ? <><Field label="Instructor Name"><input value={e.instructor.name} onChange={event => customize({ instructor: { ...e.instructor, name: event.target.value } })} placeholder={translateText("Instructor name")}/></Field><Field label="Bio"><textarea rows={2} value={e.instructor.bio} onChange={event => customize({ instructor: { ...e.instructor, bio: event.target.value } })}/></Field></> : <><b>{localizeNode(e.instructor.name || 'Instructor not assigned')}</b><p>{localizeNode(e.instructor.bio || 'Add an instructor profile and introduction.')}</p></>)}</div></div>{localizeNode(editing && <label className="tw-upload-link"><ImagePlus size={13}/>{translateText(" Change profile photo")}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => { void photo(event.target.files?.[0]); event.target.value = ''; }}/></label>)}</Card>;
 }
-export function CourseBuilder({ config: c, configure, editing, error, busy }: FormProps) {
+export function CourseBuilder({ config: c, configure, editing, error, busy, uploadFile = uploadDigitalFile }: FormProps) {
   useUILanguage();
   const dragged = React.useRef<{ module: number; lesson?: number } | null>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -98,7 +100,7 @@ export function CourseBuilder({ config: c, configure, editing, error, busy }: Fo
     if (!/\.(pdf|mp4|webm|mov|zip)$/i.test(file.name) || file.size > 100 * 1024 * 1024) { error('Choose a PDF, video or ZIP file up to 100 MB.'); return; }
     setUploading(true); busy(true);
     try {
-      const asset = await uploadDigitalFile(file), seconds = /\.(mp4|webm|mov)$/i.test(file.name) ? await probeVideo(file).catch(() => 0) : 0;
+      const asset = await uploadFile(file), seconds = /\.(mp4|webm|mov)$/i.test(file.name) ? await probeVideo(file).catch(() => 0) : 0;
       configure(current => ({ modules: current.modules.map((module, i) => i === moduleIndex ? { ...module, lessons: module.lessons.map((value, j) => { const lesson = lessonData(value, j); return lesson.id === lessonId ? { ...lesson, storageId: asset.storageId, url: asset.url, size: file.size, duration: seconds ? durationLabel(seconds) : sizeLabel(file.size), fileName: file.name, kind: /\.pdf$/i.test(file.name) ? 'PDF' as const : /\.zip$/i.test(file.name) ? 'File' as const : 'Video' as const } : value; }) } : module) }));
     } catch (cause) { error(cause instanceof Error ? cause.message : 'Could not attach lesson file.'); }
     finally { setUploading(false); busy(false); }

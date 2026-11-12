@@ -36,7 +36,6 @@ import {
   Repeat,
   UserCheck,
   CalendarDays,
-  CheckCircle2,
   ChevronDown,
   Clock,
   CreditCard,
@@ -49,7 +48,6 @@ import {
   Settings,
   Settings2,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
   Target,
   Users,
@@ -81,6 +79,8 @@ import {
 } from "../store/slices/crmSlice";
 import type { RootState, AppDispatch } from "../store";
 import "./ai-followup.css";
+import { MenuSelect, WorkflowActionField, WorkflowMessageField, WorkflowTimeline, WorkflowTriggerFields } from './follow-up-workflow-fields';
+import { WORKFLOWS_KEY, type SequenceStep, type Workflow as SavedWorkflow } from './follow-up-workflow';
 
 // Loaded only when the tab opens, so React Flow stays out of the main bundle.
 const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
@@ -122,19 +122,6 @@ type KnowledgeSource = {
   detail: string;
   content?: string;
   status?: string;
-};
-type SequenceStep = { id: string; delay: string; unit: string; action: string };
-type Workflow = {
-  messageText?: string;
-  id: string;
-  name: string;
-  description: string;
-  trigger: string;
-  active: boolean;
-  from: string;
-  to: string;
-  actionType: string;
-  sequenceSteps: SequenceStep[];
 };
 type TemplateItem = {
   id: string;
@@ -188,128 +175,9 @@ const writeLocal = (key: string, value: unknown) => {
     /* Keep the current session usable when storage is unavailable. */
   }
 };
-const WORKFLOWS_KEY = "gos.ai-followup.workflows.v1";
 const KNOWLEDGE_KEY = "gos.ai-followup.knowledge.v1";
 const TEMPLATES_KEY = "gos.ai-followup.templates.v1";
 const SETTINGS_KEY = "gos.ai-followup.settings.v1";
-type MenuOption = { value: string; label: React.ReactNode };
-const MenuSelect = ({
-  value,
-  options,
-  onChange,
-  className = "",
-  ariaLabel,
-  iconOnly = false,
-}: {
-  value: string;
-  options: MenuOption[];
-  onChange: (value: string) => void;
-  className?: string;
-  ariaLabel?: string;
-  iconOnly?: boolean;
-}) => {
-  useUILanguage();
-  const [open, setOpen] = React.useState(false);
-  const [placement, setPlacement] = React.useState<{
-    top: number;
-    left: number;
-    width: number;
-    upward: boolean;
-  } | null>(null);
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const popoverRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (!open) return;
-    const place = () => {
-      if (!buttonRef.current) return;
-      const rect = buttonRef.current.getBoundingClientRect();
-      const upward = window.innerHeight - rect.bottom < 220 && rect.top > 220;
-      setPlacement({
-        top: upward ? rect.top - 6 : rect.bottom + 6,
-        left: rect.left,
-        width: Math.max(rect.width, 190),
-        upward,
-      });
-    };
-    const outside = (event: PointerEvent) => {
-      if (
-        !buttonRef.current?.contains(event.target as Node) &&
-        !popoverRef.current?.contains(event.target as Node)
-      )
-        setOpen(false);
-    };
-    const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    place();
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", keydown);
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", keydown);
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
-    };
-  }, [open]);
-  const current =
-    options.find((option) => option.value === value)?.label ?? value;
-  return (
-    <div className={`af-select-wrap ${className}`}>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`af-select-trigger ${iconOnly ? "af-select-icon-trigger" : ""}`}
-        aria-label={translateText(ariaLabel)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((state) => !state)}
-      >
-        {localizeNode(iconOnly ? <SlidersHorizontal size={15} /> : <span>{localizeNode(current)}</span>)}
-        <ChevronDown size={14} />
-      </button>
-      {open &&
-        placement &&
-        createPortal(
-          <div
-            ref={popoverRef}
-            className={`af-select-popover ${placement.upward ? "upward" : ""}`}
-            role="listbox"
-            style={{
-              position: "fixed",
-              top: placement.top,
-              left: Math.min(
-                placement.left,
-                window.innerWidth - placement.width - 8,
-              ),
-              width: placement.width,
-              transform: placement.upward ? "translateY(-100%)" : undefined,
-              zIndex: 100010,
-            }}
-          >
-            {localizeNode(options.map((option) => (
-              <button
-                type="button"
-                role="option"
-                aria-selected={option.value === value}
-                className={option.value === value ? "selected" : ""}
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpen(false);
-                }}
-              >
-                <span>{localizeNode(option.label)}</span>
-                {localizeNode(option.value === value && <CheckCircle2 size={14} />)}
-              </button>
-            )))}
-          </div>,
-          document.body,
-        )}
-    </div>
-  );
-};
 const InstagramBrand = ({ size = 18 }: { size?: number }) => { useUILanguage(); return ((
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <rect
@@ -523,7 +391,7 @@ const channelDefinitions: Channel[] = [
     conversations: "318 conversations",
   },
 ];
-export const defaultWorkflows: Workflow[] = [];
+export const defaultWorkflows: SavedWorkflow[] = [];
 const defaultTemplates: TemplateItem[] = [];
 const defaultKnowledge: KnowledgeSource[] = [];
 const conversationRecords: FollowUpConversation[] = [];
@@ -732,7 +600,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   const changeChannel = async (channel: string, enabled: boolean) => {
     return api.updateAssistant({ channels: { ...api.assistant.channels, [channel === 'website' ? 'webchat' : channel]: enabled } });
   };
-  const [workflows, setWorkflows] = useCloudState<Workflow[]>(WORKFLOWS_KEY, []);
+  const [workflows, setWorkflows] = useCloudState<SavedWorkflow[]>(WORKFLOWS_KEY, []);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [modal, setModal] = React.useState("");
 
@@ -986,7 +854,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     try { await callBackend('queueMessage', { conversationId: (thread as FollowUpConversation & { id: string }).id, text: messageText, requestId: crypto.randomUUID() }); showToast.info('Message queued for delivery'); return true; }
     catch (error) { showToast.error(backendError(error)); return false; }
   };
-  const runWorkflow = async (flow: Workflow) => {
+  const runWorkflow = async (flow: SavedWorkflow) => {
     try { await callBackend('startWorkflow', { workflowId: flow.id, requestId: crypto.randomUUID() }); showToast.success('Workflow run scheduled'); }
     catch (error) { showToast.error(backendError(error)); }
   };
@@ -1017,7 +885,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       return;
     }
     const isSequence = modal === "new-sequence";
-    const next: Workflow[] = [
+    const next: SavedWorkflow[] = [
       ...workflows,
       {
         id: `custom-${Date.now()}`,
@@ -1151,7 +1019,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     setModal("template");
   };
   const openWorkflowEditor = (
-    flow?: Workflow,
+    flow?: SavedWorkflow,
     nextModal:
       | "new-workflow"
       | "new-sequence"
@@ -2527,144 +2395,16 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 </div>
               ))}
               {localizeNode((modal !== "new-workflow" || workflowWizardStep === 1) && (
-                <>
-                  <label>
-                    {localizeNode(modal === "new-sequence"
-                      ? "Sequence name"
-                      : "Workflow name")}
-                    <input
-                      value={newWorkflowName}
-                      onChange={(event) =>
-                        setNewWorkflowName(event.target.value)
-                      }
-                      placeholder={translateText("e.g. Qualified lead follow-up")}
-                    />
-                  </label>
-                  <label>{translateText("Trigger event")}<MenuSelect
-                      value={workflowFrom}
-                      onChange={setWorkflowFrom}
-                      options={FOLLOW_UP_LIFECYCLE.map((item) => ({
-                        value: item.state,
-                        label: item.label,
-                      }))}
-                    />
-                  </label>
-                  <label>{translateText("Lifecycle outcome")}<MenuSelect
-                      value={workflowTo}
-                      onChange={setWorkflowTo}
-                      options={FOLLOW_UP_LIFECYCLE.map((item) => ({
-                        value: item.state,
-                        label: item.label,
-                      }))}
-                    />
-                  </label>
-                </>
+                <WorkflowTriggerFields name={newWorkflowName} from={workflowFrom} to={workflowTo} sequence={modal === "new-sequence"}
+                  onName={setNewWorkflowName} onFrom={setWorkflowFrom} onTo={setWorkflowTo}/>
               ))}
-              {localizeNode((modal === "edit-workflow" ||
-                (modal === "new-workflow" && workflowWizardStep === 2)) && (
-                <label>{translateText("Action type")}<MenuSelect
-                    value={workflowAction}
-                    onChange={setWorkflowAction}
-                    options={[
-                      "Email",
-                      "WhatsApp",
-                      "Calendar reminder",
-                      "Wait",
-                      "CRM update",
-                      "Webhook",
-                    ].map((item) => ({ value: item, label: item }))}
-                  />
-                </label>
+              {localizeNode((modal === "edit-workflow" || (modal === "new-workflow" && workflowWizardStep === 2)) && (
+                <WorkflowActionField value={workflowAction} onChange={setWorkflowAction}/>
               ))}
-              <label>{translateText("Follow-up message")}<textarea value={workflowMessage} disabled={generating} onChange={event => setWorkflowMessage(event.target.value)} maxLength={20000} placeholder={translateText("Write the message this workflow should send")}/></label>
-              <button type="button" className="af-button-secondary" disabled={generating || agentConfig.loading || Boolean(agentConfig.error) || !['email', 'whatsapp'].includes((modal === 'new-sequence' ? sequenceSteps[0]?.action : workflowAction)?.toLowerCase())} onClick={() => void generateDraft('workflow')}><Sparkles size={14}/>{generating ? 'Generating…' : 'Generate AI draft'}</button>
-              {localizeNode(modal === "new-sequence" && (
-                <div className="af-sequence-builder">
-                  <div className="af-sequence-title">
-                    <b>{translateText("Follow-up timeline")}</b>
-                    <button
-                      type="button"
-                      className="af-button-secondary"
-                      onClick={() =>
-                        setSequenceSteps((current) => [
-                          ...current,
-                          {
-                            id: `step-${Date.now()}`,
-                            delay: "1",
-                            unit: "day",
-                            action: "Email",
-                          },
-                        ])
-                      }
-                    >
-                      <Plus size={13} />{translateText(" Add step")}</button>
-                  </div>
-                  {localizeNode(sequenceSteps.map((step, index) => (
-                    <div className="af-sequence-step" key={step.id}>
-                      <span className="af-sequence-number">{localizeNode(index + 1)}</span>
-                      <label>{translateText("Wait")}<input
-                          type="number"
-                          min="0"
-                          value={step.delay}
-                          onChange={(event) =>
-                            setSequenceSteps((current) =>
-                              current.map((item) =>
-                                item.id === step.id
-                                  ? { ...item, delay: event.target.value }
-                                  : item,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
-                      <MenuSelect
-                        ariaLabel="Delay unit"
-                        value={step.unit}
-                        onChange={(unit) =>
-                          setSequenceSteps((current) =>
-                            current.map((item) =>
-                              item.id === step.id ? { ...item, unit } : item,
-                            ),
-                          )
-                        }
-                        options={["minute", "hour", "day", "week"].map(
-                          (unit) => ({ value: unit, label: unit }),
-                        )}
-                      />
-                      <MenuSelect
-                        ariaLabel="Sequence action"
-                        value={step.action}
-                        onChange={(action) =>
-                          setSequenceSteps((current) =>
-                            current.map((item) =>
-                              item.id === step.id ? { ...item, action } : item,
-                            ),
-                          )
-                        }
-                        options={[
-                          "Email",
-                          "WhatsApp",
-                          "Instagram",
-                          "Wait",
-                          "CRM update",
-                        ].map((action) => ({ value: action, label: action }))}
-                      />
-                      {localizeNode(sequenceSteps.length > 1 && (
-                        <button
-                          className="af-icon-button"
-                          title={translateText("Remove step")}
-                          onClick={() =>
-                            setSequenceSteps((current) =>
-                              current.filter((item) => item.id !== step.id),
-                            )
-                          }
-                        >
-                          <X size={14} />
-                        </button>
-                      ))}
-                    </div>
-                  )))}
-                </div>
+              <WorkflowMessageField value={workflowMessage} onChange={setWorkflowMessage} generate={() => void generateDraft('workflow')} generating={generating}
+                disabled={agentConfig.loading || Boolean(agentConfig.error) || !['email', 'whatsapp'].includes((modal === 'new-sequence' ? sequenceSteps[0]?.action : workflowAction)?.toLowerCase())}/>
+              {localizeNode((modal === "new-sequence" || modal === "edit-workflow") && (
+                <WorkflowTimeline sequenceSteps={sequenceSteps} setSequenceSteps={setSequenceSteps}/>
               ))}
               {localizeNode((modal !== "new-workflow" || workflowWizardStep === 2) && (
                 <>

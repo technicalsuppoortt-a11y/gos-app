@@ -5,6 +5,7 @@ import { createHash, webcrypto } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { translateTemplateCopy } from '../functions/template-arabic.js';
 const require = createRequire(import.meta.url), root = fileURLToPath(new URL('../', import.meta.url));
 const cache = new Map(); let serial = 0;
 const stableUUID = () => { const hex = createHash('sha256').update(`gos-template-migration-v2:${serial++}`).digest('hex'); return `${hex.slice(0,8)}-${hex.slice(8,12)}-4${hex.slice(13,16)}-a${hex.slice(17,20)}-${hex.slice(20,32)}`; };
@@ -32,6 +33,8 @@ export function loadTemplateSource(relative) {
     if (id.endsWith('/backend/workspace')) return { cloudStorage: { getItem: () => null, setItem() { throw new Error('Seeding must not write workspace state.'); } } };
     if (!id.startsWith('.')) return require(id);
     const base = path.resolve(path.dirname(filename), id);
+    if (base === path.join(root, 'functions', 'template-arabic.js')) return { translateTemplateCopy };
+    if (['template-metadata-ar.json', 'template-content-ar.json'].some(name => base === path.join(root, 'functions', 'seed-data', name))) return require(base);
     const target = [base, `${base}.ts`, `${base}.tsx`, `${base}.js`].find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
     if (!target || !target.startsWith(path.join(root, 'src'))) throw new Error(`Unexpected seed dependency: ${id}`);
     return loadTemplateSource(path.relative(root, target));

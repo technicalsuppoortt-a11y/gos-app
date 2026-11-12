@@ -114,6 +114,8 @@ export const FORM_BACKGROUND_PRESETS: FormBackgroundPreset[] = [
 ];
 
 export type PageTemplate = {
+  design?: TemplateDesignDocument;
+  previewSource?: 'catalog' | 'admin';
   builderDocument?: BuilderDocument;
   mode: 'funnel' | 'website' | 'form';
   id: string;
@@ -136,6 +138,8 @@ export type PageTemplate = {
   backgroundPreset?: string;
   backgroundColor?: string;
 };
+
+export type TemplateDesignDocument = { html: string; css: string };
 
 const sec = (
   id: string,

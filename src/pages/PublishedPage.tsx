@@ -14,9 +14,15 @@ import { EditableElementPart } from './EditableElementPart';
 import { findSection } from './funnel-tree';
 import { resolveFormTheme } from './form-theme';
 
-export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false }: { readOnly?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
+export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false, language, thumbnail = false, templateDesign = false }: { readOnly?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'desktop' | 'tablet' | 'mobile'; language?: string; thumbnail?: boolean; templateDesign?: boolean }) {
   const [width, setWidth] = useState(window.innerWidth);
-  useEffect(() => { const resize = () => setWidth(window.innerWidth); window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize); }, []);
+  useEffect(() => {
+    if (viewportWidth !== undefined) return;
+    const resize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [viewportWidth]);
+  const t = (en: string, ar: string) => language?.startsWith('ar') ? ar : en;
   const visibleWidth = viewportWidth ?? width;
   const device = viewportDevice ?? (visibleWidth < 640 ? 'mobile' : visibleWidth < 1024 ? 'tablet' : 'desktop');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -71,10 +77,10 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
       display: elementHidden(item, device) ? 'none' : undefined
     } as CSSProperties;
     if (sectionTheme) { delete style.borderColor; delete style.borderWidth; delete style.borderStyle; }
-    return <section key={item.id} id={item.content.trackingId || item.id} data-section-id={item.id} className={`fb-canvas-section ${item.type === 'Hero' ? 'fb-hero-section' : ''} ${item.content.htmlClass || ''}`} style={style}>
+    return <section key={item.id} id={thumbnail ? undefined : item.content.trackingId || item.id} data-section-id={item.id} className={`fb-canvas-section ${item.type === 'Hero' ? 'fb-hero-section' : ''} ${item.content.htmlClass || ''}`} style={style}>
       {['Columns', 'Section'].includes(item.type) ? <div className="fn-column-layout" style={{ display: 'grid', gridTemplateColumns: columnGrid(item), gap: `${item.content.gap || 16}px` }}>{Array.from({ length: columnCount(item) }, (_, col) => <div className="fn-column" key={col}>{render(item.children?.[col] ?? [])}</div>)}</div>
         : item.type === 'Hero' ? <><EditableElementPart device={device} item={item} part="src" tag="img" className="fb-hero-image" src={item.content.src || page.featuredImage || asset.image} alt={item.content.alt || ''}/><span className="fb-hero-overlay"/><OrderedElementParts item={item}><div className="fb-hero-copy"><EditableElementPart device={device} item={item} part="title" tag="h1">{item.content.title}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{item.content.body}</EditableElementPart>{item.content.button && <EditableElementPart device={device} item={item} part="button" tag="button" className="fb-site-primary" onClick={() => action(findSection([item], item.id + '::button') ?? item)}>{item.content.button}</EditableElementPart>}</div></OrderedElementParts></>
-          : <SectionPreview item={item} device={device} onAction={action} onImagePick={() => {}} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
+          : <SectionPreview item={item} device={device} language={language} templateDesign={templateDesign} onAction={action} onImagePick={() => {}} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
     </section>;
   });
 
@@ -83,6 +89,8 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
       <main
         className={`fb-site-frame ${device} ${asset.formAsset ? 'is-form-page' : ''} ${isDarkBg ? 'dark-form' : ''}`}
         data-public-asset="true"
+        lang={language}
+        dir={language ? (language.startsWith('ar') ? 'rtl' : 'ltr') : undefined}
         onClickCapture={readOnly ? event => {
           if ((event.target as Element).closest('a[href]')) { event.preventDefault(); event.stopPropagation(); }
         } : undefined}
@@ -119,7 +127,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
               <span className="fb-nav-logo-mark"><Sparkles size={14} /></span>
               {asset.name}
             </button>
-            <nav className="fb-live-desktop-nav" aria-label="Site navigation">
+            <nav className="fb-live-desktop-nav" aria-label={t('Site navigation', 'التنقّل في الموقع')}>
               {asset.settings.navigation.split(',').map((label, index) => {
                 const target = asset.document.pages.find(p => p.name.toLowerCase() === label.trim().toLowerCase());
                 return target ? <button key={index} className={target.id === pageId ? 'active' : ''} onClick={() => navigate(target.id)}>{label.trim()}</button> : null;
@@ -127,7 +135,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
             </nav>
             <button
               className="fb-live-mobile-nav-toggle"
-              aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-label={mobileNavOpen ? t('Close navigation menu', 'إغلاق قائمة التنقّل') : t('Open navigation menu', 'فتح قائمة التنقّل')}
               aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen(value => !value)}
             >
@@ -159,26 +167,26 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
           <footer className="fb-standalone-footer">
             <div className="fb-footer-security">
               <ShieldCheck size={14} />
-              <span>Secure SSL Submission</span>
+              <span>{t('Secure SSL Submission', 'إرسال آمن ومشفّر')}</span>
             </div>
             <div className="fb-footer-powered">
-              <span>© {new Date().getFullYear()} {asset.name}. All rights reserved.</span>
+              <span>© {new Date().getFullYear()} {asset.name}. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}</span>
             </div>
           </footer>
         ) : page.showFooter ? (
           <footer className="fb-site-footer">
             <div className="fb-footer-brand">
               <b>{asset.name}</b>
-              <small>© {new Date().getFullYear()} All rights reserved.</small>
+              <small>© {new Date().getFullYear()} {t('All rights reserved.', 'جميع الحقوق محفوظة.')}</small>
             </div>
             <div className="fb-footer-security">
               <ShieldCheck size={13} />
-              <span>Encrypted Lead Capture</span>
+              <span>{t('Encrypted Lead Capture', 'جمع بيانات العملاء بتشفير')}</span>
             </div>
           </footer>
         ) : null}
 
-        <Toaster />
+        {!thumbnail && <Toaster />}
       </main>
     </BuilderFormCaptureContext.Provider>
   );

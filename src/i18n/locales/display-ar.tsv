@@ -256,11 +256,11 @@ PM	م
 Timezone	المنطقة الزمنية
 Time zone	المنطقة الزمنية
 Local timezone	المنطقة الزمنية المحلية
-Funnels	أقماع المبيعات
-Funnel	قُمع مبيعات
-Funnel & Website	الموقع والقوالب
-Funnels & Websites	الموقع والقوالب
-Websites	المواقع الإلكترونية
+Funnels	الفانل
+Funnel	الفانل
+Funnel & Website	الموقع والفانل
+Funnels & Websites	الموقع والفانل
+Websites	موقع إلكتروني
 Website	موقع إلكتروني
 Pages	الصفحات
 Page	صفحة
@@ -706,7 +706,7 @@ Notifications & reminders	الإشعارات والتذكيرات
 Email notifications	إشعارات البريد الإلكتروني
 SMS notifications	إشعارات الرسائل النصية
 Calendar	التقويم
-Calendars	التقويمات
+Calendars	التقويم
 Calendar view	عرض التقويم
 Calendar ID (API/Webhooks)	معرّف التقويم (API/Webhooks)
 Calendar connected	تم ربط التقويم
@@ -734,7 +734,7 @@ Event name	اسم الحدث
 Event type	نوع الحدث
 Event details	تفاصيل الحدث
 All Events	جميع الأحداث
-All calendars	جميع التقويمات
+All calendars	جميع التقويم
 All booking pages	جميع صفحات الحجز
 All dates	جميع التواريخ
 All devices	جميع الأجهزة
@@ -903,17 +903,19 @@ Attachments	المرفقات
 Take over	تولّي المحادثة
 Human takeover	تولّي المحادثة بشريًا
 Hand back to AI	إعادة المحادثة إلى الذكاء الاصطناعي
-AI Copilot	المساعد الذكي
+AI Copilot	AI Agent
 AI Business Copilot	مساعد الأعمال الذكي
+Flow Builder	انشئ مسارك
+Loading Flow Builder…	جارٍ تحميل منشئ المسارات…
 AI Follow-Up	وكيل المبيعات الذكي
 AI Follow-up	وكيل المبيعات الذكي
 AI Follow-Up sections	أقسام المتابعة بالذكاء الاصطناعي
 AI Follow-Up sequence	تسلسل المتابعة بالذكاء الاصطناعي
 AI Agent	وكيل الذكاء الاصطناعي
 AI Assist	مساعدة ذكية
-AI Assistant Setup	إعداد المساعد الذكي
-AI Assistant ·	المساعد الذكي ·
-AI Assistants	المساعدون الأذكياء
+AI Assistant Setup	إعداد AI Agent
+AI Assistant ·	AI Agent ·
+AI Assistants	AI Agents
 AI Auto-reply Rate	معدل الرد الآلي الذكي
 AI Automation	الأتمتة بالذكاء الاصطناعي
 AI Automation Status	حالة الأتمتة بالذكاء الاصطناعي
@@ -929,7 +931,7 @@ AI handled	عالجها الذكاء الاصطناعي
 AI paused	الذكاء الاصطناعي متوقف مؤقتًا
 AI sent message	أرسل الذكاء الاصطناعي رسالة
 AI suggestion ready to review	اقتراح الذكاء الاصطناعي جاهز للمراجعة
-AI tone / personality	نبرة المساعد الذكي وشخصيته
+AI tone / personality	نبرة AI Agent وشخصيته
 AI response boundaries	ضوابط ردود الذكاء الاصطناعي
 AI vs human	الذكاء الاصطناعي مقارنة بالموظفين
 AI weekly reports	تقارير أسبوعية بالذكاء الاصطناعي
@@ -943,14 +945,15 @@ AI will reply automatically	سيرد الذكاء الاصطناعي تلقائ�
 AI follow-up activated	تم تفعيل المتابعة الذكية
 AI follow-up paused	تم إيقاف المتابعة الذكية مؤقتًا
 AI can make mistakes. Review before taking action.	قد يخطئ الذكاء الاصطناعي. راجع النتائج قبل اتخاذ إجراء.
-Copilot can make mistakes. Review drafts before confirming.	قد يخطئ المساعد الذكي. راجع المسودات قبل التأكيد.
-Copilot is working…	المساعد الذكي يعمل...
-Ask the AI Copilot	اسأل المساعد الذكي
+Copilot can make mistakes. Review drafts before confirming.	قد يخطئ AI Agent؛ راجع النتائج قبل اعتمادها.
+Copilot is working…	AI Agent يعمل...
+Ask the AI Copilot	اسأل AI Agent
 Ask me anything about your business...	اسألني أي شيء عن نشاطك التجاري...
 Ask a test question	اطرح سؤالًا تجريبيًا
 Assistant name	اسم المساعد
 Assistant settings	إعدادات المساعد
-Assistant templates	قوالب المساعد
+Assistant templates	قوالب جاهزة
+Ready-made templates	قوالب جاهزة
 Assistant is paused	المساعد متوقف مؤقتًا
 Knowledge Center	مركز المعرفة
 Knowledge Base	قاعدة المعرفة
@@ -980,7 +983,7 @@ Business description	وصف النشاط التجاري
 Business brief	نبذة عن النشاط التجاري
 Business context connected	تم ربط سياق النشاط التجاري
 Automation	الأتمتة
-Automations	عمليات الأتمتة
+Automations	الأتمتة
 Automation Flow	سير الأتمتة
 Automation Workflows	سير عمل الأتمتة
 Automation templates	قوالب الأتمتة
@@ -1024,7 +1027,7 @@ Consent-first messaging	مراسلات مبنية على الموافقة
 Unsubscribe	إلغاء الاشتراك
 Subscribed	مشترك
 Unsubscribed	ألغى الاشتراك
-Products & Payments	المعاملات والمدفوعات
+Products & Payments	المنتجات والمدفوعات
 Products	المنتجات
 Product	منتج
 Product name	اسم المنتج
@@ -1516,7 +1519,12 @@ Back to pipeline	العودة إلى المسار
 Back to overview	العودة إلى النظرة العامة
 Back to asset list	العودة إلى قائمة الأصول
 Back to website	العودة إلى الموقع
-Back to AI Copilot	العودة إلى المساعد الذكي
+Back to AI Copilot	العودة إلى AI Agent
+Back to funnels	الرجوع إلى الفانل
+Back to funnel	الرجوع إلى الفانل
+Create Funnel	إنشاء فانل
+Create funnel	إنشاء فانل
+Choose a ready-to-edit page or form for your business.	اختر صفحة أو نموذجاً جاهزاً للتعديل لشركتك.
 Close Preview	إغلاق المعاينة
 Close dialog	إغلاق مربع الحوار
 Close menu	إغلاق القائمة

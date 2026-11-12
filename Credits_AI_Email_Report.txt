@@ -82,7 +82,7 @@
        لـ Chunks وفهرستها.
     3. سحب وفهرسة رابط موقع إلكتروني (Website URL Crawling).
 
-2) المساعد الذكي الشامل (AI Copilot)
+2) AI Agent الشامل (AI Copilot)
 ------------------------------------
 * المحادثة الذكية وتحليل مساحة العمل (Copilot Chat):
   - الكود: src/pages/AICopilot.tsx عبر exports.copilot في functions/index.js.
@@ -120,7 +120,7 @@
 
 4) صندوق الوارد الذكي (Inbox AI Assist)
 ---------------------------------------
-* زر المساعد الذكي في الشات (Smart Reply / AI Assist):
+* زر AI Agent في الشات (Smart Reply / AI Assist):
   - الكود: دالة runAiAssist في صفحة src/pages/Inbox.tsx (Lines 615-629).
   - الوظيفة: يقرأ آخر رسالة أرسلها العميل في المحادثة ويولد رداً مقترحاً جاهزاً
     للإرسال داخل مربع الكتابة.

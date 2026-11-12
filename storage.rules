@@ -67,6 +67,16 @@ service firebase.storage {
       allow create, update: if request.auth != null && request.auth.uid == adminUid && templateRole() in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'Admin', 'platform_admin'] && templateImage();
       allow delete: if request.auth != null && request.auth.uid == adminUid;
     }
+    match /templateAssets/system/{templateId}/{fileId} {
+      allow get, delete: if request.auth != null && templateRole() in ['SUPER_ADMIN', 'super_admin', 'platform_admin'];
+      allow create: if request.auth != null && templateRole() in ['SUPER_ADMIN', 'super_admin', 'platform_admin']
+        && request.resource.size > 0 && request.resource.size <= 100 * 1024 * 1024;
+    }
+    match /templateAssets/admins/{adminUid}/{templateId}/{fileId} {
+      allow get, delete: if request.auth != null && request.auth.uid == adminUid;
+      allow create: if request.auth != null && request.auth.uid == adminUid && templateRole() in ['ADMIN', 'admin', 'Admin', 'Owner', 'owner', 'platform_admin']
+        && request.resource.size > 0 && request.resource.size <= 100 * 1024 * 1024;
+    }
     // Launch Brand (moved from Joe Academy): logo/brand images, read by their owner only.
     match /users/{uid}/brandAssets/{allPaths=**} {
       allow read: if request.auth != null && request.auth.uid == uid && request.auth.token.launchBrand == true;

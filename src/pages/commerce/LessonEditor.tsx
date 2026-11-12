@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Lesson } from './model';
 import { Dialog, Field, Select } from './primitives';
-import { uploadDigitalFile, MAX_DIGITAL_FILE_SIZE } from './files';
+import { uploadDigitalFile, MAX_DIGITAL_FILE_SIZE, type ProductFileUploader } from './files';
 import { driveId, durationLabel, probeVideo, sizeLabel, videoEmbedUrl, youtubeId } from './mediaMetadata';
 import { YouTubeMetadataPreview } from './YouTubeMetadataPreview';
 import { translateText, useUILanguage } from '../../i18n/display';
@@ -9,7 +9,7 @@ import './digital-editor.css';
 import './authoring-controls.css';
 
 type Source = NonNullable<Lesson['videoSource']>;
-export function LessonEditor({ lesson, title, onChange, onSave, onClose, busy }: { lesson: Lesson; title: string; onChange: (next: Lesson | ((current: Lesson) => Lesson)) => void; onSave: () => void; onClose: () => void; busy: (value: boolean) => void }) {
+export function LessonEditor({ lesson, title, onChange, onSave, onClose, busy, uploadFile = uploadDigitalFile }: { lesson: Lesson; title: string; onChange: (next: Lesson | ((current: Lesson) => Lesson)) => void; onSave: () => void; onClose: () => void; busy: (value: boolean) => void; uploadFile?: ProductFileUploader }) {
   useUILanguage();
   const [uploading, setUploading] = useState(false), [progress, setProgress] = useState(0), [error, setError] = useState(''), [attempted, setAttempted] = useState(false), [metadataNote, setMetadataNote] = useState('');
   const current = useRef(lesson), inFlight = useRef(false), fileRef = useRef<HTMLInputElement>(null);
@@ -52,8 +52,8 @@ export function LessonEditor({ lesson, title, onChange, onSave, onClose, busy }:
     try {
       const video = /\.(mp4|webm|mov)$/i.test(file.name);
       const metadata = video ? probeVideo(file).catch(() => 0) : Promise.resolve(0);
-      const asset = await uploadDigitalFile(file, setProgress), seconds = await metadata;
-      onChange(current => ({ ...current, url: asset.url, storageId: asset.storageId, fileName: file.name, size: file.size, mime: file.type, kind: video ? 'Video' : /\.pdf$/i.test(file.name) ? 'PDF' : 'File', title: current.title.trim() ? current.title : file.name.replace(/\.[^.]+$/, ''), videoSource: video ? 'Local Upload' : undefined, durationSeconds: seconds || undefined, duration: video ? durationLabel(seconds) || current.duration : sizeLabel(file.size) }));
+      const asset = await uploadFile(file, setProgress), seconds = await metadata;
+      onChange(current => ({ ...current, url: asset.url, storageId: asset.storageId, fileName: file.name, size: file.size, mime: file.type, kind: video ? 'Video' : /\.pdf$/i.test(file.name) ? 'PDF' : 'File', title: current.title.trim() ? current.title : file.name.replace(/\.[^.]+$/, ''), videoSource: video ? asset.storageId ? 'Local Upload' : 'External URL' : undefined, durationSeconds: seconds || undefined, duration: video ? durationLabel(seconds) || current.duration : sizeLabel(file.size) }));
       setMetadataNote(video && !seconds ? 'Video uploaded. This file does not expose duration metadata; you may enter a duration manually.' : 'File metadata detected automatically');
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Cloud upload failed. Please try again.'); }
     finally { inFlight.current = false; setUploading(false); busy(false); }

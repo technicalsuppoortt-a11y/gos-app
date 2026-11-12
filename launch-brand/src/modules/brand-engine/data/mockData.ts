@@ -711,7 +711,7 @@ export const initialModules: Module[] = [
   {
     id: "assistant",
     name: "AI Assistant",
-    nameAr: "المساعد الذكي",
+    nameAr: "AI Agent",
     description: "Always-on business copilot.",
     icon: "Sparkles",
     active: true,

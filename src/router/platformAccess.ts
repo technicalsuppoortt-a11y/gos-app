@@ -82,7 +82,9 @@ export function canOpenPlatformPage(
 ) {
   if (!isPlatformTeamRole(role)) return false;
   const [, base, page = '', nested, leaf, extra] = path.replace(/\/+$/, '').split('/');
-  const validSubRoute = !nested || (page === 'clients' && Boolean(nested) && leaf === 'sub-users' && !extra);
+  const templateEditor = page === 'dashboard-management' && !extra
+    && ((nested === 'new' && !leaf) || (Boolean(nested) && leaf === 'edit'));
+  const validSubRoute = !nested || templateEditor || (page === 'clients' && Boolean(nested) && leaf === 'sub-users' && !extra);
   if (base !== 'super-admin' || !validSubRoute) return false;
 
   const activeTabKeys = resolveAllowedTabKeys(role, allowedTabs);

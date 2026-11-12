@@ -1,4 +1,4 @@
-import { useUILanguage, translateText, localizeNode, uiDirection } from '../i18n/display';
+import { useUILanguage, translateText, localizeNode, useDisplayLanguage } from '../i18n/display';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
@@ -16,12 +16,13 @@ type SelectProps = {
   className?: string;
   required?: boolean;
   disabled?: boolean;
+  language?: string;
 };
 const emptyOption = '__aw_empty__';
 
 /** The module uses the same Radix select primitive as the shared commerce controls. */
-export function AssetSelect({ value, defaultValue = '', options, onChange, label, placeholder = 'Choose an option', className = '', required, disabled }: SelectProps) {
-  useUILanguage();
+export function AssetSelect({ value, defaultValue = '', options, onChange, label, placeholder = 'Choose an option', className = '', required, disabled, language }: SelectProps) {
+  const { language: locale, translateText, localizeNode } = useDisplayLanguage(language);
   const [internal, setInternal] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const portal = useSelectPortal();
@@ -39,7 +40,7 @@ export function AssetSelect({ value, defaultValue = '', options, onChange, label
   const items = options.map(item => typeof item === 'string' ? { value: item, label: item } : item);
   const selected = items.find(item => item.value === current);
   return <span className={`aw-select ${className}`}>
-    <Select.Root dir={uiDirection()} open={open} onOpenChange={next => { portal.onOpenChange(next); setOpen(next); }} value={current || (selected && !selected.disabled && !required ? emptyOption : '')} onValueChange={next => { const value = next === emptyOption ? '' : next; setInternal(value); onChange?.(value); }} required={required} disabled={disabled}>
+    <Select.Root dir={locale.startsWith('ar') ? 'rtl' : 'ltr'} open={open} onOpenChange={next => { portal.onOpenChange(next); setOpen(next); }} value={current || (selected && !selected.disabled && !required ? emptyOption : '')} onValueChange={next => { const value = next === emptyOption ? '' : next; setInternal(value); onChange?.(value); }} required={required} disabled={disabled}>
       <Select.Trigger ref={portal.trigger} className="aw-select-trigger" aria-label={translateText(label)}>
         <Select.Value placeholder={translateText(placeholder)}>{localizeNode(selected?.label || placeholder)}</Select.Value>
         <Select.Icon><ChevronDown size={14}/></Select.Icon>

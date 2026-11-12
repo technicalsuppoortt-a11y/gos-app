@@ -17,20 +17,29 @@ export function validateSystemTemplate(t: ManagedTemplate): string[] {
   }
   if (t.category === 'Products') {
     if (!t.productTemplate?.product) errors.push('Configure a product.');
-    else {
-      const product = structuredClone(t.productTemplate.product);
-      // Bundled resources stay portable in masters and are resolved by the existing installer.
-      const absolute = (url: string) => /^\/(?!\/)/.test(url) ? new URL(url, 'https://templates.invalid').href : url;
-      if (product.config) {
-        product.config.assets = product.config.assets.map(asset => ({ ...asset, url: absolute(asset.url) }));
-        product.config.modules = product.config.modules.map(module => ({ ...module, lessons: module.lessons.map(lesson => typeof lesson === 'string' ? lesson : { ...lesson, url: absolute(lesson.url) }) }));
-      }
-      errors.push(...validateProduct(product, false));
-    }
+    else errors.push(...validateTemplateProduct(t.productTemplate.product));
   }
   if (t.category === 'CRM Pipelines') {
     const stages = t.pipelineTemplate?.stages || [];
     if (stages.length < 2 || stages.length > 10 || stages.some(s => !s.trim() || s.length > 40) || new Set(stages.map(s => s.trim().toLowerCase())).size !== stages.length) errors.push('Define 2–10 unique pipeline stages, each with 1–40 characters.');
   }
+  if (t.category === 'Automations' && t.automationTemplate) {
+    const { from, to, actionType, sequenceSteps } = t.automationTemplate;
+    if (!from?.trim() || !to?.trim() || !actionType?.trim()) errors.push('Choose the automation trigger, lifecycle outcome and action.');
+    if (!Array.isArray(sequenceSteps) || !sequenceSteps.length || sequenceSteps.some(step =>
+      !step.id || !step.action?.trim() || !step.unit?.trim() || !step.delay?.trim() || !Number.isFinite(Number(step.delay)) || Number(step.delay) < 0
+    )) errors.push('Give every automation step an action and a valid delay.');
+  }
   return errors;
+}
+
+export function validateTemplateProduct(source: Parameters<typeof validateProduct>[0]) {
+  const product = structuredClone(source);
+  // Bundled resources stay portable in masters and are resolved by the existing installer.
+  const absolute = (url: string) => /^\/(?!\/)/.test(url) ? new URL(url, 'https://templates.invalid').href : url;
+  if (product.config) {
+    product.config.assets = product.config.assets.map(asset => ({ ...asset, url: absolute(asset.url) }));
+    product.config.modules = product.config.modules.map(module => ({ ...module, lessons: module.lessons.map(lesson => typeof lesson === 'string' ? lesson : { ...lesson, url: absolute(lesson.url) }) }));
+  }
+  return validateProduct(product, false);
 }

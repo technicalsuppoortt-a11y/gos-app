@@ -13,7 +13,7 @@ import { flushAssetWrites } from '../backend/workspace';
 import { backendError } from '../backend/firebase';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { useUILanguage, translateText, localizeNode } from '../i18n/display';
+import { useUILanguage, translateText, localizeNode, useDisplayLanguage } from '../i18n/display';
 import {OrderedElementParts,orderedCompositeOutput} from './element-reordering';
 import {PageFlyInspector} from './PageFlyInspector';
 import {EditableElementPart, ElementSelectionContext} from './EditableElementPart';
@@ -657,8 +657,8 @@ export const BuilderWorkspace: React.FC<{
   </div></CreateFormContext.Provider>;
 };
 
-export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop, onNotify, device = 'desktop', isDark = false }: { device?: string; item: BuilderSection; isDark?: boolean; onAction: (section: BuilderSection) => void; onImagePick: () => void; onImageDrop: (event: React.DragEvent) => void; onNotify: (message: string) => void }) {
-  useUILanguage();
+export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop, onNotify, device = 'desktop', isDark = false, language, templateDesign = false }: { device?: string; item: BuilderSection; isDark?: boolean; language?: string; templateDesign?: boolean; onAction: (section: BuilderSection) => void; onImagePick: () => void; onImageDrop: (event: React.DragEvent) => void; onNotify: (message: string) => void }) {
+  const { translateText, localizeNode } = useDisplayLanguage(language);
   const item=deviceElement(source,device);
   const [activeTab, setActiveTab] = useState('');
   useEffect(()=>setActiveTab(''),[item.content.activeItem]);
@@ -717,7 +717,11 @@ export function SectionPreview({ item:source, onAction, onImagePick, onImageDrop
   if (item.type === 'Brand Story') return orderedCompositeOutput(item, <div className="fb-about-story"><div><span className="fb-section-eyebrow">{translateText("OUR STORY")}</span>{localizeNode(title && <EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart>)}{localizeNode(body && <EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart>)}</div><div className="fb-about-image-frame">{item.content.image ? <EditableElementPart device={device} item={item} part="image" tag="img" src={item.content.image} alt={translateText(item.content.alt || '')}/> : <div className="fb-image-dropzone"><Upload size={22}/><b>{translateText("Add a story image")}</b></div>}</div></div>);
   if (item.type === 'Mission & Vision') return orderedCompositeOutput(item, <div className="fb-mission-grid"><article><span>{translateText("OUR MISSION")}</span>{localizeNode(title && <EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart>)}{localizeNode(body && <EditableElementPart device={device} item={item} part="body" tag="p">{localizeNode(body)}</EditableElementPart>)}{localizeNode(!title && !body && <div className="fb-empty-widget">{translateText("Add your mission in Content settings.")}</div>)}</article><article><span>{translateText("OUR VISION")}</span>{item.content.visionTitle && <h2>{item.content.visionTitle}</h2>}{item.content.vision && <p>{item.content.vision}</p>}{!item.content.visionTitle && !item.content.vision && <div className="fb-empty-widget">{translateText("Add your vision in Content settings.")}</div>}</article></div>);
   if (item.type === 'Core Values') return orderedCompositeOutput(item, <>{localizeNode(title && <><span className="fb-section-eyebrow">{translateText("WHAT WE BELIEVE")}</span><EditableElementPart device={device} item={item} part="title" tag="h2">{localizeNode(title)}</EditableElementPart></>)}{localizeNode(body ? <div className="fb-values-grid">{localizeNode(body.split('·').filter(value=>value.trim()).map((value, valueIndex) => <article key={value}><i>0{localizeNode(valueIndex + 1)}</i><b>{localizeNode(value.trim())}</b></article>))}</div> : <div className="fb-empty-widget">{translateText("Add values in Content settings.")}</div>)}</>);
-  if (item.type === 'Stats') return orderedCompositeOutput(item, item.content.items ? <div className="fb-stats-grid">{item.content.items.split('·').filter(stat=>stat.trim()).map(stat => { const [number,...label] = stat.trim().split(' '); return <article key={stat}><strong>{localizeNode(number)}</strong><span>{localizeNode(label.join(' '))}</span></article>; })}</div> : <div className="fb-empty-widget">{translateText("Add stats in Content settings.")}</div>);
+  if (item.type === 'Stats') return orderedCompositeOutput(item, item.content.items ? <div className="fb-stats-grid">{item.content.items.split('·').filter(stat=>stat.trim()).map((stat, index) => {
+    if (templateDesign) return <article key={index}><strong dir="auto">{localizeNode(stat.trim())}</strong></article>;
+    const [number,...label] = stat.trim().split(' ');
+    return <article key={index}><strong>{localizeNode(number)}</strong><span>{localizeNode(label.join(' '))}</span></article>;
+  })}</div> : <div className="fb-empty-widget">{translateText("Add stats in Content settings.")}</div>);
   if (item.type === 'Button') return orderedCompositeOutput(item, item.content.button ? <button className="fb-site-primary" style={item.content.buttonVariant==='Outline'?{background:'transparent',color:'#7C3AED',border:'1px solid #7C3AED'}:undefined} onClick={() => onAction(item)}>{item.content.button}<ArrowRight size={13}/></button> : <div className="fb-empty-widget">{translateText("Button preview · set a label in the Content panel")}</div>);
   if (item.type === 'Text' || item.type === 'Heading' || item.type === 'Paragraph') {
     const tag = item.content.headingTag || (item.type === 'Heading' ? 'H2' : 'Paragraph');

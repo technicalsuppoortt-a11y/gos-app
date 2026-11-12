@@ -1793,7 +1793,7 @@ export default function BookingSection({
 
   const saveCalendar = async () => {
     if (isAdmin) {
-      toast.error(translateText("الآدمن لا يمكنه حفظ التقويمات", "Admin cannot save calendars"));
+      toast.error(translateText("الآدمن لا يمكنه حفظ التقويم", "Admin cannot save calendars"));
       return;
     }
     if (!calendarName.trim()) {
@@ -1915,7 +1915,7 @@ export default function BookingSection({
 
   const deleteCalendar = async () => {
     if (isAdmin) {
-      toast.error(translateText("الآدمن لا يمكنه حذف التقويمات", "Admin cannot delete calendars"));
+      toast.error(translateText("الآدمن لا يمكنه حذف التقويم", "Admin cannot delete calendars"));
       return;
     }
     if (!selectedCalendar) return;
@@ -2383,7 +2383,7 @@ export default function BookingSection({
   ];
 
   const calendarFilterOptions = [
-    { value: "all", label: translateText("كل التقويمات", "All Calendars") },
+    { value: "all", label: translateText("كل التقويم", "All Calendars") },
     ...calendars.map((calendar) => ({ value: calendar.id, label: calendar.name })),
   ];
 
@@ -2533,8 +2533,8 @@ export default function BookingSection({
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {translateText(
               isAdmin
-                ? "عرض لجميع التقويمات والحجوزات الواردة في النظام"
-                : "التقويمات، الحجوزات الواردة، وسجل المكالمات",
+                ? "عرض لجميع التقويم والحجوزات الواردة في النظام"
+                : "التقويم، الحجوزات الواردة، وسجل المكالمات",
               isAdmin
                 ? "View of all calendars and incoming bookings in the system"
                 : "Calendars, incoming bookings & call log",
@@ -2568,7 +2568,7 @@ export default function BookingSection({
           }`}
         >
           <Settings className="w-4 h-4" />
-          {translateText("التقويمات", "Calendars")}
+          {translateText("التقويم", "Calendars")}
           <span className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded-full">
             {calendars.length}
           </span>

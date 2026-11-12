@@ -7,7 +7,7 @@ import { validQualificationQuestions } from '../../../functions/booking-qualific
 import { EditorNotifications } from './EditorNotifications';
 import { EditorDurations } from './EditorDurations';
 import { BookingSelect } from './BookingSelect';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   ChevronDown,
@@ -151,13 +151,13 @@ export function BookingBuilder({
   pages,
   save,
   close,
-  onDraftChange,
+  templateEditor = false,
 }: {
   page?: BookingPage;
   pages: BookingPage[];
   save: (page: BookingPage) => void;
   close: () => void;
-  onDraftChange?: (page: BookingPage) => void;
+  templateEditor?: boolean;
 }) {
   useUILanguage();
   const [draft, setDraft] = useState<BookingPage>(() =>
@@ -166,20 +166,6 @@ export function BookingBuilder({
   const { workspaceDesigns, templateDesigns, allDesigns, workspace, setWorkspace } =
     useBookingWebsiteAndTemplateCatalog();
   const [templateFilter, setTemplateFilter] = useState<'all' | 'websites' | 'templates'>('all');
-
-  const draftObserver = useRef(onDraftChange);
-  draftObserver.current = onDraftChange;
-  useEffect(() => {
-    draftObserver.current?.(draft);
-  }, [draft]);
-  useEffect(() => {
-    if (!onDraftChange || !page) return;
-    setDraft(current =>
-      current.name === page.name && current.description === page.description
-        ? current
-        : { ...current, name: page.name, description: page.description }
-    );
-  }, [page?.name, page?.description]);
 
   const [tab, setTab] = useState('Page');
   const [openSections, setOpenSections] = useState(['Page']);
@@ -365,7 +351,7 @@ export function BookingBuilder({
       },
     };
     const chosenDesign = resolveBookingDesign(savedPage, allDesigns);
-    if (chosenDesign) {
+    if (chosenDesign && !templateEditor) {
       void syncBookingIntoWorkspaceWebsite({
         design: chosenDesign,
         bookingPage: savedPage,
@@ -399,7 +385,7 @@ export function BookingBuilder({
         <button
           type="button"
           className="bk-icon"
-          aria-label={translateText('Back to booking pages')}
+          aria-label={translateText(templateEditor ? 'Template details' : 'Back to booking pages')}
           onClick={close}
         >
           <ArrowLeft size={19} />
@@ -414,7 +400,7 @@ export function BookingBuilder({
           {translateText(' min')}
         </span>
         {localizeNode(
-          page && (
+          page && !templateEditor && (
             <a
               className="bk-button"
               href={publicUrl(page)}
@@ -428,7 +414,7 @@ export function BookingBuilder({
         )}
         <button className="bk-button primary" disabled={uploading} onClick={submit}>
           <Check size={15} />
-          {localizeNode(page ? 'Save changes' : 'Create booking page')}
+          {localizeNode(templateEditor ? 'Use booking changes' : page ? 'Save changes' : 'Create booking page')}
         </button>
       </header>
       {showAiDraft && (
@@ -1286,7 +1272,7 @@ export function BookingBuilder({
         </button>
         <button className="bk-button primary" disabled={uploading} onClick={submit}>
           <Check size={15} />
-          {localizeNode(page ? 'Save changes' : 'Create booking page')}
+          {localizeNode(templateEditor ? 'Use booking changes' : page ? 'Save changes' : 'Create booking page')}
         </button>
       </footer>
     </main>

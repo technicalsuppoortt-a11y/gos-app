@@ -64,7 +64,7 @@ Connect a payment provider to accept payments for products and bookings.	ارب�
 Connect funnel events to your business tools.	اربط أحداث القُمع بأدوات نشاطك التجاري.
 Connect this product to a funnel and page in your project workspace.	اربط هذا المنتج بقُمع وصفحة في مساحة عمل مشروعك.
 Connect your calendar and define how sessions are fulfilled.	اربط تقويمك وحدّد طريقة تقديم الجلسات.
-Connect your custom domain to published websites and funnels.	اربط نطاقك المخصص بالمواقع وأقماع المبيعات المنشورة.
+Connect your custom domain to published websites and funnels.	اربط نطاقك المخصص بالمواقع و فانل المنشورة.
 Connect your favorite tools and keep your business in sync.	اربط أدواتك المفضلة وحافظ على تناغم أعمالك.
 Connect your workflows using authenticated events and APIs.	اربط عمليات سير العمل باستخدام أحداث موثقة وواجهات API.
 Consultant biography	نبذة عن المستشار
@@ -196,7 +196,7 @@ Onboarding Session	جلسة تهيئة
 Opening Booking & Calendar.	جارٍ فتح الحجوزات والتقويم.
 Opening CRM & Leads.	جارٍ فتح إدارة العملاء CRM.
 Opening Inbox.	جارٍ فتح صندوق الرسائل.
-Opening Products & Payments.	جارٍ فتح المعاملات والمدفوعات.
+Opening Products & Payments.	جارٍ فتح المنتجات والمدفوعات.
 Opening all orders.	جارٍ فتح جميع الطلبات.
 Opening all products.	جارٍ فتح جميع المنتجات.
 Opening page analytics.	جارٍ فتح تحليلات الصفحة.
@@ -289,7 +289,7 @@ Satellite	قمر صناعي
 Saudi Arabia	السعودية
 Save Changes applies these settings to the product.	يطبّق زر حفظ التغييرات هذه الإعدادات على المنتج.
 Saved configuration; delivery requires a connected payment backend.	تم حفظ الإعدادات؛ يتطلب التسليم ربط خدمة دفع خلفية.
-Saved funnel and website templates	قوالب أقماع المبيعات والمواقع المحفوظة
+Saved funnel and website templates	قوالب  فانل والمواقع المحفوظة
 Schedule calls or meetings	جدولة المكالمات أو الاجتماعات
 Secure	آمن
 Select a column to change its width per device. Use the Styling tab to adjust the gap between columns.	اختر عمودًا لتغيير عرضه لكل جهاز. استخدم تبويب التنسيق لضبط المسافة بين الأعمدة.

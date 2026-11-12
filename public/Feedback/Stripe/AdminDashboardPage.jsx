@@ -26,7 +26,10 @@ import { JOURNEY_STEPS } from "../../data/database";
 import { TOOLS_24H } from "../../data/toolsData";
 import { useApp } from "../../context/AppContext";
 import { useConfirm } from "../../context/ConfirmContext";
-import { saveAdminOpenAiKey, getAdminOpenAiKey } from "../../services/creditsService";
+import {
+  saveAdminOpenAiKey,
+  getAdminOpenAiKey,
+} from "../../services/creditsService";
 import AdminSales from "./AdminSales";
 import AdminLibrary from "./AdminLibrary";
 import SupportSection from "../SupportSection";
@@ -49,9 +52,12 @@ import AdminHeroSectionTab from "./components/AdminHeroSectionTab";
 import Pagination from "../../components/common/Pagination";
 import PhoneInput from "../../components/PhoneInput";
 import PlatformExplanation from "../../components/common/PlatformExplanation";
-import { DEFAULT_LEGAL_CONTENT, DEFAULT_FAQS } from "../../utils/defaultLegalContent";
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import {
+  DEFAULT_LEGAL_CONTENT,
+  DEFAULT_FAQS,
+} from "../../utils/defaultLegalContent";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
@@ -151,14 +157,14 @@ import {
   Webhook,
 } from "lucide-react";
 import "./Admin.css";
-import AdminTemplateManager from './components/AdminTemplateManager';
+import AdminTemplateManager from "./components/AdminTemplateManager";
 
 const quillModules = {
   toolbar: [
-    [{ 'header': [1, 2, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    ['clean']
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["clean"],
   ],
 };
 
@@ -167,10 +173,13 @@ const formatForQuill = (text) => {
   // Check if it already has basic HTML tags (from Quill)
   if (/<[a-z][\s\S]*>/i.test(text)) return text;
   // Otherwise, it's raw text, split by \n and wrap in <p>
-  return text.split('\n').map(line => {
-    // Preserve empty lines as Quill empty paragraphs
-    return line ? `<p>${line}</p>` : `<p><br></p>`;
-  }).join('');
+  return text
+    .split("\n")
+    .map((line) => {
+      // Preserve empty lines as Quill empty paragraphs
+      return line ? `<p>${line}</p>` : `<p><br></p>`;
+    })
+    .join("");
 };
 
 export const THEME_PRESETS = [
@@ -243,7 +252,7 @@ export const THEME_PRESETS = [
 
 export const detectMatchingThemePreset = (theme) => {
   if (!theme) return "cyber";
-  if (theme.preset && THEME_PRESETS.some(p => p.id === theme.preset)) {
+  if (theme.preset && THEME_PRESETS.some((p) => p.id === theme.preset)) {
     return theme.preset;
   }
   const norm = (c) => (c || "").trim().toLowerCase();
@@ -253,12 +262,13 @@ export const detectMatchingThemePreset = (theme) => {
 
   if (!acc && !side && !bg) return "cyber";
 
-  const matched = THEME_PRESETS.find(p =>
-    norm(p.accent) === acc && (norm(p.sidebar) === side || norm(p.bg) === bg)
+  const matched = THEME_PRESETS.find(
+    (p) =>
+      norm(p.accent) === acc && (norm(p.sidebar) === side || norm(p.bg) === bg),
   );
   if (matched) return matched.id;
 
-  const accentMatched = THEME_PRESETS.find(p => norm(p.accent) === acc);
+  const accentMatched = THEME_PRESETS.find((p) => norm(p.accent) === acc);
   if (accentMatched) return accentMatched.id;
 
   return "custom";
@@ -268,7 +278,10 @@ const getLegalValue = (dbValue, defaultValue, englishDefault = null) => {
   if (!dbValue) return formatForQuill(defaultValue);
 
   // Strip HTML tags and common HTML spaces to reliably detect if the editor is actually empty
-  const textOnly = dbValue.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+  const textOnly = dbValue
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, "")
+    .trim();
 
   if (textOnly === "") {
     return formatForQuill(defaultValue);
@@ -276,7 +289,10 @@ const getLegalValue = (dbValue, defaultValue, englishDefault = null) => {
 
   // Fix for corrupted DB state: If the saved Arabic field accidentally contains the English default text, revert to Arabic default
   if (englishDefault) {
-    const englishTextOnly = englishDefault.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+    const englishTextOnly = englishDefault
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, "")
+      .trim();
     if (textOnly === englishTextOnly) {
       return formatForQuill(defaultValue);
     }
@@ -356,7 +372,6 @@ function getToolVectorIcon(item, size = 18) {
     return <Calculator size={size} style={{ color: "#10b981" }} />;
   if (id.includes("ai") || id.includes("bot"))
     return <Bot size={size} style={{ color: "#6366f1" }} />;
-
 
   return <Layers size={size} style={{ color: "var(--accent)" }} />;
 }
@@ -555,17 +570,31 @@ export default function AdminDashboardPage() {
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   const LANGUAGES = [
-    { code: 'ar', label: 'العربية', fullLabel: 'العربية (Arabic)', flag: '🇸🇦' },
-    { code: 'ar-GCC', label: 'الخليجية', fullLabel: 'الخليجية (Khaleeji)', flag: '🇦🇪' },
-    { code: 'ar-EG', label: 'المصرية', fullLabel: 'المصرية (Egyptian)', flag: '🇪🇬' },
-    { code: 'en', label: 'English', fullLabel: 'English', flag: '🇬🇧' }
+    { code: "ar", label: "العربية", fullLabel: "العربية (Arabic)", flag: "🇸🇦" },
+    {
+      code: "ar-GCC",
+      label: "الخليجية",
+      fullLabel: "الخليجية (Khaleeji)",
+      flag: "🇦🇪",
+    },
+    {
+      code: "ar-EG",
+      label: "المصرية",
+      fullLabel: "المصرية (Egyptian)",
+      flag: "🇪🇬",
+    },
+    { code: "en", label: "English", fullLabel: "English", flag: "🇬🇧" },
   ];
-  const currentLangObj = LANGUAGES.find(l => l.code === state.language) || LANGUAGES[0];
+  const currentLangObj =
+    LANGUAGES.find((l) => l.code === state.language) || LANGUAGES[0];
 
   useEffect(() => {
     if (!userData?.uid) return;
     // Listen to unread support messages for admin
-    const q = query(collection(db, "support_chats"), where("adminId", "==", userData?.uid));
+    const q = query(
+      collection(db, "support_chats"),
+      where("adminId", "==", userData?.uid),
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = [];
       snapshot.forEach((doc) => {
@@ -639,7 +668,8 @@ export default function AdminDashboardPage() {
   const [contentFactory, setContentFactory] = useState(null);
   const [proposalsSniper, setProposalsSniper] = useState(null);
   const [globalPlatformsRadar, setGlobalPlatformsRadar] = useState(null);
-  const [marketingAutomationEngine, setMarketingAutomationEngine] = useState(null);
+  const [marketingAutomationEngine, setMarketingAutomationEngine] =
+    useState(null);
   const [profitCalculatorSection, setProfitCalculatorSection] = useState(null);
   const [aiAssistantSimulator, setAiAssistantSimulator] = useState(null);
   const [finalCtaSection, setFinalCtaSection] = useState(null);
@@ -676,7 +706,8 @@ export default function AdminDashboardPage() {
 
   // Only apply theme colors to document.documentElement from saved profile settings
   useEffect(() => {
-    const isLightMode = document.documentElement.classList.contains("light-mode");
+    const isLightMode =
+      document.documentElement.classList.contains("light-mode");
     if (userData?.themeConfig) {
       const theme = userData.themeConfig;
       const root = document.documentElement;
@@ -687,7 +718,8 @@ export default function AdminDashboardPage() {
         root.style.setProperty("--font-family", `'${f}', sans-serif`);
         root.style.setProperty("--font", `'${f}', sans-serif`);
         root.style.fontFamily = `'${f}', sans-serif`;
-        if (document.body) document.body.style.fontFamily = `'${f}', sans-serif`;
+        if (document.body)
+          document.body.style.fontFamily = `'${f}', sans-serif`;
       }
       if (!isLightMode) {
         if (theme.bg) root.style.setProperty("--bg", theme.bg);
@@ -700,7 +732,8 @@ export default function AdminDashboardPage() {
         }
         if (theme.text) root.style.setProperty("--text", theme.text);
         if (theme.line) root.style.setProperty("--line", theme.line);
-        if (theme.footerBg) root.style.setProperty("--footer-bg", theme.footerBg);
+        if (theme.footerBg)
+          root.style.setProperty("--footer-bg", theme.footerBg);
       }
     }
   }, [userData?.themeConfig]);
@@ -864,11 +897,10 @@ export default function AdminDashboardPage() {
 
   // Payment Methods Standardized State & DEFAULTS
   const [paymentMethods, setPaymentMethods] = useState({
-
     manualMethods: [
       { id: "def-1", name: "Vodafone Cash / فودافون كاش", value: "" },
       { id: "def-2", name: "InstaPay / انستا باي", value: "" },
-      { id: "def-3", name: "Bank Transfer / تحويل بنكي", value: "" }
+      { id: "def-3", name: "Bank Transfer / تحويل بنكي", value: "" },
     ],
   });
   const [paymentSaving, setPaymentSaving] = useState(false);
@@ -887,11 +919,10 @@ export default function AdminDashboardPage() {
       if (!uid) return;
 
       const DEFAULTS = {
-
         manualMethods: [
           { id: "def-1", name: "Vodafone Cash / فودافون كاش", value: "" },
           { id: "def-2", name: "InstaPay / انستا باي", value: "" },
-          { id: "def-3", name: "Bank Transfer / تحويل بنكي", value: "" }
+          { id: "def-3", name: "Bank Transfer / تحويل بنكي", value: "" },
         ],
       };
 
@@ -900,7 +931,6 @@ export default function AdminDashboardPage() {
         const snap = await getDoc(userRef);
 
         const searchParams = new URLSearchParams(window.location.search);
-
 
         let loadedPM = DEFAULTS;
 
@@ -911,8 +941,6 @@ export default function AdminDashboardPage() {
             manualMethods: pmData.manualMethods || DEFAULTS.manualMethods,
           };
         }
-
-
 
         setPaymentMethods(loadedPM);
       } catch (err) {
@@ -934,12 +962,17 @@ export default function AdminDashboardPage() {
       const fullPaymentMethods = {
         stripe: {
           enabled: paymentMethods.stripe?.enabled ?? false,
-          publishableKey: paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
+          publishableKey:
+            paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
           secretKey: paymentMethods.stripe?.secretKey || stripeSecretKey || "",
           paymentLink: paymentMethods.stripe?.paymentLink || "",
           paymentLinkAnnual: paymentMethods.stripe?.paymentLinkAnnual || "",
           // webhookSecret is optional — empty string is valid (unverified mode)
-          webhookSecret: (paymentMethods.stripe?.webhookSecret ?? stripeWebhookSecret ?? "").trim(),
+          webhookSecret: (
+            paymentMethods.stripe?.webhookSecret ??
+            stripeWebhookSecret ??
+            ""
+          ).trim(),
         },
         manualMethods: paymentMethods.manualMethods || [],
       };
@@ -947,7 +980,8 @@ export default function AdminDashboardPage() {
       const publicPaymentMethods = {
         stripe: {
           enabled: paymentMethods.stripe?.enabled ?? false,
-          publishableKey: paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
+          publishableKey:
+            paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
           paymentLink: paymentMethods.stripe?.paymentLink || "",
           paymentLinkAnnual: paymentMethods.stripe?.paymentLinkAnnual || "",
         },
@@ -976,7 +1010,7 @@ export default function AdminDashboardPage() {
         await setDoc(
           brandRef,
           { paymentMethods: publicPaymentMethods, adminId: uid },
-          { merge: true }
+          { merge: true },
         );
       }
 
@@ -984,19 +1018,26 @@ export default function AdminDashboardPage() {
       try {
         const managedUsersQ = query(
           collection(db, "users"),
-          where("createdBy", "==", uid)
+          where("createdBy", "==", uid),
         );
         const managedSnap = await getDocs(managedUsersQ);
         const backfillPromises = managedSnap.docs
-          .filter(d => !d.data().adminId)
-          .map(d => setDoc(doc(db, "users", d.id), { adminId: uid }, { merge: true }));
+          .filter((d) => !d.data().adminId)
+          .map((d) =>
+            setDoc(doc(db, "users", d.id), { adminId: uid }, { merge: true }),
+          );
         if (backfillPromises.length > 0) {
           await Promise.all(backfillPromises);
-          console.log(`[Admin] Back-filled adminId for ${backfillPromises.length} users.`);
+          console.log(
+            `[Admin] Back-filled adminId for ${backfillPromises.length} users.`,
+          );
         }
       } catch (err) {
         // Non-critical — don't block the save
-        console.warn("[Admin] Could not back-fill adminId on managed users:", err.message);
+        console.warn(
+          "[Admin] Could not back-fill adminId on managed users:",
+          err.message,
+        );
       }
 
       setPaymentSaved(true);
@@ -1109,25 +1150,35 @@ export default function AdminDashboardPage() {
           const imported = JSON.parse(event.target.result);
           if (imported.ownerName) setOwnerNameForm(imported.ownerName);
           if (imported.brandName) setBrandNameForm(imported.brandName);
-          if (imported.defaultLanguage) setDefaultLanguage(imported.defaultLanguage);
-          if (imported.logoDisplayMode) setLogoDisplayMode(imported.logoDisplayMode);
+          if (imported.defaultLanguage)
+            setDefaultLanguage(imported.defaultLanguage);
+          if (imported.logoDisplayMode)
+            setLogoDisplayMode(imported.logoDisplayMode);
           if (imported.showWhatsappLoginBtn !== undefined)
             setShowWhatsappLoginBtn(imported.showWhatsappLoginBtn);
           if (imported.showWhatsappBtn !== undefined)
             setShowWhatsappBtn(imported.showWhatsappBtn);
           if (imported.themeConfig) {
-            if (imported.themeConfig.accent) setAccentColor(imported.themeConfig.accent);
-            if (imported.themeConfig.success) setSuccessColor(imported.themeConfig.success);
+            if (imported.themeConfig.accent)
+              setAccentColor(imported.themeConfig.accent);
+            if (imported.themeConfig.success)
+              setSuccessColor(imported.themeConfig.success);
             if (imported.themeConfig.bg) setBgColor(imported.themeConfig.bg);
-            if (imported.themeConfig.sidebar) setSidebarColor(imported.themeConfig.sidebar);
-            if (imported.themeConfig.fontFamily) setFontFamily(imported.themeConfig.fontFamily);
-            if (imported.themeConfig.text) setTextColor(imported.themeConfig.text);
-            if (imported.themeConfig.line) setLineColor(imported.themeConfig.line);
-            if (imported.themeConfig.footerBg) setFooterBgColor(imported.themeConfig.footerBg);
+            if (imported.themeConfig.sidebar)
+              setSidebarColor(imported.themeConfig.sidebar);
+            if (imported.themeConfig.fontFamily)
+              setFontFamily(imported.themeConfig.fontFamily);
+            if (imported.themeConfig.text)
+              setTextColor(imported.themeConfig.text);
+            if (imported.themeConfig.line)
+              setLineColor(imported.themeConfig.line);
+            if (imported.themeConfig.footerBg)
+              setFooterBgColor(imported.themeConfig.footerBg);
             setActiveThemePreset("custom");
           }
           if (imported.socialLinks) setSocialLinks(imported.socialLinks);
-          if (imported.landingTemplate) setLandingTemplate(imported.landingTemplate);
+          if (imported.landingTemplate)
+            setLandingTemplate(imported.landingTemplate);
           toast(
             state.language === "en"
               ? "Brand settings imported from JSON! Click Save to apply changes."
@@ -1149,12 +1200,16 @@ export default function AdminDashboardPage() {
   // Reset Brand Settings to Defaults (Cyber Dark) & Auto-Save to Database
   const handleResetToDefaults = async () => {
     const confirmed = await confirm({
-      title: state.language === "en" ? "Reset Brand Colors?" : "إعادة ضبط ألوان البراند",
+      title:
+        state.language === "en"
+          ? "Reset Brand Colors?"
+          : "إعادة ضبط ألوان البراند",
       message:
         state.language === "en"
           ? "Are you sure you want to reset all brand theme colors to the default values (Cyber Dark)? This will automatically save the default settings."
           : "هل أنت متأكد من إرجاع جميع ألوان البراند إلى القيم الافتراضية (السيبراني الداكن)؟ سيتم حفظ كافة الإعدادات الافتراضية وتطبيقها في وقتها.",
-      confirmText: state.language === "en" ? "Confirm" : "تأكيد واستعادة الافتراضي",
+      confirmText:
+        state.language === "en" ? "Confirm" : "تأكيد واستعادة الافتراضي",
       cancelText: state.language === "en" ? "Cancel" : "إلغاء",
       type: "warning",
     });
@@ -1187,7 +1242,10 @@ export default function AdminDashboardPage() {
       const root = document.documentElement;
       root.style.setProperty("--accent", defaultAccent);
       root.style.setProperty("--green", defaultSuccess);
-      root.style.setProperty("--font-family", `"${defaultFontFamily}", sans-serif`);
+      root.style.setProperty(
+        "--font-family",
+        `"${defaultFontFamily}", sans-serif`,
+      );
       root.style.setProperty("--font", `"${defaultFontFamily}", sans-serif`);
       root.style.fontFamily = `"${defaultFontFamily}", sans-serif`;
       root.style.setProperty("--bg", defaultBg);
@@ -1219,7 +1277,7 @@ export default function AdminDashboardPage() {
               themeConfig: defaultThemeConfig,
               updatedAt: serverTimestamp(),
             },
-            { merge: true }
+            { merge: true },
           );
 
           // 2. Tenant doc
@@ -1229,11 +1287,15 @@ export default function AdminDashboardPage() {
               themeConfig: defaultThemeConfig,
               updatedAt: serverTimestamp(),
             },
-            { merge: true }
+            { merge: true },
           );
 
           // 3. Brand doc by Brand Name
-          const currentBrandName = (brandNameForm || userData?.brandName || "").trim();
+          const currentBrandName = (
+            brandNameForm ||
+            userData?.brandName ||
+            ""
+          ).trim();
           if (currentBrandName) {
             await setDoc(
               doc(db, "brands", currentBrandName),
@@ -1241,7 +1303,7 @@ export default function AdminDashboardPage() {
                 themeConfig: defaultThemeConfig,
                 updatedAt: serverTimestamp(),
               },
-              { merge: true }
+              { merge: true },
             );
           }
 
@@ -1253,7 +1315,7 @@ export default function AdminDashboardPage() {
                 themeConfig: defaultThemeConfig,
                 updatedAt: serverTimestamp(),
               },
-              { merge: true }
+              { merge: true },
             );
           }
           if (brandUrlForm?.trim()) {
@@ -1263,7 +1325,7 @@ export default function AdminDashboardPage() {
                 themeConfig: defaultThemeConfig,
                 updatedAt: serverTimestamp(),
               },
-              { merge: true }
+              { merge: true },
             );
           }
         }
@@ -1338,9 +1400,10 @@ export default function AdminDashboardPage() {
       `"${(p.userPhone || "").replace(/"/g, '""')}"`,
       `"${(p.planName || p.plan || "Pro").replace(/"/g, '""')}"`,
       `"${p.amount || 0}"`,
-      `"${p.createdAt?.seconds
-        ? new Date(p.createdAt.seconds * 1000).toLocaleDateString("en-US")
-        : ""
+      `"${
+        p.createdAt?.seconds
+          ? new Date(p.createdAt.seconds * 1000).toLocaleDateString("en-US")
+          : ""
       }"`,
       `"${p.status || "pending"}"`,
     ]);
@@ -1428,11 +1491,29 @@ export default function AdminDashboardPage() {
         setPhoneNumberForm(storedRawPhone);
       } else if (fullPhone) {
         const sortedPrefixes = [
-          "+966", "+971", "+965", "+974", "+968", "+212",
-          "+962", "+961", "+963", "+964", "+970", "+213",
-          "+216", "+218", "+249", "+967", "+20", "+44", "+1"
+          "+966",
+          "+971",
+          "+965",
+          "+974",
+          "+968",
+          "+212",
+          "+962",
+          "+961",
+          "+963",
+          "+964",
+          "+970",
+          "+213",
+          "+216",
+          "+218",
+          "+249",
+          "+967",
+          "+20",
+          "+44",
+          "+1",
         ];
-        const matchedPrefix = sortedPrefixes.find((p) => fullPhone.startsWith(p));
+        const matchedPrefix = sortedPrefixes.find((p) =>
+          fullPhone.startsWith(p),
+        );
         if (matchedPrefix) {
           setPhoneKeyForm(matchedPrefix);
           setPhoneNumberForm(fullPhone.slice(matchedPrefix.length));
@@ -1463,11 +1544,29 @@ export default function AdminDashboardPage() {
         setWhatsappNumberForm(storedRawWhatsapp);
       } else if (fullWhatsapp) {
         const sortedPrefixes = [
-          "+966", "+971", "+965", "+974", "+968", "+212",
-          "+962", "+961", "+963", "+964", "+970", "+213",
-          "+216", "+218", "+249", "+967", "+20", "+44", "+1"
+          "+966",
+          "+971",
+          "+965",
+          "+974",
+          "+968",
+          "+212",
+          "+962",
+          "+961",
+          "+963",
+          "+964",
+          "+970",
+          "+213",
+          "+216",
+          "+218",
+          "+249",
+          "+967",
+          "+20",
+          "+44",
+          "+1",
         ];
-        const matchedPrefix = sortedPrefixes.find((p) => fullWhatsapp.startsWith(p));
+        const matchedPrefix = sortedPrefixes.find((p) =>
+          fullWhatsapp.startsWith(p),
+        );
         if (matchedPrefix) {
           setWhatsappKeyForm(matchedPrefix);
           setWhatsappNumberForm(fullWhatsapp.slice(matchedPrefix.length));
@@ -1517,12 +1616,42 @@ export default function AdminDashboardPage() {
       );
 
       // Populate Legal & FAQs
-      setTermsAr(getLegalValue(userData.legal?.terms_ar, DEFAULT_LEGAL_CONTENT.terms_ar, DEFAULT_LEGAL_CONTENT.terms_en));
-      setTermsEn(getLegalValue(userData.legal?.terms_en, DEFAULT_LEGAL_CONTENT.terms_en));
-      setPrivacyAr(getLegalValue(userData.legal?.privacy_ar, DEFAULT_LEGAL_CONTENT.privacy_ar, DEFAULT_LEGAL_CONTENT.privacy_en));
-      setPrivacyEn(getLegalValue(userData.legal?.privacy_en, DEFAULT_LEGAL_CONTENT.privacy_en));
-      setSecurityAr(getLegalValue(userData.legal?.security_ar, DEFAULT_LEGAL_CONTENT.security_ar, DEFAULT_LEGAL_CONTENT.security_en));
-      setSecurityEn(getLegalValue(userData.legal?.security_en, DEFAULT_LEGAL_CONTENT.security_en));
+      setTermsAr(
+        getLegalValue(
+          userData.legal?.terms_ar,
+          DEFAULT_LEGAL_CONTENT.terms_ar,
+          DEFAULT_LEGAL_CONTENT.terms_en,
+        ),
+      );
+      setTermsEn(
+        getLegalValue(userData.legal?.terms_en, DEFAULT_LEGAL_CONTENT.terms_en),
+      );
+      setPrivacyAr(
+        getLegalValue(
+          userData.legal?.privacy_ar,
+          DEFAULT_LEGAL_CONTENT.privacy_ar,
+          DEFAULT_LEGAL_CONTENT.privacy_en,
+        ),
+      );
+      setPrivacyEn(
+        getLegalValue(
+          userData.legal?.privacy_en,
+          DEFAULT_LEGAL_CONTENT.privacy_en,
+        ),
+      );
+      setSecurityAr(
+        getLegalValue(
+          userData.legal?.security_ar,
+          DEFAULT_LEGAL_CONTENT.security_ar,
+          DEFAULT_LEGAL_CONTENT.security_en,
+        ),
+      );
+      setSecurityEn(
+        getLegalValue(
+          userData.legal?.security_en,
+          DEFAULT_LEGAL_CONTENT.security_en,
+        ),
+      );
       setFaqs(userData.faqs?.length > 0 ? userData.faqs : DEFAULT_FAQS);
       if (Array.isArray(userData.brandFailures)) {
         setBrandFailures(userData.brandFailures);
@@ -1575,20 +1704,20 @@ export default function AdminDashboardPage() {
         Array.isArray(pData)
           ? pData
           : [
-            {
-              id: 1,
-              name: "الباقة الفضية",
-              price: 300,
-              features: "دخول لكافة الأدوات\nدعم فني\nتحديثات دورية",
-            },
-            {
-              id: 2,
-              name: "الباقة الذهبية",
-              price: 600,
-              features:
-                "دخول لكافة الأدوات\nدعم فني VIP\nتحديثات دورية\nجلسة استشارية",
-            },
-          ],
+              {
+                id: 1,
+                name: "الباقة الفضية",
+                price: 300,
+                features: "دخول لكافة الأدوات\nدعم فني\nتحديثات دورية",
+              },
+              {
+                id: 2,
+                name: "الباقة الذهبية",
+                price: 600,
+                features:
+                  "دخول لكافة الأدوات\nدعم فني VIP\nتحديثات دورية\nجلسة استشارية",
+              },
+            ],
       );
 
       // Load free trial settings
@@ -1605,7 +1734,7 @@ export default function AdminDashboardPage() {
       setTrialFeaturesEn(userData.freeTrialSettings?.features_en || [""]);
       setAllowedTrialTools(
         userData.freeTrialSettings?.allowedTools ||
-        CHECKLIST_ITEMS.map((s) => s.id),
+          CHECKLIST_ITEMS.map((s) => s.id),
       );
       setAutoIncludeNewTools(
         userData.freeTrialSettings?.autoIncludeNewTools ?? true,
@@ -1706,10 +1835,6 @@ export default function AdminDashboardPage() {
     }).length;
   }, [users, freeTrialDays]);
 
-
-
-
-
   const handleSyncStripePlans = async () => {
     if (!stripeSecretKey) {
       return toast(
@@ -1765,8 +1890,14 @@ export default function AdminDashboardPage() {
         updatedAt: serverTimestamp(),
       };
 
-      const currentBrandName = (brandNameForm || userData?.brandName || "").trim();
-      const currentBrandUrl = (brandUrlForm || userData?.brandUrl || "").trim().toLowerCase();
+      const currentBrandName = (
+        brandNameForm ||
+        userData?.brandName ||
+        ""
+      ).trim();
+      const currentBrandUrl = (brandUrlForm || userData?.brandUrl || "")
+        .trim()
+        .toLowerCase();
 
       // Parallel batch write using Promise.all for instant sub-second response
       const promises = [
@@ -1776,11 +1907,23 @@ export default function AdminDashboardPage() {
       ];
 
       if (currentBrandName && currentBrandName !== uid) {
-        promises.push(setDoc(doc(db, "brands", currentBrandName), updatePayload, { merge: true }));
+        promises.push(
+          setDoc(doc(db, "brands", currentBrandName), updatePayload, {
+            merge: true,
+          }),
+        );
       }
 
-      if (currentBrandUrl && currentBrandUrl !== uid && currentBrandUrl !== currentBrandName) {
-        promises.push(setDoc(doc(db, "brands", currentBrandUrl), updatePayload, { merge: true }));
+      if (
+        currentBrandUrl &&
+        currentBrandUrl !== uid &&
+        currentBrandUrl !== currentBrandName
+      ) {
+        promises.push(
+          setDoc(doc(db, "brands", currentBrandUrl), updatePayload, {
+            merge: true,
+          }),
+        );
       }
 
       await Promise.all(promises);
@@ -1819,7 +1962,9 @@ export default function AdminDashboardPage() {
     }
 
     // React onClick passes a synthetic event. Ignore it if it's not an array.
-    const actualOverridePlans = Array.isArray(overridePlansOrEvent) ? overridePlansOrEvent : null;
+    const actualOverridePlans = Array.isArray(overridePlansOrEvent)
+      ? overridePlansOrEvent
+      : null;
 
     setIsUpdatingProfile(true);
     try {
@@ -1852,9 +1997,24 @@ export default function AdminDashboardPage() {
         whatsappKey: cleanWhatsappKey,
         rawWhatsappNumber: cleanRawWhatsapp,
         photoURL: photoURL || "",
-        brandLogo: photoURL || userData.brandLogo || userData.logoUrl || userData.photoURL || "",
-        logoUrl: photoURL || userData.logoUrl || userData.brandLogo || userData.photoURL || "",
-        logo: photoURL || userData.logo || userData.logoUrl || userData.photoURL || "",
+        brandLogo:
+          photoURL ||
+          userData.brandLogo ||
+          userData.logoUrl ||
+          userData.photoURL ||
+          "",
+        logoUrl:
+          photoURL ||
+          userData.logoUrl ||
+          userData.brandLogo ||
+          userData.photoURL ||
+          "",
+        logo:
+          photoURL ||
+          userData.logo ||
+          userData.logoUrl ||
+          userData.photoURL ||
+          "",
         themeConfig: {
           preset: activeThemePreset,
           accent: accentColor,
@@ -1882,7 +2042,9 @@ export default function AdminDashboardPage() {
           features_ar: trialFeaturesAr,
           features_en: trialFeaturesEn,
           // Read from ref to avoid async state closure lag, and filter out invalid/duplicate items
-          allowedTools: Array.from(new Set(allowedTrialToolsRef.current || [])).filter(id => CHECKLIST_ITEMS.some(item => item.id === id)),
+          allowedTools: Array.from(
+            new Set(allowedTrialToolsRef.current || []),
+          ).filter((id) => CHECKLIST_ITEMS.some((item) => item.id === id)),
           autoIncludeNewTools: !!autoIncludeNewTools,
         },
         paymentMethods: {
@@ -1890,7 +2052,8 @@ export default function AdminDashboardPage() {
           stripe: {
             enabled: paymentMethods.stripe?.enabled ?? false,
             publishableKey: paymentMethods.stripe?.publishableKey || "",
-            secretKey: paymentMethods.stripe?.secretKey || stripeSecretKey || "",
+            secretKey:
+              paymentMethods.stripe?.secretKey || stripeSecretKey || "",
             paymentLink: paymentMethods.stripe?.paymentLink || "",
             paymentLinkAnnual: paymentMethods.stripe?.paymentLinkAnnual || "",
           },
@@ -1908,9 +2071,11 @@ export default function AdminDashboardPage() {
         },
         faqs: faqs,
         brandFailures: brandFailures || [],
-        showFailuresSection: showFailuresSection !== undefined ? showFailuresSection : true,
+        showFailuresSection:
+          showFailuresSection !== undefined ? showFailuresSection : true,
         videoConfig: videoConfig || null,
-        showVideoSection: showVideoSection !== undefined ? showVideoSection : true,
+        showVideoSection:
+          showVideoSection !== undefined ? showVideoSection : true,
         heroSection: heroSection || null,
         nicheRadar: nicheRadar || null,
         identityGenerator: identityGenerator || null,
@@ -1931,7 +2096,8 @@ export default function AdminDashboardPage() {
       const publicPaymentMethods = {
         stripe: {
           enabled: paymentMethods.stripe?.enabled ?? false,
-          publishableKey: paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
+          publishableKey:
+            paymentMethods.stripe?.publishableKey || stripePublishableKey || "",
           paymentLink: paymentMethods.stripe?.paymentLink || "",
           paymentLinkAnnual: paymentMethods.stripe?.paymentLinkAnnual || "",
         },
@@ -1983,9 +2149,21 @@ export default function AdminDashboardPage() {
             finalCtaSection: updateData.finalCtaSection,
             showWhatsappLoginBtn: updateData.showWhatsappLoginBtn,
             showWhatsappBtn: updateData.showWhatsappBtn,
-            logoUrl: updateData.photoURL || updateData.brandLogo || updateData.logoUrl || "",
-            brandLogo: updateData.photoURL || updateData.brandLogo || updateData.logoUrl || "",
-            logo: updateData.photoURL || updateData.brandLogo || updateData.logoUrl || "",
+            logoUrl:
+              updateData.photoURL ||
+              updateData.brandLogo ||
+              updateData.logoUrl ||
+              "",
+            brandLogo:
+              updateData.photoURL ||
+              updateData.brandLogo ||
+              updateData.logoUrl ||
+              "",
+            logo:
+              updateData.photoURL ||
+              updateData.brandLogo ||
+              updateData.logoUrl ||
+              "",
             photoURL: updateData.photoURL || "",
             updatedAt: serverTimestamp(),
           },
@@ -2023,7 +2201,7 @@ export default function AdminDashboardPage() {
             defaultLanguage: updateData.defaultLanguage,
             updatedAt: serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         ),
 
         // 4. Update Global Settings for language
@@ -2033,7 +2211,7 @@ export default function AdminDashboardPage() {
             systemLanguage: updateData.defaultLanguage,
             updatedAt: serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         ),
       ]);
 
@@ -2044,9 +2222,15 @@ export default function AdminDashboardPage() {
           i18n.changeLanguage(updateData.defaultLanguage);
         }
         if (typeof window !== "undefined") {
-          localStorage.setItem("user_preferred_language", updateData.defaultLanguage);
+          localStorage.setItem(
+            "user_preferred_language",
+            updateData.defaultLanguage,
+          );
           localStorage.setItem("app_language", updateData.defaultLanguage);
-          localStorage.setItem("last_synced_brand_language", updateData.defaultLanguage);
+          localStorage.setItem(
+            "last_synced_brand_language",
+            updateData.defaultLanguage,
+          );
           sessionStorage.removeItem("landing_user_selected_lang");
           Object.keys(sessionStorage).forEach((k) => {
             if (k.startsWith("landing_brand_")) sessionStorage.removeItem(k);
@@ -2064,7 +2248,8 @@ export default function AdminDashboardPage() {
         root.style.setProperty("--font-family", `'${fontFamily}', sans-serif`);
         root.style.setProperty("--font", `'${fontFamily}', sans-serif`);
         root.style.fontFamily = `'${fontFamily}', sans-serif`;
-        if (document.body) document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
+        if (document.body)
+          document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
       }
       if (bgColor) root.style.setProperty("--bg", bgColor);
       if (sidebarColor) {
@@ -2082,7 +2267,7 @@ export default function AdminDashboardPage() {
         state.language === "en"
           ? "Brand Settings updated successfully!"
           : "تم تحديث إعدادات البراند بنجاح!",
-        "success"
+        "success",
       );
     } catch (err) {
       console.error(err);
@@ -2163,9 +2348,15 @@ export default function AdminDashboardPage() {
 
     try {
       // Find the selected plan from the brand's plans to get credits and name
-      const approvedPlan = plans.find(p => String(p.id) === String(selectedPlanForPayment));
-      const planCredits = approvedPlan ? (Number(approvedPlan.creditsPerMonth) || 20) : 20;
-      const planName = approvedPlan ? (approvedPlan.name_ar || approvedPlan.name) : "Unknown Plan";
+      const approvedPlan = plans.find(
+        (p) => String(p.id) === String(selectedPlanForPayment),
+      );
+      const planCredits = approvedPlan
+        ? Number(approvedPlan.creditsPerMonth) || 20
+        : 20;
+      const planName = approvedPlan
+        ? approvedPlan.name_ar || approvedPlan.name
+        : "Unknown Plan";
 
       // 1. Update Payment status
       await updateDoc(doc(db, "payments", paymentToApprove.id), {
@@ -2200,10 +2391,7 @@ export default function AdminDashboardPage() {
         { merge: true },
       );
 
-      toast(
-        "تم الموافقة على الدفع وتحديث اشتراك المستخدم بنجاح!",
-        "success",
-      );
+      toast("تم الموافقة على الدفع وتحديث اشتراك المستخدم بنجاح!", "success");
       setPaymentToApprove(null);
       await loadPayments();
       await loadUsers();
@@ -2243,15 +2431,17 @@ export default function AdminDashboardPage() {
               planName: "Free Plan",
               currentPeriodStart: new Date().toISOString(),
               currentPeriodEnd: "2099-12-31T23:59:59Z", // Lifetime free
-            }
+            },
           },
-          { merge: true }
+          { merge: true },
         );
       }
 
       toast(
-        state.language === "en" ? "Payment request rejected successfully!" : "تم رفض طلب الدفع بنجاح",
-        "success"
+        state.language === "en"
+          ? "Payment request rejected successfully!"
+          : "تم رفض طلب الدفع بنجاح",
+        "success",
       );
       setPaymentToReject(null);
       setRejectionReason("");
@@ -2299,7 +2489,14 @@ export default function AdminDashboardPage() {
       );
       const uid = cred.user.uid;
 
-      let finalSubType = (userPlanId === "free" || userPlanId === "trial" || userPlanId === "free_trial") ? "trial" : (subType === "trial" ? "monthly" : subType);
+      let finalSubType =
+        userPlanId === "free" ||
+        userPlanId === "trial" ||
+        userPlanId === "free_trial"
+          ? "trial"
+          : subType === "trial"
+            ? "monthly"
+            : subType;
       let expiryDate = null;
       if (finalSubType === "monthly") {
         expiryDate = new Date();
@@ -2313,9 +2510,15 @@ export default function AdminDashboardPage() {
       }
 
       // Determine plan info
-      const selectedPlan = plans.find(p => String(p.id) === String(userPlanId));
-      const planNameVal = selectedPlan ? (selectedPlan.name_ar || selectedPlan.name) : "Free";
-      const planCreditsVal = selectedPlan ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20) : (freeTrialCredits || 20);
+      const selectedPlan = plans.find(
+        (p) => String(p.id) === String(userPlanId),
+      );
+      const planNameVal = selectedPlan
+        ? selectedPlan.name_ar || selectedPlan.name
+        : "Free";
+      const planCreditsVal = selectedPlan
+        ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20)
+        : freeTrialCredits || 20;
       const planAllowedToolsVal = selectedPlan?.allowedTools || null;
 
       const newUserDoc = {
@@ -2330,7 +2533,7 @@ export default function AdminDashboardPage() {
         totalCredits: planCreditsVal,
         createdAt: serverTimestamp(),
         createdBy: userData?.uid || "",
-        adminId: userData?.uid || "",  // explicit adminId for payment lookup
+        adminId: userData?.uid || "", // explicit adminId for payment lookup
         subscription: {
           type: finalSubType,
           planId: userPlanId,
@@ -2375,7 +2578,7 @@ export default function AdminDashboardPage() {
       if (secondaryApp) {
         try {
           await deleteApp(secondaryApp);
-        } catch { }
+        } catch {}
       }
       setCreating(false);
     }
@@ -2408,29 +2611,33 @@ export default function AdminDashboardPage() {
     if (!renewPlanUser) return;
     setIsRenewing(true);
     try {
-      const selectedPlan = plans.find(p => String(p.id) === String(renewPlanId));
-      const planNameVal = selectedPlan ? (selectedPlan.name_ar || selectedPlan.name) : "Free";
-      const planCreditsVal = selectedPlan ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20) : (freeTrialCredits || 20);
-
-      await updateDoc(
-        doc(db, "users", renewPlanUser.id),
-        {
-          planId: renewPlanId,
-          planName: planNameVal,
-          credits: planCreditsVal,
-          totalCredits: planCreditsVal,
-          "subscription.planId": renewPlanId,
-          "subscription.planName": planNameVal,
-          "subscription.expiryDate": (() => {
-            const d = new Date();
-            if (renewPlanId === "free") d.setDate(d.getDate() + Number(freeTrialDays || 7));
-            else d.setMonth(d.getMonth() + 1);
-            return d;
-          })(),
-          "subscription.status": "active",
-          "subscription.type": renewPlanId === "free" ? "trial" : "monthly",
-        }
+      const selectedPlan = plans.find(
+        (p) => String(p.id) === String(renewPlanId),
       );
+      const planNameVal = selectedPlan
+        ? selectedPlan.name_ar || selectedPlan.name
+        : "Free";
+      const planCreditsVal = selectedPlan
+        ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20)
+        : freeTrialCredits || 20;
+
+      await updateDoc(doc(db, "users", renewPlanUser.id), {
+        planId: renewPlanId,
+        planName: planNameVal,
+        credits: planCreditsVal,
+        totalCredits: planCreditsVal,
+        "subscription.planId": renewPlanId,
+        "subscription.planName": planNameVal,
+        "subscription.expiryDate": (() => {
+          const d = new Date();
+          if (renewPlanId === "free")
+            d.setDate(d.getDate() + Number(freeTrialDays || 7));
+          else d.setMonth(d.getMonth() + 1);
+          return d;
+        })(),
+        "subscription.status": "active",
+        "subscription.type": renewPlanId === "free" ? "trial" : "monthly",
+      });
 
       toast(
         state.language === "en"
@@ -2443,7 +2650,9 @@ export default function AdminDashboardPage() {
     } catch (err) {
       console.error("Renew plan error:", err);
       toast(
-        state.language === "en" ? "Failed to renew plan" : "\u0641\u0634\u0644 \u0641\u064a \u062a\u062c\u062f\u064a\u062f \u0627\u0644\u062e\u0637\u0629",
+        state.language === "en"
+          ? "Failed to renew plan"
+          : "\u0641\u0634\u0644 \u0641\u064a \u062a\u062c\u062f\u064a\u062f \u0627\u0644\u062e\u0637\u0629",
         "error",
       );
     } finally {
@@ -2465,7 +2674,14 @@ export default function AdminDashboardPage() {
         photoURL = await getDownloadURL(imgRef);
       }
 
-      let finalSubType = (userPlanId === "free" || userPlanId === "trial" || userPlanId === "free_trial") ? "trial" : (subType === "trial" ? "monthly" : subType);
+      let finalSubType =
+        userPlanId === "free" ||
+        userPlanId === "trial" ||
+        userPlanId === "free_trial"
+          ? "trial"
+          : subType === "trial"
+            ? "monthly"
+            : subType;
       let expiryDate = editingUser.subscription?.expiryDate?.toDate() || null;
 
       // Reset expiry if plan changed to free trial, otherwise obey subType
@@ -2488,9 +2704,15 @@ export default function AdminDashboardPage() {
       }
 
       // Determine plan info
-      const selectedPlan = plans.find(p => String(p.id) === String(userPlanId));
-      const planNameVal = selectedPlan ? (selectedPlan.name_ar || selectedPlan.name) : "Free";
-      const planCreditsVal = selectedPlan ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20) : (freeTrialCredits || 20);
+      const selectedPlan = plans.find(
+        (p) => String(p.id) === String(userPlanId),
+      );
+      const planNameVal = selectedPlan
+        ? selectedPlan.name_ar || selectedPlan.name
+        : "Free";
+      const planCreditsVal = selectedPlan
+        ? Number(selectedPlan.creditsPerMonth || freeTrialCredits || 20)
+        : freeTrialCredits || 20;
       const planAllowedToolsVal = selectedPlan?.allowedTools || null;
 
       // Only reset current credits if the plan changed
@@ -2526,11 +2748,9 @@ export default function AdminDashboardPage() {
         updateData.credits = planCreditsVal;
       }
 
-      await setDoc(
-        doc(db, "users", editingUser.id),
-        updateData,
-        { merge: true },
-      );
+      await setDoc(doc(db, "users", editingUser.id), updateData, {
+        merge: true,
+      });
       toast("تم التحديث بنجاح", "success");
       cancelEdit();
       await loadUsers();
@@ -2552,10 +2772,10 @@ export default function AdminDashboardPage() {
     setIsDeletingUser(true);
     try {
       const IS_DEV = import.meta.env.DEV;
-      const FIREBASE_PROJECT = 'event-upklick';
-      const FIREBASE_REGION = 'us-central1';
+      const FIREBASE_PROJECT = "event-upklick";
+      const FIREBASE_REGION = "us-central1";
       const CF_BASE = IS_DEV
-        ? '/api/stripe'
+        ? "/api/stripe"
         : `https://${FIREBASE_REGION}-${FIREBASE_PROJECT}.cloudfunctions.net`;
       const functionUrl = `${CF_BASE}/deleteUserAdmin`;
 
@@ -2564,7 +2784,7 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           targetUserId: userToDelete.id,
-          adminId: userData.uid
+          adminId: userData.uid,
         }),
       });
 
@@ -2607,12 +2827,12 @@ export default function AdminDashboardPage() {
       state.language === "en"
         ? ["Name", "Email", "Role", "Subscription Type", "Created Date"]
         : [
-          "الاسم",
-          "البريد الإلكتروني",
-          "الدور",
-          "نوع الاشتراك",
-          "تاريخ الإنشاء",
-        ];
+            "الاسم",
+            "البريد الإلكتروني",
+            "الدور",
+            "نوع الاشتراك",
+            "تاريخ الإنشاء",
+          ];
 
     const rows = filteredUsers.map((u) => [
       `"${u.ownerName || u.brandName || ""}"`,
@@ -2688,12 +2908,21 @@ export default function AdminDashboardPage() {
       if (userPlan !== planFilter) return false;
     }
     if (timeFilter !== "all") {
-      const rawDate = u.createdAt || u.registrationDate || u.timestamp || u.created_at;
+      const rawDate =
+        u.createdAt || u.registrationDate || u.timestamp || u.created_at;
       if (!rawDate) return false;
       let userDate = null;
-      if (typeof rawDate === "object" && rawDate !== null && typeof rawDate.seconds === "number") {
+      if (
+        typeof rawDate === "object" &&
+        rawDate !== null &&
+        typeof rawDate.seconds === "number"
+      ) {
         userDate = new Date(rawDate.seconds * 1000);
-      } else if (typeof rawDate === "object" && rawDate !== null && typeof rawDate.toDate === "function") {
+      } else if (
+        typeof rawDate === "object" &&
+        rawDate !== null &&
+        typeof rawDate.toDate === "function"
+      ) {
         userDate = rawDate.toDate();
       } else {
         userDate = new Date(rawDate);
@@ -2701,20 +2930,69 @@ export default function AdminDashboardPage() {
       if (!userDate || isNaN(userDate.getTime())) return false;
 
       const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0,
+        0,
+        0,
+        0,
+      );
+      const endOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
 
       if (timeFilter === "today") {
         if (userDate < startOfToday || userDate > endOfToday) return false;
       } else if (timeFilter === "yesterday") {
-        const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
-        const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
-        if (userDate < startOfYesterday || userDate > endOfYesterday) return false;
+        const startOfYesterday = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 1,
+          0,
+          0,
+          0,
+          0,
+        );
+        const endOfYesterday = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 1,
+          23,
+          59,
+          59,
+          999,
+        );
+        if (userDate < startOfYesterday || userDate > endOfYesterday)
+          return false;
       } else if (timeFilter === "last7days") {
-        const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7, 0, 0, 0, 0);
+        const sevenDaysAgo = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 7,
+          0,
+          0,
+          0,
+          0,
+        );
         if (userDate < sevenDaysAgo || userDate > now) return false;
       } else if (timeFilter === "thisMonth") {
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        const startOfMonth = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          1,
+          0,
+          0,
+          0,
+          0,
+        );
         if (userDate < startOfMonth || userDate > now) return false;
       } else if (timeFilter === "custom") {
         if (startDateFilter) {
@@ -2760,11 +3038,14 @@ export default function AdminDashboardPage() {
 
   const formatDate = (ts) => {
     if (!ts?.seconds) return "—";
-    return new Date(ts.seconds * 1000).toLocaleDateString(state.language === "en" ? "en-US" : "ar-EG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return new Date(ts.seconds * 1000).toLocaleDateString(
+      state.language === "en" ? "en-US" : "ar-EG",
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      },
+    );
   };
 
   if (!userData) {
@@ -2846,9 +3127,9 @@ export default function AdminDashboardPage() {
               onClick={
                 isCollapsed && !isMobile
                   ? () => {
-                    setIsCollapsed(false);
-                    localStorage.setItem("admin-sidebar-collapsed", "false");
-                  }
+                      setIsCollapsed(false);
+                      localStorage.setItem("admin-sidebar-collapsed", "false");
+                    }
                   : undefined
               }
               style={{
@@ -2881,11 +3162,11 @@ export default function AdminDashboardPage() {
                         style={
                           userData?.photoURL
                             ? {
-                              background: `url("${userData.photoURL}") center/contain no-repeat`,
-                              border: "none",
-                              backgroundSize: "contain",
-                              flexShrink: 0,
-                            }
+                                background: `url("${userData.photoURL}") center/contain no-repeat`,
+                                border: "none",
+                                backgroundSize: "contain",
+                                flexShrink: 0,
+                              }
                             : { flexShrink: 0 }
                         }
                       >
@@ -3049,7 +3330,9 @@ export default function AdminDashboardPage() {
               },
             ].map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.id || (item.id === "subscriptions" && activeTab === "trial_settings");
+              const isActive =
+                activeTab === item.id ||
+                (item.id === "subscriptions" && activeTab === "trial_settings");
               const label = t(`admin_sidebar.${item.translationKey}`);
 
               return (
@@ -3104,7 +3387,9 @@ export default function AdminDashboardPage() {
               gap: "8px",
             }}
           >
-            {(userData?.email === "admin@brand.com" || userData?.role === "superadmin" || userData?.role === "admin") && (
+            {(userData?.email === "admin@brand.com" ||
+              userData?.role === "superadmin" ||
+              userData?.role === "admin") && (
               <motion.button
                 className="btn btn-sm ad-footer-btn"
                 onClick={() => navigate("/dashboard")}
@@ -3114,7 +3399,9 @@ export default function AdminDashboardPage() {
                   isCollapsed && !isMobile
                     ? state.language === "en"
                       ? "User Tools"
-                      : (state.language === "ar-GCC" ? "أدوات المشتركين" : "أدوات المستخدم")
+                      : state.language === "ar-GCC"
+                        ? "أدوات المشتركين"
+                        : "أدوات المستخدم"
                     : undefined
                 }
                 style={{
@@ -3130,7 +3417,11 @@ export default function AdminDashboardPage() {
                 <Package size={16} />
                 {(!isCollapsed || isMobile) && (
                   <span>
-                    {state.language === "en" ? "User Tools" : (state.language === "ar-GCC" ? "أدوات المشتركين" : "أدوات المستخدم")}
+                    {state.language === "en"
+                      ? "User Tools"
+                      : state.language === "ar-GCC"
+                        ? "أدوات المشتركين"
+                        : "أدوات المستخدم"}
                   </span>
                 )}
               </motion.button>
@@ -3172,7 +3463,10 @@ export default function AdminDashboardPage() {
         {/* Main Content */}
         <div className="ad-main">
           {/* Topbar */}
-          <div className="ad-topbar" style={{ zIndex: 50, position: "relative" }}>
+          <div
+            className="ad-topbar"
+            style={{ zIndex: 50, position: "relative" }}
+          >
             <div
               className="ad-topbar-left"
               style={{ display: "flex", alignItems: "center", gap: "12px" }}
@@ -3200,10 +3494,14 @@ export default function AdminDashboardPage() {
                     isCollapsed
                       ? state.language === "en"
                         ? "Expand Sidebar"
-                        : (state.language === "ar-GCC" ? "توسيع القائمة" : "توسيع القائمة الجانبية")
+                        : state.language === "ar-GCC"
+                          ? "توسيع القائمة"
+                          : "توسيع القائمة الجانبية"
                       : state.language === "en"
                         ? "Collapse Sidebar"
-                        : (state.language === "ar-GCC" ? "تصغير القائمة" : "طي القائمة الجانبية")
+                        : state.language === "ar-GCC"
+                          ? "تصغير القائمة"
+                          : "طي القائمة الجانبية"
                   }
                   style={{
                     background: "rgba(255, 255, 255, 0.05)",
@@ -3231,7 +3529,9 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "User Management"
-                        : (state.language === "ar-GCC" ? "إدارة المشتركين والعملاء" : "إدارة المستخدمين")}
+                        : state.language === "ar-GCC"
+                          ? "إدارة المشتركين والعملاء"
+                          : "إدارة المستخدمين"}
                     </span>
                   </>
                 ) : activeTab === "sales" ? (
@@ -3240,16 +3540,21 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Sales Management"
-                        : (state.language === "ar-GCC" ? "تقارير ومتابعة المبيعات" : "إدارة المبيعات")}
+                        : state.language === "ar-GCC"
+                          ? "تقارير ومتابعة المبيعات"
+                          : "إدارة المبيعات"}
                     </span>
                   </>
-                ) : (activeTab === "subscriptions" || activeTab === "trial_settings") ? (
+                ) : activeTab === "subscriptions" ||
+                  activeTab === "trial_settings" ? (
                   <>
                     <Tag size={20} style={{ color: "var(--accent)" }} />
                     <span>
                       {state.language === "en"
                         ? "Plans & Pricing"
-                        : (state.language === "ar-GCC" ? "الباقات والاشتراكات" : "الباقات والتسعير")}
+                        : state.language === "ar-GCC"
+                          ? "الباقات والاشتراكات"
+                          : "الباقات والتسعير"}
                     </span>
                   </>
                 ) : activeTab === "payment_methods" ? (
@@ -3258,7 +3563,9 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Transactions & Payments"
-                        : (state.language === "ar-GCC" ? "المدفوعات والعمليات المالية" : "إدارة المعاملات والمدفوعات")}
+                        : state.language === "ar-GCC"
+                          ? "المدفوعات والعمليات المالية"
+                          : "إدارة المنتجات والمدفوعات"}
                     </span>
                   </>
                 ) : activeTab === "tutorial" ? (
@@ -3267,7 +3574,9 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Tutorial Video"
-                        : (state.language === "ar-GCC" ? "فيديوهات الشرح والتدريب" : "فيديو الشرح")}
+                        : state.language === "ar-GCC"
+                          ? "فيديوهات الشرح والتدريب"
+                          : "فيديو الشرح"}
                     </span>
                   </>
                 ) : activeTab === "ai_settings" ? (
@@ -3285,16 +3594,23 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Marketing & Tracking"
-                        : (state.language === "ar-GCC" ? "التسويق وتتبع الحملات" : "التسويق والتتبع")}
+                        : state.language === "ar-GCC"
+                          ? "التسويق وتتبع الحملات"
+                          : "التسويق والتتبع"}
                     </span>
                   </>
                 ) : activeTab === "templates" ? (
                   <>
-                    <LayoutTemplate size={20} style={{ color: "var(--accent)" }} />
+                    <LayoutTemplate
+                      size={20}
+                      style={{ color: "var(--accent)" }}
+                    />
                     <span>
                       {state.language === "en"
                         ? "Ready-Made Templates"
-                        : (state.language === "ar-GCC" ? "القوالب الجاهزة للعمل" : "القوالب الجاهزة")}
+                        : state.language === "ar-GCC"
+                          ? "القوالب الجاهزة للعمل"
+                          : "القوالب الجاهزة"}
                     </span>
                   </>
                 ) : activeTab === "library" ? (
@@ -3303,7 +3619,9 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Product Library"
-                        : (state.language === "ar-GCC" ? "مكتبة المنتجات والملفات" : "مكتبة المنتجات")}
+                        : state.language === "ar-GCC"
+                          ? "مكتبة المنتجات والملفات"
+                          : "مكتبة المنتجات"}
                     </span>
                   </>
                 ) : (
@@ -3312,7 +3630,9 @@ export default function AdminDashboardPage() {
                     <span>
                       {state.language === "en"
                         ? "Brand Settings"
-                        : (state.language === "ar-GCC" ? "إعدادات وهوية البراند" : "إعدادات البراند")}
+                        : state.language === "ar-GCC"
+                          ? "إعدادات وهوية البراند"
+                          : "إعدادات البراند"}
                     </span>
                   </>
                 )}
@@ -3326,7 +3646,9 @@ export default function AdminDashboardPage() {
               <div style={{ position: "relative" }}>
                 <button
                   className="btn btn-sm"
-                  onClick={() => setIsSupportDropdownOpen(!isSupportDropdownOpen)}
+                  onClick={() =>
+                    setIsSupportDropdownOpen(!isSupportDropdownOpen)
+                  }
                   style={{
                     background: "var(--bg2)",
                     border: "1px solid var(--line)",
@@ -3337,7 +3659,11 @@ export default function AdminDashboardPage() {
                     borderRadius: "10px",
                     position: "relative",
                   }}
-                  title={state.language === "en" ? "Support Notifications" : "إشعارات الدعم"}
+                  title={
+                    state.language === "en"
+                      ? "Support Notifications"
+                      : "إشعارات الدعم"
+                  }
                 >
                   <Bell size={18} style={{ color: "var(--text)" }} />
                   {unreadSupportMsgs.length > 0 && (
@@ -3356,7 +3682,8 @@ export default function AdminDashboardPage() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                        animation:
+                          "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
                       }}
                     >
                       {unreadSupportMsgs.length}
@@ -3385,21 +3712,50 @@ export default function AdminDashboardPage() {
                       }}
                       dir={state.language === "en" ? "ltr" : "rtl"}
                     >
-                      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: "1px solid var(--line)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
                         <span style={{ fontWeight: "bold", fontSize: "14px" }}>
-                          {state.language === "en" ? "Support Notifications" : "إشعارات الدعم"}
+                          {state.language === "en"
+                            ? "Support Notifications"
+                            : "إشعارات الدعم"}
                         </span>
                         {unreadSupportMsgs.length > 0 && (
-                          <span style={{ fontSize: "12px", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "2px 8px", borderRadius: "8px", fontWeight: "bold" }}>
-                            {unreadSupportMsgs.length} {state.language === "en" ? "New" : "جديد"}
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              background: "rgba(239, 68, 68, 0.1)",
+                              color: "#ef4444",
+                              padding: "2px 8px",
+                              borderRadius: "8px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {unreadSupportMsgs.length}{" "}
+                            {state.language === "en" ? "New" : "جديد"}
                           </span>
                         )}
                       </div>
 
                       <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                         {unreadSupportMsgs.length === 0 ? (
-                          <div style={{ padding: "30px", textAlign: "center", color: "var(--text2)", fontSize: "13px" }}>
-                            {state.language === "en" ? "No new support messages." : "لا توجد رسائل دعم جديدة."}
+                          <div
+                            style={{
+                              padding: "30px",
+                              textAlign: "center",
+                              color: "var(--text2)",
+                              fontSize: "13px",
+                            }}
+                          >
+                            {state.language === "en"
+                              ? "No new support messages."
+                              : "لا توجد رسائل دعم جديدة."}
                           </div>
                         ) : (
                           unreadSupportMsgs.slice(0, 5).map((msg, i) => (
@@ -3418,20 +3774,69 @@ export default function AdminDashboardPage() {
                                 handleSelectTab("support");
                               }}
                             >
-                              <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(139, 92, 246, 0.15)", color: "#8b5cf6", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "14px", flexShrink: 0 }}>
+                              <div
+                                style={{
+                                  width: "36px",
+                                  height: "36px",
+                                  borderRadius: "10px",
+                                  background: "rgba(139, 92, 246, 0.15)",
+                                  color: "#8b5cf6",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontWeight: "bold",
+                                  fontSize: "14px",
+                                  flexShrink: 0,
+                                }}
+                              >
                                 {msg.authorName?.charAt(0)?.toUpperCase()}
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
-                                  <span style={{ fontWeight: "bold", fontSize: "13px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--text)" }}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    marginBottom: "2px",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontWeight: "bold",
+                                      fontSize: "13px",
+                                      whiteSpace: "nowrap",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      color: "var(--text)",
+                                    }}
+                                  >
                                     {msg.authorName}
                                   </span>
-                                  <span style={{ fontSize: "10px", color: "var(--text2)" }}>
-                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  <span
+                                    style={{
+                                      fontSize: "10px",
+                                      color: "var(--text2)",
+                                    }}
+                                  >
+                                    {new Date(msg.createdAt).toLocaleTimeString(
+                                      [],
+                                      { hour: "2-digit", minute: "2-digit" },
+                                    )}
                                   </span>
                                 </div>
-                                <div style={{ fontSize: "12px", color: "var(--text2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                  {msg.text || (msg.files?.length ? "Attachment 📎" : "Voice Message 🎤")}
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "var(--text2)",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {msg.text ||
+                                    (msg.files?.length
+                                      ? "Attachment 📎"
+                                      : "Voice Message 🎤")}
                                 </div>
                               </div>
                             </div>
@@ -3458,7 +3863,9 @@ export default function AdminDashboardPage() {
                             boxSizing: "border-box",
                           }}
                         >
-                          {state.language === "en" ? "View All Support Messages" : "الانتقال إلى الدعم"}
+                          {state.language === "en"
+                            ? "View All Support Messages"
+                            : "الانتقال إلى الدعم"}
                         </button>
                       </div>
                     </motion.div>
@@ -3481,7 +3888,9 @@ export default function AdminDashboardPage() {
                     fontWeight: 600,
                   }}
                 >
-                  <span style={{ fontSize: '14px', lineHeight: 1 }}>{currentLangObj.flag}</span>
+                  <span style={{ fontSize: "14px", lineHeight: 1 }}>
+                    {currentLangObj.flag}
+                  </span>
                   <span>{currentLangObj.label}</span>
                   <ChevronDown size={14} style={{ color: "var(--text2)" }} />
                 </button>
@@ -3494,8 +3903,8 @@ export default function AdminDashboardPage() {
                       style={{
                         position: "absolute",
                         top: "calc(100% + 10px)",
-                        left: state.language === 'en' ? 0 : 'auto',
-                        right: state.language === 'en' ? 'auto' : 0,
+                        left: state.language === "en" ? 0 : "auto",
+                        right: state.language === "en" ? "auto" : 0,
                         background: "var(--bg2)",
                         border: "1px solid var(--line)",
                         borderRadius: "12px",
@@ -3505,22 +3914,35 @@ export default function AdminDashboardPage() {
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        padding: "8px"
+                        padding: "8px",
                       }}
                     >
                       {LANGUAGES.map((item) => (
                         <button
                           key={item.code}
                           onClick={async () => {
-                            dispatch({ type: "SET_LANGUAGE", payload: item.code });
-                            if (i18n && typeof i18n.changeLanguage === 'function') {
+                            dispatch({
+                              type: "SET_LANGUAGE",
+                              payload: item.code,
+                            });
+                            if (
+                              i18n &&
+                              typeof i18n.changeLanguage === "function"
+                            ) {
                               i18n.changeLanguage(item.code);
                             }
                             setIsLangDropdownOpen(false);
                             try {
-                              await setDoc(doc(db, 'tenants', 'global'), { systemLanguage: item.code }, { merge: true });
+                              await setDoc(
+                                doc(db, "tenants", "global"),
+                                { systemLanguage: item.code },
+                                { merge: true },
+                              );
                             } catch (e) {
-                              console.error('Failed to sync global language', e);
+                              console.error(
+                                "Failed to sync global language",
+                                e,
+                              );
                             }
                           }}
                           style={{
@@ -3529,15 +3951,23 @@ export default function AdminDashboardPage() {
                             gap: "10px",
                             padding: "10px",
                             borderRadius: "8px",
-                            background: state.language === item.code ? "var(--accent)" : "transparent",
-                            color: state.language === item.code ? "#fff" : "var(--text)",
+                            background:
+                              state.language === item.code
+                                ? "var(--accent)"
+                                : "transparent",
+                            color:
+                              state.language === item.code
+                                ? "#fff"
+                                : "var(--text)",
                             border: "none",
                             cursor: "pointer",
-                            textAlign: "left"
+                            textAlign: "left",
                           }}
                         >
-                          <span style={{ fontSize: '16px' }}>{item.flag}</span>
-                          <span style={{ fontWeight: 600 }}>{item.fullLabel}</span>
+                          <span style={{ fontSize: "16px" }}>{item.flag}</span>
+                          <span style={{ fontWeight: 600 }}>
+                            {item.fullLabel}
+                          </span>
                         </button>
                       ))}
                     </motion.div>
@@ -3636,18 +4066,19 @@ export default function AdminDashboardPage() {
                             : userData?.subscription?.type === "lifetime"
                               ? t("admin_dashboard.lifetime_subscription")
                               : userData?.subscription?.expiryDate
-                                ? `${t("admin_dashboard.expires")}${userData.subscription.expiryDate?.toDate
-                                  ? userData.subscription.expiryDate
-                                    .toDate()
-                                    .toLocaleDateString(
-                                      t("admin_dashboard.en_us"),
-                                    )
-                                  : new Date(
-                                    userData.subscription.expiryDate,
-                                  ).toLocaleDateString(
-                                    t("admin_dashboard.en_us"),
-                                  )
-                                }`
+                                ? `${t("admin_dashboard.expires")}${
+                                    userData.subscription.expiryDate?.toDate
+                                      ? userData.subscription.expiryDate
+                                          .toDate()
+                                          .toLocaleDateString(
+                                            t("admin_dashboard.en_us"),
+                                          )
+                                      : new Date(
+                                          userData.subscription.expiryDate,
+                                        ).toLocaleDateString(
+                                          t("admin_dashboard.en_us"),
+                                        )
+                                  }`
                                 : t("admin_dashboard.active_account")}
                         </span>
                       </div>
@@ -3718,19 +4149,19 @@ export default function AdminDashboardPage() {
                             ? t("admin_dashboard.lifetime")
                             : userData?.subscription?.expiryDate
                               ? (() => {
-                                const exp = userData.subscription.expiryDate
-                                  ?.toDate
-                                  ? userData.subscription.expiryDate.toDate()
-                                  : new Date(
-                                    userData.subscription.expiryDate,
-                                  );
-                                const isExp = exp < new Date();
-                                return isExp
-                                  ? t("admin_dashboard.expired")
-                                  : exp.toLocaleDateString(
-                                    t("admin_dashboard.en_us"),
-                                  );
-                              })()
+                                  const exp = userData.subscription.expiryDate
+                                    ?.toDate
+                                    ? userData.subscription.expiryDate.toDate()
+                                    : new Date(
+                                        userData.subscription.expiryDate,
+                                      );
+                                  const isExp = exp < new Date();
+                                  return isExp
+                                    ? t("admin_dashboard.expired")
+                                    : exp.toLocaleDateString(
+                                        t("admin_dashboard.en_us"),
+                                      );
+                                })()
                               : "—"}
                       </div>
                       <div className="ad-stat-label">
@@ -3752,9 +4183,7 @@ export default function AdminDashboardPage() {
                       >
                         <div className="ad-card-title">
                           <Users size={20} style={{ color: "var(--accent)" }} />
-                          <span>
-                            {t("admin_dashboard.users_list")}
-                          </span>
+                          <span>{t("admin_dashboard.users_list")}</span>
                           <span className="ad-card-count">
                             {filteredUsers.length}
                           </span>
@@ -3774,9 +4203,9 @@ export default function AdminDashboardPage() {
                             <Search size={16} />
                             <input
                               type="text"
-                              placeholder={
-                                t("admin_dashboard.search_by_name_or_email")
-                              }
+                              placeholder={t(
+                                "admin_dashboard.search_by_name_or_email",
+                              )}
                               value={userSearchQuery}
                               onChange={(e) =>
                                 setUserSearchQuery(e.target.value)
@@ -3812,9 +4241,7 @@ export default function AdminDashboardPage() {
                             }}
                           >
                             <SlidersHorizontal size={16} />
-                            <span>
-                              {t("admin_dashboard.filter")}
-                            </span>
+                            <span>{t("admin_dashboard.filter")}</span>
                           </button>
 
                           {/* Export CSV */}
@@ -3831,9 +4258,7 @@ export default function AdminDashboardPage() {
                             }}
                           >
                             <Download size={16} />
-                            <span>
-                              {t("admin_dashboard.export_csv")}
-                            </span>
+                            <span>{t("admin_dashboard.export_csv")}</span>
                           </button>
 
                           {/* Add User */}
@@ -3856,9 +4281,7 @@ export default function AdminDashboardPage() {
                             }}
                           >
                             <UserPlus size={18} />
-                            <span>
-                              {t("admin_dashboard.add_new_user")}
-                            </span>
+                            <span>{t("admin_dashboard.add_new_user")}</span>
                           </button>
                         </div>
                       </div>
@@ -3885,29 +4308,24 @@ export default function AdminDashboardPage() {
                             >
                               <div className="ad-filter-item">
                                 <CustomSelect
-                                  label={
-                                    t("admin_dashboard.account_role")
-                                  }
+                                  label={t("admin_dashboard.account_role")}
                                   value={roleFilter}
                                   onChange={(val) => setRoleFilter(val)}
                                   icon={Shield}
                                   options={[
                                     {
                                       value: "all",
-                                      label:
-                                        t("admin_dashboard.all_roles"),
+                                      label: t("admin_dashboard.all_roles"),
                                       icon: Shield,
                                     },
                                     {
                                       value: "admin",
-                                      label:
-                                        t("admin_dashboard.admin"),
+                                      label: t("admin_dashboard.admin"),
                                       icon: ShieldCheck,
                                     },
                                     {
                                       value: "user",
-                                      label:
-                                        t("admin_dashboard.user"),
+                                      label: t("admin_dashboard.user"),
                                       icon: User,
                                     },
                                   ]}
@@ -3916,41 +4334,38 @@ export default function AdminDashboardPage() {
 
                               <div className="ad-filter-item">
                                 <CustomSelect
-                                  label={
-                                    t("admin_dashboard.subscription_status")
-                                  }
+                                  label={t(
+                                    "admin_dashboard.subscription_status",
+                                  )}
                                   value={subFilter}
                                   onChange={(val) => setSubFilter(val)}
                                   icon={Sparkles}
                                   options={[
                                     {
                                       value: "all",
-                                      label:
-                                        t("admin_dashboard.all_statuses"),
+                                      label: t("admin_dashboard.all_statuses"),
                                       icon: Sparkles,
                                     },
                                     {
                                       value: "active",
-                                      label:
-                                        t("admin_dashboard.active_subscription"),
+                                      label: t(
+                                        "admin_dashboard.active_subscription",
+                                      ),
                                       icon: CheckCircle2,
                                     },
                                     {
                                       value: "trial",
-                                      label:
-                                        t("admin_dashboard.free_trial"),
+                                      label: t("admin_dashboard.free_trial"),
                                       icon: Gift,
                                     },
                                     {
                                       value: "lifetime",
-                                      label:
-                                        t("admin_dashboard.lifetime_1"),
+                                      label: t("admin_dashboard.lifetime_1"),
                                       icon: Gem,
                                     },
                                     {
                                       value: "stopped",
-                                      label:
-                                        t("admin_dashboard.stopped_1"),
+                                      label: t("admin_dashboard.stopped_1"),
                                       icon: Ban,
                                     },
                                   ]}
@@ -3959,23 +4374,19 @@ export default function AdminDashboardPage() {
 
                               <div className="ad-filter-item">
                                 <CustomSelect
-                                  label={
-                                    t("admin_dashboard.plan_type")
-                                  }
+                                  label={t("admin_dashboard.plan_type")}
                                   value={planFilter}
                                   onChange={(val) => setPlanFilter(val)}
                                   icon={Layers}
                                   options={[
                                     {
                                       value: "all",
-                                      label:
-                                        t("admin_dashboard.all_plans"),
+                                      label: t("admin_dashboard.all_plans"),
                                       icon: Layers,
                                     },
                                     {
                                       value: "free",
-                                      label:
-                                        t("admin_dashboard.free_plan"),
+                                      label: t("admin_dashboard.free_plan"),
                                       icon: Gift,
                                     },
                                     ...plans.map((p) => ({
@@ -3992,47 +4403,39 @@ export default function AdminDashboardPage() {
 
                               <div className="ad-filter-item">
                                 <CustomSelect
-                                  label={
-                                    t("admin_dashboard.time_filter")
-                                  }
+                                  label={t("admin_dashboard.time_filter")}
                                   value={timeFilter}
                                   onChange={(val) => setTimeFilter(val)}
                                   icon={Calendar}
                                   options={[
                                     {
                                       value: "all",
-                                      label:
-                                        t("admin_dashboard.all_time"),
+                                      label: t("admin_dashboard.all_time"),
                                       icon: Calendar,
                                     },
                                     {
                                       value: "today",
-                                      label:
-                                        t("admin_dashboard.today"),
+                                      label: t("admin_dashboard.today"),
                                       icon: Clock,
                                     },
                                     {
                                       value: "yesterday",
-                                      label:
-                                        t("admin_dashboard.yesterday"),
+                                      label: t("admin_dashboard.yesterday"),
                                       icon: Clock,
                                     },
                                     {
                                       value: "last7days",
-                                      label:
-                                        t("admin_dashboard.last_7_days"),
+                                      label: t("admin_dashboard.last_7_days"),
                                       icon: Calendar,
                                     },
                                     {
                                       value: "thisMonth",
-                                      label:
-                                        t("admin_dashboard.this_month"),
+                                      label: t("admin_dashboard.this_month"),
                                       icon: Calendar,
                                     },
                                     {
                                       value: "custom",
-                                      label:
-                                        t("admin_dashboard.custom_range"),
+                                      label: t("admin_dashboard.custom_range"),
                                       icon: Calendar,
                                     },
                                   ]}
@@ -4085,7 +4488,8 @@ export default function AdminDashboardPage() {
                                     marginTop: "16px",
                                     padding: "16px 20px",
                                     background: "rgba(59, 130, 246, 0.06)",
-                                    border: "1px solid rgba(59, 130, 246, 0.25)",
+                                    border:
+                                      "1px solid rgba(59, 130, 246, 0.25)",
                                     borderRadius: "14px",
                                     display: "flex",
                                     flexWrap: "wrap",
@@ -4280,7 +4684,9 @@ export default function AdminDashboardPage() {
                               marginTop: 4,
                             }}
                           >
-                            {t("admin_dashboard.try_adjusting_your_search_or_filter")}
+                            {t(
+                              "admin_dashboard.try_adjusting_your_search_or_filter",
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -4312,9 +4718,7 @@ export default function AdminDashboardPage() {
                                       }}
                                     >
                                       <Mail size={14} />
-                                      <span>
-                                        {t("admin_dashboard.email")}
-                                      </span>
+                                      <span>{t("admin_dashboard.email")}</span>
                                     </div>
                                   </th>
                                   <th>
@@ -4326,9 +4730,7 @@ export default function AdminDashboardPage() {
                                       }}
                                     >
                                       <Layers size={14} />
-                                      <span>
-                                        {t("admin_dashboard.plan")}
-                                      </span>
+                                      <span>{t("admin_dashboard.plan")}</span>
                                     </div>
                                   </th>
                                   <th>
@@ -4354,9 +4756,7 @@ export default function AdminDashboardPage() {
                                       }}
                                     >
                                       <Shield size={14} />
-                                      <span>
-                                        {t("admin_dashboard.role")}
-                                      </span>
+                                      <span>{t("admin_dashboard.role")}</span>
                                     </div>
                                   </th>
                                   <th>
@@ -4382,9 +4782,7 @@ export default function AdminDashboardPage() {
                                       }}
                                     >
                                       <Calendar size={14} />
-                                      <span>
-                                        {t("admin_dashboard.date")}
-                                      </span>
+                                      <span>{t("admin_dashboard.date")}</span>
                                     </div>
                                   </th>
                                   <th style={{ textAlign: "center" }}>
@@ -4414,10 +4812,10 @@ export default function AdminDashboardPage() {
                                           style={
                                             u.photoURL
                                               ? {
-                                                background: `url("${u.photoURL}") center/cover no-repeat`,
-                                                border:
-                                                  "1px solid rgba(255,255,255,0.1)",
-                                              }
+                                                  background: `url("${u.photoURL}") center/cover no-repeat`,
+                                                  border:
+                                                    "1px solid rgba(255,255,255,0.1)",
+                                                }
                                               : {}
                                           }
                                         >
@@ -4436,12 +4834,29 @@ export default function AdminDashboardPage() {
                                     </td>
                                     <td>
                                       {(() => {
-                                        const pName = u.subscription?.planName || u.planName || "Free";
-                                        const foundPlan = plans.find(p => p.name === pName || p.name_ar === pName || p.name_en === pName);
-                                        const displayName = state.language === "en"
-                                          ? (foundPlan?.name_en || foundPlan?.name || pName)
-                                          : (foundPlan?.name_ar || foundPlan?.name || pName);
-                                        const isFree = pName.toLowerCase().includes("free") || pName === "مجانية";
+                                        const pName =
+                                          u.subscription?.planName ||
+                                          u.planName ||
+                                          "Free";
+                                        const foundPlan = plans.find(
+                                          (p) =>
+                                            p.name === pName ||
+                                            p.name_ar === pName ||
+                                            p.name_en === pName,
+                                        );
+                                        const displayName =
+                                          state.language === "en"
+                                            ? foundPlan?.name_en ||
+                                              foundPlan?.name ||
+                                              pName
+                                            : foundPlan?.name_ar ||
+                                              foundPlan?.name ||
+                                              pName;
+                                        const isFree =
+                                          pName
+                                            .toLowerCase()
+                                            .includes("free") ||
+                                          pName === "مجانية";
 
                                         return (
                                           <div
@@ -4451,12 +4866,20 @@ export default function AdminDashboardPage() {
                                               gap: "6px",
                                               padding: "4px 10px",
                                               borderRadius: "20px",
-                                              background: isFree ? "rgba(255, 255, 255, 0.05)" : "rgba(16, 185, 129, 0.1)",
-                                              border: isFree ? "1px solid var(--line)" : "1px solid rgba(16, 185, 129, 0.3)",
-                                              color: isFree ? "var(--text1)" : "#10B981",
+                                              background: isFree
+                                                ? "rgba(255, 255, 255, 0.05)"
+                                                : "rgba(16, 185, 129, 0.1)",
+                                              border: isFree
+                                                ? "1px solid var(--line)"
+                                                : "1px solid rgba(16, 185, 129, 0.3)",
+                                              color: isFree
+                                                ? "var(--text1)"
+                                                : "#10B981",
                                               fontSize: "12px",
                                               fontWeight: "600",
-                                              boxShadow: isFree ? "none" : "0 0 10px rgba(16, 185, 129, 0.1)",
+                                              boxShadow: isFree
+                                                ? "none"
+                                                : "0 0 10px rgba(16, 185, 129, 0.1)",
                                             }}
                                           >
                                             <Database size={12} />
@@ -4495,15 +4918,19 @@ export default function AdminDashboardPage() {
                                           <Sparkles size={13} />{" "}
                                           {t("admin_dashboard.lifetime_1")}
                                         </span>
-                                      ) : (u.subscription?.type === "trial" && (!u.planId || u.planId === "free" || u.planId === "trial" || u.planId === "free_trial")) ? (
+                                      ) : u.subscription?.type === "trial" &&
+                                        (!u.planId ||
+                                          u.planId === "free" ||
+                                          u.planId === "trial" ||
+                                          u.planId === "free_trial") ? (
                                         (() => {
                                           const exp = u.subscription.expiryDate
                                             ?.toDate
                                             ? u.subscription.expiryDate.toDate()
                                             : u.subscription?.expiryDate
                                               ? new Date(
-                                                u.subscription.expiryDate,
-                                              )
+                                                  u.subscription.expiryDate,
+                                                )
                                               : null;
                                           const isExp = exp && exp < new Date();
                                           return (
@@ -4551,8 +4978,8 @@ export default function AdminDashboardPage() {
                                             ?.toDate
                                             ? u.subscription.expiryDate.toDate()
                                             : new Date(
-                                              u.subscription.expiryDate,
-                                            );
+                                                u.subscription.expiryDate,
+                                              );
                                           const isExp = exp < new Date();
                                           return (
                                             <div
@@ -4579,7 +5006,9 @@ export default function AdminDashboardPage() {
                                                   <CheckCircle2 size={12} />
                                                 )}{" "}
                                                 {isExp
-                                                  ? t("admin_dashboard.expired_1")
+                                                  ? t(
+                                                      "admin_dashboard.expired_1",
+                                                    )
                                                   : t("admin_dashboard.active")}
                                               </span>
                                               <span
@@ -4676,9 +5105,9 @@ export default function AdminDashboardPage() {
                                           }
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          title={
-                                            t("admin_dashboard.view_details")
-                                          }
+                                          title={t(
+                                            "admin_dashboard.view_details",
+                                          )}
                                         >
                                           <Eye size={15} />
                                         </motion.button>
@@ -4687,9 +5116,7 @@ export default function AdminDashboardPage() {
                                           onClick={() => handleEditClick(u)}
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          title={
-                                            t("admin_dashboard.edit_user")
-                                          }
+                                          title={t("admin_dashboard.edit_user")}
                                         >
                                           <Edit size={15} />
                                         </motion.button>
@@ -4701,9 +5128,9 @@ export default function AdminDashboardPage() {
                                           }}
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          title={
-                                            t("admin_dashboard.renew_plan")
-                                          }
+                                          title={t(
+                                            "admin_dashboard.renew_plan",
+                                          )}
                                           style={{ color: "#10B981" }}
                                         >
                                           <RefreshCw size={15} />
@@ -4713,9 +5140,9 @@ export default function AdminDashboardPage() {
                                           onClick={() => setUserToDelete(u)}
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          title={
-                                            t("admin_dashboard.delete_user")
-                                          }
+                                          title={t(
+                                            "admin_dashboard.delete_user",
+                                          )}
                                         >
                                           <Trash2 size={15} />
                                         </motion.button>
@@ -4744,7 +5171,8 @@ export default function AdminDashboardPage() {
             <div className="ad-content animate-in">
               <AdminSales subUsers={regularUsers} />
             </div>
-          ) : (activeTab === "subscriptions" || activeTab === "trial_settings") ? (
+          ) : activeTab === "subscriptions" ||
+            activeTab === "trial_settings" ? (
             <motion.div
               className="ad-content"
               initial={{ opacity: 0, y: 15 }}
@@ -4762,12 +5190,22 @@ export default function AdminDashboardPage() {
                   borderRadius: "14px",
                   border: "1px solid var(--line)",
                   marginBottom: "20px",
-                  width: "fit-content"
+                  width: "fit-content",
                 }}
               >
                 {[
-                  { id: "subscriptions", label_ar: "الخطط والأسعار", label_en: "Plans Overview", icon: Tag },
-                  { id: "trial_settings", label_ar: "إعدادات الفترة التجريبية", label_en: "Free Trial Settings", icon: Gift },
+                  {
+                    id: "subscriptions",
+                    label_ar: "الخطط والأسعار",
+                    label_en: "Plans Overview",
+                    icon: Tag,
+                  },
+                  {
+                    id: "trial_settings",
+                    label_ar: "إعدادات الفترة التجريبية",
+                    label_en: "Free Trial Settings",
+                    icon: Gift,
+                  },
                 ].map((tab) => {
                   const isActiveSub = activeTab === tab.id;
                   const TabIcon = tab.icon;
@@ -4782,7 +5220,9 @@ export default function AdminDashboardPage() {
                         padding: "8px 16px",
                         borderRadius: "10px",
                         border: "none",
-                        background: isActiveSub ? "var(--accent)" : "transparent",
+                        background: isActiveSub
+                          ? "var(--accent)"
+                          : "transparent",
                         color: isActiveSub ? "#fff" : "var(--text)",
                         fontWeight: isActiveSub ? "600" : "500",
                         fontSize: "13px",
@@ -4794,9 +5234,9 @@ export default function AdminDashboardPage() {
                       <span>
                         {state.language === "en"
                           ? tab.label_en
-                          : (tab.id === "subscriptions"
-                              ? t("admin_dashboard.plans_overview")
-                              : t("admin_dashboard.trial_settings_tab"))}
+                          : tab.id === "subscriptions"
+                            ? t("admin_dashboard.plans_overview")
+                            : t("admin_dashboard.trial_settings_tab")}
                       </span>
                     </button>
                   );
@@ -4809,7 +5249,11 @@ export default function AdminDashboardPage() {
                     {/* Header section with title and action buttons */}
                     <div
                       className="sa-card-header"
-                      style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                      }}
                     >
                       <div
                         style={{
@@ -4823,7 +5267,11 @@ export default function AdminDashboardPage() {
                       >
                         <div
                           className="sa-card-title"
-                          style={{ display: "flex", alignItems: "center", gap: 8 }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
                         >
                           <Gem size={20} style={{ color: "var(--accent)" }} />
                           <span>
@@ -4867,9 +5315,7 @@ export default function AdminDashboardPage() {
                             }}
                           >
                             <PlusCircle size={15} />
-                            <span>
-                              {t("admin_dashboard.add_new_plan")}
-                            </span>
+                            <span>{t("admin_dashboard.add_new_plan")}</span>
                           </button>
 
                           {/* Export CSV */}
@@ -4886,13 +5332,16 @@ export default function AdminDashboardPage() {
                                 const price = p.price || 0;
                                 const curr = p.currency || "EGP";
                                 const featAr =
-                                  typeof (p.features_ar || p.features) === "string"
+                                  typeof (p.features_ar || p.features) ===
+                                  "string"
                                     ? (p.features_ar || p.features).replace(
-                                      /\n/g,
-                                      " • ",
-                                    )
+                                        /\n/g,
+                                        " • ",
+                                      )
                                     : Array.isArray(p.features_ar || p.features)
-                                      ? (p.features_ar || p.features).join(" • ")
+                                      ? (p.features_ar || p.features).join(
+                                          " • ",
+                                        )
                                       : "—";
                                 const featEn =
                                   typeof p.features_en === "string"
@@ -4918,36 +5367,28 @@ export default function AdminDashboardPage() {
                               link.click();
                               document.body.removeChild(link);
                             }}
-                            title={
-                              t("admin_dashboard.export_to_csv")
-                            }
+                            title={t("admin_dashboard.export_to_csv")}
                           >
                             <Download size={15} />
-                            <span>
-                              {t("admin_dashboard.export_csv")}
-                            </span>
+                            <span>{t("admin_dashboard.export_csv")}</span>
                           </button>
 
                           {/* Reset Filters */}
                           {(plansSearchQuery !== "" ||
                             plansCurrencyFilter !== "all") && (
-                              <button
-                                type="button"
-                                className="sa-reset-btn"
-                                onClick={() => {
-                                  setPlansSearchQuery("");
-                                  setPlansCurrencyFilter("all");
-                                }}
-                                title={
-                                  t("admin_dashboard.reset_filters")
-                                }
-                              >
-                                <RotateCcw size={14} />
-                                <span>
-                                  {t("admin_dashboard.reset")}
-                                </span>
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              className="sa-reset-btn"
+                              onClick={() => {
+                                setPlansSearchQuery("");
+                                setPlansCurrencyFilter("all");
+                              }}
+                              title={t("admin_dashboard.reset_filters")}
+                            >
+                              <RotateCcw size={14} />
+                              <span>{t("admin_dashboard.reset")}</span>
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -4970,44 +5411,37 @@ export default function AdminDashboardPage() {
                             options={[
                               {
                                 value: "all",
-                                label:
-                                  t("admin_dashboard.all_currencies"),
+                                label: t("admin_dashboard.all_currencies"),
                                 icon: Globe,
                               },
                               {
                                 value: "EGP",
-                                label:
-                                  t("admin_dashboard.egp"),
+                                label: t("admin_dashboard.egp"),
                                 icon: DollarSign,
                               },
                               {
                                 value: "USD",
-                                label:
-                                  t("admin_dashboard.usd"),
+                                label: t("admin_dashboard.usd"),
                                 icon: DollarSign,
                               },
                               {
                                 value: "SAR",
-                                label:
-                                  t("admin_dashboard.sar"),
+                                label: t("admin_dashboard.sar"),
                                 icon: DollarSign,
                               },
                               {
                                 value: "AED",
-                                label:
-                                  t("admin_dashboard.aed"),
+                                label: t("admin_dashboard.aed"),
                                 icon: DollarSign,
                               },
                               {
                                 value: "KWD",
-                                label:
-                                  t("admin_dashboard.kwd"),
+                                label: t("admin_dashboard.kwd"),
                                 icon: DollarSign,
                               },
                               {
                                 value: "EUR",
-                                label:
-                                  t("admin_dashboard.eur"),
+                                label: t("admin_dashboard.eur"),
                                 icon: DollarSign,
                               },
                             ]}
@@ -5027,11 +5461,11 @@ export default function AdminDashboardPage() {
                           >
                             <input
                               type="text"
-                              placeholder={
-                                t("admin_dashboard.search_plans")
-                              }
+                              placeholder={t("admin_dashboard.search_plans")}
                               value={plansSearchQuery}
-                              onChange={(e) => setPlansSearchQuery(e.target.value)}
+                              onChange={(e) =>
+                                setPlansSearchQuery(e.target.value)
+                              }
                               dir={t("admin_dashboard.ltr")}
                               style={{
                                 width: "100%",
@@ -5082,8 +5516,8 @@ export default function AdminDashboardPage() {
                             const featArList =
                               typeof (p.features_ar || p.features) === "string"
                                 ? (p.features_ar || p.features)
-                                  .split("\n")
-                                  .filter(Boolean)
+                                    .split("\n")
+                                    .filter(Boolean)
                                 : Array.isArray(p.features_ar || p.features)
                                   ? p.features_ar || p.features
                                   : [];
@@ -5141,8 +5575,7 @@ export default function AdminDashboardPage() {
                                           fontWeight: "bold",
                                         }}
                                       >
-                                        ✓{" "}
-                                        {t("admin_dashboard.stripe_synced")}
+                                        ✓ {t("admin_dashboard.stripe_synced")}
                                       </div>
                                       <div
                                         style={{
@@ -5198,9 +5631,9 @@ export default function AdminDashboardPage() {
                                         featEnList,
                                       })
                                     }
-                                    title={
-                                      t("admin_dashboard.click_to_view_features")
-                                    }
+                                    title={t(
+                                      "admin_dashboard.click_to_view_features",
+                                    )}
                                     style={{
                                       cursor: "pointer",
                                       display: "inline-flex",
@@ -5233,28 +5666,38 @@ export default function AdminDashboardPage() {
                                     <button
                                       type="button"
                                       className="btn btn-xs btn-outline sa-action-btn"
-                                      title={
-                                        t("admin_dashboard.edit_plan")
-                                      }
+                                      title={t("admin_dashboard.edit_plan")}
                                       onClick={() => {
                                         setEditingPlan(p);
                                         setPlanName(p.name_ar || p.name || "");
                                         setPlanNameEn(p.name_en || "");
                                         setPlanPrice(p.price || "");
-                                        setPlanCredits(p.creditsPerMonth || "20");
+                                        setPlanCredits(
+                                          p.creditsPerMonth || "20",
+                                        );
                                         setPlanCurrency(p.currency || "EGP");
-                                        setPlanDisplayOnWebsite(p.displayOnWebsite !== false);
-                                        setPlanBillingCycle(p.billingCycle || "monthly");
+                                        setPlanDisplayOnWebsite(
+                                          p.displayOnWebsite !== false,
+                                        );
+                                        setPlanBillingCycle(
+                                          p.billingCycle || "monthly",
+                                        );
                                         setPlanBadgeAr(p.badge_ar || "");
                                         setPlanBadgeEn(p.badge_en || "");
                                         setPlanCtaAr(p.cta_ar || "");
                                         setPlanCtaEn(p.cta_en || "");
-                                        setPlanAllowedTools(p.allowedTools || []);
+                                        setPlanAllowedTools(
+                                          p.allowedTools || [],
+                                        );
                                         setDynamicFeaturesAr(
-                                          featArList.length > 0 ? featArList : [""],
+                                          featArList.length > 0
+                                            ? featArList
+                                            : [""],
                                         );
                                         setDynamicFeaturesEn(
-                                          featEnList.length > 0 ? featEnList : [""],
+                                          featEnList.length > 0
+                                            ? featEnList
+                                            : [""],
                                         );
                                         setIsPlanModalOpen(true);
                                       }}
@@ -5264,9 +5707,7 @@ export default function AdminDashboardPage() {
                                     <button
                                       type="button"
                                       className="sa-delete-btn btn-xs sa-action-btn"
-                                      title={
-                                        t("admin_dashboard.delete_plan")
-                                      }
+                                      title={t("admin_dashboard.delete_plan")}
                                       onClick={async () => {
                                         const planLabel =
                                           p.name_ar || p.name || p.name_en;
@@ -5277,12 +5718,16 @@ export default function AdminDashboardPage() {
                                           t("admin_dashboard.confirm_delete"),
                                         );
                                         if (!isConfirmed) return;
-                                        const updatedPlans = plans.filter((pl) => pl.id !== p.id);
+                                        const updatedPlans = plans.filter(
+                                          (pl) => pl.id !== p.id,
+                                        );
                                         setPlans(updatedPlans);
                                         // Push the updated plans list to Firestore
                                         handleUpdateAdminProfile(updatedPlans);
                                         toast(
-                                          t("admin_dashboard.plan_deleted_successfully"),
+                                          t(
+                                            "admin_dashboard.plan_deleted_successfully",
+                                          ),
                                           "success",
                                         );
                                       }}
@@ -5299,7 +5744,10 @@ export default function AdminDashboardPage() {
                             <tr>
                               <td
                                 colSpan="4"
-                                style={{ padding: "40px 0", textAlign: "center" }}
+                                style={{
+                                  padding: "40px 0",
+                                  textAlign: "center",
+                                }}
                               >
                                 <div
                                   className="sa-empty"
@@ -5332,7 +5780,9 @@ export default function AdminDashboardPage() {
                                       fontWeight: 700,
                                     }}
                                   >
-                                    {t("admin_dashboard.no_subscription_plans_found")}
+                                    {t(
+                                      "admin_dashboard.no_subscription_plans_found",
+                                    )}
                                   </div>
                                 </div>
                               </td>
@@ -5394,7 +5844,10 @@ export default function AdminDashboardPage() {
                   dir={t("admin_dashboard.ltr")}
                   style={{ textAlign: t("admin_dashboard.left") }}
                 >
-                  <div className="ad-grid" style={{ gridTemplateColumns: "1fr" }}>
+                  <div
+                    className="ad-grid"
+                    style={{ gridTemplateColumns: "1fr" }}
+                  >
                     <div
                       className="ad-table-card"
                       style={{ padding: "24px", position: "relative" }}
@@ -5424,7 +5877,10 @@ export default function AdminDashboardPage() {
                               gap: "10px",
                             }}
                           >
-                            <Gift size={22} style={{ color: "var(--accent)" }} />
+                            <Gift
+                              size={22}
+                              style={{ color: "var(--accent)" }}
+                            />
                             <span>
                               {t("admin_dashboard.free_trial_settings")}
                             </span>
@@ -5436,7 +5892,9 @@ export default function AdminDashboardPage() {
                               marginTop: "4px",
                             }}
                           >
-                            {t("admin_dashboard.configure_trial_duration_tool_permi")}
+                            {t(
+                              "admin_dashboard.configure_trial_duration_tool_permi",
+                            )}
                           </div>
                         </div>
 
@@ -5550,7 +6008,9 @@ export default function AdminDashboardPage() {
                                 style={{ color: "var(--green)" }}
                               />
                               <span>
-                                {t("admin_dashboard.currently_active_in_free_trial")}
+                                {t(
+                                  "admin_dashboard.currently_active_in_free_trial",
+                                )}
                               </span>
                             </div>
                           </div>
@@ -5688,8 +6148,15 @@ export default function AdminDashboardPage() {
                                 marginTop: "2px",
                               }}
                             >
-                              <AnimatedCounter value={Array.from(new Set(allowedTrialTools)).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)).length} /> /{" "}
-                              {CHECKLIST_ITEMS.length}
+                              <AnimatedCounter
+                                value={
+                                  Array.from(new Set(allowedTrialTools)).filter(
+                                    (id) =>
+                                      CHECKLIST_ITEMS.some((i) => i.id === id),
+                                  ).length
+                                }
+                              />{" "}
+                              / {CHECKLIST_ITEMS.length}
                             </div>
                             <div
                               style={{
@@ -5701,16 +6168,13 @@ export default function AdminDashboardPage() {
                             >
                               {[
                                 {
-                                  label:
-                                    t("admin_dashboard.niche_analyzer"),
+                                  label: t("admin_dashboard.niche_analyzer"),
                                 },
                                 {
-                                  label:
-                                    t("admin_dashboard.competitors"),
+                                  label: t("admin_dashboard.competitors"),
                                 },
                                 {
-                                  label:
-                                    t("admin_dashboard.ad_copy"),
+                                  label: t("admin_dashboard.ad_copy"),
                                 },
                               ].map((t, i) => (
                                 <span
@@ -5720,7 +6184,8 @@ export default function AdminDashboardPage() {
                                     fontWeight: "700",
                                     background: "rgba(59, 130, 246, 0.12)",
                                     color: "var(--accent)",
-                                    border: "1px solid rgba(59, 130, 246, 0.25)",
+                                    border:
+                                      "1px solid rgba(59, 130, 246, 0.25)",
                                     padding: "2px 6px",
                                     borderRadius: "10px",
                                   }}
@@ -5747,14 +6212,38 @@ export default function AdminDashboardPage() {
                             justifyContent: "space-between",
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <Gift size={20} style={{ color: "var(--accent)" }} />
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                            }}
+                          >
+                            <Gift
+                              size={20}
+                              style={{ color: "var(--accent)" }}
+                            />
                             <div>
-                              <div style={{ fontSize: "15px", fontWeight: "800", color: "#fff" }}>
-                                {t("admin_dashboard.enable_free_trial_for_new_users")}
+                              <div
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                }}
+                              >
+                                {t(
+                                  "admin_dashboard.enable_free_trial_for_new_users",
+                                )}
                               </div>
-                              <div style={{ fontSize: "12px", color: "var(--text3)" }}>
-                                {t("admin_dashboard.turn_on_or_off_the_free_trial_featu")}
+                              <div
+                                style={{
+                                  fontSize: "12px",
+                                  color: "var(--text3)",
+                                }}
+                              >
+                                {t(
+                                  "admin_dashboard.turn_on_or_off_the_free_trial_featu",
+                                )}
                               </div>
                             </div>
                           </div>
@@ -5766,7 +6255,9 @@ export default function AdminDashboardPage() {
                               width: 48,
                               height: 24,
                               borderRadius: 12,
-                              background: enableFreeTrial ? "var(--green)" : "rgba(255, 255, 255, 0.1)",
+                              background: enableFreeTrial
+                                ? "var(--green)"
+                                : "rgba(255, 255, 255, 0.1)",
                               position: "relative",
                               cursor: "pointer",
                               border: "none",
@@ -5788,76 +6279,315 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Bilingual Metadata */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 16,
+                            marginBottom: 24,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 16,
+                            }}
+                          >
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Tag size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.plan_name_arabic")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Tag
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.plan_name_arabic")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialPlanNameAr} onChange={(e) => setTrialPlanNameAr(e.target.value)} placeholder={t("admin_dashboard.e_g_free_trial")} dir={t("admin_dashboard.ltr")} style={{ textAlign: t("admin_dashboard.left") }} />
+                              <input
+                                className="field-input"
+                                value={trialPlanNameAr}
+                                onChange={(e) =>
+                                  setTrialPlanNameAr(e.target.value)
+                                }
+                                placeholder={t(
+                                  "admin_dashboard.e_g_free_trial",
+                                )}
+                                dir={t("admin_dashboard.ltr")}
+                                style={{ textAlign: t("admin_dashboard.left") }}
+                              />
                             </div>
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Tag size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.plan_name_english")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Tag
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.plan_name_english")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialPlanNameEn} onChange={(e) => setTrialPlanNameEn(e.target.value)} placeholder="e.g. Free Trial" dir="ltr" style={{ textAlign: "left" }} />
+                              <input
+                                className="field-input"
+                                value={trialPlanNameEn}
+                                onChange={(e) =>
+                                  setTrialPlanNameEn(e.target.value)
+                                }
+                                placeholder="e.g. Free Trial"
+                                dir="ltr"
+                                style={{ textAlign: "left" }}
+                              />
                             </div>
                           </div>
 
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 16,
+                            }}
+                          >
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Award size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.badge_label_arabic")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Award
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.badge_label_arabic")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialBadgeAr} onChange={(e) => setTrialBadgeAr(e.target.value)} placeholder={t("admin_dashboard.e_g_popular")} dir={t("admin_dashboard.ltr")} style={{ textAlign: t("admin_dashboard.left") }} />
+                              <input
+                                className="field-input"
+                                value={trialBadgeAr}
+                                onChange={(e) =>
+                                  setTrialBadgeAr(e.target.value)
+                                }
+                                placeholder={t("admin_dashboard.e_g_popular")}
+                                dir={t("admin_dashboard.ltr")}
+                                style={{ textAlign: t("admin_dashboard.left") }}
+                              />
                             </div>
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Award size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.badge_label_english")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Award
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.badge_label_english")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialBadgeEn} onChange={(e) => setTrialBadgeEn(e.target.value)} placeholder="e.g. Popular" dir="ltr" style={{ textAlign: "left" }} />
+                              <input
+                                className="field-input"
+                                value={trialBadgeEn}
+                                onChange={(e) =>
+                                  setTrialBadgeEn(e.target.value)
+                                }
+                                placeholder="e.g. Popular"
+                                dir="ltr"
+                                style={{ textAlign: "left" }}
+                              />
                             </div>
                           </div>
 
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 16,
+                            }}
+                          >
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Zap size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.cta_button_text_arabic")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Zap
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.cta_button_text_arabic")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialCtaAr} onChange={(e) => setTrialCtaAr(e.target.value)} placeholder={t("admin_dashboard.e_g_start_free_trial")} dir={t("admin_dashboard.ltr")} style={{ textAlign: t("admin_dashboard.left") }} />
+                              <input
+                                className="field-input"
+                                value={trialCtaAr}
+                                onChange={(e) => setTrialCtaAr(e.target.value)}
+                                placeholder={t(
+                                  "admin_dashboard.e_g_start_free_trial",
+                                )}
+                                dir={t("admin_dashboard.ltr")}
+                                style={{ textAlign: t("admin_dashboard.left") }}
+                              />
                             </div>
                             <div className="field">
-                              <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <Zap size={14} style={{ color: "var(--accent)" }} />
-                                <span>{t("admin_dashboard.cta_button_text_english")}</span>
+                              <label
+                                className="field-label"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Zap
+                                  size={14}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                <span>
+                                  {t("admin_dashboard.cta_button_text_english")}
+                                </span>
                               </label>
-                              <input className="field-input" value={trialCtaEn} onChange={(e) => setTrialCtaEn(e.target.value)} placeholder="e.g. Start Free Trial" dir="ltr" style={{ textAlign: "left" }} />
+                              <input
+                                className="field-input"
+                                value={trialCtaEn}
+                                onChange={(e) => setTrialCtaEn(e.target.value)}
+                                placeholder="e.g. Start Free Trial"
+                                dir="ltr"
+                                style={{ textAlign: "left" }}
+                              />
                             </div>
                           </div>
                         </div>
 
                         {/* Arabic Dynamic Features for Trial */}
                         <div className="field" style={{ marginBottom: 24 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                            <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
-                              <Sparkles size={14} style={{ color: "var(--green)" }} />
-                              <span>{t("admin_dashboard.features_list_arabic")}</span>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: 8,
+                            }}
+                          >
+                            <label
+                              className="field-label"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                margin: 0,
+                              }}
+                            >
+                              <Sparkles
+                                size={14}
+                                style={{ color: "var(--green)" }}
+                              />
+                              <span>
+                                {t("admin_dashboard.features_list_arabic")}
+                              </span>
                             </label>
-                            <button type="button" className="btn btn-xs" onClick={() => setTrialFeaturesAr([...trialFeaturesAr, ""])} style={{ background: "rgba(16, 185, 129, 0.15)", color: "var(--green)", border: "1px solid rgba(16, 185, 129, 0.3)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6 }}>
-                              <Plus size={12} /><span>{t("admin_dashboard.add_feature")}</span>
+                            <button
+                              type="button"
+                              className="btn btn-xs"
+                              onClick={() =>
+                                setTrialFeaturesAr([...trialFeaturesAr, ""])
+                              }
+                              style={{
+                                background: "rgba(16, 185, 129, 0.15)",
+                                color: "var(--green)",
+                                border: "1px solid rgba(16, 185, 129, 0.3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                padding: "4px 10px",
+                                borderRadius: 6,
+                              }}
+                            >
+                              <Plus size={12} />
+                              <span>{t("admin_dashboard.add_feature")}</span>
                             </button>
                           </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 8,
+                            }}
+                          >
                             {trialFeaturesAr.map((feat, idx) => (
-                              <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <input className="field-input" value={feat} onChange={(e) => { const next = [...trialFeaturesAr]; next[idx] = e.target.value; setTrialFeaturesAr(next); }} placeholder={t("admin_dashboard.e_g_access_to_limited_tools")} dir={t("admin_dashboard.ltr")} style={{ textAlign: t("admin_dashboard.left"), flex: 1 }} />
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  gap: 8,
+                                  alignItems: "center",
+                                }}
+                              >
+                                <input
+                                  className="field-input"
+                                  value={feat}
+                                  onChange={(e) => {
+                                    const next = [...trialFeaturesAr];
+                                    next[idx] = e.target.value;
+                                    setTrialFeaturesAr(next);
+                                  }}
+                                  placeholder={t(
+                                    "admin_dashboard.e_g_access_to_limited_tools",
+                                  )}
+                                  dir={t("admin_dashboard.ltr")}
+                                  style={{
+                                    textAlign: t("admin_dashboard.left"),
+                                    flex: 1,
+                                  }}
+                                />
                                 {trialFeaturesAr.length > 1 && (
-                                  <button type="button" className="sa-delete-btn btn-xs" style={{ width: 34, height: 34, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} onClick={() => setTrialFeaturesAr(trialFeaturesAr.filter((_, i) => i !== idx))} title={t("admin_dashboard.delete_feature")}>
+                                  <button
+                                    type="button"
+                                    className="sa-delete-btn btn-xs"
+                                    style={{
+                                      width: 34,
+                                      height: 34,
+                                      padding: 0,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      flexShrink: 0,
+                                    }}
+                                    onClick={() =>
+                                      setTrialFeaturesAr(
+                                        trialFeaturesAr.filter(
+                                          (_, i) => i !== idx,
+                                        ),
+                                      )
+                                    }
+                                    title={t("admin_dashboard.delete_feature")}
+                                  >
                                     <Trash2 size={14} />
                                   </button>
                                 )}
@@ -5868,21 +6598,104 @@ export default function AdminDashboardPage() {
 
                         {/* English Dynamic Features for Trial */}
                         <div className="field" style={{ marginBottom: 24 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                            <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
-                              <Sparkles size={14} style={{ color: "var(--accent)" }} />
-                              <span>{t("admin_dashboard.features_list_english")}</span>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: 8,
+                            }}
+                          >
+                            <label
+                              className="field-label"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                margin: 0,
+                              }}
+                            >
+                              <Sparkles
+                                size={14}
+                                style={{ color: "var(--accent)" }}
+                              />
+                              <span>
+                                {t("admin_dashboard.features_list_english")}
+                              </span>
                             </label>
-                            <button type="button" className="btn btn-xs" onClick={() => setTrialFeaturesEn([...trialFeaturesEn, ""])} style={{ background: "rgba(59, 130, 246, 0.15)", color: "var(--accent)", border: "1px solid rgba(59, 130, 246, 0.3)", display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6 }}>
-                              <Plus size={12} /><span>{t("admin_dashboard.add_feature")}</span>
+                            <button
+                              type="button"
+                              className="btn btn-xs"
+                              onClick={() =>
+                                setTrialFeaturesEn([...trialFeaturesEn, ""])
+                              }
+                              style={{
+                                background: "rgba(59, 130, 246, 0.15)",
+                                color: "var(--accent)",
+                                border: "1px solid rgba(59, 130, 246, 0.3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                padding: "4px 10px",
+                                borderRadius: 6,
+                              }}
+                            >
+                              <Plus size={12} />
+                              <span>{t("admin_dashboard.add_feature")}</span>
                             </button>
                           </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 8,
+                            }}
+                          >
                             {trialFeaturesEn.map((feat, idx) => (
-                              <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <input className="field-input" value={feat} onChange={(e) => { const next = [...trialFeaturesEn]; next[idx] = e.target.value; setTrialFeaturesEn(next); }} placeholder="e.g. Access to limited tools" dir="ltr" style={{ textAlign: "left", flex: 1 }} />
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  gap: 8,
+                                  alignItems: "center",
+                                }}
+                              >
+                                <input
+                                  className="field-input"
+                                  value={feat}
+                                  onChange={(e) => {
+                                    const next = [...trialFeaturesEn];
+                                    next[idx] = e.target.value;
+                                    setTrialFeaturesEn(next);
+                                  }}
+                                  placeholder="e.g. Access to limited tools"
+                                  dir="ltr"
+                                  style={{ textAlign: "left", flex: 1 }}
+                                />
                                 {trialFeaturesEn.length > 1 && (
-                                  <button type="button" className="sa-delete-btn btn-xs" style={{ width: 34, height: 34, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} onClick={() => setTrialFeaturesEn(trialFeaturesEn.filter((_, i) => i !== idx))} title={t("admin_dashboard.delete_feature")}>
+                                  <button
+                                    type="button"
+                                    className="sa-delete-btn btn-xs"
+                                    style={{
+                                      width: 34,
+                                      height: 34,
+                                      padding: 0,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      flexShrink: 0,
+                                    }}
+                                    onClick={() =>
+                                      setTrialFeaturesEn(
+                                        trialFeaturesEn.filter(
+                                          (_, i) => i !== idx,
+                                        ),
+                                      )
+                                    }
+                                    title={t("admin_dashboard.delete_feature")}
+                                  >
                                     <Trash2 size={14} />
                                   </button>
                                 )}
@@ -5901,7 +6714,7 @@ export default function AdminDashboardPage() {
                             marginBottom: "24px",
                             display: "flex",
                             flexDirection: "column",
-                            gap: "24px"
+                            gap: "24px",
                           }}
                         >
                           {/* Duration */}
@@ -5914,7 +6727,10 @@ export default function AdminDashboardPage() {
                                 marginBottom: "16px",
                               }}
                             >
-                              <Clock size={20} style={{ color: "var(--accent)" }} />
+                              <Clock
+                                size={20}
+                                style={{ color: "var(--accent)" }}
+                              />
                               <label
                                 style={{
                                   fontSize: "15px",
@@ -5969,7 +6785,9 @@ export default function AdminDashboardPage() {
                                     fontWeight: "600",
                                   }}
                                 >
-                                  {t("admin_dashboard.days_starting_from_registration_dat")}
+                                  {t(
+                                    "admin_dashboard.days_starting_from_registration_dat",
+                                  )}
                                 </span>
                               </div>
 
@@ -6012,7 +6830,9 @@ export default function AdminDashboardPage() {
                                         background: isSelected
                                           ? "var(--accent)"
                                           : "rgba(255, 255, 255, 0.05)",
-                                        color: isSelected ? "#fff" : "var(--text2)",
+                                        color: isSelected
+                                          ? "#fff"
+                                          : "var(--text2)",
                                         border: isSelected
                                           ? "1px solid var(--accent)"
                                           : "1px solid rgba(255, 255, 255, 0.1)",
@@ -6056,7 +6876,9 @@ export default function AdminDashboardPage() {
                               >
                                 <AlertTriangle size={16} />
                                 <span>
-                                  {t("admin_dashboard.minimum_trial_duration_is_1_day")}
+                                  {t(
+                                    "admin_dashboard.minimum_trial_duration_is_1_day",
+                                  )}
                                 </span>
                               </motion.div>
                             )}
@@ -6080,7 +6902,9 @@ export default function AdminDashboardPage() {
                               >
                                 <AlertTriangle size={16} />
                                 <span>
-                                  {t("admin_dashboard.warning_recommended_maximum_trial_d")}
+                                  {t(
+                                    "admin_dashboard.warning_recommended_maximum_trial_d",
+                                  )}
                                 </span>
                               </motion.div>
                             )}
@@ -6096,7 +6920,10 @@ export default function AdminDashboardPage() {
                                 marginBottom: "16px",
                               }}
                             >
-                              <Sparkles size={20} style={{ color: "var(--green)" }} />
+                              <Sparkles
+                                size={20}
+                                style={{ color: "var(--green)" }}
+                              />
                               <label
                                 style={{
                                   fontSize: "15px",
@@ -6128,7 +6955,9 @@ export default function AdminDashboardPage() {
                                   color: "#fff",
                                 }}
                                 value={freeTrialCredits}
-                                onChange={(e) => setFreeTrialCredits(Number(e.target.value))}
+                                onChange={(e) =>
+                                  setFreeTrialCredits(Number(e.target.value))
+                                }
                               />
                               <span
                                 style={{
@@ -6137,7 +6966,9 @@ export default function AdminDashboardPage() {
                                   fontWeight: "600",
                                 }}
                               >
-                                {t("admin_dashboard.credits_given_to_user_during_trial")}
+                                {t(
+                                  "admin_dashboard.credits_given_to_user_during_trial",
+                                )}
                               </span>
                             </div>
                           </div>
@@ -6201,7 +7032,9 @@ export default function AdminDashboardPage() {
                                   marginTop: "2px",
                                 }}
                               >
-                                {t("admin_dashboard.automatically_grant_trial_users_acc")}
+                                {t(
+                                  "admin_dashboard.automatically_grant_trial_users_acc",
+                                )}
                               </div>
                             </div>
                           </div>
@@ -6302,8 +7135,13 @@ export default function AdminDashboardPage() {
                                   borderRadius: "12px",
                                 }}
                               >
-                                {Array.from(new Set(allowedTrialTools)).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)).length} /{" "}
-                                {CHECKLIST_ITEMS.length}{" "}
+                                {
+                                  Array.from(new Set(allowedTrialTools)).filter(
+                                    (id) =>
+                                      CHECKLIST_ITEMS.some((i) => i.id === id),
+                                  ).length
+                                }{" "}
+                                / {CHECKLIST_ITEMS.length}{" "}
                                 {t("admin_dashboard.active")}
                               </span>
                             </div>
@@ -6314,7 +7152,9 @@ export default function AdminDashboardPage() {
                                 marginTop: "4px",
                               }}
                             >
-                              {t("admin_dashboard.click_any_tool_card_to_toggle_trial")}
+                              {t(
+                                "admin_dashboard.click_any_tool_card_to_toggle_trial",
+                              )}
                             </div>
                           </div>
 
@@ -6326,7 +7166,13 @@ export default function AdminDashboardPage() {
                               className="btn btn-xs"
                               onClick={() =>
                                 setAllowedTrialTools(() => {
-                                  const next = Array.from(new Set(CHECKLIST_ITEMS.map((item) => item.id).filter(Boolean)));
+                                  const next = Array.from(
+                                    new Set(
+                                      CHECKLIST_ITEMS.map(
+                                        (item) => item.id,
+                                      ).filter(Boolean),
+                                    ),
+                                  );
                                   allowedTrialToolsRef.current = next;
                                   return next;
                                 })
@@ -6345,19 +7191,19 @@ export default function AdminDashboardPage() {
                               }}
                             >
                               <CheckCircle2 size={14} />
-                              <span>
-                                {t("admin_dashboard.select_all")}
-                              </span>
+                              <span>{t("admin_dashboard.select_all")}</span>
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.04 }}
                               whileTap={{ scale: 0.96 }}
                               type="button"
                               className="btn btn-xs"
-                              onClick={() => setAllowedTrialTools(() => {
-                                allowedTrialToolsRef.current = [];
-                                return [];
-                              })}
+                              onClick={() =>
+                                setAllowedTrialTools(() => {
+                                  allowedTrialToolsRef.current = [];
+                                  return [];
+                                })
+                              }
                               style={{
                                 background: "rgba(239, 68, 68, 0.1)",
                                 color: "var(--red)",
@@ -6372,9 +7218,7 @@ export default function AdminDashboardPage() {
                               }}
                             >
                               <XCircle size={14} />
-                              <span>
-                                {t("admin_dashboard.deselect_all")}
-                              </span>
+                              <span>{t("admin_dashboard.deselect_all")}</span>
                             </motion.button>
                           </div>
                         </div>
@@ -6391,8 +7235,9 @@ export default function AdminDashboardPage() {
                             {
                               id: 0,
                               icon: Target,
-                              title:
-                                t("admin_dashboard.analysis_identity_building"),
+                              title: t(
+                                "admin_dashboard.analysis_identity_building",
+                              ),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) =>
                                   item.group_ar === "التحليل والهوية" ||
@@ -6402,8 +7247,7 @@ export default function AdminDashboardPage() {
                             {
                               id: 1,
                               icon: ShoppingBag,
-                              title:
-                                t("admin_dashboard.store_setup_pages"),
+                              title: t("admin_dashboard.store_setup_pages"),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) =>
                                   item.group_ar === "بناء وتجهيز المتجر" ||
@@ -6413,8 +7257,9 @@ export default function AdminDashboardPage() {
                             {
                               id: 2,
                               icon: Package,
-                              title:
-                                t("admin_dashboard.product_profit_pricing"),
+                              title: t(
+                                "admin_dashboard.product_profit_pricing",
+                              ),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) =>
                                   item.group_ar === "المنتج والربحية" ||
@@ -6424,8 +7269,9 @@ export default function AdminDashboardPage() {
                             {
                               id: 3,
                               icon: Sparkles,
-                              title:
-                                t("admin_dashboard.content_digital_marketing"),
+                              title: t(
+                                "admin_dashboard.content_digital_marketing",
+                              ),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) =>
                                   item.group_ar === "المحتوى والتسويق" ||
@@ -6435,8 +7281,7 @@ export default function AdminDashboardPage() {
                             {
                               id: 4,
                               icon: Cpu,
-                              title:
-                                t("admin_dashboard.smart_management_ops"),
+                              title: t("admin_dashboard.smart_management_ops"),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) =>
                                   item.group_ar === "إدارة وتشغيل" ||
@@ -6447,8 +7292,9 @@ export default function AdminDashboardPage() {
                             {
                               id: 6,
                               icon: BookOpen,
-                              title:
-                                t("admin_dashboard.additional_resources_tools"),
+                              title: t(
+                                "admin_dashboard.additional_resources_tools",
+                              ),
                               items: CHECKLIST_ITEMS.filter(
                                 (item) => item.section === "additional",
                               ),
@@ -6482,7 +7328,8 @@ export default function AdminDashboardPage() {
                                 {/* Category Header */}
                                 <motion.div
                                   whileHover={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.035)",
+                                    backgroundColor:
+                                      "rgba(255, 255, 255, 0.035)",
                                   }}
                                   onClick={() =>
                                     setExpandedTrialGroups((prev) => ({
@@ -6564,8 +7411,8 @@ export default function AdminDashboardPage() {
                                       }}
                                     >
                                       {selectedCount}/{totalCount}{" "}
-                                      {t("admin_dashboard.active_1")}{" "}
-                                      ({progressPercent}%)
+                                      {t("admin_dashboard.active_1")} (
+                                      {progressPercent}%)
                                     </span>
                                   </div>
 
@@ -6606,8 +7453,8 @@ export default function AdminDashboardPage() {
                                           const primaryLabel =
                                             state.language === "en"
                                               ? item.label_en ||
-                                              item.label ||
-                                              item.id
+                                                item.label ||
+                                                item.id
                                               : item.label_ar || item.label;
                                           const secondaryLabel =
                                             state.language === "en"
@@ -6617,21 +7464,35 @@ export default function AdminDashboardPage() {
                                           return (
                                             <motion.div
                                               key={item.id}
-                                              whileHover={{ scale: 1.02, y: -2 }}
+                                              whileHover={{
+                                                scale: 1.02,
+                                                y: -2,
+                                              }}
                                               whileTap={{ scale: 0.98 }}
                                               onClick={() => {
                                                 if (isChecked) {
-                                                  setAllowedTrialTools(prev => {
-                                                    const next = prev.filter((t) => t !== item.id);
-                                                    allowedTrialToolsRef.current = next;
-                                                    return next;
-                                                  });
+                                                  setAllowedTrialTools(
+                                                    (prev) => {
+                                                      const next = prev.filter(
+                                                        (t) => t !== item.id,
+                                                      );
+                                                      allowedTrialToolsRef.current =
+                                                        next;
+                                                      return next;
+                                                    },
+                                                  );
                                                 } else {
-                                                  setAllowedTrialTools(prev => {
-                                                    const next = [...prev, item.id];
-                                                    allowedTrialToolsRef.current = next;
-                                                    return next;
-                                                  });
+                                                  setAllowedTrialTools(
+                                                    (prev) => {
+                                                      const next = [
+                                                        ...prev,
+                                                        item.id,
+                                                      ];
+                                                      allowedTrialToolsRef.current =
+                                                        next;
+                                                      return next;
+                                                    },
+                                                  );
                                                 }
                                               }}
                                               style={{
@@ -6755,7 +7616,9 @@ export default function AdminDashboardPage() {
                                                     }}
                                                   />
                                                   <span>
-                                                    {t("admin_dashboard.active")}
+                                                    {t(
+                                                      "admin_dashboard.active",
+                                                    )}
                                                   </span>
                                                 </span>
                                               ) : (
@@ -6776,7 +7639,9 @@ export default function AdminDashboardPage() {
                                                     }}
                                                   />
                                                   <span>
-                                                    {t("admin_dashboard.locked")}
+                                                    {t(
+                                                      "admin_dashboard.locked",
+                                                    )}
                                                   </span>
                                                 </span>
                                               )}
@@ -6836,8 +7701,8 @@ export default function AdminDashboardPage() {
                               }}
                             >
                               {state.language === "en"
-                                ? `Trial: ${freeTrialDays} Days | Active Tools: ${Array.from(new Set(allowedTrialTools)).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)).length}/${CHECKLIST_ITEMS.length}`
-                                : `مدة التجربة: ${freeTrialDays} يوماً | الأدوات المتاحة: ${Array.from(new Set(allowedTrialTools)).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)).length} من ${CHECKLIST_ITEMS.length}`}
+                                ? `Trial: ${freeTrialDays} Days | Active Tools: ${Array.from(new Set(allowedTrialTools)).filter((id) => CHECKLIST_ITEMS.some((i) => i.id === id)).length}/${CHECKLIST_ITEMS.length}`
+                                : `مدة التجربة: ${freeTrialDays} يوماً | الأدوات المتاحة: ${Array.from(new Set(allowedTrialTools)).filter((id) => CHECKLIST_ITEMS.some((i) => i.id === id)).length} من ${CHECKLIST_ITEMS.length}`}
                             </span>
                           </div>
 
@@ -6861,7 +7726,7 @@ export default function AdminDashboardPage() {
                                 );
                                 setAllowedTrialTools(
                                   userData?.freeTrialSettings?.allowedTools ||
-                                  CHECKLIST_ITEMS.map((s) => s.id),
+                                    CHECKLIST_ITEMS.map((s) => s.id),
                                 );
                                 setAutoIncludeNewTools(
                                   userData?.freeTrialSettings
@@ -6886,9 +7751,7 @@ export default function AdminDashboardPage() {
                               }}
                             >
                               <RotateCcw size={14} />
-                              <span>
-                                {t("admin_dashboard.reset")}
-                              </span>
+                              <span>{t("admin_dashboard.reset")}</span>
                             </motion.button>
 
                             <motion.button
@@ -6913,9 +7776,7 @@ export default function AdminDashboardPage() {
                               {isUpdatingProfile ? (
                                 <>
                                   <Loader2 size={16} className="spin" />
-                                  <span>
-                                    {t("admin_dashboard.saving")}
-                                  </span>
+                                  <span>{t("admin_dashboard.saving")}</span>
                                 </>
                               ) : (
                                 <>
@@ -6988,7 +7849,10 @@ export default function AdminDashboardPage() {
                                 gap: "12px",
                               }}
                             >
-                              <Eye size={22} style={{ color: "var(--accent)" }} />
+                              <Eye
+                                size={22}
+                                style={{ color: "var(--accent)" }}
+                              />
                               <div>
                                 <div
                                   style={{
@@ -6997,7 +7861,9 @@ export default function AdminDashboardPage() {
                                     color: "#fff",
                                   }}
                                 >
-                                  {t("admin_dashboard.client_experience_preview")}
+                                  {t(
+                                    "admin_dashboard.client_experience_preview",
+                                  )}
                                 </div>
                                 <div
                                   style={{
@@ -7006,7 +7872,9 @@ export default function AdminDashboardPage() {
                                     marginTop: "2px",
                                   }}
                                 >
-                                  {t("admin_dashboard.preview_how_tools_appear_to_a_trial")}
+                                  {t(
+                                    "admin_dashboard.preview_how_tools_appear_to_a_trial",
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -7088,7 +7956,9 @@ export default function AdminDashboardPage() {
                                     gap: "6px",
                                   }}
                                 >
-                                  {tab.id === "unlocked" && <Unlock size={12} />}
+                                  {tab.id === "unlocked" && (
+                                    <Unlock size={12} />
+                                  )}
                                   {tab.id === "locked" && <Lock size={12} />}
                                   <span>{tab.label}</span>
                                 </motion.button>
@@ -7105,7 +7975,10 @@ export default function AdminDashboardPage() {
                                 gap: "6px",
                               }}
                             >
-                              <Clock size={13} style={{ color: "var(--accent)" }} />
+                              <Clock
+                                size={13}
+                                style={{ color: "var(--accent)" }}
+                              />
                               <span>
                                 {state.language === "en"
                                   ? `Trial Period: ${freeTrialDays} Days`
@@ -7116,7 +7989,11 @@ export default function AdminDashboardPage() {
 
                           {/* Modal Body Grid */}
                           <div
-                            style={{ padding: "24px", overflowY: "auto", flex: 1 }}
+                            style={{
+                              padding: "24px",
+                              overflowY: "auto",
+                              flex: 1,
+                            }}
                           >
                             <div
                               style={{
@@ -7177,7 +8054,8 @@ export default function AdminDashboardPage() {
                                           width: 38,
                                           height: 38,
                                           borderRadius: "10px",
-                                          background: "rgba(255, 255, 255, 0.05)",
+                                          background:
+                                            "rgba(255, 255, 255, 0.05)",
                                           border:
                                             "1px solid rgba(255, 255, 255, 0.08)",
                                           display: "flex",
@@ -7194,7 +8072,8 @@ export default function AdminDashboardPage() {
                                             fontSize: "10px",
                                             fontWeight: "800",
                                             color: "var(--green)",
-                                            background: "rgba(16, 185, 129, 0.15)",
+                                            background:
+                                              "rgba(16, 185, 129, 0.15)",
                                             padding: "2px 8px",
                                             borderRadius: "10px",
                                             border:
@@ -7215,7 +8094,8 @@ export default function AdminDashboardPage() {
                                             fontSize: "10px",
                                             fontWeight: "800",
                                             color: "var(--red)",
-                                            background: "rgba(239, 68, 68, 0.15)",
+                                            background:
+                                              "rgba(239, 68, 68, 0.15)",
                                             padding: "2px 8px",
                                             borderRadius: "10px",
                                             border:
@@ -7284,7 +8164,8 @@ export default function AdminDashboardPage() {
                                             width: "100%",
                                             padding: "6px 12px",
                                             borderRadius: "8px",
-                                            background: "rgba(255, 255, 255, 0.05)",
+                                            background:
+                                              "rgba(255, 255, 255, 0.05)",
                                             color: "var(--text3)",
                                             border:
                                               "1px solid rgba(255, 255, 255, 0.1)",
@@ -7298,7 +8179,9 @@ export default function AdminDashboardPage() {
                                         >
                                           <Lock size={12} />
                                           <span>
-                                            {t("admin_dashboard.upgrade_required")}
+                                            {t(
+                                              "admin_dashboard.upgrade_required",
+                                            )}
                                           </span>
                                         </button>
                                       )}
@@ -7316,7 +8199,10 @@ export default function AdminDashboardPage() {
               )}
             </motion.div>
           ) : activeTab === "payment_methods" ? (
-            <div className="ad-content animate-in" dir={t("admin_dashboard.ltr")}>
+            <div
+              className="ad-content animate-in"
+              dir={t("admin_dashboard.ltr")}
+            >
               {/* Header Title & Sub-tabs Row */}
               <div
                 style={{
@@ -7351,9 +8237,7 @@ export default function AdminDashboardPage() {
                         size={24}
                         style={{ color: "var(--accent)" }}
                       />
-                      <span>
-                        {t("admin_dashboard.transactions_payments")}
-                      </span>
+                      <span>{t("admin_dashboard.transactions_payments")}</span>
                     </h2>
                     <p
                       style={{
@@ -7380,16 +8264,16 @@ export default function AdminDashboardPage() {
                     {[
                       {
                         id: "transactions",
-                        label_ar: `سجل المعاملات (${pendingPayments.filter(p => p.status !== 'pending').length})`,
-                        label_gcc: `سجل العمليات المالية (${pendingPayments.filter(p => p.status !== 'pending').length})`,
-                        label_en: `Transactions Log (${pendingPayments.filter(p => p.status !== 'pending').length})`,
+                        label_ar: `سجل المعاملات (${pendingPayments.filter((p) => p.status !== "pending").length})`,
+                        label_gcc: `سجل العمليات المالية (${pendingPayments.filter((p) => p.status !== "pending").length})`,
+                        label_en: `Transactions Log (${pendingPayments.filter((p) => p.status !== "pending").length})`,
                         icon: Activity,
                       },
                       {
                         id: "requests",
-                        label_ar: `طلبات الدفع (${pendingPayments.filter(p => p.status === 'pending').length})`,
-                        label_gcc: `طلبات السداد والتحويل (${pendingPayments.filter(p => p.status === 'pending').length})`,
-                        label_en: `Payment Requests (${pendingPayments.filter(p => p.status === 'pending').length})`,
+                        label_ar: `طلبات الدفع (${pendingPayments.filter((p) => p.status === "pending").length})`,
+                        label_gcc: `طلبات السداد والتحويل (${pendingPayments.filter((p) => p.status === "pending").length})`,
+                        label_en: `Payment Requests (${pendingPayments.filter((p) => p.status === "pending").length})`,
                         icon: Clock,
                       },
                       {
@@ -7428,8 +8312,8 @@ export default function AdminDashboardPage() {
                             {state.language === "en"
                               ? tab.label_en
                               : state.language === "ar-GCC" && tab.label_gcc
-                              ? tab.label_gcc
-                              : tab.label_ar}
+                                ? tab.label_gcc
+                                : tab.label_ar}
                           </span>
                         </button>
                       );
@@ -7678,7 +8562,11 @@ export default function AdminDashboardPage() {
 
               {/* Sub-Tab: Payment Requests */}
               {paymentsSubTab === "requests" && (
-                <div className="ad-table-card" style={{ padding: "24px" }} dir={t("admin_dashboard.ltr")}>
+                <div
+                  className="ad-table-card"
+                  style={{ padding: "24px" }}
+                  dir={t("admin_dashboard.ltr")}
+                >
                   {/* Filter Toolbar Header */}
                   <div
                     style={{
@@ -7693,13 +8581,31 @@ export default function AdminDashboardPage() {
                     }}
                     dir={t("admin_dashboard.ltr")}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <SlidersHorizontal size={20} style={{ color: "var(--accent)" }} />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <SlidersHorizontal
+                        size={20}
+                        style={{ color: "var(--accent)" }}
+                      />
                       <div>
-                        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#fff" }}>
+                        <h3
+                          style={{
+                            margin: 0,
+                            fontSize: "16px",
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
                           {t("admin_dashboard.transactions_filter_search")}
                         </h3>
-                        <span style={{ fontSize: "12px", color: "var(--text3)" }}>
+                        <span
+                          style={{ fontSize: "12px", color: "var(--text3)" }}
+                        >
                           {state.language === "en"
                             ? `Filter through ${pendingPayments.length} financial operations`
                             : `تصفية البحث ضمن ${pendingPayments.length} معاملة مالية`}
@@ -7707,7 +8613,14 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {/* CSV Export Button */}
                       <button
                         type="button"
@@ -7734,7 +8647,8 @@ export default function AdminDashboardPage() {
                       </button>
 
                       {/* Reset Filter Button */}
-                      {(paymentSearchQuery || paymentStatusFilter !== "all") && (
+                      {(paymentSearchQuery ||
+                        paymentStatusFilter !== "all") && (
                         <button
                           type="button"
                           className="btn btn-sm"
@@ -7769,10 +8683,12 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(240px, 1fr))",
                       gap: "16px",
                       marginBottom: "20px",
-                      background: "linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(13, 18, 32, 0.95))",
+                      background:
+                        "linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(13, 18, 32, 0.95))",
                       border: "1px solid rgba(255, 255, 255, 0.08)",
                       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
                       padding: "18px",
@@ -7783,7 +8699,15 @@ export default function AdminDashboardPage() {
                   >
                     {/* Search Input */}
                     <div style={{ position: "relative", flex: 1 }}>
-                      <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "block", marginBottom: "6px" }}>
+                      <label
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          color: "var(--text3)",
+                          display: "block",
+                          marginBottom: "6px",
+                        }}
+                      >
                         {t("admin_dashboard.search_keyword")}
                       </label>
                       <div style={{ position: "relative" }}>
@@ -7792,7 +8716,9 @@ export default function AdminDashboardPage() {
                           style={{
                             position: "absolute",
                             left: t("admin_dashboard.k_14px"),
-                            right: state.language?.startsWith('ar') ? "14px" : "auto",
+                            right: state.language?.startsWith("ar")
+                              ? "14px"
+                              : "auto",
                             top: "50%",
                             transform: "translateY(-50%)",
                             color: "var(--accent)",
@@ -7801,14 +8727,18 @@ export default function AdminDashboardPage() {
                         />
                         <input
                           className="field-input"
-                          placeholder={
-                            t("admin_dashboard.search_by_customer_name_email_or_ph")
-                          }
+                          placeholder={t(
+                            "admin_dashboard.search_by_customer_name_email_or_ph",
+                          )}
                           value={paymentSearchQuery}
-                          onChange={(e) => setPaymentSearchQuery(e.target.value)}
+                          onChange={(e) =>
+                            setPaymentSearchQuery(e.target.value)
+                          }
                           style={{
                             paddingLeft: t("admin_dashboard.k_40px"),
-                            paddingRight: state.language?.startsWith('ar') ? "40px" : "14px",
+                            paddingRight: state.language?.startsWith("ar")
+                              ? "40px"
+                              : "14px",
                             fontSize: "13px",
                             height: "44px",
                             background: "rgba(0, 0, 0, 0.3)",
@@ -7823,36 +8753,29 @@ export default function AdminDashboardPage() {
                     {/* Status Filter like User Management */}
                     <div className="ad-filter-item">
                       <CustomSelect
-                        label={
-                          t("admin_dashboard.subscription_status")
-                        }
+                        label={t("admin_dashboard.subscription_status")}
                         value={paymentStatusFilter}
                         onChange={(val) => setPaymentStatusFilter(val)}
                         icon={Filter}
                         options={[
                           {
                             value: "all",
-                            label:
-                              t("admin_dashboard.all_statuses_all"),
+                            label: t("admin_dashboard.all_statuses_all"),
                             icon: Sparkles,
                           },
                           {
                             value: "pending",
-                            label:
-                              t("admin_dashboard.pending_approval"),
+                            label: t("admin_dashboard.pending_approval"),
                             icon: Clock,
                           },
                           {
                             value: "approved",
-                            label:
-                              t("admin_dashboard.approved_payments"),
+                            label: t("admin_dashboard.approved_payments"),
                             icon: CheckCircle2,
                           },
                         ]}
                       />
                     </div>
-
-
                   </div>
 
                   {/* Transactions Table */}
@@ -7862,9 +8785,7 @@ export default function AdminDashboardPage() {
                         className="ad-submit-spinner"
                         style={{ margin: "0 auto 12px" }}
                       />
-                      <div>
-                        {t("admin_dashboard.loading_transactions")}
-                      </div>
+                      <div>{t("admin_dashboard.loading_transactions")}</div>
                     </div>
                   ) : pendingPayments.length === 0 ? (
                     <div className="ad-empty" style={{ padding: "40px 0" }}>
@@ -7926,7 +8847,9 @@ export default function AdminDashboardPage() {
                                 }}
                               />
                               <div>
-                                {t("admin_dashboard.no_matching_transactions_found")}
+                                {t(
+                                  "admin_dashboard.no_matching_transactions_found",
+                                )}
                               </div>
                             </div>
                           );
@@ -8007,7 +8930,9 @@ export default function AdminDashboardPage() {
                                             >
                                               {initials}
                                             </div>
-                                            <div style={{ textAlign: "center" }}>
+                                            <div
+                                              style={{ textAlign: "center" }}
+                                            >
                                               <div
                                                 style={{
                                                   fontWeight: "700",
@@ -8044,7 +8969,9 @@ export default function AdminDashboardPage() {
                                               fontSize: "12px",
                                             }}
                                           >
-                                            {p.paymentMethod || p.methodName || (t("admin_dashboard.n_a"))}
+                                            {p.paymentMethod ||
+                                              p.methodName ||
+                                              t("admin_dashboard.n_a")}
                                           </div>
                                         </td>
                                         <td style={{ textAlign: "center" }}>
@@ -8058,25 +8985,33 @@ export default function AdminDashboardPage() {
                                           >
                                             {p.createdAt?.seconds
                                               ? new Date(
-                                                p.createdAt.seconds * 1000,
-                                              ).toLocaleDateString(
-                                                t("admin_dashboard.en_us"),
-                                                {
-                                                  year: "numeric",
-                                                  month: "short",
-                                                  day: "numeric",
-                                                },
-                                              )
+                                                  p.createdAt.seconds * 1000,
+                                                ).toLocaleDateString(
+                                                  t("admin_dashboard.en_us"),
+                                                  {
+                                                    year: "numeric",
+                                                    month: "short",
+                                                    day: "numeric",
+                                                  },
+                                                )
                                               : "—"}
                                           </div>
                                         </td>
                                         <td style={{ textAlign: "center" }}>
-                                          {(p.receiptUrl || p.screenshotUrl || p.receipt || p.receiptImage) ? (
+                                          {p.receiptUrl ||
+                                          p.screenshotUrl ||
+                                          p.receipt ||
+                                          p.receiptImage ? (
                                             <button
                                               type="button"
                                               className="btn btn-xs"
                                               onClick={() =>
-                                                setPreviewReceiptUrl(p.receiptUrl || p.screenshotUrl || p.receipt || p.receiptImage)
+                                                setPreviewReceiptUrl(
+                                                  p.receiptUrl ||
+                                                    p.screenshotUrl ||
+                                                    p.receipt ||
+                                                    p.receiptImage,
+                                                )
                                               }
                                               style={{
                                                 background:
@@ -8098,7 +9033,9 @@ export default function AdminDashboardPage() {
                                             >
                                               <Eye size={12} />
                                               <span>
-                                                {t("admin_dashboard.preview_receipt")}
+                                                {t(
+                                                  "admin_dashboard.preview_receipt",
+                                                )}
                                               </span>
                                             </button>
                                           ) : (
@@ -8134,7 +9071,9 @@ export default function AdminDashboardPage() {
                                             >
                                               <Clock size={12} />
                                               <span>
-                                                {t("admin_dashboard.pending_approval")}
+                                                {t(
+                                                  "admin_dashboard.pending_approval",
+                                                )}
                                               </span>
                                             </span>
                                           ) : (
@@ -8165,13 +9104,23 @@ export default function AdminDashboardPage() {
                                         </td>
                                         <td style={{ textAlign: "center" }}>
                                           {isPending ? (
-                                            <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                gap: "8px",
+                                                justifyContent: "center",
+                                              }}
+                                            >
                                               <button
                                                 className="btn btn-xs btn-primary"
                                                 onClick={() => {
                                                   setPaymentToApprove(p);
-                                                  setSelectedPlanForPayment(p.planId || "");
-                                                  setSelectedDurationForPayment(30);
+                                                  setSelectedPlanForPayment(
+                                                    p.planId || "",
+                                                  );
+                                                  setSelectedDurationForPayment(
+                                                    30,
+                                                  );
                                                 }}
                                                 style={{
                                                   fontSize: "11px",
@@ -8186,21 +9135,27 @@ export default function AdminDashboardPage() {
                                               >
                                                 <Check size={13} />
                                                 <span>
-                                                  {t("admin_dashboard.approve_plan")}
+                                                  {t(
+                                                    "admin_dashboard.approve_plan",
+                                                  )}
                                                 </span>
                                               </button>
 
                                               <button
                                                 className="btn btn-xs"
-                                                onClick={() => setPaymentToReject(p)}
+                                                onClick={() =>
+                                                  setPaymentToReject(p)
+                                                }
                                                 style={{
                                                   fontSize: "11px",
                                                   fontWeight: "700",
                                                   padding: "6px 12px",
                                                   borderRadius: "8px",
-                                                  background: "rgba(239, 68, 68, 0.1)",
+                                                  background:
+                                                    "rgba(239, 68, 68, 0.1)",
                                                   color: "var(--red)",
-                                                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                                                  border:
+                                                    "1px solid rgba(239, 68, 68, 0.3)",
                                                   display: "inline-flex",
                                                   alignItems: "center",
                                                   justifyContent: "center",
@@ -8220,8 +9175,7 @@ export default function AdminDashboardPage() {
                                                 color: "var(--text3)",
                                               }}
                                             >
-                                              ✓{" "}
-                                              {t("admin_dashboard.verified")}
+                                              ✓ {t("admin_dashboard.verified")}
                                             </span>
                                           )}
                                         </td>
@@ -8251,23 +9205,36 @@ export default function AdminDashboardPage() {
               )}
               {/* Sub-Tab 1: Transactions Log */}
               {paymentsSubTab === "transactions" && (
-                <div className="ad-table-card" style={{ padding: "24px" }} dir={t("admin_dashboard.ltr")}>
+                <div
+                  className="ad-table-card"
+                  style={{ padding: "24px" }}
+                  dir={t("admin_dashboard.ltr")}
+                >
                   <div style={{ marginBottom: "20px" }}>
                     <h3 style={{ margin: 0, color: "#fff", fontSize: "18px" }}>
                       {t("admin_dashboard.transactions_history_log")}
                     </h3>
-                    <p style={{ margin: "4px 0 0 0", color: "var(--text3)", fontSize: "13px" }}>
+                    <p
+                      style={{
+                        margin: "4px 0 0 0",
+                        color: "var(--text3)",
+                        fontSize: "13px",
+                      }}
+                    >
                       {t("admin_dashboard.a_read_only_log_of_all_processed_pa")}
                     </p>
                   </div>
                   <div className="table-responsive">
                     {(() => {
-                      const transactionLogs = pendingPayments.filter(p => p.status !== "pending");
+                      const transactionLogs = pendingPayments.filter(
+                        (p) => p.status !== "pending",
+                      );
                       const itemsPerPage = 8;
-                      const totalTransactionsPages = Math.ceil(transactionLogs.length / itemsPerPage) || 1;
+                      const totalTransactionsPages =
+                        Math.ceil(transactionLogs.length / itemsPerPage) || 1;
                       const paginatedLogs = transactionLogs.slice(
                         (transactionsCurrentPage - 1) * itemsPerPage,
-                        transactionsCurrentPage * itemsPerPage
+                        transactionsCurrentPage * itemsPerPage,
                       );
 
                       return (
@@ -8288,17 +9255,38 @@ export default function AdminDashboardPage() {
                                 <tr key={p.id}>
                                   <td>
                                     <div>
-                                      <strong style={{ color: "#fff", display: "block", fontSize: "13px" }}>
+                                      <strong
+                                        style={{
+                                          color: "#fff",
+                                          display: "block",
+                                          fontSize: "13px",
+                                        }}
+                                      >
                                         {p.userName || "User"}
                                       </strong>
-                                      <span style={{ color: "var(--text3)", fontSize: "11px" }}>
+                                      <span
+                                        style={{
+                                          color: "var(--text3)",
+                                          fontSize: "11px",
+                                        }}
+                                      >
                                         {p.userEmail || p.userPhone}
                                       </span>
                                     </div>
                                   </td>
                                   <td>{p.planName || p.planId || "N/A"}</td>
-                                  <td>{p.paymentMethod || p.methodName || (t("admin_dashboard.n_a"))}</td>
-                                  <td>{p.amount ? (p.currency === 'USD' ? `$${p.amount}` : `${p.amount} ${p.currency || 'EGP'}`) : "-"}</td>
+                                  <td>
+                                    {p.paymentMethod ||
+                                      p.methodName ||
+                                      t("admin_dashboard.n_a")}
+                                  </td>
+                                  <td>
+                                    {p.amount
+                                      ? p.currency === "USD"
+                                        ? `$${p.amount}`
+                                        : `${p.amount} ${p.currency || "EGP"}`
+                                      : "-"}
+                                  </td>
                                   <td>
                                     <span
                                       style={{
@@ -8306,43 +9294,89 @@ export default function AdminDashboardPage() {
                                         fontWeight: "800",
                                         padding: "4px 10px",
                                         borderRadius: "12px",
-                                        background: p.status === "rejected" ? "rgba(239, 68, 68, 0.12)" : "rgba(16, 185, 129, 0.12)",
-                                        color: p.status === "rejected" ? "#EF4444" : "#10B981",
-                                        border: `1px solid ${p.status === "rejected" ? "rgba(239, 68, 68, 0.3)" : "rgba(16, 185, 129, 0.3)"}`
+                                        background:
+                                          p.status === "rejected"
+                                            ? "rgba(239, 68, 68, 0.12)"
+                                            : "rgba(16, 185, 129, 0.12)",
+                                        color:
+                                          p.status === "rejected"
+                                            ? "#EF4444"
+                                            : "#10B981",
+                                        border: `1px solid ${p.status === "rejected" ? "rgba(239, 68, 68, 0.3)" : "rgba(16, 185, 129, 0.3)"}`,
                                       }}
                                     >
                                       {p.status === "rejected"
-                                        ? (t("admin_dashboard.rejected"))
-                                        : (t("admin_dashboard.approved_completed"))}
+                                        ? t("admin_dashboard.rejected")
+                                        : t(
+                                            "admin_dashboard.approved_completed",
+                                          )}
                                     </span>
                                   </td>
                                   <td>
                                     {p.createdAt?.seconds
-                                      ? new Date(p.createdAt.seconds * 1000).toLocaleDateString(
-                                        t("admin_dashboard.en_us")
-                                      )
+                                      ? new Date(
+                                          p.createdAt.seconds * 1000,
+                                        ).toLocaleDateString(
+                                          t("admin_dashboard.en_us"),
+                                        )
                                       : "-"}
                                   </td>
                                 </tr>
                               ))}
                               {loadingPayments ? (
                                 <tr>
-                                  <td colSpan="6" style={{ textAlign: "center", padding: "40px" }}>
+                                  <td
+                                    colSpan="6"
+                                    style={{
+                                      textAlign: "center",
+                                      padding: "40px",
+                                    }}
+                                  >
                                     <div
                                       className="ad-submit-spinner"
-                                      style={{ margin: "0 auto 12px", borderTopColor: "var(--accent)" }}
+                                      style={{
+                                        margin: "0 auto 12px",
+                                        borderTopColor: "var(--accent)",
+                                      }}
                                     />
-                                    <div style={{ color: "var(--text3)", fontSize: "14px" }}>
-                                      {t("admin_dashboard.loading_transactions")}
+                                    <div
+                                      style={{
+                                        color: "var(--text3)",
+                                        fontSize: "14px",
+                                      }}
+                                    >
+                                      {t(
+                                        "admin_dashboard.loading_transactions",
+                                      )}
                                     </div>
                                   </td>
                                 </tr>
                               ) : paginatedLogs.length === 0 ? (
                                 <tr>
-                                  <td colSpan="6" style={{ textAlign: "center", padding: "40px" }}>
-                                    <CreditCard size={32} style={{ opacity: 0.3, margin: "0 auto 12px", display: "block" }} />
-                                    <div style={{ color: "var(--text)", fontWeight: "600" }}>
-                                      {t("admin_dashboard.no_transactions_found")}
+                                  <td
+                                    colSpan="6"
+                                    style={{
+                                      textAlign: "center",
+                                      padding: "40px",
+                                    }}
+                                  >
+                                    <CreditCard
+                                      size={32}
+                                      style={{
+                                        opacity: 0.3,
+                                        margin: "0 auto 12px",
+                                        display: "block",
+                                      }}
+                                    />
+                                    <div
+                                      style={{
+                                        color: "var(--text)",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {t(
+                                        "admin_dashboard.no_transactions_found",
+                                      )}
                                     </div>
                                   </td>
                                 </tr>
@@ -8368,7 +9402,11 @@ export default function AdminDashboardPage() {
 
               {/* Sub-Tab 3: Payment Gateways Section */}
               {paymentsSubTab === "gateways" && (
-                <div className="ad-table-card" style={{ padding: "24px" }} dir={t("admin_dashboard.ltr")}>
+                <div
+                  className="ad-table-card"
+                  style={{ padding: "24px" }}
+                  dir={t("admin_dashboard.ltr")}
+                >
                   {/* Header & Save Button Bar */}
                   <div
                     style={{
@@ -8393,9 +9431,14 @@ export default function AdminDashboardPage() {
                           gap: "8px",
                         }}
                       >
-                        <CreditCard size={20} style={{ color: "var(--accent)" }} />
+                        <CreditCard
+                          size={20}
+                          style={{ color: "var(--accent)" }}
+                        />
                         <span>
-                          {t("admin_dashboard.payment_gateways_methods_settings")}
+                          {t(
+                            "admin_dashboard.payment_gateways_methods_settings",
+                          )}
                         </span>
                       </div>
                       <div
@@ -8405,7 +9448,9 @@ export default function AdminDashboardPage() {
                           marginTop: "4px",
                         }}
                       >
-                        {t("admin_dashboard.configure_instapay_vodafone_cash_ba")}
+                        {t(
+                          "admin_dashboard.configure_instapay_vodafone_cash_ba",
+                        )}
                       </div>
                     </div>
 
@@ -8455,7 +9500,8 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(320px, 1fr))",
                       gap: "24px",
                     }}
                   >
@@ -8463,7 +9509,8 @@ export default function AdminDashboardPage() {
                     <div
                       style={{
                         gridColumn: "1 / -1",
-                        background: "linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(13, 18, 32, 0.95))",
+                        background:
+                          "linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(13, 18, 32, 0.95))",
                         border: "1px solid rgba(139, 92, 246, 0.3)",
                         borderRadius: "18px",
                         padding: "24px",
@@ -8474,13 +9521,21 @@ export default function AdminDashboardPage() {
                         backdropFilter: "blur(12px)",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          marginBottom: "10px",
+                        }}
+                      >
                         <div
                           style={{
                             width: 44,
                             height: 44,
                             borderRadius: "14px",
-                            background: "radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.05) 100%)",
+                            background:
+                              "radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.05) 100%)",
                             border: "1px solid rgba(139, 92, 246, 0.4)",
                             display: "flex",
                             alignItems: "center",
@@ -8492,19 +9547,53 @@ export default function AdminDashboardPage() {
                           <Wallet size={22} color="#8B5CF6" />
                         </div>
                         <div>
-                          <div style={{ fontSize: "16px", fontWeight: "800", color: "#fff", letterSpacing: "0.2px" }}>
+                          <div
+                            style={{
+                              fontSize: "16px",
+                              fontWeight: "800",
+                              color: "#fff",
+                              letterSpacing: "0.2px",
+                            }}
+                          >
                             {t("admin_dashboard.manual_payment_methods")}
                           </div>
-                          <div style={{ fontSize: "11px", color: "var(--text3)", fontWeight: "600" }}>
-                            {t("admin_dashboard.bank_transfers_vodafone_cash_crypto")}
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--text3)",
+                              fontWeight: "600",
+                            }}
+                          >
+                            {t(
+                              "admin_dashboard.bank_transfers_vodafone_cash_crypto",
+                            )}
                           </div>
                         </div>
                       </div>
 
                       {/* Add New Method Form */}
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "flex-end", background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "12px",
+                          alignItems: "flex-end",
+                          background: "rgba(0,0,0,0.2)",
+                          padding: "16px",
+                          borderRadius: "12px",
+                          border: "1px solid rgba(255,255,255,0.05)",
+                        }}
+                      >
                         <div style={{ flex: "1 1 200px" }}>
-                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "block", marginBottom: "6px" }}>
+                          <label
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              color: "var(--text3)",
+                              display: "block",
+                              marginBottom: "6px",
+                            }}
+                          >
                             {t("admin_dashboard.method_name_e_g_vodafone_cash")}
                           </label>
                           <input
@@ -8526,7 +9615,15 @@ export default function AdminDashboardPage() {
                           />
                         </div>
                         <div style={{ flex: "1 1 200px" }}>
-                          <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "block", marginBottom: "6px" }}>
+                          <label
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              color: "var(--text3)",
+                              display: "block",
+                              marginBottom: "6px",
+                            }}
+                          >
                             {t("admin_dashboard.transfer_details_number")}
                           </label>
                           <input
@@ -8552,15 +9649,24 @@ export default function AdminDashboardPage() {
                           type="button"
                           onClick={() => {
                             if (!newPayName.trim() || !newPayValue.trim()) {
-                              toast(t("admin_dashboard.please_enter_both_name_and_details"), "error");
+                              toast(
+                                t(
+                                  "admin_dashboard.please_enter_both_name_and_details",
+                                ),
+                                "error",
+                              );
                               return;
                             }
                             setPaymentMethods((prev) => ({
                               ...prev,
                               manualMethods: [
                                 ...(prev.manualMethods || []),
-                                { id: "pay-" + Date.now(), name: newPayName.trim(), value: newPayValue.trim() }
-                              ]
+                                {
+                                  id: "pay-" + Date.now(),
+                                  name: newPayName.trim(),
+                                  value: newPayValue.trim(),
+                                },
+                              ],
                             }));
                             setNewPayName("");
                             setNewPayValue("");
@@ -8568,7 +9674,8 @@ export default function AdminDashboardPage() {
                           style={{
                             height: "42px",
                             padding: "0 20px",
-                            background: "linear-gradient(135deg, #8B5CF6, #6D28D9)",
+                            background:
+                              "linear-gradient(135deg, #8B5CF6, #6D28D9)",
                             color: "#fff",
                             border: "none",
                             borderRadius: "10px",
@@ -8577,7 +9684,7 @@ export default function AdminDashboardPage() {
                             display: "flex",
                             alignItems: "center",
                             gap: "8px",
-                            boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)"
+                            boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
                           }}
                         >
                           <Plus size={16} />
@@ -8586,36 +9693,111 @@ export default function AdminDashboardPage() {
                       </div>
 
                       {/* Methods List */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                        {(!paymentMethods.manualMethods || paymentMethods.manualMethods.length === 0) && (
-                          <div style={{ textAlign: "center", padding: "20px", color: "var(--text3)", fontSize: "13px" }}>
-                            {t("admin_dashboard.no_manual_payment_methods_added_yet")}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "10px",
+                        }}
+                      >
+                        {(!paymentMethods.manualMethods ||
+                          paymentMethods.manualMethods.length === 0) && (
+                          <div
+                            style={{
+                              textAlign: "center",
+                              padding: "20px",
+                              color: "var(--text3)",
+                              fontSize: "13px",
+                            }}
+                          >
+                            {t(
+                              "admin_dashboard.no_manual_payment_methods_added_yet",
+                            )}
                           </div>
                         )}
                         {paymentMethods.manualMethods?.map((method) => (
-                          <div key={method.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "10px" }}>
+                          <div
+                            key={method.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              padding: "12px 16px",
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(255,255,255,0.05)",
+                              borderRadius: "10px",
+                            }}
+                          >
                             {editingPayId === method.id ? (
-                              <div style={{ display: "flex", gap: "10px", flex: 1, marginRight: "12px" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  flex: 1,
+                                  marginRight: "12px",
+                                }}
+                              >
                                 <input
                                   type="text"
                                   value={editingPayName}
-                                  onChange={(e) => setEditingPayName(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingPayName(e.target.value)
+                                  }
                                   className="input"
-                                  style={{ flex: 1, height: "36px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                                  style={{
+                                    flex: 1,
+                                    height: "36px",
+                                    background: "rgba(0,0,0,0.3)",
+                                    border: "1px solid rgba(139,92,246,0.3)",
+                                    borderRadius: "8px",
+                                    color: "#fff",
+                                    padding: "0 10px",
+                                    fontSize: "12px",
+                                  }}
                                 />
                                 <input
                                   type="text"
                                   dir="ltr"
                                   value={editingPayValue}
-                                  onChange={(e) => setEditingPayValue(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingPayValue(e.target.value)
+                                  }
                                   className="input"
-                                  style={{ flex: 2, height: "36px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px", fontFamily: "monospace" }}
+                                  style={{
+                                    flex: 2,
+                                    height: "36px",
+                                    background: "rgba(0,0,0,0.3)",
+                                    border: "1px solid rgba(139,92,246,0.3)",
+                                    borderRadius: "8px",
+                                    color: "#fff",
+                                    padding: "0 10px",
+                                    fontSize: "12px",
+                                    fontFamily: "monospace",
+                                  }}
                                 />
                               </div>
                             ) : (
                               <div>
-                                <div style={{ fontSize: "14px", fontWeight: "700", color: "#fff" }}>{method.name}</div>
-                                <div style={{ fontSize: "12px", color: "var(--text3)", fontFamily: "monospace", marginTop: "4px" }} dir="ltr">{method.value}</div>
+                                <div
+                                  style={{
+                                    fontSize: "14px",
+                                    fontWeight: "700",
+                                    color: "#fff",
+                                  }}
+                                >
+                                  {method.name}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "var(--text3)",
+                                    fontFamily: "monospace",
+                                    marginTop: "4px",
+                                  }}
+                                  dir="ltr"
+                                >
+                                  {method.value}
+                                </div>
                               </div>
                             )}
 
@@ -8624,25 +9806,62 @@ export default function AdminDashboardPage() {
                                 <>
                                   <button
                                     onClick={() => {
-                                      if (!editingPayName.trim() || !editingPayValue.trim()) {
-                                        toast("يرجى إدخال الاسم والتفاصيل", "error");
+                                      if (
+                                        !editingPayName.trim() ||
+                                        !editingPayValue.trim()
+                                      ) {
+                                        toast(
+                                          "يرجى إدخال الاسم والتفاصيل",
+                                          "error",
+                                        );
                                         return;
                                       }
                                       setPaymentMethods((prev) => ({
                                         ...prev,
-                                        manualMethods: prev.manualMethods.map((m) =>
-                                          m.id === method.id ? { ...m, name: editingPayName.trim(), value: editingPayValue.trim() } : m
-                                        )
+                                        manualMethods: prev.manualMethods.map(
+                                          (m) =>
+                                            m.id === method.id
+                                              ? {
+                                                  ...m,
+                                                  name: editingPayName.trim(),
+                                                  value: editingPayValue.trim(),
+                                                }
+                                              : m,
+                                        ),
                                       }));
                                       setEditingPayId(null);
                                     }}
-                                    style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.15)", color: "#10B981", border: "1px solid rgba(16, 185, 129, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "8px",
+                                      background: "rgba(16, 185, 129, 0.15)",
+                                      color: "#10B981",
+                                      border:
+                                        "1px solid rgba(16, 185, 129, 0.3)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                    }}
                                   >
                                     <Check size={14} />
                                   </button>
                                   <button
                                     onClick={() => setEditingPayId(null)}
-                                    style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.1)", color: "#fff", border: "1px solid rgba(255, 255, 255, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "8px",
+                                      background: "rgba(255, 255, 255, 0.1)",
+                                      color: "#fff",
+                                      border:
+                                        "1px solid rgba(255, 255, 255, 0.2)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                    }}
                                   >
                                     <X size={14} />
                                   </button>
@@ -8655,7 +9874,19 @@ export default function AdminDashboardPage() {
                                       setEditingPayName(method.name);
                                       setEditingPayValue(method.value);
                                     }}
-                                    style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(139, 92, 246, 0.15)", color: "#8B5CF6", border: "1px solid rgba(139, 92, 246, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "8px",
+                                      background: "rgba(139, 92, 246, 0.15)",
+                                      color: "#8B5CF6",
+                                      border:
+                                        "1px solid rgba(139, 92, 246, 0.3)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                    }}
                                   >
                                     <Edit size={14} />
                                   </button>
@@ -8663,10 +9894,25 @@ export default function AdminDashboardPage() {
                                     onClick={() => {
                                       setPaymentMethods((prev) => ({
                                         ...prev,
-                                        manualMethods: prev.manualMethods.filter((m) => m.id !== method.id)
+                                        manualMethods:
+                                          prev.manualMethods.filter(
+                                            (m) => m.id !== method.id,
+                                          ),
                                       }));
                                     }}
-                                    style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(239, 68, 68, 0.15)", color: "#EF4444", border: "1px solid rgba(239, 68, 68, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      borderRadius: "8px",
+                                      background: "rgba(239, 68, 68, 0.15)",
+                                      color: "#EF4444",
+                                      border:
+                                        "1px solid rgba(239, 68, 68, 0.3)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                    }}
                                   >
                                     <Trash2 size={14} />
                                   </button>
@@ -8679,50 +9925,82 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* ── Stripe Setup: Responsive Flex Layout ── */}
-                    <div style={{
-                      gridColumn: "1 / -1",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "24px",
-                      alignItems: "flex-start",
-                      width: "100%",
-                    }}>
-
+                    <div
+                      style={{
+                        gridColumn: "1 / -1",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "24px",
+                        alignItems: "flex-start",
+                        width: "100%",
+                      }}
+                    >
                       {/* ═══════════════════════════════════════════════════════
                         LEFT COL — Stripe Setup Guide Panel
                     ═══════════════════════════════════════════════════════ */}
-                      <div style={{
-                        order: 2,
-                        flex: "1 1 500px",
-                        minWidth: "300px",
-                        background: "linear-gradient(145deg, rgba(99,102,241,0.08) 0%, rgba(13,18,32,0.95) 100%)",
-                        border: "1px solid rgba(99,102,241,0.25)",
-                        borderRadius: "18px",
-                        padding: "32px",
-                        backdropFilter: "blur(12px)",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "24px",
-                        boxShadow: "0 8px 32px -8px rgba(99,102,241,0.12)",
-                      }}>
-
+                      <div
+                        style={{
+                          order: 2,
+                          flex: "1 1 500px",
+                          minWidth: "300px",
+                          background:
+                            "linear-gradient(145deg, rgba(99,102,241,0.08) 0%, rgba(13,18,32,0.95) 100%)",
+                          border: "1px solid rgba(99,102,241,0.25)",
+                          borderRadius: "18px",
+                          padding: "32px",
+                          backdropFilter: "blur(12px)",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "24px",
+                          boxShadow: "0 8px 32px -8px rgba(99,102,241,0.12)",
+                        }}
+                      >
                         {/* Header */}
                         <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                            <div style={{
-                              width: 36, height: 36, borderRadius: "10px",
-                              background: "radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(99,102,241,0.06) 100%)",
-                              border: "1px solid rgba(99,102,241,0.4)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: "10px",
+                                background:
+                                  "radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(99,102,241,0.06) 100%)",
+                                border: "1px solid rgba(99,102,241,0.4)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
                               <HelpCircle size={18} color="#818CF8" />
                             </div>
                             <div>
-                              <div style={{ fontSize: "13px", fontWeight: "800", color: "#fff", lineHeight: 1.3 }}>
+                              <div
+                                style={{
+                                  fontSize: "13px",
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                  lineHeight: 1.3,
+                                }}
+                              >
                                 {t("admin_dashboard.how_to_connect_stripe")}
                               </div>
-                              <div style={{ fontSize: "10px", color: "var(--text3)", marginTop: "2px" }}>
-                                {t("admin_dashboard.quick_guide_to_retrieve_keys_and_ac")}
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  color: "var(--text3)",
+                                  marginTop: "2px",
+                                }}
+                              >
+                                {t(
+                                  "admin_dashboard.quick_guide_to_retrieve_keys_and_ac",
+                                )}
                               </div>
                             </div>
                           </div>
@@ -8731,13 +10009,20 @@ export default function AdminDashboardPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                              display: "inline-flex", alignItems: "center", gap: "6px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
                               marginTop: "8px",
-                              background: "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08))",
+                              background:
+                                "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08))",
                               border: "1px solid rgba(99,102,241,0.35)",
-                              borderRadius: "8px", padding: "6px 12px",
-                              color: "#818CF8", fontSize: "11px", fontWeight: "700",
-                              textDecoration: "none", cursor: "pointer",
+                              borderRadius: "8px",
+                              padding: "6px 12px",
+                              color: "#818CF8",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              textDecoration: "none",
+                              cursor: "pointer",
                               transition: "all 0.2s",
                             }}
                           >
@@ -8747,38 +10032,197 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Divider */}
-                        <div style={{ height: "1px", background: "rgba(99,102,241,0.15)" }} />
+                        <div
+                          style={{
+                            height: "1px",
+                            background: "rgba(99,102,241,0.15)",
+                          }}
+                        />
 
                         {/* Step 1 — API Keys */}
                         <div style={{ display: "flex", gap: "12px" }}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: "8px", flexShrink: 0,
-                            background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "11px", fontWeight: "800", color: "#818CF8",
-                          }}>1</div>
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "8px",
+                              flexShrink: 0,
+                              background: "rgba(99,102,241,0.15)",
+                              border: "1px solid rgba(99,102,241,0.3)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "11px",
+                              fontWeight: "800",
+                              color: "#818CF8",
+                            }}
+                          >
+                            1
+                          </div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                marginBottom: "6px",
+                              }}
+                            >
                               <Key size={13} color="#818CF8" />
-                              <span style={{ fontSize: "12px", fontWeight: "800", color: "#fff" }}>
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                }}
+                              >
                                 {t("admin_dashboard.get_api_keys")}
                               </span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "5px",
+                              }}
+                            >
                               {[
-                                state.language === "en"
-                                  ? <>Go to <b style={{ color: "#818CF8" }}>Developers → API Keys</b> in Stripe Dashboard.</>
-                                  : <>اذهب إلى <b style={{ color: "#818CF8" }}>Developers ➔ API Keys</b> في لوحة تحكم Stripe.</>,
-                                state.language === "en"
-                                  ? <>Copy <b style={{ color: "#10B981" }}>Publishable Key</b> (starts with <code style={{ color: "#818CF8", fontSize: "10px" }}>pk_test_</code> or <code style={{ color: "#818CF8", fontSize: "10px" }}>pk_live_</code>) → paste in <b>Publishable Key</b> field.</>
-                                  : <>انسخ <b style={{ color: "#10B981" }}>Publishable Key</b> (يبدأ بـ <code style={{ color: "#818CF8", fontSize: "10px" }}>pk_test_</code> أو <code style={{ color: "#818CF8", fontSize: "10px" }}>pk_live_</code>) وضعه في خانة <b>المفتاح العام</b>.</>,
-                                state.language === "en"
-                                  ? <>Click <b style={{ color: "#F59E0B" }}>Reveal test key</b> to copy <b style={{ color: "#10B981" }}>Secret Key</b> (starts with <code style={{ color: "#818CF8", fontSize: "10px" }}>sk_</code>) → paste in <b>Secret Key</b> field.</>
-                                  : <>انقر على <b style={{ color: "#F59E0B" }}>Reveal test key</b> لنسخ <b style={{ color: "#10B981" }}>Secret Key</b> (يبدأ بـ <code style={{ color: "#818CF8", fontSize: "10px" }}>sk_</code>) وضعه في خانة <b>المفتاح السري</b>.</>,
+                                state.language === "en" ? (
+                                  <>
+                                    Go to{" "}
+                                    <b style={{ color: "#818CF8" }}>
+                                      Developers → API Keys
+                                    </b>{" "}
+                                    in Stripe Dashboard.
+                                  </>
+                                ) : (
+                                  <>
+                                    اذهب إلى{" "}
+                                    <b style={{ color: "#818CF8" }}>
+                                      Developers ➔ API Keys
+                                    </b>{" "}
+                                    في لوحة تحكم Stripe.
+                                  </>
+                                ),
+                                state.language === "en" ? (
+                                  <>
+                                    Copy{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Publishable Key
+                                    </b>{" "}
+                                    (starts with{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      pk_test_
+                                    </code>{" "}
+                                    or{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      pk_live_
+                                    </code>
+                                    ) → paste in <b>Publishable Key</b> field.
+                                  </>
+                                ) : (
+                                  <>
+                                    انسخ{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Publishable Key
+                                    </b>{" "}
+                                    (يبدأ بـ{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      pk_test_
+                                    </code>{" "}
+                                    أو{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      pk_live_
+                                    </code>
+                                    ) وضعه في خانة <b>المفتاح العام</b>.
+                                  </>
+                                ),
+                                state.language === "en" ? (
+                                  <>
+                                    Click{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Reveal test key
+                                    </b>{" "}
+                                    to copy{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Secret Key
+                                    </b>{" "}
+                                    (starts with{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      sk_
+                                    </code>
+                                    ) → paste in <b>Secret Key</b> field.
+                                  </>
+                                ) : (
+                                  <>
+                                    انقر على{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Reveal test key
+                                    </b>{" "}
+                                    لنسخ{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Secret Key
+                                    </b>{" "}
+                                    (يبدأ بـ{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      sk_
+                                    </code>
+                                    ) وضعه في خانة <b>المفتاح السري</b>.
+                                  </>
+                                ),
                               ].map((item, i) => (
-                                <div key={i} style={{ display: "flex", gap: "7px", alignItems: "flex-start" }}>
-                                  <CheckCircle2 size={12} color="#6366F1" style={{ flexShrink: 0, marginTop: "2px" }} />
-                                  <span style={{ fontSize: "11px", color: "var(--text2)", lineHeight: 1.6 }}>{item}</span>
+                                <div
+                                  key={i}
+                                  style={{
+                                    display: "flex",
+                                    gap: "7px",
+                                    alignItems: "flex-start",
+                                  }}
+                                >
+                                  <CheckCircle2
+                                    size={12}
+                                    color="#6366F1"
+                                    style={{ flexShrink: 0, marginTop: "2px" }}
+                                  />
+                                  <span
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "var(--text2)",
+                                      lineHeight: 1.6,
+                                    }}
+                                  >
+                                    {item}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -8786,58 +10230,158 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Divider */}
-                        <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
+                        <div
+                          style={{
+                            height: "1px",
+                            background: "rgba(255,255,255,0.05)",
+                          }}
+                        />
 
                         {/* Step 2 — Webhook */}
                         <div style={{ display: "flex", gap: "12px" }}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: "8px", flexShrink: 0,
-                            background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "11px", fontWeight: "800", color: "#818CF8",
-                          }}>2</div>
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "8px",
+                              flexShrink: 0,
+                              background: "rgba(99,102,241,0.15)",
+                              border: "1px solid rgba(99,102,241,0.3)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "11px",
+                              fontWeight: "800",
+                              color: "#818CF8",
+                            }}
+                          >
+                            2
+                          </div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                marginBottom: "6px",
+                              }}
+                            >
                               <Zap size={13} color="#818CF8" />
-                              <span style={{ fontSize: "12px", fontWeight: "800", color: "#fff" }}>
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                }}
+                              >
                                 {t("admin_dashboard.set_up_webhook_optional")}
                               </span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "5px",
+                              }}
+                            >
                               {[
-                                state.language === "en"
-                                  ? <>Go to <b style={{ color: "#818CF8" }}>Developers → Webhooks</b> and click <b style={{ color: "#F59E0B" }}>Add endpoint</b>.</>
-                                  : <>اذهب إلى <b style={{ color: "#818CF8" }}>Developers ➔ Webhooks</b> واضغط على <b style={{ color: "#F59E0B" }}>Add endpoint</b>.</>,
-                                state.language === "en"
-                                  ? <>Paste this URL in the endpoint field:</>
-                                  : <>ضع رابط الـ Webhook الخاص بموقعك:</>,
+                                state.language === "en" ? (
+                                  <>
+                                    Go to{" "}
+                                    <b style={{ color: "#818CF8" }}>
+                                      Developers → Webhooks
+                                    </b>{" "}
+                                    and click{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Add endpoint
+                                    </b>
+                                    .
+                                  </>
+                                ) : (
+                                  <>
+                                    اذهب إلى{" "}
+                                    <b style={{ color: "#818CF8" }}>
+                                      Developers ➔ Webhooks
+                                    </b>{" "}
+                                    واضغط على{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Add endpoint
+                                    </b>
+                                    .
+                                  </>
+                                ),
+                                state.language === "en" ? (
+                                  <>Paste this URL in the endpoint field:</>
+                                ) : (
+                                  <>ضع رابط الـ Webhook الخاص بموقعك:</>
+                                ),
                               ].map((item, i) => (
-                                <div key={i} style={{ display: "flex", gap: "7px", alignItems: "flex-start" }}>
-                                  <CheckCircle2 size={12} color="#6366F1" style={{ flexShrink: 0, marginTop: "2px" }} />
-                                  <span style={{ fontSize: "11px", color: "var(--text2)", lineHeight: 1.6 }}>{item}</span>
+                                <div
+                                  key={i}
+                                  style={{
+                                    display: "flex",
+                                    gap: "7px",
+                                    alignItems: "flex-start",
+                                  }}
+                                >
+                                  <CheckCircle2
+                                    size={12}
+                                    color="#6366F1"
+                                    style={{ flexShrink: 0, marginTop: "2px" }}
+                                  />
+                                  <span
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "var(--text2)",
+                                      lineHeight: 1.6,
+                                    }}
+                                  >
+                                    {item}
+                                  </span>
                                 </div>
                               ))}
                             </div>
                             {/* Webhook URL box */}
-                            <div style={{
-                              margin: "12px 0",
-                              background: "rgba(0,0,0,0.5)",
-                              border: "1px solid rgba(99,102,241,0.3)",
-                              borderRadius: "10px", padding: "12px 16px",
-                              fontFamily: "monospace", fontSize: "11.5px", color: "#818CF8",
-                              wordBreak: "break-all", lineHeight: 1.6,
-                              display: "flex", alignItems: "center", gap: "12px",
-                              justifyContent: "space-between",
-                              flexWrap: "wrap"
-                            }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <Webhook size={14} style={{ flexShrink: 0, color: "#6366F1" }} />
-                                <span>https://us-central1-event-upklick.cloudfunctions.net/stripeWebhook</span>
+                            <div
+                              style={{
+                                margin: "12px 0",
+                                background: "rgba(0,0,0,0.5)",
+                                border: "1px solid rgba(99,102,241,0.3)",
+                                borderRadius: "10px",
+                                padding: "12px 16px",
+                                fontFamily: "monospace",
+                                fontSize: "11.5px",
+                                color: "#818CF8",
+                                wordBreak: "break-all",
+                                lineHeight: 1.6,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                }}
+                              >
+                                <Webhook
+                                  size={14}
+                                  style={{ flexShrink: 0, color: "#6366F1" }}
+                                />
+                                <span>
+                                  https://us-central1-event-upklick.cloudfunctions.net/stripeWebhook
+                                </span>
                               </div>
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigator.clipboard.writeText("https://us-central1-event-upklick.cloudfunctions.net/stripeWebhook");
+                                  navigator.clipboard.writeText(
+                                    "https://us-central1-event-upklick.cloudfunctions.net/stripeWebhook",
+                                  );
                                   toast(t("admin_dashboard.copied"), "success");
                                 }}
                                 style={{
@@ -8852,25 +10396,104 @@ export default function AdminDashboardPage() {
                                   gap: "6px",
                                   fontSize: "11px",
                                   fontWeight: "bold",
-                                  transition: "all 0.2s"
+                                  transition: "all 0.2s",
                                 }}
                               >
                                 <Copy size={12} />
                                 {t("admin_dashboard.copy")}
                               </button>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "5px",
+                              }}
+                            >
                               {[
-                                state.language === "en"
-                                  ? <>Select event: <code style={{ color: "#818CF8", fontSize: "10px" }}>checkout.session.completed</code></>
-                                  : <>حدد الحدث (Event): <code style={{ color: "#818CF8", fontSize: "10px" }}>checkout.session.completed</code></>,
-                                state.language === "en"
-                                  ? <>Save, then copy <b style={{ color: "#10B981" }}>Signing Secret</b> (starts with <code style={{ color: "#818CF8", fontSize: "10px" }}>whsec_</code>) → paste in <b>Webhook Secret</b> field.</>
-                                  : <>اضغط حفظ، ثم انسخ <b style={{ color: "#10B981" }}>Signing Secret</b> (يبدأ بـ <code style={{ color: "#818CF8", fontSize: "10px" }}>whsec_</code>) وضعه في خانة <b>سر الـ Webhook</b>.</>,
+                                state.language === "en" ? (
+                                  <>
+                                    Select event:{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      checkout.session.completed
+                                    </code>
+                                  </>
+                                ) : (
+                                  <>
+                                    حدد الحدث (Event):{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      checkout.session.completed
+                                    </code>
+                                  </>
+                                ),
+                                state.language === "en" ? (
+                                  <>
+                                    Save, then copy{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Signing Secret
+                                    </b>{" "}
+                                    (starts with{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      whsec_
+                                    </code>
+                                    ) → paste in <b>Webhook Secret</b> field.
+                                  </>
+                                ) : (
+                                  <>
+                                    اضغط حفظ، ثم انسخ{" "}
+                                    <b style={{ color: "#10B981" }}>
+                                      Signing Secret
+                                    </b>{" "}
+                                    (يبدأ بـ{" "}
+                                    <code
+                                      style={{
+                                        color: "#818CF8",
+                                        fontSize: "10px",
+                                      }}
+                                    >
+                                      whsec_
+                                    </code>
+                                    ) وضعه في خانة <b>سر الـ Webhook</b>.
+                                  </>
+                                ),
                               ].map((item, i) => (
-                                <div key={i} style={{ display: "flex", gap: "7px", alignItems: "flex-start" }}>
-                                  <CheckCircle2 size={12} color="#6366F1" style={{ flexShrink: 0, marginTop: "2px" }} />
-                                  <span style={{ fontSize: "11px", color: "var(--text2)", lineHeight: 1.6 }}>{item}</span>
+                                <div
+                                  key={i}
+                                  style={{
+                                    display: "flex",
+                                    gap: "7px",
+                                    alignItems: "flex-start",
+                                  }}
+                                >
+                                  <CheckCircle2
+                                    size={12}
+                                    color="#6366F1"
+                                    style={{ flexShrink: 0, marginTop: "2px" }}
+                                  />
+                                  <span
+                                    style={{
+                                      fontSize: "11px",
+                                      color: "var(--text2)",
+                                      lineHeight: 1.6,
+                                    }}
+                                  >
+                                    {item}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -8878,35 +10501,133 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Divider */}
-                        <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
+                        <div
+                          style={{
+                            height: "1px",
+                            background: "rgba(255,255,255,0.05)",
+                          }}
+                        />
 
                         {/* Step 3 — Test vs Live */}
-                        <div style={{
-                          background: "rgba(0,0,0,0.3)",
-                          border: "1px solid rgba(245,158,11,0.2)",
-                          borderRadius: "10px", padding: "12px 14px",
-                          display: "flex", gap: "10px", alignItems: "flex-start",
-                        }}>
-                          <ShieldCheck size={16} color="#F59E0B" style={{ flexShrink: 0, marginTop: "1px" }} />
+                        <div
+                          style={{
+                            background: "rgba(0,0,0,0.3)",
+                            border: "1px solid rgba(245,158,11,0.2)",
+                            borderRadius: "10px",
+                            padding: "12px 14px",
+                            display: "flex",
+                            gap: "10px",
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <ShieldCheck
+                            size={16}
+                            color="#F59E0B"
+                            style={{ flexShrink: 0, marginTop: "1px" }}
+                          />
                           <div>
-                            <div style={{ fontSize: "11px", fontWeight: "800", color: "#F59E0B", marginBottom: "6px" }}>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "800",
+                                color: "#F59E0B",
+                                marginBottom: "6px",
+                              }}
+                            >
                               {t("admin_dashboard.test_mode_vs_live_mode")}
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <div style={{ fontSize: "10.5px", color: "var(--text2)", lineHeight: 1.6 }}>
-                                🧪 {state.language === "en"
-                                  ? <>Use keys starting with <code style={{ color: "#818CF8" }}>pk_test_</code> / <code style={{ color: "#818CF8" }}>sk_test_</code> and test card <code style={{ color: "#10B981" }}>4242 4242 4242 4242</code></>
-                                  : <>للاختبار: استخدم مفاتيح تبدأ بـ <code style={{ color: "#818CF8" }}>pk_test_</code> / <code style={{ color: "#818CF8" }}>sk_test_</code> وبطاقة تجريبية <code style={{ color: "#10B981" }}>4242 4242 4242 4242</code></>}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "4px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "10.5px",
+                                  color: "var(--text2)",
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                🧪{" "}
+                                {state.language === "en" ? (
+                                  <>
+                                    Use keys starting with{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      pk_test_
+                                    </code>{" "}
+                                    /{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      sk_test_
+                                    </code>{" "}
+                                    and test card{" "}
+                                    <code style={{ color: "#10B981" }}>
+                                      4242 4242 4242 4242
+                                    </code>
+                                  </>
+                                ) : (
+                                  <>
+                                    للاختبار: استخدم مفاتيح تبدأ بـ{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      pk_test_
+                                    </code>{" "}
+                                    /{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      sk_test_
+                                    </code>{" "}
+                                    وبطاقة تجريبية{" "}
+                                    <code style={{ color: "#10B981" }}>
+                                      4242 4242 4242 4242
+                                    </code>
+                                  </>
+                                )}
                               </div>
-                              <div style={{ fontSize: "10.5px", color: "var(--text2)", lineHeight: 1.6 }}>
-                                🚀 {state.language === "en"
-                                  ? <>For production: disable <b style={{ color: "#F59E0B" }}>Test Mode</b> in Stripe and use <code style={{ color: "#818CF8" }}>pk_live_</code> / <code style={{ color: "#818CF8" }}>sk_live_</code> keys.</>
-                                  : <>للعمل الفعلي: أوقف <b style={{ color: "#F59E0B" }}>Test Mode</b> من أعلى شاشة Stripe وانسخ المفاتيح الحقيقية <code style={{ color: "#818CF8" }}>pk_live_</code> / <code style={{ color: "#818CF8" }}>sk_live_</code>.</>}
+                              <div
+                                style={{
+                                  fontSize: "10.5px",
+                                  color: "var(--text2)",
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                🚀{" "}
+                                {state.language === "en" ? (
+                                  <>
+                                    For production: disable{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Test Mode
+                                    </b>{" "}
+                                    in Stripe and use{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      pk_live_
+                                    </code>{" "}
+                                    /{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      sk_live_
+                                    </code>{" "}
+                                    keys.
+                                  </>
+                                ) : (
+                                  <>
+                                    للعمل الفعلي: أوقف{" "}
+                                    <b style={{ color: "#F59E0B" }}>
+                                      Test Mode
+                                    </b>{" "}
+                                    من أعلى شاشة Stripe وانسخ المفاتيح الحقيقية{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      pk_live_
+                                    </code>{" "}
+                                    /{" "}
+                                    <code style={{ color: "#818CF8" }}>
+                                      sk_live_
+                                    </code>
+                                    .
+                                  </>
+                                )}
                               </div>
                             </div>
                           </div>
                         </div>
-
                       </div>
                       {/* ═══════════════════════════════════════════════════════
                         RIGHT COL — Stripe Gateway Settings Card (unchanged)
@@ -8918,25 +10639,40 @@ export default function AdminDashboardPage() {
                           order: 1,
                           flex: "0 0 380px",
                           maxWidth: "100%",
-                          background: "linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(13, 18, 32, 0.95))",
+                          background:
+                            "linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(13, 18, 32, 0.95))",
                           border: "1px solid rgba(99, 102, 241, 0.3)",
                           borderRadius: "18px",
                           padding: "24px",
                           display: "flex",
                           flexDirection: "column",
                           gap: "18px",
-                          boxShadow: "0 10px 30px -10px rgba(99, 102, 241, 0.1)",
+                          boxShadow:
+                            "0 10px 30px -10px rgba(99, 102, 241, 0.1)",
                           backdropFilter: "blur(12px)",
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                            }}
+                          >
                             <div
                               style={{
                                 width: 44,
                                 height: 44,
                                 borderRadius: "14px",
-                                background: "radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.05) 100%)",
+                                background:
+                                  "radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.05) 100%)",
                                 border: "1px solid rgba(99, 102, 241, 0.4)",
                                 display: "flex",
                                 alignItems: "center",
@@ -8948,10 +10684,23 @@ export default function AdminDashboardPage() {
                               <ShieldCheck size={22} color="#6366F1" />
                             </div>
                             <div>
-                              <div style={{ fontSize: "16px", fontWeight: "800", color: "#fff", letterSpacing: "0.2px" }}>
+                              <div
+                                style={{
+                                  fontSize: "16px",
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                  letterSpacing: "0.2px",
+                                }}
+                              >
                                 Stripe Gateway
                               </div>
-                              <div style={{ fontSize: "11px", color: "var(--text3)", fontWeight: "600" }}>
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  color: "var(--text3)",
+                                  fontWeight: "600",
+                                }}
+                              >
                                 {t("admin_dashboard.credit_cards_links")}
                               </div>
                             </div>
@@ -8961,7 +10710,10 @@ export default function AdminDashboardPage() {
                             onClick={() =>
                               setPaymentMethods((prev) => ({
                                 ...prev,
-                                stripe: { ...prev.stripe, enabled: !prev.stripe?.enabled },
+                                stripe: {
+                                  ...prev.stripe,
+                                  enabled: !prev.stripe?.enabled,
+                                },
                               }))
                             }
                             style={{
@@ -8973,9 +10725,12 @@ export default function AdminDashboardPage() {
                                 : "rgba(255, 255, 255, 0.1)",
                               border: `1px solid ${paymentMethods.stripe?.enabled ? "#10B981" : "rgba(255, 255, 255, 0.15)"}`,
                               position: "relative",
-                              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                              transition:
+                                "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                               cursor: "pointer",
-                              boxShadow: paymentMethods.stripe?.enabled ? "0 0 12px rgba(16, 185, 129, 0.3)" : "none",
+                              boxShadow: paymentMethods.stripe?.enabled
+                                ? "0 0 12px rgba(16, 185, 129, 0.3)"
+                                : "none",
                             }}
                           >
                             <div
@@ -8986,38 +10741,83 @@ export default function AdminDashboardPage() {
                                 background: "#FFF",
                                 position: "absolute",
                                 top: "2px",
-                                left: paymentMethods.stripe?.enabled ? "25px" : "2px",
-                                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                                left: paymentMethods.stripe?.enabled
+                                  ? "25px"
+                                  : "2px",
+                                transition:
+                                  "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                                 boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
                               }}
                             />
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "12px",
+                          }}
+                        >
                           <div>
-                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
+                            <label
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "var(--text3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                marginBottom: "4px",
+                              }}
+                            >
                               <Key size={11} style={{ color: "#6366F1" }} />
-                              <span>{t("admin_dashboard.publishable_key")}</span>
+                              <span>
+                                {t("admin_dashboard.publishable_key")}
+                              </span>
                             </label>
                             <input
                               type="text"
                               dir="ltr"
                               placeholder="pk_live_..."
-                              value={paymentMethods.stripe?.publishableKey || ""}
+                              value={
+                                paymentMethods.stripe?.publishableKey || ""
+                              }
                               onChange={(e) =>
                                 setPaymentMethods((prev) => ({
                                   ...prev,
-                                  stripe: { ...prev.stripe, publishableKey: e.target.value },
+                                  stripe: {
+                                    ...prev.stripe,
+                                    publishableKey: e.target.value,
+                                  },
                                 }))
                               }
                               className="input"
-                              style={{ width: "100%", height: "38px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                background: "rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(99, 102, 241, 0.2)",
+                                borderRadius: "8px",
+                                color: "#fff",
+                                padding: "0 10px",
+                                fontSize: "12px",
+                              }}
                             />
                           </div>
 
                           <div>
-                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
+                            <label
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "var(--text3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                marginBottom: "4px",
+                              }}
+                            >
                               <Lock size={11} style={{ color: "#6366F1" }} />
                               <span>{t("admin_dashboard.secret_key")}</span>
                             </label>
@@ -9029,18 +10829,45 @@ export default function AdminDashboardPage() {
                               onChange={(e) =>
                                 setPaymentMethods((prev) => ({
                                   ...prev,
-                                  stripe: { ...prev.stripe, secretKey: e.target.value },
+                                  stripe: {
+                                    ...prev.stripe,
+                                    secretKey: e.target.value,
+                                  },
                                 }))
                               }
                               className="input"
-                              style={{ width: "100%", height: "38px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                background: "rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(99, 102, 241, 0.2)",
+                                borderRadius: "8px",
+                                color: "#fff",
+                                padding: "0 10px",
+                                fontSize: "12px",
+                              }}
                             />
                           </div>
 
                           <div>
-                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
-                              <CreditCard size={11} style={{ color: "#6366F1" }} />
-                              <span>{t("admin_dashboard.payment_link_monthly")}</span>
+                            <label
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "var(--text3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                marginBottom: "4px",
+                              }}
+                            >
+                              <CreditCard
+                                size={11}
+                                style={{ color: "#6366F1" }}
+                              />
+                              <span>
+                                {t("admin_dashboard.payment_link_monthly")}
+                              </span>
                             </label>
                             <input
                               type="text"
@@ -9050,45 +10877,102 @@ export default function AdminDashboardPage() {
                               onChange={(e) =>
                                 setPaymentMethods((prev) => ({
                                   ...prev,
-                                  stripe: { ...prev.stripe, paymentLink: e.target.value },
+                                  stripe: {
+                                    ...prev.stripe,
+                                    paymentLink: e.target.value,
+                                  },
                                 }))
                               }
                               className="input"
-                              style={{ width: "100%", height: "38px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                background: "rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(99, 102, 241, 0.2)",
+                                borderRadius: "8px",
+                                color: "#fff",
+                                padding: "0 10px",
+                                fontSize: "12px",
+                              }}
                             />
                           </div>
 
                           <div>
-                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
-                              <CreditCard size={11} style={{ color: "#6366F1" }} />
-                              <span>{t("admin_dashboard.payment_link_annual")}</span>
+                            <label
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "var(--text3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                marginBottom: "4px",
+                              }}
+                            >
+                              <CreditCard
+                                size={11}
+                                style={{ color: "#6366F1" }}
+                              />
+                              <span>
+                                {t("admin_dashboard.payment_link_annual")}
+                              </span>
                             </label>
                             <input
                               type="text"
                               dir="ltr"
                               placeholder="https://buy.stripe.com/..."
-                              value={paymentMethods.stripe?.paymentLinkAnnual || ""}
+                              value={
+                                paymentMethods.stripe?.paymentLinkAnnual || ""
+                              }
                               onChange={(e) =>
                                 setPaymentMethods((prev) => ({
                                   ...prev,
-                                  stripe: { ...prev.stripe, paymentLinkAnnual: e.target.value },
+                                  stripe: {
+                                    ...prev.stripe,
+                                    paymentLinkAnnual: e.target.value,
+                                  },
                                 }))
                               }
                               className="input"
-                              style={{ width: "100%", height: "38px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                background: "rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(99, 102, 241, 0.2)",
+                                borderRadius: "8px",
+                                color: "#fff",
+                                padding: "0 10px",
+                                fontSize: "12px",
+                              }}
                             />
                           </div>
 
                           {/* ── Webhook Secret (Optional) ─────────────────────── */}
                           <div>
-                            <label style={{ fontSize: "11px", fontWeight: "700", color: "var(--text3)", display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
+                            <label
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "var(--text3)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                marginBottom: "4px",
+                              }}
+                            >
                               <Zap size={11} style={{ color: "#6366F1" }} />
                               <span>{t("admin_dashboard.webhook_secret")}</span>
-                              <span style={{
-                                fontSize: "9px", fontWeight: "600", color: "var(--text3)",
-                                background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-                                borderRadius: "4px", padding: "1px 5px",
-                              }}>
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  fontWeight: "600",
+                                  color: "var(--text3)",
+                                  background: "rgba(255,255,255,0.07)",
+                                  border: "1px solid rgba(255,255,255,0.12)",
+                                  borderRadius: "4px",
+                                  padding: "1px 5px",
+                                }}
+                              >
                                 {t("admin_dashboard.optional")}
                               </span>
                             </label>
@@ -9100,22 +10984,41 @@ export default function AdminDashboardPage() {
                               onChange={(e) =>
                                 setPaymentMethods((prev) => ({
                                   ...prev,
-                                  stripe: { ...prev.stripe, webhookSecret: e.target.value },
+                                  stripe: {
+                                    ...prev.stripe,
+                                    webhookSecret: e.target.value,
+                                  },
                                 }))
                               }
                               className="input"
-                              style={{ width: "100%", height: "38px", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "8px", color: "#fff", padding: "0 10px", fontSize: "12px" }}
+                              style={{
+                                width: "100%",
+                                height: "38px",
+                                background: "rgba(0,0,0,0.35)",
+                                border: "1px solid rgba(99, 102, 241, 0.2)",
+                                borderRadius: "8px",
+                                color: "#fff",
+                                padding: "0 10px",
+                                fontSize: "12px",
+                              }}
                             />
-                            <div style={{ fontSize: "10px", color: "var(--text3)", marginTop: "4px", lineHeight: 1.5 }}>
-                              {t("admin_dashboard.from_stripe_dashboard_webhooks_sign")}
+                            <div
+                              style={{
+                                fontSize: "10px",
+                                color: "var(--text3)",
+                                marginTop: "4px",
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {t(
+                                "admin_dashboard.from_stripe_dashboard_webhooks_sign",
+                              )}
                             </div>
                           </div>
-
                         </div>
                       </div>
                       {/* ── End of Stripe Setup: 2-col grid ── */}
                     </div>
-
                   </div>
                 </div>
               )}
@@ -9228,9 +11131,7 @@ export default function AdminDashboardPage() {
                           }}
                         >
                           <ExternalLink size={14} />
-                          <span>
-                            {t("admin_dashboard.open_full_image")}
-                          </span>
+                          <span>{t("admin_dashboard.open_full_image")}</span>
                         </a>
                       </div>
                     </motion.div>
@@ -9312,15 +11213,31 @@ export default function AdminDashboardPage() {
                         className="field-input"
                         value={rejectionReason}
                         onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder={t("admin_dashboard.enter_the_reason_for_rejecting_the")}
+                        placeholder={t(
+                          "admin_dashboard.enter_the_reason_for_rejecting_the",
+                        )}
                         rows={4}
-                        style={{ minHeight: "100px", padding: "12px", borderRadius: "10px", width: "100%" }}
+                        style={{
+                          minHeight: "100px",
+                          padding: "12px",
+                          borderRadius: "10px",
+                          width: "100%",
+                        }}
                       />
                     </div>
 
                     <button
                       className="btn btn-primary"
-                      style={{ width: "100%", background: "#EF4444", color: "#fff", border: "none", padding: "12px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
+                      style={{
+                        width: "100%",
+                        background: "#EF4444",
+                        color: "#fff",
+                        border: "none",
+                        padding: "12px",
+                        borderRadius: "10px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                      }}
                       onClick={handleRejectPayment}
                     >
                       {t("admin_dashboard.confirm_rejection")}
@@ -9377,37 +11294,154 @@ export default function AdminDashboardPage() {
                       ✕
                     </button>
                     <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                      <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                      <div
+                        style={{
+                          width: "64px",
+                          height: "64px",
+                          borderRadius: "50%",
+                          background: "rgba(16, 185, 129, 0.1)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          margin: "0 auto 16px",
+                        }}
+                      >
                         <CheckCircle2 size={32} style={{ color: "#10B981" }} />
                       </div>
-                      <h3 style={{ margin: "0 0 8px 0", color: "#fff", fontSize: "20px", fontWeight: "800" }}>
+                      <h3
+                        style={{
+                          margin: "0 0 8px 0",
+                          color: "#fff",
+                          fontSize: "20px",
+                          fontWeight: "800",
+                        }}
+                      >
                         {t("admin_dashboard.confirm_subscription_approval")}
                       </h3>
-                      <p style={{ margin: 0, color: "var(--text3)", fontSize: "14px" }}>
-                        {t("admin_dashboard.review_the_details_before_activatin")}
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "var(--text3)",
+                          fontSize: "14px",
+                        }}
+                      >
+                        {t(
+                          "admin_dashboard.review_the_details_before_activatin",
+                        )}
                       </p>
                     </div>
 
-                    <div style={{ background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--line)", borderRadius: "12px", padding: "20px", marginBottom: "24px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                        <span style={{ color: "var(--text2)", fontSize: "14px" }}>{t("admin_dashboard.customer")}</span>
-                        <strong style={{ color: "#fff", fontSize: "14px" }}>{paymentToApprove.userName || "—"}</strong>
+                    <div
+                      style={{
+                        background: "rgba(255, 255, 255, 0.03)",
+                        border: "1px solid var(--line)",
+                        borderRadius: "12px",
+                        padding: "20px",
+                        marginBottom: "24px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "12px",
+                          paddingBottom: "12px",
+                          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                        }}
+                      >
+                        <span
+                          style={{ color: "var(--text2)", fontSize: "14px" }}
+                        >
+                          {t("admin_dashboard.customer")}
+                        </span>
+                        <strong style={{ color: "#fff", fontSize: "14px" }}>
+                          {paymentToApprove.userName || "—"}
+                        </strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                        <span style={{ color: "var(--text2)", fontSize: "14px" }}>{t("admin_dashboard.requested_plan")}</span>
-                        <strong style={{ color: "var(--accent)", fontSize: "14px" }}>{paymentToApprove.planName || paymentToApprove.planId || "—"}</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "12px",
+                          paddingBottom: "12px",
+                          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                        }}
+                      >
+                        <span
+                          style={{ color: "var(--text2)", fontSize: "14px" }}
+                        >
+                          {t("admin_dashboard.requested_plan")}
+                        </span>
+                        <strong
+                          style={{ color: "var(--accent)", fontSize: "14px" }}
+                        >
+                          {paymentToApprove.planName ||
+                            paymentToApprove.planId ||
+                            "—"}
+                        </strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                        <span style={{ color: "var(--text2)", fontSize: "14px" }}>{t("admin_dashboard.duration")}</span>
-                        <strong style={{ color: "#fff", fontSize: "14px" }}>{t("admin_dashboard.k_30_days_standard")}</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "12px",
+                          paddingBottom: "12px",
+                          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                        }}
+                      >
+                        <span
+                          style={{ color: "var(--text2)", fontSize: "14px" }}
+                        >
+                          {t("admin_dashboard.duration")}
+                        </span>
+                        <strong style={{ color: "#fff", fontSize: "14px" }}>
+                          {t("admin_dashboard.k_30_days_standard")}
+                        </strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                        <span style={{ color: "var(--text2)", fontSize: "14px" }}>{t("admin_dashboard.payment_method")}</span>
-                        <strong style={{ color: "#fff", fontSize: "14px" }}>{paymentToApprove.paymentMethod || paymentToApprove.methodName || (t("admin_dashboard.n_a"))}</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "12px",
+                          paddingBottom: "12px",
+                          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                        }}
+                      >
+                        <span
+                          style={{ color: "var(--text2)", fontSize: "14px" }}
+                        >
+                          {t("admin_dashboard.payment_method")}
+                        </span>
+                        <strong style={{ color: "#fff", fontSize: "14px" }}>
+                          {paymentToApprove.paymentMethod ||
+                            paymentToApprove.methodName ||
+                            t("admin_dashboard.n_a")}
+                        </strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ color: "var(--text2)", fontSize: "14px" }}>{t("admin_dashboard.amount_paid")}</span>
-                        <strong style={{ color: "#10B981", fontSize: "15px", fontWeight: "800" }}>{paymentToApprove.amount ? (paymentToApprove.currency === 'USD' ? `$${paymentToApprove.amount}` : `${paymentToApprove.amount} ${paymentToApprove.currency || 'EGP'}`) : "—"}</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span
+                          style={{ color: "var(--text2)", fontSize: "14px" }}
+                        >
+                          {t("admin_dashboard.amount_paid")}
+                        </span>
+                        <strong
+                          style={{
+                            color: "#10B981",
+                            fontSize: "15px",
+                            fontWeight: "800",
+                          }}
+                        >
+                          {paymentToApprove.amount
+                            ? paymentToApprove.currency === "USD"
+                              ? `$${paymentToApprove.amount}`
+                              : `${paymentToApprove.amount} ${paymentToApprove.currency || "EGP"}`
+                            : "—"}
+                        </strong>
                       </div>
                     </div>
 
@@ -9424,10 +11458,16 @@ export default function AdminDashboardPage() {
                           borderRadius: "10px",
                           fontWeight: "700",
                           cursor: "pointer",
-                          transition: "all 0.2s ease"
+                          transition: "all 0.2s ease",
                         }}
-                        onMouseOver={(e) => e.target.style.background = "rgba(255, 255, 255, 0.1)"}
-                        onMouseOut={(e) => e.target.style.background = "rgba(255, 255, 255, 0.05)"}
+                        onMouseOver={(e) =>
+                          (e.target.style.background =
+                            "rgba(255, 255, 255, 0.1)")
+                        }
+                        onMouseOut={(e) =>
+                          (e.target.style.background =
+                            "rgba(255, 255, 255, 0.05)")
+                        }
                       >
                         {t("admin_dashboard.cancel")}
                       </button>
@@ -9444,10 +11484,12 @@ export default function AdminDashboardPage() {
                           fontWeight: "700",
                           cursor: "pointer",
                           boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
-                          transition: "all 0.2s ease"
+                          transition: "all 0.2s ease",
                         }}
-                        onMouseOver={(e) => e.target.style.transform = "translateY(-1px)"}
-                        onMouseOut={(e) => e.target.style.transform = "none"}
+                        onMouseOver={(e) =>
+                          (e.target.style.transform = "translateY(-1px)")
+                        }
+                        onMouseOut={(e) => (e.target.style.transform = "none")}
                       >
                         {t("admin_dashboard.confirm_activate_plan")}
                       </button>
@@ -9647,7 +11689,9 @@ export default function AdminDashboardPage() {
                             className="field-input"
                             placeholder="pk_test_..."
                             value={stripePublishableKey}
-                            onChange={(e) => setStripePublishableKey(e.target.value)}
+                            onChange={(e) =>
+                              setStripePublishableKey(e.target.value)
+                            }
                             dir="ltr"
                           />
                         </div>
@@ -9664,36 +11708,44 @@ export default function AdminDashboardPage() {
                             }}
                           >
                             <Zap size={14} />
-                            <span>
-                              {t("admin_dashboard.webhook_secret")}
-                            </span>
-                            <span style={{
-                              fontSize: "10px",
-                              fontWeight: "600",
-                              color: "var(--text3)",
-                              background: "rgba(255,255,255,0.07)",
-                              border: "1px solid rgba(255,255,255,0.12)",
-                              borderRadius: "4px",
-                              padding: "1px 6px",
-                              letterSpacing: "0.3px",
-                            }}>
+                            <span>{t("admin_dashboard.webhook_secret")}</span>
+                            <span
+                              style={{
+                                fontSize: "10px",
+                                fontWeight: "600",
+                                color: "var(--text3)",
+                                background: "rgba(255,255,255,0.07)",
+                                border: "1px solid rgba(255,255,255,0.12)",
+                                borderRadius: "4px",
+                                padding: "1px 6px",
+                                letterSpacing: "0.3px",
+                              }}
+                            >
                               {t("admin_dashboard.optional")}
                             </span>
                           </label>
                           <input
                             className="field-input"
-                            placeholder={t("admin_dashboard.whsec_optional_for_production_signa")}
+                            placeholder={t(
+                              "admin_dashboard.whsec_optional_for_production_signa",
+                            )}
                             value={stripeWebhookSecret}
-                            onChange={(e) => setStripeWebhookSecret(e.target.value)}
+                            onChange={(e) =>
+                              setStripeWebhookSecret(e.target.value)
+                            }
                             dir="ltr"
                           />
-                          <div style={{
-                            fontSize: "11px",
-                            color: "var(--text3)",
-                            marginTop: "6px",
-                            lineHeight: 1.5,
-                          }}>
-                            {t("admin_dashboard.copy_from_stripe_dashboard_webhooks")}
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--text3)",
+                              marginTop: "6px",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {t(
+                              "admin_dashboard.copy_from_stripe_dashboard_webhooks",
+                            )}
                           </div>
                         </div>
                       </>
@@ -9729,7 +11781,9 @@ export default function AdminDashboardPage() {
                             marginBottom: "16px",
                           }}
                         >
-                          {t("admin_dashboard.check_key_format_and_webhook_endpoi")}
+                          {t(
+                            "admin_dashboard.check_key_format_and_webhook_endpoi",
+                          )}
                         </p>
                         {isTestingStripe ? (
                           <div
@@ -9806,12 +11860,15 @@ export default function AdminDashboardPage() {
                   </motion.div>
                 </div>
               )}
-
             </div>
           ) : activeTab === "tutorial" ? (
             <div className="ad-content animate-in" style={{ padding: 0 }}>
               <PlatformExplanation
-                title={state.language === "en" ? "SuperAdmin & Brand Masterclass Guide" : "شرح منصة الأدمن (مالك البراند)"}
+                title={
+                  state.language === "en"
+                    ? "SuperAdmin & Brand Masterclass Guide"
+                    : "شرح منصة الأدمن (مالك البراند)"
+                }
                 videoUrl="https://firebasestorage.googleapis.com/v0/b/aibrand-vision.firebasestorage.app/o/Videos%2F%D8%B4%D8%B1%D8%AD%20%D9%85%D9%88%D9%82%D8%B9%20%D8%A7%D9%84%D8%A3%D8%AF%D9%85%D9%86%20(%D9%85%D8%A7%D9%84%D9%83%20%D8%A7%D9%84%D8%A8%D8%B1%D8%A7%D9%86%D8%AF).webm?alt=media&token=c3b6e0dd-c406-4c37-a853-ac637b869402"
                 lang={state.language || "ar"}
               />
@@ -9833,12 +11890,15 @@ export default function AdminDashboardPage() {
               <MarketingTrackingSection
                 isAdmin={true}
                 userId={userData?.uid}
-                isRtl={state.language?.startsWith('ar')}
-                t={(ar, en) => state.language?.startsWith('ar') ? ar : en}
+                isRtl={state.language?.startsWith("ar")}
+                t={(ar, en) => (state.language?.startsWith("ar") ? ar : en)}
               />
             </div>
           ) : (
-            <div className="ad-content animate-in" dir={state.language === "en" ? "ltr" : "rtl"}>
+            <div
+              className="ad-content animate-in"
+              dir={state.language === "en" ? "ltr" : "rtl"}
+            >
               {/* Brand Settings Page Header & Progress Section */}
               <div
                 style={{
@@ -9861,7 +11921,13 @@ export default function AdminDashboardPage() {
                     marginBottom: "20px",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                    }}
+                  >
                     <div
                       style={{
                         width: "48px",
@@ -9887,7 +11953,9 @@ export default function AdminDashboardPage() {
                           color: "#fff",
                         }}
                       >
-                        {state.language === "en" ? "Brand Settings & Customization" : "إعدادات الهوية والبراند"}
+                        {state.language === "en"
+                          ? "Brand Settings & Customization"
+                          : "إعدادات الهوية والبراند"}
                       </h2>
                       <span style={{ fontSize: "12px", color: "var(--text3)" }}>
                         {state.language === "en"
@@ -9898,7 +11966,14 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Keyboard Shortcut Hint & Last Saved Info */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      flexWrap: "wrap",
+                    }}
+                  >
                     {lastSavedTimestamp && (
                       <span
                         style={{
@@ -9977,14 +12052,23 @@ export default function AdminDashboardPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        <span style={{ fontSize: "12px", fontWeight: "800", color: "#fff" }}>
-                          {state.language === "en" ? "Brand Setup Completion" : "نسبة اكتمال إعدادات البراند"}
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
+                          {state.language === "en"
+                            ? "Brand Setup Completion"
+                            : "نسبة اكتمال إعدادات البراند"}
                         </span>
                         <span
                           style={{
                             fontSize: "13px",
                             fontWeight: "800",
-                            color: progressPct >= 80 ? "#10B981" : "var(--accent)",
+                            color:
+                              progressPct >= 80 ? "#10B981" : "var(--accent)",
                           }}
                         >
                           {progressPct}%
@@ -10042,7 +12126,9 @@ export default function AdminDashboardPage() {
                         });
                       }
                     }}
-                    title={state.language === "en" ? "Scroll Left" : "تمرير لليمين"}
+                    title={
+                      state.language === "en" ? "Scroll Left" : "تمرير لليمين"
+                    }
                     style={{ flexShrink: 0 }}
                   >
                     <ChevronRight size={18} />
@@ -10180,8 +12266,8 @@ export default function AdminDashboardPage() {
                       {
                         id: "aiAssistant",
                         label_en: "AI Assistant Simulator",
-                        label_ar: "المساعد الذكي",
-                        label_gcc: "المساعد الذكي الافتراضي",
+                        label_ar: "AI Agent",
+                        label_gcc: "AI Agent الافتراضي",
                         icon: Bot,
                       },
                       {
@@ -10242,18 +12328,22 @@ export default function AdminDashboardPage() {
                           <SubIcon
                             size={16}
                             style={{
-                              color: isActive ? "var(--accent, #3B82F6)" : "inherit",
-                              filter: isActive ? "drop-shadow(0 0 6px rgba(59, 130, 246, 0.6))" : "none",
+                              color: isActive
+                                ? "var(--accent, #3B82F6)"
+                                : "inherit",
+                              filter: isActive
+                                ? "drop-shadow(0 0 6px rgba(59, 130, 246, 0.6))"
+                                : "none",
                             }}
                           />
                           <span>
                             {state.language === "en"
                               ? subTab.label_en
                               : state.language === "ar-GCC" && subTab.label_gcc
-                              ? subTab.label_gcc
-                              : state.language === "ar-EG" && subTab.label_eg
-                              ? subTab.label_eg
-                              : subTab.label_ar}
+                                ? subTab.label_gcc
+                                : state.language === "ar-EG" && subTab.label_eg
+                                  ? subTab.label_eg
+                                  : subTab.label_ar}
                           </span>
                         </button>
                       );
@@ -10273,7 +12363,9 @@ export default function AdminDashboardPage() {
                         });
                       }
                     }}
-                    title={state.language === "en" ? "Scroll Right" : "تمرير لليسار"}
+                    title={
+                      state.language === "en" ? "Scroll Right" : "تمرير لليسار"
+                    }
                     style={{ flexShrink: 0 }}
                   >
                     <ChevronLeft size={18} />
@@ -10311,11 +12403,21 @@ export default function AdminDashboardPage() {
                     >
                       <UserCheck size={20} style={{ color: "var(--accent)" }} />
                       <span>
-                        {t("brand_settings.personal_tab", state.language === "en" ? "Personal & Brand Account Details" : "البيانات الشخصية ومعلومات البراند")}
+                        {t(
+                          "brand_settings.personal_tab",
+                          state.language === "en"
+                            ? "Personal & Brand Account Details"
+                            : "البيانات الشخصية ومعلومات البراند",
+                        )}
                       </span>
                     </h3>
                     <span style={{ fontSize: "12px", color: "var(--text3)" }}>
-                      {t("brand_settings.personal_tab_desc", state.language === "en" ? "Configure owner name, brand title, contact phone number, and brand logo display preferences." : "تحديث اسم المشرف، اسم البراند، رقم الهاتف للتواصل، وإعدادات ظهور اللوجو والواتساب.")}
+                      {t(
+                        "brand_settings.personal_tab_desc",
+                        state.language === "en"
+                          ? "Configure owner name, brand title, contact phone number, and brand logo display preferences."
+                          : "تحديث اسم المشرف، اسم البراند، رقم الهاتف للتواصل، وإعدادات ظهور اللوجو والواتساب.",
+                      )}
                     </span>
                   </div>
 
@@ -10352,7 +12454,8 @@ export default function AdminDashboardPage() {
                           color: "#fff",
                         }}
                       >
-                        {!userData?.photoURL && (ownerNameForm || "?").charAt(0).toUpperCase()}
+                        {!userData?.photoURL &&
+                          (ownerNameForm || "?").charAt(0).toUpperCase()}
                       </div>
                     </div>
 
@@ -10366,10 +12469,27 @@ export default function AdminDashboardPage() {
                           marginBottom: "4px",
                         }}
                       >
-                        {t("brand_settings.avatar_title", state.language === "en" ? "Brand Profile Photo / Logo" : "الصورة الشخصية / لوجو البراند")}
+                        {t(
+                          "brand_settings.avatar_title",
+                          state.language === "en"
+                            ? "Brand Profile Photo / Logo"
+                            : "الصورة الشخصية / لوجو البراند",
+                        )}
                       </label>
-                      <span style={{ fontSize: "11px", color: "var(--text3)", display: "block", marginBottom: "12px" }}>
-                        {t("brand_settings.avatar_desc", state.language === "en" ? "Recommended format: PNG, JPG or WEBP (Max 5MB)" : "الصيغ المدعومة: PNG أو JPG أو WEBP (الحد الأقصى 5 ميجابايت)")}
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text3)",
+                          display: "block",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {t(
+                          "brand_settings.avatar_desc",
+                          state.language === "en"
+                            ? "Recommended format: PNG, JPG or WEBP (Max 5MB)"
+                            : "الصيغ المدعومة: PNG أو JPG أو WEBP (الحد الأقصى 5 ميجابايت)",
+                        )}
                       </span>
 
                       <label
@@ -10388,19 +12508,29 @@ export default function AdminDashboardPage() {
                           transition: "all 0.2s ease",
                         }}
                       >
-                        <UploadCloud size={16} style={{ color: "var(--accent)" }} />
+                        <UploadCloud
+                          size={16}
+                          style={{ color: "var(--accent)" }}
+                        />
                         <span>
                           {adminProfileImage
                             ? state.language === "en"
                               ? `Selected: ${adminProfileImage.name}`
                               : `تم اختيار: ${adminProfileImage.name}`
-                            : t("brand_settings.upload_image", state.language === "en" ? "Upload New Image" : "رفع صورة جديدة")}
+                            : t(
+                                "brand_settings.upload_image",
+                                state.language === "en"
+                                  ? "Upload New Image"
+                                  : "رفع صورة جديدة",
+                              )}
                         </span>
                         <input
                           type="file"
                           accept="image/*"
                           style={{ display: "none" }}
-                          onChange={(e) => setAdminProfileImage(e.target.files[0])}
+                          onChange={(e) =>
+                            setAdminProfileImage(e.target.files[0])
+                          }
                           disabled={isUpdatingProfile}
                         />
                       </label>
@@ -10411,7 +12541,8 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(280px, 1fr))",
                       gap: "20px",
                       marginBottom: "24px",
                     }}
@@ -10427,9 +12558,20 @@ export default function AdminDashboardPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
                           <User size={15} style={{ color: "var(--accent)" }} />
-                          {t("brand_settings.owner_name", state.language === "en" ? "Owner Name" : "اسم المشرف (المالك)")}
+                          {t(
+                            "brand_settings.owner_name",
+                            state.language === "en"
+                              ? "Owner Name"
+                              : "اسم المشرف (المالك)",
+                          )}
                         </span>
                         <span
                           style={{
@@ -10438,15 +12580,31 @@ export default function AdminDashboardPage() {
                             color: ownerNameForm.trim() ? "#10B981" : "#EF4444",
                           }}
                         >
-                          {ownerNameForm.trim() ? t("brand_settings.save_badge_complete", "COMPLETE 🟢") : t("brand_settings.save_badge_required", "REQUIRED 🔴")}
+                          {ownerNameForm.trim()
+                            ? t(
+                                "brand_settings.save_badge_complete",
+                                "COMPLETE 🟢",
+                              )
+                            : t(
+                                "brand_settings.save_badge_required",
+                                "REQUIRED 🔴",
+                              )}
                         </span>
                       </label>
                       <input
                         className="field-input"
                         value={ownerNameForm}
                         onChange={(e) => setOwnerNameForm(e.target.value)}
-                        placeholder={state.language === "en" ? "Enter owner full name..." : "أدخل اسم المشرف..."}
-                        style={{ height: "46px", borderRadius: "12px", fontWeight: "700" }}
+                        placeholder={
+                          state.language === "en"
+                            ? "Enter owner full name..."
+                            : "أدخل اسم المشرف..."
+                        }
+                        style={{
+                          height: "46px",
+                          borderRadius: "12px",
+                          fontWeight: "700",
+                        }}
                       />
                     </div>
 
@@ -10461,9 +12619,23 @@ export default function AdminDashboardPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <Briefcase size={15} style={{ color: "var(--accent)" }} />
-                          {t("brand_settings.brand_name", state.language === "en" ? "Brand / Project Name" : "اسم البراند / المشروع")}
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Briefcase
+                            size={15}
+                            style={{ color: "var(--accent)" }}
+                          />
+                          {t(
+                            "brand_settings.brand_name",
+                            state.language === "en"
+                              ? "Brand / Project Name"
+                              : "اسم البراند / المشروع",
+                          )}
                         </span>
                         <span
                           style={{
@@ -10472,15 +12644,31 @@ export default function AdminDashboardPage() {
                             color: brandNameForm.trim() ? "#10B981" : "#EF4444",
                           }}
                         >
-                          {brandNameForm.trim() ? t("brand_settings.save_badge_complete", "COMPLETE 🟢") : t("brand_settings.save_badge_required", "REQUIRED 🔴")}
+                          {brandNameForm.trim()
+                            ? t(
+                                "brand_settings.save_badge_complete",
+                                "COMPLETE 🟢",
+                              )
+                            : t(
+                                "brand_settings.save_badge_required",
+                                "REQUIRED 🔴",
+                              )}
                         </span>
                       </label>
                       <input
                         className="field-input"
                         value={brandNameForm}
                         onChange={(e) => setBrandNameForm(e.target.value)}
-                        placeholder={state.language === "en" ? "Enter brand name..." : "أدخل اسم البراند..."}
-                        style={{ height: "46px", borderRadius: "12px", fontWeight: "700" }}
+                        placeholder={
+                          state.language === "en"
+                            ? "Enter brand name..."
+                            : "أدخل اسم البراند..."
+                        }
+                        style={{
+                          height: "46px",
+                          borderRadius: "12px",
+                          fontWeight: "700",
+                        }}
                       />
                     </div>
 
@@ -10495,9 +12683,20 @@ export default function AdminDashboardPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
                           <Mail size={15} style={{ color: "var(--accent)" }} />
-                          {t("brand_settings.account_email", state.language === "en" ? "Account Email (Read-only)" : "البريد الإلكتروني الحساب")}
+                          {t(
+                            "brand_settings.account_email",
+                            state.language === "en"
+                              ? "Account Email (Read-only)"
+                              : "البريد الإلكتروني الحساب",
+                          )}
                         </span>
                         <span
                           style={{
@@ -10506,7 +12705,10 @@ export default function AdminDashboardPage() {
                             color: "#10B981",
                           }}
                         >
-                          {t("brand_settings.save_badge_complete", "COMPLETE 🟢")}
+                          {t(
+                            "brand_settings.save_badge_complete",
+                            "COMPLETE 🟢",
+                          )}
                         </span>
                       </label>
                       <input
@@ -10514,7 +12716,12 @@ export default function AdminDashboardPage() {
                         value={userData?.email || ""}
                         readOnly
                         disabled
-                        style={{ height: "46px", borderRadius: "12px", opacity: 0.6, background: "rgba(0,0,0,0.4)" }}
+                        style={{
+                          height: "46px",
+                          borderRadius: "12px",
+                          opacity: 0.6,
+                          background: "rgba(0,0,0,0.4)",
+                        }}
                       />
                     </div>
 
@@ -10529,18 +12736,42 @@ export default function AdminDashboardPage() {
                           marginBottom: "8px",
                         }}
                       >
-                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <Smartphone size={15} style={{ color: "var(--accent)" }} />
-                          {t("brand_settings.phone_number", state.language === "en" ? "Contact Phone Number *" : "رقم الهاتف للتواصل *")}
+                        <span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Smartphone
+                            size={15}
+                            style={{ color: "var(--accent)" }}
+                          />
+                          {t(
+                            "brand_settings.phone_number",
+                            state.language === "en"
+                              ? "Contact Phone Number *"
+                              : "رقم الهاتف للتواصل *",
+                          )}
                         </span>
                         <span
                           style={{
                             fontSize: "10px",
                             fontWeight: "800",
-                            color: phoneNumberForm.trim() ? "#10B981" : "#EF4444",
+                            color: phoneNumberForm.trim()
+                              ? "#10B981"
+                              : "#EF4444",
                           }}
                         >
-                          {phoneNumberForm.trim() ? t("brand_settings.save_badge_complete", "COMPLETE 🟢") : t("brand_settings.save_badge_required", "REQUIRED 🔴")}
+                          {phoneNumberForm.trim()
+                            ? t(
+                                "brand_settings.save_badge_complete",
+                                "COMPLETE 🟢",
+                              )
+                            : t(
+                                "brand_settings.save_badge_required",
+                                "REQUIRED 🔴",
+                              )}
                         </span>
                       </label>
                       <PhoneInput
@@ -10551,33 +12782,56 @@ export default function AdminDashboardPage() {
                       />
                     </div>
 
-
-
                     {/* Default Language CustomSelect */}
                     <div className="field">
                       <CustomSelect
-                        label={
-                          t("brand_settings.default_lang", state.language === "en" ? "Default Platform Language" : "اللغة الافتراضية للمنصة")
-                        }
-                        badge={{ text: t("brand_settings.save_badge_complete", "COMPLETE 🟢"), color: "#10B981" }}
+                        label={t(
+                          "brand_settings.default_lang",
+                          state.language === "en"
+                            ? "Default Platform Language"
+                            : "اللغة الافتراضية للمنصة",
+                        )}
+                        badge={{
+                          text: t(
+                            "brand_settings.save_badge_complete",
+                            "COMPLETE 🟢",
+                          ),
+                          color: "#10B981",
+                        }}
                         value={defaultLanguage}
                         onChange={(val) => {
                           setDefaultLanguage(val);
                           dispatch({ type: "SET_LANGUAGE", payload: val });
-                          if (i18n && typeof i18n.changeLanguage === "function") {
+                          if (
+                            i18n &&
+                            typeof i18n.changeLanguage === "function"
+                          ) {
                             i18n.changeLanguage(val);
                           }
                           if (typeof window !== "undefined") {
-                            localStorage.setItem("user_preferred_language", val);
+                            localStorage.setItem(
+                              "user_preferred_language",
+                              val,
+                            );
                             localStorage.setItem("app_language", val);
-                            localStorage.setItem("last_synced_brand_language", val);
-                            sessionStorage.removeItem("landing_user_selected_lang");
+                            localStorage.setItem(
+                              "last_synced_brand_language",
+                              val,
+                            );
+                            sessionStorage.removeItem(
+                              "landing_user_selected_lang",
+                            );
                             Object.keys(sessionStorage).forEach((k) => {
-                              if (k.startsWith("landing_brand_")) sessionStorage.removeItem(k);
+                              if (k.startsWith("landing_brand_"))
+                                sessionStorage.removeItem(k);
                             });
                           }
                           try {
-                            setDoc(doc(db, "tenants", "global"), { systemLanguage: val }, { merge: true });
+                            setDoc(
+                              doc(db, "tenants", "global"),
+                              { systemLanguage: val },
+                              { merge: true },
+                            );
                           } catch (e) {}
                         }}
                         icon={Globe}
@@ -10609,26 +12863,44 @@ export default function AdminDashboardPage() {
                     {/* Brand Logo Display Mode CustomSelect */}
                     <div className="field">
                       <CustomSelect
-                        label={
-                          t("brand_settings.logo_display_mode", state.language === "en" ? "Logo & Brand Display Mode" : "طريقة عرض اللوجو والاسم")
-                        }
+                        label={t(
+                          "brand_settings.logo_display_mode",
+                          state.language === "en"
+                            ? "Logo & Brand Display Mode"
+                            : "طريقة عرض اللوجو والاسم",
+                        )}
                         value={logoDisplayMode}
                         onChange={(val) => setLogoDisplayMode(val)}
                         icon={Layers}
                         options={[
                           {
                             value: "both",
-                            label: t("brand_settings.logo_both", state.language === "en" ? "Logo and Brand Name Together" : "اللوجو واسم البراند معاً"),
+                            label: t(
+                              "brand_settings.logo_both",
+                              state.language === "en"
+                                ? "Logo and Brand Name Together"
+                                : "اللوجو واسم البراند معاً",
+                            ),
                             icon: Layers,
                           },
                           {
                             value: "logo",
-                            label: t("brand_settings.logo_only", state.language === "en" ? "Logo Only" : "اللوجو فقط"),
+                            label: t(
+                              "brand_settings.logo_only",
+                              state.language === "en"
+                                ? "Logo Only"
+                                : "اللوجو فقط",
+                            ),
                             icon: Image,
                           },
                           {
                             value: "text",
-                            label: t("brand_settings.text_only", state.language === "en" ? "Brand Name Only" : "الاسم فقط"),
+                            label: t(
+                              "brand_settings.text_only",
+                              state.language === "en"
+                                ? "Brand Name Only"
+                                : "الاسم فقط",
+                            ),
                             icon: FileText,
                           },
                         ]}
@@ -10638,28 +12910,41 @@ export default function AdminDashboardPage() {
                     {/* Show WhatsApp Login Button CustomSelect */}
                     <div className="field">
                       <CustomSelect
-                        label={
-                          t("brand_settings.whatsapp_btn_visibility", state.language === "en" ? "WhatsApp Login Button Visibility" : "إظهار زر الواتساب في صفحة الدخول")
-                        }
+                        label={t(
+                          "brand_settings.whatsapp_btn_visibility",
+                          state.language === "en"
+                            ? "WhatsApp Login Button Visibility"
+                            : "إظهار زر الواتساب في صفحة الدخول",
+                        )}
                         value={showWhatsappLoginBtn ? "true" : "false"}
-                        onChange={(val) => setShowWhatsappLoginBtn(val === "true")}
+                        onChange={(val) =>
+                          setShowWhatsappLoginBtn(val === "true")
+                        }
                         icon={MessageCircle}
                         options={[
                           {
                             value: "true",
-                            label: t("brand_settings.whatsapp_show", state.language === "en" ? "Show WhatsApp Button" : "نعم، إظهار زر الواتساب"),
+                            label: t(
+                              "brand_settings.whatsapp_show",
+                              state.language === "en"
+                                ? "Show WhatsApp Button"
+                                : "نعم، إظهار زر الواتساب",
+                            ),
                             icon: CheckCircle2,
                           },
                           {
                             value: "false",
-                            label: t("brand_settings.whatsapp_hide", state.language === "en" ? "Hide WhatsApp Button" : "لا، إخفاء زر الواتساب"),
+                            label: t(
+                              "brand_settings.whatsapp_hide",
+                              state.language === "en"
+                                ? "Hide WhatsApp Button"
+                                : "لا، إخفاء زر الواتساب",
+                            ),
                             icon: XCircle,
                           },
                         ]}
                       />
                     </div>
-
-
                   </div>
                 </motion.div>
               )}
@@ -10715,23 +13000,54 @@ export default function AdminDashboardPage() {
                     {/* Typography Font Selector using CustomSelect */}
                     <div style={{ minWidth: "200px" }}>
                       <CustomSelect
-                        label={state.language === "en" ? "Typography Font" : "نوع الخط الرئيسي"}
+                        label={
+                          state.language === "en"
+                            ? "Typography Font"
+                            : "نوع الخط الرئيسي"
+                        }
                         value={fontFamily}
                         onChange={(val) => {
                           setFontFamily(val);
                           const root = document.documentElement;
-                          root.style.setProperty("--font-family", `'${val}', sans-serif`);
-                          root.style.setProperty("--font", `'${val}', sans-serif`);
+                          root.style.setProperty(
+                            "--font-family",
+                            `'${val}', sans-serif`,
+                          );
+                          root.style.setProperty(
+                            "--font",
+                            `'${val}', sans-serif`,
+                          );
                           root.style.fontFamily = `'${val}', sans-serif`;
-                          if (document.body) document.body.style.fontFamily = `'${val}', sans-serif`;
+                          if (document.body)
+                            document.body.style.fontFamily = `'${val}', sans-serif`;
                         }}
                         icon={BookOpen}
                         options={[
-                          { value: "Cairo", label: "Cairo (كيرو)", icon: BookOpen },
-                          { value: "Tajawal", label: "Tajawal (تجوال)", icon: BookOpen },
-                          { value: "Almarai", label: "Almarai (المراعي)", icon: BookOpen },
-                          { value: "Rubik", label: "Rubik (روبيك)", icon: BookOpen },
-                          { value: "Readex Pro", label: "Readex Pro (ريديكس برو)", icon: BookOpen },
+                          {
+                            value: "Cairo",
+                            label: "Cairo (كيرو)",
+                            icon: BookOpen,
+                          },
+                          {
+                            value: "Tajawal",
+                            label: "Tajawal (تجوال)",
+                            icon: BookOpen,
+                          },
+                          {
+                            value: "Almarai",
+                            label: "Almarai (المراعي)",
+                            icon: BookOpen,
+                          },
+                          {
+                            value: "Rubik",
+                            label: "Rubik (روبيك)",
+                            icon: BookOpen,
+                          },
+                          {
+                            value: "Readex Pro",
+                            label: "Readex Pro (ريديكس برو)",
+                            icon: BookOpen,
+                          },
                         ]}
                       />
                     </div>
@@ -10739,10 +13055,26 @@ export default function AdminDashboardPage() {
 
                   {/* Quick Pick Presets Bar with Modern Smooth Arrow Controls */}
                   <div style={{ marginBottom: "20px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginBottom: "12px",
+                      }}
+                    >
                       <Zap size={16} fill="#F59E0B" color="#F59E0B" />
-                      <span style={{ fontSize: "13.5px", fontWeight: "900", color: "#FFFFFF", letterSpacing: "0.2px" }}>
-                        {state.language === "en" ? "Quick-Pick Theme Presets" : "الثيمات الجاهزة للاختيار السريع"}
+                      <span
+                        style={{
+                          fontSize: "13.5px",
+                          fontWeight: "900",
+                          color: "#FFFFFF",
+                          letterSpacing: "0.2px",
+                        }}
+                      >
+                        {state.language === "en"
+                          ? "Quick-Pick Theme Presets"
+                          : "الثيمات الجاهزة للاختيار السريع"}
                       </span>
                     </div>
 
@@ -10767,7 +13099,11 @@ export default function AdminDashboardPage() {
                             });
                           }
                         }}
-                        title={state.language === "en" ? "Scroll Left" : "تمرير لليمين"}
+                        title={
+                          state.language === "en"
+                            ? "Scroll Left"
+                            : "تمرير لليمين"
+                        }
                         style={{ flexShrink: 0 }}
                       >
                         <ChevronRight size={18} />
@@ -10791,8 +13127,13 @@ export default function AdminDashboardPage() {
                       >
                         {THEME_PRESETS.map((preset) => {
                           const norm = (c) => (c || "").trim().toUpperCase();
-                          const isColorMatch = norm(accentColor) === norm(preset.accent) && (norm(sidebarColor) === norm(preset.sidebar) || norm(bgColor) === norm(preset.bg));
-                          const isSelected = activeThemePreset === preset.id || (activeThemePreset !== "custom" && isColorMatch);
+                          const isColorMatch =
+                            norm(accentColor) === norm(preset.accent) &&
+                            (norm(sidebarColor) === norm(preset.sidebar) ||
+                              norm(bgColor) === norm(preset.bg));
+                          const isSelected =
+                            activeThemePreset === preset.id ||
+                            (activeThemePreset !== "custom" && isColorMatch);
                           return (
                             <button
                               key={preset.id}
@@ -10851,11 +13192,30 @@ export default function AdminDashboardPage() {
                                     color: "#000",
                                   }}
                                 >
-                                  <Check size={11} strokeWidth={3.5} color={preset.id === "purple" || preset.id === "sunset" ? "#fff" : "#000"} />
+                                  <Check
+                                    size={11}
+                                    strokeWidth={3.5}
+                                    color={
+                                      preset.id === "purple" ||
+                                      preset.id === "sunset"
+                                        ? "#fff"
+                                        : "#000"
+                                    }
+                                  />
                                 </span>
                               )}
-                              <span>{state.language === "en" ? preset.name_en : preset.name_ar}</span>
-                              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span>
+                                {state.language === "en"
+                                  ? preset.name_en
+                                  : preset.name_ar}
+                              </span>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
                                 {preset.dots.map((d, i) => (
                                   <div
                                     key={i}
@@ -10865,7 +13225,9 @@ export default function AdminDashboardPage() {
                                       borderRadius: "50%",
                                       background: d,
                                       boxShadow: "0 0 4px rgba(0,0,0,0.6)",
-                                      border: isSelected ? "1px solid rgba(255,255,255,0.4)" : "none",
+                                      border: isSelected
+                                        ? "1px solid rgba(255,255,255,0.4)"
+                                        : "none",
                                     }}
                                   />
                                 ))}
@@ -10889,17 +13251,21 @@ export default function AdminDashboardPage() {
                           style={{
                             padding: "8px 18px",
                             borderRadius: "9999px",
-                            border: activeThemePreset === "custom"
-                              ? "2px solid #FFFFFF"
-                              : "1.5px solid rgba(255, 255, 255, 0.4)",
-                            background: activeThemePreset === "custom"
-                              ? "rgba(255, 255, 255, 0.18)"
-                              : "rgba(10, 15, 26, 0.5)",
-                            boxShadow: activeThemePreset === "custom"
-                              ? "0 0 14px rgba(255, 255, 255, 0.25)"
-                              : "none",
+                            border:
+                              activeThemePreset === "custom"
+                                ? "2px solid #FFFFFF"
+                                : "1.5px solid rgba(255, 255, 255, 0.4)",
+                            background:
+                              activeThemePreset === "custom"
+                                ? "rgba(255, 255, 255, 0.18)"
+                                : "rgba(10, 15, 26, 0.5)",
+                            boxShadow:
+                              activeThemePreset === "custom"
+                                ? "0 0 14px rgba(255, 255, 255, 0.25)"
+                                : "none",
                             color: "#FFFFFF",
-                            fontWeight: activeThemePreset === "custom" ? "900" : "700",
+                            fontWeight:
+                              activeThemePreset === "custom" ? "900" : "700",
                             fontSize: "12.5px",
                             display: "inline-flex",
                             alignItems: "center",
@@ -10927,7 +13293,11 @@ export default function AdminDashboardPage() {
                             </span>
                           )}
                           <Palette size={15} style={{ color: "#FFFFFF" }} />
-                          <span>{state.language === "en" ? "Custom Colors" : "تخصيص الألوان"}</span>
+                          <span>
+                            {state.language === "en"
+                              ? "Custom Colors"
+                              : "تخصيص الألوان"}
+                          </span>
                         </button>
                       </div>
 
@@ -10944,7 +13314,11 @@ export default function AdminDashboardPage() {
                             });
                           }
                         }}
-                        title={state.language === "en" ? "Scroll Right" : "تمرير لليسار"}
+                        title={
+                          state.language === "en"
+                            ? "Scroll Right"
+                            : "تمرير لليسار"
+                        }
                         style={{ flexShrink: 0 }}
                       >
                         <ChevronLeft size={18} />
@@ -10965,19 +13339,19 @@ export default function AdminDashboardPage() {
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      marginBottom: "18px"
+                      marginBottom: "18px",
                     }}
                   >
                     <AlertTriangle size={17} style={{ flexShrink: 0 }} />
-                    <span>
-                      {t('brand_settings.note')}
-                    </span>
+                    <span>{t("brand_settings.note")}</span>
                   </div>
 
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.4fr) minmax(310px, 0.9fr)",
+                      gridTemplateColumns: isMobile
+                        ? "1fr"
+                        : "minmax(0, 1.4fr) minmax(310px, 0.9fr)",
                       gap: "20px",
                       alignItems: "start",
                     }}
@@ -10986,7 +13360,9 @@ export default function AdminDashboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                        gridTemplateColumns: isMobile
+                          ? "1fr"
+                          : "repeat(2, minmax(0, 1fr))",
                         gap: "14px",
                       }}
                     >
@@ -11059,7 +13435,10 @@ export default function AdminDashboardPage() {
                         <div
                           key={item.titleKey}
                           style={{
-                            gridColumn: (item.isFullWidth && !isMobile) ? "span 2" : "span 1",
+                            gridColumn:
+                              item.isFullWidth && !isMobile
+                                ? "span 2"
+                                : "span 1",
                             background: "rgba(0, 0, 0, 0.35)",
                             border: "1px solid rgba(255, 255, 255, 0.08)",
                             borderRadius: "12px",
@@ -11071,12 +13450,32 @@ export default function AdminDashboardPage() {
                             backdropFilter: "blur(10px)",
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "8px",
+                            }}
+                          >
                             <div>
-                              <div style={{ fontSize: "12.5px", fontWeight: "800", color: "#FFFFFF", marginBottom: "3px" }}>
+                              <div
+                                style={{
+                                  fontSize: "12.5px",
+                                  fontWeight: "800",
+                                  color: "#FFFFFF",
+                                  marginBottom: "3px",
+                                }}
+                              >
                                 {t(`brand_settings.${item.titleKey}`)}
                               </div>
-                              <div style={{ fontSize: "10.5px", color: "var(--text3)", lineHeight: "1.3" }}>
+                              <div
+                                style={{
+                                  fontSize: "10.5px",
+                                  color: "var(--text3)",
+                                  lineHeight: "1.3",
+                                }}
+                              >
                                 {t(`brand_settings.${item.descKey}`)}
                               </div>
                             </div>
@@ -11148,10 +13547,25 @@ export default function AdminDashboardPage() {
                         transition: "all 0.3s ease",
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ fontSize: "12.5px", fontWeight: "800", color: textColor, display: "flex", alignItems: "center", gap: "7px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "12.5px",
+                            fontWeight: "800",
+                            color: textColor,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "7px",
+                          }}
+                        >
                           <Sparkles size={15} style={{ color: accentColor }} />
-                          <span>{t('brand_settings.live_preview')}</span>
+                          <span>{t("brand_settings.live_preview")}</span>
                         </div>
                         <span
                           style={{
@@ -11168,7 +13582,7 @@ export default function AdminDashboardPage() {
                           }}
                         >
                           <span>✓</span>
-                          <span>{t('brand_settings.live_active')}</span>
+                          <span>{t("brand_settings.live_active")}</span>
                         </span>
                       </div>
 
@@ -11184,19 +13598,68 @@ export default function AdminDashboardPage() {
                           alignItems: "center",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <div style={{ width: "22px", height: "22px", borderRadius: "6px", background: accentColor, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "10px", fontWeight: "900" }}>
-                            {brandNameForm ? brandNameForm.charAt(0).toUpperCase() : "B"}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "22px",
+                              height: "22px",
+                              borderRadius: "6px",
+                              background: accentColor,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#fff",
+                              fontSize: "10px",
+                              fontWeight: "900",
+                            }}
+                          >
+                            {brandNameForm
+                              ? brandNameForm.charAt(0).toUpperCase()
+                              : "B"}
                           </div>
-                          <span style={{ fontSize: "12px", fontWeight: "800", color: textColor }}>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "800",
+                              color: textColor,
+                            }}
+                          >
                             {brandNameForm || "El Safa Chemical"}
                           </span>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: `${accentColor}25`, color: accentColor, fontWeight: "700" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              background: `${accentColor}25`,
+                              color: accentColor,
+                              fontWeight: "700",
+                            }}
+                          >
                             admin
                           </span>
-                          <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: accentColor }} />
+                          <div
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                              borderRadius: "50%",
+                              background: accentColor,
+                            }}
+                          />
                         </div>
                       </div>
 
@@ -11216,10 +13679,39 @@ export default function AdminDashboardPage() {
                             alignItems: "center",
                           }}
                         >
-                          <div style={{ width: "100%", height: "18px", borderRadius: "5px", background: `${accentColor}30`, border: `1px solid ${accentColor}60` }} />
-                          <div style={{ width: "100%", height: "8px", borderRadius: "4px", background: `${textColor}30` }} />
-                          <div style={{ width: "100%", height: "8px", borderRadius: "4px", background: `${textColor}20` }} />
-                          <div style={{ width: "100%", height: "8px", borderRadius: "4px", background: `${textColor}15` }} />
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "18px",
+                              borderRadius: "5px",
+                              background: `${accentColor}30`,
+                              border: `1px solid ${accentColor}60`,
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "8px",
+                              borderRadius: "4px",
+                              background: `${textColor}30`,
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "8px",
+                              borderRadius: "4px",
+                              background: `${textColor}20`,
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "8px",
+                              borderRadius: "4px",
+                              background: `${textColor}15`,
+                            }}
+                          />
                         </div>
 
                         {/* Mini Main Content Area */}
@@ -11237,15 +13729,33 @@ export default function AdminDashboardPage() {
                           }}
                         >
                           <div>
-                            <div style={{ fontSize: "13px", fontWeight: "800", color: textColor, marginBottom: "4px" }}>
+                            <div
+                              style={{
+                                fontSize: "13px",
+                                fontWeight: "800",
+                                color: textColor,
+                                marginBottom: "4px",
+                              }}
+                            >
                               {brandNameForm || "El Safa Chemical"}
                             </div>
-                            <div style={{ fontSize: "11px", color: `${textColor}80` }}>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: `${textColor}80`,
+                              }}
+                            >
                               {ownerNameForm || "Admin User"}
                             </div>
                           </div>
 
-                          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                              flexWrap: "wrap",
+                            }}
+                          >
                             <button
                               type="button"
                               style={{
@@ -11295,13 +13805,40 @@ export default function AdminDashboardPage() {
                           gap: "8px",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: successColor }} />
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: textColor }}>
-                            {state.language === "en" ? "Footer, Legal & Policies Bar" : "قسم الفوتر والسياسات والحقوق"}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              background: successColor,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              color: textColor,
+                            }}
+                          >
+                            {state.language === "en"
+                              ? "Footer, Legal & Policies Bar"
+                              : "قسم الفوتر والسياسات والحقوق"}
                           </span>
                         </div>
-                        <span style={{ fontSize: "10px", color: `${textColor}70`, fontFamily: "monospace" }}>
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            color: `${textColor}70`,
+                            fontFamily: "monospace",
+                          }}
+                        >
                           {footerBgColor}
                         </span>
                       </div>
@@ -11324,7 +13861,8 @@ export default function AdminDashboardPage() {
                     setHeroSection(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.heroSection) setHeroSection(newFields.heroSection);
+                    if (newFields.heroSection)
+                      setHeroSection(newFields.heroSection);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -11345,7 +13883,8 @@ export default function AdminDashboardPage() {
                     setFinalCtaSection(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.finalCtaSection) setFinalCtaSection(newFields.finalCtaSection);
+                    if (newFields.finalCtaSection)
+                      setFinalCtaSection(newFields.finalCtaSection);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -11398,7 +13937,8 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(280px, 1fr))",
                       gap: "20px",
                     }}
                   >
@@ -11464,27 +14004,61 @@ export default function AdminDashboardPage() {
                             justifyContent: "space-between",
                           }}
                         >
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                              <PlatformIcon size={20} style={{ color: platform.color }} />
-                              <span style={{ fontWeight: "800", color: "#fff", fontSize: "14px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: "14px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                              }}
+                            >
+                              <PlatformIcon
+                                size={20}
+                                style={{ color: platform.color }}
+                              />
+                              <span
+                                style={{
+                                  fontWeight: "800",
+                                  color: "#fff",
+                                  fontSize: "14px",
+                                }}
+                              >
                                 {platform.label}
                               </span>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
                               {linkVal && (
                                 <button
                                   type="button"
                                   onClick={() => {
                                     navigator.clipboard.writeText(linkVal);
-                                    toast(state.language === "en" ? "Link copied!" : "تم نسخ الرابط!", "success");
+                                    toast(
+                                      state.language === "en"
+                                        ? "Link copied!"
+                                        : "تم نسخ الرابط!",
+                                      "success",
+                                    );
                                   }}
                                   style={{
                                     fontSize: "11px",
                                     fontWeight: "800",
                                     color: "#fff",
                                     background: "rgba(255, 255, 255, 0.1)",
-                                    border: "1px solid rgba(255, 255, 255, 0.18)",
+                                    border:
+                                      "1px solid rgba(255, 255, 255, 0.18)",
                                     borderRadius: "8px",
                                     padding: "4px 10px",
                                     cursor: "pointer",
@@ -11493,15 +14067,25 @@ export default function AdminDashboardPage() {
                                     gap: "5px",
                                     transition: "all 0.2s ease",
                                   }}
-                                  title={state.language === "en" ? "Copy Link" : "نسخ الرابط"}
+                                  title={
+                                    state.language === "en"
+                                      ? "Copy Link"
+                                      : "نسخ الرابط"
+                                  }
                                 >
                                   <Copy size={13} />
-                                  <span>{state.language === "en" ? "Copy" : "نسخ"}</span>
+                                  <span>
+                                    {state.language === "en" ? "Copy" : "نسخ"}
+                                  </span>
                                 </button>
                               )}
                               {linkVal ? (
                                 <a
-                                  href={linkVal.startsWith("http") ? linkVal : `https://${linkVal}`}
+                                  href={
+                                    linkVal.startsWith("http")
+                                      ? linkVal
+                                      : `https://${linkVal}`
+                                  }
                                   target="_blank"
                                   rel="noreferrer"
                                   style={{
@@ -11514,17 +14098,31 @@ export default function AdminDashboardPage() {
                                     gap: "4px",
                                   }}
                                 >
-                                  <span>{state.language === "en" ? "Visit ↗" : "زيارة ↗"}</span>
+                                  <span>
+                                    {state.language === "en"
+                                      ? "Visit ↗"
+                                      : "زيارة ↗"}
+                                  </span>
                                 </a>
                               ) : (
-                                <span style={{ fontSize: "10px", color: "var(--text3)" }}>
-                                  {state.language === "en" ? "Not set" : "غير محدد"}
+                                <span
+                                  style={{
+                                    fontSize: "10px",
+                                    color: "var(--text3)",
+                                  }}
+                                >
+                                  {state.language === "en"
+                                    ? "Not set"
+                                    : "غير محدد"}
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          <div className="field" style={{ margin: 0, position: "relative" }}>
+                          <div
+                            className="field"
+                            style={{ margin: 0, position: "relative" }}
+                          >
                             <input
                               className="field-input"
                               value={linkVal}
@@ -11560,17 +14158,53 @@ export default function AdminDashboardPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
                   className="ad-table-card"
-                  style={{ padding: "32px", display: "flex", flexDirection: "column", gap: "32px" }}
+                  style={{
+                    padding: "32px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "32px",
+                  }}
                   dir={state.language === "en" ? "ltr" : "rtl"}
                 >
                   {/* Header & Segmented Control */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "20px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      flexWrap: "wrap",
+                      gap: "20px",
+                    }}
+                  >
                     <div>
-                      <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#fff", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
-                        <FileText size={20} style={{ color: "var(--accent)" }} />
-                        {state.language === "en" ? "Legal Policies & FAQs" : "الشروط والسياسات والأسئلة الشائعة"}
+                      <h3
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "700",
+                          color: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          margin: 0,
+                        }}
+                      >
+                        <FileText
+                          size={20}
+                          style={{ color: "var(--accent)" }}
+                        />
+                        {state.language === "en"
+                          ? "Legal Policies & FAQs"
+                          : "الشروط والسياسات والأسئلة الشائعة"}
                       </h3>
-                      <p style={{ color: "var(--text3)", fontSize: "14px", marginTop: "8px", maxWidth: "500px", lineHeight: "1.6" }}>
+                      <p
+                        style={{
+                          color: "var(--text3)",
+                          fontSize: "14px",
+                          marginTop: "8px",
+                          maxWidth: "500px",
+                          lineHeight: "1.6",
+                        }}
+                      >
                         {state.language === "en"
                           ? "Manage your landing page terms, privacy, security, and FAQs dynamically. Changes are reflected instantly on your public page."
                           : "إدارة شروط الاستخدام، سياسة الخصوصية، سياسة الأمان والأسئلة الشائعة لصفحة الهبوط بشكل ديناميكي. تنعكس التغييرات فوراً."}
@@ -11578,21 +14212,37 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Premium Language Segmented Control */}
-                    <div style={{ display: "flex", background: "rgba(0,0,0,0.4)", borderRadius: "12px", padding: "4px", border: "1px solid rgba(255,255,255,0.05)", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        background: "rgba(0,0,0,0.4)",
+                        borderRadius: "12px",
+                        padding: "4px",
+                        border: "1px solid rgba(255,255,255,0.05)",
+                        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+                      }}
+                    >
                       <button
                         type="button"
                         onClick={() => setLegalTabLang("ar")}
                         style={{
                           padding: "8px 24px",
                           borderRadius: "10px",
-                          background: legalTabLang === "ar" ? "linear-gradient(135deg, var(--accent), var(--accent-hover, #2563EB))" : "transparent",
-                          color: legalTabLang === "ar" ? "#fff" : "var(--text3)",
+                          background:
+                            legalTabLang === "ar"
+                              ? "linear-gradient(135deg, var(--accent), var(--accent-hover, #2563EB))"
+                              : "transparent",
+                          color:
+                            legalTabLang === "ar" ? "#fff" : "var(--text3)",
                           fontSize: "13px",
                           fontWeight: legalTabLang === "ar" ? "700" : "500",
                           border: "none",
                           cursor: "pointer",
                           transition: "all 0.3s ease",
-                          boxShadow: legalTabLang === "ar" ? "0 4px 12px rgba(59, 130, 246, 0.3)" : "none",
+                          boxShadow:
+                            legalTabLang === "ar"
+                              ? "0 4px 12px rgba(59, 130, 246, 0.3)"
+                              : "none",
                         }}
                       >
                         العربية
@@ -11603,14 +14253,21 @@ export default function AdminDashboardPage() {
                         style={{
                           padding: "8px 24px",
                           borderRadius: "10px",
-                          background: legalTabLang === "en" ? "linear-gradient(135deg, var(--accent), var(--accent-hover, #2563EB))" : "transparent",
-                          color: legalTabLang === "en" ? "#fff" : "var(--text3)",
+                          background:
+                            legalTabLang === "en"
+                              ? "linear-gradient(135deg, var(--accent), var(--accent-hover, #2563EB))"
+                              : "transparent",
+                          color:
+                            legalTabLang === "en" ? "#fff" : "var(--text3)",
                           fontSize: "13px",
                           fontWeight: legalTabLang === "en" ? "700" : "500",
                           border: "none",
                           cursor: "pointer",
                           transition: "all 0.3s ease",
-                          boxShadow: legalTabLang === "en" ? "0 4px 12px rgba(59, 130, 246, 0.3)" : "none",
+                          boxShadow:
+                            legalTabLang === "en"
+                              ? "0 4px 12px rgba(59, 130, 246, 0.3)"
+                              : "none",
                         }}
                       >
                         English
@@ -11619,25 +14276,70 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Horizontal Tabs Menu */}
-                  <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "16px", overflowX: "auto", margin: "16px 0" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      paddingBottom: "16px",
+                      overflowX: "auto",
+                      margin: "16px 0",
+                    }}
+                  >
                     {[
-                      { id: "terms", labelEn: "Terms & Conditions", labelAr: "الشروط والأحكام", icon: <FileText size={16} /> },
-                      { id: "privacy", labelEn: "Privacy Policy", labelAr: "سياسة الخصوصية", icon: <Lock size={16} /> },
-                      { id: "security", labelEn: "Security Policy", labelAr: "سياسة الأمان", icon: <Shield size={16} /> },
-                      { id: "faqs", labelEn: "FAQs", labelAr: "الأسئلة الشائعة", icon: <MessageSquare size={16} /> }
-                    ].map(tab => (
+                      {
+                        id: "terms",
+                        labelEn: "Terms & Conditions",
+                        labelAr: "الشروط والأحكام",
+                        icon: <FileText size={16} />,
+                      },
+                      {
+                        id: "privacy",
+                        labelEn: "Privacy Policy",
+                        labelAr: "سياسة الخصوصية",
+                        icon: <Lock size={16} />,
+                      },
+                      {
+                        id: "security",
+                        labelEn: "Security Policy",
+                        labelAr: "سياسة الأمان",
+                        icon: <Shield size={16} />,
+                      },
+                      {
+                        id: "faqs",
+                        labelEn: "FAQs",
+                        labelAr: "الأسئلة الشائعة",
+                        icon: <MessageSquare size={16} />,
+                      },
+                    ].map((tab) => (
                       <button
                         type="button"
                         key={tab.id}
                         onClick={() => setLegalActiveTab(tab.id)}
                         style={{
-                          display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px",
-                          background: legalActiveTab === tab.id ? "rgba(59,130,246,0.1)" : "transparent",
-                          color: legalActiveTab === tab.id ? "#3B82F6" : "var(--text3)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "10px 20px",
+                          background:
+                            legalActiveTab === tab.id
+                              ? "rgba(59,130,246,0.1)"
+                              : "transparent",
+                          color:
+                            legalActiveTab === tab.id
+                              ? "#3B82F6"
+                              : "var(--text3)",
                           border: "1px solid",
-                          borderColor: legalActiveTab === tab.id ? "rgba(59,130,246,0.2)" : "transparent",
-                          borderRadius: "12px", fontSize: "14px", fontWeight: "600", cursor: "pointer",
-                          transition: "all 0.2s", whiteSpace: "nowrap"
+                          borderColor:
+                            legalActiveTab === tab.id
+                              ? "rgba(59,130,246,0.2)"
+                              : "transparent",
+                          borderRadius: "12px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {tab.icon}
@@ -11647,8 +14349,15 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Tab Content Panels */}
-                  <div style={{ minHeight: "400px", background: "rgba(255,255,255,0.01)", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.03)", padding: "24px" }}>
-
+                  <div
+                    style={{
+                      minHeight: "400px",
+                      background: "rgba(255,255,255,0.01)",
+                      borderRadius: "16px",
+                      border: "1px solid rgba(255,255,255,0.03)",
+                      padding: "24px",
+                    }}
+                  >
                     {/* Custom Styles for React Quill Dark Mode and Scrolling */}
                     <style>{`
                       .quill-editor-container .ql-toolbar {
@@ -11709,16 +14418,35 @@ export default function AdminDashboardPage() {
                     `}</style>
 
                     <AnimatePresence mode="wait">
-
                       {/* Terms Panel */}
                       {legalActiveTab === "terms" && (
-                        <motion.div key="terms" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="quill-editor-container">
+                        <motion.div
+                          key="terms"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "16px",
+                          }}
+                          className="quill-editor-container"
+                        >
                           <ReactQuill
                             theme="snow"
                             modules={quillModules}
                             value={legalTabLang === "ar" ? termsAr : termsEn}
-                            onChange={(content) => legalTabLang === "ar" ? setTermsAr(content) : setTermsEn(content)}
-                            placeholder={state.language === "en" ? "Enter Terms & Conditions..." : "أدخل الشروط والأحكام..."}
+                            onChange={(content) =>
+                              legalTabLang === "ar"
+                                ? setTermsAr(content)
+                                : setTermsEn(content)
+                            }
+                            placeholder={
+                              state.language === "en"
+                                ? "Enter Terms & Conditions..."
+                                : "أدخل الشروط والأحكام..."
+                            }
                             dir={legalTabLang === "ar" ? "rtl" : "ltr"}
                           />
                         </motion.div>
@@ -11726,13 +14454,35 @@ export default function AdminDashboardPage() {
 
                       {/* Privacy Panel */}
                       {legalActiveTab === "privacy" && (
-                        <motion.div key="privacy" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="quill-editor-container">
+                        <motion.div
+                          key="privacy"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "16px",
+                          }}
+                          className="quill-editor-container"
+                        >
                           <ReactQuill
                             theme="snow"
                             modules={quillModules}
-                            value={legalTabLang === "ar" ? privacyAr : privacyEn}
-                            onChange={(content) => legalTabLang === "ar" ? setPrivacyAr(content) : setPrivacyEn(content)}
-                            placeholder={state.language === "en" ? "Enter Privacy Policy..." : "أدخل سياسة الخصوصية..."}
+                            value={
+                              legalTabLang === "ar" ? privacyAr : privacyEn
+                            }
+                            onChange={(content) =>
+                              legalTabLang === "ar"
+                                ? setPrivacyAr(content)
+                                : setPrivacyEn(content)
+                            }
+                            placeholder={
+                              state.language === "en"
+                                ? "Enter Privacy Policy..."
+                                : "أدخل سياسة الخصوصية..."
+                            }
                             dir={legalTabLang === "ar" ? "rtl" : "ltr"}
                           />
                         </motion.div>
@@ -11740,13 +14490,35 @@ export default function AdminDashboardPage() {
 
                       {/* Security Panel */}
                       {legalActiveTab === "security" && (
-                        <motion.div key="security" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexDirection: "column", gap: "16px" }} className="quill-editor-container">
+                        <motion.div
+                          key="security"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "16px",
+                          }}
+                          className="quill-editor-container"
+                        >
                           <ReactQuill
                             theme="snow"
                             modules={quillModules}
-                            value={legalTabLang === "ar" ? securityAr : securityEn}
-                            onChange={(content) => legalTabLang === "ar" ? setSecurityAr(content) : setSecurityEn(content)}
-                            placeholder={state.language === "en" ? "Enter Security Policy..." : "أدخل سياسة الأمان..."}
+                            value={
+                              legalTabLang === "ar" ? securityAr : securityEn
+                            }
+                            onChange={(content) =>
+                              legalTabLang === "ar"
+                                ? setSecurityAr(content)
+                                : setSecurityEn(content)
+                            }
+                            placeholder={
+                              state.language === "en"
+                                ? "Enter Security Policy..."
+                                : "أدخل سياسة الأمان..."
+                            }
                             dir={legalTabLang === "ar" ? "rtl" : "ltr"}
                           />
                         </motion.div>
@@ -11754,49 +14526,160 @@ export default function AdminDashboardPage() {
 
                       {/* FAQs Panel */}
                       {legalActiveTab === "faqs" && (
-                        <motion.div key="faqs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+                        <motion.div
+                          key="faqs"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "24px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: "16px",
+                            }}
+                          >
                             <div>
-                              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#fff", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
-                                <MessageSquare size={18} style={{ color: "var(--accent)" }} />
-                                {state.language === "en" ? "Frequently Asked Questions" : "الأسئلة الشائعة (FAQs)"}
+                              <h3
+                                style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  color: "#fff",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  margin: 0,
+                                }}
+                              >
+                                <MessageSquare
+                                  size={18}
+                                  style={{ color: "var(--accent)" }}
+                                />
+                                {state.language === "en"
+                                  ? "Frequently Asked Questions"
+                                  : "الأسئلة الشائعة (FAQs)"}
                               </h3>
-                              <p style={{ color: "var(--text3)", fontSize: "13px", marginTop: "4px" }}>
-                                {state.language === "en" ? "Add questions to help your users understand your product." : "أضف أسئلة لمساعدة المستخدمين على فهم منتجك."}
+                              <p
+                                style={{
+                                  color: "var(--text3)",
+                                  fontSize: "13px",
+                                  marginTop: "4px",
+                                }}
+                              >
+                                {state.language === "en"
+                                  ? "Add questions to help your users understand your product."
+                                  : "أضف أسئلة لمساعدة المستخدمين على فهم منتجك."}
                               </p>
                             </div>
                             <button
                               type="button"
                               onClick={() => {
-                                setFaqs([...faqs, { id: Date.now().toString(), q_ar: "", q_en: "", a_ar: "", a_en: "" }]);
+                                setFaqs([
+                                  ...faqs,
+                                  {
+                                    id: Date.now().toString(),
+                                    q_ar: "",
+                                    q_en: "",
+                                    a_ar: "",
+                                    a_en: "",
+                                  },
+                                ]);
                                 setTimeout(() => {
-                                  const faqElements = document.querySelectorAll('.faq-item-container');
+                                  const faqElements = document.querySelectorAll(
+                                    ".faq-item-container",
+                                  );
                                   if (faqElements.length > 0) {
-                                    faqElements[faqElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    faqElements[
+                                      faqElements.length - 1
+                                    ].scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "center",
+                                    });
                                   }
                                 }, 100);
                               }}
                               style={{
-                                padding: "10px 20px", borderRadius: "10px", background: "var(--accent)", color: "#fff",
-                                fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px",
-                                border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)",
-                                transition: "transform 0.2s, background 0.2s"
+                                padding: "10px 20px",
+                                borderRadius: "10px",
+                                background: "var(--accent)",
+                                color: "#fff",
+                                fontSize: "13px",
+                                fontWeight: "600",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                border: "none",
+                                cursor: "pointer",
+                                boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)",
+                                transition: "transform 0.2s, background 0.2s",
                               }}
-                              onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.background = "var(--accent-hover, #2563EB)"; }}
-                              onMouseOut={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "var(--accent)"; }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.transform =
+                                  "translateY(-1px)";
+                                e.currentTarget.style.background =
+                                  "var(--accent-hover, #2563EB)";
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.transform =
+                                  "translateY(0)";
+                                e.currentTarget.style.background =
+                                  "var(--accent)";
+                              }}
                             >
                               <Plus size={16} />
-                              {state.language === "en" ? "Add FAQ" : "إضافة سؤال"}
+                              {state.language === "en"
+                                ? "Add FAQ"
+                                : "إضافة سؤال"}
                             </button>
                           </div>
 
-                          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "16px",
+                            }}
+                          >
                             <AnimatePresence>
                               {faqs.length === 0 ? (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: "center", padding: "60px 20px", background: "rgba(0,0,0,0.2)", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "16px" }}>
-                                  <MessageSquare size={32} style={{ color: "var(--text3)", opacity: 0.5, marginBottom: "16px" }} />
-                                  <p style={{ color: "var(--text2)", fontSize: "14px", margin: 0 }}>
-                                    {state.language === "en" ? "No FAQs added yet. Click the button above to create one." : "لم يتم إضافة أسئلة شائعة بعد. انقر على الزر أعلاه لإضافة سؤال."}
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  style={{
+                                    textAlign: "center",
+                                    padding: "60px 20px",
+                                    background: "rgba(0,0,0,0.2)",
+                                    border: "1px dashed rgba(255,255,255,0.1)",
+                                    borderRadius: "16px",
+                                  }}
+                                >
+                                  <MessageSquare
+                                    size={32}
+                                    style={{
+                                      color: "var(--text3)",
+                                      opacity: 0.5,
+                                      marginBottom: "16px",
+                                    }}
+                                  />
+                                  <p
+                                    style={{
+                                      color: "var(--text2)",
+                                      fontSize: "14px",
+                                      margin: 0,
+                                    }}
+                                  >
+                                    {state.language === "en"
+                                      ? "No FAQs added yet. Click the button above to create one."
+                                      : "لم يتم إضافة أسئلة شائعة بعد. انقر على الزر أعلاه لإضافة سؤال."}
                                   </p>
                                 </motion.div>
                               ) : (
@@ -11804,27 +14687,78 @@ export default function AdminDashboardPage() {
                                   <motion.div
                                     key={faq.id}
                                     className="faq-item-container"
-                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    transition={{ duration: 0.2 }}
                                     style={{
-                                      padding: "20px", background: "rgba(0,0,0,0.2)", borderRadius: "16px",
-                                      border: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column", gap: "16px",
-                                      position: "relative", overflow: "hidden"
+                                      padding: "20px",
+                                      background: "rgba(0,0,0,0.2)",
+                                      borderRadius: "16px",
+                                      border:
+                                        "1px solid rgba(255,255,255,0.05)",
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: "16px",
+                                      position: "relative",
+                                      overflow: "hidden",
                                     }}
                                   >
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                      <span style={{ fontSize: "12px", fontWeight: "700", color: "rgba(255,255,255,0.4)", letterSpacing: "0.5px" }}>FAQ #{index + 1}</span>
-                                      <div style={{ display: "flex", gap: "6px" }}>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          fontSize: "12px",
+                                          fontWeight: "700",
+                                          color: "rgba(255,255,255,0.4)",
+                                          letterSpacing: "0.5px",
+                                        }}
+                                      >
+                                        FAQ #{index + 1}
+                                      </span>
+                                      <div
+                                        style={{ display: "flex", gap: "6px" }}
+                                      >
                                         <button
                                           type="button"
                                           onClick={() => {
                                             if (index > 0) {
                                               const newFaqs = [...faqs];
-                                              [newFaqs[index - 1], newFaqs[index]] = [newFaqs[index], newFaqs[index - 1]];
+                                              [
+                                                newFaqs[index - 1],
+                                                newFaqs[index],
+                                              ] = [
+                                                newFaqs[index],
+                                                newFaqs[index - 1],
+                                              ];
                                               setFaqs(newFaqs);
                                             }
                                           }}
                                           disabled={index === 0}
-                                          style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.05)", color: index === 0 ? "rgba(255,255,255,0.1)" : "var(--text2)", border: "none", cursor: index === 0 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "8px",
+                                            background:
+                                              "rgba(255,255,255,0.05)",
+                                            color:
+                                              index === 0
+                                                ? "rgba(255,255,255,0.1)"
+                                                : "var(--text2)",
+                                            border: "none",
+                                            cursor:
+                                              index === 0
+                                                ? "default"
+                                                : "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
                                         >
                                           ↑
                                         </button>
@@ -11833,21 +14767,70 @@ export default function AdminDashboardPage() {
                                           onClick={() => {
                                             if (index < faqs.length - 1) {
                                               const newFaqs = [...faqs];
-                                              [newFaqs[index], newFaqs[index + 1]] = [newFaqs[index + 1], newFaqs[index]];
+                                              [
+                                                newFaqs[index],
+                                                newFaqs[index + 1],
+                                              ] = [
+                                                newFaqs[index + 1],
+                                                newFaqs[index],
+                                              ];
                                               setFaqs(newFaqs);
                                             }
                                           }}
                                           disabled={index === faqs.length - 1}
-                                          style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.05)", color: index === faqs.length - 1 ? "rgba(255,255,255,0.1)" : "var(--text2)", border: "none", cursor: index === faqs.length - 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "8px",
+                                            background:
+                                              "rgba(255,255,255,0.05)",
+                                            color:
+                                              index === faqs.length - 1
+                                                ? "rgba(255,255,255,0.1)"
+                                                : "var(--text2)",
+                                            border: "none",
+                                            cursor:
+                                              index === faqs.length - 1
+                                                ? "default"
+                                                : "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
                                         >
                                           ↓
                                         </button>
                                         <button
                                           type="button"
-                                          onClick={() => setFaqs(faqs.filter(f => f.id !== faq.id))}
-                                          style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(239,68,68,0.1)", color: "var(--error)", border: "none", marginLeft: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s" }}
-                                          onMouseOver={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.2)"}
-                                          onMouseOut={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.1)"}
+                                          onClick={() =>
+                                            setFaqs(
+                                              faqs.filter(
+                                                (f) => f.id !== faq.id,
+                                              ),
+                                            )
+                                          }
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "8px",
+                                            background: "rgba(239,68,68,0.1)",
+                                            color: "var(--error)",
+                                            border: "none",
+                                            marginLeft: "12px",
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            transition: "background 0.2s",
+                                          }}
+                                          onMouseOver={(e) =>
+                                            (e.currentTarget.style.background =
+                                              "rgba(239,68,68,0.2)")
+                                          }
+                                          onMouseOut={(e) =>
+                                            (e.currentTarget.style.background =
+                                              "rgba(239,68,68,0.1)")
+                                          }
                                         >
                                           <Trash2 size={16} />
                                         </button>
@@ -11855,40 +14838,100 @@ export default function AdminDashboardPage() {
                                     </div>
                                     <input
                                       type="text"
-                                      value={legalTabLang === "ar" ? faq.q_ar : faq.q_en}
+                                      value={
+                                        legalTabLang === "ar"
+                                          ? faq.q_ar
+                                          : faq.q_en
+                                      }
                                       onChange={(e) => {
                                         const newFaqs = [...faqs];
-                                        if (legalTabLang === "ar") newFaqs[index].q_ar = e.target.value;
-                                        else newFaqs[index].q_en = e.target.value;
+                                        if (legalTabLang === "ar")
+                                          newFaqs[index].q_ar = e.target.value;
+                                        else
+                                          newFaqs[index].q_en = e.target.value;
                                         setFaqs(newFaqs);
                                       }}
-                                      placeholder={state.language === "en" ? "Question..." : "السؤال..."}
+                                      placeholder={
+                                        state.language === "en"
+                                          ? "Question..."
+                                          : "السؤال..."
+                                      }
                                       style={{
-                                        width: "100%", padding: "14px 16px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.05)",
-                                        borderRadius: "10px", color: "#fff", fontSize: "14px", fontWeight: "600", outline: "none", transition: "border-color 0.2s"
+                                        width: "100%",
+                                        padding: "14px 16px",
+                                        background: "rgba(0,0,0,0.3)",
+                                        border:
+                                          "1px solid rgba(255,255,255,0.05)",
+                                        borderRadius: "10px",
+                                        color: "#fff",
+                                        fontSize: "14px",
+                                        fontWeight: "600",
+                                        outline: "none",
+                                        transition: "border-color 0.2s",
                                       }}
-                                      onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
-                                      onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.05)"}
-                                      dir={legalTabLang === "ar" ? "rtl" : "ltr"}
+                                      onFocus={(e) =>
+                                        (e.target.style.borderColor =
+                                          "var(--accent)")
+                                      }
+                                      onBlur={(e) =>
+                                        (e.target.style.borderColor =
+                                          "rgba(255,255,255,0.05)")
+                                      }
+                                      dir={
+                                        legalTabLang === "ar" ? "rtl" : "ltr"
+                                      }
                                     />
                                     <textarea
-                                      value={legalTabLang === "ar" ? faq.a_ar : faq.a_en}
+                                      value={
+                                        legalTabLang === "ar"
+                                          ? faq.a_ar
+                                          : faq.a_en
+                                      }
                                       onChange={(e) => {
                                         const newFaqs = [...faqs];
-                                        if (legalTabLang === "ar") newFaqs[index].a_ar = e.target.value;
-                                        else newFaqs[index].a_en = e.target.value;
+                                        if (legalTabLang === "ar")
+                                          newFaqs[index].a_ar = e.target.value;
+                                        else
+                                          newFaqs[index].a_en = e.target.value;
                                         setFaqs(newFaqs);
                                       }}
-                                      onInput={(e) => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
-                                      placeholder={state.language === "en" ? "Answer..." : "الإجابة..."}
-                                      style={{
-                                        width: "100%", minHeight: "90px", resize: "none", padding: "14px 16px", background: "rgba(0,0,0,0.3)",
-                                        border: "1px solid rgba(255,255,255,0.05)", borderRadius: "10px", color: "var(--text2)", fontSize: "14px",
-                                        lineHeight: "1.6", outline: "none", transition: "border-color 0.2s", overflow: "hidden"
+                                      onInput={(e) => {
+                                        e.target.style.height = "auto";
+                                        e.target.style.height =
+                                          e.target.scrollHeight + "px";
                                       }}
-                                      onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
-                                      onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.05)"}
-                                      dir={legalTabLang === "ar" ? "rtl" : "ltr"}
+                                      placeholder={
+                                        state.language === "en"
+                                          ? "Answer..."
+                                          : "الإجابة..."
+                                      }
+                                      style={{
+                                        width: "100%",
+                                        minHeight: "90px",
+                                        resize: "none",
+                                        padding: "14px 16px",
+                                        background: "rgba(0,0,0,0.3)",
+                                        border:
+                                          "1px solid rgba(255,255,255,0.05)",
+                                        borderRadius: "10px",
+                                        color: "var(--text2)",
+                                        fontSize: "14px",
+                                        lineHeight: "1.6",
+                                        outline: "none",
+                                        transition: "border-color 0.2s",
+                                        overflow: "hidden",
+                                      }}
+                                      onFocus={(e) =>
+                                        (e.target.style.borderColor =
+                                          "var(--accent)")
+                                      }
+                                      onBlur={(e) =>
+                                        (e.target.style.borderColor =
+                                          "rgba(255,255,255,0.05)")
+                                      }
+                                      dir={
+                                        legalTabLang === "ar" ? "rtl" : "ltr"
+                                      }
                                     />
                                   </motion.div>
                                 ))
@@ -11899,7 +14942,6 @@ export default function AdminDashboardPage() {
                       )}
                     </AnimatePresence>
                   </div>
-
                 </motion.div>
               )}
 
@@ -11915,12 +14957,16 @@ export default function AdminDashboardPage() {
                   }}
                   userData={userData}
                   onChange={(newFields) => {
-                    if (newFields.brandFailures) setBrandFailures(newFields.brandFailures);
-                    if (newFields.showFailuresSection !== undefined) setShowFailuresSection(newFields.showFailuresSection);
+                    if (newFields.brandFailures)
+                      setBrandFailures(newFields.brandFailures);
+                    if (newFields.showFailuresSection !== undefined)
+                      setShowFailuresSection(newFields.showFailuresSection);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.brandFailures) setBrandFailures(newFields.brandFailures);
-                    if (newFields.showFailuresSection !== undefined) setShowFailuresSection(newFields.showFailuresSection);
+                    if (newFields.brandFailures)
+                      setBrandFailures(newFields.brandFailures);
+                    if (newFields.showFailuresSection !== undefined)
+                      setShowFailuresSection(newFields.showFailuresSection);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -11951,12 +14997,16 @@ export default function AdminDashboardPage() {
                   }}
                   userData={userData}
                   onChange={(newFields) => {
-                    if (newFields.videoConfig) setVideoConfig(newFields.videoConfig);
-                    if (newFields.showVideoSection !== undefined) setShowVideoSection(newFields.showVideoSection);
+                    if (newFields.videoConfig)
+                      setVideoConfig(newFields.videoConfig);
+                    if (newFields.showVideoSection !== undefined)
+                      setShowVideoSection(newFields.showVideoSection);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.videoConfig) setVideoConfig(newFields.videoConfig);
-                    if (newFields.showVideoSection !== undefined) setShowVideoSection(newFields.showVideoSection);
+                    if (newFields.videoConfig)
+                      setVideoConfig(newFields.videoConfig);
+                    if (newFields.showVideoSection !== undefined)
+                      setShowVideoSection(newFields.showVideoSection);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -11977,7 +15027,8 @@ export default function AdminDashboardPage() {
                     setNicheRadar(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.nicheRadar) setNicheRadar(newFields.nicheRadar);
+                    if (newFields.nicheRadar)
+                      setNicheRadar(newFields.nicheRadar);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -11998,7 +15049,8 @@ export default function AdminDashboardPage() {
                     setIdentityGenerator(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.identityGenerator) setIdentityGenerator(newFields.identityGenerator);
+                    if (newFields.identityGenerator)
+                      setIdentityGenerator(newFields.identityGenerator);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12019,7 +15071,8 @@ export default function AdminDashboardPage() {
                     setInfrastructureBuilder(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.infrastructureBuilder) setInfrastructureBuilder(newFields.infrastructureBuilder);
+                    if (newFields.infrastructureBuilder)
+                      setInfrastructureBuilder(newFields.infrastructureBuilder);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12040,7 +15093,8 @@ export default function AdminDashboardPage() {
                     setContentFactory(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.contentFactory) setContentFactory(newFields.contentFactory);
+                    if (newFields.contentFactory)
+                      setContentFactory(newFields.contentFactory);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12061,7 +15115,8 @@ export default function AdminDashboardPage() {
                     setProposalsSniper(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.proposalsSniper) setProposalsSniper(newFields.proposalsSniper);
+                    if (newFields.proposalsSniper)
+                      setProposalsSniper(newFields.proposalsSniper);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12082,7 +15137,8 @@ export default function AdminDashboardPage() {
                     setGlobalPlatformsRadar(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.globalPlatformsRadar) setGlobalPlatformsRadar(newFields.globalPlatformsRadar);
+                    if (newFields.globalPlatformsRadar)
+                      setGlobalPlatformsRadar(newFields.globalPlatformsRadar);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12103,7 +15159,10 @@ export default function AdminDashboardPage() {
                     setMarketingAutomationEngine(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.marketingAutomationEngine) setMarketingAutomationEngine(newFields.marketingAutomationEngine);
+                    if (newFields.marketingAutomationEngine)
+                      setMarketingAutomationEngine(
+                        newFields.marketingAutomationEngine,
+                      );
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12124,7 +15183,10 @@ export default function AdminDashboardPage() {
                     setProfitCalculatorSection(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.profitCalculatorSection) setProfitCalculatorSection(newFields.profitCalculatorSection);
+                    if (newFields.profitCalculatorSection)
+                      setProfitCalculatorSection(
+                        newFields.profitCalculatorSection,
+                      );
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12145,7 +15207,8 @@ export default function AdminDashboardPage() {
                     setAiAssistantSimulator(newFields);
                   }}
                   onSave={async (newFields) => {
-                    if (newFields.aiAssistantSimulator) setAiAssistantSimulator(newFields.aiAssistantSimulator);
+                    if (newFields.aiAssistantSimulator)
+                      setAiAssistantSimulator(newFields.aiAssistantSimulator);
                     await handleSaveSubTabSection(newFields);
                   }}
                   saving={isUpdatingProfile}
@@ -12222,7 +15285,11 @@ export default function AdminDashboardPage() {
                       }}
                     >
                       <ExternalLink size={15} />
-                      <span>{state.language === "en" ? "Open Live Landing Page ↗" : "فتح صفحة الهبوط مباشرة ↗"}</span>
+                      <span>
+                        {state.language === "en"
+                          ? "Open Live Landing Page ↗"
+                          : "فتح صفحة الهبوط مباشرة ↗"}
+                      </span>
                     </a>
                   </div>
 
@@ -12230,7 +15297,8 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(300px, 1fr))",
                       gap: "24px",
                     }}
                   >
@@ -12257,7 +15325,8 @@ export default function AdminDashboardPage() {
                         style={{
                           width: "100%",
                           height: "140px",
-                          background: "linear-gradient(135deg, #0b132b, #1c2541)",
+                          background:
+                            "linear-gradient(135deg, #0b132b, #1c2541)",
                           borderRadius: "12px",
                           border: "1px solid rgba(255, 255, 255, 0.1)",
                           marginBottom: "16px",
@@ -12266,12 +15335,31 @@ export default function AdminDashboardPage() {
                           justifyContent: "center",
                         }}
                       >
-                        <Sparkles size={36} style={{ color: "var(--accent)" }} />
+                        <Sparkles
+                          size={36}
+                          style={{ color: "var(--accent)" }}
+                        />
                       </div>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                        <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#fff" }}>
-                          {state.language === "en" ? "Default Standard Template" : "القالب الافتراضي القياسي"}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <h4
+                          style={{
+                            margin: 0,
+                            fontSize: "16px",
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
+                          {state.language === "en"
+                            ? "Default Standard Template"
+                            : "القالب الافتراضي القياسي"}
                         </h4>
                         <span
                           style={{
@@ -12288,7 +15376,14 @@ export default function AdminDashboardPage() {
                         </span>
                       </div>
 
-                      <p style={{ fontSize: "12px", color: "var(--text3)", margin: "0 0 16px 0", lineHeight: 1.5 }}>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--text3)",
+                          margin: "0 0 16px 0",
+                          lineHeight: 1.5,
+                        }}
+                      >
                         {state.language === "en"
                           ? "Clean, fast-loading, responsive layout optimized for all devices and high conversion rates."
                           : "تصميم نظيف وسريع الاستجابة ومتوافق مع كافة الأجهزة لمعدلات تحويل مرتفعة."}
@@ -12318,7 +15413,11 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         <Eye size={15} />
-                        <span>{state.language === "en" ? "Live Demo Preview" : "معاينة تجريبية حية"}</span>
+                        <span>
+                          {state.language === "en"
+                            ? "Live Demo Preview"
+                            : "معاينة تجريبية حية"}
+                        </span>
                       </button>
                     </div>
 
@@ -12345,7 +15444,8 @@ export default function AdminDashboardPage() {
                         style={{
                           width: "100%",
                           height: "140px",
-                          background: "linear-gradient(135deg, #0a0a14, #18122b)",
+                          background:
+                            "linear-gradient(135deg, #0a0a14, #18122b)",
                           borderRadius: "12px",
                           border: "1px solid rgba(255, 255, 255, 0.1)",
                           marginBottom: "16px",
@@ -12357,9 +15457,25 @@ export default function AdminDashboardPage() {
                         <Zap size={36} style={{ color: "#8B5CF6" }} />
                       </div>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                        <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#fff" }}>
-                          {state.language === "en" ? "Madgicx Pro Cyber Template" : "قالب Madgicx الاحترافي"}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <h4
+                          style={{
+                            margin: 0,
+                            fontSize: "16px",
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
+                          {state.language === "en"
+                            ? "Madgicx Pro Cyber Template"
+                            : "قالب Madgicx الاحترافي"}
                         </h4>
                         <span
                           style={{
@@ -12376,7 +15492,14 @@ export default function AdminDashboardPage() {
                         </span>
                       </div>
 
-                      <p style={{ fontSize: "12px", color: "var(--text3)", margin: "0 0 16px 0", lineHeight: 1.5 }}>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--text3)",
+                          margin: "0 0 16px 0",
+                          lineHeight: 1.5,
+                        }}
+                      >
                         {state.language === "en"
                           ? "Futuristic cyber dark design with interactive feature cards, video hero, and glassmorphic stats."
                           : "تصميم سيبراني عصري مستقبلي مع بطاقات تفاعلية وعرض مميز للخدمات والمميزات."}
@@ -12406,7 +15529,11 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         <Eye size={15} />
-                        <span>{state.language === "en" ? "Live Demo Preview" : "معاينة تجريبية حية"}</span>
+                        <span>
+                          {state.language === "en"
+                            ? "Live Demo Preview"
+                            : "معاينة تجريبية حية"}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -12436,19 +15563,57 @@ export default function AdminDashboardPage() {
                       gap: "12px",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
                       <Eye size={18} style={{ color: "var(--accent)" }} />
-                      <span style={{ fontSize: "14px", fontWeight: "800", color: "#fff" }}>
-                        {state.language === "en" ? "Interactive Live Viewport Preview" : "المعاينة التفاعلية المباشرة"}
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "800",
+                          color: "#fff",
+                        }}
+                      >
+                        {state.language === "en"
+                          ? "Interactive Live Viewport Preview"
+                          : "المعاينة التفاعلية المباشرة"}
                       </span>
                     </div>
 
                     {/* Device Responsive Viewport Toggles */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255, 255, 255, 0.05)", padding: "4px", borderRadius: "12px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        background: "rgba(255, 255, 255, 0.05)",
+                        padding: "4px",
+                        borderRadius: "12px",
+                      }}
+                    >
                       {[
-                        { id: "desktop", label: "Desktop", icon: Laptop, width: "100%" },
-                        { id: "tablet", label: "Tablet", icon: Tablet, width: "768px" },
-                        { id: "mobile", label: "Mobile", icon: Smartphone, width: "380px" },
+                        {
+                          id: "desktop",
+                          label: "Desktop",
+                          icon: Laptop,
+                          width: "100%",
+                        },
+                        {
+                          id: "tablet",
+                          label: "Tablet",
+                          icon: Tablet,
+                          width: "768px",
+                        },
+                        {
+                          id: "mobile",
+                          label: "Mobile",
+                          icon: Smartphone,
+                          width: "380px",
+                        },
                       ].map((device) => {
                         const DevIcon = device.icon;
                         const isActive = brandPreviewDevice === device.id;
@@ -12462,7 +15627,9 @@ export default function AdminDashboardPage() {
                               padding: "0 12px",
                               borderRadius: "8px",
                               border: "none",
-                              background: isActive ? "var(--accent)" : "transparent",
+                              background: isActive
+                                ? "var(--accent)"
+                                : "transparent",
                               color: isActive ? "#fff" : "var(--text3)",
                               fontSize: "11px",
                               fontWeight: "800",
@@ -12481,7 +15648,13 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Toolbar Action Controls */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
                       <button
                         type="button"
                         onClick={() => setIframeKey((k) => k + 1)}
@@ -12501,7 +15674,9 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         <RefreshCw size={13} />
-                        <span>{state.language === "en" ? "Refresh" : "تحديث"}</span>
+                        <span>
+                          {state.language === "en" ? "Refresh" : "تحديث"}
+                        </span>
                       </button>
 
                       <a
@@ -12524,7 +15699,9 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         <ExternalLink size={13} />
-                        <span>{state.language === "en" ? "New Tab" : "نافذة جديدة"}</span>
+                        <span>
+                          {state.language === "en" ? "New Tab" : "نافذة جديدة"}
+                        </span>
                       </a>
                     </div>
                   </div>
@@ -12533,7 +15710,8 @@ export default function AdminDashboardPage() {
                   <div
                     style={{
                       background: "#080c14",
-                      padding: brandPreviewDevice === "desktop" ? "0" : "20px 0",
+                      padding:
+                        brandPreviewDevice === "desktop" ? "0" : "20px 0",
                       display: "flex",
                       justifyContent: "center",
                       minHeight: "650px",
@@ -12549,10 +15727,17 @@ export default function AdminDashboardPage() {
                               : "380px",
                         height: "650px",
                         transition: "all 0.3s ease",
-                        borderRadius: brandPreviewDevice === "desktop" ? "0" : "16px",
+                        borderRadius:
+                          brandPreviewDevice === "desktop" ? "0" : "16px",
                         overflow: "hidden",
-                        border: brandPreviewDevice === "desktop" ? "none" : "2px solid rgba(255,255,255,0.15)",
-                        boxShadow: brandPreviewDevice === "desktop" ? "none" : "0 20px 50px rgba(0,0,0,0.6)",
+                        border:
+                          brandPreviewDevice === "desktop"
+                            ? "none"
+                            : "2px solid rgba(255,255,255,0.15)",
+                        boxShadow:
+                          brandPreviewDevice === "desktop"
+                            ? "none"
+                            : "0 20px 50px rgba(0,0,0,0.6)",
                       }}
                     >
                       <iframe
@@ -12560,7 +15745,11 @@ export default function AdminDashboardPage() {
                         key={iframeKey}
                         src="/dashboard"
                         onLoad={handleIframeLoad}
-                        style={{ width: "100%", height: "100%", border: "none" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          border: "none",
+                        }}
                         title="Tools Preview"
                       />
                     </div>
@@ -12586,7 +15775,14 @@ export default function AdminDashboardPage() {
                 }}
                 dir={state.language === "en" ? "ltr" : "rtl"}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    flexWrap: "wrap",
+                  }}
+                >
                   {/* Save All Changes Main Button */}
                   <button
                     type="button"
@@ -12611,12 +15807,23 @@ export default function AdminDashboardPage() {
                     {isUpdatingProfile ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        <span>{state.language === "en" ? "Saving..." : "جاري الحفظ..."}</span>
+                        <span>
+                          {state.language === "en"
+                            ? "Saving..."
+                            : "جاري الحفظ..."}
+                        </span>
                       </>
                     ) : (
                       <>
                         <Save size={18} />
-                        <span>{t("brand_settings.save_all", state.language === "en" ? "Save All Changes (Ctrl+S)" : "حفظ كافة الإعدادات (Ctrl+S)")}</span>
+                        <span>
+                          {t(
+                            "brand_settings.save_all",
+                            state.language === "en"
+                              ? "Save All Changes (Ctrl+S)"
+                              : "حفظ كافة الإعدادات (Ctrl+S)",
+                          )}
+                        </span>
                       </>
                     )}
                   </button>
@@ -12642,12 +15849,23 @@ export default function AdminDashboardPage() {
                     }}
                   >
                     <RotateCcw size={15} />
-                    <span>{state.language === "en" ? "Reset Defaults" : "القيم الافتراضية"}</span>
+                    <span>
+                      {state.language === "en"
+                        ? "Reset Defaults"
+                        : "القيم الافتراضية"}
+                    </span>
                   </button>
                 </div>
 
                 {/* Export JSON Button */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    flexWrap: "wrap",
+                  }}
+                >
                   <button
                     type="button"
                     onClick={handleExportBrandSettingsJSON}
@@ -12668,7 +15886,14 @@ export default function AdminDashboardPage() {
                     }}
                   >
                     <Download size={15} />
-                    <span>{t("brand_settings.export_json", state.language === "en" ? "Export Config (JSON)" : "تصدير الإعدادات (JSON)")}</span>
+                    <span>
+                      {t(
+                        "brand_settings.export_json",
+                        state.language === "en"
+                          ? "Export Config (JSON)"
+                          : "تصدير الإعدادات (JSON)",
+                      )}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -12683,17 +15908,43 @@ export default function AdminDashboardPage() {
                   >
                     <motion.div
                       className="sa-modal-content"
-                      style={{ maxWidth: "900px", width: "95%", height: "80vh", padding: "24px" }}
+                      style={{
+                        maxWidth: "900px",
+                        width: "95%",
+                        height: "80vh",
+                        padding: "24px",
+                      }}
                       onClick={(e) => e.stopPropagation()}
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.9, opacity: 0 }}
                     >
-                      <div className="sa-modal-header" style={{ marginBottom: "16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <Layout size={20} style={{ color: "var(--accent)" }} />
-                          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#fff" }}>
-                            {state.language === "en" ? `Live Demo: ${previewDemoTemplate} Template` : `معاينة حية: قالب ${previewDemoTemplate}`}
+                      <div
+                        className="sa-modal-header"
+                        style={{ marginBottom: "16px" }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <Layout
+                            size={20}
+                            style={{ color: "var(--accent)" }}
+                          />
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: "16px",
+                              fontWeight: "800",
+                              color: "#fff",
+                            }}
+                          >
+                            {state.language === "en"
+                              ? `Live Demo: ${previewDemoTemplate} Template`
+                              : `معاينة حية: قالب ${previewDemoTemplate}`}
                           </h3>
                         </div>
                         <button
@@ -12710,10 +15961,22 @@ export default function AdminDashboardPage() {
                         </button>
                       </div>
 
-                      <div style={{ width: "100%", height: "calc(100% - 60px)", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "calc(100% - 60px)",
+                          borderRadius: "12px",
+                          overflow: "hidden",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      >
                         <iframe
                           src={`/?brand=${userData?.brandName || ""}&template=${previewDemoTemplate}`}
-                          style={{ width: "100%", height: "100%", border: "none" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            border: "none",
+                          }}
                           title="Template Demo"
                         />
                       </div>
@@ -12808,7 +16071,7 @@ export default function AdminDashboardPage() {
                         ((viewingUserDetails.appState?.completedSteps?.length ||
                           0) /
                           totalSteps) *
-                        100,
+                          100,
                       )}
                       %
                     </span>
@@ -13089,24 +16352,40 @@ export default function AdminDashboardPage() {
                     {!editingUser && (
                       <div className="field">
                         <label className="field-label">
-                          {state.language === "en" ? "Assign Plan" : "تخصيص باقة"}
+                          {state.language === "en"
+                            ? "Assign Plan"
+                            : "تخصيص باقة"}
                         </label>
                         <CustomSelect
                           options={[
                             {
                               value: "free",
-                              label: state.language === "en" ? `Free Plan (${freeTrialCredits || 20} credits)` : `باقة مجانية (${freeTrialCredits || 20} رصيد)`,
+                              label:
+                                state.language === "en"
+                                  ? `Free Plan (${freeTrialCredits || 20} credits)`
+                                  : `باقة مجانية (${freeTrialCredits || 20} رصيد)`,
                             },
                             ...plans.map((p) => ({
                               value: p.id.toString(),
-                              label: (state.language === "en" ? (p.name_en || p.name) : (p.name_ar || p.name)) + " (" + (p.creditsPerMonth || 0) + " " + (state.language === "en" ? "credits" : "رصيد") + ")",
-                            }))
+                              label:
+                                (state.language === "en"
+                                  ? p.name_en || p.name
+                                  : p.name_ar || p.name) +
+                                " (" +
+                                (p.creditsPerMonth || 0) +
+                                " " +
+                                (state.language === "en" ? "credits" : "رصيد") +
+                                ")",
+                            })),
                           ]}
                           value={userPlanId}
                           onChange={(newPlanId) => {
                             setUserPlanId(newPlanId);
                             if (newPlanId === "free") {
-                              if (subType !== "trial" && subType !== "stopped") {
+                              if (
+                                subType !== "trial" &&
+                                subType !== "stopped"
+                              ) {
                                 setSubType("trial");
                               }
                             } else {
@@ -13265,44 +16544,68 @@ export default function AdminDashboardPage() {
                       </div>
                       <div style={{ marginTop: 16 }}>
                         <CustomSelect
-                          label={state.language === "en" ? "Subscription Type" : "نوع الاشتراك"}
+                          label={
+                            state.language === "en"
+                              ? "Subscription Type"
+                              : "نوع الاشتراك"
+                          }
                           value={subType}
                           onChange={(val) => setSubType(val)}
                           icon={Sparkles}
                           options={
-                            userPlanId === "free" ? [
-                              {
-                                value: "trial",
-                                label: state.language === "en" ? `Trial (${freeTrialDays} Days)` : `فترة مجانية (${freeTrialDays} أيام)`,
-                                icon: Gift,
-                              },
-                              {
-                                value: "stopped",
-                                label: state.language === "en" ? "Stop" : "إيقاف",
-                                icon: Ban,
-                              }
-                            ] : [
-                              {
-                                value: "monthly",
-                                label: state.language === "en" ? "Monthly" : "شهر",
-                                icon: Calendar,
-                              },
-                              {
-                                value: "lifetime",
-                                label: state.language === "en" ? "Lifetime" : "دائم",
-                                icon: Gem,
-                              },
-                              {
-                                value: "custom",
-                                label: state.language === "en" ? "Custom" : "محدد",
-                                icon: SlidersHorizontal,
-                              },
-                              {
-                                value: "stopped",
-                                label: state.language === "en" ? "Stop" : "إيقاف",
-                                icon: Ban,
-                              }
-                            ]
+                            userPlanId === "free"
+                              ? [
+                                  {
+                                    value: "trial",
+                                    label:
+                                      state.language === "en"
+                                        ? `Trial (${freeTrialDays} Days)`
+                                        : `فترة مجانية (${freeTrialDays} أيام)`,
+                                    icon: Gift,
+                                  },
+                                  {
+                                    value: "stopped",
+                                    label:
+                                      state.language === "en"
+                                        ? "Stop"
+                                        : "إيقاف",
+                                    icon: Ban,
+                                  },
+                                ]
+                              : [
+                                  {
+                                    value: "monthly",
+                                    label:
+                                      state.language === "en"
+                                        ? "Monthly"
+                                        : "شهر",
+                                    icon: Calendar,
+                                  },
+                                  {
+                                    value: "lifetime",
+                                    label:
+                                      state.language === "en"
+                                        ? "Lifetime"
+                                        : "دائم",
+                                    icon: Gem,
+                                  },
+                                  {
+                                    value: "custom",
+                                    label:
+                                      state.language === "en"
+                                        ? "Custom"
+                                        : "محدد",
+                                    icon: SlidersHorizontal,
+                                  },
+                                  {
+                                    value: "stopped",
+                                    label:
+                                      state.language === "en"
+                                        ? "Stop"
+                                        : "إيقاف",
+                                    icon: Ban,
+                                  },
+                                ]
                           }
                         />
                       </div>
@@ -13401,10 +16704,7 @@ export default function AdminDashboardPage() {
       {/* Plan Create / Edit Modal */}
       <AnimatePresence>
         {isPlanModalOpen && (
-          <div
-            className="sa-modal-overlay"
-            style={{ zIndex: 2000 }}
-          >
+          <div className="sa-modal-overlay" style={{ zIndex: 2000 }}>
             <motion.div
               className="sa-modal-content"
               onClick={(e) => e.stopPropagation()}
@@ -13474,10 +16774,18 @@ export default function AdminDashboardPage() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     <Globe size={18} style={{ color: "var(--accent)" }} />
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: "800", color: "#fff" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "800",
+                          color: "#fff",
+                        }}
+                      >
                         {t("admin_dashboard.display_on_website")}
                       </div>
                     </div>
@@ -13485,12 +16793,16 @@ export default function AdminDashboardPage() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setPlanDisplayOnWebsite(!planDisplayOnWebsite)}
+                    onClick={() =>
+                      setPlanDisplayOnWebsite(!planDisplayOnWebsite)
+                    }
                     style={{
                       width: 44,
                       height: 22,
                       borderRadius: 11,
-                      background: planDisplayOnWebsite ? "var(--green)" : "rgba(255, 255, 255, 0.1)",
+                      background: planDisplayOnWebsite
+                        ? "var(--green)"
+                        : "rgba(255, 255, 255, 0.1)",
                       position: "relative",
                       cursor: "pointer",
                       border: "none",
@@ -13518,9 +16830,7 @@ export default function AdminDashboardPage() {
                     style={{ display: "flex", alignItems: "center", gap: 6 }}
                   >
                     <Tag size={14} style={{ color: "var(--accent)" }} />
-                    <span>
-                      {t("admin_dashboard.plan_name_ar_label")}
-                    </span>
+                    <span>{t("admin_dashboard.plan_name_ar_label")}</span>
                   </label>
                   <input
                     className="field-input"
@@ -13545,9 +16855,7 @@ export default function AdminDashboardPage() {
                     style={{ display: "flex", alignItems: "center", gap: 6 }}
                   >
                     <Tag size={14} style={{ color: "var(--accent)" }} />
-                    <span>
-                      {t("admin_dashboard.plan_name_en_label")}
-                    </span>
+                    <span>{t("admin_dashboard.plan_name_en_label")}</span>
                   </label>
                   <input
                     className="field-input"
@@ -13572,9 +16880,7 @@ export default function AdminDashboardPage() {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <DollarSign size={14} style={{ color: "var(--green)" }} />
-                      <span>
-                        {t("admin_dashboard.monthly_price")}
-                      </span>
+                      <span>{t("admin_dashboard.monthly_price")}</span>
                     </label>
                     <input
                       type="number"
@@ -13592,9 +16898,7 @@ export default function AdminDashboardPage() {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <Sparkles size={14} style={{ color: "var(--accent)" }} />
-                      <span>
-                        {t("admin_dashboard.monthly_credits")}
-                      </span>
+                      <span>{t("admin_dashboard.monthly_credits")}</span>
                     </label>
                     <input
                       type="number"
@@ -13612,9 +16916,7 @@ export default function AdminDashboardPage() {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <Globe size={14} style={{ color: "var(--accent)" }} />
-                      <span>
-                        {t("admin_dashboard.currency_label")}
-                      </span>
+                      <span>{t("admin_dashboard.currency_label")}</span>
                     </label>
                     <CustomSelect
                       value={planCurrency}
@@ -13675,9 +16977,7 @@ export default function AdminDashboardPage() {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <Calendar size={14} style={{ color: "var(--accent)" }} />
-                      <span>
-                        {t("admin_dashboard.billing_cycle")}
-                      </span>
+                      <span>{t("admin_dashboard.billing_cycle")}</span>
                     </label>
                     <CustomSelect
                       value={planBillingCycle}
@@ -13685,12 +16985,18 @@ export default function AdminDashboardPage() {
                       options={[
                         {
                           value: "monthly",
-                          label: state.language === "en" ? "Monthly" : t("admin_dashboard.billing_monthly"),
+                          label:
+                            state.language === "en"
+                              ? "Monthly"
+                              : t("admin_dashboard.billing_monthly"),
                           icon: Calendar,
                         },
                         {
                           value: "yearly",
-                          label: state.language === "en" ? "Yearly" : t("admin_dashboard.billing_annual"),
+                          label:
+                            state.language === "en"
+                              ? "Yearly"
+                              : t("admin_dashboard.billing_annual"),
                           icon: Calendar,
                         },
                       ]}
@@ -13698,37 +17004,103 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: 12 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "16px",
+                    marginTop: 12,
+                  }}
+                >
                   <div className="field">
-                    <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label
+                      className="field-label"
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
                       <Award size={14} style={{ color: "var(--accent)" }} />
                       <span>{t("admin_dashboard.badge_ar_label")}</span>
                     </label>
-                    <input className="field-input" value={planBadgeAr} onChange={(e) => setPlanBadgeAr(e.target.value)} placeholder={state.language === "en" ? "e.g. Popular" : "مثال: الأكثر طلباً"} dir={state.language === "en" ? "ltr" : "rtl"} style={{ textAlign: state.language === "en" ? "left" : "right" }} />
+                    <input
+                      className="field-input"
+                      value={planBadgeAr}
+                      onChange={(e) => setPlanBadgeAr(e.target.value)}
+                      placeholder={
+                        state.language === "en"
+                          ? "e.g. Popular"
+                          : "مثال: الأكثر طلباً"
+                      }
+                      dir={state.language === "en" ? "ltr" : "rtl"}
+                      style={{
+                        textAlign: state.language === "en" ? "left" : "right",
+                      }}
+                    />
                   </div>
                   <div className="field">
-                    <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label
+                      className="field-label"
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
                       <Award size={14} style={{ color: "var(--accent)" }} />
                       <span>{t("admin_dashboard.badge_en_label")}</span>
                     </label>
-                    <input className="field-input" value={planBadgeEn} onChange={(e) => setPlanBadgeEn(e.target.value)} placeholder="e.g. Popular" dir="ltr" style={{ textAlign: "left" }} />
+                    <input
+                      className="field-input"
+                      value={planBadgeEn}
+                      onChange={(e) => setPlanBadgeEn(e.target.value)}
+                      placeholder="e.g. Popular"
+                      dir="ltr"
+                      style={{ textAlign: "left" }}
+                    />
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: 12 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "16px",
+                    marginTop: 12,
+                  }}
+                >
                   <div className="field">
-                    <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label
+                      className="field-label"
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
                       <Zap size={14} style={{ color: "var(--accent)" }} />
                       <span>{t("admin_dashboard.cta_ar_label")}</span>
                     </label>
-                    <input className="field-input" value={planCtaAr} onChange={(e) => setPlanCtaAr(e.target.value)} placeholder={state.language === "en" ? "e.g. Subscribe Now" : "مثال: اشترك الآن"} dir={state.language === "en" ? "ltr" : "rtl"} style={{ textAlign: state.language === "en" ? "left" : "right" }} />
+                    <input
+                      className="field-input"
+                      value={planCtaAr}
+                      onChange={(e) => setPlanCtaAr(e.target.value)}
+                      placeholder={
+                        state.language === "en"
+                          ? "e.g. Subscribe Now"
+                          : "مثال: اشترك الآن"
+                      }
+                      dir={state.language === "en" ? "ltr" : "rtl"}
+                      style={{
+                        textAlign: state.language === "en" ? "left" : "right",
+                      }}
+                    />
                   </div>
                   <div className="field">
-                    <label className="field-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <label
+                      className="field-label"
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
                       <Zap size={14} style={{ color: "var(--accent)" }} />
                       <span>{t("admin_dashboard.cta_en_label")}</span>
                     </label>
-                    <input className="field-input" value={planCtaEn} onChange={(e) => setPlanCtaEn(e.target.value)} placeholder="e.g. Subscribe Now" dir="ltr" style={{ textAlign: "left" }} />
+                    <input
+                      className="field-input"
+                      value={planCtaEn}
+                      onChange={(e) => setPlanCtaEn(e.target.value)}
+                      placeholder="e.g. Subscribe Now"
+                      dir="ltr"
+                      style={{ textAlign: "left" }}
+                    />
                   </div>
                 </div>
 
@@ -13955,41 +17327,203 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Tool Access Permissions */}
-                <div style={{ marginTop: 24, marginBottom: 12, padding: "16px", borderRadius: "12px", border: "1px solid var(--line)", background: "rgba(255, 255, 255, 0.01)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div
+                  style={{
+                    marginTop: 24,
+                    marginBottom: 12,
+                    padding: "16px",
+                    borderRadius: "12px",
+                    border: "1px solid var(--line)",
+                    background: "rgba(255, 255, 255, 0.01)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 16,
+                    }}
+                  >
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: "800", color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-                        <SlidersHorizontal size={16} style={{ color: "var(--accent)" }} />
-                        <span>{state.language === "en" ? "Tool Access Permissions" : "صلاحيات الوصول للأدوات"}</span>
-                        <span style={{ background: "rgba(59, 130, 246, 0.12)", color: "var(--accent)", border: "1px solid rgba(59, 130, 246, 0.25)", fontSize: "11px", fontWeight: "800", padding: "2px 8px", borderRadius: "8px" }}>
-                          {Array.from(new Set(planAllowedTools)).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)).length} / {CHECKLIST_ITEMS.length}
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "800",
+                          color: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <SlidersHorizontal
+                          size={16}
+                          style={{ color: "var(--accent)" }}
+                        />
+                        <span>
+                          {state.language === "en"
+                            ? "Tool Access Permissions"
+                            : "صلاحيات الوصول للأدوات"}
+                        </span>
+                        <span
+                          style={{
+                            background: "rgba(59, 130, 246, 0.12)",
+                            color: "var(--accent)",
+                            border: "1px solid rgba(59, 130, 246, 0.25)",
+                            fontSize: "11px",
+                            fontWeight: "800",
+                            padding: "2px 8px",
+                            borderRadius: "8px",
+                          }}
+                        >
+                          {
+                            Array.from(new Set(planAllowedTools)).filter((id) =>
+                              CHECKLIST_ITEMS.some((i) => i.id === id),
+                            ).length
+                          }{" "}
+                          / {CHECKLIST_ITEMS.length}
                         </span>
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setPlanAllowedTools(() => { const next = Array.from(new Set(CHECKLIST_ITEMS.map((item) => item.id).filter(Boolean))); planAllowedToolsRef.current = next; return next; })} style={{ background: "rgba(59, 130, 246, 0.12)", color: "var(--accent)", border: "1px solid rgba(59, 130, 246, 0.3)", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}>
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() =>
+                          setPlanAllowedTools(() => {
+                            const next = Array.from(
+                              new Set(
+                                CHECKLIST_ITEMS.map((item) => item.id).filter(
+                                  Boolean,
+                                ),
+                              ),
+                            );
+                            planAllowedToolsRef.current = next;
+                            return next;
+                          })
+                        }
+                        style={{
+                          background: "rgba(59, 130, 246, 0.12)",
+                          color: "var(--accent)",
+                          border: "1px solid rgba(59, 130, 246, 0.3)",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                        }}
+                      >
                         {state.language === "en" ? "Select All" : "تحديد الكل"}
                       </motion.button>
-                      <motion.button type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setPlanAllowedTools(() => { planAllowedToolsRef.current = []; return []; })} style={{ background: "rgba(239, 68, 68, 0.1)", color: "var(--red)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", cursor: "pointer" }}>
-                        {state.language === "en" ? "Deselect All" : "إلغاء الكل"}
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() =>
+                          setPlanAllowedTools(() => {
+                            planAllowedToolsRef.current = [];
+                            return [];
+                          })
+                        }
+                        style={{
+                          background: "rgba(239, 68, 68, 0.1)",
+                          color: "var(--red)",
+                          border: "1px solid rgba(239, 68, 68, 0.3)",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {state.language === "en"
+                          ? "Deselect All"
+                          : "إلغاء الكل"}
                       </motion.button>
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8, maxHeight: "200px", overflowY: "auto", paddingRight: "4px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill, minmax(180px, 1fr))",
+                      gap: 8,
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      paddingRight: "4px",
+                    }}
+                  >
                     {CHECKLIST_ITEMS.map((item) => {
                       const isActive = planAllowedTools.includes(item.id);
                       return (
-                        <div key={item.id} onClick={() => setPlanAllowedTools(prev => { const next = isActive ? prev.filter(id => id !== item.id) : [...prev, item.id]; planAllowedToolsRef.current = next; return next; })} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: "8px", background: isActive ? "rgba(16, 185, 129, 0.1)" : "rgba(255, 255, 255, 0.02)", border: isActive ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(255, 255, 255, 0.05)", cursor: "pointer", transition: "all 0.2s ease" }}>
-                          {isActive ? <CheckCircle2 size={14} style={{ color: "var(--green)" }} /> : <div style={{ width: 14, height: 14, borderRadius: "50%", border: "1px solid var(--text3)" }} />}
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: isActive ? "#fff" : "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {state.language === "en" ? (item.label_en || item.title || item.name || item.id) : (item.label_ar || item.title || item.name || item.id)}
+                        <div
+                          key={item.id}
+                          onClick={() =>
+                            setPlanAllowedTools((prev) => {
+                              const next = isActive
+                                ? prev.filter((id) => id !== item.id)
+                                : [...prev, item.id];
+                              planAllowedToolsRef.current = next;
+                              return next;
+                            })
+                          }
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "8px 12px",
+                            borderRadius: "8px",
+                            background: isActive
+                              ? "rgba(16, 185, 129, 0.1)"
+                              : "rgba(255, 255, 255, 0.02)",
+                            border: isActive
+                              ? "1px solid rgba(16, 185, 129, 0.3)"
+                              : "1px solid rgba(255, 255, 255, 0.05)",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          {isActive ? (
+                            <CheckCircle2
+                              size={14}
+                              style={{ color: "var(--green)" }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: "50%",
+                                border: "1px solid var(--text3)",
+                              }}
+                            />
+                          )}
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              color: isActive ? "#fff" : "#cbd5e1",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {state.language === "en"
+                              ? item.label_en ||
+                                item.title ||
+                                item.name ||
+                                item.id
+                              : item.label_ar ||
+                                item.title ||
+                                item.name ||
+                                item.id}
                           </span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-
 
                 {/* Modal Buttons */}
                 <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
@@ -14026,31 +17560,35 @@ export default function AdminDashboardPage() {
                         newPlans = plans.map((p) =>
                           p.id === editingPlan.id
                             ? {
-                              ...p,
-                              name: planName,
-                              name_ar: planName,
-                              name_en: planNameEn,
-                              price: Number(planPrice),
-                              creditsPerMonth: Number(planCredits),
-                              currency: planCurrency,
-                              features: featArString,
-                              features_ar: featArString,
-                              features_en: featEnString,
-                              stripe_product_id:
-                                editingPlan.stripe_product_id || null,
-                              stripe_monthly_price_id:
-                                editingPlan.stripe_monthly_price_id || null,
-                              stripe_yearly_price_id:
-                                editingPlan.stripe_yearly_price_id || null,
-                              displayOnWebsite: planDisplayOnWebsite,
-                              billingCycle: planBillingCycle,
-                              badge_ar: planBadgeAr,
-                              badge_en: planBadgeEn,
-                              cta_ar: planCtaAr,
-                              cta_en: planCtaEn,
-                              // Use ref and filter to avoid async closure issues and clean data
-                              allowedTools: Array.from(new Set(planAllowedToolsRef.current || [])).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)),
-                            }
+                                ...p,
+                                name: planName,
+                                name_ar: planName,
+                                name_en: planNameEn,
+                                price: Number(planPrice),
+                                creditsPerMonth: Number(planCredits),
+                                currency: planCurrency,
+                                features: featArString,
+                                features_ar: featArString,
+                                features_en: featEnString,
+                                stripe_product_id:
+                                  editingPlan.stripe_product_id || null,
+                                stripe_monthly_price_id:
+                                  editingPlan.stripe_monthly_price_id || null,
+                                stripe_yearly_price_id:
+                                  editingPlan.stripe_yearly_price_id || null,
+                                displayOnWebsite: planDisplayOnWebsite,
+                                billingCycle: planBillingCycle,
+                                badge_ar: planBadgeAr,
+                                badge_en: planBadgeEn,
+                                cta_ar: planCtaAr,
+                                cta_en: planCtaEn,
+                                // Use ref and filter to avoid async closure issues and clean data
+                                allowedTools: Array.from(
+                                  new Set(planAllowedToolsRef.current || []),
+                                ).filter((id) =>
+                                  CHECKLIST_ITEMS.some((i) => i.id === id),
+                                ),
+                              }
                             : p,
                         );
                         setPlans(newPlans);
@@ -14081,7 +17619,11 @@ export default function AdminDashboardPage() {
                             cta_ar: planCtaAr,
                             cta_en: planCtaEn,
                             // Use ref and filter to avoid async closure issues and clean data
-                            allowedTools: Array.from(new Set(planAllowedToolsRef.current || [])).filter(id => CHECKLIST_ITEMS.some(i => i.id === id)),
+                            allowedTools: Array.from(
+                              new Set(planAllowedToolsRef.current || []),
+                            ).filter((id) =>
+                              CHECKLIST_ITEMS.some((i) => i.id === id),
+                            ),
                           },
                         ];
                         setPlans(newPlans);
@@ -14310,7 +17852,10 @@ export default function AdminDashboardPage() {
       {/* Renew / Change Plan Modal */}
       <AnimatePresence>
         {renewPlanUser && (
-          <div className="sa-modal-overlay" onClick={() => setRenewPlanUser(null)}>
+          <div
+            className="sa-modal-overlay"
+            onClick={() => setRenewPlanUser(null)}
+          >
             <motion.div
               className="sa-modal-content"
               onClick={(e) => e.stopPropagation()}
@@ -14341,7 +17886,10 @@ export default function AdminDashboardPage() {
                       : "تجديد / تغيير الخطة"}
                   </span>
                 </h2>
-                <button className="btn btn-sm" onClick={() => setRenewPlanUser(null)}>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setRenewPlanUser(null)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -14372,9 +17920,9 @@ export default function AdminDashboardPage() {
                     style={
                       renewPlanUser.photoURL
                         ? {
-                          background: `url("${renewPlanUser.photoURL}") center/cover no-repeat`,
-                          border: "1px solid rgba(255,255,255,0.1)",
-                        }
+                            background: `url("${renewPlanUser.photoURL}") center/cover no-repeat`,
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          }
                         : {}
                     }
                   >
@@ -14384,10 +17932,22 @@ export default function AdminDashboardPage() {
                         .toUpperCase()}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text1)" }}>
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        fontSize: "15px",
+                        color: "var(--text1)",
+                      }}
+                    >
                       {renewPlanUser.ownerName || "\u2014"}
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--text3)", marginTop: "2px" }}>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text3)",
+                        marginTop: "2px",
+                      }}
+                    >
                       {renewPlanUser.email}
                     </div>
                   </div>
@@ -14409,16 +17969,38 @@ export default function AdminDashboardPage() {
                       border: "1px solid var(--line)",
                     }}
                   >
-                    <div style={{ fontSize: "11px", color: "var(--text3)", marginBottom: "4px" }}>
-                      {state.language === "en" ? "Current Plan" : "الخطة الحالية"}
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text3)",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {state.language === "en"
+                        ? "Current Plan"
+                        : "الخطة الحالية"}
                     </div>
-                    <div style={{ fontWeight: "700", fontSize: "14px", color: "#10B981" }}>
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        fontSize: "14px",
+                        color: "#10B981",
+                      }}
+                    >
                       {(() => {
-                        const pName = renewPlanUser.subscription?.planName || renewPlanUser.planName || "Free";
-                        const foundPlan = plans.find(p => p.name === pName || p.name_ar === pName || p.name_en === pName);
+                        const pName =
+                          renewPlanUser.subscription?.planName ||
+                          renewPlanUser.planName ||
+                          "Free";
+                        const foundPlan = plans.find(
+                          (p) =>
+                            p.name === pName ||
+                            p.name_ar === pName ||
+                            p.name_en === pName,
+                        );
                         return state.language === "en"
-                          ? (foundPlan?.name_en || foundPlan?.name || pName)
-                          : (foundPlan?.name_ar || foundPlan?.name || pName);
+                          ? foundPlan?.name_en || foundPlan?.name || pName
+                          : foundPlan?.name_ar || foundPlan?.name || pName;
                       })()}
                     </div>
                   </div>
@@ -14430,13 +18012,34 @@ export default function AdminDashboardPage() {
                       border: "1px solid var(--line)",
                     }}
                   >
-                    <div style={{ fontSize: "11px", color: "var(--text3)", marginBottom: "4px" }}>
-                      {state.language === "en" ? "Remaining Credits" : "الرصيد المتبقي"}
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text3)",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {state.language === "en"
+                        ? "Remaining Credits"
+                        : "الرصيد المتبقي"}
                     </div>
-                    <div style={{ fontWeight: "700", fontSize: "14px", color: "var(--text1)" }}>
+                    <div
+                      style={{
+                        fontWeight: "700",
+                        fontSize: "14px",
+                        color: "var(--text1)",
+                      }}
+                    >
                       {renewPlanUser.credits ?? 0}
-                      <span style={{ color: "var(--text3)", fontWeight: "400", fontSize: "12px" }}>
-                        {" / "}{renewPlanUser.totalCredits ?? 20}
+                      <span
+                        style={{
+                          color: "var(--text3)",
+                          fontWeight: "400",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {" / "}
+                        {renewPlanUser.totalCredits ?? 20}
                       </span>
                     </div>
                   </div>
@@ -14456,7 +18059,9 @@ export default function AdminDashboardPage() {
                     }}
                   >
                     <Layers size={14} style={{ color: "var(--accent)" }} />
-                    {state.language === "en" ? "Select New Plan" : "اختر الخطة الجديدة"}
+                    {state.language === "en"
+                      ? "Select New Plan"
+                      : "اختر الخطة الجديدة"}
                   </label>
                   <CustomSelect
                     label=""
@@ -14466,12 +18071,23 @@ export default function AdminDashboardPage() {
                     options={[
                       {
                         value: "free",
-                        label: state.language === "en" ? `Free Plan (${freeTrialCredits || 20} credits)` : `خطة مجانية (${freeTrialCredits || 20} رصيد)`,
+                        label:
+                          state.language === "en"
+                            ? `Free Plan (${freeTrialCredits || 20} credits)`
+                            : `خطة مجانية (${freeTrialCredits || 20} رصيد)`,
                         icon: Gift,
                       },
                       ...plans.map((p) => ({
                         value: p.id.toString(),
-                        label: (state.language === "en" ? (p.name_en || p.name) : (p.name_ar || p.name)) + " (" + (p.creditsPerMonth || 0) + " " + (state.language === "en" ? "credits" : "رصيد") + ")",
+                        label:
+                          (state.language === "en"
+                            ? p.name_en || p.name
+                            : p.name_ar || p.name) +
+                          " (" +
+                          (p.creditsPerMonth || 0) +
+                          " " +
+                          (state.language === "en" ? "credits" : "رصيد") +
+                          ")",
                         icon: Sparkles,
                       })),
                     ]}
@@ -14493,7 +18109,14 @@ export default function AdminDashboardPage() {
                     lineHeight: "1.6",
                   }}
                 >
-                  <AlertTriangle size={16} style={{ color: "#F59E0B", flexShrink: 0, marginTop: "2px" }} />
+                  <AlertTriangle
+                    size={16}
+                    style={{
+                      color: "#F59E0B",
+                      flexShrink: 0,
+                      marginTop: "2px",
+                    }}
+                  />
                   <span>
                     {state.language === "en"
                       ? "This action will immediately reset the user\u2019s credits to the selected plan\u2019s monthly allocation. The user can start using the new credits right away."
@@ -14547,8 +18170,14 @@ export default function AdminDashboardPage() {
                       boxShadow: "0 4px 15px rgba(16, 185, 129, 0.25)",
                     }}
                   >
-                    {isRenewing ? <Loader2 size={16} className="spin" /> : <RefreshCw size={16} />}
-                    {state.language === "en" ? "Confirm Renewal" : "تأكيد التجديد"}
+                    {isRenewing ? (
+                      <Loader2 size={16} className="spin" />
+                    ) : (
+                      <RefreshCw size={16} />
+                    )}
+                    {state.language === "en"
+                      ? "Confirm Renewal"
+                      : "تأكيد التجديد"}
                   </button>
                 </div>
               </div>
@@ -14556,7 +18185,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </AnimatePresence>
-
       {/* Professional Custom Delete Confirmation Modal */}
       <AnimatePresence>
         {userToDelete && (
@@ -14670,5 +18298,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-

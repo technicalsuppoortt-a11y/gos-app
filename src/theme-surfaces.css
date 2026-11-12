@@ -40,7 +40,6 @@ html.dark :is(
   .pm-brand-frame,
   .st-privacy-security-icon,
   .st-action-toggle-thumb,
-  .tpl-live-thumb-canvas,
   .aw-preview-viewport
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface)
@@ -202,7 +201,6 @@ html.dark :is(
   .pt-badge,
   .cw-workflow-icon,
   .cw-price-highlight,
-  .pdd-product-icon,
   .sw-setting-icon,
   .tw-instructor-avatar,
   .tw-lesson-badge,
@@ -637,8 +635,6 @@ html.dark :is(
   .cw-button:hover,
   .cw-metrics .blue,
   .cw-metrics .amber,
-  .quick-details-body .pdd-note,
-  .pp-buyer-details-btn:hover,
   .tw-lesson-badge.pdf,
   .tw-checkout-option.selected,
   .crm-workspace-summary-icon.green,
@@ -833,10 +829,6 @@ html.dark :is(
   .cw-cover,
   .cw-count,
   .cw-errors,
-  .pdd-success,
-  .pdd-progress,
-  .pdd-pending,
-  .pdd-danger,
   .tw-service,
   .sw-preview-media,
   .tw-media-cover,
@@ -896,6 +888,7 @@ html.dark :is(
   .st-provider-mark,
   .st-integration-connected-account,
   .support-error,
+  .template-design-thumbnail,
   .tl-art,
   .tl-category,
   .tl-details,
@@ -2342,7 +2335,6 @@ html.dark :is(
   .cr-receipt-frame,
   .cp-wallet-preview,
   .pd-warning,
-  .pp-buyer-details-btn,
   .cw-pipeline-step-btn,
   .crm-kanban-column,
   .funnel-builder-page,
@@ -6223,11 +6215,6 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: linear-gradient(180deg, var(--ui-surface) 0%, var(--ui-surface) 100%)
-}
-html.dark :is(
-  .tpl-live-thumb-skeleton
-):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
-    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .55) 50%, transparent 80%) var(--ui-surface-sunken, var(--ui-surface-raised))
 }
 html.dark :is(
   .tl-workspace

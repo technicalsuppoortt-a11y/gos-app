@@ -66,6 +66,7 @@
 }
 .alm-ghl-description { margin: 0; color: var(--alm-muted); font-size: 12px; overflow-wrap: anywhere; }
 .alm-ghl-image-link { display: block; width: 100%; height: 100%; }
+.alm-ghl-design-link { position: absolute; inset: 0; }
 .alm-ghl-image-link:focus-visible { outline: 2px solid var(--alm-primary); border-radius: 9px; }
 .alm-ghl-preview-pill, .alm-button[href] { text-decoration: none; }
 @media (hover: none), (max-width: 900px) {

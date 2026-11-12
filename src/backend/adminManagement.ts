@@ -13,12 +13,13 @@ import { validateSystemTemplate } from '../pages/system-template-validation';
 import { isPlatformTeamRole } from '../router/platformAccess';
 
 // This hook never enters the tenant workspace store, changes backend context, or writes tenant documents.
-export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0) {
+export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0, enabled = true) {
   const { role, user, impersonation } = useSelector((s: RootState) => s.auth);
   const key = resources.join(',');
   const scope = `${user?.id ?? ''}:${role}:${!!impersonation}:${key}:${templates}:${serverOnly}:${reload}`;
   const [state, setState] = useState<{ scope: string; records: LiveRecord[]; tenants: Directory; users: Directory; templates: ManagedTemplate[]; loading: boolean; error: string; sourceErrors: Record<string, string>; pendingSources: string[] }>({ scope, records: [], tenants: {}, users: {}, templates: [], loading: true, error: '', sourceErrors: {}, pendingSources: ['directory', 'users'] });
   useEffect(() => {
+    if (!enabled) return;
     const empty = { scope, records: [], tenants: {}, users: {}, templates: [], loading: true, error: '', sourceErrors: {}, pendingSources: templates ? ['templates'] : ['directory', 'users'] };
     setState(empty);
     if (!user || impersonation || !(role === 'ADMIN' || isPlatformTeamRole(role))) {
@@ -99,7 +100,7 @@ export function useAdminManagement(resources: readonly ManagementResource[], tem
       }, error => fail('directory', error)));
     });
     return () => { active = false; authStop(); stop(); };
-  }, [key, templates, role, user?.id, !!impersonation, serverOnly, reload]);
+  }, [key, templates, role, user?.id, !!impersonation, serverOnly, reload, enabled]);
   return state.scope === scope ? state : { records: [] as LiveRecord[], tenants: {} as Directory, users: {} as Directory, templates: [] as ManagedTemplate[], loading: true, error: '', sourceErrors: {} as Record<string, string>, pendingSources: ['directory', 'users'] };
 }
 

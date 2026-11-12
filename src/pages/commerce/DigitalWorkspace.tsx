@@ -12,7 +12,7 @@ import type { FormProps } from './TypeForms';
 import { PricingForm } from './PricingForms';
 import type { Billing, CommerceConfig } from './model';
 
-export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean) => void; onSalesPage: () => void; onCopy: () => void; onDuplicate: () => void; onDelete: () => void; onFunnel: () => void; onAutomation: () => void; disabled: boolean }) {
+export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean) => void; onSalesPage: () => void; onCopy: () => void; onDuplicate?: () => void; onDelete?: () => void; onFunnel: () => void; onAutomation: () => void; disabled: boolean }) {
   useUILanguage();
   const { product: p, config: c, experience: e, editing, update, configure, customize } = props;
   const descriptionError = useDigitalFieldError('description');
@@ -59,7 +59,7 @@ export function DigitalWorkspace(props: FormProps & { onStatus: (active: boolean
         <div className="cw-field"><span>{translateText("Tags / Keywords")}</span><TagManager tags={e.tags} disabled={!editing} onChange={tags => customize({ tags })}/></div>
       </div></Card>
       <Card title={translateText("Connected Tools")} className="dw-tools-card"><div className="dw-tools">{localizeNode([{ title: 'Funnel', icon: Layers3, description: 'Product sales funnel', connected: !!e.funnelUrl, action: props.onFunnel }, { title: 'Automation', icon: Sparkles, description: 'Product delivery automation', connected: c.automations.confirmation || c.automations.grantAccess, action: props.onAutomation }].map(({ title, icon: Icon, description, connected, action }) => <div key={title}><Icon size={18}/><span><b>{localizeNode(title)}</b><small>{localizeNode(description)}</small></span><em className={connected ? 'connected' : ''}>{localizeNode(connected ? 'Connected' : 'Connect')}</em><button onClick={action}>{localizeNode(connected ? 'Edit' : 'Set up')}</button></div>))}</div></Card>
-      <Card title={translateText("Quick Actions")} className="dw-actions-card"><div className="dw-actions"><button onClick={props.onSalesPage}><Eye size={14}/>{translateText("View Product Page")}</button><button onClick={props.onCopy}><Link2 size={14}/>{translateText("Copy Product Link")}</button><button disabled={props.disabled} onClick={props.onDuplicate}><Copy size={14}/>{translateText("Duplicate Product")}</button><button className="dw-delete" disabled={!p.id || props.disabled} onClick={props.onDelete}><Trash2 size={14}/>{translateText("Delete Product")}</button></div></Card>
+      <Card title={translateText("Quick Actions")} className="dw-actions-card"><div className="dw-actions"><button onClick={props.onSalesPage}><Eye size={14}/>{translateText("View Product Page")}</button><button onClick={props.onCopy}><Link2 size={14}/>{translateText("Copy Product Link")}</button><button disabled={props.disabled || !props.onDuplicate} onClick={props.onDuplicate}><Copy size={14}/>{translateText("Duplicate Product")}</button><button className="dw-delete" disabled={!p.id || props.disabled || !props.onDelete} onClick={props.onDelete}><Trash2 size={14}/>{translateText("Delete Product")}</button></div></Card>
     </aside>
   </div></div>;
 }

@@ -7,21 +7,27 @@ import { useState, useEffect } from 'react';
 import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw } from 'lucide-react';
 import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
 import type { PageTemplate } from './page-templates';
+import { TemplateDesignThumbnail, templateDesignAsset } from './TemplateDesign';
 import './pagefly-editor.css';
 
 export function PageTemplateCards({templates=[],install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
-  useUILanguage();
+  const language = useUILanguage();
   return <>{localizeNode(templates.map(template => {
     const isBlank = template.id === 'blank-form-template';
+    const hasDesign = !!template.design || (!!template.previewSource && !isBlank);
+    const previewHref = `/template-preview/${encodeURIComponent(template.id)}?${new URLSearchParams({ source: template.previewSource || 'catalog', lang: language.startsWith('ar') ? 'ar' : 'en' })}`;
     return (
-      <article key={template.id} className="pf-template-entry">
+      <article key={`${template.previewSource || 'catalog'}:${template.id}`} className={`pf-template-entry ${hasDesign ? 'has-template-design' : ''}`}>
+      {hasDesign && <div className="pf-template-design-cover">
+        <TemplateDesignThumbnail asset={templateDesignAsset(template)} language={language}/>
+      </div>}
       <AssetAsyncButton busyText="Creating..." className={`pf-template-card ${isBlank ? 'pf-template-blank-card' : ''}`} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>
         {busy => <>
-          {template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
+          {!hasDesign && (template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
             <small>{localizeNode(template.mode==='funnel'?`Funnel · ${template.builderDocument?.steps?.length || 3} steps`:`Website · ${template.builderDocument?.pages?.length || 1} ${(template.builderDocument?.pages?.length || 1) === 1 ? 'page' : 'pages'}`)}</small>
             <strong>{localizeNode(template.title)}</strong>
             <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>
-          </LazyBackground>}
+          </LazyBackground>)}
           <div className="pf-template-description">
             <b>{localizeNode(template.name)}</b>
             <small>{template.categoryLabel && <>{template.categoryLabel} · </>}{localizeNode(template.industry)} · {localizeNode(template.goal)}</small>
@@ -29,7 +35,7 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
           </div>
         </>}
       </AssetAsyncButton>
-      <a className="pf-template-preview-action" href={`/template-preview/${encodeURIComponent(template.id)}`} target="_blank" rel="noopener" aria-label={translateText('Preview') + ' · ' + template.name}><Eye size={15}/>{translateText('Preview')}</a>
+      <a className="pf-template-preview-action" href={previewHref} target="_blank" rel="noopener" aria-label={translateText('Preview') + ' · ' + template.name}><Eye size={15}/>{translateText('Preview')}</a>
       </article>
     );
   }))}</>;

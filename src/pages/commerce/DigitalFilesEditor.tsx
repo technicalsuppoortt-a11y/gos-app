@@ -15,7 +15,7 @@ export function validDeliveryUrl(value: string) {
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !!url.hostname && !url.username && !url.password; } catch { return false; }
 }
 const assetKey = (asset: Asset, index: number) => asset.id || asset.storageId || `legacy-${index}`;
-export function DigitalFilesEditor({ config: c, configure, editing, busy, compact = false, paginate = true }: FormProps & { compact?: boolean; paginate?: boolean }) {
+export function DigitalFilesEditor({ config: c, configure, editing, busy, uploadFile = uploadDigitalFile, compact = false, paginate = true }: FormProps & { compact?: boolean; paginate?: boolean }) {
   useUILanguage();
   const [dragging, setDragging] = React.useState(false), [page, setPage] = React.useState(0);
   const [jobs, setJobs] = React.useState<Record<string, number>>({}), [uploadError, setUploadError] = React.useState('');
@@ -39,7 +39,7 @@ export function DigitalFilesEditor({ config: c, configure, editing, busy, compac
     locks.current.add(key); retryFiles.current.set(key, file); busy(true); setJobs(current => ({ ...current, [key]: 0 }));
     changeAsset(key, { uploadError: '' });
     try {
-      const asset = await uploadDigitalFile(file, progress => setJobs(current => ({ ...current, [key]: progress })));
+      const asset = await uploadFile(file, progress => setJobs(current => ({ ...current, [key]: progress })));
       configure(current => ({ assets: current.assets.map((existing, index) => assetKey(existing, index) === key ? { ...asset, id: key } : existing) }));
       retryFiles.current.delete(key);
     } catch (cause) { changeAsset(key, { uploadError: cause instanceof Error ? cause.message : 'Cloud upload failed. Please try again.' }); }

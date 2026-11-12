@@ -6,9 +6,10 @@ import { PagePreview } from '../AssetViews';
 import { useUILanguage } from '../../i18n/display';
 import { AdminSelect } from './AdminSelect';
 import { LiveDialog } from './AdminLiveUI';
+import { TemplateDesign, templateDesktopWidth } from '../TemplateDesign';
 import '../asset-workspace.css';
 
-export type SitePreview = { document: BuilderDocument; name: string; kind?: 'funnel' | 'website'; domain?: string; image?: string; settings?: Asset['settings'] };
+export type SitePreview = { document: BuilderDocument; name: string; kind?: 'funnel' | 'website'; domain?: string; image?: string; settings?: Asset['settings']; template?: Pick<Asset, 'formAsset' | 'templateDesign'> };
 export function AdminSitePreview({ value, close }: { value: SitePreview; close: () => void }) {
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
   return <LiveDialog wide title={value.name} subtitle={t('Visual preview of the saved design', 'معاينة مرئية للتصميم المحفوظ')} close={close} footer={<AdminSitePreviewNote/>}><AdminSitePreviewCanvas value={value}/></LiveDialog>;
@@ -25,7 +26,7 @@ export function AdminSitePreviewCanvas({ value }: { value: SitePreview }) {
   const viewport = useRef<HTMLDivElement>(null), canvas = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ scale: 1, height: 600 });
   const page = value.document.pages.find(item => item.id === pageId) || value.document.pages[0];
-  const width = device === 'Desktop' ? 1200 : device === 'Tablet' ? 768 : 390;
+  const width = device === 'Desktop' ? (value.template ? templateDesktopWidth : 1200) : device === 'Tablet' ? 768 : 390;
   useLayoutEffect(() => {
     if (!viewport.current || !canvas.current) return;
     const measure = () => {
@@ -37,9 +38,11 @@ export function AdminSitePreviewCanvas({ value }: { value: SitePreview }) {
     observer.observe(viewport.current); observer.observe(canvas.current); measure();
     return () => observer.disconnect();
   }, [width, pageId]);
-  const asset = { ...value, id: 'admin-supervisory-preview', kind: value.kind || (value.document.steps?.length ? 'funnel' : 'website'), domain: value.domain || '', image: value.image || '/dashboard/hero-landscape.png', description: '', updated: '', settings: value.settings || { color: value.document.theme?.color || '#7C3AED', navigation: value.document.pages.map(p => p.name).join(', '), seo: value.name } } as Asset;
+  const asset = { ...value, ...value.template, id: 'admin-supervisory-preview', kind: value.kind || (value.document.steps?.length ? 'funnel' : 'website'), domain: value.domain || '', image: value.image || '/dashboard/hero-landscape.png', description: '', updated: '', settings: value.settings || { color: value.document.theme?.color || '#7C3AED', navigation: value.document.pages.map(p => p.name).join(', '), seo: value.name } } as Asset;
   return <>
     {page ? <><div className="alm-preview-toolbar"><AdminSelect label={t('Preview page', 'صفحة المعاينة')} value={page.id} onChange={setPageId} options={value.document.pages.map(p => ({ value: p.id, label: p.name }))}/><div className="alm-device-switch" role="group" aria-label={t('Preview viewport', 'حجم المعاينة')}>{([{ name: 'Desktop', Icon: Monitor }, { name: 'Tablet', Icon: Tablet }, { name: 'Mobile', Icon: Smartphone }] as const).map(({ name, Icon }) => <button type="button" aria-label={`${name} preview`} aria-pressed={device === name} key={name} onClick={() => setDevice(name)}><Icon size={16}/><span>{name}</span></button>)}</div><span className="alm-preview-width">{width}px</span></div>
-      <div className="alm-preview-viewport" ref={viewport}><div className="alm-preview-measure" style={{ width: width * size.scale, height: size.height }}><div ref={canvas} className="alm-preview-canvas" style={{ width, transform: `scale(${size.scale})` }} inert><PagePreview asset={asset} page={page} device={device} onNavigate={() => {}} isDark={false}/></div></div></div></> : <p className="alm-empty-copy">{t('This record has no saved pages to preview.', 'لا يحتوي هذا السجل على صفحات محفوظة للمعاينة.')}</p>}
+      <div className="alm-preview-viewport" ref={viewport}><div className="alm-preview-measure" style={{ width: width * size.scale, height: size.height }}><div ref={canvas} className="alm-preview-canvas" style={{ width, transform: `scale(${size.scale})` }} inert>
+        {value.template ? <TemplateDesign asset={asset} pageId={page.id} width={width} language={ar ? 'ar' : 'en'}/> : <PagePreview asset={asset} page={page} device={device} onNavigate={() => {}} isDark={false}/>}
+      </div></div></div></> : <p className="alm-empty-copy">{t('This record has no saved pages to preview.', 'لا يحتوي هذا السجل على صفحات محفوظة للمعاينة.')}</p>}
   </>;
 }
