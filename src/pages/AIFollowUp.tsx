@@ -84,6 +84,8 @@ import "./ai-followup.css";
 
 // Loaded only when the tab opens, so React Flow stays out of the main bundle.
 const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
+const CampaignsTab = React.lazy(() => import("./campaigns/Campaigns").then(module => ({ default: module.CampaignsTab })));
+const WaTemplatesTab = React.lazy(() => import("./templates/WaTemplates").then(module => ({ default: module.WaTemplatesTab })));
 
 type Props = { notify?: (message: string) => void; section?: "follow-up" | "automation" };
 type Tab =
@@ -2067,7 +2069,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         </section>
       );
     if (tab === "Knowledge") return null;
+    // Automation & Campaign: Templates holds WhatsApp (Meta) templates; the AI response templates live under Follow Up.
+    if (tab === "Templates" && isAutomation)
+      return (
+        <React.Suspense fallback={<p className="af-muted">{translateText("Loading templates…")}</p>}>
+          <WaTemplatesTab />
+        </React.Suspense>
+      );
     if (tab === "Templates") return renderTemplatesTab();
+    if (tab === "Automations" && isAutomation) return <>{renderAutomationTab()}{renderTemplatesTab()}</>;
     if (tab === "Automations") return renderAutomationTab();
     if (tab === "Flow Builder")
       return (
@@ -2078,11 +2088,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     if (tab === "Settings") return renderSettingsTab();
     if (tab === "Campaign")
       return (
-        <div className="af-panel" style={{ padding: 28, display: "grid", gap: 10, justifyItems: "start" }}>
-          <h2>{translateText("Campaigns")}</h2>
-          <p className="af-muted">{translateText("Send one message to many contacts at once, now or on a schedule.")}</p>
-          <button className="af-button-primary" disabled>{translateText("New campaign (coming soon)")}</button>
-        </div>
+        <React.Suspense fallback={<p className="af-muted">{translateText("Loading campaigns…")}</p>}>
+          <CampaignsTab />
+        </React.Suspense>
       );
     if (tab === "Settings & Analysis")
       return (

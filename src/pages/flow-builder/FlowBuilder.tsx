@@ -17,7 +17,7 @@ import './flowBuilder.css'
 type View = 'automation' | 'channels'
 const Nav = createContext<{ view: View; go: (view: View) => void }>({ view: 'automation', go: () => {} })
 
-/** The Flow Builder tab of AI Follow-Up. State lives in the URL: ?tab=flows[&flow=id] or ?tab=channels. */
+/** The Flow Builder tab of AI Follow-Up. State lives in the URL: ?tab=flows[&flow=id] (?tab=channels now redirects to Settings › Integrations). */
 export function FlowBuilderTab() {
   const params = new URLSearchParams(location.search)
   const [view, setView] = useState<View>(params.get('tab') === 'channels' ? 'channels' : 'automation')
@@ -32,14 +32,14 @@ export function FlowBuilderTab() {
     setOpenId(null)
     setView(next)
   }
+  // Channels moved to Settings › Integrations; old ?tab=channels links land there.
+  if (view === 'channels') { location.replace('/dashboard/settings/integrations'); return null }
   return (
     <div className={`fb-root${view === 'automation' && openId ? ' fb-root-builder' : ''}`}>
       <Nav.Provider value={{ view, go }}>
-        {view === 'channels'
-          ? <div className="fb-shell"><Sidebar /><Channels /></div>
-          : openId
-            ? <ReactFlowProvider><Builder flowId={openId} onBack={() => open(null)} /></ReactFlowProvider>
-            : <FlowList onOpen={open} />}
+        {openId
+          ? <ReactFlowProvider><Builder flowId={openId} onBack={() => open(null)} /></ReactFlowProvider>
+          : <FlowList onOpen={open} />}
       </Nav.Provider>
     </div>
   )
@@ -240,7 +240,6 @@ function Sidebar() {
   return (
     <nav className="fb-sidebar" aria-label="Flow Builder">
       <button type="button" aria-current={view === 'automation' ? 'page' : undefined} onClick={() => go('automation')}>Automations</button>
-      <button type="button" aria-current={view === 'channels' ? 'page' : undefined} onClick={() => go('channels')}>Channels</button>
     </nav>
   )
 }
