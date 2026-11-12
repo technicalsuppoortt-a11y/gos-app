@@ -1,5 +1,6 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { defineSecret } from 'firebase-functions/params';
 import { productReviewsRequest, storedSummary } from './product-reviews.js';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -9,14 +10,10 @@ const buyerEmail = order => String(order?.customerEmail || order?.customer_email
 const containsProduct = (order, id) => [order?.productId || order?.product_id, ...(order?.items || []).map(item => item.productId || item.product_id)].includes(id);
 export const portalPurchaseId = (tenantId, productId) => hash(JSON.stringify([tenantId, productId]));
 const purchases = (db, uid) => db.collection(`customerLibraries/${uid}/purchases`);
-/**
- * Initial password of customer accounts created at checkout. Customers sign in with their email and this
- * password, then must choose their own password before the portal opens (portalPasswordChangeRequired).
- */
-export const DEFAULT_CUSTOMER_PASSWORD = '12345678';
-/** @deprecated Kept for callers of the previous per-account temporary password; returns the default password. */
-export function temporaryCustomerPassword() {
-  return DEFAULT_CUSTOMER_PASSWORD;
+export const portalBootstrapKey = defineSecret('CUSTOMER_BOOTSTRAP_KEY');
+export function temporaryCustomerPassword(key, uid) {
+  if (typeof key !== 'string' || Buffer.byteLength(key) < 32) throw new Error('CUSTOMER_BOOTSTRAP_KEY must contain at least 32 bytes of random secret material.');
+  return createHmac('sha256', key).update(`customer-bootstrap-v1:${uid}`).digest('base64url');
 }
 export function customerPasswordChangePending(profile, token) {
   return profile?.portalPasswordPolicy === 'temporary-v1'
@@ -118,7 +115,7 @@ async function ensureCustomer(db, auth, email, name, now, bootstrapKey) {
     try {
       account = await auth.createUser({
         uid: customerUidFor(email), email, displayName: name,
-        password: DEFAULT_CUSTOMER_PASSWORD,
+        password: temporaryCustomerPassword(bootstrapKey, customerUidFor(email)),
       });
     } catch (creationError) {
       if (!['auth/email-already-exists', 'auth/uid-already-exists'].includes(creationError.code)) throw creationError;
@@ -316,7 +313,7 @@ async function changeInitialCustomerPassword(db, auth, identity, password, boots
   const age = Date.now() / 1000 - Number(token?.auth_time);
   if (!Number.isFinite(age) || age < -10 || age > 300) throw new HttpsError('unauthenticated', 'Sign in again before changing your password.');
   if (typeof password !== 'string' || password.length < 12 || password.length > 128 ||
-      !/[a-zA-Z]/.test(password) || !/[^a-zA-Z]/.test(password) || password === DEFAULT_CUSTOMER_PASSWORD) {
+      !/[a-zA-Z]/.test(password) || !/[^a-zA-Z]/.test(password) || password === temporaryCustomerPassword(bootstrapKey, uid)) {
     throw new HttpsError('invalid-argument', 'Use a different password of 12–128 characters with a letter and at least one number or symbol.');
   }
   const ref = db.doc(`users/${uid}`);

@@ -361,24 +361,6 @@
   border: 0; border-radius: 0; overflow-wrap: anywhere;
 }
 .pf-template-entry .pf-template-preview { padding: 16px; }
-/* Live template artwork: rendered from the template itself and layered over the card button. */
-.pf-template-card-wrap { position: relative; display: flex; flex: 1; flex-direction: column; min-inline-size: 0; }
-.pf-template-card-wrap > .pf-template-card {
-  display: block; flex: 1; inline-size: 100%; min-inline-size: 0; padding: 0;
-  border: 0; border-radius: 0; overflow-wrap: anywhere;
-}
-.pf-template-live-spacer, .pf-template-live-layer { display: block; aspect-ratio: 16 / 10; }
-.pf-template-live-layer {
-  position: absolute; inset-block-start: 0; inset-inline: 0; pointer-events: none;
-  border-block-end: 1px solid var(--ui-border, #e2e8f0); overflow: hidden;
-}
-.pf-template-live-layer .tpl-live-thumb { inline-size: 100%; block-size: 100%; }
-.pf-template-live-badge {
-  position: absolute; inset-block-start: 10px; inset-inline-start: 10px; z-index: 1;
-  padding: 3px 8px; border-radius: 999px; background: rgba(15, 23, 42, .78); color: #fff;
-  font-size: 10px; font-weight: 650; letter-spacing: .3px; backdrop-filter: blur(6px);
-}
-.pf-template-card-wrap:hover .pf-template-live-layer { border-block-end-color: #a78bfa; }
 .pf-template-preview-action {
   display: flex; justify-content: center; align-items: center; gap: 7px;
   margin: 0 12px 12px; padding: 8px 12px; min-block-size: 36px;

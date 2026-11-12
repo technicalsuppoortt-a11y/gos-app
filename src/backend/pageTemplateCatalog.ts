@@ -4,7 +4,7 @@ import type { PageTemplate } from '../pages/page-template-data';
 
 const OFFICIAL_PAGE_CATEGORIES = new Set(['Funnels', 'Websites', 'Forms']);
 
-export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string; contentLanguage?: 'ar' | 'en' })[]): PageTemplate[] {
+export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string })[]): PageTemplate[] {
   const seen = new Set<string>();
   return catalog
     .filter(t => {
@@ -23,7 +23,6 @@ export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel
         name: t.name,
         description: t.description,
         categoryLabel: t.categoryLabel,
-        contentLanguage: t.contentLanguage,
         tags: t.tags,
         mode: t.category === 'Forms' ? 'form' : t.category === 'Funnels' ? 'funnel' : 'website',
         industry: t.industry || t.pageTemplate?.industry || 'Professional Services',

@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Monitor, ShieldCheck, Smartphone, Tablet } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { pageCatalogTemplates, usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
-import { backendError, db } from '../backend/firebase';
-import { decodeFirestoreValue } from '../backend/firestoreCodec';
+import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
 import { translateText, useUILanguage } from '../i18n/display';
 import { AssetSelect } from './AssetControls';
 import type { Asset } from './asset-model';
-import { localizeManagedTemplate, templateIsActive, type ManagedTemplate } from './admin/managed-template';
-import { pageTemplatePreviewAsset, type PageTemplate } from './page-templates';
+import { createPageAsset } from './page-templates';
 import { PublishedPage } from './PublishedPage';
 import './template-preview-page.css';
 
@@ -19,59 +15,24 @@ const devices = [
   { key: 'mobile', label: 'Mobile', Icon: Smartphone, width: 390 },
 ] as const;
 
-/**
- * Loads the exact template requested in the URL. The workspace catalog (already cached by the gallery)
- * is used first; when the id is not part of it the document itself is read from Firestore, so a preview
- * never falls back to another or stale template.
- */
-function useRequestedPageTemplate(templateId: string) {
-  const arabic = useUILanguage().startsWith('ar');
-  const catalog = usePageTemplateCatalogState();
-  const listed = catalog.templates.find(item => item.id === templateId);
-  const [direct, setDirect] = useState<{ id: string; template?: ManagedTemplate; loading: boolean; error: string }>({ id: '', loading: false, error: '' });
-  const needsDirect = !!templateId && !listed && !catalog.loading;
-  useEffect(() => {
-    if (!needsDirect) return;
-    let active = true;
-    setDirect({ id: templateId, loading: true, error: '' });
-    (async () => {
-      for (const collection of ['templateCatalog', 'adminTemplates']) {
-        const snapshot = await getDoc(doc(db, collection, templateId)).catch(() => null);
-        if (snapshot?.exists() && templateIsActive(snapshot.data())) return { ...decodeFirestoreValue(snapshot.data()), id: snapshot.id } as ManagedTemplate;
-      }
-      return undefined;
-    })().then(template => { if (active) setDirect({ id: templateId, template, loading: false, error: '' }); },
-      cause => { if (active) setDirect({ id: templateId, loading: false, error: backendError(cause) }); });
-    return () => { active = false; };
-  }, [needsDirect, templateId]);
-  const fetched = useMemo(() => {
-    if (direct.id !== templateId || !direct.template) return undefined;
-    return pageCatalogTemplates([localizeManagedTemplate(direct.template, arabic)])[0];
-  }, [direct, templateId, arabic]);
-  const template: PageTemplate | undefined = listed || fetched;
-  const loading = !template && (catalog.loading || (needsDirect && (direct.id !== templateId || direct.loading)));
-  return { template, loading, error: template ? '' : (direct.id === templateId && direct.error) || catalog.error };
-}
-
 export function TemplatePreviewPage() {
   useUILanguage();
-  const { templateId = '' } = useParams();
-  const { template, loading, error } = useRequestedPageTemplate(templateId);
-  const asset = useMemo(() => template && pageTemplatePreviewAsset(template), [template]);
-  return <StandaloneTemplatePreview title={asset?.name || translateText('Template preview')} asset={asset} direction={template ? template.contentLanguage === 'ar' ? 'rtl' : 'ltr' : undefined}>
+  const { templateId } = useParams();
+  const { templates, loading, error } = usePageTemplateCatalogState();
+  const template = templates.find(item => item.id === templateId);
+  const asset = useMemo(() => template && createPageAsset(template.mode, template.name, template), [template]);
+  return <StandaloneTemplatePreview title={asset?.name || translateText('Template preview')} asset={asset}>
     <p role={error ? 'alert' : 'status'}>{error || translateText(loading ? 'Loading preview…' : 'This template is unavailable.')}</p>
   </StandaloneTemplatePreview>;
 }
 
-export function StandaloneTemplatePreview({ title, asset, direction, children }: { title: string; asset?: Asset; direction?: 'ltr' | 'rtl'; children?: ReactNode }) {
+export function StandaloneTemplatePreview({ title, asset, children }: { title: string; asset?: Asset; children?: ReactNode }) {
   useUILanguage();
   const [deviceKey, setDevice] = useState<(typeof devices)[number]['key']>('desktop');
-  const [selection, setSelection] = useState({ assetId: '', pageId: '' });
+  const [pageId, setPageId] = useState('');
   const [width, setWidth] = useState(0);
   const canvas = useRef<HTMLDivElement>(null);
   const device = devices.find(item => item.key === deviceKey) ?? devices[0];
-  // A page chosen for one template must never leak into another template's preview.
-  const pageId = selection.assetId === asset?.id ? selection.pageId : '';
   const page = asset?.document.pages.find(item => item.id === pageId) ?? asset?.document.pages[0];
   const hasCanvas = Boolean(asset && page);
   useEffect(() => {
@@ -87,7 +48,7 @@ export function StandaloneTemplatePreview({ title, asset, direction, children }:
     return () => { document.title = previous; };
   }, [title]);
   const navigate = (id: string) => {
-    setSelection({ assetId: asset?.id || '', pageId: id });
+    setPageId(id);
     canvas.current?.scrollIntoView({ block: 'start' });
   };
   return <main className="template-preview-page">
@@ -103,10 +64,9 @@ export function StandaloneTemplatePreview({ title, asset, direction, children }:
       </div>}
       {hasCanvas && <p className="template-preview-note"><ShieldCheck size={14}/>{translateText('Preview only. Forms, payments and bookings are disabled.')}</p>}
     </header>
-    {asset && page ? <div className="template-preview-canvas" ref={canvas} data-device={deviceKey} data-template-id={asset.id}
-      dir={direction} lang={direction === 'rtl' ? 'ar' : direction === 'ltr' ? 'en' : undefined}
+    {asset && page ? <div className="template-preview-canvas" ref={canvas} data-device={deviceKey}
       style={{ '--preview-device-width': device.width ? device.width + 'px' : 'none' } as CSSProperties}>
-      <PublishedPage key={asset.id + ':' + page.id} asset={asset} pageId={page.id} viewportWidth={width || window.innerWidth}
+      <PublishedPage key={page.id} asset={asset} pageId={page.id} viewportWidth={width || window.innerWidth}
         viewportDevice={device.key === 'desktop' ? undefined : device.key} onNavigate={navigate} readOnly/>
     </div> : <div className="template-preview-content">{children}</div>}
   </main>;

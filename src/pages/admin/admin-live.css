@@ -67,11 +67,6 @@
 .alm-ghl-description { margin: 0; color: var(--alm-muted); font-size: 12px; overflow-wrap: anywhere; }
 .alm-ghl-image-link { display: block; width: 100%; height: 100%; }
 .alm-ghl-image-link:focus-visible { outline: 2px solid var(--alm-primary); border-radius: 9px; }
-/* Live template artwork (the real template page, scaled) with a transparent preview link on top. */
-.alm-ghl-live { position: absolute; inset: 0; border-radius: 9px; }
-.alm-ghl-live-link { position: absolute; inset: 0; border-radius: 9px; cursor: pointer; }
-.alm-type-filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 2px 0 12px; }
-.alm-type-filter-label { color: var(--alm-muted); font-size: 12px; font-weight: 650; }
 .alm-ghl-preview-pill, .alm-button[href] { text-decoration: none; }
 @media (hover: none), (max-width: 900px) {
   .alm-ghl-frame .alm-ghl-overlay { opacity: 1; }

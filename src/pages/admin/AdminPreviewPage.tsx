@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { primaryDb, backendError } from '../../backend/firebase';
 import { decodeFirestoreValue } from '../../backend/firestoreCodec';
-import { localizeManagedTemplate, managedTemplateAsset, type ManagedTemplate } from './managed-template';
+import { localizeManagedTemplate, type ManagedTemplate } from './managed-template';
 import { useSearchParams } from 'react-router-dom';
 import { useAdminManagement } from '../../backend/adminManagement';
 import { useUILanguage } from '../../i18n/display';
@@ -22,28 +22,26 @@ export function AdminPreviewPage() {
   const adminSource = params.get('source') === 'admin';
   const live = useAdminManagement(resources, !!templateId && !adminSource);
   // Admin-owned templates live in their own collection; read the one requested.
-  const [owned, setOwned] = useState<{ id: string; template?: ManagedTemplate; loading: boolean; error: string }>({ id: '', loading: true, error: '' });
+  const [owned, setOwned] = useState<{ template?: ManagedTemplate; loading: boolean; error: string }>({ loading: true, error: '' });
   useEffect(() => {
     if (!adminSource || !templateId) return;
-    return onSnapshot(doc(primaryDb, 'adminTemplates', templateId), snapshot => setOwned({ id: templateId, template: snapshot.exists() ? { ...decodeFirestoreValue(snapshot.data()), id: snapshot.id } as ManagedTemplate : undefined, loading: false, error: '' }), cause => setOwned({ id: templateId, loading: false, error: backendError(cause) }));
+    return onSnapshot(doc(primaryDb, 'adminTemplates', templateId), snapshot => setOwned({ template: snapshot.exists() ? { ...decodeFirestoreValue(snapshot.data()), id: snapshot.id } as ManagedTemplate : undefined, loading: false, error: '' }), cause => setOwned({ loading: false, error: backendError(cause) }));
   }, [adminSource, templateId]);
-  // Only ever render the exact template that was requested — never a previously loaded one.
-  const ownedCurrent = owned.id === templateId ? owned : { id: templateId, template: undefined, loading: true, error: '' };
-  const savedTemplate = !templateId ? undefined : adminSource ? ownedCurrent.template : live.templates.find(item => item.id === templateId);
-  const template = useMemo(() => savedTemplate && localizeManagedTemplate(savedTemplate, ar), [savedTemplate, ar]);
-  const loading = adminSource ? ownedCurrent.loading : live.loading, error = adminSource ? ownedCurrent.error : live.error;
+  const savedTemplate = !templateId ? undefined : adminSource ? owned.template : live.templates.find(item => item.id === templateId);
+  const template = savedTemplate && localizeManagedTemplate(savedTemplate, ar);
+  const loading = adminSource ? owned.loading : live.loading, error = adminSource ? owned.error : live.error;
   const record = recordPath ? live.records.find(item => item.path === recordPath) : undefined;
   const name = template?.name || (record ? String(record.data.name || record.id) : t('Preview', 'معاينة'));
-  const recordDocument: BuilderDocument | undefined = record?.data.document;
-  const asset: Asset | undefined = useMemo(() => template ? managedTemplateAsset(template) : recordDocument?.pages?.length ? {
-    id: record?.id || 'preview', name, document: recordDocument,
-    kind: record?.data.kind === 'funnel' ? 'funnel' : 'website',
-    formAsset: record?.data.formAsset === true,
-    image: record?.data.image || recordDocument.pages[0]?.featuredImage || '',
-    domain: '', description: '', updated: '',
-    settings: record?.data.settings || { color: recordDocument.theme?.color || '#7C3AED', navigation: recordDocument.pages.map(page => page.name).join(', '), seo: name },
-  } : undefined, [template, record, recordDocument, name]);
-  return <StandaloneTemplatePreview title={name} asset={asset} direction={template ? template.contentLanguage === 'ar' ? 'rtl' : 'ltr' : undefined}>
+  const document: BuilderDocument | undefined = template?.builderDocument || template?.pageTemplate?.builderDocument || record?.data.document;
+  const asset: Asset | undefined = document?.pages?.length ? {
+    id: templateId || record?.id || 'preview', name, document,
+    kind: template?.category === 'Funnels' || record?.data.kind === 'funnel' ? 'funnel' : 'website',
+    formAsset: template?.category === 'Forms' || record?.data.formAsset === true,
+    image: template?.pageTemplate?.image || record?.data.image || document.pages[0]?.featuredImage || '',
+    domain: '', description: template?.description || '', updated: '',
+    settings: record?.data.settings || { color: document.theme?.color || '#7C3AED', navigation: document.pages.map(page => page.name).join(', '), seo: name },
+  } : undefined;
+  return <StandaloneTemplatePreview title={name} asset={asset}>
     {template ? <div className="adm-live"><TemplateContent template={template}/></div>
       : <p role={error ? 'alert' : 'status'}>{error || (loading ? t('Loading preview…', 'جار تحميل المعاينة…') : t('This item is unavailable.', 'هذا العنصر غير متاح.'))}</p>}
   </StandaloneTemplatePreview>;

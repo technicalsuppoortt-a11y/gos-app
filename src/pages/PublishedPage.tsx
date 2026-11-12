@@ -14,7 +14,7 @@ import { EditableElementPart } from './EditableElementPart';
 import { findSection } from './funnel-tree';
 import { resolveFormTheme } from './form-theme';
 
-export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false, showToaster = true }: { readOnly?: boolean; showToaster?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
+export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false }: { readOnly?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => { const resize = () => setWidth(window.innerWidth); window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize); }, []);
   const visibleWidth = viewportWidth ?? width;
@@ -178,7 +178,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
           </footer>
         ) : null}
 
-        {showToaster && <Toaster />}
+        <Toaster />
       </main>
     </BuilderFormCaptureContext.Provider>
   );

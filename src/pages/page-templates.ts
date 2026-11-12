@@ -4,10 +4,6 @@ import type { Asset, BuilderMode } from './asset-model';
 
 import { type PageTemplate, FORM_BACKGROUND_PRESETS } from './page-template-data';
 export { pageTemplates, type PageTemplate, FORM_BACKGROUND_PRESETS, type FormBackgroundPreset } from './page-template-data';
-/** The read-only asset rendered for a gallery template, shared by its card artwork and its preview page. */
-export function pageTemplatePreviewAsset(template: PageTemplate): Asset {
-  return { ...createPageAsset(template.mode, template.name, template), id: template.id, updated: '' };
-}
 export function createPageAsset(kind:BuilderMode|'form',name:string,template?:PageTemplate):Asset {
   const isForm = template?.mode === 'form' || kind === 'form';
   const effectiveKind: BuilderMode = isForm ? 'website' : (template?.mode === 'funnel' ? 'funnel' : (kind === 'funnel' ? 'funnel' : 'website'));

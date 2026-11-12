@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 94,
+  "scannedStylesheets": 99,
   "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 173,
+      "line": 171,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 181,
+      "line": 179,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 184,
+      "line": 182,
       "utility": "text-slate-400"
     },
     {
@@ -248,43 +248,38 @@
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 96,
+      "line": 100,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 139,
+      "line": 143,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 201,
+      "line": 205,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 210,
+      "line": 214,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 227,
+      "line": 231,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 239,
+      "line": 243,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 269,
+      "line": 273,
       "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 294,
-      "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
@@ -293,62 +288,67 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 298,
+      "line": 302,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 322,
+      "line": 302,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 326,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 325,
+      "line": 329,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 334,
+      "line": 338,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 89,
+      "line": 90,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 203,
+      "line": 208,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 217,
+      "line": 222,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 228,
+      "line": 233,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 253,
+      "line": 258,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 267,
+      "line": 272,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 331,
+      "line": 336,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 379,
+      "line": 384,
       "utility": "text-slate-400"
     },
     {
@@ -843,37 +843,37 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 586,
+      "line": 611,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 589,
+      "line": 614,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 613,
+      "line": 638,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 711,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 711,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 711,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/commerce/ProductWorkspace.tsx",
-      "line": 363,
+      "line": 371,
       "utility": "text-slate-500"
     },
     {

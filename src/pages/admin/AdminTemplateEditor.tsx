@@ -12,7 +12,7 @@ import { useUILanguage } from '../../i18n/display';
 import { AdminSelect } from './AdminSelect';
 import { LiveDialog } from './AdminLiveUI';
 import { TemplateContent } from './AdminRecordDetails';
-import { editableArabicFields, localizeManagedTemplate, templateArabicMetadata, templateCategoryLabel, templateIsActive, type ManagedTemplate } from './managed-template';
+import { localizeManagedTemplate, templateArabicMetadata, templateCategoryLabel, templateIsActive, type ManagedTemplate } from './managed-template';
 import type { SitePreview } from './AdminSitePreview';
 
 export function newManagedTemplate(category: ManagedTemplate['category'] = 'Funnels'): ManagedTemplate {
@@ -24,7 +24,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   busy: boolean; preview: (value: SitePreview) => void; presets?: ManagedTemplate[]; ownerUid?: string;
 }) {
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
-  const [draft, setDraft] = useState(() => initializeTemplateAsset({ ...template, ...templateArabicMetadata(template), ...editableArabicFields(template) }));
+  const [draft, setDraft] = useState(() => initializeTemplateAsset({ ...template, ...templateArabicMetadata(template) }));
   const [builderArabic, setBuilderArabic] = useState(false);
   const [showArabicNative, setShowArabicNative] = useState(false);
   const [builder, setBuilder] = useState(false);
@@ -44,7 +44,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     const preset = presets.find(item => item.id === id);
     if (!preset) return;
     const { id: _presetId, ...copy } = structuredClone(preset);
-    const next = initializeTemplateAsset({ ...copy, ...templateArabicMetadata(preset), ...editableArabicFields(preset), id: template.id, source: 'official', active: false, status: 'Draft', popularity: 0 });
+    const next = initializeTemplateAsset({ ...copy, ...templateArabicMetadata(preset), id: template.id, source: 'official', active: false, status: 'Draft', popularity: 0 });
     documentRef.current = next.builderDocument;
     arabicDocumentRef.current = next.builder_document_ar;
     setDraft(next);

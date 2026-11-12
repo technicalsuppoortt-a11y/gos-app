@@ -120,8 +120,6 @@ export type PageTemplate = {
   name: string;
   description?: string;
   categoryLabel?: string;
-  /** Language of the copy inside the template ('ar' renders right-to-left). */
-  contentLanguage?: 'ar' | 'en';
   industry: string;
   goal: string;
   title: string;

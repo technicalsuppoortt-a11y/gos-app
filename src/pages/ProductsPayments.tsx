@@ -18,8 +18,6 @@ import { DiscountsWorkspace } from './DiscountsWorkspace';
 import { useTransactions } from './commerce/transactions';
 import { usePurchasedProducts } from './commerce/purchases';
 import { useCustomerPortalLibrary, type CustomerPurchaseRecord } from '../backend/customerPortal';
-import { ProductTypeFilter, productTypeCounts, productTypeOf, type ProductTypeValue } from '../components/ui/ProductTypeFilter';
-import { PurchaseDetailsDialog } from './commerce/PurchaseDetailsDialog';
 
 import {
   ArrowRight,
@@ -202,13 +200,12 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
     }
     return products;
   }, [selectedTab, activeSubTab, products, purchasedProducts]);
-  const typeCounts = useMemo(() => productTypeCounts(baseProducts, p => p.type), [baseProducts]);
 
   const displayed = useMemo(() => {
     return baseProducts
       .filter(
         p =>
-          (type === 'All Types' || p.type === type || productTypeOf(p.type) === type) &&
+          (type === 'All Types' || p.type === type) &&
           (activeSubTab === 'purchases' || status === 'All Status' || p.status === status) &&
           `${p.name} ${p.type}`.toLowerCase().includes(search.toLowerCase())
       )
@@ -392,15 +389,12 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                       }
                     />
                   </label>
-                  <ProductTypeFilter
-                    className="pp-type-filter"
-                    value={type === 'All Types' ? 'All' : (type as ProductTypeValue)}
-                    counts={typeCounts}
-                    label={translateText('Filter by product type')}
+                  <ProfessionalSelect
+                    value={type}
+                    options={['All Types', 'Service', 'Digital Product', 'Course']}
                     onChange={v => {
-                      const next = v === 'All' ? 'All Types' : v;
-                      setType(next);
-                      setFilterMetric(next === 'All Types' ? 'All Products' : next);
+                      setType(v);
+                      setFilterMetric(v === 'All Types' ? 'All Products' : v);
                     }}
                   />
                   {activeSubTab !== 'purchases' && (
@@ -578,7 +572,6 @@ function ProductCard({
   useUILanguage();
   const { formatPrice } = useCurrency();
   const [showUsers, setShowUsers] = useState(false);
-  const [showBuyer, setShowBuyer] = useState(false);
 
   const courseLessonsTotal = useMemo(() => {
     if (portalRecord?.productSnapshot?.modules) {
@@ -629,7 +622,7 @@ function ProductCard({
         )}
       </button>
 
-      <ProductCardActions product={item} customerPage={customerPage} purchaseOnly={customerMode} onEdit={onEdit} onBuyerDetails={customerMode ? () => setShowBuyer(true) : undefined} notify={notify}/>
+      <ProductCardActions product={item} customerPage={customerPage} purchaseOnly={customerMode} onEdit={onEdit} notify={notify}/>
 
       <div className="pp-card-info">
         <div className="pp-card-header-tags">
@@ -683,19 +676,6 @@ function ProductCard({
               )}
             </div>
             {item.type === "Course" && <progress max={100} value={courseProgress} aria-label={translateText("Course progress")}/>}
-            <button
-              type="button"
-              className="pp-buyer-details-btn"
-              aria-haspopup="dialog"
-              aria-label={translateText(`View buyer details for ${item.name}`)}
-              onClick={event => {
-                event.stopPropagation();
-                setShowBuyer(true);
-              }}
-            >
-              <UserRound size={13} />
-              {translateText('View buyer details')}
-            </button>
           </div>
         ) : (
           <div
@@ -823,14 +803,6 @@ function ProductCard({
           defaultTab="users"
           close={() => setShowUsers(false)}
           edit={onEdit}
-        />
-      )}
-      {customerMode && showBuyer && (
-        <PurchaseDetailsDialog
-          product={item}
-          record={portalRecord}
-          customerPage={customerPage}
-          close={() => setShowBuyer(false)}
         />
       )}
     </article>
