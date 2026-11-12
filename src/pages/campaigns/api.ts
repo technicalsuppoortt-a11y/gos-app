@@ -5,10 +5,22 @@ import { gosRequest } from '../../backend/gosApi'
  * The screens use the small types below; this file maps them to and from the API's shapes.
  */
 
-export type TemplateComponent = { type: string; format?: string; text?: string; buttons?: { type: string; text: string; url?: string }[] }
+export type TemplateComponent = { type: string; format?: string; text?: string; buttons?: { type: string; text: string; url?: string; phone_number?: string }[] }
 /** A template variable, keyed like the API: "body.1", "header.1", "button.0.1". */
 export type TemplateVariable = { key: string; component: string; placeholder: string; example?: string | null }
-export type WaTemplate = { name: string; language: string; category: string; status: string; components: TemplateComponent[]; variables: TemplateVariable[] }
+export type TemplateStatus = 'APPROVED' | 'PENDING' | 'REJECTED' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION' | 'DELETED' | 'LIMIT_EXCEEDED'
+export type TemplateQuality = 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN'
+export type WaTemplate = {
+  id?: string | null
+  name: string
+  language: string
+  category: string
+  status: TemplateStatus | string
+  rejected_reason?: string | null
+  quality?: TemplateQuality | string | null
+  components: TemplateComponent[]
+  variables: TemplateVariable[]
+}
 
 export type VariableSource = { source: 'field'; field: string; fallback?: string } | { source: 'text'; value: string }
 

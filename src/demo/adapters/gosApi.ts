@@ -157,6 +157,26 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     if (parts[2] === 'simulator') throw new Error('The demo account cannot run the simulator. Sign in to test flows.');
     return flow as T;
   }
+  // WhatsApp message templates: created ones stay PENDING in the demo store; nothing reaches Meta.
+  if (parts[0] === 'templates') {
+    const templates = read<ApiRecord[]>('templates.v1', demoTemplates.map(t => ({ ...t, id: 'tpl_' + t.name, rejected_reason: null, quality: 'GREEN' })));
+    const save = (next: ApiRecord[]) => write('templates.v1', next);
+    if (method === 'POST') {
+      if (!/^[a-z0-9_]{1,512}$/.test(body.name ?? '')) throw new Error('The name may only use lowercase letters, numbers and underscores (max 512).');
+      if (templates.some(t => t.name === body.name && t.language === body.language)) throw new Error('A template with this name and language already exists.');
+      const components = [
+        body.header && { type: 'HEADER', format: body.header.format ?? 'TEXT', text: body.header.text },
+        { type: 'BODY', text: body.body?.text ?? '' },
+        body.footer?.text && { type: 'FOOTER', text: body.footer.text },
+        body.buttons?.length && { type: 'BUTTONS', buttons: body.buttons },
+      ].filter(Boolean);
+      const vars = [...new Set<string>((body.body?.text ?? '').match(/\{\{\d+\}\}/g) ?? [])].map((p, i) => tv('body.' + (i + 1), 'body', p, body.body?.examples?.[i]));
+      const template = { id: 'tpl_' + crypto.randomUUID().slice(0, 12), name: body.name, language: body.language, category: body.category, status: 'PENDING', rejected_reason: null, quality: null, components, variables: vars };
+      save([...templates, template]); return { template } as T;
+    }
+    if (method === 'DELETE' && parts[1]) { save(templates.filter(t => t.name !== decodeURIComponent(parts[1]))); return { deleted: true, name: parts[1] } as T; }
+    return { templates } as T;
+  }
   // WhatsApp campaigns: sample templates and campaigns kept in the demo store, in the API's shapes; nothing is sent.
   if (parts[0] === 'campaigns') {
     const campaigns = read<ApiRecord[]>('campaigns.v2', demoCampaigns());
