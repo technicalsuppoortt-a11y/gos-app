@@ -85,6 +85,7 @@ import "./ai-followup.css";
 // Loaded only when the tab opens, so React Flow stays out of the main bundle.
 const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
 const CampaignsTab = React.lazy(() => import("./campaigns/Campaigns").then(module => ({ default: module.CampaignsTab })));
+const WaTemplatesTab = React.lazy(() => import("./templates/WaTemplates").then(module => ({ default: module.WaTemplatesTab })));
 
 type Props = { notify?: (message: string) => void; section?: "follow-up" | "automation" };
 type Tab =
@@ -2068,7 +2069,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         </section>
       );
     if (tab === "Knowledge") return null;
+    // Automation & Campaign: Templates holds WhatsApp (Meta) templates; the AI response templates live under Follow Up.
+    if (tab === "Templates" && isAutomation)
+      return (
+        <React.Suspense fallback={<p className="af-muted">{translateText("Loading templates…")}</p>}>
+          <WaTemplatesTab />
+        </React.Suspense>
+      );
     if (tab === "Templates") return renderTemplatesTab();
+    if (tab === "Automations" && isAutomation) return <>{renderAutomationTab()}{renderTemplatesTab()}</>;
     if (tab === "Automations") return renderAutomationTab();
     if (tab === "Flow Builder")
       return (
