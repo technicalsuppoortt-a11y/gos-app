@@ -1,0 +1,113 @@
+WhatsApp campaigns	حملات واتساب
+Send approved Meta templates to your customers, now or at a time you choose.	أرسل قوالب Meta المعتمدة إلى عملائك، الآن أو في موعد تختاره.
+New campaign	حملة جديدة
+Messages sent	الرسائل المُرسلة
+Delivery rate	نسبة الوصول
+Read rate	نسبة القراءة
+Customer replies	ردود العملاء
+Filter by status	تصفية حسب الحالة
+Search by campaign name	ابحث باسم الحملة
+Recipients	المستلمون
+Delivered / read	وصلت / قُرئت
+Now	الآن
+Ahmed	أحمد
+Send a test message to this WhatsApp number (with country code):	أرسل رسالة تجريبية إلى رقم واتساب هذا (مع كود الدولة):
+Test message sent	تم إرسال الرسالة التجريبية
+Connect a WhatsApp Business number in Settings › Integrations before sending campaigns.	اربط رقم WhatsApp Business من الإعدادات › التكاملات قبل إرسال الحملات.
+e.g. White Friday offer	مثال: عرض الجمعة البيضاء
+Sending number	رقم الإرسال
+No WhatsApp number connected	لا يوجد رقم واتساب مربوط
+Choose an approved template	اختر قالبًا معتمدًا
+Refresh from Meta	تحديث من Meta
+Loading templates…	جارٍ تحميل القوالب…
+No approved templates yet. Create one and wait for Meta to approve it.	لا توجد قوالب معتمدة بعد. أنشئ قالبًا وانتظر موافقة Meta عليه.
+Only approved templates are listed. Templates in review or rejected cannot be used in campaigns.	تظهر هنا القوالب المعتمدة فقط. القوالب قيد المراجعة أو المرفوضة لا يمكن استخدامها في الحملات.
+Template variables	متغيرات القالب
+Link each variable to customer data or type a fixed text. The fallback is used when the data is missing.	اربط كل متغير ببيانات العميل أو اكتب نصًا ثابتًا. يُستخدم البديل عندما تكون البيانات ناقصة.
+Variable	المتغير
+Fallback / text	البديل / النص
+Fixed text	نص ثابت
+When to send	موعد الإرسال
+Review campaign	مراجعة الحملة
+Variables	المتغيرات
+Send now	إرسال الآن
+Meta charges template messages per conversation, and WhatsApp may limit how many you can send a day based on your number’s quality rating.	تحاسب Meta على رسائل القوالب لكل محادثة، وقد يحدّ واتساب عدد الرسائل اليومي حسب تصنيف جودة رقمك.
+Total recipients	إجمالي المستلمين
+CSV file	ملف CSV
+Manual selection	اختيار يدوي
+Duplicates removed	مكرر (حُذف)
+Invalid numbers skipped	أرقام غير صالحة (تُخطّت)
+Pick at least one source to see who will receive this campaign.	اختر مصدرًا واحدًا على الأقل لترى من سيستلم هذه الحملة.
+Message preview	معاينة الرسالة
+Preview uses the first recipient’s data.	المعاينة ببيانات أول مستلم.
+The file is empty.	الملف فارغ.
+Combine recipients from one or more sources. Duplicate numbers are removed automatically.	اجمع المستلمين من مصدر أو أكثر. الأرقام المكررة تُحذف تلقائيًا.
+No pipeline stages yet	لا توجد مراحل بعد
+Add a tag	أضف وسمًا
+No stage and no tag selected means all leads with a phone number.	عدم اختيار مرحلة أو وسم يعني كل العملاء المحتملين الذين لديهم رقم هاتف.
+Exclude contacts who opted out of marketing messages	استبعد من رفضوا استلام الرسائل التسويقية
+invalid numbers will be skipped	رقم غير صالح سيتم تخطيه
+First row must be the column names	يجب أن يحتوي الصف الأول على أسماء الأعمدة
+Phone column	عمود الهاتف
+Name column	عمود الاسم
+Default country code	كود الدولة الافتراضي
+Download a sample file	تنزيل ملف نموذجي
+Search by name or number	ابحث بالاسم أو الرقم
+No contacts with a phone number found	لا توجد جهات اتصال لديها رقم هاتف
+Choose a template to see the message.	اختر قالبًا لترى الرسالة.
+Scheduled for	مجدولة في
+Started	بدأت
+Stop this campaign? Messages already sent stay sent.	إيقاف هذه الحملة؟ الرسائل المُرسلة بالفعل لن تُلغى.
+Cancel campaign	إلغاء الحملة
+Resend to failed	إعادة الإرسال لمن فشلت رسائلهم
+Duplicate campaign	نسخ الحملة
+Replied	ردّوا
+Message funnel	مسار الرسائل
+Filter recipients	تصفية المستلمين
+No recipients here	لا يوجد مستلمون هنا
+Last update	آخر تحديث
+Open conversation	فتح المحادثة
+No campaigns match this filter	لا توجد حملات تطابق هذا الفلتر
+No campaigns yet	لا توجد حملات بعد
+e.g. Dear customer	مثال: عميلنا العزيز
+Schedule for later	جدولة لوقت لاحق
+Sending starts right after you confirm	يبدأ الإرسال فور التأكيد
+Pick a date and time	اختر التاريخ والوقت
+Sending…	جارٍ الإرسال…
+Send me a test	إرسال رسالة تجريبية لي
+Next: audience	التالي: الجمهور
+Next: schedule	التالي: الجدولة
+Send campaign	إرسال الحملة
+Schedule campaign	جدولة الحملة
+Replace file	استبدال الملف
+Choose file	اختيار ملف
+Choose a CSV file	اختر ملف CSV
+Contact name	اسم العميل
+Egypt +20	مصر +20
+Saudi Arabia +966	السعودية +966
+UAE +971	الإمارات +971
+Kuwait +965	الكويت +965
+Qatar +974	قطر +974
+Jordan +962	الأردن +962
+Sending	جارٍ الإرسال
+Schedule & review	الجدولة والمراجعة
+Loading campaigns…	جارٍ تحميل الحملات…
+Marketing	تسويق
+Utility	خدمي
+Authentication	مصادقة
+Queued	في الانتظار
+Campaign is sending	بدأ إرسال الحملة
+Campaign scheduled	تمت جدولة الحملة
+Draft saved	تم حفظ المسودة
+Campaign cancelled	تم إلغاء الحملة
+Export ready	الملف جاهز
+Resending to failed recipients	جارٍ إعادة الإرسال لمن فشلت رسائلهم
+Leads by stage or tag	العملاء المحتملون حسب المرحلة أو الوسم
+Upload a CSV file	رفع ملف CSV
+fallback	البديل
+recipients	مستلم
+variables	متغيرات
+rows	صف
+Time zone	المنطقة الزمنية
+Uploading…	جارٍ الرفع…
+Uploaded file	الملف المرفوع
