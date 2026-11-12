@@ -25,3 +25,45 @@ No leads captured yet	لم يتم التقاط عملاء محتملين بعد
 Leads appear here once visitors submit a form on this funnel.	يظهر العملاء المحتملون هنا بمجرد إرسال الزوار نموذجًا في مسار التحويل هذا.
 Leads exported	تم تصدير العملاء المحتملين
 Workspace activity	نشاط مساحة العمل
+Quick Connection Steps	خطوات الربط السريع
+Manage Facebook Page messages in your unified inbox and automations.	أدِر رسائل صفحتك على فيسبوك من صندوق الوارد الموحد والأتمتة.
+Make Sure You Are a Page Admin	تأكد من أنك مسؤول الصفحة
+Open your Facebook Page → Settings → Page access and confirm your account has full control of the Page.	افتح صفحتك على فيسبوك ← الإعدادات ← الوصول إلى الصفحة، وتأكد من أن حسابك يملك تحكمًا كاملًا في الصفحة.
+Turn On Page Messaging	فعّل الرسائل على الصفحة
+In your Page settings, make sure people can message your Page so new conversations can reach your Inbox.	من إعدادات الصفحة، تأكد من أن الأشخاص يمكنهم مراسلة صفحتك حتى تصل المحادثات الجديدة إلى صندوق الوارد.
+Authorize via Meta Business Login	سجّل الدخول عن طريق Meta Business
+Click "Connect" below, sign in with your Facebook Admin account, and select the Page you want to sync.	اضغط "ربط" أدناه، وسجّل الدخول بحساب مسؤول الصفحة على فيسبوك، ثم اختر الصفحة التي تريد مزامنتها.
+Test & Enable Automatic Sync	اختبر الاتصال وفعّل المزامنة التلقائية
+Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new messages appear in your Inbox immediately.	شغّل اختبار الاتصال للتأكد من وصول الرسائل، وأبقِ "المزامنة التلقائية" مفعّلة لتظهر الرسائل الجديدة في صندوق الوارد فورًا.
+Connected Facebook Page	صفحة فيسبوك المربوطة
+Read the Facebook Pages you manage	قراءة صفحات فيسبوك التي تديرها
+Receive and reply to Page messages and comments in real time	استقبال رسائل الصفحة وتعليقاتها والرد عليها لحظياً
+Grant all requested permissions for the Page during the Meta popup—deselecting any of them can stop new messages from reaching your Inbox.	امنح جميع الصلاحيات المطلوبة للصفحة في نافذة Meta، فإلغاء أي صلاحية قد يمنع الرسائل الجديدة من الوصول إلى صندوق الوارد.
+Comment Replies	الرد على التعليقات
+Admin access to a Facebook Business Page	صلاحية مسؤول على صفحة فيسبوك تجارية
+Messaging turned on for the Page	الرسائل مفعّلة على الصفحة
+Connect with Meta	الربط عبر Meta
+Connect manually	ربط يدوي
+Connect manually with my own Meta app	ربط يدوي بتطبيق Meta الخاص بي
+Connect WhatsApp Cloud API for customer messaging, broadcasts, and automated AI follow-ups.	اربط WhatsApp Cloud API لمراسلة العملاء والرسائل الجماعية والمتابعات الآلية بالذكاء الاصطناعي.
+A Meta Business Portfolio (Business Manager) account	حساب Meta Business Portfolio (مدير الأعمال)
+A phone number that can receive an SMS or call code and is not active on the regular WhatsApp app	رقم هاتف يستقبل رمز تحقق عبر الرسائل أو المكالمة وغير مفعّل على تطبيق واتساب العادي
+For manual setup: your own Meta app with the WhatsApp product added	للربط اليدوي: تطبيق Meta خاص بك مضاف إليه منتج WhatsApp
+Prepare Your Phone Number	جهّز رقم الهاتف
+Use a number that is not registered on the regular WhatsApp or WhatsApp Business app, or delete that account from the app first.	استخدم رقمًا غير مسجّل على تطبيق واتساب أو واتساب للأعمال، أو احذف الحساب من التطبيق أولًا.
+Option 1: Connect with Meta	الطريقة 1: الربط عبر Meta
+Click "Connect with Meta", log in to your Meta Business Portfolio, then create or pick your WhatsApp Business profile and verify the number with the 6-digit code.	اضغط "الربط عبر Meta"، وسجّل الدخول إلى Meta Business Portfolio، ثم أنشئ ملف WhatsApp Business أو اختره، وأكّد الرقم بالرمز المكوّن من 6 أرقام.
+Option 2: Connect Manually	الطريقة 2: الربط اليدوي
+Click "Connect manually", add the Callback URL and Verify token shown to your Meta app webhook and subscribe to "messages", then paste your Phone number ID, permanent access token and App Secret.	اضغط "ربط يدوي"، وأضف Callback URL وVerify token الظاهرين إلى إعدادات Webhook في تطبيق Meta واشترك في حقل "messages"، ثم الصق Phone number ID ورمز الوصول الدائم وApp Secret.
+Send a Test Message	أرسل رسالة تجريبية
+Message your WhatsApp number from another phone and check that the conversation appears in your Inbox.	أرسل رسالة إلى رقم واتساب من هاتف آخر، وتأكد من ظهور المحادثة في صندوق الوارد.
+Use Connect with Meta if you are not sure. Choose manual setup only if you already run your own Meta app and have a permanent System User token.	استخدم الربط عبر Meta إذا لم تكن متأكدًا. اختر الربط اليدوي فقط إذا كان لديك تطبيق Meta خاص بك ورمز System User دائم.
+Access your verified WhatsApp Business Account (WABA) and phone number	الوصول إلى حساب WhatsApp Business (WABA) الموثّق ورقم الهاتف
+Send approved template messages and receive customer replies in real time	إرسال رسائل القوالب المعتمدة واستقبال ردود العملاء لحظيًا
+Connect with your own Meta app	الربط بتطبيق Meta الخاص بك
+First add this webhook to your app in Meta, and subscribe to the messages field.	أضف هذا الـ Webhook أولًا إلى تطبيقك في Meta، واشترك في حقل messages.
+Phone number ID	معرّف رقم الهاتف (Phone number ID)
+Permanent access token	رمز الوصول الدائم
+Disconnect Facebook Messenger	قطع ربط Facebook Messenger
+Disconnect WhatsApp Business	قطع ربط WhatsApp Business
+Connect Facebook Messenger	ربط Facebook Messenger
