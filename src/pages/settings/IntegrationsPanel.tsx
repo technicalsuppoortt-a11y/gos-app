@@ -47,39 +47,38 @@ const providers = [
     accountLabel: 'Connected Facebook Page',
     accountPlaceholder: 'e.g. Upclick Official Page',
     description: 'Manage Facebook Page messages in your unified inbox and automations.',
-    capabilities: ['Unified Inbox DMs', 'Story & Comment Replies', 'AI Auto-Responder'],
+    capabilities: ['Unified Inbox DMs', 'Comment Replies', 'AI Auto-Responder'],
     scopes: [
-      'Read connected Facebook Pages and linked Instagram Business accounts',
-      'Receive and reply to customer direct messages and comments in real time',
+      'Read the Facebook Pages you manage',
+      'Receive and reply to Page messages and comments in real time',
     ],
     prerequisites: [
       'Admin access to a Facebook Business Page',
-      'An Instagram Professional (Business or Creator) account linked to your Facebook Page',
-      'Message control ("Allow access to messages") enabled in Instagram Advanced Messaging settings',
+      'Messaging turned on for the Page',
     ],
     guideSteps: [
       {
         step: '01',
-        title: 'Link Instagram to Your Facebook Page',
-        detail: 'Open your Facebook Page Settings → Linked Accounts → Instagram and ensure your Instagram Business profile is connected.',
+        title: 'Make Sure You Are a Page Admin',
+        detail: 'Open your Facebook Page → Settings → Page access and confirm your account has full control of the Page.',
       },
       {
         step: '02',
-        title: 'Enable Connected Tools in Instagram',
-        detail: 'In the Instagram mobile app, go to Settings & Privacy → Messages and story replies → Message controls and turn on "Allow access to messages".',
+        title: 'Turn On Page Messaging',
+        detail: 'In your Page settings, make sure people can message your Page so new conversations can reach your Inbox.',
       },
       {
         step: '03',
         title: 'Authorize via Meta Business Login',
-        detail: 'Click "Connect" below, sign in with your Facebook Admin account, and select the exact Business Page and Instagram account you want to sync.',
+        detail: 'Click "Connect" below, sign in with your Facebook Admin account, and select the Page you want to sync.',
       },
       {
         step: '04',
         title: 'Test & Enable Automatic Sync',
-        detail: 'Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new DMs appear in your Inbox immediately.',
+        detail: 'Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new messages appear in your Inbox immediately.',
       },
     ] as GuideStep[],
-    proTip: 'Always grant permissions for all listed Pages during the Meta popup flow—deselecting permissions can interrupt Instagram DM webhook delivery.',
+    proTip: 'Grant all requested permissions for the Page during the Meta popup—deselecting any of them can stop new messages from reaching your Inbox.',
     icon: FacebookIcon,
     color: 'blue',
     status: 'https://metastatus.com/',
@@ -131,32 +130,32 @@ const providers = [
     ],
     prerequisites: [
       'A Meta Business Portfolio (Business Manager) account',
-      'A dedicated phone number able to receive an SMS or voice verification code (not currently active on personal WhatsApp)',
-      'Your legal business name and website URL ready for Meta Embedded Signup',
+      'A phone number that can receive an SMS or call code and is not active on the regular WhatsApp app',
+      'For manual setup: your own Meta app with the WhatsApp product added',
     ],
     guideSteps: [
       {
         step: '01',
-        title: 'Prepare Your Dedicated Phone Number',
-        detail: 'Ensure the phone number you want to use is not registered on the standard WhatsApp Messenger app (or delete the personal account from the app first).',
+        title: 'Prepare Your Phone Number',
+        detail: 'Use a number that is not registered on the regular WhatsApp or WhatsApp Business app, or delete that account from the app first.',
       },
       {
         step: '02',
-        title: 'Launch WhatsApp Embedded Signup',
-        detail: 'Click "Connect" on the WhatsApp Business card and log in to your Meta Business Portfolio when prompted.',
+        title: 'Option 1: Connect with Meta',
+        detail: 'Click "Connect with Meta", log in to your Meta Business Portfolio, then create or pick your WhatsApp Business profile and verify the number with the 6-digit code.',
       },
       {
         step: '03',
-        title: 'Create or Select Your WhatsApp Business Profile',
-        detail: 'Enter your display name, business category, and verify your phone number via the 6-digit SMS or voice call code.',
+        title: 'Option 2: Connect Manually',
+        detail: 'Click "Connect manually", add the Callback URL and Verify token shown to your Meta app webhook and subscribe to "messages", then paste your Phone number ID, permanent access token and App Secret.',
       },
       {
         step: '04',
-        title: 'Verify Webhook & Activate AI Follow-Up',
-        detail: 'Click "Test Connection" to confirm your WhatsApp number is operational, then save your connection to sync with Inbox and AI Follow-Up.',
+        title: 'Send a Test Message',
+        detail: 'Message your WhatsApp number from another phone and check that the conversation appears in your Inbox.',
       },
     ] as GuideStep[],
-    proTip: 'Use a clean phone number dedicated to your business so customer conversations, automated sequences, and 24-hour service windows stay uninterrupted.',
+    proTip: 'Use Connect with Meta if you are not sure. Choose manual setup only if you already run your own Meta app and have a permanent System User token.',
     icon: MessageCircle,
     color: 'green',
     status: 'https://metastatus.com/',
@@ -265,7 +264,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
   const [category, setCategory] = useState('All integrations');
   const [search, setSearch] = useState('');
   const [params, setParams] = useSearchParams();
-  const [selected, setSelected] = useState<Provider | null>(providers.find(p => p.id === params.get('provider')) ?? null);
+  const [selected, setSelected] = useState<Provider | null>(providers.find(p => p.id === params.get('provider') && !p.channel) ?? null);
   const [activeGuideId, setActiveGuideId] = useState<string>(providers[0].id);
   const [logs, setLogs] = useState<string[] | null>(null);
   const [logError, setLogError] = useState('');
@@ -305,6 +304,16 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
     guideRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const toggleChannel = (p: Provider) => {
+    const c = meta.channels?.find(x => x.channel === p.channel);
+    if (stateOf(p).status === 'Connected' && c) meta.disconnect(c, p.name);
+    else meta.connect(p.channel!);
+  };
+  const openManualWhatsApp = () => {
+    meta.setManual({ external_id: '', access_token: '', app_secret: '' });
+    requestAnimationFrame(() => document.getElementById('integration-whatsapp')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  };
+
   const renderChannelExtras = (p: Provider) => {
     const isWhatsApp = p.channel === 'whatsapp';
     const connected = stateOf(p).status === 'Connected';
@@ -335,8 +344,8 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
           </div>
         )}
         {isWhatsApp && !connected && !meta.manual && (
-          <button type="button" className="st-guide-trigger" onClick={() => meta.setManual({ external_id: '', access_token: '', app_secret: '' })}>
-            {translateText('Use my own Meta app instead')}
+          <button type="button" className="st-secondary small" onClick={openManualWhatsApp}>
+            {translateText('Connect manually with my own Meta app')}
           </button>
         )}
         {isWhatsApp && !connected && meta.manual && (
@@ -411,7 +420,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
             const state = stateOf(p);
             const isConnected = state.status === 'Connected';
             return (
-              <Card key={p.id} className={`st-integration-card${isConnected ? ' is-connected' : ''}`}>
+              <Card key={p.id} id={`integration-${p.id}`} className={`st-integration-card${isConnected ? ' is-connected' : ''}`}>
                 <div className="st-integration-top">
                   <span className={`st-service-icon ${p.color}`}>
                     {localizeNode(renderProviderIcon(p, 25))}
@@ -493,11 +502,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                         type="button"
                         className={isConnected ? 'st-secondary' : 'st-primary'}
                         disabled={meta.busy !== null || meta.channels === null}
-                        onClick={() => {
-                          const c = meta.channels?.find(x => x.channel === p.channel);
-                          if (isConnected && c) meta.disconnect(c, p.name);
-                          else meta.connect(p.channel!);
-                        }}
+                        onClick={() => toggleChannel(p)}
                       >
                         {localizeNode(meta.busy === p.channel ? (isConnected ? 'Disconnecting…' : 'Opening Meta…') : isConnected ? 'Disconnect' : 'Connect')}
                       </button>
@@ -651,18 +656,32 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                     <p>{localizeNode(activeGuide.proTip)}</p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="st-primary"
-                  onClick={() => setSelected(activeGuide)}
-                >
-                  {localizeNode(
-                    activeGuideState.status === 'Connected'
-                      ? `Manage ${activeGuide.name}`
-                      : `Connect ${activeGuide.name}`,
+                <div className="st-modal-actions">
+                  {activeGuide.channel === 'whatsapp' && activeGuideState.status !== 'Connected' && (
+                    <button type="button" className="st-secondary" onClick={openManualWhatsApp}>
+                      {translateText('Connect manually')}
+                    </button>
                   )}
-                  <ArrowRight size={14} />
-                </button>
+                  <button
+                    type="button"
+                    className="st-primary"
+                    disabled={!!activeGuide.channel && (meta.busy !== null || meta.channels === null)}
+                    onClick={() => (activeGuide.channel ? toggleChannel(activeGuide) : setSelected(activeGuide))}
+                  >
+                    {localizeNode(
+                      activeGuide.channel
+                        ? activeGuideState.status === 'Connected'
+                          ? `Disconnect ${activeGuide.name}`
+                          : activeGuide.channel === 'whatsapp'
+                          ? 'Connect with Meta'
+                          : `Connect ${activeGuide.name}`
+                        : activeGuideState.status === 'Connected'
+                        ? `Manage ${activeGuide.name}`
+                        : `Connect ${activeGuide.name}`,
+                    )}
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
