@@ -1607,6 +1607,24 @@
   }
 }
 
+@media (min-width: 761px) and (max-width: 980px) {
+  .bk-reference-editor .bk-editor-split {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-inline: 16px;
+  }
+  .bk-reference-editor .bk-editor-configurator {
+    flex: none;
+    min-width: 0;
+    overflow: visible;
+  }
+  .bk-reference-editor .bk-editor-preview {
+    flex: none;
+    height: min(540px, 62dvh);
+  }
+}
+
 @media (max-width: 760px) {
   .bk-reference-editor .bk-editor-split {
     display: flex;

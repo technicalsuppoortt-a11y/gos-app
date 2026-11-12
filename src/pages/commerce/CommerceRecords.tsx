@@ -183,6 +183,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
         displayName,
         provider: m.provider,
         typeName,
+        standard: isStripe || isPaypal || isApple || isGoogle,
         settlement: 'Instant (0–2 days)',
         status: m.status || 'Active',
       };
@@ -592,15 +593,15 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                           <CreditCard size={15} />
                         </span>
                         <div className="cr-customer-meta">
-                          <b>{translateText(m.displayName)}</b>
-                          <small>{m.provider}</small>
+                          <b dir="auto">{m.standard ? translateText(m.displayName) : m.displayName}</b>
+                          <small>{m.standard ? translateText(m.provider) : m.provider}</small>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className="cr-method-badge">{m.provider}</span>
+                      <span className="cr-method-badge">{m.standard ? translateText(m.provider) : m.provider}</span>
                     </td>
-                    <td className="cr-date-cell">{translateText(m.typeName)}</td>
+                    <td className="cr-date-cell">{m.standard ? translateText(m.typeName) : m.typeName}</td>
                     <td className="cr-date-cell">{translateText(m.settlement)}</td>
                     <td>
                       <span className="request-status active">
@@ -728,7 +729,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                           </div>
                         </td>
                         <td>
-                          <span className="cr-method-badge">{row.method || 'Checkout'}</span>
+                          <span className="cr-method-badge">{row.method || translateText("Checkout")}</span>
                         </td>
                         <td>
                           <div className="cr-total-cell">
@@ -1039,8 +1040,8 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
               </div>
               <div className="cr-detail-product-name">
                 {tab === 'Customers'
-                  ? quick.name || quickEmail || 'Customer'
-                  : quick.productName || quick.product_name || quick.name || 'Order Record'}
+                  ? quick.name || quickEmail || translateText("Customer")
+                  : quick.productName || quick.product_name || quick.name || translateText("Order Record")}
               </div>
               {quick.createdAt && (
                 <div className="cr-detail-timestamp">
@@ -1111,7 +1112,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                     <dt>{translateText('Payment Method')}</dt>
                     <dd>
                       <span className="cr-method-badge">
-                        {quick.method || quick.provider || 'Checkout'}
+                        {quick.method || quick.provider || translateText("Checkout")}
                       </span>
                     </dd>
                   </div>
@@ -1164,10 +1165,10 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                     >
                       <div>
                         <strong style={{ display: 'block', fontSize: 13, color: '#0f172a' }}>
-                          {ord.productName || 'Product'}
+                          {ord.productName || translateText("Product")}
                         </strong>
                         <small style={{ fontSize: 11.5, color: '#64748b' }}>
-                          {ord.method || 'Checkout'} ·{' '}
+                          {ord.method || translateText("Checkout")} ·{' '}
                           {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : ''}
                         </small>
                       </div>
@@ -1220,7 +1221,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                     >
                       <div>
                         <strong style={{ display: 'block', fontSize: 13, color: '#0f172a' }}>
-                          {money(t)} · {t.method || t.provider || 'Payment'}
+                          {money(t)} · {t.method || t.provider || translateText("Payment")}
                         </strong>
                         <small style={{ fontSize: 11.5, color: '#64748b' }}>
                           #{String(t.id).slice(-8).toUpperCase()} ·{' '}
@@ -1266,7 +1267,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                       'Enable a payment method for checkout. Live payments require a connected payment provider.',
                     )}
                   </p>
-                  <Field label="Payment method">
+                  <Field label={translateText("Payment method")}>
                     <CommerceSelect
                       value={draft.provider}
                       options={Object.entries(providers).map(([value, label]) => ({
@@ -1279,7 +1280,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                 </>
               ) : (
                 <>
-                  <Field label="Customer name">
+                  <Field label={translateText("Customer name")}>
                     <input
                       required
                       value={draft.name}
@@ -1289,7 +1290,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                       }
                     />
                   </Field>
-                  <Field label="Email">
+                  <Field label={translateText("Email")}>
                     <input
                       required
                       type="email"
@@ -1301,7 +1302,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                     />
                   </Field>
                   {tab === 'Customers' ? (
-                    <Field label="Phone">
+                    <Field label={translateText("Phone")}>
                       <input
                         type="tel"
                         value={draft.phone}
@@ -1313,14 +1314,14 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                     </Field>
                   ) : (
                     <>
-                      <Field label="Product">
+                      <Field label={translateText("Product")}>
                         <CommerceSelect
                           label="Order product"
                           value={draft.productId}
                           placeholder="Select a product"
                           options={products.map(product => ({
                             value: product.id,
-                            label: product.name,
+                            label: product.name, preserveLabel: true,
                           }))}
                           onChange={productId => setDraft(current => ({ ...current, productId }))}
                         />

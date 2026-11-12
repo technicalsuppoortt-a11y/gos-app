@@ -10,14 +10,14 @@ import { resolveDisplayTranslation } from '../../i18n/translate';
 export const BookingDirectionContext = createContext<'rtl' | 'ltr' | undefined>(undefined);
 
 type Props = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'multiple' | 'size'>;
-type Option = { value:string; label:ReactNode; text:string; disabled:boolean };
+type Option = { value:string; label:ReactNode; text:string; disabled:boolean; preserveLabel:boolean };
 const empty = '__gos_booking_empty__';
 function optionsFrom(children:ReactNode):Option[] {
   return Children.toArray(children).flatMap(child => {
-    if (!isValidElement<{value?:string|number;children?:ReactNode;disabled?:boolean}>(child)) return [];
+    if (!isValidElement<{value?:string|number;children?:ReactNode;disabled?:boolean;translate?:'yes'|'no'}>(child)) return [];
     if (child.type !== 'option') return optionsFrom(child.props.children);
     const text = Children.toArray(child.props.children).join('');
-    return [{value:String(child.props.value ?? text),label:child.props.children,text,disabled:!!child.props.disabled}];
+    return [{value:String(child.props.value ?? text),label:child.props.children,text,disabled:!!child.props.disabled,preserveLabel:child.props.translate==='no'}];
   });
 }
 // Native-compatible props keep each existing field's value and change handler intact.
@@ -39,12 +39,12 @@ export function BookingSelect({children,value,defaultValue,onChange,disabled,req
   };
   return <span style={style} className={'bk-select '+className}>
     <Select.Root dir={direction} value={current||empty} onValueChange={choose} disabled={disabled} onOpenChange={onOpenChange}>
-      <Select.Trigger ref={trigger} type="button" id={id||autoId} className="bk-select-trigger" aria-label={translateText(props['aria-label'])} aria-labelledby={props['aria-labelledby']} aria-required={required} aria-invalid={invalid||undefined} title={translateText(selected?.text)} onFocus={props.onFocus as never} onBlur={props.onBlur as never}>
-        <Select.Value placeholder={emptyLabel}>{localizeNode(selected?.label) || emptyLabel}</Select.Value><Select.Icon><ChevronDown size={14}/></Select.Icon>
+      <Select.Trigger ref={trigger} type="button" id={id||autoId} className="bk-select-trigger" aria-label={translateText(props['aria-label'])} aria-labelledby={props['aria-labelledby']} aria-required={required} aria-invalid={invalid||undefined} title={selected?.preserveLabel ? selected.text : translateText(selected?.text)} onFocus={props.onFocus as never} onBlur={props.onBlur as never}>
+        <Select.Value placeholder={emptyLabel}>{(selected?.preserveLabel ? selected.label : localizeNode(selected?.label)) || emptyLabel}</Select.Value><Select.Icon><ChevronDown size={14}/></Select.Icon>
       </Select.Trigger>
       <Select.Portal container={container||undefined}><Select.Content className="bk-select-content" position="popper" sideOffset={5} collisionPadding={8}>
         <Select.ScrollUpButton className="bk-select-scroll"><ChevronUp size={13}/></Select.ScrollUpButton>
-        <Select.Viewport>{localizeNode(items.map((o,index)=><Select.Item key={o.value+'-'+index} value={o.value||empty} disabled={o.disabled} textValue={translateText(o.text)} className="bk-select-option"><Select.ItemText>{localizeNode(o.label)}</Select.ItemText><Select.ItemIndicator><Check size={13}/></Select.ItemIndicator></Select.Item>))}</Select.Viewport>
+        <Select.Viewport>{items.map((o,index)=><Select.Item key={o.value+'-'+index} value={o.value||empty} disabled={o.disabled} textValue={o.preserveLabel ? o.text : translateText(o.text)} className="bk-select-option"><Select.ItemText>{o.preserveLabel ? o.label : localizeNode(o.label)}</Select.ItemText><Select.ItemIndicator><Check size={13}/></Select.ItemIndicator></Select.Item>)}</Select.Viewport>
         <Select.ScrollDownButton className="bk-select-scroll"><ChevronDown size={13}/></Select.ScrollDownButton>
       </Select.Content></Select.Portal>
     </Select.Root>

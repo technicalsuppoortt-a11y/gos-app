@@ -5,7 +5,7 @@ import { Check, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import './asset-controls.css';
 import { useSelectPortal } from '../components/ui/select-layer';
 
-type Option = string | { value: string; label: string; disabled?: boolean };
+type Option = string | { value: string; label: string; disabled?: boolean; preserveLabel?: boolean };
 type SelectProps = {
   value?: string;
   defaultValue?: string;
@@ -39,16 +39,17 @@ export function AssetSelect({ value, defaultValue = '', options, onChange, label
   const current = value ?? internal;
   const items = options.map(item => typeof item === 'string' ? { value: item, label: item } : item);
   const selected = items.find(item => item.value === current);
+  const labelFor = (option?: (typeof items)[number]) => option?.preserveLabel ? option.label : translateText(option?.label || placeholder);
   return <span className={`aw-select ${className}`}>
     <Select.Root dir={locale.startsWith('ar') ? 'rtl' : 'ltr'} open={open} onOpenChange={next => { portal.onOpenChange(next); setOpen(next); }} value={current || (selected && !selected.disabled && !required ? emptyOption : '')} onValueChange={next => { const value = next === emptyOption ? '' : next; setInternal(value); onChange?.(value); }} required={required} disabled={disabled}>
       <Select.Trigger ref={portal.trigger} className="aw-select-trigger" aria-label={translateText(label)}>
-        <Select.Value placeholder={translateText(placeholder)}>{localizeNode(selected?.label || placeholder)}</Select.Value>
+        <Select.Value placeholder={translateText(placeholder)}>{labelFor(selected)}</Select.Value>
         <Select.Icon><ChevronDown size={14}/></Select.Icon>
       </Select.Trigger>
       <Select.Portal container={portal.container}><Select.Content className="aw-select-popup" position="popper" align="start" sideOffset={6} collisionPadding={10} onEscapeKeyDown={event => { event.preventDefault(); event.stopPropagation(); setOpen(false); }}>
         <Select.ScrollUpButton className="aw-select-scroll"><ChevronUp size={14}/></Select.ScrollUpButton>
-        <Select.Viewport className="aw-select-options">{localizeNode(items.map(item => <Select.Item key={item.value} value={item.value || emptyOption} textValue={translateText(item.label || placeholder)} disabled={item.disabled} className="aw-select-option">
-          <Select.ItemText>{localizeNode(item.label || placeholder)}</Select.ItemText>
+        <Select.Viewport className="aw-select-options">{localizeNode(items.map(item => <Select.Item key={item.value} value={item.value || emptyOption} textValue={labelFor(item)} disabled={item.disabled} className="aw-select-option">
+          <Select.ItemText>{labelFor(item)}</Select.ItemText>
           <Select.ItemIndicator><Check size={14}/></Select.ItemIndicator>
         </Select.Item>))}</Select.Viewport>
         <Select.ScrollDownButton className="aw-select-scroll"><ChevronDown size={14}/></Select.ScrollDownButton>

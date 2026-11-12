@@ -1,7 +1,7 @@
 import { PlatformToolBoundary } from '../backend/platformTools';
 import type { RouteObject } from 'react-router-dom';
 import { WorkspaceData } from '../backend/workspace';
-import { useUILanguage, localizeNode, translateText } from '../i18n/display';
+import { useUILanguage, localizeNode } from '../i18n/display';
 import React, { lazy as reactLazy } from 'react';
 import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
@@ -96,9 +96,9 @@ export const router = createBrowserRouter([
   { path: '/product-preview/:token', element: <ProductPreviewRoute/> },
   { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
   { path: '/customer/change-password', element: <ProtectedRoute allowedRoles={['CUSTOMER']} allowPendingPassword><Suspended><CustomerChangePassword/></Suspended></ProtectedRoute> },
-  { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
+  { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal/></WorkspaceData></GuardedLayout> },
   { path: '/portal/preview/:productId', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><CustomerDeliveryPreview/></Suspended></WorkspaceData></ProtectedRoute> },
-  { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
+  { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal/></WorkspaceData></GuardedLayout> },
   { path: '/template-preview/:templateId', element: <GuardedLayout roles={['USER']}><TemplatePreviewPage/></GuardedLayout> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
@@ -176,8 +176,8 @@ export const router = createBrowserRouter([
       { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
       { path: 'marketing-tracking', element: <Navigate to="/dashboard/settings/pixel" replace/> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
-      { path: 'content', element: <Suspended><PagePlaceholder title={translateText("Content Generator")}/></Suspended> },
-      { path: 'academy', element: <Suspended><PagePlaceholder title={translateText("Upclick Academy")}/></Suspended> },
+      { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title="Upclick Academy"/></Suspended> },
       { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
       { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
       { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },

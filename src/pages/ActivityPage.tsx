@@ -93,7 +93,7 @@ export const ActivityPage: React.FC = () => {
         const date = dateFromMinutes(event.minutesAgo);
         return <tr key={event.id}>
           <td className="text-start"><span className={`activity-event-badge ${event.type.toLowerCase()}`}><Icon size={15}/>{localizeNode(event.type)}</span></td>
-          <td className="text-start"><div className="activity-description"><b>{localizeNode(event.actor)}</b><span>{localizeNode(event.description)}</span></div></td>
+          <td className="text-start"><div className="activity-description"><b>{event.actor}</b><span>{localizeNode(event.description)}</span></div></td>
           <td className="text-center"><time className="justify-center inline-flex" title={translateText(date.toLocaleString())} dateTime={date.toISOString()}><Clock3 size={13}/>{localizeNode(relativeTime(event.minutesAgo))}</time></td>
           <td className="text-center"><span className={`activity-status mx-auto ${event.status.toLowerCase()}`}>{localizeNode(event.status === 'Completed' ? <Check size={12}/> : event.status === 'Pending' ? <Clock3 size={12}/> : <CircleX size={12}/>)} {localizeNode(event.status)}</span></td>
         </tr>;

@@ -967,6 +967,12 @@ body.layout-locked #root {
   background: #f8f8fb;
 }
 
+.layout-profile-popup {
+  max-inline-size: calc(100vw - 24px);
+  max-block-size: calc(100dvh - 72px);
+  overflow-y: auto;
+}
+
 .layout-header-user>span:nth-child(2) {
   display: flex;
   min-width: 86px;
@@ -1395,6 +1401,7 @@ html.dark .layout-header-breadcrumb h1 {
     display: block;
     width: min(278px, 86vw);
     height: 100vh;
+    height: 100dvh;
     background: #fff;
     box-shadow: 20px 0 70px rgba(20, 19, 41, 0.19);
   }

@@ -30,3 +30,7 @@ scripts/localization-*.txt
 *.njsproj
 *.sln
 *.sw?
+
+# Build artifacts & local history (may contain secrets)
+.dashboard-localization-build/
+.history/

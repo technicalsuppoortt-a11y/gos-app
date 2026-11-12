@@ -869,6 +869,7 @@ html.dark :is(
   .ob-avatar,
   .ob-track,
   .ob-progress-meter,
+  .pixel-connect-google,
   .pp-art,
   .pp-thumb-small,
   .pp-empty-icon-wrap,
@@ -2151,6 +2152,7 @@ html.dark :is(
   .crm-lead-card:hover,
   .crm-task-card:hover,
   .crm-task-quick-add .crm-custom-select-trigger,
+  .gos-home-dashboard .gos-quick-action,
   .forms-search-box:hover,
   .fn-domain-picker>.aw-search,
   .legal-section-card:hover,
@@ -3394,6 +3396,7 @@ html.dark :is(
 html.dark :is(
   .ai-thinking-option.level-low .ai-thinking-option-badge,
   .ai-thinking-option.level-high .ai-thinking-option-badge,
+  .ai-tool-actions > .ai-send-button:disabled,
   .af-assistant-config .af-attribute-icon.bg-sky-50,
   .an-kpi.pink .an-kpi-icon,
   .an-kpi.green .an-kpi-icon,
@@ -3413,6 +3416,8 @@ html.dark :is(
   .dc-stat.green .dc-stat-icon,
   .dc-stat.orange .dc-stat-icon,
   .fb-mini-section.hero .fb-mini-copy,
+  .pixel-workspace .st-badge.green,
+  .pixel-workspace .st-badge.orange,
   .st-privacy-btn.deletion-jump:hover,
   .st-privacy-toc-chip.compliance:hover,
   .st-team-role-pill.is-active .st-team-role-count

@@ -14,7 +14,8 @@ html[dir="rtl"] :is(input, textarea, select) { text-align: start; }
   direction: ltr;
   unicode-bidi: isolate;
 }
-html[dir="rtl"] :is(.layout-header-breadcrumb, .layout-nav-item, .bk-tabs, .crm-toolbar, .fb-toolbar) { text-align: start; }
+html[dir="rtl"] :is(.layout-header-breadcrumb, .layout-nav-item, .bk-tabs, .crm-toolbar, .fb-toolbar, .cr-details-drawer, .cr-detail-card, .cr-detail-hero) { text-align: start; }
+html[dir="rtl"] .cr-detail-dl :is(dt, dd) { text-align: start; }
 html[dir="rtl"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right, .lucide-chevrons-left, .lucide-chevrons-right) { scale: -1 1; }
 html[dir="rtl"] :is(.bk-toggle, .crm-switch, .settings-toggle) :is(.lucide-arrow-left, .lucide-arrow-right) { scale: 1; }
 html[dir="rtl"] :is(.line-chart, .sparkline, .analytics-chart, .recharts-wrapper) { direction: ltr; }

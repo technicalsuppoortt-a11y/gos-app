@@ -12,6 +12,7 @@ export interface CommerceTransaction {
   status: 'Completed' | 'Pending' | 'Refunded' | 'Rejected';
   customerName?: string;
   customerEmail?: string;
+  customerPhone?: string;
   method?: string;
 }
 
@@ -21,7 +22,7 @@ const STORAGE_KEY = 'gos-commerce-transactions';
 const EMPTY: CommerceTransaction[] = [];
 const listeners = new Set<() => void>();
 
-type StoredTransaction = { id: string; status?: string; amount?: number | string; currency?: string; createdAt?: string; date?: string; productName?: string; customerName?: string; customerEmail?: string; method?: string };
+type StoredTransaction = { id: string; status?: string; amount?: number | string; currency?: string; createdAt?: string; date?: string; productName?: string; customerName?: string; customerEmail?: string; customerPhone?: string; phone?: string; customer?: any; method?: string };
 function normalizeStatus(status = ''): CommerceTransaction['status'] {
   const value = status.toUpperCase();
   if (['PAID', 'COMPLETED', 'SUCCEEDED'].includes(value)) return 'Completed';
@@ -35,7 +36,10 @@ function normalize(row: StoredTransaction): CommerceTransaction {
   let amount: string;
   try { amount = new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amountValue).replace(/\u00A0/g, ' '); }
   catch { amount = `${amountValue.toFixed(2)} ${currency}`; }
-  return { id: row.id, date: toIsoDateString(row.createdAt ?? row.date).slice(0, 10), productName: row.productName || '—', amount, amountValue, currency, status: normalizeStatus(row.status), customerName: row.customerName, customerEmail: row.customerEmail, method: row.method };
+  const cName = row.customerName || (typeof row.customer === 'object' ? row.customer?.name : typeof row.customer === 'string' ? row.customer : undefined);
+  const cEmail = row.customerEmail || (typeof row.customer === 'object' ? row.customer?.email : undefined);
+  const cPhone = row.customerPhone || row.phone || (typeof row.customer === 'object' ? row.customer?.phone : undefined);
+  return { id: row.id, date: toIsoDateString(row.createdAt ?? row.date).slice(0, 10), productName: row.productName || '—', amount, amountValue, currency, status: normalizeStatus(row.status), customerName: cName, customerEmail: cEmail, customerPhone: cPhone, method: row.method };
 }
 let raw: string | null = null;
 let transactionsCache: CommerceTransaction[] = EMPTY;

@@ -52,7 +52,7 @@ export interface ToolItem {
 export const initialTools: ToolItem[] = [
   {
     id: 'ai-copilot',
-    name: ['AI Copilot & Automations', 'مساعد الذكاء الاصطناعي والأتمتة'],
+    name: ['AI Copilot & Automations', 'AI Agent والأتمتة'],
     description: ['Autonomous AI agents, prompt engines, and workflow automations.', 'وكلاء أذكياء ومحركات التوجيه وأتمتة العمليات عبر المنصة.'],
     icon: Bot,
     category: 'Intelligence',

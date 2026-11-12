@@ -1,0 +1,1238 @@
+Create Website	إنشاء موقع إلكتروني
+Add Product	إضافة منتج
+Add Contact	إضافة جهة اتصال
+Book Appointment	حجز موعد
+Manage and view all your customer contacts and leads	إدارة وعرض جميع جهات الاتصال والعملاء المحتملين
+Move to	نقل إلى
+Move to another pipeline	نقل إلى مسار مبيعات آخر
+Loading CRM…	جارٍ تحميل إدارة علاقات العملاء…
+Syncing…	جارٍ المزامنة…
+Pending booking	بانتظار الحجز
+Task content / title	عنوان المهمة أو محتواها
+This will remove the form asset from your workspace.	سيؤدي هذا إلى إزالة النموذج من مساحة عملك.
+Published & Live	منشور ومتاح
+Warning: This form is currently Live.	تنبيه: هذا النموذج منشور ومتاح حاليًا.
+Deleting it will immediately unpublish the form, deactivate its live URL, and remove it from any linked funnels or websites.	سيؤدي حذفه إلى إلغاء نشره وإيقاف رابطه وإزالته فورًا من مسارات المبيعات والمواقع المرتبطة به.
+This form and all configured fields will be permanently deleted from your workspace. This action cannot be undone.	سيُحذف هذا النموذج وجميع حقوله نهائيًا من مساحة عملك. لا يمكن التراجع عن هذا الإجراء.
+Deleting Form...	جارٍ حذف النموذج…
+Field duplicated	تم نسخ الحقل
+Field removed	تمت إزالة الحقل
+Form created	تم إنشاء النموذج
+Please resolve required fields	يرجى استكمال الحقول المطلوبة
+Back to page builder	العودة إلى محرر الصفحات
+All Forms	جميع النماذج
+Form name...	اسم النموذج…
+Click to rename form	انقر لتغيير اسم النموذج
+Form editing mode	وضع تحرير النموذج
+Fast Form	نموذج سريع
+Advanced Form	نموذج متقدم
+Builder	المحرر
+Interactive Preview	معاينة تفاعلية
+CRM Routing	توجيه إلى إدارة علاقات العملاء
+Share & Embed	المشاركة والتضمين
+Republish Changes	إعادة نشر التغييرات
+Input Fields	حقول الإدخال
+Text & Contact	النص وبيانات الاتصال
+Single Line Text	نص من سطر واحد
+Names, titles, keywords	أسماء وعناوين وكلمات مفتاحية
+Validation enabled	التحقق مفعّل
+Mobile / Telephone	الهاتف المحمول أو الأرضي
+Number Input	إدخال رقم
+Budgets, ratings, count	ميزانيات وتقييمات وأعداد
+Paragraph / Textarea	فقرة أو مساحة نص
+Textarea	مساحة نص
+Multi-line inquiries	استفسارات من عدة أسطر
+Selections & Dropdowns	الخيارات والقوائم المنسدلة
+Dropdown Select	اختيار من قائمة منسدلة
+Curated choices menu	قائمة بخيارات محددة
+Radio Choice	اختيار واحد
+Single selection group	مجموعة تسمح باختيار واحد
+Checkbox Opt-in	مربع اختيار للموافقة
+Agreements & terms	الاتفاقيات والشروط
+Form Display Headline	العنوان الظاهر للنموذج
+Enter form title...	أدخل عنوان النموذج…
+Fields below represent the user-facing form. Click any element to configure its properties.	تعرض الحقول أدناه شكل النموذج للمستخدم. انقر على أي عنصر لضبط خصائصه.
+No fields in this form	لا توجد حقول في هذا النموذج
+Click any input from the left palette to add fields to your form.	اختر أحد عناصر الإدخال من لوحة الحقول لإضافته إلى النموذج.
+Long text message...	رسالة نصية طويلة…
+choices	خيارات
+Submit Button Text	نص زر الإرسال
+Post-Submission Message	رسالة ما بعد الإرسال
+Thank you. We will be in touch.	شكرًا لك. سنتواصل معك.
+Field Settings	إعدادات الحقل
+e.g. Work Email Address	مثل: البريد الإلكتروني للعمل
+CRM / Lead Field Key	مفتاح حقل العميل المحتمل في نظام إدارة العلاقات
+e.g. work_email	مثل: work_email
+Mapped directly to CRM lead properties.	يُربط مباشرة بخصائص العميل المحتمل في نظام إدارة علاقات العملاء.
+Field Input Type	نوع إدخال الحقل
+Placeholder Text	النص التوضيحي
+e.g. Enter your response...	مثل: أدخل إجابتك…
+Helper Text / Guide	نص إرشادي
+Optional guidance under the field	إرشادات اختيارية أسفل الحقل
+Choices (	الخيارات (
+Quick Presets (Click to load)	خيارات جاهزة (انقر لإضافتها)
+Paste choices here (one choice per line or separated by commas)...	الصق الخيارات هنا، خيارًا في كل سطر أو مفصولة بفواصل…
+Apply Options	تطبيق الخيارات
+Default selection (active)	الاختيار الافتراضي (نشط)
+Set as default choice	تعيين كخيار افتراضي
+Default Selected Choice	الخيار المحدد افتراضيًا
+None (Prompt with placeholder)	بلا اختيار (عرض النص التوضيحي)
+Submission Received!	تم استلام الرد!
+Test Again (Reset Form)	إعادة الاختبار (إعادة ضبط النموذج)
+Please fill out the details below.	يرجى تعبئة البيانات أدناه.
+CRM & Lead Stage Routing	توجيه العملاء إلى مراحل إدارة علاقات العملاء
+Share & Embed Form	مشاركة النموذج وتضمينه
+Direct Shareable Link	رابط مباشر للمشاركة
+Iframe Embed Code	رمز تضمين iframe
+Embed code copied	تم نسخ رمز التضمين
+Embed Directly into Existing Funnel or Website Page	التضمين مباشرة في صفحة موقع أو مسار مبيعات موجود
+Form embedded in page successfully!	تم تضمين النموذج في الصفحة بنجاح!
+Embed in Selected Page	التضمين في الصفحة المحددة
+Form Background & Theme	خلفية النموذج ومظهره
+Form Card	بطاقة النموذج
+Current Theme	المظهر الحالي
+Apply Theme	تطبيق المظهر
+Build high-converting dynamic forms, configure CRM lead pipelines, and share or embed them anywhere.	أنشئ نماذج تفاعلية لزيادة التحويلات، واربطها بمسارات العملاء المحتملين، وشاركها أو ضمّنها حيث تريد.
+Browse Form Templates	تصفح قوالب النماذج
+Create Blank Form	إنشاء نموذج فارغ
+Total Forms Created	إجمالي النماذج المنشأة
+CRM Pipelines Connected	النماذج المرتبطة بمسارات المبيعات
+No forms match your search	لا توجد نماذج تطابق بحثك
+No forms created yet	لم تُنشأ أي نماذج بعد
+Start with a ready-made template or build a custom form from scratch.	ابدأ بقالب جاهز أو أنشئ نموذجًا مخصصًا من البداية.
+Browse Templates	تصفح القوالب
+CRM Connected	مرتبط بإدارة علاقات العملاء
+Unrouted	بلا توجيه
+View live published form	عرض النموذج المنشور
+Follow Up	المتابعة
+Settings & Analysis	الإعدادات والتحليلات
+Run workflow	تشغيل سير العمل
+Follow-up engine	محرك المتابعة
+Changes are saved to this workspace.	تُحفظ التغييرات في مساحة العمل هذه.
+Loading Flow Builder…	جارٍ تحميل محرر المسارات…
+Retry assistant settings	إعادة محاولة تحميل إعدادات المساعد
+Automations, campaigns, follow-ups and templates in one place	إدارة الأتمتة والحملات والمتابعات والقوالب من مكان واحد
+Generating…	جارٍ الإنشاء…
+Generate AI draft	إنشاء مسودة بالذكاء الاصطناعي
+Check consent & queue	التحقق من الموافقة وإضافة الرسالة إلى قائمة الإرسال
+Delivery requires a connected channel and verified consent.	يتطلب الإرسال قناة متصلة وموافقة مؤكدة.
+Test real-time grounded responses using your connected knowledge base.	اختبر ردود المساعد الفورية المستندة إلى قاعدة المعرفة المرتبطة.
+Upload verified business documents or paste guidelines for your assistant.	ارفع مستندات عمل معتمدة أو الصق إرشادات للمساعد.
+Configure persona identity, operational rules, and conversion goals.	اضبط شخصية المساعد وقواعد عمله وأهداف التحويل.
+Automate lifecycle transitions and scheduled outreach.	أتمت انتقال العملاء بين المراحل وجدولة التواصل معهم.
+Build consistent, consent-checked messaging templates.	أنشئ قوالب رسائل موحّدة تخضع للتحقق من موافقة المستلمين.
+Manage channel connections and messaging consent policies.	أدر اتصالات القنوات وسياسات الموافقة على المراسلة.
+Messaging actions check channel consent and connection status before they run.	تتحقق إجراءات المراسلة من الموافقة وحالة اتصال القناة قبل التنفيذ.
+Only verified business content should be added. TXT, MD, CSV and PDF files are uploaded securely and indexed in the background.	أضف محتوى عمل معتمدًا فقط. تُرفع ملفات TXT وMD وCSV وPDF بأمان وتُفهرس في الخلفية.
+Web chat is part of this workspace. Turn replies on when you want the assistant to answer on your site.	دردشة الموقع جزء من مساحة العمل هذه. فعّل الردود عندما تريد أن يجيب المساعد على موقعك.
+This channel is not linked to a Meta account. Connect it before replies can be sent or received.	هذه القناة غير مرتبطة بحساب Meta. اربطها لتتمكن من إرسال الردود واستلامها.
+Facebook messages use a linked Messenger page.	تستخدم رسائل فيسبوك صفحة مرتبطة بماسنجر.
+Checking the live account…	جارٍ التحقق من الحساب المتصل…
+Reply status	حالة الردود
+Opening Meta…	جارٍ فتح Meta…
+Choose an Instagram account	اختر حساب إنستغرام
+No pages were returned. Allow the page in the Meta window, then try again.	لم تظهر أي صفحات. امنح إذن الوصول إلى الصفحة في نافذة Meta ثم أعد المحاولة.
+Require explicit opt-in blocks a send until the contact has consent. Transactional only allows it. Disabled blocks this channel.	يتطلب خيار الموافقة الصريحة موافقة جهة الاتصال قبل الإرسال. يسمح خيار المعاملات فقط برسائل المعاملات. يؤدي التعطيل إلى إيقاف الإرسال عبر هذه القناة.
+Recorded operational events over time	أحداث التشغيل المسجلة بمرور الوقت
+AI draft generated. Review it before sending or activating.	تم إنشاء مسودة بالذكاء الاصطناعي. راجعها قبل الإرسال أو التفعيل.
+This channel is turned off by its consent policy.	هذه القناة معطّلة وفقًا لسياسة الموافقة الخاصة بها.
+This contact has not opted in on this channel.	لم توافق جهة الاتصال على تلقي الرسائل عبر هذه القناة.
+No conversation exists for this contact and channel.	لا توجد محادثة مع جهة الاتصال هذه على هذه القناة.
+Message queued for delivery	أُضيفت الرسالة إلى قائمة الإرسال
+Workflow run scheduled	تمت جدولة تشغيل سير العمل
+Add the follow-up message before activating this workflow.	أضف رسالة المتابعة قبل تفعيل سير العمل هذا.
+Add source content before saving.	أضف محتوى المصدر قبل الحفظ.
+Choose a TXT, MD, CSV or PDF file.	اختر ملفًا بتنسيق TXT أو MD أو CSV أو PDF.
+Automation name	اسم الأتمتة
+New automation name	اسم الأتمتة الجديدة
+Could not load automations:	تعذّر تحميل الأتمتة:
+No automations yet. Create the first one above.	لا توجد أتمتة بعد. أنشئ أول أتمتة من الأعلى.
+Unpublished changes	تغييرات غير منشورة
+The automation is live	الأتمتة منشورة ونشطة
+Unsaved	غير محفوظ
+Set live	نشر وتفعيل
+Step settings	إعدادات الخطوة
+Buttons (max 3)	الأزرار (3 كحد أقصى)
+Button title	عنوان الزر
+Button type	نوع الزر
+Go to step	الانتقال إلى خطوة
+Save answer to field	حفظ الإجابة في حقل
+Message on invalid answer	رسالة عند إدخال إجابة غير صالحة
+Rules	القواعد
+Match	مطابقة
+All rules	جميع القواعد
+Any rule	أي قاعدة
+Add rule	إضافة قاعدة
+Agent endpoint (https)	عنوان نقطة اتصال الوكيل (https)
+Leave empty to use the placeholder agent	اتركه فارغًا لاستخدام الوكيل المؤقت
+Agent id	معرّف الوكيل
+Instructions sent to the agent	التعليمات المرسلة إلى الوكيل
+Hand off after this many replies	تحويل المحادثة بعد هذا العدد من الردود
+Start this flow when a message matches.	شغّل هذا المسار عند تلقي رسالة مطابقة.
+Rule	القاعدة
+Message contains	الرسالة تحتوي على
+Message is exactly	الرسالة تطابق النص تمامًا
+Any message	أي رسالة
+Keywords, comma separated	كلمات مفتاحية مفصولة بفواصل
+Set field	تعيين قيمة حقل
+Notify admin	إشعار المسؤول
+Webhook	خطاف ويب
+Notification text	نص الإشعار
+Operator	عامل المقارنة
+Has tag	يتضمن الوسم
+Does not have tag	لا يتضمن الوسم
+Field is set	الحقل له قيمة
+Field is empty	الحقل فارغ
+Field equals	قيمة الحقل تساوي
+Field is not	قيمة الحقل لا تساوي
+Field contains	الحقل يحتوي على
+Tag or field	الوسم أو الحقل
+When…	عندما…
+Add a keyword trigger	إضافة مشغّل بكلمة مفتاحية
+Then	ثم
+Contacts that reached this step	جهات الاتصال التي وصلت إلى هذه الخطوة
+External agent	وكيل خارجي
+Placeholder agent (no endpoint yet)	وكيل مؤقت (لم تُحدد نقطة اتصال بعد)
+The simulator could not reach the API.	تعذّر على المحاكي الاتصال بواجهة API.
+Test this flow	اختبار هذا المسار
+Restart	إعادة التشغيل
+Close test panel	إغلاق لوحة الاختبار
+Send a trigger keyword to start the draft.	أرسل كلمة مفتاحية لتشغيل المسودة.
+Waiting until	في الانتظار حتى
+Skip wait	تخطّي الانتظار
+Type a message	اكتب رسالة
+Flow Builder	إنشئ مسارك
+Booking details	تفاصيل الحجز
+Date & time	التاريخ والوقت
+No location provided	لم يُحدد مكان
+Question answers	إجابات الأسئلة
+No additional answers provided.	لا توجد إجابات إضافية.
+Reference	المرجع
+Template details	تفاصيل القالب
+Use booking changes	استخدام تغييرات الحجز
+Choose Website or Funnel Template	اختر موقعًا إلكترونيًا أو قالب مسار مبيعات
+Standard Upclick Calendar	تقويم Upclick القياسي
+Focused 2-panel Koalendar layout	تخطيط Koalendar بلوحتين
+My Website	موقعي الإلكتروني
+Choose any Website from Funnel & Website or any template from the Templates Library to frame this booking calendar in a matching landing page UI.	اختر موقعًا من قسم المواقع ومسارات المبيعات أو قالبًا من مكتبة القوالب لعرض تقويم الحجز ضمن صفحة هبوط متناسقة.
+Could not save this booking preset. Try again.	تعذّر حفظ إعداد الحجز الجاهز. أعد المحاولة.
+Booking Presets	إعدادات الحجز الجاهزة
+No published booking templates are available.	لا توجد قوالب حجز منشورة.
+Why Choose Us	لماذا تختارنا؟
+Instant Confirmation	تأكيد فوري
+Trusted scheduling powered by	جدولة موثوقة بواسطة
+Could not import this CSV.	تعذّر استيراد ملف CSV.
+Members can create their own booking pages, and be added to multi-host events.	يمكن للأعضاء إنشاء صفحات حجز خاصة بهم والمشاركة في مواعيد لها أكثر من مضيف.
+Admins	المسؤولون
+can manage booking pages across the workspace.	يمكنهم إدارة صفحات الحجز في جميع أنحاء مساحة العمل.
+CRM & Lead Sync	مزامنة العملاء المحتملين مع إدارة العلاقات
+pending ·	قيد الانتظار ·
+Smart Booking Suite	أدوات الحجز الذكي
+Automate scheduling, lead screening, and landing page conversion:	أتمت الجدولة وتأهيل العملاء المحتملين وزيادة التحويلات عبر صفحات الهبوط:
+Prevent no-shows with reminders	قلّل حالات عدم الحضور بإرسال تذكيرات
+Qualify leads inside Your details	أهّل العملاء المحتملين في خطوة «بياناتك»
+Sync pending bookings to CRM	زامن الحجوزات المعلقة مع إدارة علاقات العملاء
+Embed calendars in Landing Pages	ضمّن التقويمات في صفحات الهبوط
+Browse booking templates	تصفح قوالب الحجز
+NOTIFICATIONS ACTIVE	الإشعارات مفعّلة
+ID COPIED	تم نسخ المعرّف
+e.g. Alex Morgan	مثل: أحمد محمد
+e.g. Samir Morgan	مثل: سمير محمد
+e.g. alex@company.com	مثل: alex@company.com
+Appointment saved.	تم حفظ الموعد.
+Could not save this appointment.	تعذّر حفظ هذا الموعد.
+This appointment may have been removed.	ربما تمت إزالة هذا الموعد.
+Products sub-views	أقسام المنتجات
+My Purchases	مشترياتي
+Active in your account:	نشط في حسابك:
+No purchased products yet	لا توجد منتجات مشتراة بعد
+Products and courses you purchase or enroll in via checkout will appear here in your personal library.	ستظهر في مكتبتك الشخصية المنتجات والدورات التي تشتريها أو تسجّل فيها عبر صفحة الدفع.
+No purchased products match your search filter.	لا توجد مشتريات تطابق معايير البحث.
+Explore All Products	استعرض جميع المنتجات
+Purchased & active in your account	تم الشراء والوصول مفعّل في حسابك
+Click to view users who purchased this product	انقر لعرض مشتري هذا المنتج
+Active Access	الوصول مفعّل
+Start Course	بدء الدورة
+Access Files	فتح الملفات
+View Users & Buyers	عرض المستخدمين والمشترين
+Total Transactions	إجمالي المعاملات
+Logged across all products	المسجلة لجميع المنتجات
+Settled Volume	إجمالي المبالغ المسوّاة
+Success Rate	نسبة النجاح
+No transactions found	لم يُعثر على معاملات
+Product & ID	المنتج والمعرّف
+Transaction details	تفاصيل المعاملة
+Transaction ID copied	تم نسخ معرّف المعاملة
+Customer Information	بيانات العميل
+Payment & Settlement	الدفع والتسوية
+Transaction ID	معرّف المعاملة
+Amount Settled	المبلغ المسوّى
+Upclick PRO	باقة Upclick Pro
+Sort products	ترتيب المنتجات
+Could not save changes.	تعذّر حفظ التغييرات.
+Total Customers	إجمالي العملاء
+Active Buyers	المشترون النشطون
+Recorded Payments	المدفوعات المسجلة
+Settled	تمت التسوية
+Configured Checkout Gateways	بوابات الدفع المضبوطة
+Accepted Types	الأنواع المقبولة
+Settlement	التسوية
+Product & Payment ID	المنتج ومعرّف الدفع
+Try adjusting your search query or status filter.	جرّب تغيير عبارة البحث أو فلتر الحالة.
+Customer profile & history	ملف العميل وسجله
+Payment & transaction details	تفاصيل الدفع والمعاملة
+Reference ID copied	تم نسخ المعرّف المرجعي
+Order Record	سجل الطلب
+Order & Payment Breakdown	تفاصيل الطلب والدفع
+Customer Orders & Products	طلبات العميل ومنتجاته
+Purchased Items	العناصر المشتراة
+No orders recorded yet.	لا توجد طلبات مسجلة بعد.
+No recorded transactions for this customer.	لا توجد معاملات مسجلة لهذا العميل.
+Enable a payment method for checkout. Live payments require a connected payment provider.	فعّل طريقة دفع لاستخدامها عند إتمام الشراء. يتطلب تحصيل المدفوعات ربط مزوّد دفع.
+Order product	منتج الطلب
+Orders are created as drafts. Payment status is updated by the payment provider.	تُنشأ الطلبات كمسودات. يحدّث مزوّد الدفع حالة الدفع.
+Report exported	تم تصدير التقرير
+Date range updated	تم تحديث النطاق الزمني
+current records	السجلات الحالية
+Verified Revenue	الإيرادات المؤكدة
+Operational Events	أحداث التشغيل
+Only recorded events and verified transactions are included.	تُحتسب الأحداث المسجلة والمعاملات المؤكدة فقط.
+Workspace Records	سجلات مساحة العمل
+Activity Stream	سجل النشاط
+Resource	المورد
+No events recorded for this period.	لا توجد أحداث مسجلة لهذه الفترة.
+This inbox API supports viewing conversations and receiving customer messages. Staff edits require a connected delivery integration.	تتيح واجهة صندوق الوارد عرض المحادثات واستلام رسائل العملاء. تتطلب تعديلات الموظفين ربط خدمة إرسال.
+Only text replies can be sent to customers for now.	يمكن إرسال ردود نصية للعملاء فقط في الوقت الحالي.
+Demo reply saved locally	تم حفظ الرد التجريبي محليًا
+Demo draft ready for review	المسودة التجريبية جاهزة للمراجعة
+AI draft ready for review	مسودة الذكاء الاصطناعي جاهزة للمراجعة
+AI is handling this conversation again.	عاد المساعد الذكي إلى إدارة هذه المحادثة.
+No conversations yet	لا توجد محادثات بعد
+Loading conversations	جارٍ تحميل المحادثات
+No conversations yet. Connected channels will appear here when customer messages arrive.	لا توجد محادثات بعد. ستظهر القنوات المرتبطة هنا عند وصول رسائل العملاء.
+Local demo	عرض تجريبي محلي
+AI replies resumed across all channels.	تم استئناف الردود الذكية عبر جميع القنوات.
+AI replies paused across all channels.	تم إيقاف الردود الذكية مؤقتًا عبر جميع القنوات.
+AI auto-reply for this conversation	الرد الذكي التلقائي لهذه المحادثة
+Toggle AI follow-up	تبديل المتابعة الذكية
+WhatsApp	واتساب
+Instagram	إنستغرام
+Facebook	فيسبوك
+Messenger	ماسنجر
+Instagram / Facebook / Messenger	إنستغرام / فيسبوك / ماسنجر
+Live	مباشر
+Use	استخدم
+or	أو
+The agent answers	يجيب الوكيل
+exit	خروج
+“done” or “handoff” moves the flow on.	تنقل القيمة “done” أو “handoff” المسار إلى الخطوة التالية.
+Text and up to 3 buttons	نص وما يصل إلى 3 أزرار
+Ask and save the answer	اطرح سؤالًا واحفظ الإجابة
+Tags, fields, notify, webhook	الوسوم والحقول والإشعارات وخطافات الويب
+Split by tag or field	التفرع حسب وسم أو حقل
+Smart delay	انتظار ذكي
+Wait before the next step	انتظر قبل تنفيذ الخطوة التالية
+Hand the chat to the AI agent	حوّل المحادثة إلى وكيل الذكاء الاصطناعي
+Note on the canvas	ملاحظة على لوحة التحرير
+Select a step to edit it, or drag from a step’s right dot to link it to the next one.	اختر خطوة لتحريرها، أو اسحب من النقطة الموجودة على يمينها لربطها بالخطوة التالية.
+Ideas to impact	أفكار تصنع أثرًا
+Collapse sidebar	طي الشريط الجانبي
+Expand sidebar	توسيع الشريط الجانبي
+Wallet Balance (Demo)	رصيد المحفظة (تجريبي)
+Notifications alt+T	الإشعارات (Alt+T)
+Close toast	إغلاق الإشعار
+Demo	عرض تجريبي
+monthly goal	الهدف الشهري
+Payment completed	اكتمل الدفع
+Lead captured	تم تسجيل عميل محتمل
+Message received	تم استلام رسالة
+Search forms by name...	ابحث باسم النموذج…
+Search forms by name	ابحث باسم النموذج
+Route all incoming form submissions directly into your CRM pipelines. When leads submit this form, they will automatically appear in your chosen pipeline and stage.	وجّه جميع الردود الواردة من هذا النموذج مباشرةً إلى مسار إدارة العملاء. سيظهر العميل المحتمل تلقائيًا في المسار والمرحلة المحددين عند إرسال النموذج.
+Thinking level	مستوى التفكير
+Thinking	مستوى التفكير
+Choose how deeply Copilot reasons before answering	اختر مستوى التحليل الذي يستخدمه المساعد قبل الإجابة
+conversations · Private to your workspace	محادثات · خاصة بمساحة عملك
+Assistant response received	تم استلام رد المساعد
+Enter a name first.	أدخل اسمًا أولًا.
+Copied	تم النسخ
+Your offer headline	عنوان عرضك
+Copied to clipboard	تم النسخ إلى الحافظة
+Domain connected · SSL active	تم ربط النطاق · شهادة SSL نشطة
+Enter a step type.	أدخل نوع الخطوة.
+Asset deleted successfully	تم حذف الأصل بنجاح
+Verifying...	جارٍ التحقق…
+DNS and SSL are pending. Status refreshes automatically while this window is open. Propagation may take up to 24 hours.	التحقق من DNS وشهادة SSL قيد الانتظار. تتحدّث الحالة تلقائيًا ما دامت هذه النافذة مفتوحة. قد يستغرق انتشار السجلات حتى 24 ساعة.
+Connecting...	جارٍ الاتصال…
+Connecting…	جارٍ الاتصال…
+Add the following DNS records through your domain registrar. Use CNAME for subdomains or A record for apex domains.	أضف سجلات DNS التالية لدى مسجّل نطاقك. استخدم سجل CNAME للنطاقات الفرعية وسجل A للنطاق الجذري.
+CNAME (Subdomain / www)	سجل CNAME (نطاق فرعي أو www)
+A Record (Apex / @)	سجل A (النطاق الجذري أو @)
+Copy IP	نسخ عنوان IP
+Automatic SSL certificate provisioning and Firebase Auth whitelisting are triggered once DNS records are verified.	يبدأ إصدار شهادة SSL وإضافة النطاق إلى النطاقات المصرّح بها في Firebase Auth تلقائيًا بعد التحقق من سجلات DNS.
+Verifying DNS records and SSL provisioning for	جارٍ التحقق من سجلات DNS وإصدار شهادة SSL لـ
+Propagation can take from a few minutes up to 24 hours.	قد يستغرق انتشار السجلات من بضع دقائق إلى 24 ساعة.
+DNS records not verified yet	لم يُتحقق من سجلات DNS بعد
+CNAMEs detected:	سجلات CNAME المكتشفة:
+A Records (IPs) detected:	سجلات A المكتشفة (عناوين IP):
+No DNS records detected for this host yet. Please verify your DNS registrar configuration.	لم يُعثر على سجلات DNS لهذا المضيف. تحقق من إعدادات مسجّل النطاق.
+Back to DNS records	العودة إلى سجلات DNS
+Check DNS & SSL	التحقق من DNS وSSL
+Choose or enter a custom type	اختر نوعًا أو أدخل نوعًا مخصصًا
+Sort assets	ترتيب الأصول
+Click to deactivate domain	انقر لتعطيل النطاق
+Click to activate domain	انقر لتفعيل النطاق
+Updating...	جارٍ التحديث…
+Manage DNS	إدارة سجلات DNS
+Configure DNS	إعداد سجلات DNS
+Update connected funnel or website target, active routing status, and default domain settings.	حدّث الموقع أو مسار المبيعات المرتبط، وحالة التوجيه وإعدادات النطاق الافتراضي.
+Domain host	مضيف النطاق
+Connected target asset	الأصل المرتبط
+None (Unconnected / Standalone)	بلا ربط (مستقل)
+Routing Status	حالة التوجيه
+Connected (Active & Routing Traffic)	مرتبط (نشط ويوجّه الزيارات)
+Disconnected (Paused / Inactive)	غير مرتبط (متوقف أو غير نشط)
+Set as primary default workspace domain	تعيين كنطاق افتراضي رئيسي لمساحة العمل
+This will permanently remove the domain configuration from your workspace, disconnect any connected funnel or website, and revoke Vercel / SSL routing records. This action cannot be undone.	ستُحذف إعدادات النطاق نهائيًا من مساحة العمل، وسيُفصل أي موقع أو مسار مبيعات مرتبط وتُلغى سجلات التوجيه في Vercel وسجلات SSL. لا يمكن التراجع عن هذا الإجراء.
+Deleting...	جارٍ الحذف…
+Unconnected domain	نطاق غير مرتبط
+Save this page to a workspace asset before publishing.	احفظ هذه الصفحة في أحد أصول مساحة العمل قبل النشر.
+View Published Site	عرض الموقع المنشور
+Publish changes to create a confirmed Firebase Hosting release.	انشر التغييرات لإنشاء إصدار مؤكد على Firebase Hosting.
+Draft editing is active. Save Draft to persist your changes.	أنت تحرّر مسودة. احفظها للاحتفاظ بالتغييرات.
+Choose a preset above or enter any type	اختر إعدادًا جاهزًا من الأعلى أو أدخل نوعًا مخصصًا
+Published form	نموذج منشور
+Choose a valid published form link.	اختر رابطًا صالحًا لنموذج منشور.
+Thank you. Your response was received.	شكرًا لك. تم استلام ردّك.
+Submitting…	جارٍ الإرسال…
+Submitting...	جارٍ الإرسال…
+How can we help you?	كيف يمكننا مساعدتك؟
+Add a video URL or upload a video in Content settings	أضف رابط فيديو أو ارفع فيديو من إعدادات المحتوى
+Upload a video or enter a video link.	ارفع فيديو أو أدخل رابطًا للفيديو.
+Opening Form Creation Workspace...	جارٍ فتح محرر إنشاء النماذج…
+Workspace form	نموذج من مساحة العمل
+No form attached yet	لم يُربط أي نموذج بعد
+No forms available yet. Create a form to connect it here.	لا تتوفر نماذج بعد. أنشئ نموذجًا لربطه هنا.
+Create a new form	إنشاء نموذج جديد
+Create New Form	إنشاء نموذج جديد
+No calendar connected yet	لم يُربط أي تقويم بعد
+Create New Calendar	إنشاء تقويم جديد
+Color & surface style	اللون ومظهر الخلفية
+Match Landing Page Brand Color	مطابقة لون العلامة التجارية لصفحة الهبوط
+Subtle Refined Accent	لون تمييز هادئ
+Use Calendar Original Color	استخدام لون التقويم الأصلي
+Section heading (optional)	عنوان القسم (اختياري)
+e.g. Book Your Strategy Session	مثل: احجز جلستك الاستراتيجية
+Section subtitle (optional)	العنوان الفرعي للقسم (اختياري)
+Optional intro above the booking card	مقدمة اختيارية أعلى بطاقة الحجز
+Unable to save the discount. Please try again.	تعذّر حفظ الخصم. يرجى إعادة المحاولة.
+Discount code copied!	تم نسخ رمز الخصم!
+Could not copy code. Please copy it manually.	تعذّر نسخ الرمز. يرجى نسخه يدويًا.
+View users who used this discount	عرض المستخدمين الذين استخدموا هذا الخصم
+View discount details & users	عرض تفاصيل الخصم والمستخدمين
+Discount Details & Redemptions	تفاصيل الخصم ومرات استخدامه
+Discount code copied	تم نسخ رمز الخصم
+Promotional discount coupon	قسيمة خصم ترويجية
+Used	استُخدم
+times	مرات
+Discount Configuration	إعدادات الخصم
+Coupon Code	رمز القسيمة
+Users Who Used This Discount	المستخدمون الذين استخدموا هذا الخصم
+No redemptions recorded yet	لم يُسجّل أي استخدام للخصم بعد
+Customers who apply this coupon code during checkout will appear here with their order details.	سيظهر هنا العملاء الذين يستخدمون رمز القسيمة عند الدفع، مع تفاصيل طلباتهم.
+Total Paid	إجمالي المدفوع
+Completed orders with a discount	الطلبات المكتملة بخصم
+Payment methods saved	تم حفظ طرق الدفع
+Stripe settings saved, but the connection could not be verified. Check your keys and mode.	حُفظت إعدادات Stripe، لكن تعذّر التحقق من الاتصال. راجع المفاتيح ووضع التشغيل.
+Accept payments through manual transfers or payment gateways. Methods are synchronized across products and checkout.	استقبل المدفوعات عبر التحويل اليدوي أو بوابات الدفع. تُزامَن الطرق بين المنتجات وصفحات إتمام الشراء.
+Syncing configured manual transfer wallets and payment gateways	جارٍ مزامنة محافظ التحويل اليدوي وبوابات الدفع المضبوطة
+Cloud Sync	المزامنة السحابية
+Active Methods	الطرق المفعّلة
+Payment methods currently available to your customers at checkout.	طرق الدفع المتاحة لعملائك حاليًا عند إتمام الشراء.
+Connected · verified with provider	متصل · تحقّق مزوّد الدفع من الاتصال
+Configured · verification pending	مضبوط · بانتظار التحقق
+No payment methods added yet. Connect a gateway or add a transfer method below.	لم تُضف أي طريقة دفع بعد. اربط بوابة دفع أو أضف طريقة تحويل أدناه.
+Webhook endpoint (checkout.session.completed)	نقطة اتصال خطاف الويب (checkout.session.completed)
+Webhook URL copied	تم نسخ رابط خطاف الويب
+Hide sensitive key	إخفاء المفتاح الحساس
+Show sensitive key	إظهار المفتاح الحساس
+Verify these Stripe keys before enabling checkout.	تحقق من مفاتيح Stripe هذه قبل تفعيل الدفع.
+Fawry	فوري
+Kashier	كاشير
+PayPal	باي بال
+Paymob	باي موب
+Ready to connect	جاهز للربط
+How to connect	طريقة الربط
+Disconnecting…	جارٍ قطع الاتصال…
+Callback URL	رابط إعادة الاتصال
+Verify token	رمز التحقق
+App Secret	مفتاح التطبيق السري
+Your access needs to be renewed. Reconnect to resume syncing.	يحتاج إذن الوصول إلى التجديد. أعد الربط لاستئناف المزامنة.
+STEP-BY-STEP CONNECTION GUIDE	دليل الربط خطوة بخطوة
+How to Connect Your Channels Professionally	كيفية ربط قنواتك
+Firebase Cloud Synced	تمت المزامنة مع Firebase
+Channel connection guides	أدلة ربط القنوات
+Before You Begin (Prerequisites)	المتطلبات قبل البدء
+Permissions & Data Sync	الأذونات ومزامنة البيانات
+Pro Tip for	نصيحة حول
+You control what you connect. All integration states are securely synced with your Firebase workspace, and disconnecting a tool preserves your historical data.	أنت تتحكم في الأدوات التي تربطها. تُزامَن حالات التكامل بأمان مع مساحة عملك في Firebase، وتبقى بياناتك السابقة محفوظة عند فصل أي أداة.
+You’ll authorize access securely and sync your connection state with Firebase. You can disconnect at any time.	ستمنح إذن الوصول بأمان وتزامن حالة الاتصال مع Firebase. يمكنك قطع الاتصال في أي وقت.
+We’ll verify your authorization with the provider.	سنتحقق من الإذن لدى المزوّد.
+No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.	لم يُعثر على حساب إنستغرام. اربط حسابًا احترافيًا بصفحتك على فيسبوك، ثم اسمح بالوصول إليه في نافذة Meta.
+No pages found. You need to manage the page, and allow it in the Meta window.	لم يُعثر على أي صفحات. يجب أن تكون مسؤولًا عن الصفحة وأن تسمح بالوصول إليها في نافذة Meta.
+Refresh list	تحديث القائمة
+result	نتيجة
+results	نتائج
+Press ⌘K to search	اضغط ⌘K للبحث
+Filter status	تصفية حسب الحالة
+Loading knowledge sources	جارٍ تحميل مصادر المعرفة
+Indexed Chunks	المقاطع المفهرسة
+Indexed	تمت الفهرسة
+No knowledge sources uploaded yet. Click 'Add knowledge' above to add your first source.	لم تُرفع أي مصادر معرفة بعد. انقر على «إضافة معرفة» لإضافة أول مصدر.
+e.g., Return & Refund Policy	مثل: سياسة الإرجاع والاسترداد
+Paste verified business information, FAQs, pricing, or guidelines for the AI assistant...	الصق معلومات عمل موثوقة أو أسئلة شائعة أو أسعارًا أو إرشادات للمساعد الذكي…
+This will permanently remove this source and all its indexed chunks from your AI assistant. This action cannot be undone.	سيُحذف هذا المصدر وجميع مقاطعه المفهرسة نهائيًا من المساعد الذكي. لا يمكن التراجع عن هذا الإجراء.
+Chunks	المقاطع
+This source was indexed into embeddings and is active in your assistant's knowledge base.	تمت فهرسة هذا المصدر وهو نشط في قاعدة معرفة المساعد.
+Use workspace defaults	استخدام الإعدادات الافتراضية لمساحة العمل
+Please enter your current password.	أدخل كلمة المرور الحالية.
+Use at least 8 characters for the new password.	استخدم 8 أحرف على الأقل لكلمة المرور الجديدة.
+Choose a new password different from your current password.	اختر كلمة مرور جديدة تختلف عن كلمة المرور الحالية.
+Update your account password. For your security, you will be automatically signed out after updating.	حدّث كلمة مرور حسابك. حفاظًا على أمانك، سيُسجَّل خروجك تلقائيًا بعد التحديث.
+Enter current password	أدخل كلمة المرور الحالية
+At least 8 characters	8 أحرف على الأقل
+Re-enter new password	أعد إدخال كلمة المرور الجديدة
+Use at least 8 characters. Updating your password will sign you out and redirect to login.	استخدم 8 أحرف على الأقل. سيؤدي تحديث كلمة المرور إلى تسجيل خروجك ونقلك إلى صفحة تسجيل الدخول.
+Assign support teams	تعيين فرق الدعم
+Support owner	مسؤول الدعم
+Save assignment	حفظ التعيين
+Canvas controls	عناصر التحكم بلوحة التحرير
+Matches	مطابق
+Otherwise	وإلا
+Handoff	تحويل المحادثة
+Save failed	تعذّر الحفظ
+Delete Form Permanently?	حذف النموذج نهائيًا؟
+Contact name	اسم جهة الاتصال
+No phone added	لم يُضف رقم هاتف
+Google Meet	اجتماع عبر Google Meet
+Demo playback controls	عناصر التحكم بتشغيل العرض التجريبي
+Replay demo	إعادة تشغيل العرض التجريبي
+Play demo	تشغيل العرض التجريبي
+Demo cycle steps	خطوات العرض التجريبي
+Demo upload	رفع تجريبي
+Drop your knowledge	أفلت ملفات المعرفة هنا
+Choose demo files	اختر ملفات للعرض التجريبي
+Use sample sources	استخدم مصادر نموذجية
+Demo knowledge files	ملفات المعرفة التجريبية
+Enter a valid HTTP or HTTPS URL.	أدخل رابط HTTP أو HTTPS صالحًا.
+Demo website URL	رابط الموقع التجريبي
++ website your-website.com	+ موقع إلكتروني your-website.com
+Demo cycle progress	تقدّم العرض التجريبي
+FRONTEND DEMO	عرض تجريبي للواجهة
+No live data changes	لا تغييرات على البيانات الفعلية
+Cycle complete	اكتملت الخطوات
+Playing	جارٍ التشغيل
+Demo question	سؤال تجريبي
+Try question	جرّب السؤال
+Return to my knowledge	العودة إلى معرفتي
+Close demo training options	إغلاق خيارات التدريب التجريبي
+DEMO TRAINING	تدريب تجريبي
+How should your AI learn?	كيف تريد تدريب مساعدك الذكي؟
+Demo training mode	وضع التدريب التجريبي
+Train on Something New	التدريب على محتوى جديد
+Enhance / Append to Existing Data	تحسين البيانات الحالية أو الإضافة إليها
+New demo category	فئة تجريبية جديدة
+Append to demo category	الإضافة إلى فئة تجريبية
+Review sources	مراجعة المصادر
+Start demo cycle	بدء العرض التجريبي
+Training	التدريب
+YOUR AI	مساعدك الذكي
+Training simulation	محاكاة التدريب
+Building your knowledge	جارٍ بناء قاعدة معرفتك
+CRAWLING LINKS	جارٍ استكشاف الروابط
+Demo training progress	تقدّم التدريب التجريبي
+Chat simulation	محاكاة المحادثة
+Test your assistant	اختبر مساعدك
+WHATSAPP ·	واتساب ·
+RIYADH	الرياض
+Preparing sample reply	جارٍ إعداد رد نموذجي
+RETRIEVED:	المصدر المسترجع:
+CONSISTENT	متسق
+Illustrative conversation and pricing · demo only	محادثة وأسعار توضيحية · عرض تجريبي
+Channel network simulation	محاكاة شبكة القنوات
+IDLE	في وضع الانتظار
+Live conversation monitor	متابعة المحادثات المباشرة
+Your demo assistant is live	مساعدك التجريبي نشط
+TALKING TO	يتحدث مع
+CONVERSATIONS TODAY	محادثات اليوم
+NEEDED YOUR TEAM	تطلّبت تدخل فريقك
+Meet customers where they are	تواصل مع العملاء عبر قنواتهم المفضلة
+Web chat turns on here. WhatsApp, Messenger and Instagram open the real account connection.	فعّل دردشة الموقع من هنا. يفتح واتساب وماسنجر وإنستغرام نافذة ربط الحساب.
+Ready on your site	جاهز على موقعك
+Account linked	الحساب مرتبط
+Needs an account	يحتاج إلى حساب
+channels are listening for customers.	قنوات تستقبل رسائل العملاء.
+Turn on web chat, or connect a Meta account, before you go live.	فعّل دردشة الموقع أو اربط حساب Meta قبل بدء التشغيل.
+A teammate should take this one.	يحتاج أحد أعضاء الفريق إلى تولّي هذه المحادثة.
+Go live, and keep this channel listening, before the assistant can reply.	فعّل المساعد واترك هذه القناة تستقبل الرسائل ليتمكن من الرد.
+The knowledge base is not ready yet.	قاعدة المعرفة غير جاهزة بعد.
+LIVE MONITOR	المتابعة المباشرة
+Your assistant is live	مساعدك نشط
+Ready when you are	جاهز للتشغيل
+Customers on listening channels get answers from this knowledge.	يتلقى عملاء القنوات النشطة إجابات تستند إلى قاعدة المعرفة هذه.
+Go live after a channel is listening and the knowledge is ready.	ابدأ التشغيل عندما تستقبل إحدى القنوات الرسائل وتصبح قاعدة المعرفة جاهزة.
+Go live	بدء التشغيل
+sources ready	مصادر جاهزة
+channels listening	قنوات تستقبل الرسائل
+No channel is listening yet	لا توجد قناة تستقبل الرسائل بعد
+Assistant is answering	المساعد يجيب
+CHANNELS ENABLED	القنوات المفعّلة
+Talk to the assistant as a customer	تحدّث مع المساعد كما يفعل العميل
+Choose a channel first	اختر قناة أولًا
+Send a question. The reply is saved in your inbox.	أرسل سؤالًا. سيُحفظ الرد في صندوق الوارد.
+Assistant is replying	جارٍ رد المساعد
+Ask something a customer would ask…	اطرح سؤالًا قد يطرحه أحد العملاء…
+Replying…	جارٍ الرد…
+Your conversation monitor is ready	متابعة المحادثات جاهزة
+Customer conversations will appear here as they reach your workspace.	ستظهر محادثات العملاء هنا عند وصولها إلى مساحة العمل.
+Waiting for messages	في انتظار الرسائل
+TEAM HANDLING	يتولّاها الفريق
+AI ENABLED	الذكاء الاصطناعي مفعّل
+AWAITING TEAM	بانتظار الفريق
+SOURCES READY	المصادر الجاهزة
+Choose a PDF, DOCX, CSV, MD, TXT or JSON file.	اختر ملفًا بتنسيق PDF أو DOCX أو CSV أو MD أو TXT أو JSON.
+Choose a non-empty file up to 20 MB.	اختر ملفًا غير فارغ بحجم يصل إلى 20 ميغابايت.
+Enter a valid public HTTP or HTTPS website URL.	أدخل رابط HTTP أو HTTPS صالحًا لموقع متاح للعامة.
+Enter a category name of up to 60 characters without brackets.	أدخل اسم فئة لا يتجاوز 60 حرفًا ومن دون أقواس.
+Confirm that the current knowledge will be deleted.	أكّد حذف قاعدة المعرفة الحالية.
+The current knowledge could not be removed.	تعذّر حذف قاعدة المعرفة الحالية.
+The server did not confirm this source. Refresh sources before retrying.	لم يؤكد الخادم هذا المصدر. حدّث قائمة المصادر قبل إعادة المحاولة.
+sources submitted for indexing.	مصادر أُرسلت للفهرسة.
+Some sources could not be submitted. Review the errors and retry those sources.	تعذّر إرسال بعض المصادر. راجع الأخطاء وأعد إرسالها.
+Source removed.	تمت إزالة المصدر.
+No websites in this training batch.	لا توجد مواقع إلكترونية في دفعة التدريب هذه.
+No files in this training batch.	لا توجد ملفات في دفعة التدريب هذه.
+Reading	جارٍ القراءة
+Embedding	جارٍ إعداد التمثيلات المتجهية
+Tuning	جارٍ الضبط
+INTELLIGENCE STUDIO	استوديو الذكاء الاصطناعي
+Your knowledge. Your AI.	معرفتك ومساعدك الذكي
+Turn business knowledge into answers your customers can trust.	استخدم معرفة نشاطك لتقديم إجابات موثوقة لعملائك.
+Exit demo	الخروج من العرض التجريبي
+Cycle Demo Mode	عرض خطوات التدريب
+Knowledge studio demo	عرض تجريبي لاستوديو المعرفة
+Knowledge training workflow	خطوات التدريب على المعرفة
+Knowledge workflow steps	خطوات إعداد المعرفة
+Retry connection	إعادة محاولة الاتصال
+Drag files here, or browse your device	اسحب الملفات إلى هنا أو تصفّح جهازك
+Upload knowledge files	رفع ملفات المعرفة
+Up to 20 MB per file	حتى 20 ميغابايت لكل ملف
+Website crawling and document extraction depend on server support. Unsupported sources show an error and can be retried.	يعتمد استكشاف المواقع واستخراج محتوى المستندات على دعم الخادم. تظهر رسالة خطأ للمصادر غير المدعومة ويمكن إعادة المحاولة.
+Choose add or replace before training starts.	اختر الإضافة أو الاستبدال قبل بدء التدريب.
+Add text or instructions	إضافة نص أو تعليمات
+e.g. Support guidelines	مثل: إرشادات الدعم
+Knowledge content	محتوى قاعدة المعرفة
+Add text source	إضافة مصدر نصي
+Ready to upload	جاهز للرفع
+Submitting sources…	جارٍ إرسال المصادر…
+Choose training mode	اختر وضع التدريب
+Live source status from the indexing service.	حالة المصادر مباشرة من خدمة الفهرسة.
+Training in progress	التدريب جارٍ
+Training complete	اكتمل التدريب
+Awaiting sources	في انتظار المصادر
+Sources indexed	المصادر المفهرسة
+Indexing	جارٍ الفهرسة
+Ready for a test drive	جاهز للاختبار
+A smarter assistant starts here	ابدأ إعداد مساعدك الذكي
+sources indexed. Percentages reflect completed sources.	مصادر فُهرست. تعكس النسب المئوية المصادر المكتملة.
+sources indexed. Overall embedding progress is reported by the server.	مصادر فُهرست. يعرض الخادم التقدّم الإجمالي لإعداد التمثيلات المتجهية.
+Source status and overall training progress refresh automatically.	تتحدّث حالة المصادر والتقدّم الإجمالي للتدريب تلقائيًا.
+Continue to test	متابعة إلى الاختبار
+TEST YOUR KNOWLEDGE	اختبر قاعدة المعرفة
+Put your knowledge to the test	جرّب الإجابات المستندة إلى معرفتك
+Continue to connect	متابعة إلى ربط القنوات
+Continue to live	متابعة إلى التشغيل
+Manage the sources behind your assistant’s answers.	أدر المصادر التي يستند إليها المساعد في إجاباته.
+Filter knowledge category	تصفية حسب فئة المعرفة
+Refreshing sources…	جارٍ تحديث المصادر…
+No sources match your search.	لا توجد مصادر تطابق بحثك.
+Your knowledge starts here. Add your first source above.	أضف مصدرك الأول من الأعلى لبدء بناء قاعدة المعرفة.
+Close training options	إغلاق خيارات التدريب
+SOURCES SELECTED	المصادر المحددة
+Add these sources to the current knowledge, or replace that knowledge with a new training.	أضف هذه المصادر إلى قاعدة المعرفة الحالية أو استبدلها بتدريب جديد.
+Training mode	وضع التدريب
+New Training	تدريب جديد
+Deletes every current source, then trains only on what you upload now.	يحذف جميع المصادر الحالية، ثم يبدأ التدريب على ما ترفعه الآن فقط.
+Update Existing Training	تحديث التدريب الحالي
+Adds these sources on top of the knowledge you already have.	يضيف هذه المصادر إلى قاعدة المعرفة الحالية.
+The current knowledge will be deleted.	ستُحذف قاعدة المعرفة الحالية.
+existing sources will be removed before training starts. This cannot be undone.	من المصادر الحالية ستُحذف قبل بدء التدريب. لا يمكن التراجع عن هذا الإجراء.
+There is no existing knowledge to remove. Training will use only these sources.	لا توجد معرفة سابقة لحذفها. سيستخدم التدريب هذه المصادر فقط.
+I understand the current knowledge will be deleted.	أفهم أن قاعدة المعرفة الحالية ستُحذف.
+Category for the new knowledge	فئة المعرفة الجديدة
+Add to category	إضافة إلى فئة
+e.g. Product launch	مثل: إطلاق المنتج
+The category is a label on the new sources. It does not keep a separate knowledge base.	تُستخدم الفئة لتصنيف المصادر الجديدة ضمن قاعدة المعرفة نفسها.
+Add to existing knowledge	إضافة إلى قاعدة المعرفة الحالية
+Checkout request approved.	تمت الموافقة على طلب الدفع.
+Checkout Requests	طلبات إتمام الشراء
+Review customer submissions, transfer receipts and checkout details.	راجع طلبات العملاء وإيصالات التحويل وتفاصيل الدفع.
+Request status	حالة الطلب
+Loading checkout requests…	جارٍ تحميل طلبات إتمام الشراء…
+Manual transfer	تحويل يدوي
+Approve verified transfer	الموافقة على التحويل بعد التحقق
+Reject with reason	الرفض مع ذكر السبب
+No checkout requests yet	لا توجد طلبات إتمام شراء بعد
+Change your search or status filter.	غيّر عبارة البحث أو فلتر الحالة.
+Submissions from published product checkouts appear here.	تظهر هنا الطلبات الواردة من صفحات الدفع المنشورة للمنتجات.
+Please enter a rejection reason before rejecting this request.	أدخل سبب الرفض قبل رفض الطلب.
+Checkout request approved · Customer portal access & login email sent.	تمت الموافقة على الطلب · فُعّل دخول العميل إلى البوابة وأُرسل بريد تسجيل الدخول.
+Checkout request rejected.	تم رفض طلب إتمام الشراء.
+Checkout request	طلب إتمام الشراء
+Reference ID	المعرّف المرجعي
+Copy reference ID	نسخ المعرّف المرجعي
+Total due	الإجمالي المستحق
+Transfer account	حساب التحويل
+Customer note	ملاحظة العميل
+No receipt submitted	لم يُرسل إيصال
+Loading receipt…	جارٍ تحميل الإيصال…
+Review details	تفاصيل المراجعة
+No review note	لا توجد ملاحظة مراجعة
+Review request	مراجعة الطلب
+Verify the transfer against your payment account before approving.	تحقق من وصول التحويل إلى حساب الدفع قبل الموافقة.
+Approve to confirm this order.	وافق لتأكيد هذا الطلب.
+Review note	ملاحظة المراجعة
+Required to reject	مطلوب عند الرفض
+A reason is required to reject the request	يجب ذكر سبب لرفض الطلب
+Reject request	رفض الطلب
+Approve request	الموافقة على الطلب
+Template loaded. Save Changes to keep your edits.	تم تحميل القالب. احفظ التغييرات للاحتفاظ بتعديلاتك.
+New version created as a draft.	تم إنشاء إصدار جديد كمسودة.
+Product duplicated as a draft.	تم نسخ المنتج كمسودة.
+Choose a Product Template	اختر قالب منتج
+Choose a starting point for this draft. Add your own files and booking links, then use Save Changes to persist it.	اختر نقطة بداية لهذه المسودة. أضف ملفاتك وروابط الحجز، ثم احفظ التغييرات.
+Use product changes	استخدام تغييرات المنتج
+Local attachments are available only in this browser session. Upload them to cloud storage or add delivery URLs before publishing.	المرفقات المحلية متاحة في جلسة المتصفح هذه فقط. ارفعها إلى التخزين السحابي أو أضف روابط التسليم قبل النشر.
+Quick-Start Preset Templates	قوالب جاهزة للبدء
+Pick a ready-made template to pre-configure pricing, delivery structure, and sales settings instantly.	اختر قالبًا جاهزًا لضبط السعر وطريقة التسليم وإعدادات المبيعات فورًا.
+Automated Sales & Delivery Pipeline	سير عمل المبيعات والتسليم الآلي
+Every product you create connects out of the box with checkout, delivery, and CRM lead capture.	يرتبط كل منتج تنشئه تلقائيًا بإتمام الشراء والتسليم وتسجيل العملاء المحتملين.
+Sales funnel linked	مسار المبيعات مرتبط
+Receipt Full Preview	معاينة الإيصال بالكامل
+Automatic subscription renewal via Wallet enabled.	تم تفعيل التجديد التلقائي للاشتراك من المحفظة.
+Automatic subscription renewal disabled.	تم إيقاف التجديد التلقائي للاشتراك.
+Wallet Transactions	معاملات المحفظة
+All wallet top-ups, plan payments, auto-renewals, and service usage.	جميع عمليات شحن المحفظة ومدفوعات الباقات والتجديد التلقائي واستخدام الخدمات.
+Shared billing	الفوترة المشتركة
+Top-Up Request Pending Review	طلب الشحن بانتظار المراجعة
+Awaiting Approval	بانتظار الموافقة
+You requested a wallet top-up of	طلبت شحن المحفظة بمبلغ
+via	عبر
+Your request is being reviewed by administration. You cannot send another top-up request until this request is approved or rejected.	تراجع الإدارة طلبك. يمكنك إرسال طلب شحن جديد بعد الموافقة على هذا الطلب أو رفضه.
+In Review	قيد المراجعة
+Available to pay instantly for plans, renewals, add-ons, auto-recharge, and messaging channels.	رصيد متاح للدفع الفوري للباقات والتجديدات والإضافات والشحن التلقائي وقنوات المراسلة.
+Top-up request awaiting approval	طلب شحن بانتظار الموافقة
+Top-Up In Review…	طلب الشحن قيد المراجعة…
+Top Up Wallet	شحن المحفظة
+Auto-Renew & Recharge	التجديد والشحن التلقائيان
+Auto-Renewal via Wallet	التجديد التلقائي من المحفظة
+Add funds to your wallet for instant plan payments, renewals, and services.	أضف رصيدًا إلى محفظتك لدفع رسوم الباقات والتجديدات والخدمات فورًا.
+Or enter a specific amount	أو أدخل مبلغًا محددًا
+Enter specific amount…	أدخل مبلغًا محددًا…
+Enter specific wallet top-up amount	أدخل مبلغ شحن المحفظة
+Enter an amount between 1 and 100,000.	أدخل مبلغًا بين 1 و100,000.
+Awaiting Admin Approval	بانتظار موافقة الإدارة
+Auto-Renewal & Auto-Recharge	التجديد والشحن التلقائيان
+Automatically renew your subscription and recharge low credits from your Wallet.	جدّد الاشتراك تلقائيًا واشحن الرصيد من محفظتك عند انخفاضه.
+Auto-Renew Subscription	تجديد الاشتراك تلقائيًا
+Deduct renewal from Wallet when sufficient funds exist.	اخصم مبلغ التجديد من المحفظة عند توفر رصيد كافٍ.
+Enable Auto-Renew Subscription	تفعيل التجديد التلقائي للاشتراك
+Low-Balance Auto-Recharge	الشحن التلقائي عند انخفاض الرصيد
+Top up AI credits automatically from Wallet when low.	اشحن رصيد الذكاء الاصطناعي تلقائيًا من المحفظة عند انخفاضه.
+When AI credits drop below	عندما ينخفض رصيد الذكاء الاصطناعي عن
+Enter credits threshold…	أدخل حد الرصيد…
+Auto-add AI credits from Wallet	إضافة رصيد الذكاء الاصطناعي تلقائيًا من المحفظة
+Enter credits to add…	أدخل الرصيد المراد إضافته…
+Low Wallet Balance Alert (€)	تنبيه انخفاض رصيد المحفظة (€)
+Enter alert balance…	أدخل الرصيد الذي يفعّل التنبيه…
+Payment Requests & Receipts	طلبات الدفع والإيصالات
+Top-up request processed. Your balance updates automatically.	تمت معالجة طلب الشحن. يُحدّث رصيدك تلقائيًا.
+Enter a full name and email address.	أدخل الاسم الكامل وعنوان البريد الإلكتروني.
+Enter a valid email address.	أدخل عنوان بريد إلكتروني صالحًا.
+Enter a login password of at least 6 characters for this team member.	أدخل كلمة مرور من 6 أحرف على الأقل لهذا العضو.
+New password must be at least 6 characters.	يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل.
+Team member removed.	تمت إزالة عضو الفريق.
+Team member permissions updated.	تم تحديث صلاحيات عضو الفريق.
+Team member added and login credentials provisioned.	تمت إضافة عضو الفريق وإعداد بيانات تسجيل دخوله.
+Manage your team members and configure granular sidebar module and settings tab permissions.	أدر أعضاء فريقك واضبط صلاحيات الوصول إلى أقسام الشريط الجانبي وتبويبات الإعدادات.
+Assign workspace roles and control which sidebar modules and settings tabs each member can access.	عيّن أدوار مساحة العمل وحدد الأقسام وتبويبات الإعدادات التي يستطيع كل عضو الوصول إليها.
+Filter members by role	تصفية الأعضاء حسب الدور
+Allowed Modules & Tabs	الأقسام والتبويبات المسموح بها
+Full Access (All tabs)	وصول كامل (جميع التبويبات)
+Workspace owner is always active	حساب مالك مساحة العمل نشط دائمًا
+Active — click to deactivate member login	نشط — انقر لتعطيل تسجيل دخول العضو
+Inactive — click to activate member login	غير نشط — انقر لتفعيل تسجيل دخول العضو
+The workspace owner keeps 100% full access. Assign individual module and settings tab visibility when adding or editing a member.	يحتفظ مالك مساحة العمل بوصول كامل. حدّد الأقسام وتبويبات الإعدادات عند إضافة عضو أو تعديله.
+e.g. Sarah Ahmed	مثل: سارة أحمد
+Account Status	حالة الحساب
+Dashboard Login Password (Optional update)	كلمة مرور لوحة التحكم (التحديث اختياري)
+Dashboard Login Password *	كلمة مرور لوحة التحكم *
+Login Enabled	تسجيل الدخول مفعّل
+Generated password and copied to clipboard.	تم إنشاء كلمة المرور ونسخها إلى الحافظة.
+Generate password	إنشاء كلمة مرور
+Enter a new password to change login password (min 6 chars)…	أدخل كلمة مرور جديدة لتغيير كلمة مرور تسجيل الدخول (6 أحرف على الأقل)…
+Enter login password for this member (min 6 chars)…	أدخل كلمة مرور تسجيل الدخول لهذا العضو (6 أحرف على الأقل)…
+This team member can sign in to the User Dashboard (/auth/login) using their email and password under your workspace.	يمكن لهذا العضو تسجيل الدخول إلى لوحة التحكم في مساحة عملك من /auth/login باستخدام بريده الإلكتروني وكلمة مروره.
+Quick Access Presets	إعدادات وصول جاهزة
+Choose a preset or customize individual tabs below	اختر إعدادًا جاهزًا أو خصّص التبويبات أدناه
+Platform Modules (Sidebar Navigation)	أقسام المنصة (الشريط الجانبي)
+Unchecked modules will be hidden from the member’s sidebar.	تُخفى الأقسام غير المحددة من الشريط الجانبي للعضو.
+Settings Tabs	تبويبات الإعدادات
+Choose which workspace settings tabs this member can access.	حدّد تبويبات إعدادات مساحة العمل التي يستطيع هذا العضو الوصول إليها.
+and revoke their workspace access?	وإلغاء صلاحية وصوله إلى مساحة العمل؟
+Pixel	بكسل التتبع
+Manage platform-wide Meta Pixel and Google Analytics defaults.	أدر الإعدادات الافتراضية لـ Meta Pixel وإحصاءات Google على مستوى المنصة.
+Configure workspace pixels and inspect recorded activity and observed tracking events.	اضبط بكسلات التتبع في مساحة العمل وراجع النشاط وأحداث التتبع المسجلة.
+Events combine recorded workspace activity, verified transactions and this browser session. Script availability does not confirm delivery to a provider.	تجمع الأحداث بين نشاط مساحة العمل المسجل والمعاملات المؤكدة وجلسة المتصفح الحالية. توفر النص البرمجي وحده لا يؤكد تسليم الأحداث إلى المزوّد.
+Tracking settings saved	تم حفظ إعدادات التتبع
+Could not save tracking settings.	تعذّر حفظ إعدادات التتبع.
+These defaults apply across the platform.	تُطبَّق هذه الإعدادات الافتراضية على مستوى المنصة.
+Your workspace pixels run alongside platform defaults.	تعمل بكسلات مساحة عملك إلى جانب الإعدادات الافتراضية للمنصة.
+1. Copy your Pixel ID from Meta Events Manager.	1. انسخ معرّف البكسل من مدير الأحداث في Meta.
+2. Copy your Measurement ID from your GA4 web data stream.	2. انسخ معرّف القياس من مصدر بيانات الويب في GA4.
+3. Save, then use Test Center to inspect local events.	3. احفظ الإعدادات ثم استخدم مركز الاختبار لفحص الأحداث المحلية.
+Meta Facebook Ads	إعلانات فيسبوك من Meta
+Meta Pixel integration	تكامل Meta Pixel
+Google Analytics 4	إحصاءات Google 4
+Web analytics integration	تكامل تحليلات الويب
+TikTok Ads	إعلانات تيك توك
+TikTok pixel integration	تكامل بكسل تيك توك
+Soon	قريبًا
+LinkedIn Insight Tag	وسم LinkedIn Insight
+LinkedIn pixel integration	تكامل بكسل لينكدإن
+Webhook / CAPI endpoint (configuration only)	نقطة اتصال Webhook أو CAPI (للإعداد فقط)
+Server-side webhook delivery and consent management must be connected separately. No API secrets are stored here.	اربط خدمة إرسال خطافات الويب من الخادم وإدارة الموافقات بشكل منفصل. لا تُخزّن هنا مفاتيح API السرية.
+Disable tracking in draft	تعطيل التتبع في المسودة
+Call purchase only after the payment backend verifies an order. Avoid personal or sensitive data in event payloads.	استدعِ purchase فقط بعد أن يؤكّد خادم الدفع الطلب. تجنّب تضمين بيانات شخصية أو حساسة في بيانات الأحداث.
+Could not save event.	تعذّر حفظ الحدث.
+Workspace records and browser event stream · delivery to Meta or Google is not verified here.	سجلات مساحة العمل وأحداث المتصفح · لا يُتحقق هنا من التسليم إلى Meta أو Google.
+Aggregate event counts, not unique-user attribution.	إجمالي عدد الأحداث دون إسنادها إلى مستخدمين فريدين.
+Recorded workspace events, verified transactions and observed browser events.	أحداث مساحة العمل المسجلة والمعاملات المؤكدة وأحداث المتصفح المرصودة.
+Tests appear in Realtime and Debug Logs without sending production conversions.	تظهر الاختبارات في العرض المباشر وسجلات تصحيح الأخطاء دون إرسال تحويلات فعلية.
+Test event added to Realtime	أُضيف حدث الاختبار إلى العرض المباشر
+Rule-based diagnostics from your current configuration.	تشخيصات قائمة على القواعد وفق إعداداتك الحالية.
+Verify delivery with Meta Test Events and Google DebugView. Add a consent manager before collecting marketing events where consent is required.	تحقّق من التسليم باستخدام أحداث الاختبار في Meta وGoogle DebugView. أضف أداة لإدارة الموافقات قبل جمع أحداث التسويق عندما تكون الموافقة مطلوبة.
+YouTube	يوتيوب
+LinkedIn	لينكدإن
+Stripe	سترايب
+All owners	جميع المسؤولين
+All active contacts	جميع جهات الاتصال النشطة
+Choose a booking page.	اختر صفحة حجز.
+Add at least one guest.	أضف ضيفًا واحدًا على الأقل.
+Choose an available time. Availability, notice and buffers apply.	اختر وقتًا متاحًا. تُطبَّق قواعد التوفر ومهلة الحجز والفواصل الزمنية.
+Appointments need a page with availability rules.	تحتاج المواعيد إلى صفحة تحتوي على قواعد التوفر.
+Flow builder	إنشئ مسارك
+Message equals	الرسالة تطابق النص تمامًا
+Stopped	متوقف
+Canvas zoom in	تكبير لوحة التحرير
+Canvas zoom out	تصغير لوحة التحرير
+Fit view	ملاءمة العرض
+Next step	الخطوة التالية
+Control Panel	عناصر التحكم بالمخطط
+Press enter or space to select a node. Press delete to remove it and escape to cancel.	اضغط Enter أو مفتاح المسافة لتحديد خطوة، أو Delete لحذفها، أو Escape للإلغاء.
+Press enter or space to select a node. You can then use the arrow keys to move the node around. Press delete to remove it and escape to cancel.	اضغط Enter أو مفتاح المسافة لتحديد خطوة، ثم استخدم مفاتيح الأسهم لنقلها. اضغط Delete لحذفها أو Escape للإلغاء.
+Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.	اضغط Enter أو مفتاح المسافة لتحديد وصلة، ثم اضغط Delete لحذفها أو Escape للإلغاء.
+Text	نص
+Radio	اختيار واحد
+Close details	إغلاق التفاصيل
+Quick details	تفاصيل سريعة
+Form layout preview	معاينة تخطيط النموذج
+Could not load your workspace.	تعذّر تحميل مساحة عملك.
+Help Center	مركز المساعدة
+Could not create a support conversation.	تعذّر إنشاء محادثة دعم.
+Test your knowledge	اختبر قاعدة المعرفة
+MQLs	عملاء محتملون مؤهلون تسويقيًا
+AI Assistant ·	AI Agent ·
+AI Assistants	Ai Agent
+Zoom In	تكبير
+Zoom Out	تصغير
+Processing	قيد المعالجة
+Trial	تجريبي
+No matching booking pages	لا توجد صفحات حجز مطابقة
+No phone number	لا يوجد رقم هاتف
+US Dollar	الدولار الأمريكي
+Euro	اليورو
+Egyptian Pound	الجنيه المصري
+British Pound	الجنيه الإسترليني
+UAE Dirham	الدرهم الإماراتي
+Saudi Riyal	الريال السعودي
+Kuwaiti Dinar	الدينار الكويتي
+Qatari Riyal	الريال القطري
+Bahraini Dinar	الدينار البحريني
+Omani Rial	الريال العُماني
+Jordanian Dinar	الدينار الأردني
+Lebanese Pound	الليرة اللبنانية
+Moroccan Dirham	الدرهم المغربي
+Tunisian Dinar	الدينار التونسي
+Algerian Dinar	الدينار الجزائري
+Iraqi Dinar	الدينار العراقي
+Credit / Debit Cards	بطاقات الائتمان والخصم
+PayPal Express	باي بال إكسبريس
+Apple Pay	آبل باي
+Google Pay	جوجل باي
+Visa, Mastercard, Amex	فيزا وماستركارد وأمريكان إكسبريس
+One-Click Checkout	إتمام الشراء بنقرة واحدة
+Apple Wallet (Tokenized)	محفظة آبل (برمز دفع)
+Google Wallet (Tokenized)	محفظة جوجل (برمز دفع)
+Instant (0–2 days)	فورية (0–2 يوم)
+Payment Gateway	بوابة دفع
+Customers	العملاء
+Orders	الطلبات
+Transactions	المعاملات
+Good morning,	صباح الخير،
+No activity yet. Your recent changes will appear here.	لا يوجد نشاط بعد. ستظهر تغييراتك الأخيرة هنا.
+Create your first funnel to see its results here.	أنشئ أول فانل لعرض نتائجه هنا.
+Create a product to start tracking sales.	أنشئ منتجًا لبدء متابعة المبيعات.
+Use my own Meta app instead	استخدام تطبيق Meta الخاص بي
+Button URL	رابط الزر
+Choose from saved contacts...	اختر من جهات الاتصال المحفوظة…
+qualify	يؤهّل للحجز
+Enter at least two distinct choices.	أدخل خيارين مختلفين على الأقل.
+Mark at least one qualifying choice.	حدّد خيارًا واحدًا على الأقل يؤهّل للحجز.
+Enter a minimum amount of 0 or greater.	أدخل حدًا أدنى يساوي صفرًا أو أكبر.
+e.g. What is your monthly marketing budget?	مثل: ما ميزانيتك الشهرية للتسويق؟
+Lead qualification (screening question)	تأهيل العميل المحتمل (سؤال فرز)
+Shown inside Your details. If an invitee gives a non-qualifying answer, the appointment is not booked, they receive a polite thank-you message, and the lead is saved to CRM as Pending booking.	يظهر السؤال في خطوة «بياناتك». إذا لم تؤهّل الإجابة للحجز، فلن يُحجز الموعد. سيتلقى المدعو رسالة شكر، ويُسجّل العميل المحتمل في نظام إدارة العلاقات بحالة «بانتظار الحجز».
+Rule type	نوع القاعدة
+Add choices and check the answers that qualify to book.	أضف خيارات وحدّد الإجابات التي تؤهّل للحجز.
+ZIP, PDF, MP4, images and office files · Max 100 MB each	ملفات ZIP وPDF وMP4 والصور والمستندات المكتبية · حتى 100 ميغابايت لكل ملف
+Uploading file…	جارٍ رفع الملف…
+Untitled asset	أصل بلا عنوان
+Browser attachment · Cloud upload required	مرفق في المتصفح · يلزم رفعه إلى السحابة
+Replace digital file	استبدال الملف الرقمي
+Replace with delivery link	الاستبدال برابط تسليم
+Add External Asset / Delivery Link	إضافة أصل خارجي أو رابط تسليم
+Link Title	عنوان الرابط
+Google Drive Master Folder	المجلد الرئيسي على Google Drive
+Resource Type	نوع المورد
+this asset	هذا الأصل
+from this product? You can add it again later.	من هذا المنتج؟ يمكنك إضافته مجددًا لاحقًا.
+New time slot	فترة زمنية جديدة
+e.g. Mon 10:00	مثل: الاثنين 10:00
+Add slot	إضافة فترة
+New checkout field label	اسم حقل الدفع الجديد
+Company Name, Tax ID…	اسم الشركة، الرقم الضريبي…
+Thank-you page	صفحة الشكر
+Sales page template	قالب صفحة المبيعات
+Thank-you page template	قالب صفحة الشكر
+Sales video URL	رابط فيديو المبيعات
+Welcome video URL	رابط فيديو الترحيب
+Community link	رابط المجتمع
+Terms policy source	مصدر الشروط
+Privacy policy source	مصدر سياسة الخصوصية
+Terms URL	رابط الشروط
+Privacy policy URL	رابط سياسة الخصوصية
+Choose a non-empty PDF, video or ZIP file up to 100 MB.	اختر ملف PDF أو فيديو أو ZIP غير فارغ بحجم يصل إلى 100 ميغابايت.
+Cloud upload failed. Please try again.	تعذّر الرفع إلى السحابة. يرجى إعادة المحاولة.
+Lesson format	تنسيق الدرس
+Detected automatically when available.	يُحدَّد تلقائيًا عند توفره.
+Detected on upload	يُحدَّد عند الرفع
+Video source	مصدر الفيديو
+Make sure enrolled students have access to this Drive file.	تأكد من أن الطلاب المسجّلين لديهم إذن الوصول إلى هذا الملف على Google Drive.
+Attach PDF / Video / ZIP	إرفاق ملف PDF أو فيديو أو ZIP
+Drop a file here or choose a file · Max 100 MB	أفلت ملفًا هنا أو اختر ملفًا · حتى 100 ميغابايت
+Self-paced	التعلّم بالسرعة التي تناسبك
+CUSTOMER EXPERIENCE	تجربة العميل
+Loading page…	جارٍ تحميل الصفحة…
+Enter a complete HTTP or HTTPS URL.	أدخل رابط HTTP أو HTTPS كاملًا.
+Your page will appear here as soon as you enter its URL.	ستظهر صفحتك هنا بمجرد إدخال رابطها.
+If this website blocks embedded previews, open it in a new tab to view the full page.	إذا كان الموقع يمنع المعاينة المضمّنة، افتحه في تبويب جديد لعرض الصفحة كاملة.
+Your product name	اسم منتجك
+Mastercard	ماستركارد
+Offer an additional product after purchase.	اعرض منتجًا إضافيًا بعد الشراء.
+Upsell product	المنتج الإضافي
+This offer is no longer active. Choose an active product.	هذا العرض غير نشط الآن. اختر منتجًا نشطًا.
+Discounted Upsell Price	سعر المنتج الإضافي بعد الخصم
+Upsell price	سعر المنتج الإضافي
+Add as One-Click Post-Purchase Offer	إضافة كعرض بنقرة واحدة بعد الشراء
+Offer preferences are saved with this product. One-click charging requires a payment provider and customer consent.	تُحفظ إعدادات العرض مع هذا المنتج. يتطلب الدفع بنقرة واحدة مزوّد دفع وموافقة العميل.
+This action is unavailable.	هذا الإجراء غير متاح.
+Product access	الوصول إلى المنتج
+Mark complete	تحديد كمكتمل
+No files have been attached to this product.	لم تُرفق ملفات بهذا المنتج.
+Sign in with your customer email	سجّل الدخول ببريدك الإلكتروني كعميل
+The action could not be completed.	تعذّر إكمال الإجراء.
+Enter valid HTTP or HTTPS URLs.	أدخل روابط HTTP أو HTTPS صالحة.
+Require terms agreement	اشتراط الموافقة على الشروط
+An order bump is an optional add-on checkbox displayed on the checkout form before payment. Its price is added to the order total when selected.	يظهر العرض الإضافي كخيار في نموذج الدفع. عند اختياره يُضاف سعره إلى إجمالي الطلب.
+Order bump product	منتج العرض الإضافي عند الدفع
+Order bumps use one-time products in the checkout currency.	تُستخدم للعروض الإضافية منتجات بدفعة واحدة وبعملة الدفع نفسها.
+Community discussion URL	رابط نقاش المجتمع
+Enable completion certificates	تفعيل شهادات الإكمال
+Certificate issuer	الجهة المصدرة للشهادة
+Buffer before (minutes)	الفاصل قبل الموعد (بالدقائق)
+Buffer after (minutes)	الفاصل بعد الموعد (بالدقائق)
+Cancellation notice (hours)	مهلة الإلغاء (بالساعات)
+Cancellation policy	سياسة الإلغاء
+Send file delivery notification	إرسال إشعار بتسليم الملف
+Availability and reservations are checked by the connected calendar. Preview slot labels do not reserve appointments.	يتحقق التقويم المرتبط من الأوقات المتاحة والحجوزات. أوقات المعاينة للعرض فقط ولا تحجز موعدًا.
+Sync saved calendar settings	مزامنة إعدادات التقويم المحفوظة
+Save Changes before generating access links. Access actions use the saved product settings.	احفظ التغييرات قبل إنشاء روابط الوصول. تعتمد إجراءات الوصول على إعدادات المنتج المحفوظة.
+Generate access link	إنشاء رابط وصول
+Generate certificate	إنشاء شهادة
+Apply to draft	تطبيق على المسودة
+Quick View Details	عرض التفاصيل السريع
+Could not delete product. Please try again.	تعذّر حذف المنتج. يرجى إعادة المحاولة.
+Are you sure you want to delete this product?	هل تريد حذف هذا المنتج؟
+will be removed from your catalog. This action cannot be undone.	سيُحذف من كتالوجك. لا يمكن التراجع عن هذا الإجراء.
+Includes labeled sample records for this product.	يتضمن سجلات نموذجية لهذا المنتج مميزة بوسم.
+Orders associated with this product.	الطلبات المرتبطة بهذا المنتج.
+This product	هذا المنتج
+Not enrolled	غير مسجّل
+THANK-YOU PAGE PREVIEW	معاينة صفحة الشكر
+Your next chapter starts here.	خطوتك التالية تبدأ هنا.
+Welcome to the community.	أهلًا بك في المجتمع.
+Thank you for your order.	شكرًا لك على طلبك.
+Your confirmation and access instructions will arrive by email after a verified payment.	ستتلقى تأكيد الطلب وتعليمات الوصول بالبريد الإلكتروني بعد التحقق من الدفع.
+Check your inbox for your confirmation.	تحقق من بريدك الإلكتروني للاطلاع على التأكيد.
+Access your resources or book your session.	افتح مواردك أو احجز جلستك.
+Follow your personal next steps below.	اتبع الخطوات التالية المخصصة لك أدناه.
+Your welcome video will appear here when configured.	سيظهر فيديو الترحيب هنا بعد إعداده.
+Join the community	انضم إلى المجتمع
+Continue your journey	تابع رحلتك
+Ready to customize	جاهز للتخصيص
+Users & Buyers	المستخدمون والمشترون
+Product Specs	مواصفات المنتج
+Product Users & Buyers	مستخدمو المنتج ومشتروه
+No users have purchased this product yet	لم يشترِ أي مستخدم هذا المنتج بعد
+Try clearing your search filter.	جرّب مسح فلتر البحث.
+Customers who complete checkout or get approved will appear here automatically.	يظهر هنا تلقائيًا العملاء الذين يكملون الدفع أو تتم الموافقة عليهم.
+No email recorded	لم يُسجّل بريد إلكتروني
+Email copied	تم نسخ البريد الإلكتروني
+No description added.	لم يُضف وصف.
+Paid Sales	المبيعات المدفوعة
+CRM Pipeline	مسار إدارة علاقات العملاء
+Default pipeline	المسار الافتراضي
+Initial Stage	المرحلة الأولى
+Choose a star rating and enter your name and review.	اختر تقييمًا بالنجوم وأدخل اسمك ومراجعتك.
+Save this product before submitting a review.	احفظ المنتج قبل إرسال المراجعة.
+Ratings & reviews	التقييمات والمراجعات
+Showing the latest	عرض الأحدث
+out of 5 stars	من 5 نجوم
+Be the first to leave a review	كن أول من يكتب مراجعة
+Share your experience to help others choose.	شارك تجربتك لمساعدة الآخرين على الاختيار.
+Share your experience	شارك تجربتك
+Your rating	تقييمك
+star	نجمة
+Your review	مراجعتك
+Thank you! Your review has been submitted.	شكرًا لك! أُرسلت مراجعتك.
+Submit review	إرسال المراجعة
+No reviews yet	لا توجد مراجعات بعد
+Watch the product story	شاهد قصة المنتج
+Could not create your product. Please try again.	تعذّر إنشاء المنتج. يرجى إعادة المحاولة.
+THE PRODUCT STUDIO	استوديو المنتجات
+Start with something great.	ابدأ بقالب جاهز.
+Expertly structured services, downloads and courses. Ready for your brand.	قوالب احترافية للخدمات والملفات القابلة للتنزيل والدورات. خصّصها لعلامتك التجارية.
+Curated by Upclick	من اختيار Upclick
+Sort templates	ترتيب القوالب
+templates · Ready to customize	قوالب · جاهزة للتخصيص
+Creating…	جارٍ الإنشاء…
+No templates match your filters	لا توجد قوالب تطابق عوامل التصفية
+Try another niche or clear your search.	جرّب مجالًا آخر أو امسح البحث.
+Your learning path	مسار التعلّم
+Explore the demo resources	استعرض الموارد التجريبية
+Demo content included. Replace with your own files before publishing.	يتضمن القالب محتوى تجريبيًا. استبدله بملفاتك قبل النشر.
+YOUR NEXT OFFER	عرضك التالي
+Payment options	خيارات الدفع
+Sample availability	أوقات متاحة للمعاينة
+Connects to an available 60-minute workspace calendar. If none exists, connect one in the editor.	يرتبط بتقويم متاح في مساحة العمل لمواعيد مدتها 60 دقيقة. إذا لم يتوفر تقويم، اربط واحدًا في المحرر.
+Instructor: Samir Morgan. Includes sample videos and PDFs to replace with your own lessons.	المدرّب: Samir Morgan. يتضمن القالب مقاطع فيديو وملفات PDF نموذجية يمكنك استبدالها بدروسك.
+Creating your product…	جارٍ إنشاء المنتج…
+Creates your own editable draft. No payment required.	ينشئ مسودة قابلة للتعديل دون دفع.
+Your service name	اسم خدمتك
+Provider unassigned	لم يُعيّن مقدّم الخدمة
+Your service introduction appears here.	تظهر مقدمة خدمتك هنا.
+from the course roster?	من قائمة طلاب الدورة؟
+Type a tag and press Enter	اكتب وسمًا واضغط Enter
+Suggested tags	الوسوم المقترحة
+Press Enter or comma to add a tag.	اضغط Enter أو اكتب فاصلة لإضافة وسم.
+Instructor not assigned	لم يُعيّن مدرّب
+Back to confirmation	العودة إلى التأكيد
+Your product	منتجك
+Syncing CRM	مزامنة بيانات العملاء
+Syncing CRM…	جارٍ مزامنة بيانات العملاء…
+Your workspace will be ready in a moment.	ستصبح مساحة عملك جاهزة قريبًا.
+from the workspace? It will be archived and its data retained. Move its contacts first and keep at least one active pipeline.	من مساحة العمل؟ ستتم أرشفته مع الاحتفاظ ببياناته. انقل جهات الاتصال أولًا واترك مسارًا نشطًا واحدًا على الأقل.
+Pipeline archived.	تمت أرشفة المسار.
+Archive pipeline	أرشفة المسار
+Map each column to only one field.	اربط كل عمود بحقل واحد فقط.
+Paste CSV	لصق بيانات CSV
+Unnamed contact	جهة اتصال بلا اسم
+Independent contact	جهة اتصال مستقلة
+Contact name is required.	اسم جهة الاتصال مطلوب.
+Contact details updated successfully	تم تحديث بيانات جهة الاتصال بنجاح
+Failed to update contact details	تعذّر تحديث بيانات جهة الاتصال
+Update contact details and click Save Changes.	حدّث بيانات جهة الاتصال ثم انقر على «حفظ التغييرات».
+Interest	الاهتمام
+Main interest or program	مجال الاهتمام الرئيسي أو البرنامج
+Schedule next follow-up	جدولة المتابعة التالية
+Schedule follow-up	جدولة متابعة
+Opportunity name	اسم الفرصة
+Follow-up date and time	تاريخ المتابعة ووقتها
+Use your local time. Clear the date to remove this follow-up.	استخدم توقيتك المحلي. امسح التاريخ لإزالة المتابعة.
+Changes could not be saved. Please try again.	تعذّر حفظ التغييرات. يرجى إعادة المحاولة.
+Pipeline routing	التوجيه إلى المسار
+Save pipeline routing	حفظ التوجيه إلى المسار
+No custom fields added.	لم تُضف حقول مخصصة.
+No activity yet.	لا يوجد نشاط بعد.
+Add a checkout or sales page URL in the product settings to share a link.	أضف رابط الدفع أو صفحة المبيعات في إعدادات المنتج لتتمكن من مشاركته.
+Checkout link copied.	تم نسخ رابط الدفع.
+Copy checkout link	نسخ رابط الدفع
+Share by email	المشاركة بالبريد الإلكتروني
+Share on WhatsApp	المشاركة عبر واتساب
+Purchases and payments linked by contact, email or phone.	المشتريات والمدفوعات المرتبطة بجهة الاتصال أو بريدها الإلكتروني أو رقم هاتفها.
+Attach Product	إرفاق منتج
+No orders recorded for this contact. Attach a product to track interest or share its checkout link.	لا توجد طلبات مسجلة لجهة الاتصال هذه. أرفق منتجًا لمتابعة اهتمامها به أو لمشاركة رابط الدفع.
+Attached products	المنتجات المرفقة
+Attached	مرفق
+Purchase not recorded	لم تُسجّل عملية شراء
+Attach product to contact	إرفاق منتج بجهة اتصال
+Product attached to contact.	تم إرفاق المنتج بجهة الاتصال.
+Associate a product with	اربط منتجًا بـ
+A purchase appears here after an order or payment is recorded.	تظهر عملية الشراء هنا بعد تسجيل طلب أو دفعة.
+Product to attach	المنتج المراد إرفاقه
+No products available yet.	لا توجد منتجات متاحة بعد.
+This product is already attached to the contact.	هذا المنتج مرفق بالفعل بجهة الاتصال.
+No conversations linked to this contact.	لا توجد محادثات مرتبطة بجهة الاتصال هذه.
+Threads require a matching contact ID, email or phone.	لربط المحادثات، يجب أن يتطابق معرّف جهة الاتصال أو بريدها الإلكتروني أو رقم هاتفها.
+No appointments recorded for this contact.	لا توجد مواعيد مسجلة لجهة الاتصال هذه.
+Live AI replies:	الردود الذكية المباشرة:
+Loading automation status…	جارٍ تحميل حالة الأتمتة…
+No automated sequences linked to this contact.	لا توجد تسلسلات آلية مرتبطة بجهة الاتصال هذه.
+Sample orders · illustrative data	طلبات نموذجية · بيانات توضيحية
+CRM lead routing	توجيه العملاء المحتملين
+Default · Main Pipeline	الافتراضي · المسار الرئيسي
+Unavailable pipeline · choose another	المسار غير متاح · اختر مسارًا آخر
+Privacy policy table of contents	جدول محتويات سياسة الخصوصية
+Payment provider	مزوّد الدفع
+Could not load automations	تعذّر تحميل الأتمتة
+Automation & Campaign	الأتمتة والحملات
+AI Assistant Setup	إعداد AI Agent
+AI tone / personality	نبرة المساعد الذكي وشخصيته
+Copilot can make mistakes. Review drafts before confirming.	قد يخطئ المساعد الذكي. راجع المسودات قبل اعتمادها.
+Copilot is working…	المساعد الذكي يعمل…
+Ask the AI Copilot	اسأل المساعد الذكي
+Back to AI Copilot	العودة إلى AI Agent
+Edit AI Assistant	تعديل المساعد الذكي
+Test AI Assistant	اختبار المساعد الذكي
+Reviewed · Used by Copilot, Inbox, and Follow-up	تمت المراجعة · يستخدمه المساعد الذكي وصندوق الوارد والمتابعة
+Copilot and your customer-facing tools use these reviewed sources.	يستخدم المساعد الذكي وأدوات التواصل مع العملاء هذه المصادر التي تمت مراجعتها.
+CRM & Leads	ادارة العملا
+CRM & leads	ادارة العملا
+Templates belong to your WhatsApp Business number. Connect it to create and manage them here.	ترتبط القوالب برقم واتساب للأعمال. اربط الرقم لإنشاء القوالب وإدارتها هنا.
+Template deleted	تم حذف القالب
+WhatsApp Templates	قوالب واتساب
+Create templates, send them to Meta for review, and use the approved ones in campaigns.	أنشئ القوالب وأرسلها إلى Meta للمراجعة، ثم استخدم القوالب المعتمدة في الحملات.
+No templates yet	لا توجد قوالب بعد
+Create your first template. Meta usually reviews it within minutes, then you can use it in a campaign.	أنشئ قالبك الأول. تراجعه Meta عادةً خلال دقائق، ثم يمكنك استخدامه في حملة.
+Meta:	مراجعة Meta:
+No templates match.	لا توجد قوالب مطابقة.
+Meta reviews every template.	تراجع Meta كل قالب.
+Only approved templates can be used in campaigns. Review usually takes a few minutes and can take up to a day; statuses update here on their own.	يمكن استخدام القوالب المعتمدة فقط في الحملات. تستغرق المراجعة عادةً بضع دقائق وقد تمتد إلى يوم. تتحدّث الحالات هنا تلقائيًا.
+It will be deleted from Meta in every language. You can’t reuse this name for 30 days, and scheduled campaigns using it will stop.	سيُحذف القالب من Meta بجميع اللغات. لا يمكنك إعادة استخدام اسمه لمدة 30 يومًا، وستتوقف الحملات المجدولة التي تستخدمه.
+Template sent to Meta for review	أُرسل القالب إلى Meta للمراجعة
+Submit for review	إرسال للمراجعة
+Basics	الأساسيات
+Lowercase letters, numbers and _ only.	استخدم الأحرف الإنجليزية الصغيرة والأرقام والشرطة السفلية (_) فقط.
+English (en)	الإنجليزية (en)
+English US (en_US)	الإنجليزية الأمريكية (en_US)
+Header type	نوع الترويسة
+Header text	نص الترويسة
+Sample media link	رابط وسائط نموذجي
+Body	متن الرسالة
+Sample values	قيم نموذجية
+Meta needs an example for each variable	تحتاج Meta إلى مثال لكل متغيّر
+Example for variable	مثال للمتغيّر
+Buttons	الأزرار
+up to 10	حتى 10
+Quick reply	رد سريع
+Visit website	زيارة الموقع
+Call phone number	الاتصال برقم هاتف
+Your message appears here.	تظهر رسالتك هنا.
+Before you submit	قبل الإرسال
+Domain connected	تم ربط النطاق
+Domain reassigned. Open domain configuration to verify DNS and SSL.	أُعيد تعيين النطاق. افتح إعداداته للتحقق من DNS وSSL.
+Active Brand Logo Preview	معاينة شعار العلامة التجارية الحالي
+System Default	الشعار الافتراضي
+Reset to default logo	استعادة الشعار الافتراضي
+Uploading brand logo…	جارٍ رفع شعار العلامة التجارية…
+Drag & drop your logo here, or click to browse	اسحب شعارك وأفلته هنا أو انقر للتصفّح
+Supports PNG, JPEG, WebP & SVG up to 10 MB · Recommended 3:1 horizontal or 1:1 square	يدعم PNG وJPEG وWebP وSVG حتى 10 ميغابايت · يُفضّل شعار أفقي بنسبة 3:1 أو مربع بنسبة 1:1
+Logo Image URL	رابط صورة الشعار
+Privacy policy link copied to clipboard	تم نسخ رابط سياسة الخصوصية إلى الحافظة
+Could not copy link	تعذّر نسخ الرابط
+Could not copy email	تعذّر نسخ البريد الإلكتروني
+My Plan	باقتي
+Jump to	انتقل إلى
+Workspace Owner	مالك مساحة العمل
+Agency user	مستخدم الوكالة
+Your Role	دورك
+Facebook Messenger	ماسنجر فيسبوك
+Reply to messages sent to your Facebook Page.	رد على الرسائل الواردة إلى صفحتك على فيسبوك.
+Reply to Instagram DMs. The account must be a professional account linked to a Facebook Page.	رد على رسائل إنستغرام الخاصة. يجب أن يكون الحساب احترافيًا ومرتبطًا بصفحة على فيسبوك.
+Reply on your WhatsApp Business number.	رد على الرسائل عبر رقم واتساب للأعمال.
+Connect Facebook	ربط فيسبوك
+Connect Instagram	ربط إنستغرام
+Connect WhatsApp	ربط واتساب
+Enter a valid email address	أدخل عنوان بريد إلكتروني صالحًا
+Close chat history	إغلاق سجل الدردشة
+Profile menu	قائمة الملف الشخصي
+Low thinking	مستوى التفكير: منخفض
+Medium thinking	مستوى التفكير: متوسط
+High thinking	مستوى التفكير: مرتفع
+Fast & concise responses	ردود سريعة ومختصرة
+Balanced reasoning & speed	توازن بين التحليل وسرعة الرد
+Deep strategic analysis	تحليل استراتيجي معمّق
+Quickly reviewing your workspace…	جارٍ إجراء مراجعة سريعة لمساحة عملك…
+Reviewing your workspace…	جارٍ مراجعة مساحة عملك…
+Thinking deeply about your workspace…	جارٍ تحليل مساحة عملك بالتفصيل…
+Web search enabled	البحث على الويب مفعّل
+Deep research enabled	البحث المعمّق مفعّل
+Microphone access was denied. Allow access in your browser settings to record a voice note.	رُفض الوصول إلى الميكروفون. اسمح بالوصول من إعدادات المتصفح لتسجيل ملاحظة صوتية.
+Could not start microphone recording.	تعذّر بدء التسجيل من الميكروفون.
+Open Customer Portal	فتح بوابة العملاء
+Tracking Settings	إعدادات التتبع
+Event Logs	سجل الأحداث
+Event Management	إدارة الأحداث
+Meta ID valid	معرّف Meta صالح
+Meta script requested	تم طلب برنامج Meta
+Test Meta	اختبار Meta
+GA4 ID valid	معرّف GA4 صالح
+GA4 script requested	تم طلب برنامج GA4
+Test GA4	اختبار GA4
+Tracking enabled	التتبع مفعّل
+HTTPS connection	اتصال HTTPS
+Meta SDK available	حزمة Meta متاحة
+GA4 SDK available	حزمة GA4 متاحة
+Events observed this session	الأحداث المرصودة في هذه الجلسة
+Custom events configured	تم إعداد الأحداث المخصصة
+Webhook URL configured (delivery not connected)	رابط Webhook مُعدّ (خدمة الإرسال غير متصلة)
+Tracking scope authorized	صلاحية التتبع متاحة
+Run a local PageView test	تشغيل اختبار PageView محلي
+Run local test events from this page. They appear in the event logs without sending production conversions.	اختبر الأحداث محليًا من هذه الصفحة. تظهر في سجل الأحداث دون إرسال تحويلات فعلية.
+Standard events are ready to use. Add a custom event for a workspace-specific action.	الأحداث القياسية جاهزة للاستخدام. أضف حدثًا مخصصًا لإجراء يخص مساحة عملك.
+Use this SDK to dispatch events from the application code.	استخدم هذه الحزمة لإرسال الأحداث من كود التطبيق.
+Advanced tools	أدوات متقدمة
+Pixel navigation	أقسام إعدادات البكسل
+Realtime events and debug logs	الأحداث المباشرة وسجلات التصحيح
+Test event added to Event Logs	أُضيف الحدث التجريبي إلى سجل الأحداث
+Workspace record	سجل مساحة العمل
+Verified transaction	معاملة مؤكدة
+Dispatched	تم الإرسال
+Local test	اختبار محلي
+Local only	محلي فقط
+Destinations	الوجهات
+Payload	البيانات
+Total Events	إجمالي الأحداث
+Recorded conversions	التحويلات المسجلة
+Coming soon	قريبًا

@@ -115,6 +115,10 @@ function reconcileCommerceFromRequests() {
       Array.isArray(req.items) && req.items.length
         ? req.items
         : [{ productId, productName, amount, quantity: 1 }];
+    const cName = req.customerName || existing.customerName || 'Customer';
+    const cEmail = req.customerEmail || existing.customerEmail || '';
+    const cPhone = req.customerPhone || existing.customerPhone || '';
+    const customerObj = { name: cName, email: cEmail, phone: cPhone };
     ordersById.set(req.id, {
       ...existing,
       id: req.id,
@@ -124,9 +128,10 @@ function reconcileCommerceFromRequests() {
       productName,
       items,
       contactId,
-      customerName: req.customerName || existing.customerName || 'Customer',
-      customerEmail: req.customerEmail || existing.customerEmail || '',
-      customerPhone: req.customerPhone || existing.customerPhone || '',
+      customer: customerObj,
+      customerName: cName,
+      customerEmail: cEmail,
+      customerPhone: cPhone,
       currency: req.currency || req.totals?.currency || existing.currency || 'USD',
       amount,
       total: amount,
@@ -159,6 +164,10 @@ function reconcileCommerceFromRequests() {
     txnsById.set(req.id, {
       ...existing,
       ...derivedOrder,
+      customerName: derivedOrder.customerName,
+      customerEmail: derivedOrder.customerEmail,
+      customerPhone: derivedOrder.customerPhone,
+      customer: derivedOrder.customer,
       date: derivedOrder.createdAt,
     });
   }

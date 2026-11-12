@@ -4,6 +4,15 @@
 @media(max-width:650px){.fn-analytics-bottom,.fn-integration-grid{grid-template-columns:1fr}.fn-date-range{margin-inline-start:0}.fn-performance .aw-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.fn-ssl{display:none}.fn-focused-editor.aw-editor-host{min-height:0}.fn-column-layout{grid-template-columns:1fr!important}.fn-element-actions button>span{display:none}}
 @media(prefers-reduced-motion:reduce){.fn-drop-zone,.fn-editable-section,.fn-element-actions,.fn-bar i,.fn-domain-options>button{transition:none}}
 
+@media (max-width: 380px) {
+  .aw-funnels-workspace .fn-performance .aw-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .aw-funnels-workspace .fn-performance .aw-metrics article > div {
+    min-width: 0;
+  }
+}
+
 .fn-focused-editor .fb-site-topline nav,.fn-focused-editor .fb-mobile-nav-toggle,.fn-focused-editor .fb-live-page-nav nav,.fn-focused-editor .fb-live-mobile-nav-toggle{display:none}
 
 @media(min-width:1000px) and (max-height:820px){.aw-funnels-workspace .aw-step-image{height:96px}.aw-funnels-workspace .aw-asset-image{height:110px}.aw-funnels-workspace .aw-utilities{margin-bottom:7px}}

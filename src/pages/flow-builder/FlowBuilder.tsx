@@ -1,3 +1,4 @@
+import { translateText, useUILanguage } from '../../i18n/display';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   ReactFlow, ReactFlowProvider, Background, Controls, addEdge, useEdgesState, useNodesState, useReactFlow,
@@ -19,6 +20,7 @@ const Nav = createContext<{ view: View; go: (view: View) => void }>({ view: 'aut
 
 /** The Flow Builder tab of AI Follow-Up. State lives in the URL: ?tab=flows[&flow=id] (?tab=channels now redirects to Settings › Integrations). */
 export function FlowBuilderTab() {
+  useUILanguage()
   const params = new URLSearchParams(location.search)
   const [view, setView] = useState<View>(params.get('tab') === 'channels' ? 'channels' : 'automation')
   const [openId, setOpenId] = useState<string | null>(params.get('flow'))
@@ -63,21 +65,21 @@ function FlowList({ onOpen }: { onOpen: (id: string) => void }) {
     <div className="fb-shell">
       <Sidebar />
       <main className="fb-list-page">
-        <h1>Automations</h1>
+        <h1>{translateText("Automations")}</h1>
         <form className="fb-create" onSubmit={create}>
-          <label htmlFor="new-name" className="sr-only">Automation name</label>
-          <input id="new-name" dir="auto" placeholder="New automation name" value={name} onChange={e => setName(e.target.value)} />
-          <button type="submit" className="fb-btn fb-btn-primary">Create</button>
+          <label htmlFor="new-name" className="sr-only">{translateText("Automation name")}</label>
+          <input id="new-name" dir="auto" placeholder={translateText("New automation name")} value={name} onChange={e => setName(e.target.value)} />
+          <button type="submit" className="fb-btn fb-btn-primary">{translateText("Create")}</button>
         </form>
-        {error && <p className="fb-error" role="alert">Could not load automations: {error}</p>}
-        {flows?.length === 0 && <p className="fb-muted">No automations yet. Create the first one above.</p>}
+        {error && <p className="fb-error" role="alert">{translateText("Could not load automations: ")}{error}</p>}
+        {flows?.length === 0 && <p className="fb-muted">{translateText("No automations yet. Create the first one above.")}</p>}
         <ul className="fb-flow-list">
           {flows?.map(f => (
             <li key={f.id}>
               <button type="button" className="fb-flow-row" onClick={() => onOpen(f.id)}>
                 <span dir="auto">{f.name}</span>
-                <span className={`fb-badge badge-${f.status}`}>{f.status.toUpperCase()}</span>
-                {f.has_unpublished_changes && <span className="fb-muted">Unpublished changes</span>}
+                <span className={`fb-badge badge-${f.status}`}>{translateText(f.status.toUpperCase())}</span>
+                {f.has_unpublished_changes && <span className="fb-muted">{translateText("Unpublished changes")}</span>}
               </button>
             </li>
           ))}
@@ -162,42 +164,42 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
 
   const sel = useMemo(() => nodes.find(n => n.id === selected) ?? null, [nodes, selected])
 
-  if (!flow) return <div className="fb-shell"><main className="fb-list-page">{notice ? <p className="fb-error">{notice.text}</p> : <p className="fb-muted">Loading…</p>}</main></div>
+  if (!flow) return <div className="fb-shell"><main className="fb-list-page">{notice ? <p className="fb-error">{translateText(notice.text)}</p> : <p className="fb-muted">{translateText("Loading…")}</p>}</main></div>
 
   return (
     <div className="fb-shell">
       <div className="fb-main">
         <header className="fb-topbar">
-          <button type="button" className="fb-btn fb-btn-ghost" onClick={onBack}>Automations</button>
+          <button type="button" className="fb-btn fb-btn-ghost" onClick={onBack}>{translateText("Automations")}</button>
           <span aria-hidden="true" className="fb-muted">/</span>
-          <label htmlFor="flow-name" className="sr-only">Automation name</label>
+          <label htmlFor="flow-name" className="sr-only">{translateText("Automation name")}</label>
           <input id="flow-name" className="fb-title-input" dir="auto" value={flow.name} onChange={e => { setFlow({ ...flow, name: e.target.value }); touch() }} />
-          <span className={`fb-badge badge-${flow.status}`}>{flow.status.toUpperCase()}</span>
+          <span className={`fb-badge badge-${flow.status}`}>{translateText(flow.status.toUpperCase())}</span>
           <span className="fb-spacer" />
-          {notice && <span className={`fb-notice tone-${notice.tone}`} role="status">{notice.text}</span>}
-          {dirty && <span className="fb-muted">Unsaved</span>}
-          <button type="button" className="fb-btn fb-btn-secondary" onClick={save} disabled={busy !== null}>{busy === 'save' ? 'Saving…' : 'Save draft'}</button>
-          <button type="button" className="fb-btn fb-btn-secondary" onClick={async () => { if (!dirty || await save()) setTesting(true) }}>Test</button>
+          {notice && <span className={`fb-notice tone-${notice.tone}`} role="status">{translateText(notice.text)}</span>}
+          {dirty && <span className="fb-muted">{translateText("Unsaved")}</span>}
+          <button type="button" className="fb-btn fb-btn-secondary" onClick={save} disabled={busy !== null}>{busy === 'save' ? translateText("Saving…") : translateText("Save draft")}</button>
+          <button type="button" className="fb-btn fb-btn-secondary" onClick={async () => { if (!dirty || await save()) setTesting(true) }}>{translateText("Test")}</button>
           {flow.status === 'live'
-            ? <button type="button" className="fb-btn fb-btn-secondary" onClick={async () => setFlow(await api.stop(flowId))}>Stop</button>
+            ? <button type="button" className="fb-btn fb-btn-secondary" onClick={async () => setFlow(await api.stop(flowId))}>{translateText("Stop")}</button>
             : null}
           <button type="button" className="fb-btn fb-btn-primary" onClick={publish} disabled={busy !== null}>
-            {flow.status === 'live' && !flow.has_unpublished_changes && !dirty ? 'Live' : busy === 'publish' ? 'Publishing…' : 'Set live'}
+            {flow.status === 'live' && !flow.has_unpublished_changes && !dirty ? translateText("Live") : busy === 'publish' ? translateText("Publishing…") : translateText("Set live")}
           </button>
         </header>
 
         <div className="fb-work">
-          <nav className="fb-palette" aria-label="Add a step">
-            <p className="fb-eyebrow">Add step</p>
+          <nav className="fb-palette" aria-label={translateText("Add a step")}>
+            <p className="fb-eyebrow">{translateText("Add step")}</p>
             {(Object.keys(NODE_META) as NodeType[]).map(t => (
               <button key={t} type="button" className="fb-palette-item" onClick={() => addStep(t)}>
                 <span className={`fb-dot tone-${NODE_META[t].tone}`} aria-hidden="true" />
-                <span><strong>{NODE_META[t].label}</strong><small>{NODE_META[t].hint}</small></span>
+                <span><strong>{translateText(NODE_META[t].label)}</strong><small>{translateText(NODE_META[t].hint)}</small></span>
               </button>
             ))}
           </nav>
 
-          <div className="fb-canvas">
+          <div className="fb-canvas" dir="ltr">
             <ReactFlow
               nodes={nodes} edges={edges} nodeTypes={nodeTypes}
               onNodesChange={ch => { onNodesChange(ch); if (ch.some(c => c.type !== 'select' && c.type !== 'dimensions')) touch() }}
@@ -205,6 +207,15 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
               onConnect={onConnect}
               onSelectionChange={({ nodes }) => setSelected(nodes[0]?.id ?? null)}
               deleteKeyCode={['Delete']}
+              ariaLabelConfig={{
+                'controls.ariaLabel': translateText('Control Panel'),
+                'controls.zoomIn.ariaLabel': translateText('Zoom In'),
+                'controls.zoomOut.ariaLabel': translateText('Zoom Out'),
+                'controls.fitView.ariaLabel': translateText('Fit View'),
+                'node.a11yDescription.default': translateText('Press enter or space to select a node. Press delete to remove it and escape to cancel.'),
+                'node.a11yDescription.keyboardDisabled': translateText('Press enter or space to select a node. You can then use the arrow keys to move the node around. Press delete to remove it and escape to cancel.'),
+                'edge.a11yDescription.default': translateText('Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.'),
+              }}
               fitView
               proOptions={{ hideAttribution: true }}
             >
@@ -216,8 +227,8 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
           {testing
             ? <Simulator flowId={flowId} onClose={() => setTesting(false)} />
             : (
-              <aside className="fb-inspector" aria-label="Step settings">
-                {!sel && <p className="fb-muted">Select a step to edit it, or drag from a step’s right dot to link it to the next one.</p>}
+              <aside className="fb-inspector" aria-label={translateText("Step settings")}>
+                {!sel && <p className="fb-muted">{translateText("Select a step to edit it, or drag from a step’s right dot to link it to the next one.")}</p>}
                 {sel?.id === START && (
                   <Inspector kind="start" triggers={(sel.data as StartData).triggers}
                     onTriggers={t => { setNodes(ns => ns.map(n => n.id === START ? { ...n, data: { triggers: t } } : n)); touch() }} />
@@ -238,8 +249,8 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
 function Sidebar() {
   const { view, go } = useContext(Nav)
   return (
-    <nav className="fb-sidebar" aria-label="Flow Builder">
-      <button type="button" aria-current={view === 'automation' ? 'page' : undefined} onClick={() => go('automation')}>Automations</button>
+    <nav className="fb-sidebar" aria-label={translateText("Flow Builder")}>
+      <button type="button" aria-current={view === 'automation' ? 'page' : undefined} onClick={() => go('automation')}>{translateText("Automations")}</button>
     </nav>
   )
 }

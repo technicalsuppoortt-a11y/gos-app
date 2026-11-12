@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 98,
-  "correctedDeclarations": 870,
+  "scannedStylesheets": 99,
+  "correctedDeclarations": 871,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 250,
+  "utilityOccurrences": 249,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 229,
+      "line": 238,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 240,
+      "line": 249,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 344,
+      "line": 363,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 382,
+      "line": 401,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 384,
+      "line": 403,
       "utility": "text-gray-400"
     },
     {
@@ -903,72 +903,72 @@
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 707,
+      "line": 715,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 726,
+      "line": 734,
       "utility": "text-slate-200"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 849,
+      "line": 857,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 915,
+      "line": 923,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 971,
+      "line": 979,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1086,
+      "line": 1094,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1161,
+      "line": 1169,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1173,
+      "line": 1181,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1202,
+      "line": 1210,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1208,
+      "line": 1216,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1222,
+      "line": 1230,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1243,
+      "line": 1251,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1269,
+      "line": 1277,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1302,
+      "line": 1310,
       "utility": "text-slate-500"
     },
     {
@@ -1187,11 +1187,6 @@
       "utility": "text-slate-400"
     },
     {
-      "file": "src/pages/MarketingTracking.tsx",
-      "line": 46,
-      "utility": "text-slate-100"
-    },
-    {
       "file": "src/pages/PrivacyPage.tsx",
       "line": 91,
       "utility": "text-slate-500"
@@ -1203,22 +1198,22 @@
     },
     {
       "file": "src/pages/settings/BillingPanel.tsx",
-      "line": 549,
+      "line": 593,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/settings/BillingPanel.tsx",
-      "line": 664,
+      "line": 712,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/settings/BillingPanel.tsx",
-      "line": 725,
+      "line": 790,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/settings/BillingPanel.tsx",
-      "line": 745,
+      "line": 812,
       "utility": "text-slate-500"
     },
     {
@@ -1228,32 +1223,32 @@
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 361,
+      "line": 422,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 479,
+      "line": 548,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 491,
+      "line": 560,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 515,
+      "line": 584,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 551,
+      "line": 627,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/TermsOfServicePage.tsx",
-      "line": 598,
+      "line": 676,
       "utility": "text-slate-400"
     }
   ],
@@ -3274,7 +3269,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 984,
+      "line": 990,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -3282,7 +3277,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1044,
+      "line": 1050,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -3290,7 +3285,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1124,
+      "line": 1130,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -3298,7 +3293,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1418,
+      "line": 1425,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",
@@ -4154,7 +4149,7 @@
     },
     {
       "file": "src/pages/ai-followup.css",
-      "line": 1419,
+      "line": 1418,
       "selector": ".af-composer-hint",
       "before": "#94a3b8",
       "after": "#475569",
@@ -7399,6 +7394,14 @@
       "before": "#EDE9FE",
       "after": "#334155",
       "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/pixel-connect.css",
+      "line": 380,
+      "selector": ".pixel-sdk",
+      "before": "#edf0f8",
+      "after": "#334155",
+      "contrastOnWhite": 1.14
     },
     {
       "file": "src/pages/products-payments-overrides.css",

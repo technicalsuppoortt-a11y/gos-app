@@ -352,11 +352,11 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
           <form className="st-channel-picker" onSubmit={meta.connectManual}>
             <h4>{translateText('Connect with your own Meta app')}</h4>
             <p>{translateText('First add this webhook to your app in Meta, and subscribe to the messages field.')}</p>
-            <Field label="Callback URL"><input readOnly value={meta.config?.webhook_url ?? ''} /></Field>
-            <Field label="Verify token"><input readOnly value={meta.config?.verify_token ?? ''} /></Field>
-            <Field label="Phone number ID"><input required inputMode="numeric" value={meta.manual.external_id} onChange={e => meta.setManual({ ...meta.manual!, external_id: e.target.value })} /></Field>
-            <Field label="Permanent access token"><input required type="password" autoComplete="off" value={meta.manual.access_token} onChange={e => meta.setManual({ ...meta.manual!, access_token: e.target.value })} /></Field>
-            <Field label="App Secret"><input required type="password" autoComplete="off" value={meta.manual.app_secret} onChange={e => meta.setManual({ ...meta.manual!, app_secret: e.target.value })} /></Field>
+            <Field label={translateText("Callback URL")}><input readOnly value={meta.config?.webhook_url ?? ''} /></Field>
+            <Field label={translateText("Verify token")}><input readOnly value={meta.config?.verify_token ?? ''} /></Field>
+            <Field label={translateText("Phone number ID")}><input required inputMode="numeric" value={meta.manual.external_id} onChange={e => meta.setManual({ ...meta.manual!, external_id: e.target.value })} /></Field>
+            <Field label={translateText("Permanent access token")}><input required type="password" autoComplete="off" value={meta.manual.access_token} onChange={e => meta.setManual({ ...meta.manual!, access_token: e.target.value })} /></Field>
+            <Field label={translateText("App Secret")}><input required type="password" autoComplete="off" value={meta.manual.app_secret} onChange={e => meta.setManual({ ...meta.manual!, app_secret: e.target.value })} /></Field>
             <div className="st-modal-actions">
               <button type="button" className="st-secondary" onClick={() => meta.setManual(null)}>{translateText('Cancel')}</button>
               <button type="submit" className="st-primary" disabled={meta.busy !== null}>{localizeNode(meta.busy === 'whatsapp' ? 'Connecting…' : 'Connect')}</button>
@@ -374,7 +374,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
     <>
       <PanelHeading
         title={translateText('Integrations')}
-        description="Connect your core communication and scheduling channels with real-time Firebase workspace sync."
+        description={translateText("Connect your core communication and scheduling channels with real-time Firebase workspace sync.")}
       />
 
       {/* Summary & Filter Toolbar */}
@@ -1018,7 +1018,7 @@ function ConnectionModal({
               </span>
               <Toggle label="Automatic sync" checked={sync} onChange={setSync} />
             </div>
-            <Field label="Connected account">
+            <Field label={translateText("Connected account")}>
               <input
                 value={accountInput || (connection?.account ?? '')}
                 onChange={e => setAccountInput(e.target.value)}

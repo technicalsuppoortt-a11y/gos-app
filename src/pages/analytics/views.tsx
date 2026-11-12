@@ -137,7 +137,7 @@ export function LeadsView({ notify, compare }: ViewProps) {
             <colgroup><col style={{ width: '20%' }} /><col style={{ width: '26%' }} /><col style={{ width: '16%' }} /><col style={{ width: '11%' }} /><col style={{ width: '13%' }} /><col style={{ width: '14%' }} /></colgroup>
             <thead><tr><th className="text-start">{translateText("Lead")}</th><th className="text-start">{translateText("Email")}</th><th className="text-start">{translateText("Source")}</th><th className="text-center">{translateText("Quality")}</th><th className="text-center">{translateText("Score")}</th><th className="text-center">{translateText("Captured")}</th></tr></thead>
             <tbody>{rows.map(l => <tr key={l.email}>
-              <td className="text-start"><span className="an-customer"><img src={avatar(l.avatar)} alt={translateText("")} />{localizeNode(l.name)}</span></td>
+              <td className="text-start"><span className="an-customer"><img src={avatar(l.avatar)} alt={translateText("")} />{l.name}</span></td>
               <td className="an-muted-cell text-start">{l.email}</td>
               <td className="text-start"><span className="an-source-badge"><ChannelIcon kind={l.kind} />{localizeNode(l.source)}</span></td>
               <td className="text-center"><StatusBadge status={l.quality} /></td>
@@ -349,7 +349,7 @@ export function ProductsView({ notify, compare }: ViewProps) {
       <Card title={translateText("Product Sales Comparison")} action={rangeAction(notify, 'Product Sales Comparison')}>
         <div className="an-summary"><b>906</b><Delta value="31%" /><span>{translateText("units sold")}</span><Legend items={productLines.map(p => [p.name, p.color] as [string, string])} /></div>
         <ChartFrame yLabels={['20', '15', '10', '5', '0']}>
-          {localizeNode(productLines.map(p => { const pts = toPoints(p.data, 20); return <g key={p.name} className="an-series"><title>{localizeNode(p.name)}</title>
+          {localizeNode(productLines.map(p => { const pts = toPoints(p.data, 20); return <g key={p.name} className="an-series"><title>{p.name}</title>
             <path d={smoothPath(pts)} fill="none" stroke={p.color} strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
             <path d={dotsPath(pts.filter((_, i) => i % 3 === 0))} stroke={p.color} strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </g>; }))}
@@ -364,7 +364,7 @@ export function ProductsView({ notify, compare }: ViewProps) {
             <colgroup><col style={{ width: '27%' }} /><col style={{ width: '13%' }} /><col style={{ width: '9%' }} /><col style={{ width: '9%' }} /><col style={{ width: '11%' }} /><col style={{ width: '10%' }} /><col style={{ width: '8%' }} /><col style={{ width: '13%' }} /></colgroup>
             <thead><tr><th className="text-start">{translateText("Product")}</th><th className="text-center">{translateText("Type")}</th><th className="text-center">{translateText("Price")}</th><th className="text-center">{translateText("Units")}</th><th className="text-center">{translateText("Revenue")}</th><th className="text-center">{translateText("Conversion")}</th><th className="text-center">{translateText("Refunds")}</th><th className="text-center">{translateText("Trend")}</th></tr></thead>
             <tbody>{localizeNode(productRows.map(p => <tr key={p.name}>
-              <td className="text-start"><span className="an-product-cell"><img src={p.img} alt={translateText("")} />{localizeNode(p.name)}</span></td>
+              <td className="text-start"><span className="an-product-cell"><img src={p.img} alt={translateText("")} />{p.name}</span></td>
               <td className="text-center"><span className={`an-type mx-auto ${p.type.toLowerCase().replace(/\s+/g, '-')}`}>{localizeNode(p.type)}</span></td>
               <td className="text-center">{localizeNode(p.price)}</td><td className="text-center"><b>{localizeNode(p.units)}</b></td><td className="text-center">{localizeNode(p.revenue)}</td><td className="text-center">{localizeNode(p.conv)}</td><td className="text-center">{localizeNode(p.refunds)}</td>
               <td className="text-center"><Sparkline data={p.spark} color="#7C3AED" fill={false} className="an-table-spark mx-auto" /></td>

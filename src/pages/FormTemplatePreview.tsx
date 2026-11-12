@@ -1,9 +1,10 @@
-import { translateText } from '../i18n/display';
+import { formatDisplayMessage, translateText, useUILanguage } from '../i18n/display';
 import type { PageTemplate } from './page-template-data';
 import './form-template-preview.css';
 
 /** Gallery-only pure-SVG artwork matching the official curated Form templates. */
 export function FormTemplatePreview({ template }: { template: PageTemplate }) {
+  useUILanguage();
   const idLower = template.id.toLowerCase();
   const nameLower = template.name.toLowerCase();
   const isFlooring = idLower.includes('flooring') || nameLower.includes('flooring');
@@ -13,7 +14,7 @@ export function FormTemplatePreview({ template }: { template: PageTemplate }) {
   if (isFlooring) {
     return (
       <div className="pf-form-wireframe" data-form-preview={template.id}>
-        <svg viewBox="0 0 480 280" role="img" aria-label={translateText(`${template.name} form layout preview`)}>
+        <svg viewBox="0 0 480 280" role="img" aria-label={formatDisplayMessage('{{0}} form layout preview', template.name)}>
           <rect width="480" height="280" fill="#EAE4DC" />
           <circle cx="455" cy="18" r="70" fill="#A78BFA" opacity=".06" />
           <circle cx="22" cy="262" r="55" fill="#7C3AED" opacity=".05" />
@@ -64,7 +65,7 @@ export function FormTemplatePreview({ template }: { template: PageTemplate }) {
   if (isTrainer) {
     return (
       <div className="pf-form-wireframe" data-form-preview={template.id}>
-        <svg viewBox="0 0 480 280" role="img" aria-label={translateText(`${template.name} form layout preview`)}>
+        <svg viewBox="0 0 480 280" role="img" aria-label={formatDisplayMessage('{{0}} form layout preview', template.name)}>
           <defs>
             <linearGradient id="ptGold" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#FDE047" />
@@ -122,7 +123,7 @@ export function FormTemplatePreview({ template }: { template: PageTemplate }) {
   if (isArchitecture) {
     return (
       <div className="pf-form-wireframe" data-form-preview={template.id}>
-        <svg viewBox="0 0 480 280" role="img" aria-label={translateText(`${template.name} form layout preview`)}>
+        <svg viewBox="0 0 480 280" role="img" aria-label={formatDisplayMessage('{{0}} form layout preview', template.name)}>
           <rect width="480" height="280" fill="#F4F1EA" />
           <circle cx="458" cy="258" r="50" fill="#A78BFA" opacity=".05" />
           <rect x="24" y="12" width="432" height="256" rx="10" fill="#FFFFFF" stroke="#E5E0D8" />
@@ -173,10 +174,10 @@ export function FormTemplatePreview({ template }: { template: PageTemplate }) {
     { id: 'topic', label: 'Choose a topic', type: 'select' }
   ]).slice(0, 4);
   const split = fields.length > 3 && seed % 2 === 0;
-  const title = translateText(template.name);
+  const title = template.name;
   const shorten = (text: string, limit: number) => text.length > limit ? text.slice(0, limit - 1) + '…' : text;
   return <div className="pf-form-wireframe" data-form-preview={template.id}>
-    <svg viewBox="0 0 480 280" role="img" aria-label={translateText(`${template.name} form layout preview`)}>
+    <svg viewBox="0 0 480 280" role="img" aria-label={formatDisplayMessage('{{0}} form layout preview', template.name)}>
       <rect width="480" height="280" fill="var(--fp-canvas)"/>
       <circle cx={420 - seed % 60} cy="25" r="125" fill="#A78BFA" opacity=".12"/>
       <circle cx="30" cy="275" r="100" fill="#7C3AED" opacity=".08"/>
@@ -193,9 +194,9 @@ export function FormTemplatePreview({ template }: { template: PageTemplate }) {
         return <g key={field.id}>
           {choice ? <>
             <rect x={x} y={y + 3} width="12" height="12" rx={field.type === 'radio' ? 6 : 3} fill="var(--fp-input)" stroke="#A78BFA"/>
-            <text x={x + 20} y={y + 13} fill="var(--fp-muted)" fontSize="9">{shorten(translateText(field.label), split ? 24 : 52)}</text>
+            <text x={x + 20} y={y + 13} fill="var(--fp-muted)" fontSize="9">{shorten(field.label, split ? 24 : 52)}</text>
           </> : <>
-            <text x={x} y={y - 4} fill="var(--fp-ink)" fontSize="8" fontWeight="600">{shorten(translateText(field.label), split ? 26 : 58)}</text>
+            <text x={x} y={y - 4} fill="var(--fp-ink)" fontSize="8" fontWeight="600">{shorten(field.label, split ? 26 : 58)}</text>
             <rect x={x} y={y} width={width} height={field.type === 'textarea' && split ? 32 : 21} rx="5" fill="var(--fp-input)" stroke="var(--fp-border)"/>
             <rect x={x + 9} y={y + 9} width={Math.min(width - 40, 44 + (seed + index * 17) % 70)} height="3" rx="1.5" fill="var(--fp-muted)" opacity=".45"/>
             {field.type === 'select' && <path d={`m${x + width - 18} ${y + 8} 4 4 4-4`} stroke="#A78BFA" strokeWidth="1.7" fill="none" strokeLinecap="round"/>}

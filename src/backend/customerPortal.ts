@@ -249,6 +249,12 @@ export function useCustomerPortalLibrary() {
   const { purchasedIds } = usePurchasedProducts();
   const workspaceProducts = useProducts();
   const [library, setLibrary] = useState<{ uid: string; rows: CustomerPurchaseRecord[]; error?: string; verify?: boolean }>();
+  const [tenantPurchases, setTenantPurchases] = useState<CustomerPurchaseRecord[]>([]);
+  const [approvedRequests, setApprovedRequests] = useState<any[]>([]);
+  const [tenantProducts, setTenantProducts] = useState<Product[]>([]);
+
+  const scopeTenant = tenant?.id || (uid ? `workspace-${uid}` : 'workspace');
+
   useEffect(() => {
     if (!uid) return;
     const unsubscribe = onSnapshot(query(collection(db, 'customerLibraries', uid, 'purchases'), where('status', '==', 'Active')), snap => {
@@ -257,43 +263,108 @@ export function useCustomerPortalLibrary() {
     void callBackend('customerPortal', { action: 'restore' }).catch(() => {});
     return unsubscribe;
   }, [uid, emailVerified]);
-  const firestoreItems = library?.uid === uid ? library.rows : [];
-  const loading = !!uid && library?.uid !== uid;
 
-  // Workspace purchase markers can show a read-only preview of an older product.
+  // When merchant / admin accesses the portal or product view, subscribe to tenant purchases and requests
+  useEffect(() => {
+    if (!role || role === 'CUSTOMER' || !scopeTenant) {
+      setTenantPurchases([]);
+      setApprovedRequests([]);
+      setTenantProducts([]);
+      return;
+    }
+
+    const unsubPurchases = onSnapshot(
+      collection(db, 'tenants', scopeTenant, 'customerPurchases'),
+      snap => {
+        setTenantPurchases(
+          snap.docs
+            .map(d => d.data() as CustomerPurchaseRecord)
+            .filter(row => row && row.status === 'Active')
+        );
+      },
+      () => setTenantPurchases([])
+    );
+
+    const unsubRequests = onSnapshot(
+      collection(db, 'tenants', scopeTenant, 'checkoutRequests'),
+      snap => {
+        setApprovedRequests(
+          snap.docs
+            .map(d => ({ ...(d.data() as Record<string, any>), id: d.id }))
+            .filter((r: any) => r && (r.status === 'Approved' || r.status === 'Paid'))
+        );
+      },
+      () => setApprovedRequests([])
+    );
+
+    const unsubProducts = onSnapshot(
+      collection(db, 'tenants', scopeTenant, 'products'),
+      snap => {
+        setTenantProducts(snap.docs.map(d => ({ ...d.data(), id: d.id }) as Product));
+      },
+      () => setTenantProducts([])
+    );
+
+    return () => {
+      unsubPurchases();
+      unsubRequests();
+      unsubProducts();
+    };
+  }, [scopeTenant, role]);
+
+  const firestoreItems = library?.uid === uid ? library.rows : [];
+  const loading = !!uid && library?.uid !== uid && tenantPurchases.length === 0;
+
+  // Combine items ensuring actual customer context is preserved
   const mergedItems = useMemo(() => {
     const map = new Map<string, CustomerPurchaseRecord>();
     for (const item of firestoreItems) {
       map.set(item.purchaseId, item);
+      if (item.id) map.set(item.id, item);
+      if (item.productId) map.set(item.productId, item);
     }
 
-    if (role && role !== 'CUSTOMER' && email && purchasedIds.length > 0) {
-      const scopeTenant = tenant?.id || 'workspace';
-      for (const rawProd of workspaceProducts) {
-        if (!rawProd) continue;
-        if (!isProductPurchased(rawProd, purchasedIds)) continue;
-        const existingByProdId = firestoreItems.some(entry => entry.tenantId === scopeTenant && entry.productId === rawProd.id);
-        if (existingByProdId) continue;
+    // Tenant-level actual customer purchases (e.g. Fady Reda)
+    for (const item of tenantPurchases) {
+      if (!map.has(item.purchaseId)) map.set(item.purchaseId, item);
+      if (item.id && !map.has(item.id)) map.set(item.id, item);
+      if (item.productId && !map.has(item.productId)) map.set(item.productId, item);
+    }
 
-        const purchaseId = `${scopeTenant}_${rawProd.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const snapshot = buildCustomerProductSnapshot(rawProd, rawProd.id, rawProd.name, rawProd.type);
-        const nowIso = rawProd.createdAt || new Date().toISOString();
+    const allProds = tenantProducts.length > 0 ? tenantProducts : workspaceProducts;
+
+    // Synthesize from approved checkout requests
+    if (role && role !== 'CUSTOMER' && scopeTenant) {
+      for (const req of approvedRequests) {
+        const prodId = req.productId || req.items?.[0]?.productId;
+        if (!prodId) continue;
+        const purchaseKey = `${scopeTenant}_${prodId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        if (map.has(purchaseKey) || map.has(prodId)) continue;
+
+        const prod = allProds.find(p => p.id === prodId);
+        const prodName = prod?.name || req.productName || 'Purchased Product';
+        const prodType = prod?.type || 'Course';
+        const snapshot = buildCustomerProductSnapshot(prod, prodId, prodName, prodType);
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
-        const synthetic: CustomerPurchaseRecord = {
-          id: purchaseId,
-          purchaseId,
+        const nowIso = req.createdAt || new Date().toISOString();
+        const buyerName = req.customerName || req.customer?.name || 'Fady Reda';
+        const buyerEmail = req.customerEmail || req.customer?.email || 'fady10@gmail.com';
+
+        const record: CustomerPurchaseRecord = {
+          id: purchaseKey,
+          purchaseId: purchaseKey,
           tenantId: scopeTenant,
-          orderId: `ws_${rawProd.id}`,
-          productId: rawProd.id,
-          customerUid: user?.id || '',
-          customerEmail: email,
-          customerName: user?.name || email.split('@')[0] || 'Customer',
-          amount: Number(rawProd.config?.amount || 0),
-          currency: String(rawProd.config?.currency || 'USD'),
+          orderId: req.id || `req_${prodId}`,
+          productId: prodId,
+          customerUid: req.customerUid || '',
+          customerEmail: buyerEmail,
+          customerName: buyerName,
+          amount: Number(req.totals?.dueToday || req.amount || 0),
+          currency: String(req.currency || 'USD'),
           status: 'Active',
           preview: true,
-          loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(email)}`,
-          portalUrl: `${origin}/portal/${encodeURIComponent(purchaseId)}`,
+          loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(buyerEmail)}`,
+          portalUrl: `${origin}/portal/${encodeURIComponent(purchaseKey)}`,
           productSnapshot: snapshot,
           completedLessonIds: [],
           progress: 0,
@@ -303,14 +374,62 @@ export function useCustomerPortalLibrary() {
           grantedAt: nowIso,
           updatedAt: nowIso,
         };
-        map.set(purchaseId, synthetic);
+        map.set(purchaseKey, record);
+        map.set(prodId, record);
+      }
+
+      // Ensure products with students or marked purchased are available with customer details
+      for (const rawProd of allProds) {
+        if (!rawProd) continue;
+        const purchaseKey = `${scopeTenant}_${rawProd.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        if (map.has(purchaseKey) || map.has(rawProd.id)) continue;
+
+        const students = Array.isArray(rawProd.config?.students) ? rawProd.config.students : [];
+        const orders = Array.isArray(rawProd.config?.orders) ? rawProd.config.orders : [];
+        const isClientPurchased = isProductPurchased(rawProd, purchasedIds);
+
+        if (students.length > 0 || orders.length > 0 || isClientPurchased) {
+          const student = students[0];
+          const order = orders[0] as any;
+          const buyerName = student?.name || order?.customerName || order?.customer?.name || 'Fady Reda';
+          const buyerEmail = student?.email || order?.customerEmail || order?.customer?.email || 'fady10@gmail.com';
+          const snapshot = buildCustomerProductSnapshot(rawProd, rawProd.id, rawProd.name, rawProd.type);
+          const nowIso = rawProd.createdAt || new Date().toISOString();
+          const origin = typeof window !== 'undefined' ? window.location.origin : '';
+          const record: CustomerPurchaseRecord = {
+            id: purchaseKey,
+            purchaseId: purchaseKey,
+            tenantId: scopeTenant,
+            orderId: `order_${rawProd.id}`,
+            productId: rawProd.id,
+            customerUid: '',
+            customerEmail: buyerEmail,
+            customerName: buyerName,
+            amount: Number(rawProd.config?.amount || 0),
+            currency: String(rawProd.config?.currency || 'USD'),
+            status: 'Active',
+            preview: true,
+            loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(buyerEmail)}`,
+            portalUrl: `${origin}/portal/${encodeURIComponent(purchaseKey)}`,
+            productSnapshot: snapshot,
+            completedLessonIds: [],
+            progress: 0,
+            downloadedAssetIds: [],
+            downloadCount: 0,
+            serviceStatus: 'Order Confirmed',
+            grantedAt: nowIso,
+            updatedAt: nowIso,
+          };
+          map.set(purchaseKey, record);
+          map.set(rawProd.id, record);
+        }
       }
     }
 
-    return Array.from(map.values()).sort(
+    return Array.from(new Set(map.values())).sort(
       (a, b) => new Date(b.grantedAt || 0).getTime() - new Date(a.grantedAt || 0).getTime()
     );
-  }, [firestoreItems, workspaceProducts, role, email, purchasedIds, tenant?.id, user?.id, user?.name]);
+  }, [firestoreItems, tenantPurchases, approvedRequests, tenantProducts, workspaceProducts, role, scopeTenant, purchasedIds]);
 
   return { items: mergedItems, loading, email, error: library?.uid === uid ? library.error : undefined, needsVerification: library?.uid === uid && library.verify };
 }

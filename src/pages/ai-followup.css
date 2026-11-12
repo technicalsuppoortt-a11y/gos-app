@@ -236,7 +236,7 @@ font-family:Inter,"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;color:#
 .af-performance-metric>span{overflow:hidden!important;color:#334155!important;font-size:10px!important;font-weight:400!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 .af-performance-metric>b{color:#0f172a!important;font-size:11px!important;font-weight:700!important;text-align:end!important;white-space:nowrap!important}
 .af-performance-metric>.af-trend-pill{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:2px!important;padding:3px 6px!important;border-radius:6px!important;background:#ecfdf3!important;color:#16a34a!important;font-size:8px!important;font-weight:500!important;line-height:1!important;white-space:nowrap!important}
-.af-perf-chart{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);grid-template-rows:88px 18px;margin:10px 20px 12px 12px}
+.af-perf-chart{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);grid-template-rows:88px 18px;margin:10px 20px 12px 12px;direction:ltr}
 .af-perf-chart-y{position:relative;grid-row:1;grid-column:1}
 .af-perf-chart-y span{position:absolute;right:6px;color:#94a3b8;font-size:8px;line-height:1;transform:translateY(-50%)}
 .af-perf-chart-plot{position:relative;grid-row:1;grid-column:2}
@@ -434,7 +434,6 @@ font-family:Inter,"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;color:#
     inset: 0;
   }
 }
-
 /* Overrides for Zero-Scroll High-Density View */
 .af-overview-grid { gap: 6px !important; flex: 1; min-height: 0; }
 .af-column { gap: 6px !important; min-height: 0; display: flex; flex-direction: column; flex: 1; }
@@ -1817,4 +1816,54 @@ html.dark .af-empty-bot-icon {
   color: #b42318;
   font-size: 12px;
   line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .af-page .af-overview-grid > .af-column,
+  .af-page .af-performance-panel,
+  .af-page .af-tabs {
+    min-width: 0;
+  }
+  .af-page .af-channel-title b,
+  .af-page .af-assistant-config .af-attribute-copy :is(b, small) {
+    min-width: 0;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .af-page .af-kpi b {
+    font-size: 14px !important;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .af-page .af-perf-chart {
+    align-self: stretch;
+    width: auto;
+    min-width: 0;
+    margin-inline: 10px 16px;
+  }
+}
+@media (min-width: 900px) and (max-width: 1100px) {
+  .af-page .af-overview-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.08fr);
+  }
+}
+@media (min-width: 640px) and (max-width: 899px) {
+  .af-page .af-overview-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  }
+  .af-page .af-assistant-knowledge-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 360px) {
+  .af-page .af-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .af-page .af-panel-heading {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }

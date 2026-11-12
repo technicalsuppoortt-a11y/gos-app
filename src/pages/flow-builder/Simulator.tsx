@@ -1,3 +1,4 @@
+import { translateText } from '../../i18n/display';
 import { useState } from 'react'
 import { api, ApiError, type SimState } from './api'
 
@@ -30,14 +31,14 @@ export function Simulator({ flowId, onClose }: { flowId: string; onClose: () => 
   const skip = async () => apply(await api.skipDelay(flowId, session))
 
   return (
-    <aside className="fb-sim" aria-label="Test this flow">
+    <aside className="fb-sim" aria-label={translateText("Test this flow")}>
       <header className="fb-sim-head">
-        <strong>Test</strong>
-        <button type="button" className="fb-btn fb-btn-ghost" onClick={() => { setSession(`s${Date.now()}`); setLines([]); setState(null) }}>Restart</button>
-        <button type="button" className="fb-btn fb-btn-ghost" onClick={onClose} aria-label="Close test panel">Close</button>
+        <strong>{translateText("Test")}</strong>
+        <button type="button" className="fb-btn fb-btn-ghost" onClick={() => { setSession(`s${Date.now()}`); setLines([]); setState(null) }}>{translateText("Restart")}</button>
+        <button type="button" className="fb-btn fb-btn-ghost" onClick={onClose} aria-label={translateText("Close test panel")}>{translateText("Close")}</button>
       </header>
       <div className="fb-sim-log" aria-live="polite">
-        {lines.length === 0 && <p className="fb-muted">Send a trigger keyword to start the draft.</p>}
+        {lines.length === 0 && <p className="fb-muted">{translateText("Send a trigger keyword to start the draft.")}</p>}
         {lines.map((l, i) => (
           <div key={i} className={`fb-bubble from-${l.from}`} dir="auto">
             {l.text}
@@ -48,19 +49,19 @@ export function Simulator({ flowId, onClose }: { flowId: string; onClose: () => 
         ))}
       </div>
       {state?.run?.state === 'waiting_delay' && (
-        <div className="fb-sim-note">Waiting until {new Date(state.run.wake_at!).toLocaleString()} <button type="button" className="fb-btn fb-btn-soft" onClick={skip}>Skip wait</button></div>
+        <div className="fb-sim-note">{translateText("Waiting until ")}{new Date(state.run.wake_at!).toLocaleString()} <button type="button" className="fb-btn fb-btn-soft" onClick={skip}>{translateText("Skip wait")}</button></div>
       )}
       {state?.contact && (
         <dl className="fb-sim-contact">
-          <dt>Tags</dt><dd>{state.contact.tags.join(', ') || '—'}</dd>
+          <dt>{translateText("Tags")}</dt><dd>{state.contact.tags.join(', ') || '—'}</dd>
           {Object.entries(state.contact.fields).map(([k, v]) => <div key={k}><dt>{k}</dt><dd dir="auto">{v}</dd></div>)}
         </dl>
       )}
-      {error && <p className="fb-error" role="alert">{error}</p>}
+      {error && <p className="fb-error" role="alert">{translateText(error)}</p>}
       <form className="fb-sim-input" onSubmit={e => { e.preventDefault(); send(text) }}>
-        <label htmlFor="sim-text" className="sr-only">Message</label>
-        <input id="sim-text" dir="auto" value={text} onChange={e => setText(e.target.value)} placeholder="Type a message" />
-        <button type="submit" className="fb-btn fb-btn-primary">Send</button>
+        <label htmlFor="sim-text" className="sr-only">{translateText("Message")}</label>
+        <input id="sim-text" dir="auto" value={text} onChange={e => setText(e.target.value)} placeholder={translateText("Type a message")} />
+        <button type="submit" className="fb-btn fb-btn-primary">{translateText("Send")}</button>
       </form>
     </aside>
   )

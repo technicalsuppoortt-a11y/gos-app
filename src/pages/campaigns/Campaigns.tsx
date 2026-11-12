@@ -39,9 +39,12 @@ const headerOf = (tpl?: WaTemplate) => tpl?.components.find(c => c.type.toUpperC
 const varLabel = (key: string) => { const [component, ...rest] = key.split('.'); const name = rest[rest.length - 1]; return component === 'body' ? `{{${name}}}` : `${component} {{${name}}}` }
 const buttonsOf = (tpl?: WaTemplate) => tpl?.components.find(c => c.type.toUpperCase() === 'BUTTONS')?.buttons ?? []
 
-export function CampaignsTab() {
+export function CampaignsTab({ startInEditor = false, onEditorOpened }: { startInEditor?: boolean; onEditorOpened?: () => void }) {
   useUILanguage()
-  const [view, setView] = React.useState<View>({ name: 'list' })
+  const [view, setView] = React.useState<View>(() => ({ name: startInEditor ? 'edit' : 'list' }))
+  React.useEffect(() => {
+    if (startInEditor) onEditorOpened?.()
+  }, [startInEditor, onEditorOpened])
   return (
     <div className="cp-root">
       {view.name === 'list' && <CampaignList onNew={() => setView({ name: 'edit' })} onOpen={c => setView(c.status === 'draft' ? { name: 'edit', campaign: c } : { name: 'report', id: c.id })} />}

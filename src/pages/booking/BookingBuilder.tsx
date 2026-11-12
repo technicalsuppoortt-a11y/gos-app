@@ -1,5 +1,5 @@
 import { CRMRouting } from '../CRMRouting';
-import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
+import { useUILanguage, localizeNode, translateText, formatDisplayMessage } from '../../i18n/display';
 import { ColorPicker, Toggle } from './EditorControls';
 import { EditorAvailability } from './EditorAvailability';
 import { EditorBookingForm } from './EditorBookingForm';
@@ -419,8 +419,8 @@ export function BookingBuilder({
       </header>
       {showAiDraft && (
         <BuilderBriefDialog
-          title="Draft booking page with AI"
-          placeholder="Describe the appointment, who it is for, and how long it should take."
+          title={translateText("Draft booking page with AI")}
+          placeholder={translateText("Describe the appointment, who it is for, and how long it should take.")}
           close={() => setShowAiDraft(false)}
           generate={async brief => {
             const generated = await generateBuilderDraft('booking', brief);
@@ -657,7 +657,7 @@ export function BookingBuilder({
                       {localizeNode(
                         readMembers().map(m => (
                           <option key={m.id} value={m.name}>
-                            {localizeNode(m.name)} ({localizeNode(m.role)})
+                            {m.name} ({localizeNode(m.role)})
                           </option>
                         ))
                       )}
@@ -974,12 +974,12 @@ export function BookingBuilder({
                     <option value="default">{translateText('Standard Upclick booking page')}</option>
                     {workspaceDesigns.map(design => (
                       <option key={design.id} value={design.id}>
-                        {`Website · ${design.name} (${design.industry})`}
+                        {formatDisplayMessage('Website · {{0}} ({{1}})', design.name, design.industry)}
                       </option>
                     ))}
                     {templateDesigns.map(design => (
                       <option key={design.id} value={design.id}>
-                        {`Template · ${design.name} (${design.industry})`}
+                        {formatDisplayMessage('Template · {{0}} ({{1}})', design.name, design.industry)}
                       </option>
                     ))}
                     <option value="template">{translateText('Custom template ID')}</option>
@@ -1102,8 +1102,9 @@ export function BookingBuilder({
                 )}
                 <p className="bk-tip">
                   {activeDesign
-                    ? translateText(
-                        `Connected to "${activeDesign.name}". Saving will style your booking page with this template and sync a Booking section into your Funnel & Website workspace.`
+                    ? formatDisplayMessage(
+                        'Connected to "{{0}}". Saving will style your booking page with this template and sync a Booking section into your Funnel & Website workspace.',
+                        activeDesign.name
                       )
                     : translateText(
                         'Choose any Website from Funnel & Website or any template from the Templates Library to frame this booking calendar in a matching landing page UI.'
@@ -1251,7 +1252,7 @@ export function BookingBuilder({
                   )}
                 </h3>
                 <p>{localizeNode(draft.afterBooking.confirmationBody)}</p>
-                <b>{localizeNode(draft.titleOverride || draft.name || 'Your meeting title')}</b>
+                <b>{draft.titleOverride || draft.name || translateText('Your meeting title')}</b>
                 <small>
                   {localizeNode(draft.duration)}
                   {translateText(' minutes · ')}

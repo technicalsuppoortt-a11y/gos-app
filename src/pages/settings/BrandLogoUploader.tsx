@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Image as ImageIcon, RefreshCw, RotateCcw, UploadCloud } from 'lucide-react';
 import { DEFAULT_BRAND_LOGO_URL } from '../../backend/workspacePreferences';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
@@ -103,12 +103,12 @@ export function BrandLogoUploader({
           <div className="ws-logo-preview-header">
             <span className="ws-logo-preview-title">
               <ImageIcon size={14} />
-              {ar ? 'معاينة الشعار المباشرة' : 'Active Brand Logo Preview'}
+              {ar ? 'معاينة الشعار المباشرة' : translateText("Active Brand Logo Preview")}
             </span>
             <span className="ws-logo-status-pill">
               {activeLogo === DEFAULT_BRAND_LOGO_URL
-                ? ar ? 'الافتراضي للمنصة' : 'System Default'
-                : ar ? 'شعار مخصص' : 'Custom Logo'}
+                ? ar ? 'الافتراضي للمنصة' : translateText("System Default")
+                : ar ? 'شعار مخصص' : translateText("Custom Logo")}
             </span>
           </div>
 
@@ -116,7 +116,7 @@ export function BrandLogoUploader({
             <img
               key={activeLogo}
               src={imgError ? DEFAULT_BRAND_LOGO_URL : activeLogo}
-              alt={brandName ? `${brandName} logo` : 'Brand logo preview'}
+              alt={brandName ? `${brandName} logo` : translateText("Brand logo preview")}
               className="ws-logo-preview-img"
               onLoad={e => {
                 const img = e.currentTarget;
@@ -132,7 +132,7 @@ export function BrandLogoUploader({
             <div className="ws-logo-meta-info">
               <b title={displayFileName}>{displayFileName}</b>
               <small>
-                {ar ? 'نسبة الأبعاد:' : 'Aspect Ratio:'} {aspectLabel} · {sizeLabel}
+                {ar ? 'نسبة الأبعاد:' : translateText("Aspect Ratio:")} {aspectLabel} · {sizeLabel}
               </small>
             </div>
             <div className="ws-logo-meta-actions">
@@ -143,7 +143,7 @@ export function BrandLogoUploader({
                 onClick={() => fileRef.current?.click()}
               >
                 <RefreshCw size={13} />
-                {ar ? 'استبدال' : 'Replace'}
+                {ar ? 'استبدال' : translateText("Replace")}
               </button>
               <button
                 type="button"
@@ -154,10 +154,10 @@ export function BrandLogoUploader({
                   setImgError(false);
                   onChangeUrl(DEFAULT_BRAND_LOGO_URL);
                 }}
-                title={ar ? 'إعادة للشعار الافتراضي' : 'Reset to default logo'}
+                title={ar ? 'إعادة للشعار الافتراضي' : translateText("Reset to default logo")}
               >
                 <RotateCcw size={13} />
-                {ar ? 'إزالة / افتراضي' : 'Remove'}
+                {ar ? 'إزالة / افتراضي' : translateText("Remove")}
               </button>
             </div>
           </div>
@@ -195,13 +195,13 @@ export function BrandLogoUploader({
             </span>
             <b>
               {busy
-                ? ar ? 'جاري رفع الشعار…' : 'Uploading brand logo…'
-                : ar ? 'اسحب وأفلت الشعار هنا أو اضغط للاختيار' : 'Drag & drop your logo here, or click to browse'}
+                ? ar ? 'جاري رفع الشعار…' : translateText("Uploading brand logo…")
+                : ar ? 'اسحب وأفلت الشعار هنا أو اضغط للاختيار' : translateText("Drag & drop your logo here, or click to browse")}
             </b>
             <small>
               {ar
                 ? 'يدعم PNG وJPEG وWebP وSVG بحد أقصى 10 ميجابايت (يُنصح بنسبة أفقية 3:1 أو مربعة 1:1)'
-                : 'Supports PNG, JPEG, WebP & SVG up to 10 MB · Recommended 3:1 horizontal or 1:1 square'}
+                : translateText("Supports PNG, JPEG, WebP & SVG up to 10 MB · Recommended 3:1 horizontal or 1:1 square")}
             </small>
             <input
               ref={fileRef}
@@ -217,7 +217,7 @@ export function BrandLogoUploader({
           </div>
 
           <label className="ws-logo-url-field">
-            <span>{ar ? 'رابط الشعار المباشر (Logo URL)' : 'Logo Image URL'}</span>
+            <span>{ar ? 'رابط الشعار المباشر (Logo URL)' : translateText("Logo Image URL")}</span>
             <input
               type="text"
               dir="ltr"

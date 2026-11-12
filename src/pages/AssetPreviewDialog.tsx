@@ -48,7 +48,7 @@ export function AssetPreviewDialog({ asset, pageId, close }: { asset: Asset; pag
   return <div className="aw-preview-scrim" onMouseDown={event => { if (event.target === event.currentTarget) close(); }}>
     <div ref={root} className="aw-preview-modal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <header className="aw-preview-modal-header">
-        <div className="aw-preview-modal-title"><h2 id={titleId}>{localizeNode(asset.name)}{translateText(" · Preview")}</h2><p>{translateText("Workspace preview · Live hosting is not connected.")}</p></div>
+        <div className="aw-preview-modal-title"><h2 id={titleId}>{asset.name}{translateText(" · Preview")}</h2><p>{translateText("Workspace preview · Live hosting is not connected.")}</p></div>
         <div className="aw-preview-modal-controls">
           <AssetSelect label={asset.kind === 'funnel' ? 'Preview step' : 'Preview page'} value={page?.id} onChange={setSelected} options={asset.document.pages.map(item => ({ value: item.id, label: item.name }))}/>
           <div className="aw-preview-device-switch flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200" role="group" aria-label={translateText("Preview viewport")}>

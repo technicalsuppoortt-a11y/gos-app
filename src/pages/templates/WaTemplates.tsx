@@ -89,7 +89,7 @@ function TemplateList({ channel, onNew }: { channel: Channel; onNew: (from?: WaT
           <h3>{t('WhatsApp Templates')}</h3>
           <p className="cp-muted cp-small">{t('Create templates, send them to Meta for review, and use the approved ones in campaigns.')}</p>
         </div>
-        <span className="cp-muted cp-small" dir="ltr">{channel.name ?? channel.external_id ?? 'WhatsApp'}</span>
+        <span className="cp-muted cp-small" dir="ltr">{channel.name ?? channel.external_id ?? t("WhatsApp")}</span>
       </section>
 
       <div className="cp-row-between">
@@ -261,7 +261,7 @@ function TemplateEditor({ from, onClose }: { from: WaTemplate | null; onClose: (
               </label>
               <label className="cp-field">{t('Language')}
                 <select value={language} onChange={e => setLanguage(e.target.value)}>
-                  <option value="en">English (en)</option><option value="en_US">English US (en_US)</option><option value="ar">العربية (ar)</option>
+                  <option value="en">{t("English (en)")}</option><option value="en_US">{t("English US (en_US)")}</option><option value="ar">العربية (ar)</option>
                 </select>
               </label>
             </div>

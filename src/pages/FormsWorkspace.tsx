@@ -1,6 +1,6 @@
 import { BookingSelect as DashboardSelect } from './booking/BookingSelect';
 import { resolveFormTheme } from './form-theme';
-import { useUILanguage, translateText, localizeNode } from '../i18n/display';
+import { useUILanguage, translateText, localizeNode, formatDisplayMessage } from '../i18n/display';
 import React, { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -202,10 +202,10 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
             <Trash2 size={24} />
           </div>
           <div className="delete-form-modal-title-wrap">
-            <h3>Delete Form Permanently?</h3>
-            <p>This will remove the form asset from your workspace.</p>
+            <h3>{translateText("Delete Form Permanently?")}</h3>
+            <p>{translateText("This will remove the form asset from your workspace.")}</p>
           </div>
-          <button className="delete-form-close-btn" onClick={onClose} title="Cancel">
+          <button className="delete-form-close-btn" onClick={onClose} title={translateText("Cancel")}>
             <X size={18} />
           </button>
         </div>
@@ -215,13 +215,13 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
             <div className="delete-form-asset-info">
               <span className="delete-form-asset-name">{form.name}</span>
               <div className="delete-form-asset-meta">
-                <span>{fieldCount} input {fieldCount === 1 ? 'field' : 'fields'}</span>
+                <span>{formatDisplayMessage(fieldCount === 1 ? '{{0}} input field' : '{{0}} input fields', fieldCount)}</span>
                 <span>•</span>
-                <span>Updated {new Date(form.updated).toLocaleDateString()}</span>
+                <span>{translateText("Updated ")}{new Date(form.updated).toLocaleDateString()}</span>
               </div>
             </div>
             <span className={`form-status-pill ${isPublished ? 'published' : 'draft'}`}>
-              {isPublished ? 'Published & Live' : 'Draft'}
+              {isPublished ? translateText("Published & Live") : translateText("Draft")}
             </span>
           </div>
 
@@ -229,9 +229,9 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
             <div className="delete-form-warning-callout">
               <span style={{ fontSize: 16 }}>⚠️</span>
               <div>
-                <strong>Warning: This form is currently Live.</strong>
+                <strong>{translateText("Warning: This form is currently Live.")}</strong>
                 <div style={{ marginTop: 2 }}>
-                  Deleting it will immediately unpublish the form, deactivate its live URL, and remove it from any linked funnels or websites.
+                  {translateText("Deleting it will immediately unpublish the form, deactivate its live URL, and remove it from any linked funnels or websites.")}
                 </div>
               </div>
             </div>
@@ -239,26 +239,24 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
             <div className="delete-form-warning-callout">
               <span style={{ fontSize: 16 }}>ℹ️</span>
               <div>
-                This form and all configured fields will be permanently deleted from your workspace. This action cannot be undone.
+                {translateText("This form and all configured fields will be permanently deleted from your workspace. This action cannot be undone.")}
               </div>
             </div>
           )}
         </div>
 
         <div className="delete-form-modal-footer">
-          <button className="delete-btn-cancel" onClick={onClose} disabled={deleting}>
-            Cancel
-          </button>
+          <button className="delete-btn-cancel" onClick={onClose} disabled={deleting}>{translateText("Cancel")}</button>
           <button className="delete-btn-confirm" onClick={onConfirm} disabled={deleting}>
             {deleting ? (
               <>
                 <LoaderCircle size={15} className="animate-spin" />
-                Deleting Form...
+                {translateText("Deleting Form...")}
               </>
             ) : (
               <>
                 <Trash2 size={15} />
-                Delete Form
+                {translateText("Delete Form")}
               </>
             )}
           </button>
@@ -315,7 +313,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   // Interactive preview state
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({});
   const [previewSubmitted, setPreviewSubmitted] = useState(false);
-  const [previewErrors, setPreviewErrors] = useState<Record<string, string>>({});
+  const [previewErrors, setPreviewErrors] = useState<Record<string, 'required' | 'email'>>({});
 
   const handleDeleteForm = async () => {
     if (!formToDelete) return;
@@ -330,7 +328,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
       } catch (saveErr) {
         console.warn('[handleDeleteForm] save sync notice:', saveErr);
       }
-      showToast.success(`Form "${formToDelete.name}" deleted successfully.`);
+      showToast.success(formatDisplayMessage('Form "{{0}}" deleted successfully.', formToDelete.name));
       if (selected === formToDelete.id) {
         setSelected('');
       }
@@ -575,7 +573,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
       const a = createPageAsset('form', tmpl.name, tmpl);
       await save(w => ({ ...w, assets: [a, ...w.assets] }));
       setSelected(a.id);
-      showToast.success(`Created form from "${tmpl.name}"`);
+      showToast.success(formatDisplayMessage('Created form from "{{0}}"', tmpl.name));
     } catch (e) {
       showToast.error(backendError(e));
     } finally {
@@ -636,14 +634,14 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   // Handle Interactive Preview Submit
   const handlePreviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const errors: Record<string, string> = {};
+    const errors: typeof previewErrors = {};
     for (const f of fields) {
       const val = previewValues[f.id] || '';
       if (f.required && !val.trim()) {
-        errors[f.id] = `Please complete ${f.label}`;
+        errors[f.id] = 'required';
       }
       if (f.type === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-        errors[f.id] = 'Enter a valid email address';
+        errors[f.id] = 'email';
       }
     }
     if (Object.keys(errors).length > 0) {
@@ -661,8 +659,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   if (selected && asset && block) {
     const isPublished = asset.document.funnel.status === 'Published';
     const formTitle = block.content.title || asset.name;
-    const submitBtnText = block.content.button || 'Submit';
-    const successMsg = block.content.successMessage || 'Thank you. We will be in touch.';
+    const submitBtnText = block.content.button || translateText('Submit');
+    const successMsg = block.content.successMessage || translateText('Thank you. We will be in touch.');
     const formTheme = resolveFormTheme(asset.document.pages[0], block);
     const currentBg = formTheme.background;
     const currentThemeId = block.content.themeBackgroundId || 'blank';
@@ -695,25 +693,25 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               value={asset.name}
               disabled={formMode === 'advanced' && activeTab === 'builder'}
               onChange={e => { const name = e.target.value; void updateAsset(a => ({ ...a, name, document: { ...a.document, funnel: { ...a.document.funnel, name } } })); }}
-              placeholder="Form name..."
-              title="Click to rename form"
+              placeholder={translateText("Form name...")}
+              title={translateText("Click to rename form")}
             />
             <span className={`form-status-pill ${isPublished ? 'published' : 'draft'}`}>
               <span className="form-status-dot" />
-              {isPublished ? 'Published' : 'Draft'}
+              {isPublished ? translateText("Published") : translateText("Draft")}
             </span>
           </div>
 
           <div className="form-studio-nav-tabs">
-            <div className="form-mode-selector" role="group" aria-label="Form editing mode">
-              <button className={`form-studio-nav-tab ${formMode === 'fast' ? 'active' : ''}`} aria-pressed={formMode === 'fast'} onClick={() => setFormMode('fast')}>Fast Form</button>
-              <button className={`form-studio-nav-tab ${formMode === 'advanced' ? 'active' : ''}`} aria-pressed={formMode === 'advanced'} onClick={async () => { await flushAssetWrites(); setFormMode('advanced'); }}>Advanced Form</button>
+            <div className="form-mode-selector" role="group" aria-label={translateText("Form editing mode")}>
+              <button className={`form-studio-nav-tab ${formMode === 'fast' ? 'active' : ''}`} aria-pressed={formMode === 'fast'} onClick={() => setFormMode('fast')}>{translateText("Fast Form")}</button>
+              <button className={`form-studio-nav-tab ${formMode === 'advanced' ? 'active' : ''}`} aria-pressed={formMode === 'advanced'} onClick={async () => { await flushAssetWrites(); setFormMode('advanced'); }}>{translateText("Advanced Form")}</button>
             </div>
             <button
               className={`form-studio-nav-tab ${activeTab === 'builder' ? 'active' : ''}`}
               onClick={() => setActiveTab('builder')}
             >
-              <SlidersHorizontal size={14} /> Builder
+              <SlidersHorizontal size={14} />{translateText(" Builder")}
             </button>
             <button
               className={`form-studio-nav-tab ${activeTab === 'preview' ? 'active' : ''}`}
@@ -722,7 +720,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                 setPreviewSubmitted(false);
               }}
             >
-              <Eye size={14} /> Interactive Preview
+              <Eye size={14} />{translateText(" Interactive Preview")}
             </button>
           </div>
 
@@ -742,12 +740,12 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       const separator = returnUrl.includes('?') ? '&' : '?';
                       const targetUrl = `${returnUrl}${separator}connectFormId=${asset.id}`;
                       navigate(targetUrl, { state: { connectedFormId: asset.id } });
-                      showToast.success(`Form "${asset.name}" published & connected!`);
+                      showToast.success(formatDisplayMessage('Form "{{0}}" published & connected!', asset.name));
                     } else if (currentFunnelId) {
                       navigate(`/dashboard/funnels/${currentFunnelId}?connectFormId=${asset.id}`, { state: { connectedFormId: asset.id } });
-                      showToast.success(`Form "${asset.name}" published & connected!`);
+                      showToast.success(formatDisplayMessage('Form "{{0}}" published & connected!', asset.name));
                     } else {
-                      showToast.success(`Form "${asset.name}" published!`);
+                      showToast.success(formatDisplayMessage('Form "{{0}}" published!', asset.name));
                     }
                   } catch (error) {
                     showToast.error(backendError(error));
@@ -767,7 +765,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               <Palette size={14} color="#7C3AED" />
-              Theme & Background
+              {translateText("Theme & Background")}
             </button>
 
             <button
@@ -776,7 +774,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
               <Layers size={14} color="#7C3AED" />
-              CRM Routing {asset.crmRouting?.pipelineId ? '✓' : ''}
+              {translateText("CRM Routing ")}{asset.crmRouting?.pipelineId ? '✓' : ''}
             </button>
 
             {asset.publishedUrl && (
@@ -785,7 +783,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                 onClick={() => setShowShareModal(true)}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                <Share2 size={14} /> Share & Embed
+                <Share2 size={14} />{translateText(" Share & Embed")}
               </button>
             )}
 
@@ -793,10 +791,10 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               <button
                 className="aw-secondary"
                 onClick={() => setFormToDelete(asset)}
-                title="Delete this form"
+                title={translateText("Delete this form")}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#EF4444' }}
               >
-                <Trash2 size={14} /> Delete
+                <Trash2 size={14} />{translateText(" Delete")}
               </button>
             )}
 
@@ -818,7 +816,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
                 {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Globe size={15} />}
-                {isPublished ? 'Republish Changes' : 'Publish Form'}
+                {isPublished ? translateText("Republish Changes") : translateText("Publish Form")}
               </button>
             )}
           </div>
@@ -841,19 +839,19 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             <aside className="form-studio-panel">
               <div className="form-panel-header">
                 <h3>
-                  <Plus size={15} color="#7C3AED" /> Input Fields
+                  <Plus size={15} color="#7C3AED" />{translateText(" Input Fields")}
                 </h3>
               </div>
               <div className="form-panel-body">
                 <div className="form-palette-group">
-                  <span className="form-palette-category-label">Text & Contact</span>
+                  <span className="form-palette-category-label">{translateText("Text & Contact")}</span>
                   <button className="form-palette-btn" onClick={() => addField('text')}>
                     <span className="form-palette-btn-icon">
                       <FileText size={16} />
                     </span>
                     <div>
-                      <div>Single Line Text</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Names, titles, keywords</small>
+                      <div>{translateText("Single Line Text")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Names, titles, keywords")}</small>
                     </div>
                   </button>
 
@@ -862,8 +860,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <Mail size={16} />
                     </span>
                     <div>
-                      <div>Email Address</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Validation enabled</small>
+                      <div>{translateText("Email Address")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Validation enabled")}</small>
                     </div>
                   </button>
 
@@ -872,8 +870,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <Phone size={16} />
                     </span>
                     <div>
-                      <div>Phone Number</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Mobile / Telephone</small>
+                      <div>{translateText("Phone Number")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Mobile / Telephone")}</small>
                     </div>
                   </button>
 
@@ -882,8 +880,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <Hash size={16} />
                     </span>
                     <div>
-                      <div>Number Input</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Budgets, ratings, count</small>
+                      <div>{translateText("Number Input")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Budgets, ratings, count")}</small>
                     </div>
                   </button>
 
@@ -892,21 +890,21 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <AlignLeft size={16} />
                     </span>
                     <div>
-                      <div>Paragraph / Textarea</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Multi-line inquiries</small>
+                      <div>{translateText("Paragraph / Textarea")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Multi-line inquiries")}</small>
                     </div>
                   </button>
                 </div>
 
                 <div className="form-palette-group">
-                  <span className="form-palette-category-label">Selections & Dropdowns</span>
+                  <span className="form-palette-category-label">{translateText("Selections & Dropdowns")}</span>
                   <button className="form-palette-btn" onClick={() => addField('select')}>
                     <span className="form-palette-btn-icon" style={{ background: 'rgba(124, 58, 237, 0.18)' }}>
                       <ListFilter size={16} />
                     </span>
                     <div>
-                      <div style={{ color: '#7C3AED', fontWeight: 700 }}>Dropdown Select</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Curated choices menu</small>
+                      <div style={{ color: '#7C3AED', fontWeight: 700 }}>{translateText("Dropdown Select")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Curated choices menu")}</small>
                     </div>
                   </button>
 
@@ -915,8 +913,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <CircleDot size={16} />
                     </span>
                     <div>
-                      <div>Radio Choice</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Single selection group</small>
+                      <div>{translateText("Radio Choice")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Single selection group")}</small>
                     </div>
                   </button>
 
@@ -925,8 +923,8 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       <CheckSquare size={16} />
                     </span>
                     <div>
-                      <div>Checkbox Opt-in</div>
-                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>Agreements & terms</small>
+                      <div>{translateText("Checkbox Opt-in")}</div>
+                      <small style={{ color: 'var(--form-text-muted)', fontSize: 11 }}>{translateText("Agreements & terms")}</small>
                     </div>
                   </button>
                 </div>
@@ -949,7 +947,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               <div className="form-canvas-header-card">
                 <div>
                   <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#7C3AED', letterSpacing: '0.05em' }}>
-                    Form Display Headline
+                    {translateText("Form Display Headline")}
                   </label>
                   <input
                     style={{
@@ -964,11 +962,11 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     }}
                     value={formTitle}
                     onChange={e => void updateFormContent('title', e.target.value)}
-                    placeholder="Enter form title..."
+                    placeholder={translateText("Enter form title...")}
                   />
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--form-text-muted)' }}>
-                  Fields below represent the user-facing form. Click any element to configure its properties.
+                  {translateText("Fields below represent the user-facing form. Click any element to configure its properties.")}
                 </div>
               </div>
 
@@ -985,9 +983,9 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     }}
                   >
                     <Plus size={36} color="#7C3AED" style={{ margin: '0 auto 12px' }} />
-                    <h4 style={{ margin: '0 0 6px 0', fontSize: 16 }}>No fields in this form</h4>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: 16 }}>{translateText("No fields in this form")}</h4>
                     <p style={{ margin: 0, fontSize: 13, color: 'var(--form-text-muted)' }}>
-                      Click any input from the left palette to add fields to your form.
+                      {translateText("Click any input from the left palette to add fields to your form.")}
                     </p>
                   </div>
                 ) : (
@@ -1003,21 +1001,21 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span className="form-field-card-type-tag">
                               {field.type === 'select'
-                                ? 'Dropdown'
+                                ? translateText("Dropdown")
                                 : field.type === 'textarea'
-                                ? 'Textarea'
-                                : field.type}
+                                ? translateText("Textarea")
+                                : translateText(field.type)}
                             </span>
                             <strong style={{ fontSize: 14 }}>{field.label}</strong>
                             {field.required && (
-                              <span style={{ color: '#EF4444', fontSize: 12, fontWeight: 700 }}>* Required</span>
+                              <span style={{ color: '#EF4444', fontSize: 12, fontWeight: 700 }}>* {translateText('Required')}</span>
                             )}
                           </div>
 
                           <div className="form-field-card-actions" onClick={e => e.stopPropagation()}>
                             <button
                               className="form-icon-btn"
-                              title="Move Up"
+                              title={translateText("Move Up")}
                               disabled={idx === 0}
                               onClick={() => moveField(idx, 'up')}
                             >
@@ -1025,7 +1023,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                             </button>
                             <button
                               className="form-icon-btn"
-                              title="Move Down"
+                              title={translateText("Move Down")}
                               disabled={idx === fields.length - 1}
                               onClick={() => moveField(idx, 'down')}
                             >
@@ -1033,14 +1031,14 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                             </button>
                             <button
                               className="form-icon-btn"
-                              title="Duplicate Field"
+                              title={translateText("Duplicate Field")}
                               onClick={() => duplicateField(field)}
                             >
                               <Copy size={13} />
                             </button>
                             <button
                               className="form-icon-btn danger"
-                              title="Remove Field"
+                              title={translateText("Remove Field")}
                               onClick={() => removeField(field.id)}
                             >
                               <Trash2 size={13} />
@@ -1052,13 +1050,13 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         <div>
                           {field.type === 'textarea' ? (
                             <div className="form-field-preview-control" style={{ minHeight: 64, alignItems: 'flex-start' }}>
-                              <span>{field.placeholder || 'Long text message...'}</span>
+                              <span>{field.placeholder || translateText("Long text message...")}</span>
                             </div>
                           ) : field.type === 'select' ? (
                             <div className="form-field-preview-control select-preview">
-                              <span>{field.placeholder || 'Choose an option...'}</span>
+                              <span>{field.placeholder || translateText("Choose an option...")}</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#7C3AED', fontSize: 12 }}>
-                                <span>{field.options?.length || 0} choices</span>
+                                <span>{field.options?.length || 0}{translateText(" choices")}</span>
                                 <ChevronDown size={15} />
                               </div>
                             </div>
@@ -1107,7 +1105,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--form-text-muted)', display: 'block', marginBottom: 4 }}>
-                        Submit Button Text
+                        {translateText("Submit Button Text")}
                       </label>
                       <input
                         style={{
@@ -1120,12 +1118,12 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         }}
                         value={submitBtnText}
                         onChange={e => void updateFormContent('button', e.target.value)}
-                        placeholder="Submit"
+                        placeholder={translateText("Submit")}
                       />
                     </div>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--form-text-muted)', display: 'block', marginBottom: 4 }}>
-                        Post-Submission Message
+                        {translateText("Post-Submission Message")}
                       </label>
                       <input
                         style={{
@@ -1138,7 +1136,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         }}
                         value={successMsg}
                         onChange={e => void updateFormContent('successMessage', e.target.value)}
-                        placeholder="Thank you. We will be in touch."
+                        placeholder={translateText("Thank you. We will be in touch.")}
                       />
                     </div>
                   </div>
@@ -1150,11 +1148,11 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             <aside className="form-studio-panel">
               <div className="form-panel-header">
                 <h3>
-                  <Settings2 size={15} color="#7C3AED" /> Field Settings
+                  <Settings2 size={15} color="#7C3AED" />{translateText(" Field Settings")}
                 </h3>
                 {activeField && (
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#7C3AED', background: 'rgba(124, 58, 237, 0.1)', padding: '2px 6px', borderRadius: 4 }}>
-                    {activeField.type.toUpperCase()}
+                    {translateText(activeField.type.toUpperCase())}
                   </span>
                 )}
               </div>
@@ -1164,45 +1162,45 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                   <>
                     <div className="form-inspector-section">
                       <label>
-                        Field Label
+                        {translateText("Field Label")}
                         <input
                           value={activeField.label}
                           onChange={e => updateActiveField({ label: e.target.value })}
-                          placeholder="e.g. Work Email Address"
+                          placeholder={translateText("e.g. Work Email Address")}
                         />
                       </label>
                     </div>
 
                     <div className="form-inspector-section">
                       <label>
-                        CRM / Lead Field Key
+                        {translateText("CRM / Lead Field Key")}
                         <input
                           value={activeField.id}
                           onChange={e => updateActiveField({ id: e.target.value.toLowerCase().replace(/[^\w-]/g, '_') })}
-                          placeholder="e.g. work_email"
+                          placeholder={translateText("e.g. work_email")}
                         />
                       </label>
                       <small style={{ fontSize: 11, color: 'var(--form-text-muted)' }}>
-                        Mapped directly to CRM lead properties.
+                        {translateText("Mapped directly to CRM lead properties.")}
                       </small>
                     </div>
 
                     <div className="form-inspector-section">
                       <label>
-                        Field Input Type
+                        {translateText("Field Input Type")}
                         <DashboardSelect
                           className="form-select-control"
                           value={activeField.type}
                           onChange={e => updateActiveField({ type: e.target.value as FormFieldType })}
                         >
-                          <option value="text">Single Line Text</option>
-                          <option value="email">Email Address</option>
-                          <option value="tel">Phone / Mobile</option>
-                          <option value="number">Number</option>
-                          <option value="textarea">Paragraph / Textarea</option>
-                          <option value="select">Dropdown Select</option>
-                          <option value="radio">Radio Choice</option>
-                          <option value="checkbox">Checkbox</option>
+                          <option value="text">{translateText("Single Line Text")}</option>
+                          <option value="email">{translateText("Email Address")}</option>
+                          <option value="tel">{translateText("Phone / Mobile")}</option>
+                          <option value="number">{translateText("Number")}</option>
+                          <option value="textarea">{translateText("Paragraph / Textarea")}</option>
+                          <option value="select">{translateText("Dropdown Select")}</option>
+                          <option value="radio">{translateText("Radio Choice")}</option>
+                          <option value="checkbox">{translateText("Checkbox")}</option>
                         </DashboardSelect>
                       </label>
                     </div>
@@ -1210,11 +1208,11 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     {activeField.type !== 'checkbox' && activeField.type !== 'radio' && (
                       <div className="form-inspector-section">
                         <label>
-                          Placeholder Text
+                          {translateText("Placeholder Text")}
                           <input
                             value={activeField.placeholder || ''}
                             onChange={e => updateActiveField({ placeholder: e.target.value })}
-                            placeholder="e.g. Enter your response..."
+                            placeholder={translateText("e.g. Enter your response...")}
                           />
                         </label>
                       </div>
@@ -1222,17 +1220,17 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 
                     <div className="form-inspector-section">
                       <label>
-                        Helper Text / Guide
+                        {translateText("Helper Text / Guide")}
                         <input
                           value={activeField.helperText || ''}
                           onChange={e => updateActiveField({ helperText: e.target.value })}
-                          placeholder="Optional guidance under the field"
+                          placeholder={translateText("Optional guidance under the field")}
                         />
                       </label>
                     </div>
 
                     <div className="form-inspector-section" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>Required Field</span>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{translateText("Required Field")}</span>
                       <input
                         type="checkbox"
                         checked={activeField.required}
@@ -1245,7 +1243,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     {(activeField.type === 'select' || activeField.type === 'radio') && (
                       <div className="form-options-builder">
                         <div className="form-options-builder-header">
-                          <h4>Choices ({activeField.options?.length || 0})</h4>
+                          <h4>{translateText("Choices (")}{activeField.options?.length || 0})</h4>
                           <div style={{ display: 'flex', gap: 6 }}>
                             <button
                               type="button"
@@ -1253,7 +1251,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                               onClick={() => setBulkOptionMode(!bulkOptionMode)}
                               style={{ padding: '3px 8px', fontSize: 11 }}
                             >
-                              {bulkOptionMode ? 'List View' : '📋 Bulk Paste'}
+                              {bulkOptionMode ? translateText("List View") : '📋 Bulk Paste'}
                             </button>
                             <button
                               type="button"
@@ -1261,7 +1259,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                               onClick={addOption}
                               style={{ padding: '3px 8px', fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                             >
-                              <Plus size={12} /> Add
+                              <Plus size={12} />{translateText(" Add")}
                             </button>
                           </div>
                         </div>
@@ -1269,7 +1267,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         {/* Quick Preset Chips */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--form-text-muted)' }}>
-                            Quick Presets (Click to load)
+                            {translateText("Quick Presets (Click to load)")}
                           </span>
                           <div className="form-preset-chips">
                             {Object.keys(PRESET_OPTIONS).map(name => (
@@ -1278,7 +1276,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                 type="button"
                                 className="form-preset-chip"
                                 onClick={() => applyPreset(name)}
-                                title={`Load ${name}`}
+                                title={formatDisplayMessage('Load {{0}}', translateText(name))}
                               >
                                 {name}
                               </button>
@@ -1292,7 +1290,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                             <textarea
                               value={bulkOptionText}
                               onChange={e => setBulkOptionText(e.target.value)}
-                              placeholder={`Paste choices here (one choice per line or separated by commas)...`}
+                              placeholder={translateText("Paste choices here (one choice per line or separated by commas)...")}
                               style={{
                                 width: '100%',
                                 minHeight: 100,
@@ -1314,9 +1312,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                   setBulkOptionText('');
                                 }}
                                 style={{ padding: '5px 10px', fontSize: 11.5 }}
-                              >
-                                Cancel
-                              </button>
+                              >{translateText("Cancel")}</button>
                               <button
                                 type="button"
                                 className="aw-primary"
@@ -1324,7 +1320,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                 onClick={() => applyBulkOptions(bulkOptionText)}
                                 style={{ padding: '5px 12px', fontSize: 11.5 }}
                               >
-                                Apply Options
+                                {translateText("Apply Options")}
                               </button>
                             </div>
                           </div>
@@ -1338,14 +1334,14 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                   <input
                                     value={opt}
                                     onChange={e => updateOption(optIdx, e.target.value)}
-                                    placeholder={`Option ${optIdx + 1}`}
+                                    placeholder={formatDisplayMessage('Option {{0}}', optIdx + 1)}
                                   />
                                   <div className="form-option-row-actions">
                                     <button
                                       type="button"
                                       className={`form-icon-btn ${isDefault ? 'active' : ''}`}
                                       onClick={() => updateActiveField({ defaultValue: isDefault ? '' : opt })}
-                                      title={isDefault ? 'Default selection (active)' : 'Set as default choice'}
+                                      title={isDefault ? translateText("Default selection (active)") : translateText("Set as default choice")}
                                       style={{ color: isDefault ? '#7C3AED' : undefined }}
                                     >
                                       <Star size={11} fill={isDefault ? '#7C3AED' : 'none'} />
@@ -1355,7 +1351,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                       className="form-icon-btn"
                                       disabled={optIdx === 0}
                                       onClick={() => moveOption(optIdx, 'up')}
-                                      title="Move option up"
+                                      title={translateText("Move option up")}
                                     >
                                       <ArrowUp size={11} />
                                     </button>
@@ -1364,7 +1360,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                       className="form-icon-btn"
                                       disabled={optIdx === (activeField.options?.length || 0) - 1}
                                       onClick={() => moveOption(optIdx, 'down')}
-                                      title="Move option down"
+                                      title={translateText("Move option down")}
                                     >
                                       <ArrowDown size={11} />
                                     </button>
@@ -1373,7 +1369,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                                       className="form-icon-btn danger"
                                       disabled={(activeField.options?.length || 0) <= 1}
                                       onClick={() => removeOption(optIdx)}
-                                      title="Delete option"
+                                      title={translateText("Delete option")}
                                     >
                                       <Trash2 size={11} />
                                     </button>
@@ -1387,7 +1383,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         {/* Default Selected Selector */}
                         <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--form-border)' }}>
                           <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--form-text-muted)', display: 'block', marginBottom: 4 }}>
-                            Default Selected Choice
+                            {translateText("Default Selected Choice")}
                           </label>
                           <DashboardSelect
                             className="form-select-control"
@@ -1395,7 +1391,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                             onChange={e => updateActiveField({ defaultValue: e.target.value })}
                             style={{ width: '100%', fontSize: 13, minHeight: 40 }}
                           >
-                            <option value="">None (Prompt with placeholder)</option>
+                            <option value="">{translateText("None (Prompt with placeholder)")}</option>
                             {(activeField.options || []).map((opt, i) => (
                               <option key={i} value={opt}>
                                 {opt}
@@ -1408,7 +1404,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: 24, color: 'var(--form-text-muted)' }}>
-                    Select any field in the canvas to customize its settings.
+                    {translateText("Select any field in the canvas to customize its settings.")}
                   </div>
                 )}
               </div>
@@ -1445,7 +1441,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             {previewSubmitted ? (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <CheckCircle2 size={56} color="#10B981" style={{ margin: '0 auto 16px' }} />
-                <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px 0' }}>Submission Received!</h2>
+                <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px 0' }}>{translateText("Submission Received!")}</h2>
                 <p style={{ color: 'var(--form-text-muted)', fontSize: 15, margin: '0 0 24px 0' }}>
                   {successMsg}
                 </p>
@@ -1456,7 +1452,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     setPreviewSubmitted(false);
                   }}
                 >
-                  Test Again (Reset Form)
+                  {translateText("Test Again (Reset Form)")}
                 </button>
               </div>
             ) : (
@@ -1466,12 +1462,15 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     {formTitle}
                   </h2>
                   <p style={{ fontSize: 14, color: 'var(--form-text-muted)', margin: 0 }}>
-                    Please fill out the details below.
+                    {translateText("Please fill out the details below.")}
                   </p>
                 </div>
 
                 {fields.map(f => {
-                  const error = previewErrors[f.id];
+                  const issue = previewErrors[f.id];
+                  const error = issue === 'required'
+                    ? formatDisplayMessage('Please complete {{0}}', f.label)
+                    : issue === 'email' ? translateText('Enter a valid email address') : '';
                   if (f.type === 'checkbox') {
                     return (
                       <div key={f.id}>
@@ -1534,7 +1533,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         <CustomSelectBox
                           id={f.id}
                           value={previewValues[f.id] ?? (f.defaultValue || '')}
-                          placeholder={f.placeholder || 'Choose an option...'}
+                          placeholder={f.placeholder || translateText('Choose an option...')}
                           options={f.options || []}
                           onChange={val => setPreviewValues(prev => ({ ...prev, [f.id]: val }))}
                         />
@@ -1567,14 +1566,14 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           <div className="form-modal-overlay" onClick={() => setShowCRMModal(false)}>
             <div className="form-modal-dialog" onClick={e => e.stopPropagation()}>
               <div className="form-modal-header">
-                <h2>CRM & Lead Stage Routing</h2>
+                <h2>{translateText("CRM & Lead Stage Routing")}</h2>
                 <button className="form-icon-btn" onClick={() => setShowCRMModal(false)}>
                   <X size={16} />
                 </button>
               </div>
               <div className="form-modal-body">
                 <p style={{ margin: 0, fontSize: 14, color: 'var(--form-text-muted)' }}>
-                  Route all incoming form submissions directly into your CRM pipelines. When leads submit this form, they will automatically appear in your chosen pipeline and stage.
+                  {translateText("Route all incoming form submissions directly into your CRM pipelines. When leads submit this form, they will automatically appear in your chosen pipeline and stage.")}
                 </p>
                 <CRMRouting
                   value={asset.crmRouting}
@@ -1582,9 +1581,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                 />
               </div>
               <div className="form-modal-footer">
-                <button className="aw-primary" onClick={() => setShowCRMModal(false)}>
-                  Done
-                </button>
+                <button className="aw-primary" onClick={() => setShowCRMModal(false)}>{translateText("Done")}</button>
               </div>
             </div>
           </div>,
@@ -1596,7 +1593,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           <div className="form-modal-overlay" onClick={() => setShowShareModal(false)}>
             <div className="form-modal-dialog" onClick={e => e.stopPropagation()}>
               <div className="form-modal-header">
-                <h2>Share & Embed Form</h2>
+                <h2>{translateText("Share & Embed Form")}</h2>
                 <button className="form-icon-btn" onClick={() => setShowShareModal(false)}>
                   <X size={16} />
                 </button>
@@ -1604,7 +1601,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               <div className="form-modal-body">
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                    Direct Shareable Link
+                    {translateText("Direct Shareable Link")}
                   </label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input
@@ -1626,7 +1623,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         showToast.success('Link copied');
                       }}
                     >
-                      <Copy size={14} /> Copy
+                      <Copy size={14} />{translateText(" Copy")}
                     </button>
                     <a
                       className="aw-secondary"
@@ -1642,7 +1639,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                    Iframe Embed Code
+                    {translateText("Iframe Embed Code")}
                   </label>
                   <div className="form-code-snippet">
                     {`<iframe src="${asset.publishedUrl}" title="${asset.name}" width="100%" height="650" style="border:0;border-radius:12px;" loading="lazy"></iframe>`}
@@ -1655,14 +1652,14 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         showToast.success('Embed code copied');
                       }}
                     >
-                      <Copy size={11} /> Copy Code
+                      <Copy size={11} />{translateText(" Copy Code")}
                     </button>
                   </div>
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--form-border)', paddingTop: 16 }}>
                   <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                    Embed Directly into Existing Funnel or Website Page
+                    {translateText("Embed Directly into Existing Funnel or Website Page")}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                     <DashboardSelect
@@ -1673,10 +1670,10 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         setTargetPageId('');
                       }}
                     >
-                      <option value="">Select funnel or website...</option>
+                      <option value="">{translateText("Select funnel or website...")}</option>
                       {targets.map(t => (
                         <option key={t.id} value={t.id}>
-                          {t.name} ({t.kind})
+                          {t.name} ({translateText(t.kind)})
                         </option>
                       ))}
                     </DashboardSelect>
@@ -1687,7 +1684,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       onChange={e => setTargetPageId(e.target.value)}
                       disabled={!target}
                     >
-                      <option value="">Select destination page...</option>
+                      <option value="">{translateText("Select destination page...")}</option>
                       {target?.document.pages.map(p => (
                         <option key={p.id} value={p.id}>
                           {p.name}
@@ -1747,13 +1744,13 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       }
                     }}
                   >
-                    <Code2 size={14} /> Embed in Selected Page
+                    <Code2 size={14} />{translateText(" Embed in Selected Page")}
                   </button>
                 </div>
               </div>
               <div className="form-modal-footer">
                 <button className="aw-secondary" onClick={() => setShowShareModal(false)}>
-                  Close
+                  {translateText("Close")}
                 </button>
               </div>
             </div>
@@ -1767,9 +1764,9 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             <div className="form-modal-dialog" style={{ maxWidth: 740 }} onClick={e => e.stopPropagation()}>
               <div className="form-modal-header">
                 <div>
-                  <h2>Form Background & Theme</h2>
+                  <h2>{translateText("Form Background & Theme")}</h2>
                   <small style={{ color: 'var(--form-text-muted)', fontSize: 13 }}>
-                    Select a professional styling for your form canvas, card container, and published page.
+                    {translateText("Select a professional styling for your form canvas, card container, and published page.")}
                   </small>
                 </div>
                 <button className="form-icon-btn" onClick={() => setShowThemeModal(false)}>
@@ -1823,7 +1820,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                             }}
                           >
-                            Form Card
+                            {translateText("Form Card")}
                           </div>
                           {isCurrent && (
                             <div
@@ -1851,7 +1848,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                             <b style={{ fontSize: 13, color: 'var(--form-text)' }}>{preset.name}</b>
                             {preset.id === 'blank' && (
                               <span style={{ fontSize: 10, fontWeight: 700, background: '#E2E8F0', padding: '1px 5px', borderRadius: 4 }}>
-                                BLANK
+                                {translateText("BLANK")}
                               </span>
                             )}
                           </div>
@@ -1865,7 +1862,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                           className={isCurrent ? 'aw-primary' : 'aw-secondary'}
                           style={{ width: '100%', padding: '6px 12px', fontSize: 12, marginTop: 'auto' }}
                         >
-                          {isCurrent ? 'Current Theme' : 'Apply Theme'}
+                          {isCurrent ? translateText("Current Theme") : translateText("Apply Theme")}
                         </button>
                       </div>
                     );
@@ -1874,9 +1871,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               </div>
 
               <div className="form-modal-footer">
-                <button className="aw-secondary" onClick={() => setShowThemeModal(false)}>
-                  Done
-                </button>
+                <button className="aw-secondary" onClick={() => setShowThemeModal(false)}>{translateText("Done")}</button>
               </div>
             </div>
           </div>,
@@ -1894,9 +1889,9 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
       {/* Forms Hub Header */}
       <div className="forms-hub-header">
         <div className="forms-hub-title">
-          <h1>Forms & Lead Capture</h1>
+          <h1>{translateText("Forms & Lead Capture")}</h1>
           <p>
-            Build high-converting dynamic forms, configure CRM lead pipelines, and share or embed them anywhere.
+            {translateText("Build high-converting dynamic forms, configure CRM lead pipelines, and share or embed them anywhere.")}
           </p>
         </div>
 
@@ -1907,7 +1902,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             onClick={() => go('funnels?tab=templates&category=Forms')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <Sparkles size={16} color="#7C3AED" /> Browse Form Templates
+            <Sparkles size={16} color="#7C3AED" />{translateText(" Browse Form Templates")}
           </button>
           <button
             className="aw-primary"
@@ -1915,8 +1910,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             onClick={() => void createBlank()}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
-            <Plus size={16} /> Create Blank Form
-          </button>
+            <Plus size={16} />{translateText(" Create Blank Form")}</button>
         </div>
       </div>
 
@@ -1928,7 +1922,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           </div>
           <div className="forms-stat-info">
             <span className="forms-stat-val">{forms.length}</span>
-            <span className="forms-stat-label">Total Forms Created</span>
+            <span className="forms-stat-label">{translateText("Total Forms Created")}</span>
           </div>
         </div>
 
@@ -1938,7 +1932,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           </div>
           <div className="forms-stat-info">
             <span className="forms-stat-val">{publishedCount}</span>
-            <span className="forms-stat-label">Published & Live</span>
+            <span className="forms-stat-label">{translateText("Published & Live")}</span>
           </div>
         </div>
 
@@ -1948,7 +1942,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           </div>
           <div className="forms-stat-info">
             <span className="forms-stat-val">{routedCount}</span>
-            <span className="forms-stat-label">CRM Pipelines Connected</span>
+            <span className="forms-stat-label">{translateText("CRM Pipelines Connected")}</span>
           </div>
         </div>
       </div>
@@ -1958,7 +1952,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
         <div className="forms-search-box">
           <Search size={16} />
           <input
-            placeholder="Search forms by name..."
+            placeholder={translateText("Search forms by name...")}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -1967,7 +1961,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               type="button"
               onClick={() => setSearchQuery('')}
               style={{ border: 0, background: 'transparent', padding: 2, cursor: 'pointer', color: '#94a3b8', display: 'flex' }}
-              title="Clear search"
+              title={translateText("Clear search")}
             >
               <X size={14} />
             </button>
@@ -1981,7 +1975,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               className={`forms-status-tab ${statusFilter === tab ? 'active' : ''}`}
               onClick={() => setStatusFilter(tab)}
             >
-              {tab}
+              {translateText(tab)}
             </button>
           ))}
         </div>
@@ -1989,29 +1983,20 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 
       {/* Forms Cards Grid */}
       {filteredForms.length === 0 ? (
-        <div
-          style={{
-            padding: 56,
-            textAlign: 'center',
-            borderRadius: 16,
-            border: '2px dashed var(--form-border)',
-            background: 'var(--form-surface)'
-          }}
-        >
+        <div className="forms-hub-empty">
           <FileText size={40} color="#7C3AED" style={{ margin: '0 auto 16px' }} />
           <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 8px 0' }}>
-            {searchQuery ? 'No forms match your search' : 'No forms created yet'}
+            {searchQuery ? translateText("No forms match your search") : translateText("No forms created yet")}
           </h3>
           <p style={{ color: 'var(--form-text-muted)', fontSize: 14, margin: '0 0 20px 0' }}>
-            Start with a ready-made template or build a custom form from scratch.
+            {translateText("Start with a ready-made template or build a custom form from scratch.")}
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <div className="forms-hub-empty-actions">
             <button className="aw-secondary" onClick={() => go('funnels?tab=templates&category=Forms')}>
-              <Sparkles size={15} /> Browse Templates
+              <Sparkles size={15} />{translateText(" Browse Templates")}
             </button>
             <button className="aw-primary" onClick={() => void createBlank()}>
-              <Plus size={15} /> Create Blank Form
-            </button>
+              <Plus size={15} />{translateText(" Create Blank Form")}</button>
           </div>
         </div>
       ) : (
@@ -2033,27 +2018,26 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     <h3 className="form-hub-card-title">{item.name}</h3>
                     <span className={`form-status-pill ${isPub ? 'published' : 'draft'}`}>
                       <span className="form-status-dot" />
-                      {isPub ? 'Published' : 'Draft'}
+                      {isPub ? translateText("Published") : translateText("Draft")}
                     </span>
                   </div>
 
                   <div className="form-hub-card-meta">
                     <div className="form-hub-card-pill-row">
                       <span className="form-meta-tag">
-                        <FileText size={12} /> {itemFields.length} {itemFields.length === 1 ? 'field' : 'fields'}
+                        <FileText size={12} /> {itemFields.length} {itemFields.length === 1 ? translateText("field") : translateText("fields")}
                       </span>
                       {item.crmRouting?.pipelineId ? (
                         <span className="form-meta-tag" style={{ color: '#059669', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                          <CheckCircle2 size={12} /> CRM Connected
+                          <CheckCircle2 size={12} />{translateText(" CRM Connected")}
                         </span>
                       ) : (
                         <span className="form-meta-tag">
-                          <HelpCircle size={12} /> Unrouted
+                          <HelpCircle size={12} />{translateText(" Unrouted")}
                         </span>
                       )}
                     </div>
-                    <small style={{ color: 'var(--form-text-muted)', fontSize: 12 }}>
-                      Updated {new Date(item.updated).toLocaleDateString()}
+                    <small style={{ color: 'var(--form-text-muted)', fontSize: 12 }}>{translateText("Updated ")}{new Date(item.updated).toLocaleDateString()}
                     </small>
                   </div>
                 </div>
@@ -2067,7 +2051,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     }}
                     style={{ flex: 1, padding: '7px 14px', fontSize: 13 }}
                   >
-                    Edit & Customize
+                    {translateText("Edit & Customize")}
                   </button>
 
                   {item.publishedUrl && (
@@ -2076,7 +2060,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                       href={item.publishedUrl}
                       target="_blank"
                       rel="noreferrer"
-                      title="View live published form"
+                      title={translateText("View live published form")}
                     >
                       <ExternalLink size={15} />
                     </a>
@@ -2084,7 +2068,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 
                   <button
                     className="form-icon-btn danger"
-                    title="Delete form"
+                    title={translateText("Delete form")}
                     onClick={() => setFormToDelete(item)}
                   >
                     <Trash2 size={15} />
@@ -2097,7 +2081,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
       )}
 
       {/* MODAL: PROFESSIONAL DELETE FORM CONFIRMATION */}
-      {showAiDraft && <BuilderBriefDialog title="Create form with AI" placeholder="Describe the form’s purpose and the information you need to collect." close={() => setShowAiDraft(false)} generate={createAiForm} />}
+      {showAiDraft && <BuilderBriefDialog title={translateText("Create form with AI")} placeholder={translateText("Describe the form’s purpose and the information you need to collect.")} close={() => setShowAiDraft(false)} generate={createAiForm} />}
       {formToDelete && (
         <DeleteFormModal
           form={formToDelete}

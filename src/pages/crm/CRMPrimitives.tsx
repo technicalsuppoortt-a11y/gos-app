@@ -1,7 +1,7 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useCRMBusy } from './useCRMActions';
 import { useSelectPortal } from '../../components/ui/select-layer';
-import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
+import { formatDisplayMessage, useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
 import { useEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Link } from 'react-router-dom';
@@ -31,7 +31,7 @@ export function CRMAvatar({ lead }: { lead: CanonicalLead }) {
   const avatarText = lead.avatar || (lead.name ? lead.name.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() : 'L');
   return photo && !failed
     ? <img className="crm-person-avatar crm-person-photo w-8 h-8 rounded-full" src={photo} alt={translateText("")} onError={() => setFailed(true)} />
-    : <span className={`crm-person-avatar crm-person-${lead.color || 'lilac'}`}>{localizeNode(avatarText)}</span>;
+    : <span className={`crm-person-avatar crm-person-${lead.color || 'lilac'}`}>{avatarText}</span>;
 }
 
 export function SourceBadge({ source }: { source?: string }) {
@@ -57,7 +57,7 @@ export function TagBadge({ tag }: { tag: string }) {
     : /interested|warm/.test(text) ? 'orange'
     : /hot|unqualified/.test(text) ? 'red'
     : /coaching|consultation|course|digital product|service/.test(text) ? 'purple' : 'neutral';
-  return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(isPendingBooking ? <Calendar size={9}/> : tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {localizeNode(tag)}</span>;
+  return <span className={`crm-tag crm-tag-${tone}`}>{localizeNode(tone === 'green' && <BadgeCheck size={9}/>)} {localizeNode(isPendingBooking ? <Calendar size={9}/> : tone === 'orange' && <Phone size={9}/>)} {localizeNode(tone === 'red' && <Flame size={9}/>)} {tag}</span>;
 }
 
 function followUp(lead: CanonicalLead): { label: string; tone: string } {
@@ -114,16 +114,16 @@ export function LeadCard({ lead, pipeline, base, dragging, onDragStart, onDragEn
   }, [menuOpen]);
   return <article className={`crm-lead-card ${dragging ? 'crm-is-dragging' : ''}`} draggable={!menuOpen}
     onDragStart={e => { e.dataTransfer.setData('text/plain', lead.id); e.dataTransfer.effectAllowed = 'move'; onDragStart(lead.id); }} onDragEnd={onDragEnd}>
-    <button className="crm-card-link" type="button" onClick={onOpen} aria-label={translateText(`Quick details for ${lead.name || 'contact'}`)}/>
+    <button className="crm-card-link" type="button" onClick={onOpen} aria-label={formatDisplayMessage('Quick details for {{0}}', lead.name || translateText('contact'))}/>
     <div className="crm-card-content">
-      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{localizeNode(lead.name || 'Unnamed contact')}</b><small>{localizeNode(lead.company || 'Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
+      <div className="crm-card-person"><CRMAvatar lead={lead}/><div><b>{lead.name || translateText('Unnamed contact')}</b><small>{lead.company || translateText('Independent contact')}</small><SourceBadge source={lead.source}/></div></div>
       <div className="crm-card-tags">{localizeNode((((lead.bookingStatus === 'Pending Booking' || lead.bookingStatus === 'Pending') && !(lead.tags || []).some(t => /pending.?booking/i.test(t))) ? ['Pending Booking', ...(lead.tags || [])] : (lead.tags || [])).slice(0, 3).map(tag => <TagBadge key={tag} tag={tag}/>))}</div>
       <div className="crm-card-bottom"><strong dir="ltr">{formatPrice(lead.value || 0, (lead as { currency?: string }).currency || 'EUR')}</strong>{localizeNode(status.tone !== 'none' && <Sparkles className="crm-card-sparkle" size={13}/>)}</div>
       <div className="crm-card-footer"><small className="crm-card-time"><Clock3 size={11}/>{localizeNode(compactActivity(lead.lastActivity))}</small><span className={`crm-followup crm-followup-${status.tone}`} title={translateText(lead.nextFollowUp)}>{localizeNode(status.label)}</span></div>
     </div>
     <div className="crm-card-options" ref={menuRef}>
-      <button className="crm-card-menu-button" aria-label={translateText(`Options for ${lead.name || 'contact'}`)} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
-      {localizeNode(menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>{translateText("Open contact")}</Link><label>{translateText("Move to stage")}<CustomSelect aria-label={translateText(`Move ${lead.name || 'contact'} to stage`)} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: s.label }))} /></label></div>)}
+      <button className="crm-card-menu-button" aria-label={formatDisplayMessage('Options for {{0}}', lead.name || translateText('contact'))} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreVertical size={15}/></button>
+      {localizeNode(menuOpen && <div className="crm-card-menu"><Link to={`${base}/contacts/${encodeURIComponent(lead.id)}`}>{translateText("Open contact")}</Link><label>{translateText("Move to stage")}<CustomSelect aria-label={formatDisplayMessage('Move {{0}} to stage', lead.name || translateText('contact'))} value={displayStage(lead, pipeline)} onChange={val => { onMove(lead.id, pipeline.stages.find(s => s.id === val)!.id); setMenuOpen(false); }} options={pipeline.stages.map(s => ({ value: s.id, label: <bdi>{s.label}</bdi> }))} /></label></div>)}
     </div>
   </article>;
 }

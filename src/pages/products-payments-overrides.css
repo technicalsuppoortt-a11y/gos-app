@@ -619,6 +619,29 @@
   color: #7C3AED;
 }
 
+.pp-purchases-subnav-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .pp-page .pp-subnav-bar,
+  .pp-page .pp-subnav {
+    flex-wrap: wrap;
+  }
+  .pp-purchases-subnav-actions {
+    min-width: 0;
+    width: 100%;
+    gap: 8px;
+  }
+  .pp-purchases-subnav-actions > button {
+    min-height: 40px;
+    white-space: normal;
+  }
+}
+
 .pp-purchases-summary-pill {
   display: inline-flex;
   align-items: center;

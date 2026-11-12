@@ -7,10 +7,10 @@ export type StepData = { node: FlowNode; stats?: { sent: number; clicked: number
 export type StartData = { triggers: Trigger[] }
 
 /** Handles each step exposes; the edge's sourceHandle says which link it is. */
-export function outputs(n: FlowNode): { id: string; label: string }[] {
+export function outputs(n: FlowNode): { id: string; label: string; authored?: boolean }[] {
   switch (n.type) {
     case 'send_message': {
-      const btns = (n.buttons ?? []).filter(b => b.type === 'node').map(b => ({ id: `btn:${b.id}`, label: b.title || 'Button' }))
+      const btns = (n.buttons ?? []).filter(b => b.type === 'node').map(b => ({ id: `btn:${b.id}`, label: b.title || 'Button', authored: Boolean(b.title) }))
       return [...btns, { id: 'next', label: 'Next step' }]
     }
     case 'condition': return [{ id: 'true', label: 'Matches' }, { id: 'false', label: 'Otherwise' }]

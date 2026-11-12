@@ -178,7 +178,7 @@ function GatewaySetupGuide({ provider }: { provider: string }) {
           >
             <span>{ar ? 'فتح لوحة التحكم ↗' : guide.urlText}</span>
           </a>
-          <button type="button" className="st-icon-button" style={{ width: 22, height: 22 }} aria-label="Toggle Guide">
+          <button type="button" className="st-icon-button" style={{ width: 22, height: 22 }} aria-label={t("Toggle Guide")}>
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>
@@ -297,7 +297,7 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
     finally { setBusy(false); }
   }
   return <div className="st-workspace pm-methods">
-    <PanelHeading title={t('Payment Methods')} description="Accept payments through manual transfers or payment gateways. Methods are synchronized across products and checkout."/>
+    <PanelHeading title={t('Payment Methods')} description={t("Accept payments through manual transfers or payment gateways. Methods are synchronized across products and checkout.")}/>
     {(error || failure) && <div className="st-error" role="alert">{error || failure}{error && <button className="st-link" onClick={source.refresh}>{t('Try again')}</button>}</div>}
     {loading && (
       <div className="pm-loading-card" role="status" aria-live="polite">
@@ -362,14 +362,14 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
     {draft && <Modal title={t(`Configure ${draft.name}`)} close={close} disableBackdropClose={busy || testing} disableEscapeClose={busy || testing}>
       <form autoComplete="off" onSubmit={event => { event.preventDefault(); if (draft.type === 'gateway') void persistGateway(); else void persist([...methods.filter(method => method.id !== draft.id), draft]); }}>
         <fieldset disabled={busy}>
-          {['fawry', 'kashier'].includes(draft.provider) && <Field label="Provider"><DashboardSelect aria-label={t('Provider')} value={draft.provider} onChange={event => configure(event.target.value)}><option value="fawry">Fawry</option><option value="kashier">Kashier</option></DashboardSelect></Field>}
+          {['fawry', 'kashier'].includes(draft.provider) && <Field label={t("Provider")}><DashboardSelect aria-label={t('Provider')} value={draft.provider} onChange={event => configure(event.target.value)}><option value="fawry">{t("Fawry")}</option><option value="kashier">{t("Kashier")}</option></DashboardSelect></Field>}
           {draft.type === 'manual' ? <>
-            <Field label="Transfer account / wallet number"><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
-            <Field label="Customer instructions"><textarea maxLength={1000} value={draft.instructions} onChange={event => setDraft({ ...draft, instructions: event.target.value })}/></Field>
+            <Field label={t("Transfer account / wallet number")}><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
+            <Field label={t("Customer instructions")}><textarea maxLength={1000} value={draft.instructions} onChange={event => setDraft({ ...draft, instructions: event.target.value })}/></Field>
           </> : <>
-            <Field label="Account label"><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
+            <Field label={t("Account label")}><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
             {gatewayProvider && <GatewaySetupGuide provider={gatewayProvider} />}
-            {gatewayProvider === 'stripe' && <Field label="Webhook endpoint (checkout.session.completed)">
+            {gatewayProvider === 'stripe' && <Field label={t("Webhook endpoint (checkout.session.completed)")}>
               <div className="st-password-wrap">
                 <input type="text" readOnly spellCheck={false} value={webhookUrl} onFocus={event => event.currentTarget.select()}/>
                 <button
@@ -385,8 +385,8 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
             </Field>}
             {gatewayLoading && <p className="st-note" role="status">{t('Loading gateway configuration…')}</p>}
             {gateway && gatewayProvider && <>
-              <Field label="Mode"><DashboardSelect aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></DashboardSelect></Field>
-              {gatewayProvider === 'paytabs' && <Field label="PayTabs region"><DashboardSelect aria-label={t('PayTabs region')} value={credentials.region} onChange={event => setCredentials({ ...credentials, region: event.target.value })}>{paytabsRegions.map(region => <option key={region} value={region}>{t(({ SAU: 'Saudi Arabia', ARE: 'United Arab Emirates', EGY: 'Egypt', OMN: 'Oman', JOR: 'Jordan', IRQ: 'Iraq', KWT: 'Kuwait', GLOBAL: 'Global' })[region] ?? region)}</option>)}</DashboardSelect></Field>}
+              <Field label={t("Mode")}><DashboardSelect aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></DashboardSelect></Field>
+              {gatewayProvider === 'paytabs' && <Field label={t("PayTabs region")}><DashboardSelect aria-label={t('PayTabs region')} value={credentials.region} onChange={event => setCredentials({ ...credentials, region: event.target.value })}>{paytabsRegions.map(region => <option key={region} value={region}>{t(({ SAU: 'Saudi Arabia', ARE: 'United Arab Emirates', EGY: 'Egypt', OMN: 'Oman', JOR: 'Jordan', IRQ: 'Iraq', KWT: 'Kuwait', GLOBAL: 'Global' })[region] ?? region)}</option>)}</DashboardSelect></Field>}
               {gatewayFields[gatewayProvider].map(field => <Field key={`${gatewayProvider}-${field.key}`} label={field.optional ? `${field.label} (optional)` : field.label}>
                 {field.secret ? (
                   <div className="st-password-wrap">

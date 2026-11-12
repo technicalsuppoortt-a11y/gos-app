@@ -669,16 +669,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     showToast.success(`Conversation with ${active.name} archived.`);
   };
 
-  if (!conversations.length) return <div className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"><h2>{language === 'ar' ? 'لا توجد محادثات بعد' : 'No conversations yet'}</h2><p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : 'Connect a channel in Settings to start receiving messages.'}</p><button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : 'Connect a channel'}</button></div>;
+  if (!conversations.length) return <div className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"><h2>{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2><p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : translateText("Connect a channel in Settings to start receiving messages.")}</p><button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : translateText("Connect a channel")}</button></div>;
   const assigneeMember = teamMembers.find((m) => m.name === active.assignee) ?? teamMembers[0];
   const availableTags = (Object.keys(tagMeta) as TagId[]).filter((t) => !active.tags.includes(t));
 
   /* ------------------------------------------------------------------ */
   return (
     <div className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
-      {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>Retry</button></div>}
-      {!demoInbox && inboxApi.loading && <div role="status" className="af-knowledge-loading" aria-label="Loading conversations"><i/><i/></div>}
-      {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>No conversations yet. Connected channels will appear here when customer messages arrive.</p>}
+      {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>{translateText("Retry")}</button></div>}
+      {!demoInbox && inboxApi.loading && <div role="status" className="af-knowledge-loading" aria-label={translateText("Loading conversations")}><i/><i/></div>}
+      {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>{translateText("No conversations yet. Connected channels will appear here when customer messages arrive.")}</p>}
       {/* ============ Channel filter strip ============ */}
       <div className={`${CARD} flex h-[54px] shrink-0 items-center gap-3 px-2.5`}>
         <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label={translateText("Filter by channel")}>
@@ -860,7 +860,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     <Avatar person={c} size={40} channel={c.channel} />
                     <span className="min-w-0 flex-1 pt-0.5">
                       <span className={`block truncate text-[13px] font-bold ${HEADING}`}>
-                        {localizeNode(c.name)}
+                        {c.name}
                       </span>
                       <span
                         className={`mt-0.5 line-clamp-2 text-[12px] leading-[17px] ${
@@ -905,7 +905,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           <header className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/[0.06]">
             <Avatar person={active} size={42} />
             <div className="min-w-0">
-              <h2 className={`truncate text-[15px] font-bold leading-5 ${HEADING}`}>{localizeNode(active.name)}</h2>
+              <h2 className={`truncate text-[15px] font-bold leading-5 ${HEADING}`}>{active.name}</h2>
               <p className={`mt-0.5 flex items-center gap-1.5 text-[12px] ${MUTED}`}>
                 <ChannelIcon channel={active.channel} size={14} />
                 {localizeNode(channelMeta[active.channel].label)}
@@ -1023,7 +1023,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               {localizeNode(m.attachments.map((file) =>
                                 file.isImage ? (
                                   <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl ring-1 ring-black/5">
-                                    <img src={file.url} alt={translateText(file.name)} className="h-32 w-44 object-cover" />
+                                    <img src={file.url} alt={file.name} className="h-32 w-44 object-cover" />
                                   </a>
                                 ) : (
                                   <a
@@ -1036,7 +1036,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                                       <FileText size={15} />
                                     </span>
                                     <span className="min-w-0">
-                                      <b className={`block truncate text-[12px] font-semibold ${HEADING}`}>{localizeNode(file.name)}</b>
+                                      <b className={`block truncate text-[12px] font-semibold ${HEADING}`}>{file.name}</b>
                                       <small className={`text-[11px] ${MUTED}`}>{localizeNode(bytesLabel(file.size))}</small>
                                     </span>
                                   </a>
@@ -1065,7 +1065,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             <>
                               <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}</>
                           ))}
-                          {localizeNode(m.sender === "agent" && <>{localizeNode(currentUser.name)} ·</>)}
+                          {localizeNode(m.sender === "agent" && <>{currentUser.name} ·</>)}
                           {localizeNode(m.time)}
                           {localizeNode((m.sender === "ai" || m.sender === "agent") && <CheckCheck size={13} className="text-purple-400" />)}
                         </span>
@@ -1148,7 +1148,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             inputRef.current?.focus();
                           }}
                         >
-                          <span className={`text-[12.5px] font-semibold ${HEADING}`}>{localizeNode(t.title)}</span>
+                          <span className={`text-[12.5px] font-semibold ${HEADING}`}>{t.title}</span>
                           <span className={`line-clamp-1 text-[11.5px] font-normal ${MUTED}`}>{t.body.replace(/\*\*/g, "").replace(/\n/g, " ")}</span>
                         </button>
                       ))}
@@ -1198,7 +1198,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       </span>
                     ))}
                     <span className="min-w-0">
-                      <b className={`block truncate text-[11.5px] font-semibold ${HEADING}`}>{localizeNode(file.name)}</b>
+                      <b className={`block truncate text-[11.5px] font-semibold ${HEADING}`}>{file.name}</b>
                       <small className={`text-[10.5px] ${MUTED}`}>{localizeNode(bytesLabel(file.size))}</small>
                     </span>
                     <button onClick={() => removeAttachment(file.id)} aria-label={translateText(`Remove ${file.name}`)} className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-rose-50 hover:text-rose-500">
@@ -1293,7 +1293,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             <div className="flex items-start gap-3">
               <Avatar person={active} size={48} />
               <div className="min-w-0 flex-1">
-                <h3 className={`truncate text-[15px] font-bold ${HEADING}`}>{localizeNode(active.name)}</h3>
+                <h3 className={`truncate text-[15px] font-bold ${HEADING}`}>{active.name}</h3>
                 <p className={`mt-0.5 flex items-center gap-1.5 text-[12px] ${MUTED}`}>
                   <ChannelIcon channel={active.channel} size={14} /> {localizeNode(channelMeta[active.channel].label)}
                 </p>
@@ -1437,7 +1437,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   ) : (
                     <Avatar person={assigneeMember} size={20} />
                   ))}
-                  <span className={`flex-1 truncate text-[12px] font-semibold ${HEADING}`}>{localizeNode(assigneeMember.name)}</span>
+                  <span className={`flex-1 truncate text-[12px] font-semibold ${HEADING}`}>{assigneeMember.name}</span>
                   <ChevronDown size={13} className={`${SUBTLE} transition ${assigneeOpen ? "rotate-180" : ""}`} />
                 </button>
                 <AnimatePresence>
@@ -1460,7 +1460,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           ) : (
                             <Avatar person={member} size={24} />
                           ))}
-                          <span className="flex-1">{localizeNode(member.name)}</span>
+                          <span className="flex-1">{member.name}</span>
                           {localizeNode(member.name === active.assignee && <Check size={14} className="text-purple-600" />)}
                         </button>
                       )))}

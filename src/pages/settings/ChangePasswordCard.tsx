@@ -68,7 +68,7 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
     >
       <form className="st-password-change-form" onSubmit={handleSubmit}>
         <div className="st-form-grid three">
-          <Field label={ar ? 'كلمة المرور الحالية' : 'Current Password'}>
+          <Field label={ar ? 'كلمة المرور الحالية' : translateText("Current Password")}>
             <div className="st-password-input-wrap">
               <input
                 required
@@ -76,14 +76,14 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
                 autoComplete="current-password"
                 value={currentPassword}
                 onChange={e => setCurrentPassword(e.target.value)}
-                placeholder={ar ? 'أدخل كلمة المرور الحالية' : 'Enter current password'}
+                placeholder={ar ? 'أدخل كلمة المرور الحالية' : translateText("Enter current password")}
                 disabled={busy}
               />
               <button
                 type="button"
                 className="st-password-eye"
                 onClick={() => setShowCurrent(v => !v)}
-                aria-label={showCurrent ? 'Hide current password' : 'Show current password'}
+                aria-label={showCurrent ? translateText("Hide current password") : translateText("Show current password")}
                 tabIndex={-1}
               >
                 {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -91,7 +91,7 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
             </div>
           </Field>
 
-          <Field label={ar ? 'كلمة المرور الجديدة' : 'New Password'}>
+          <Field label={ar ? 'كلمة المرور الجديدة' : translateText("New Password")}>
             <div className="st-password-input-wrap">
               <input
                 required
@@ -100,14 +100,14 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
                 minLength={8}
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                placeholder={ar ? '8 أحرف على الأقل' : 'At least 8 characters'}
+                placeholder={ar ? '8 أحرف على الأقل' : translateText("At least 8 characters")}
                 disabled={busy}
               />
               <button
                 type="button"
                 className="st-password-eye"
                 onClick={() => setShowNew(v => !v)}
-                aria-label={showNew ? 'Hide new password' : 'Show new password'}
+                aria-label={showNew ? translateText("Hide new password") : translateText("Show new password")}
                 tabIndex={-1}
               >
                 {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -115,7 +115,7 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
             </div>
           </Field>
 
-          <Field label={ar ? 'تأكيد كلمة المرور الجديدة' : 'Confirm Password'}>
+          <Field label={ar ? 'تأكيد كلمة المرور الجديدة' : translateText("Confirm Password")}>
             <div className="st-password-input-wrap">
               <input
                 required
@@ -124,14 +124,14 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
                 minLength={8}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                placeholder={ar ? 'أعد كتابة كلمة المرور الجديدة' : 'Re-enter new password'}
+                placeholder={ar ? 'أعد كتابة كلمة المرور الجديدة' : translateText("Re-enter new password")}
                 disabled={busy}
               />
               <button
                 type="button"
                 className="st-password-eye"
                 onClick={() => setShowConfirm(v => !v)}
-                aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
+                aria-label={showConfirm ? translateText("Hide confirm password") : translateText("Show confirm password")}
                 tabIndex={-1}
               >
                 {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}

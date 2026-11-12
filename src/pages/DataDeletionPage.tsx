@@ -100,7 +100,7 @@ export function DataDeletionPage() {
           { id: 'meta-tokens', label: 'رموز الوصول وأذونات تطبيقات Meta (Facebook / Instagram / WhatsApp)' },
           { id: 'inbox-messages', label: 'سجلات المحادثات وصندوق الوارد الموحد والمرفقات' },
           { id: 'crm-contacts', label: 'بيانات جهات الاتصال والعملاء المحتملين في الـ CRM' },
-          { id: 'ai-history', label: 'سجل محادثات مساعد الذكاء الاصطناعي وتفضيلات الأتمتة' },
+          { id: 'ai-history', label: 'سجل محادثات AI Agent وتفضيلات الأتمتة' },
           { id: 'full-account', label: 'حذف الحساب بالكامل ومسح جميع البيانات المرتبطة' },
         ],
         metaSteps: [

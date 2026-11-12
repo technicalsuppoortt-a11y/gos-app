@@ -315,7 +315,7 @@ export function BookingPageView({
               )}
 
               {page.description && (
-                <p className="bk-wizard-description">{localizeNode(page.description)}</p>
+                <p className="bk-wizard-description">{page.description}</p>
               )}
 
               {(page.durationOptions.length > 1 || page.locationOptions.length > 1) && (

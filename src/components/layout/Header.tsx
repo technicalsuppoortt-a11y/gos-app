@@ -30,6 +30,9 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard': { title: 'Dashboard', description: 'A clear view of what’s happening across your workspace.' },
   '/dashboard/booking': { title: 'Booking & Calendar', description: 'Create booking links, manage your availability and let clients book appointments with you.' },
   '/dashboard/funnels': { title: 'Funnel & Website', description: 'Build and manage the paths that turn visitors into customers.' },
+  '/dashboard/websites': { title: 'Websites', description: 'Build and manage your websites.' },
+  '/dashboard/forms': { title: 'Forms', description: 'Build forms and manage submissions.' },
+  '/dashboard/copilot': { title: 'AI Copilot', description: 'Work with your business assistant.' },
   '/dashboard/integrations': { title: 'Integrations', description: 'Connect the tools that keep your business in sync.' },
   '/dashboard/inbox': { title: 'Inbox', description: 'Manage all your customer conversations in one place.' },
   '/dashboard/crm': { title: 'CRM & Leads', description: 'Build relationships and keep your pipeline moving.' },
@@ -37,7 +40,12 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/automation': { title: 'Automation & Campaign', description: 'Automations, campaigns, follow-ups and templates in one place.' },
   '/dashboard/follow-up': { title: 'AI Follow-up', description: 'Thoughtful follow-ups that help every lead move forward.' },
   '/dashboard/products': { title: 'Products & Payments', description: 'Manage your offers, products and connected payments.' },
+  '/dashboard/products-payments': { title: 'Products & Payments', description: 'Manage your offers, products and connected payments.' },
   '/dashboard/analytics': { title: 'Analytics', description: 'Understand performance across your business.' },
+  '/dashboard/knowledge': { title: 'Business Knowledge', description: 'Manage the sources that your assistant uses.' },
+  '/dashboard/activity': { title: 'Activity Log', description: 'View changes and events in your workspace.' },
+  '/dashboard/content': { title: 'Content Generator', description: 'Create content for your business.' },
+  '/dashboard/academy': { title: 'Upclick Academy', description: 'Explore learning resources.' },
   '/dashboard/settings/privacy': { title: 'Privacy Policy', description: 'Review how we protect your personal and business data.' },
 };
 
@@ -73,7 +81,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
-  const copy = pageCopy[location.pathname] ?? { title: 'Workspace settings', description: 'Manage your workspace and business preferences.' };
+  const dashboardSection = location.pathname.match(/^\/dashboard\/[^/]+/)?.[0];
+  const copy = pageCopy[location.pathname] ?? (dashboardSection ? pageCopy[dashboardSection] : undefined) ?? { title: 'Workspace settings', description: 'Manage your workspace and business preferences.' };
   const pageTitle = title ?? copy.title;
   const isDiscountEditor = /^\/dashboard\/products-payments\/discounts\/(?:new|[^/]+\/edit)\/?$/.test(location.pathname);
   const isDiscountEdit = isDiscountEditor && /\/edit\/?$/.test(location.pathname);
@@ -86,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const productId = productMatch ? productMatch[1] : null;
   const products = useProducts();
   const product = isProductWorkspace ? products.find(p => p.id === productId) : null;
-  const productName = product ? product.name : (productId === 'new' ? 'Create Product' : '');
+  const productName = product ? product.name : (productId === 'new' ? translateText('Create Product') : '');
 
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -180,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}>
           <span>{translateText("Workspace")}</span><i aria-hidden="true">/</i>
           <button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button>
-          <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" title={translateText(productName)} aria-current="page">{localizeNode(productName)}</h1>
+          <i aria-hidden="true">/</i><h1 className="min-w-0 truncate max-w-[200px] sm:max-w-[300px] md:max-w-[400px] inline-block align-bottom" dir="auto" title={productName} aria-current="page">{productName}</h1>
         </nav>
       ) : isDiscountEditor || isDiscountDashboard ? <nav className="layout-header-breadcrumb discount-header-breadcrumb" aria-label={translateText("Breadcrumb")}><button type="button" onClick={() => navigate('/dashboard/products-payments')}>{translateText("Products & Payments")}</button><i aria-hidden="true">/</i>{localizeNode(isDiscountEditor ? <><button type="button" onClick={backToDiscounts}>{translateText("Discounts")}</button><i aria-hidden="true">/</i><h1 aria-current="page">{localizeNode(discountTitle)}</h1></> : <h1 aria-current="page">{translateText("Discounts")}</h1>)}</nav> : <div className="layout-header-breadcrumb min-w-0 flex-1"><span>{translateText("Workspace")}</span><i>/</i><h1 className="min-w-0 truncate" title={translateText(pageTitle)}>{localizeNode(pageTitle)}</h1></div>)}
     </div>
@@ -245,15 +254,17 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           </AnimatePresence>
         </div>
       ))}
-      <button 
-        type="button" 
-        onClick={() => navigate('/')} 
-        className="layout-landing-link inline-flex items-center justify-center w-[34px] h-[34px] shrink-0 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:border-[#7C3AED]/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition-all shadow-sm"
-        title={translateText("View Landing Page")}
-        aria-label={translateText("View Landing Page")}
-      >
-        <Globe size={16} />
-      </button>
+      {((location.pathname.startsWith('/admin') || role === 'ADMIN') || (location.pathname.startsWith('/dashboard') && agency)) && (
+        <button 
+          type="button" 
+          onClick={() => navigate('/')} 
+          className="layout-landing-link inline-flex items-center justify-center w-[34px] h-[34px] shrink-0 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:border-[#7C3AED]/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition-all shadow-sm"
+          title={translateText("View Landing Page")}
+          aria-label={translateText("View Landing Page")}
+        >
+          <Globe size={16} />
+        </button>
+      )}
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
@@ -297,10 +308,17 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       <button type="button" onClick={() => navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans'))} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
-      <div className="relative" ref={profileRef}>
+      <div className="relative" ref={profileRef} onKeyDown={event => {
+        if (event.key !== 'Escape' || !profileOpen) return;
+        event.stopPropagation();
+        setProfileOpen(false);
+        profileRef.current?.querySelector<HTMLButtonElement>('.layout-header-user')?.focus();
+      }}>
         <button 
           className="layout-header-user" 
           onClick={() => setProfileOpen(!profileOpen)}
+          aria-label={translateText("Profile menu")}
+          aria-controls={profileOpen ? 'workspace-profile-menu' : undefined}
           aria-expanded={profileOpen}
         >
           {currentUser?.avatar ? (
@@ -330,7 +348,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 5, scale: 0.98 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute end-0 top-[calc(100%+8px)] w-64 rounded-xl bg-white shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
+              id="workspace-profile-menu"
+              className="layout-profile-popup absolute end-0 top-[calc(100%+8px)] w-64 rounded-xl bg-white shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
             >
               <div className="p-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-3">

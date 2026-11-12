@@ -19,5 +19,7 @@
   "switch_lang": "Change language",
   "welcome": "Welcome back",
   "dark_mode": "Dark Mode",
-  "light_mode": "Light Mode"
+  "light_mode": "Light Mode",
+  "orders": "Orders",
+  "requests": "Requests"
 }

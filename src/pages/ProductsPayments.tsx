@@ -2,7 +2,7 @@ import { defaultConfig, formatPrice as formatProductPrice } from './commerce/mod
 import { useCurrency } from '../context/CurrencyContext';
 import { thumbnailImageProps } from '../utils/thumbnailImages';
 import { usePaymentMethods } from '../backend/paymentMethods';
-import { useUILanguage, localizeNode, translateText } from '../i18n/display';
+import { formatDisplayMessage, useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { ProductCardActions } from './commerce/ProductCardActions';
 import { ProductQuickView } from './commerce/ProductQuickView';
 import { QuickDetails } from '../components/ui/QuickDetails';
@@ -41,6 +41,7 @@ import {
   Mail,
   PackageCheck,
   Pencil,
+  Phone,
   Plus,
   Receipt,
   Search,
@@ -103,7 +104,15 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   const { isPurchased } = usePurchasedProducts();
   const { items: portalItems } = useCustomerPortalLibrary();
 
-  const portalById = useMemo(() => new Map(portalItems.map(item => [item.purchaseId, item])), [portalItems]);
+  const portalById = useMemo(() => {
+    const map = new Map<string, CustomerPurchaseRecord>();
+    for (const item of portalItems) {
+      if (item.purchaseId) map.set(item.purchaseId, item);
+      if (item.productId) map.set(item.productId, item);
+      if (item.id) map.set(item.id, item);
+    }
+    return map;
+  }, [portalItems]);
 
   const rawTab = tabParams.get('tab')?.toLowerCase();
   const selectedTab = useMemo(() => {
@@ -314,7 +323,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                 </div>
 
                 {activeSubTab === 'purchases' && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <div className="pp-purchases-subnav-actions">
                     <div className="pp-purchases-summary-pill">
                       <PackageCheck size={14} className="text-emerald-500" />
                       <span>{translateText('Active in your account:')}</span>
@@ -605,14 +614,14 @@ function ProductCard({
         aria-label={
           customerMode
             ? translateText(`Open ${item.name} in Customer Portal`)
-            : translateText(`Edit ${item.name}`)
+            : formatDisplayMessage('Edit {{0}}', item.name)
         }
       >
         {localizeNode(
           item.image ? (
             <img decoding="async"
               {...thumbnailImageProps(item.image)} src={item.image}
-              alt={translateText(`${item.name} thumbnail`)}
+              alt={formatDisplayMessage('{{0}} thumbnail', item.name)}
               loading="lazy"
               draggable={false}
             />
@@ -647,7 +656,7 @@ function ProductCard({
             onSelect();
           }}
         >
-          {localizeNode(item.name)}
+          {item.name}
         </button>
         <b className="pp-price">{localizeNode(formatProductPrice(item.config ?? defaultConfig(item.type, item.price), formatPrice))}</b>
 
@@ -748,7 +757,7 @@ function ProductCard({
                   type="button"
                   className="pp-open"
                   title={translateText('View Users & Buyers')}
-                  aria-label={translateText(`View users of ${item.name}`)}
+                  aria-label={formatDisplayMessage('View users of {{0}}', item.name)}
                   onClick={event => {
                     event.stopPropagation();
                     setShowUsers(true);
@@ -762,7 +771,7 @@ function ProductCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   title={translateText('View Live Preview')}
-                  aria-label={translateText(`Preview ${item.name}`)}
+                  aria-label={formatDisplayMessage('Preview {{0}}', item.name)}
                   onPointerDown={() => {
                     try {
                       writePreview(productPreviewToken(item), item);
@@ -784,7 +793,7 @@ function ProductCard({
                   type="button"
                   className="pp-open"
                   title={translateText('Edit product')}
-                  aria-label={translateText(`Edit ${item.name}`)}
+                  aria-label={formatDisplayMessage('Edit {{0}}', item.name)}
                   onClick={event => {
                     event.stopPropagation();
                     onSelect();
@@ -979,14 +988,14 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                           <div className="cr-customer-cell">
                             <span className="cr-customer-avatar" aria-hidden="true">{initials}</span>
                             <div className="cr-customer-meta">
-                              <b>{localizeNode(t.customerName || 'Customer')}</b>
+                              <b dir="auto">{t.customerName || translateText('Customer')}</b>
                               <small>{t.customerEmail || '—'}</small>
                             </div>
                           </div>
                         </td>
                         <td>
                           <div className="cr-product-cell">
-                            <span className="cr-product-name">{localizeNode(t.productName)}</span>
+                            <span className="cr-product-name" dir="auto">{t.productName}</span>
                             <small className="cr-ref-code">#{String(t.id).slice(-8).toUpperCase()}</small>
                           </div>
                         </td>
@@ -1105,7 +1114,7 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                 </button>
               </div>
               <div className="cr-detail-amount">{localizeNode(selectedTxn.amount)}</div>
-              <div className="cr-detail-product-name">{localizeNode(selectedTxn.productName)}</div>
+              <div className="cr-detail-product-name" dir="auto">{selectedTxn.productName}</div>
               <div className="cr-detail-timestamp">
                 <Clock3 size={12} />
                 <span>{selectedTxn.date}</span>
@@ -1131,6 +1140,19 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
                         {selectedTxn.customerEmail}
                       </a>
                     ) : '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{translateText('Phone Number')}</dt>
+                  <dd>
+                    {selectedTxn.customerPhone ? (
+                      <span className="cr-detail-inline">
+                        <Phone size={12} />
+                        {selectedTxn.customerPhone}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
                   </dd>
                 </div>
               </dl>

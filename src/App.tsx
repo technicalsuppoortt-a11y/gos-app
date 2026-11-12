@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { FirebaseSession } from './backend/session';
 import { useSessionReady } from './backend/sessionState';
 import { CustomDomainInterceptor } from './components/common/CustomDomainInterceptor';
-import { useUILanguage } from './i18n/display';
+import { translateText, useUILanguage } from './i18n/display';
 import { RouterProvider } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
 import { store, type RootState } from './store';
@@ -41,9 +41,11 @@ function AppToaster() {
       dir={language === 'ar' ? 'rtl' : 'ltr'}
       richColors
       closeButton
+      containerAriaLabel={translateText('Notifications')}
       theme={theme}
       toastOptions={{
         duration: 3500,
+        closeButtonAriaLabel: translateText('Close toast'),
         style: { padding: '16px 20px', fontSize: '14px', borderRadius: '12px' },
       }}
     />

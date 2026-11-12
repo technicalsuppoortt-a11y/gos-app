@@ -29,7 +29,7 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
             <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>
           </LazyBackground>)}
           <div className="pf-template-description">
-            <b>{localizeNode(template.name)}</b>
+            <b>{template.name}</b>
             <small>{template.categoryLabel && <>{template.categoryLabel} · </>}{localizeNode(template.industry)} · {localizeNode(template.goal)}</small>
             <span>{busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Creating...")}</> : <>{translateText(isBlank ? "Start Blank Form " : "Use Template ")}<ArrowRight size={12}/></>}</span>
           </div>

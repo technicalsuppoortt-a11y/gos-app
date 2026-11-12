@@ -60,7 +60,7 @@ export function LiveOrders({ lead }: { lead: CanonicalLead }) {
               ? 'Service'
               : 'Digital Product';
       return <div className="crm-feed-item" key={row.id}>
-        <Package size={20}/><div><b>{row.productName || row.product_name || row.invoiceNumber || 'Order / payment'}</b><p>{translateText(typeLabel)} · {date(row.createdAt || row.created_at || row.at || row.date)}{row.invoiceNumber ? ' · Invoice ' + row.invoiceNumber : ''}</p></div>
+        <Package size={20}/><div><b>{row.productName || row.product_name || row.invoiceNumber || translateText("Order / payment")}</b><p>{translateText(typeLabel)} · {date(row.createdAt || row.created_at || row.at || row.date)}{row.invoiceNumber ? ' · Invoice ' + row.invoiceNumber : ''}</p></div>
         <span>{row.status} {formatPrice(Number(row.total ?? row.amount ?? NaN), row.currency || 'USD')}</span>
       </div>;
     })}</div> : <p className="crm-empty">{translateText('No orders recorded for this contact. Attach a product to track interest or share its checkout link.')}</p>}

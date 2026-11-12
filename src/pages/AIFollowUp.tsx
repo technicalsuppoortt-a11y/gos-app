@@ -2,7 +2,7 @@ import { useCloudState, useEntities } from '../backend/workspace';
 import { useBusinessMetrics } from '../backend/metrics';
 import { callBackend, backendError } from '../backend/firebase';
 import { cloudStorage } from '../backend/workspace';
-import { useUILanguage, translateText, localizeNode } from '../i18n/display';
+import { formatDisplayMessage, useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React from "react";
 import { gosApi, type GosSourceInput } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
@@ -484,7 +484,7 @@ const Avatar = ({
   <span className="af-avatar-wrap">
     <img
       src={`https://i.pravatar.cc/150?u=${lead.id}`}
-      alt={translateText(altName ?? lead.name)}
+      alt={altName ?? lead.name}
       className={`af-avatar ${small ? "af-avatar-small" : ""}`}
       style={{ objectFit: "cover" }}
     />
@@ -592,7 +592,13 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   const conversationRecords = useEntities<FollowUpConversation>('conversations');
   const leads = useSelector((state: RootState) => state.crm.leads);
   // ?tab=flows / ?tab=channels (also where Facebook Login returns) open the Flow Builder tab.
-  const [tab, setTab] = React.useState<Tab>(() => ["flows", "channels"].includes(new URLSearchParams(window.location.search).get("tab") ?? "") || isAutomation ? "Flow Builder" : "Overview");
+  const query = new URLSearchParams(window.location.search);
+  const initialTab = query.get("tab");
+  const [tab, setTab] = React.useState<Tab>(() => {
+    if (initialTab === "campaigns") return "Campaign";
+    return initialTab === "flows" || initialTab === "channels" || isAutomation ? "Flow Builder" : "Overview";
+  });
+  const startCampaign = React.useRef(initialTab === "campaigns" && query.get("action") === "new");
   const [dateRange, setDateRange] = React.useState("Last 7 days");
   const [conversationChannel, setConversationChannel] = React.useState("All");
   const api = useGosAI();
@@ -1291,7 +1297,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               <i />
             </div>
             <div>
-              <b>{localizeNode(assistantProfile.name)}</b>
+              <b>{assistantProfile.name}</b>
               <span>
                 {localizeNode(assistantEnabled
                   ? `${assistantProfile.role} · ready to help conversations, answer questions, book appointments, and follow up with leads.`
@@ -1365,7 +1371,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                   <span className="af-knowledge-check">
                     <SourceIcon size={10} strokeWidth={2.5} />
                   </span>
-                  <b>{localizeNode(item.name)}</b>{item.status && <small className={`af-source-status af-source-${item.status}`} role="status">{item.status}</small>}
+                  <b>{item.name}</b>{item.status && <small className={`af-source-status af-source-${item.status}`} role="status">{translateText(item.status)}</small>}
                 </div>
               );
             }))}
@@ -1401,7 +1407,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 <FlowIcon size={15} />
               </span>
               <div>
-                <b>{localizeNode(flow.name)}</b>
+                <b>{flow.name}</b>
                 <small>{localizeNode(flow.description)}</small>
               </div>
               <span
@@ -1412,7 +1418,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               <button
                 className={`af-switch ${flow.active ? "on" : ""}`}
                 type="button" role="switch" aria-checked={flow.active}
-                aria-label={translateText(`${flow.active ? "Pause" : "Activate"} ${flow.name}`)}
+                aria-label={formatDisplayMessage(flow.active ? 'Pause {{0}}' : 'Activate {{0}}', flow.name)}
                 onClick={() => {
                   const next = workflows.map((item) =>
                     item.id === flow.id
@@ -1493,7 +1499,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         )))}
       </div>
       <div className="af-perf-chart flex-1 min-h-0 w-full relative">
-  <div className="af-perf-chart-plot"><svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="Recorded operational events over time"><polyline fill="none" stroke="#A78BFA" strokeWidth="2" points={metrics.daily.map((day,index) => (index / Math.max(1,metrics.daily.length-1) * 600) + ',' + (118 - day.events / Math.max(1,...metrics.daily.map(item => item.events)) * 110)).join(' ')}/></svg></div>
+  <div className="af-perf-chart-plot"><svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label={translateText("Recorded operational events over time")}><polyline fill="none" stroke="#A78BFA" strokeWidth="2" points={metrics.daily.map((day,index) => (index / Math.max(1,metrics.daily.length-1) * 600) + ',' + (118 - day.events / Math.max(1,...metrics.daily.map(item => item.events)) * 110)).join(' ')}/></svg></div>
   <div className="af-perf-chart-x">{metrics.daily.filter((_,index) => index % 5 === 0).map((day,index) => <span key={day.date} style={{left: (index / 6 * 100) + '%'}}>{day.label}</span>)}</div>
  </div>
     </section>
@@ -1616,8 +1622,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 <span className="af-template-icon af-tone-violet">
                   <Icon size={16} strokeWidth={2.4} />
                 </span>
-                <b>{localizeNode(item.title)}</b>
-                <small>{localizeNode(item.description)}</small>
+                <b>{item.custom ? item.title : translateText(item.title)}</b>
+                <small>{item.custom ? item.description : translateText(item.description)}</small>
                 <span className="af-link">
                   {localizeNode(item.custom
                     ? "Edit template"
@@ -1680,7 +1686,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 <FlowIcon size={17} />
               </span>
               <div className="af-automation-main">
-                <b>{localizeNode(flow.name)}</b>
+                <b>{flow.name}</b>
                 <small>{localizeNode(flow.description)}</small>
                 <span>{translateText("Trigger: ")}{localizeNode(stateLabel(flow.from as FollowUpLifecycleState))}{localizeNode(" ")}
                   <ArrowRight size={12} />{localizeNode(" ")}
@@ -1701,7 +1707,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               <button
                 className={`af-switch ${flow.active ? "on" : ""}`}
                 type="button" role="switch" aria-checked={flow.active}
-                aria-label={translateText(`${flow.active ? "Pause" : "Activate"} ${flow.name}`)}
+                aria-label={formatDisplayMessage(flow.active ? 'Pause {{0}}' : 'Activate {{0}}', flow.name)}
                 onClick={() => {
                   const next = workflows.map((item) =>
                     item.id === flow.id
@@ -1715,7 +1721,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 <i />
               </button>
               <details className="af-action-menu">
-                <summary aria-label={translateText(`${flow.name} actions`)}>
+                <summary aria-label={formatDisplayMessage('{{0}} actions', flow.name)}>
                   <MoreHorizontal size={16} />
                 </summary>
                 <div>
@@ -1906,7 +1912,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               <i />
             </div>
             <div>
-              <b>{localizeNode(assistantProfile.name)}</b>
+              <b>{assistantProfile.name}</b>
               <p>
                 {localizeNode(assistantProfile.role)} · {localizeNode(assistantProfile.language)}
               </p>
@@ -1957,7 +1963,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     if (tab === "Campaign")
       return (
         <React.Suspense fallback={<p className="af-muted">{translateText("Loading campaigns…")}</p>}>
-          <CampaignsTab />
+          <CampaignsTab startInEditor={startCampaign.current} onEditorOpened={() => { startCampaign.current = false; }} />
         </React.Suspense>
       );
     if (tab === "Settings & Analysis")
@@ -2003,8 +2009,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
 
   return (
     <main className={`af-page flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
-      {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>Retry</button></div>}
-      {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>Retry assistant settings</button></div>}
+      {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>{translateText("Retry")}</button></div>}
+      {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>{translateText("Retry assistant settings")}</button></div>}
       <div className="af-page-title">
         <div>
           <h1>
@@ -2110,7 +2116,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
             <div className="af-lead-profile">
               <Avatar lead={selectedLead} />
               <div>
-                <b>{localizeNode(selectedLead.name)}</b>
+                <b>{selectedLead.name}</b>
                 <span>
                   {localizeNode(selectedLead.company)} · {selectedLead.email}
                 </span>
@@ -2179,7 +2185,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
             )))}
             <div className="af-message-demo">
               <label>{translateText("Message")}</label>
-              <button type="button" className="af-button-secondary" disabled={generating || agentConfig.loading || Boolean(agentConfig.error)} onClick={() => void generateDraft('lead')}><Sparkles size={14}/>{generating ? 'Generating…' : 'Generate AI draft'}</button>
+              <button type="button" className="af-button-secondary" disabled={generating || agentConfig.loading || Boolean(agentConfig.error)} onClick={() => void generateDraft('lead')}><Sparkles size={14}/>{generating ? translateText("Generating…") : translateText("Generate AI draft")}</button>
               <textarea
                 value={messageText}
                 disabled={generating}
@@ -2539,7 +2545,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 disabled={uploading || api.loading || Boolean(api.error)}
                 onClick={saveKnowledgeSource}
               >
-                <Plus size={14} />{uploading ? "Uploading…" : translateText(" Add to Knowledge Base")}</button>
+                <Plus size={14} />{uploading ? translateText("Uploading…") : translateText(" Add to Knowledge Base")}</button>
             </div>
           ))}
           {localizeNode(modal === "template" && (
@@ -2585,9 +2591,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
           ))}
           {localizeNode(modal === "channel" && (
             <div className="af-modal-form">
-              <p className="af-modal-copy">{translateText(channelAccount?.external_id
-                ? `Linked account: ${channelAccount.name || channelAccount.external_id}. Pausing keeps this account connected.`
-                : apiChannelId(selectedChannel) === 'webchat'
+              <p className="af-modal-copy">{channelAccount?.external_id
+                ? formatDisplayMessage('Linked account: {{0}}. Pausing keeps this account connected.', channelAccount.name || channelAccount.external_id)
+                : translateText(apiChannelId(selectedChannel) === 'webchat'
                   ? 'Web chat is part of this workspace. Turn replies on when you want the assistant to answer on your site.'
                   : metaTarget(selectedChannel)
                     ? 'This channel is not linked to a Meta account. Connect it before replies can be sent or received.'

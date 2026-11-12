@@ -56,7 +56,7 @@ export const CurrencySelector: React.FC<{
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${translateText('Select Currency')} (${activeCode})`}
-        title={`${activeItem.name} (${activeCode})`}
+        title={`${translateText(activeItem.name)} (${activeCode})`}
       >
         <span className="global-currency-symbol">
           {activeItem.symbol.length <= 2 ? (
@@ -89,7 +89,7 @@ export const CurrencySelector: React.FC<{
                     <img className="global-currency-flag" alt="" src={new URL(`../../assets/currency-flags/${item.flag}.svg`, import.meta.url).href}/>
                   </span>
                   <span className="font-semibold">{item.code}</span>
-                  <span className="text-[10px] opacity-75 font-normal">· {item.name}</span>
+                  <span className="text-[10px] opacity-75 font-normal" dir="auto">· {translateText(item.name)}</span>
                 </div>
                 {item.code === activeCode && <Check size={14} className="text-[var(--ws-accent)] shrink-0" />}
               </button>

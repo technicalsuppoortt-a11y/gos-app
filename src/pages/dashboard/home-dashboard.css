@@ -122,7 +122,7 @@ html.dark .gos-home-dashboard { --icon-cut: #121829; }
   position:absolute;
   top:calc(100% + 6px);
   inset-inline-end:0;
-  min-width:160px;
+  min-width:max(168px, 100%);
   width:max-content;
   background:#141a33;
   border:1px solid rgba(255,255,255,0.12);
@@ -134,4 +134,43 @@ html.dark .gos-home-dashboard { --icon-cut: #121829; }
 html.dark .gos-home-dashboard #hero-create-list{background:#0d1226;border-color:rgba(255,255,255,0.12)}
 .gos-home-dashboard #hero-create-list:not(.opacity-100){pointer-events:none}
 
+.gos-home-dashboard #hero-create-new,
+.gos-home-dashboard #hero-create-list button {
+  min-height: 36px;
+  cursor: pointer;
+}
+.gos-home-dashboard #hero-create-list button {
+  white-space: nowrap;
+}
+.gos-home-dashboard .gos-quick-action {
+  min-height: 36px;
+  min-width: 0;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-color: #cbd5e1;
+  text-align: center;
+}
+.gos-home-dashboard .gos-quick-action:hover {
+  border-color: #7c3aed;
+}
+.gos-home-dashboard .gos-quick-action:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+html.dark .gos-home-dashboard .gos-quick-action {
+  border-color: #475569;
+}
+html.dark .gos-home-dashboard .gos-quick-action:hover,
+html.dark .gos-home-dashboard .gos-quick-action:focus-visible {
+  border-color: #a78bfa;
+  outline-color: #a78bfa;
+}
+
+@media (max-width: 760px) {
+  .gos-home-dashboard #hero-create-new,
+  .gos-home-dashboard #hero-create-list button,
+  .gos-home-dashboard .gos-quick-action {
+    min-height: 44px;
+  }
+}
 

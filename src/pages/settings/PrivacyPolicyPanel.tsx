@@ -637,7 +637,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
                         type="button" 
                         onClick={handleCopyEmail}
                         className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
-                        title="Copy email"
+                        title={translateText("Copy email")}
                       >
                         {supportEmail}
                         <Copy size={11} />

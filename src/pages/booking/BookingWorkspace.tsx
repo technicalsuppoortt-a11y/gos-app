@@ -255,7 +255,7 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
                       >
                         <div className="bk-booking-card-main">
                           <button className="bk-title-link" onClick={() => setBuilder(p)}>
-                            {localizeNode(p.name)}
+                            {p.name}
                           </button>
                           <div className="bk-booking-card-meta">
                             <span className="bk-pill">
@@ -270,12 +270,12 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
                             </span>
                             <span className="bk-platform">
                               <Video size={13} />
-                              {localizeNode(p.location)}
+                              {p.location}
                             </span>
                             {localizeNode(!p.active && <span className="bk-pill gray">{translateText('Turned off')}</span>)}
                             {localizeNode(
                               p.note && (
-                                <span title={translateText(p.note)}>
+                                <span title={p.note}>
                                   <FileText size={13} />
                                   {translateText('Internal note')}
                                 </span>
@@ -488,14 +488,14 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
                       columns.includes('Name') && (
                         <td className="text-start">
                           <button className="bk-name-link" onClick={() => setContactEditor(c)}>
-                            {localizeNode(c.name)}
+                            {c.name}
                           </button>
                         </td>
                       )
                     )}
                     {columns.includes('Email') && <td className="text-start">{c.email || '—'}</td>}
                     {columns.includes('Phone') && <td className="text-center">{c.phone || '—'}</td>}
-                    {localizeNode(columns.includes('Company') && <td className="text-start">{localizeNode(c.company || '—')}</td>)}
+                    {localizeNode(columns.includes('Company') && <td className="text-start">{c.company || '—'}</td>)}
                     <td className="bk-action-cell text-center">
                       <Menu label={c.name + ' contact actions'}>
                         <button role="menuitem" onClick={() => setContactEditor(c)}>
@@ -592,7 +592,7 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
                           <Avatar name={m.name} />
                           <div>
                             <b>
-                              {localizeNode(m.name)}
+                              {m.name}
                               {localizeNode(m.id === 'owner' && <small>{translateText(' (you)')}</small>)}
                             </b>
                             <small>{m.email}</small>
@@ -799,7 +799,7 @@ function BookingSidePanel({
               <Avatar name={admin.name} />
               <div>
                 <b>
-                  {localizeNode(admin.name)}
+                  {admin.name}
                   {localizeNode((admin.id === 'owner' || index === 0) && <small>{translateText(' (you)')}</small>)}
                 </b>
                 <small>{admin.email}</small>
@@ -931,7 +931,7 @@ function BookingsList({
       <div className="bk-tools bk-bookings-actions">
         <BookingSelect className="bk-filter" value={pageId} onChange={e => setPageId(e.target.value)} aria-label={translateText('Booking page filter')}>
           <option value="">{translateText('All booking pages')}</option>
-          {localizeNode(pages.map(p => <option key={p.id} value={p.id}>{localizeNode(p.name)}</option>))}
+          {pages.map(p => <option key={p.id} value={p.id} translate="no">{p.name}</option>)}
         </BookingSelect>
         <SearchBox value={query} onChange={setQuery} placeholder={translateText('Search bookings by name or email...')} />
         <button className="bk-button primary bk-push-right" onClick={onNew}>
@@ -1041,14 +1041,14 @@ function BookingsList({
                               onEdit(b);
                             }}
                           >
-                            {localizeNode(b.name)}
+                            {b.name}
                           </button>
                           <span>·</span>
                           <a href={'mailto:' + b.email} onClick={e => e.stopPropagation()}>
                             {b.email}
                           </a>
                         </div>
-                        <small>{localizeNode(p?.name || b.serviceName)}</small>
+                        <small>{p?.name || b.serviceName}</small>
                       </div>
                       <span className={`bk-pill ${b.status === 'Canceled' ? 'gray' : b.status === 'Pending' ? 'amber' : 'green'}`}>
                         {localizeNode(b.status)}
@@ -1111,7 +1111,7 @@ function BookingsList({
                               <dt>{translateText('Invitee')}</dt>
                               <dd>
                                 <a href={`mailto:${b.email}`} className="bk-collapse-link">
-                                  {localizeNode(b.name)}
+                                  {b.name}
                                 </a>{' '}
                                 <span className="bk-muted">({b.email})</span>
                                 {b.whatsapp ? <span className="bk-muted"> · {b.whatsapp}</span> : null}
@@ -1222,7 +1222,7 @@ function PageActionDialog({ action, close, save, remove }: { action: PageAction;
       close={close}
     >
       <div className="bk-dialog-body bk-form">
-        <p>{localizeNode(action.page.name)}</p>
+        <p>{action.page.name}</p>
         {localizeNode(
           action.kind === 'Share' && (
             <>
@@ -1403,7 +1403,7 @@ function ConfirmDelete({ title, name, close, confirm }: { title: string; name: s
       <div className="bk-dialog-body">
         <p>
           {translateText('Remove ')}
-          {localizeNode(name)}
+          {name}
           {translateText(' from this workspace?')}
         </p>
       </div>

@@ -35,7 +35,7 @@ export function templateIsActive(template: { active?: boolean; status?: string }
 const arabicCategories: Record<string, string> = {
   Funnels: 'مسارات التحويل', Websites: 'المواقع', Forms: 'النماذج', 'Landing Pages': 'صفحات الهبوط',
   'Booking Pages': 'صفحات الحجز', 'CRM Pipelines': 'مسارات المبيعات', Automations: 'الأتمتة', Products: 'المنتجات',
-  'Email/SMS/WhatsApp': 'البريد والرسائل وواتساب', 'AI Assistants': 'مساعدو الذكاء الاصطناعي', 'AI Knowledge Packs': 'حزم المعرفة',
+  'Email/SMS/WhatsApp': 'البريد والرسائل وواتساب', 'AI Assistants': 'Ai Agent', 'AI Knowledge Packs': 'حزم المعرفة',
 };
 
 export function templateCategoryLabel(category: string, arabic: boolean) {

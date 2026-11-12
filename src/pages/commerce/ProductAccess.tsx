@@ -1,3 +1,4 @@
+import { translateText } from '../../i18n/display';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { auth, callBackend } from '../../backend/firebase';
@@ -17,5 +18,5 @@ export function ProductAccess() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'This action is unavailable.'); }
     finally { lock.current = false; setBusy(false); }
   }
-  return <main className="cw-page"><section className="cw-card"><h1>{data?.name || 'Product access'}</h1>{error && <p className="cw-errors" role="alert">{error}</p>}{message && <p role="status">{message}</p>}{busy && <p role="status">Loading…</p>}{data?.files.map(file => <div className="cw-content-item" key={file.index}><b>{file.name}</b><button className="cw-button" disabled={busy} onClick={() => void action('download', file)}>Open / Download</button>{file.lessonId && <button className="cw-button" disabled={busy} onClick={() => void action('complete', file)}>Mark complete</button>}</div>)}{data && !data.files.length && <p>No files have been attached to this product.</p>}<a href="/auth/login" className="cw-text-link">Sign in with your customer email</a></section></main>;
+  return <main className="cw-page"><section className="cw-card"><h1>{data?.name || translateText("Product access")}</h1>{error && <p className="cw-errors" role="alert">{error}</p>}{message && <p role="status">{message}</p>}{busy && <p role="status">{translateText("Loading…")}</p>}{data?.files.map(file => <div className="cw-content-item" key={file.index}><b>{file.name}</b><button className="cw-button" disabled={busy} onClick={() => void action('download', file)}>{translateText("Open / Download")}</button>{file.lessonId && <button className="cw-button" disabled={busy} onClick={() => void action('complete', file)}>{translateText("Mark complete")}</button>}</div>)}{data && !data.files.length && <p>{translateText("No files have been attached to this product.")}</p>}<a href="/auth/login" className="cw-text-link">{translateText("Sign in with your customer email")}</a></section></main>;
 }

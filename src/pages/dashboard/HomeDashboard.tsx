@@ -2,7 +2,7 @@ import { eventLabel, parseTimestampMs, resourceLabel, useBusinessMetrics } from 
 import { withUniqueListIds } from '../../utils/listKeys';
 import { useEntities } from '../../backend/workspace';
 import type { Asset } from '../asset-model';
-import { useUILanguage, localizeNode, translateText } from '../../i18n/display';
+import { formatDisplayMessage, useUILanguage, localizeNode, translateText } from '../../i18n/display';
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -343,13 +343,13 @@ const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
       label: "Create Funnel",
       icon: IcFunnel,
       tone: "purple",
-      to: "/dashboard/funnels-websites/funnels/new",
+      to: "/dashboard/funnels?action=new",
     },
     {
       label: "Create Website",
       icon: IcWebsite,
       tone: "blue",
-      to: "/dashboard/funnels-websites/websites/new",
+      to: "/dashboard/websites?action=new",
     },
     {
       label: "Add Product",
@@ -361,7 +361,7 @@ const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
       label: "New Campaign",
       icon: IcSend,
       tone: "orange",
-      to: "/dashboard/automations/campaigns/new",
+      to: "/dashboard/automation?tab=campaigns&action=new",
     },
     {
       label: "Add Contact",
@@ -373,7 +373,7 @@ const QUICK_ACTIONS: { label: string; icon: IconC; tone: Tone; to: string }[] =
       label: "Book Appointment",
       icon: IcCalendarPlus,
       tone: "indigo",
-      to: "/dashboard/booking?tab=bookings&action=new",
+      to: "/dashboard/booking/appointments/new?returnTo=bookings",
     },
   ];
 
@@ -639,13 +639,13 @@ const CREATE_ITEMS: {
     label: "Funnel",
     icon: IcFunnel,
     color: "#F2542D",
-    to: "/dashboard/funnels-websites/funnels/new",
+    to: "/dashboard/funnels?action=new",
   },
   {
     label: "Website",
     icon: IcWebsite,
     color: "#13B5C8",
-    to: "/dashboard/funnels-websites/websites/new",
+    to: "/dashboard/websites?action=new",
   },
   {
     label: "Product",
@@ -657,7 +657,7 @@ const CREATE_ITEMS: {
     label: "Campaign",
     icon: IcSend,
     color: "#3B82F6",
-    to: "/dashboard/automations/campaigns/new",
+    to: "/dashboard/automation?tab=campaigns&action=new",
   },
   {
     label: "Contact",
@@ -672,6 +672,7 @@ function CreateNewMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     if (!open) return;
@@ -688,20 +689,27 @@ function CreateNewMenu() {
     <nav
       ref={menuRef}
       aria-label={translateText("Create new")}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !open) return;
+        event.stopPropagation();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }}
       className="relative w-full rounded-xl border border-white/10 bg-[#141a33] p-1.5 text-white shadow-[0_16px_32px_-12px_rgba(15,21,53,0.6)] md:w-[154px] dark:bg-[#0d1226]"
     >
       <button
         type="button"
+        ref={triggerRef}
         id="hero-create-new"
         aria-expanded={open}
         aria-controls="hero-create-list"
         onClick={() => setOpen((o) => !o)}
         className="group flex w-full items-center gap-2 rounded-lg p-1 transition hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
       >
-        <span className="grid h-5 w-5 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#7C3AED] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
+        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#7C3AED] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
           <Plus size={13} strokeWidth={3} />
         </span>
-        <span className="flex-1 text-xs font-semibold tracking-tight text-start">{translateText("Create New")}</span>
+        <span className="flex-1 text-sm font-semibold leading-normal text-start">{translateText("Create New")}</span>
         <ChevronDown
           size={13}
           className={`text-slate-400 transition-transform duration-200 ${open ? "" : "-rotate-90 rtl:rotate-90"}`}
@@ -734,7 +742,7 @@ function CreateNewMenu() {
                 >
                   <item.icon size={10} />
                 </span>
-                <span className="flex-1 font-medium">{localizeNode(item.label)}</span>
+                <span className="flex-1 text-sm font-medium leading-normal">{translateText(item.label)}</span>
               </button>
             </li>
           )))}
@@ -829,7 +837,7 @@ function HeroBanner() {
           id="dash-greeting"
           className="text-lg font-extrabold leading-tight tracking-tight text-[#0f1535] sm:text-xl dark:text-white"
         >
-          {language.startsWith('ar') ? 'صباح الخير، ' : 'Good morning, '}{userName} <span aria-hidden="true">👋</span>
+          {language.startsWith('ar') ? 'صباح الخير، ' : translateText("Good morning, ")}{userName} <span aria-hidden="true">👋</span>
         </h1>
         <p className="mt-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
           {phoenix?.brand.tagline || phoenix?.brand.description || translateText("Here’s what’s happening with your business today.")}
@@ -908,7 +916,7 @@ function QuickActions() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="quick-actions" className={`${CARD} shrink-0 px-3 py-1.5`}>
+    <section data-dashboard-section="quick-actions" aria-label={translateText("Quick Actions")} className={`${CARD} shrink-0 px-3 py-1.5`}>
       <div className="flex items-center justify-between gap-2.5">
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <span className={`text-xs font-bold whitespace-nowrap ${H}`}>{translateText("Quick Actions")}</span>
@@ -923,13 +931,13 @@ function QuickActions() {
                 id={`quick-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
                 type="button"
                 onClick={() => navigate(a.to)}
-                className={`group flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1 transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-300 ${t.tile}`}
+                className={`group gos-quick-action flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1 transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-300 ${t.tile}`}
               >
-                <span className={`transition-transform duration-150 group-hover:scale-110 ${t.text}`}>
+                <span className={`shrink-0 transition-transform duration-150 group-hover:scale-110 ${t.text}`}>
                   <a.icon size={12} />
                 </span>
-                <span className={`truncate text-[11px] font-semibold ${H}`}>
-                  {localizeNode(a.label)}
+                <span className={`text-xs font-semibold leading-snug ${H}`}>
+                  {translateText(a.label)}
                 </span>
               </button>
             );
@@ -947,7 +955,7 @@ function ToolsGrid() {
     <section data-dashboard-section="tools" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
       <SectionHeader
         title={translateText("Your Tools & Products")}
-        subtitle="Access and manage all your business tools in one place."
+        subtitle={translateText("Access and manage all your business tools in one place.")}
       />
       <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-2.5 mt-2.5 auto-rows-fr min-h-0">
         {localizeNode(TOOLS.map((t) => (
@@ -1199,7 +1207,7 @@ function RecentActivity() {
         onAction={() => navigate("/dashboard/activity")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0">
-        {!ACTIVITY.length && <li className="py-4 text-xs text-slate-500">No activity yet. Your recent changes will appear here.</li>}{ACTIVITY.slice(0, 4).map((a) => (
+        {!ACTIVITY.length && <li className="py-4 text-xs text-slate-500">{translateText("No activity yet. Your recent changes will appear here.")}</li>}{ACTIVITY.slice(0, 4).map((a) => (
           <li key={a.id} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
             <IconTile icon={a.icon} tone={a.tone} size="xs" />
             <span className={`min-w-0 flex-1 truncate text-[11.5px] font-medium leading-tight ${H} text-start`}>
@@ -1240,7 +1248,7 @@ function TopFunnels() {
         onAction={() => navigate("/dashboard/funnels")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {!FUNNELS.length && <li className="py-4 text-xs text-slate-500">Create your first funnel to see its results here.</li>}{FUNNELS.slice(0, 3).map((f, i) => {
+        {!FUNNELS.length && <li className="py-4 text-xs text-slate-500">{translateText("Create your first funnel to see its results here.")}</li>}{FUNNELS.slice(0, 3).map((f, i) => {
           const up = f.trend >= 0;
           return (
             <li
@@ -1251,7 +1259,7 @@ function TopFunnels() {
               <span className="relative h-7 w-11 shrink-0 overflow-hidden rounded-md bg-slate-900 ring-1 ring-black/5">
                 <img
                   src={f.img}
-                  alt={translateText(`${f.name} preview`)}
+                  alt={formatDisplayMessage('{{0}} preview', f.name)}
                   loading="lazy"
                   className="h-full w-full object-cover block"
                 />
@@ -1262,7 +1270,7 @@ function TopFunnels() {
               </span>
               <span className="flex-1 min-w-0 leading-tight text-start">
                 <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
-                  {localizeNode(f.name)}
+                  {f.name}
                 </span>
                 <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
                   {localizeNode(f.leads)}{translateText(" Leads")}{localizeNode(" ")}
@@ -1299,7 +1307,7 @@ function TopProducts() {
         onAction={() => navigate("/dashboard/products")}
       />
       <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {!PRODUCTS.length && <li className="py-4 text-xs text-slate-500">Create a product to start tracking sales.</li>}{PRODUCTS.slice(0, 3).map((p, i) => (
+        {!PRODUCTS.length && <li className="py-4 text-xs text-slate-500">{translateText("Create a product to start tracking sales.")}</li>}{PRODUCTS.slice(0, 3).map((p, i) => (
           <li
             key={p.name}
             className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"
@@ -1307,13 +1315,13 @@ function TopProducts() {
             <RankBadge n={i + 1} />
             <img
               src={p.img}
-              alt={translateText(p.name)}
+              alt={p.name}
               loading="lazy"
               className="h-7 w-7 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
             />
             <span className="flex-1 min-w-0 leading-tight text-start">
               <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
-                {localizeNode(p.name)}
+                {p.name}
               </span>
               <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
                 {localizeNode(p.sales)}{translateText(" sales")}</span>

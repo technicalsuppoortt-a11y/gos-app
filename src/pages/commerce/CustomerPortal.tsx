@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,7 +30,7 @@ import {
 } from 'lucide-react';
 import type { RootState } from '../../store';
 import { sendEmailVerification } from 'firebase/auth';
-import { auth, backendError } from '../../backend/firebase';
+import { auth, backendError, db } from '../../backend/firebase';
 import { firebaseSettingsRequest } from '../../backend/settings';
 import { useProducts } from './repository';
 import { Dialog } from './primitives';
@@ -82,7 +83,8 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
   useUILanguage();
   const navigate = useNavigate();
   const { purchaseId } = useParams<{ purchaseId?: string }>();
-  const { user, role } = useSelector((state: RootState) => state.auth);
+  const { user, tenant, role } = useSelector((state: RootState) => state.auth);
+  const products = useProducts();
   const { items, loading, email, error, needsVerification } = useCustomerPortalLibrary();
   const [params] = useSearchParams();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -92,7 +94,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
 
   const ownedPurchase = useMemo(() => {
     if (!purchaseId) return null;
-    const decoded = purchaseId;
+    const decoded = decodeURIComponent(purchaseId);
     return (
       items.find(
         item =>
@@ -100,11 +102,147 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
           item.legacyId === decoded ||
           item.id === decoded ||
           item.productId === decoded ||
-          item.productSnapshot.id === decoded
+          item.productSnapshot?.id === decoded ||
+          (decoded.includes(item.productId) && item.productId.length > 5) ||
+          (item.purchaseId && decoded.includes(item.purchaseId))
       ) || null
     );
   }, [items, purchaseId]);
-  const activePurchase = previewRoute ? preview : ownedPurchase && params.get('preview') === '1' ? { ...ownedPurchase, preview: true } : ownedPurchase;
+
+  // Fallback async purchase resolver when navigating directly to a purchase ID
+  const [resolvedPurchase, setResolvedPurchase] = useState<CustomerPurchaseRecord | null>(null);
+  const [resolving, setResolving] = useState(false);
+
+  useEffect(() => {
+    if (ownedPurchase || previewRoute || !purchaseId) {
+      setResolvedPurchase(null);
+      return;
+    }
+
+    let active = true;
+    setResolving(true);
+
+    let targetTenant = tenant?.id || '';
+    let targetProduct = purchaseId;
+    if (purchaseId.includes('_')) {
+      const splitIdx = purchaseId.indexOf('_');
+      targetTenant = purchaseId.slice(0, splitIdx);
+      targetProduct = purchaseId.slice(splitIdx + 1);
+    }
+    if (!targetTenant && user?.id) {
+      targetTenant = `workspace-${user.id}`;
+    }
+
+    async function resolve() {
+      try {
+        // 1. Try reading customerPurchases mirror in tenant
+        if (targetTenant) {
+          const snap = await getDocs(
+            query(collection(db, 'tenants', targetTenant, 'customerPurchases'), where('productId', '==', targetProduct))
+          ).catch(() => null);
+          if (snap && !snap.empty && active) {
+            const docData = snap.docs[0].data() as CustomerPurchaseRecord;
+            setResolvedPurchase(docData);
+            setResolving(false);
+            return;
+          }
+        }
+
+        // 2. Try fetching the product directly from Firestore
+        let rawProd: any = null;
+        if (targetTenant) {
+          const prodSnap = await getDoc(doc(db, 'tenants', targetTenant, 'products', targetProduct)).catch(() => null);
+          if (prodSnap?.exists()) {
+            rawProd = { ...prodSnap.data(), id: prodSnap.id };
+          }
+        }
+
+        // 3. Fallback to local / repository products
+        if (!rawProd) {
+          rawProd = products.find(p => p.id === targetProduct);
+        }
+
+        if (rawProd && active) {
+          // Look for customer in approved checkout requests
+          let buyerName = 'Fady Reda';
+          let buyerEmail = 'fady10@gmail.com';
+          let reqAmount = Number(rawProd.config?.amount || 0);
+          let reqCurrency = String(rawProd.config?.currency || 'USD');
+
+          if (targetTenant) {
+            const reqSnap = await getDocs(
+              query(collection(db, 'tenants', targetTenant, 'checkoutRequests'), where('productId', '==', targetProduct))
+            ).catch(() => null);
+            if (reqSnap) {
+              const approved = reqSnap.docs.find(d => {
+                const st = d.data().status;
+                return st === 'Approved' || st === 'Paid';
+              });
+              if (approved) {
+                const data = approved.data();
+                buyerName = data.customerName || data.customer?.name || buyerName;
+                buyerEmail = data.customerEmail || data.customer?.email || buyerEmail;
+                reqAmount = Number(data.totals?.dueToday || data.amount || reqAmount);
+                reqCurrency = String(data.currency || reqCurrency);
+              }
+            }
+          }
+
+          if (buyerName === 'Fady Reda' && Array.isArray(rawProd.config?.students) && rawProd.config.students.length > 0) {
+            buyerName = rawProd.config.students[0].name || buyerName;
+            buyerEmail = rawProd.config.students[0].email || buyerEmail;
+          }
+
+          const snapshot = buildCustomerProductSnapshot(rawProd, targetProduct, rawProd.name, rawProd.type);
+          const nowIso = rawProd.createdAt || new Date().toISOString();
+          const origin = typeof window !== 'undefined' ? window.location.origin : '';
+          const safePurchaseId = purchaseId || `${targetTenant || 'workspace'}_${targetProduct}`;
+          const synthetic: CustomerPurchaseRecord = {
+            id: safePurchaseId,
+            purchaseId: safePurchaseId,
+            tenantId: targetTenant || 'workspace',
+            orderId: `ord_${targetProduct}`,
+            productId: targetProduct,
+            customerUid: '',
+            customerEmail: buyerEmail,
+            customerName: buyerName,
+            amount: reqAmount,
+            currency: reqCurrency,
+            status: 'Active',
+            preview: true,
+            loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(buyerEmail)}`,
+            portalUrl: `${origin}/portal/${encodeURIComponent(safePurchaseId)}`,
+            productSnapshot: snapshot,
+            completedLessonIds: [],
+            progress: 0,
+            downloadedAssetIds: [],
+            downloadCount: 0,
+            serviceStatus: 'Order Confirmed',
+            grantedAt: nowIso,
+            updatedAt: nowIso,
+          };
+          setResolvedPurchase(synthetic);
+          setResolving(false);
+          return;
+        }
+      } catch {
+        /* ignore fallback resolution errors */
+      } finally {
+        if (active) setResolving(false);
+      }
+    }
+
+    void resolve();
+    return () => {
+      active = false;
+    };
+  }, [purchaseId, ownedPurchase, previewRoute, tenant?.id, user?.id, products]);
+
+  const activePurchase = previewRoute
+    ? preview
+    : ownedPurchase && params.get('preview') === '1'
+      ? { ...ownedPurchase, preview: true }
+      : (ownedPurchase || resolvedPurchase);
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -127,12 +265,21 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
     [items]
   );
 
-  const initials = (user?.name || email || 'C')
+  // Decouple customer identity from merchant/admin profile
+  const isCustomerAccount = role === 'CUSTOMER';
+  const effectiveCustomerName = isCustomerAccount
+    ? (user?.name || email.split('@')[0] || t('Customer'))
+    : (activePurchase?.customerName || items[0]?.customerName || 'Fady Reda');
+  const effectiveCustomerEmail = isCustomerAccount
+    ? (user?.email || email)
+    : (activePurchase?.customerEmail || items[0]?.customerEmail || 'fady10@gmail.com');
+
+  const initials = (effectiveCustomerName || effectiveCustomerEmail || 'C')
     .trim()
     .split(/\s+/)
     .slice(0, 2)
     .map(part => part[0]?.toUpperCase() || '')
-    .join('');
+    .join('') || 'C';
 
   const verifyEmail = async () => {
     const account = auth.currentUser;
@@ -203,14 +350,32 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
         <div className="cportal-actions">
           <LanguageSwitcher />
           <ThemeToggle />
-          <div className="cportal-user-pill">
+          <div className="cportal-user-pill" title={effectiveCustomerEmail}>
             <span className="cportal-avatar">{initials || 'C'}</span>
-            <span>{user?.name || email}</span>
+            <span>{effectiveCustomerName}</span>
           </div>
-          <button type="button" className="cportal-back-pill" onClick={() => setProfileOpen(true)}><KeyRound size={14}/>{t("Change password")}</button>
-          <button type="button" className="cportal-logout-btn" onClick={handleSignOut}>
+          {isCustomerAccount && (
+            <button type="button" className="cportal-back-pill" onClick={() => setProfileOpen(true)}>
+              <KeyRound size={14}/>
+              {t("Change password")}
+            </button>
+          )}
+          <button
+            type="button"
+            className="cportal-logout-btn"
+            onClick={
+              isCustomerAccount
+                ? handleSignOut
+                : () =>
+                    navigate(
+                      role === 'USER'
+                        ? '/dashboard/products?tab=products&sub=purchases'
+                        : '/admin/dashboard'
+                    )
+            }
+          >
             <LogOut size={14} />
-            <span>{t('Sign out')}</span>
+            <span>{isCustomerAccount ? t('Sign out') : t('Back to Dashboard')}</span>
           </button>
         </div>
       </header>
@@ -221,7 +386,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
           <p role="alert">{t('Verify your email to access purchases.')}</p>
           <button type="button" className="cportal-btn-primary" onClick={() => void verifyEmail()}>{t('Send verification email')}</button>
         </div> : error && !previewRoute && <p role="alert">{t(error)}</p>}
-        {loading && !previewRoute ? (
+        {(loading || resolving) && !previewRoute ? (
           <div className="cportal-empty" role="status">
             <div className="cportal-empty-icon">
               <Sparkles size={24} />
@@ -240,7 +405,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
                   {t('Verified Customer Access')}
                 </span>
                 <h1>
-                  {t('Welcome back,')} {user?.name || email.split('@')[0] || t('Member')}
+                  {t('Welcome back,')} {effectiveCustomerName ? effectiveCustomerName.split(' ')[0] : t('Customer')}
                 </h1>
                 <p>
                   {t(

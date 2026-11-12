@@ -348,7 +348,7 @@ export function LiveAnalytics({ tab }: { tab: string }) {
         </div>
       </Card>
       <Card title={translateText('Activity Stream')} className="an-span2">
-        <input className="mb-3 rounded-lg border bg-transparent px-3 py-2 text-sm" aria-label="Search events" placeholder={translateText('Search events')} value={search} onChange={event => setSearch(event.target.value)}/>
+        <input className="mb-3 rounded-lg border bg-transparent px-3 py-2 text-sm" aria-label={translateText("Search events")} placeholder={translateText('Search events')} value={search} onChange={event => setSearch(event.target.value)}/>
         {events.length ? <div className="an-table-wrap"><table className="an-table"><thead><tr><th>{translateText('Event')}</th><th>{translateText('Resource')}</th><th>{translateText('Date')}</th></tr></thead><tbody>{events.map(event => <tr key={event.id}><td>{eventLabel(event.type)}</td><td>{resourceLabel(event.resource)}</td><td>{new Date(parseTimestampMs(event.createdAt) || Date.now()).toLocaleString()}</td></tr>)}</tbody></table></div> : <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-sm text-slate-500"><BarChart3 size={24}/><p>{translateText('No events recorded for this period.')}</p></div>}
       </Card>
     </div>

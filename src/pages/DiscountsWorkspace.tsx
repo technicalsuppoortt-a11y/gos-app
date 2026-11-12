@@ -312,7 +312,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                                 <Copy size={13} />
                               </button>
                             </span>
-                            <small className="dc-description">{localizeNode(d.description)}</small>
+                            <small className="dc-description">{d.description}</small>
                           </td>
                           <td className="text-center">
                             <span className="dc-type-badge">{localizeNode(d.type)}</span>
@@ -774,7 +774,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                                 {translateText('Product')}
                               </span>
                               <strong style={{ color: '#0f172a' }}>
-                                {ord.productName || 'Product'}
+                                {ord.productName || translateText("Product")}
                               </strong>
                             </div>
                             <div>
@@ -822,7 +822,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                           >
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                               <CreditCard size={12} />
-                              {ord.method || 'Checkout'}
+                              {ord.method || translateText("Checkout")}
                             </span>
                             {(ord.decidedAt || ord.createdAt) && (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>

@@ -63,7 +63,7 @@ export function ProfilePanel({ data, save }: {
   const isDarkModeChecked = draft.mode === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : (draft.mode ?? theme) === 'dark';
   useEffect(() => () => { if (photo) URL.revokeObjectURL(photo.preview); }, [photo]);
   const avatar = photo?.preview ?? draft.photo;
-  const avatarView = (large = false) => avatar ? <img className={`st-avatar${large ? ' large' : ''}`} src={avatar} alt={translateText(draft.name)} onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = portrait; }}/>: <span className={`st-avatar st-initials${large ? ' large' : ''}`}>{localizeNode(draft.name.split(' ').map(x => x[0]).slice(0, 2).join(''))}</span>;
+  const avatarView = (large = false) => avatar ? <img className={`st-avatar${large ? ' large' : ''}`} src={avatar} alt={draft.name} onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = portrait; }}/>: <span className={`st-avatar st-initials${large ? ' large' : ''}`}>{draft.name.split(' ').map(x => x[0]).slice(0, 2).join('')}</span>;
 
   return <>
     {localizeNode(blocker.state === 'blocked' && (
@@ -75,7 +75,7 @@ export function ProfilePanel({ data, save }: {
         </div>
       </Modal>
     ))}
-    <PanelHeading title={translateText("Profile Settings")} description="Manage your personal information and account preferences."/>
+    <PanelHeading title={translateText("Profile Settings")} description={translateText("Manage your personal information and account preferences.")}/>
     <form onSubmit={async e => {
       e.preventDefault();
       setBusy(true);
@@ -98,7 +98,7 @@ export function ProfilePanel({ data, save }: {
           <div className="st-section-title"><h3>{translateText("Profile Photo")}</h3><p>{translateText("This photo will be used across your account.")}</p></div>
           <div className="st-photo-row">
             <div className="st-avatar-wrap">
-              {localizeNode(avatarView(true))}
+              {avatarView(true)}
               <button type="button" aria-label={translateText("Change profile photo")} className="st-camera" onClick={() => file.current?.click()}><Camera size={13}/></button>
             </div>
             <div>
@@ -123,13 +123,13 @@ export function ProfilePanel({ data, save }: {
 
           <div className="st-section-title"><h3>{translateText("Personal Information")}</h3><p>{translateText("Update your personal details.")}</p></div>
           <div className="st-form-grid">
-            <Field label="Full Name"><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
-            <Field label="Email Address"><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
-            <Field label="Phone Number"><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
-            <Field label="Language"><Select value={draft.language} onChange={value => updateRegional('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
-            <Field label="Currency"><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={currencyOptions(language)} /></Field>
-            <Field label="Timezone"><TimezoneSelect value={draft.timezone} onChange={value => updatePreference('timezone', value)}/></Field>
-            <Field label="Date Format"><Select value={draft.dateFormat || 'DD / MM / YYYY'} onChange={value => updatePreference('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>
+            <Field label={translateText("Full Name")}><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
+            <Field label={translateText("Email Address")}><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
+            <Field label={translateText("Phone Number")}><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
+            <Field label={translateText("Language")}><Select value={draft.language} onChange={value => updateRegional('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
+            <Field label={translateText("Currency")}><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={currencyOptions(language)} /></Field>
+            <Field label={translateText("Timezone")}><TimezoneSelect value={draft.timezone} onChange={value => updatePreference('timezone', value)}/></Field>
+            <Field label={translateText("Date Format")}><Select value={draft.dateFormat || 'DD / MM / YYYY'} onChange={value => updatePreference('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>
           </div>
 
           <div className="st-section-title st-preferences-title"><h3>{translateText("Preferences")}</h3><p>{translateText("Customize your experience.")}</p></div>
@@ -162,18 +162,18 @@ export function ProfilePanel({ data, save }: {
         <aside className="st-profile-summary">
           <Card title={translateText("Account Overview")} action={<Badge>{translateText("Active")}</Badge>}>
             <dl className="st-account-list">
-              {[[UserRound, 'Name', draft.name], [Mail, 'Email', draft.email], [Phone, 'Phone', draft.phone || '—'], [Globe2, 'Language', draft.language], [Clock3, 'Timezone', draft.timezone], [CalendarDays, 'Member Since', draft.memberSince || '—']].map(([Icon, label, value]) => {
+              {[[UserRound, 'Name', draft.name], [Mail, 'Email', draft.email], [Phone, 'Phone', draft.phone || '—'], [Globe2, 'Language', translateText(draft.language)], [Clock3, 'Timezone', draft.timezone], [CalendarDays, 'Member Since', draft.memberSince || '—']].map(([Icon, label, value]) => {
                 const I = Icon as typeof UserRound;
-                return <div key={String(label)}><dt><I size={15}/>{localizeNode(String(label))}</dt><dd>{localizeNode(String(value))}</dd></div>;
+                return <div key={String(label)}><dt><I size={15}/>{translateText(String(label))}</dt><dd><bdi>{String(value)}</bdi></dd></div>;
               })}
             </dl>
           </Card>
           <Card title={translateText("Profile Preview")} description="This is how your profile appears to clients.">
             <div className="st-preview">
-              {localizeNode(avatarView())}
-              <b>{localizeNode(draft.name)}</b>
-              <small>{localizeNode(draft.title)}</small>
-              <p>{localizeNode(draft.bio)}</p>
+              {avatarView()}
+              <b>{draft.name}</b>
+              <small>{draft.title}</small>
+              <p dir="auto">{draft.bio}</p>
               <div className="st-socials">
                 <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label={translateText("Instagram")}><InstagramIcon size={18}/></a>
                 <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label={translateText("Facebook")}><FacebookIcon size={18}/></a>
@@ -199,7 +199,7 @@ export function ProfilePanel({ data, save }: {
     {localizeNode(deleteOpen && (
       <Modal title={translateText("Delete your account?")} close={closeDelete}>
         <p>{translateText("This permanently deletes your account and personal data. This action cannot be undone.")}</p>
-        <Field label="Type DELETE to confirm"><input value={confirmation} onChange={e => setConfirmation(e.target.value)}/></Field>
+        <Field label={translateText("Type DELETE to confirm")}><input value={confirmation} onChange={e => setConfirmation(e.target.value)}/></Field>
         {localizeNode(!settingsApiEnabled && <p className="st-note">{translateText("Account deletion requires the account service to be connected. Your account will remain active.")}</p>)}
         {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
         <div className="st-modal-actions">

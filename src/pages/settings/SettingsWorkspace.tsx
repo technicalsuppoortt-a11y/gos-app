@@ -74,13 +74,18 @@ function SettingsWorkspaceView() {
     showToast.success('Changes saved');
   }
   if (segment === 'general' || segment === 'business-assets' || segment === 'tools') return <Navigate to="/dashboard/settings/profile" replace />;
+  const retiredBillingPath = /^\/dashboard\/settings\/billing\/(?:payment-methods|payments)\/?$/.test(location.pathname);
+  const billingQuery = new URLSearchParams(location.search);
+  if (retiredBillingPath || (active.slug === 'billing' && billingQuery.get('tab') === 'payment-methods')) {
+    billingQuery.set('tab', 'overview');
+    return <Navigate to={{ pathname: '/dashboard/settings/billing', search: billingQuery.toString(), hash: location.hash }} replace/>;
+  }
   if (active.slug === 'domains') return <DomainsSettingsPanel/>;
   if (active.slug === 'payment-methods') return <PaymentMethodsPanel scope="user"/>;
   if (active.slug === 'billing' && segment !== 'billing') {
     const query = new URLSearchParams(location.search);
     if (!query.has('tab')) {
       if (segment && ['wallet', 'billing-wallet', 'billing-and-wallet'].includes(segment)) query.set('tab', 'wallet');
-      if (segment === 'payments' && !agencyUid) query.set('tab', 'payment-methods');
       if (segment && ['plans', 'plans-pricing', 'plans-and-pricing', 'pricing'].includes(segment) && !agencyUid) query.set('tab', 'plans');
     }
     return <Navigate to={{ pathname: '/dashboard/settings/billing', search: query.toString(), hash: location.hash }} replace/>;
@@ -112,16 +117,16 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
   }, [data.business]);
   const update = (key: keyof typeof draft, value: string) => setDraft(p => ({ ...p, [key]: value }));
   return <div className="st-business w-full">
-    <PanelHeading title={translateText("Business Settings")} description="Your business identity and defaults used across Upclick."/>
+    <PanelHeading title={translateText("Business Settings")} description={translateText("Your business identity and defaults used across Upclick.")}/>
     <form className="st-business-form w-full" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, business: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
       <Card title={translateText("Business identity")} description="Your brand appears on customer-facing pages and communications." className="w-full">
         <div className="st-form-grid two">
-          <Field label="Business name"><input required value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
-          <Field label="Business type"><Select value={draft.type} onChange={value => update('type', value)} options={['Creative services', 'Consulting', 'Education', 'Retail', 'Other']} /></Field>
-          <Field label="Business email"><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
-          <Field label="Phone number"><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
-          <Field label="Business address" className="full-span"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
-          <Field label="Public description" className="full-span"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
+          <Field label={translateText("Business name")}><input required value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
+          <Field label={translateText("Business type")}><Select value={draft.type} onChange={value => update('type', value)} options={['Creative services', 'Consulting', 'Education', 'Retail', 'Other']} /></Field>
+          <Field label={translateText("Business email")}><input type="email" required value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
+          <Field label={translateText("Phone number")}><input type="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></Field>
+          <Field label={translateText("Business address")} className="full-span"><input value={draft.address} onChange={e => update('address', e.target.value)}/></Field>
+          <Field label={translateText("Public description")} className="full-span"><textarea value={draft.description} onChange={e => update('description', e.target.value)}/></Field>
         </div>
       </Card>
       {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
@@ -139,5 +144,5 @@ export function PaymentsPanel({ data, save }: { data: SettingsData; save: (data:
     setDraft(data.payment);
   }, [data.payment]);
   const navigate = useNavigate();
-  return <><PanelHeading title={translateText("Payment preferences")} description="Manage payment providers, payout details and receipt preferences."/><Card title={translateText("Connected payment provider")} description="Connect a payment provider to accept payments for products and bookings."><div className="st-row"><span className="st-provider-mark stripe">{translateText("stripe")}</span><div><b>{translateText("Stripe")}</b><p>{localizeNode(data.integrations.stripe?.status ?? 'Not Connected')}</p></div><button className="st-secondary" onClick={() => navigate('/dashboard/settings/integrations?provider=stripe')}>{translateText("Manage provider ")}<ChevronRight size={15}/></button></div></Card><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, payment: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}><Card title={translateText("Payment preferences")}><div className="st-form-grid two"><Field label="Currency"><Select value={draft.currency} onChange={value => setDraft({ ...draft, currency: value })} options={CURRENCY_SELECT_OPTIONS} /></Field><Field label="Receipt email"><input type="email" required value={draft.receiptEmail} onChange={e => setDraft({ ...draft, receiptEmail: e.target.value })}/></Field></div><div className="st-preference"><span><b>{translateText("Send invoices & receipts")}</b><small>{translateText("Email a receipt after a verified payment.")}</small></span><Toggle label="Send invoices and receipts" checked={draft.invoices} onChange={invoices => setDraft({ ...draft, invoices })}/></div><p className="st-note">{translateText("Payout details are managed securely through your connected provider.")}</p><button type="button" className="st-secondary" onClick={() => navigate('/dashboard/settings/billing?tab=payment-methods')}>{translateText("Manage saved payment methods ")}<ChevronRight size={15}/></button></Card>{localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}<div className="st-form-footer"><span/><button className="st-primary" disabled={busy}>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div></form></>;
+  return <><PanelHeading title={translateText("Payment preferences")} description={translateText("Manage payment providers, payout details and receipt preferences.")}/><Card title={translateText("Connected payment provider")} description="Connect a payment provider to accept payments for products and bookings."><div className="st-row"><span className="st-provider-mark stripe">{translateText("stripe")}</span><div><b>{translateText("Stripe")}</b><p>{localizeNode(data.integrations.stripe?.status ?? 'Not Connected')}</p></div><button className="st-secondary" onClick={() => navigate('/dashboard/settings/integrations?provider=stripe')}>{translateText("Manage provider ")}<ChevronRight size={15}/></button></div></Card><form onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, payment: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}><Card title={translateText("Payment preferences")}><div className="st-form-grid two"><Field label={translateText("Currency")}><Select value={draft.currency} onChange={value => setDraft({ ...draft, currency: value })} options={CURRENCY_SELECT_OPTIONS} /></Field><Field label={translateText("Receipt email")}><input type="email" required value={draft.receiptEmail} onChange={e => setDraft({ ...draft, receiptEmail: e.target.value })}/></Field></div><div className="st-preference"><span><b>{translateText("Send invoices & receipts")}</b><small>{translateText("Email a receipt after a verified payment.")}</small></span><Toggle label="Send invoices and receipts" checked={draft.invoices} onChange={invoices => setDraft({ ...draft, invoices })}/></div><p className="st-note">{translateText("Payout details are managed securely through your connected provider.")}</p><button type="button" className="st-secondary" onClick={() => navigate('/dashboard/settings/payment-methods')}>{translateText("Manage saved payment methods ")}<ChevronRight size={15}/></button></Card>{localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}<div className="st-form-footer"><span/><button className="st-primary" disabled={busy}>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div></form></>;
 }

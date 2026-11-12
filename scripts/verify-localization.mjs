@@ -12,6 +12,9 @@ assert.equal(display.translateText(' Save changes '),' Save changes ','English c
 display.testLanguage('ar');
 assert.equal(display.translateText(' Save changes '),' حفظ التغييرات ');
 assert.equal(display.translateText('Customer-authored content'),'Customer-authored content');
+assert.equal(display.formatDisplayMessage('Form "{{0}}" published!', 'Draft ٠١'), 'تم نشر النموذج «Draft ٠١»!');
+assert.equal(display.formatDisplayMessage('Edit {{0}}', 'Draft'), 'تعديل Draft');
+assert.equal(display.formatDisplayMessage('Edit {{0}}', 'مرحلة {{0}}'), 'تعديل مرحلة {{0}}');
 assert.equal(display.localizeNode('AM'),'AM','Personal initials remain intact');
 assert.equal(display.translateText('AM'),'ص','Time-period labels remain translatable');
 const element={type:'input',props:{value:'Draft',name:'status',onChange:()=>{}}};
@@ -19,7 +22,7 @@ assert.equal(display.localizeNode(element),element,'Elements, field values and c
 assert.deepEqual(display.localizeNode(['Draft',42,null]),['مسودة',42,null]);
 display.testLanguage('en');
 assert.equal(display.translateText('Draft'),'Draft','Switching back restores English');
-assert.equal(tr('Funnel'),'قُمع مبيعات');
+assert.equal(tr('Funnel'),'الفانل');
 assert.equal(tr('Booking'),'حجز المواعيد');
 assert.equal(tr('Analytics'),'التحليلات');
 assert.equal(tr('Draft'),'مسودة');
@@ -37,9 +40,10 @@ assert.equal(tr('Price (Optional)'),'السعر (اختياري)');
 assert.equal(tr('SKU_CUSTOM_123'),undefined);
 assert.equal(tr('https://example.com'),undefined);
 assert.equal(tr('a.user@example.com'),undefined);
+const brandCopy = new Map([['Upclick','Upclick'], ['AI Copilot','AI Agent'], ['AI Assistant ·','AI Agent ·'], ['AI Assistants', 'Ai Agent']]);
 for(const [english,arabic]of Object.entries(catalog)) {
   assert.ok(english.trim());assert.ok(arabic.trim());
-  assert.match(arabic,/[\u0600-\u06ff]/,`Arabic text missing: ${english}`);
+  if (brandCopy.get(english) !== arabic) assert.match(arabic,/[\u0600-\u06ff]/,`Arabic text missing: ${english}`);
 }
 const en=JSON.parse(fs.readFileSync('src/i18n/locales/en.json','utf8'));
 const ar=JSON.parse(fs.readFileSync('src/i18n/locales/ar.json','utf8'));

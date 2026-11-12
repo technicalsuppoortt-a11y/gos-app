@@ -429,7 +429,7 @@ export function TeamPanel() {
     <>
       <PanelHeading
         title={translateText('Team & roles')}
-        description="Manage your team members and configure granular sidebar module and settings tab permissions."
+        description={translateText("Manage your team members and configure granular sidebar module and settings tab permissions.")}
       />
 
       <Card
@@ -608,7 +608,7 @@ export function TeamPanel() {
                         </span>
                         <span>
                           <b style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                            {localizeNode(member.name)}
+                            {member.name}
                             {isOwnerRow && (
                               <Badge tone="purple">{translateText('Owner')}</Badge>
                             )}
@@ -806,7 +806,7 @@ export function TeamPanel() {
           >
             {/* Member Identity & Role Inputs */}
             <div className="st-form-grid two" style={{ marginTop: 0 }}>
-              <Field label="Full Name">
+              <Field label={translateText("Full Name")}>
                 <input
                   required
                   maxLength={100}
@@ -815,7 +815,7 @@ export function TeamPanel() {
                   onChange={e => setDraft({ ...draft, name: e.target.value })}
                 />
               </Field>
-              <Field label="Email Address">
+              <Field label={translateText("Email Address")}>
                 <input
                   required
                   type="email"
@@ -824,14 +824,14 @@ export function TeamPanel() {
                   onChange={e => setDraft({ ...draft, email: e.target.value })}
                 />
               </Field>
-              <Field label="Role">
+              <Field label={translateText("Role")}>
                 <Select
                   value={draft.role}
                   onChange={handleRoleChange}
                   options={ROLE_OPTIONS}
                 />
               </Field>
-              <Field label="Account Status">
+              <Field label={translateText("Account Status")}>
                 <Select
                   value={draft.active ? 'Active' : 'Inactive'}
                   onChange={value => setDraft({ ...draft, active: value === 'Active' })}
@@ -1231,7 +1231,7 @@ export function TeamPanel() {
           <Modal title={translateText('Delete team member')} close={closeRemoval}>
             <p>
               {translateText('Remove ')}
-              <b>{localizeNode(removal.name)}</b>
+              <b>{removal.name}</b>
               {translateText(' and revoke their workspace access?')}
             </p>
             {localizeNode(

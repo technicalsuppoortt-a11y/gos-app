@@ -1,3 +1,4 @@
+import { formatDisplayMessage, translateText, useUILanguage } from '../../i18n/display';
 import { useEffect, useState } from 'react'
 import { api, type Channel, type MetaPage } from './api'
 import { metaConnectWindow, type MetaConfig } from './metaSdk'
@@ -73,7 +74,7 @@ export function useMetaChannels() {
   })
 
   const disconnect = (c: Channel, title: string) => {
-    if (!confirm(`Disconnect ${c.name ?? title}? Automations and the AI will stop replying there.`)) return
+    if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', c.name ?? translateText(title)))) return
     run(c.channel, async () => update(await api.disconnect(c.channel)))
   }
 
@@ -81,10 +82,11 @@ export function useMetaChannels() {
 }
 
 export function Channels() {
+  useUILanguage()
   const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, pick, disconnect } = useMetaChannels()
   return (
     <main className="fb-list-page">
-      <h1>Channels</h1>
+      <h1>{translateText("Channels")}</h1>
       {error && <p className="fb-error" role="alert">{error}</p>}
 
       {CARDS.map(card => {
@@ -95,30 +97,30 @@ export function Channels() {
             <div className="fb-channel-head">
               <span className="fb-channel-icon" aria-hidden="true">{card.icon}</span>
               <div>
-                <h2 id={`ch-${card.id}`}>{card.title}</h2>
-                <p className="fb-muted">{card.text}</p>
+                <h2 id={`ch-${card.id}`}>{translateText(card.title)}</h2>
+                <p className="fb-muted">{translateText(card.text)}</p>
               </div>
               {connected
-                ? <button type="button" className="fb-btn fb-btn-ghost" onClick={() => disconnect(c!, card.title)} disabled={busy !== null}>{busy === card.id ? 'Disconnecting…' : 'Disconnect'}</button>
-                : <button type="button" className="fb-btn fb-btn-primary" onClick={() => connect(card.id)} disabled={busy !== null || channels === null}>{busy === card.id ? 'Opening Meta…' : card.button}</button>}
+                ? <button type="button" className="fb-btn fb-btn-ghost" onClick={() => disconnect(c!, card.title)} disabled={busy !== null}>{busy === card.id ? translateText("Disconnecting…") : translateText("Disconnect")}</button>
+                : <button type="button" className="fb-btn fb-btn-primary" onClick={() => connect(card.id)} disabled={busy !== null || channels === null}>{translateText(busy === card.id ? "Opening Meta…" : card.button)}</button>}
             </div>
 
             {card.id === 'whatsapp' && !connected && !manual && (
-              <button type="button" className="fb-btn fb-btn-ghost fb-self-start" onClick={() => setManual(EMPTY_MANUAL)}>Use my own Meta app instead</button>
+              <button type="button" className="fb-btn fb-btn-ghost fb-self-start" onClick={() => setManual(EMPTY_MANUAL)}>{translateText("Use my own Meta app instead")}</button>
             )}
 
             {card.id === 'whatsapp' && !connected && manual && (
               <form className="fb-channel-block fb-manual" onSubmit={connectManual}>
-                <h3>Connect with your own Meta app</h3>
-                <p className="fb-muted">First add this webhook to your app in Meta, and subscribe to the messages field.</p>
-                <label className="fb-field">Callback URL<input readOnly value={config?.webhook_url ?? ''} /></label>
-                <label className="fb-field">Verify token<input readOnly value={config?.verify_token ?? ''} /></label>
-                <label className="fb-field">Phone number ID<input required inputMode="numeric" value={manual.external_id} onChange={e => setManual({ ...manual, external_id: e.target.value })} /></label>
-                <label className="fb-field">Permanent access token<input required type="password" autoComplete="off" value={manual.access_token} onChange={e => setManual({ ...manual, access_token: e.target.value })} /></label>
-                <label className="fb-field">App Secret<input required type="password" autoComplete="off" value={manual.app_secret} onChange={e => setManual({ ...manual, app_secret: e.target.value })} /></label>
+                <h3>{translateText("Connect with your own Meta app")}</h3>
+                <p className="fb-muted">{translateText("First add this webhook to your app in Meta, and subscribe to the messages field.")}</p>
+                <label className="fb-field">{translateText("Callback URL")}<input readOnly value={config?.webhook_url ?? ''} /></label>
+                <label className="fb-field">{translateText("Verify token")}<input readOnly value={config?.verify_token ?? ''} /></label>
+                <label className="fb-field">{translateText("Phone number ID")}<input required inputMode="numeric" value={manual.external_id} onChange={e => setManual({ ...manual, external_id: e.target.value })} /></label>
+                <label className="fb-field">{translateText("Permanent access token")}<input required type="password" autoComplete="off" value={manual.access_token} onChange={e => setManual({ ...manual, access_token: e.target.value })} /></label>
+                <label className="fb-field">{translateText("App Secret")}<input required type="password" autoComplete="off" value={manual.app_secret} onChange={e => setManual({ ...manual, app_secret: e.target.value })} /></label>
                 <div className="fb-create">
-                  <button type="submit" className="fb-btn fb-btn-primary" disabled={busy !== null}>{busy === 'whatsapp' ? 'Connecting…' : 'Connect'}</button>
-                  <button type="button" className="fb-btn fb-btn-ghost" onClick={() => setManual(null)}>Cancel</button>
+                  <button type="submit" className="fb-btn fb-btn-primary" disabled={busy !== null}>{busy === 'whatsapp' ? translateText("Connecting…") : translateText("Connect")}</button>
+                  <button type="button" className="fb-btn fb-btn-ghost" onClick={() => setManual(null)}>{translateText("Cancel")}</button>
                 </div>
               </form>
             )}
@@ -128,19 +130,19 @@ export function Channels() {
                 <li className="fb-page-row">
                   <span className="fb-page-avatar" aria-hidden="true">{(c!.name ?? card.title)[0]}</span>
                   <span dir="auto">{c!.name ?? c!.external_id}</span>
-                  <span className="fb-badge badge-live">CONNECTED</span>
+                  <span className="fb-badge badge-live">{translateText("CONNECTED")}</span>
                 </li>
               </ul>
             )}
 
             {picking?.channel === card.id && (
               <div className="fb-channel-block">
-                <h3>{card.id === 'instagram' ? 'Choose an Instagram account' : 'Choose a page'}</h3>
+                <h3>{card.id === 'instagram' ? translateText("Choose an Instagram account") : translateText("Choose a page")}</h3>
                 {picking.pages.length === 0 && (
                   <p className="fb-muted">
                     {card.id === 'instagram'
-                      ? 'No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.'
-                      : 'No pages found. You need to manage the page, and allow it in the Meta window.'}
+                      ? translateText("No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.")
+                      : translateText("No pages found. You need to manage the page, and allow it in the Meta window.")}
                   </p>
                 )}
                 <ul className="fb-page-list">
@@ -148,7 +150,7 @@ export function Channels() {
                     <li key={p.id} className="fb-page-row">
                       <span className="fb-page-avatar" aria-hidden="true">{p.name[0]}</span>
                       <span dir="auto">{card.id === 'instagram' ? `@${p.instagram?.username} · ${p.name}` : p.name}</span>
-                      <button type="button" className="fb-btn fb-btn-soft" onClick={() => pick(p)} disabled={busy !== null}>{busy === p.id ? 'Connecting…' : 'Connect'}</button>
+                      <button type="button" className="fb-btn fb-btn-soft" onClick={() => pick(p)} disabled={busy !== null}>{busy === p.id ? translateText("Connecting…") : translateText("Connect")}</button>
                     </li>
                   ))}
                 </ul>

@@ -1,6 +1,6 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useSelector } from 'react-redux';
-import { Activity, CheckCircle2, Download, Radio, Save, ShieldCheck } from 'lucide-react';
+import { Activity, CheckCircle2, Download, Plus, Radio, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { useBusinessMetrics, eventLabel } from '../backend/metrics';
 import type { RootState } from '../store';
 import { useTrackingConfig, validMeta, validGoogle, subscribeTracking, trackingSnapshot, track, type TrackingConfig } from '../backend/marketingTracking';
@@ -10,7 +10,16 @@ import { showToast } from '../utils/toast';
 import './settings/settings.css';
 import './pixel-connect.css';
 
-const tabs = ['Overview', 'Connect Accounts', 'Event SDK', 'Event Library', 'Realtime', 'Funnels', 'Analytics', 'Health Check', 'Debug Logs', 'Test Center', 'AI Optimization', 'Advanced'];
+const platformTabs = ['Overview', 'Connect Accounts', 'Event SDK', 'Event Library', 'Realtime', 'Funnels', 'Analytics', 'Health Check', 'Debug Logs', 'Test Center', 'AI Optimization', 'Advanced'] as const;
+const workspaceTabs = ['Tracking Settings', 'Event Logs', 'Event Management'] as const;
+const providers = [
+  { key: 'metaId', style: 'meta', mark: 'f', name: 'Meta Facebook Ads', description: 'Meta Pixel integration', field: 'Meta Pixel ID', placeholder: '123456789012345', idCheck: 'Meta ID valid', scriptCheck: 'Meta script requested', testLabel: 'Test Meta' },
+  { key: 'googleId', style: 'google', mark: 'G', name: 'Google Analytics 4', description: 'Web analytics integration', field: 'GA4 Measurement ID', placeholder: 'G-ABC123XYZ0', idCheck: 'GA4 ID valid', scriptCheck: 'GA4 script requested', testLabel: 'Test GA4' },
+] as const;
+const upcomingProviders = [
+  { style: 'tiktok', mark: '♪', name: 'TikTok Ads', description: 'TikTok pixel integration' },
+  { style: 'linkedin', mark: 'in', name: 'LinkedIn Insight Tag', description: 'LinkedIn pixel integration' },
+] as const;
 const library = ['PageView','Lead','Purchase','BookMeeting','Signup','Login','InitiateCheckout','ViewContent','AddToCart','AddToWishlist','Search','Contact','Subscribe','StartTrial','CompleteRegistration','AddPaymentInfo','SubmitApplication','Donate','FindLocation','CustomizeProduct','Schedule','ViewCart','RemoveFromCart','Refund','Share','Download'];
 export function MarketingTracking() {
   useUILanguage();
@@ -19,7 +28,7 @@ export function MarketingTracking() {
   const source = useTrackingConfig(global);
   const [changes, setChanges] = useState<{ source: TrackingConfig; draft: TrackingConfig } | null>(null);
   const draft = changes?.source === source.config ? changes.draft : source.config;
-  const [tab, setTab] = useState('Overview'), [busy, setBusy] = useState(false), [error, setError] = useState(''), [eventName, setEventName] = useState('');
+  const [tab, setTab] = useState<string>(global ? platformTabs[0] : workspaceTabs[0]), [busy, setBusy] = useState(false), [error, setError] = useState(''), [eventName, setEventName] = useState('');
   const sessionEvents = useSyncExternalStore(subscribeTracking, trackingSnapshot);
   const records = useBusinessMetrics();
   const events = [
@@ -40,16 +49,237 @@ export function MarketingTracking() {
     const csv = [['Time', 'Event', 'Test', 'Destinations', 'Payload'], ...events.map(e => [e.at, e.event, String(e.test), e.destinations.join(', '), JSON.stringify(e.payload)])].map(row => row.map(cell).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'upclick-tracking-events.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return <div className="st-workspace"><PanelHeading title={t('Pixel')} description={global ? 'Manage platform-wide Meta Pixel and Google Analytics defaults.' : 'Configure workspace pixels and inspect recorded activity and observed tracking events.'}/><nav className="st-billing-tabs flex-wrap" aria-label={t('Pixel navigation')}>{tabs.map(name => <button key={name} className={tab === name ? 'active' : ''} aria-current={tab === name ? 'page' : undefined} onClick={() => setTab(name)}>{t(name)}</button>)}</nav>{source.loading && <p role="status">{t('Loading tracking settings…')}</p>}{(source.error || error) && <p role="alert" className="st-error">{source.error || error}{source.error && <button className="st-link" onClick={source.refresh}>{t('Try again')}</button>}</p>}
-  {tab === 'Overview' && <><div className="st-integration-grid">{[[ShieldCheck, `${score}%`, 'Readiness checks'], [Radio, events.filter(e => !e.test).length, 'Recorded events'], [Activity, count('Purchase') + count('BookMeeting'), 'Recorded conversions']].map(([Icon, value, label]) => { const Glyph = Icon as typeof Activity; return <Card key={String(label)} title={t(String(label))}><Glyph size={22}/><strong className="block py-3 text-3xl">{String(value)}</strong></Card>; })}</div><Card title={t('Quick setup')}><p className="st-note">{t('Events combine recorded workspace activity, verified transactions and this browser session. Script availability does not confirm delivery to a provider.')}</p><div className="st-modal-actions"><button className="st-primary" onClick={() => setTab('Connect Accounts')}>{t('Connect Accounts')}</button><button className="st-secondary" onClick={() => setTab('Test Center')}>{t('Test Center')}</button></div></Card></>}
-  {(tab === 'Connect Accounts' || tab === 'Advanced') && <form className={tab === 'Connect Accounts' ? 'pixel-connect' : undefined} onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await source.save({ ...draft, metaId: draft.metaId.trim(), googleId: draft.googleId.trim().toUpperCase() }); showToast.success('Tracking settings saved'); } catch (e) { setError(e instanceof Error ? e.message : 'Could not save tracking settings.'); } finally { setBusy(false); } }}><Card title={t(tab === 'Advanced' ? 'Advanced configuration' : 'Pixel setup')} description={global ? 'These defaults apply across the platform.' : 'Your workspace pixels run alongside platform defaults.'}><fieldset disabled={busy || source.loading || !!source.error || !source.canManage}>{tab === 'Connect Accounts' ? <><ol className="st-scope-list"><li>{t('1. Copy your Pixel ID from Meta Events Manager.')}</li><li>{t('2. Copy your Measurement ID from your GA4 web data stream.')}</li><li>{t('3. Save, then use Test Center to inspect local events.')}</li></ol><div className="pixel-connect-grid"><section className="pixel-connect-card" aria-label={t('Meta Facebook Ads')}><div className="pixel-connect-heading"><span className="pixel-connect-logo pixel-connect-meta" aria-hidden="true">f</span><div><h4>{t('Meta Facebook Ads')}</h4><p>{t('Meta Pixel integration')}</p></div></div><Field label="Meta Pixel ID"><input value={draft.metaId} inputMode="numeric" placeholder="123456789012345" onChange={e => change('metaId', e.target.value)}/></Field></section><section className="pixel-connect-card" aria-label={t('Google Analytics 4')}><div className="pixel-connect-heading"><span className="pixel-connect-logo pixel-connect-google" aria-hidden="true">G</span><div><h4>{t('Google Analytics 4')}</h4><p>{t('Web analytics integration')}</p></div></div><Field label="GA4 Measurement ID"><input value={draft.googleId} placeholder="G-ABC123XYZ0" onChange={e => change('googleId', e.target.value.toUpperCase())}/></Field></section><section className="pixel-connect-card pixel-connect-upcoming" aria-label={t('TikTok Ads')}><div className="pixel-connect-heading"><span className="pixel-connect-logo pixel-connect-tiktok" aria-hidden="true">♪</span><div><h4>{t('TikTok Ads')}</h4><p>{t('TikTok pixel integration')}</p></div></div><div className="pixel-connect-coming"><span>{t('Coming soon')}</span><button type="button" className="st-secondary" disabled>{t('Soon')}</button></div></section><section className="pixel-connect-card pixel-connect-upcoming" aria-label={t('LinkedIn Insight Tag')}><div className="pixel-connect-heading"><span className="pixel-connect-logo pixel-connect-linkedin" aria-hidden="true">in</span><div><h4>{t('LinkedIn Insight Tag')}</h4><p>{t('LinkedIn pixel integration')}</p></div></div><div className="pixel-connect-coming"><span>{t('Coming soon')}</span><button type="button" className="st-secondary" disabled>{t('Soon')}</button></div></section></div><div className="st-preference"><span>{t('Enable tracking after reviewing your consent requirements')}</span><Toggle label="Enable tracking" checked={draft.enabled} onChange={v => change('enabled', v)}/></div></> : <><div className="st-preference"><span>{t('Developer mode')}</span><Toggle label="Developer mode" checked={draft.advancedMode} onChange={v => change('advancedMode', v)}/></div><Field label="Webhook / CAPI endpoint (configuration only)"><input type="url" value={draft.webhookUrl} onChange={e => change('webhookUrl', e.target.value)}/></Field><p className="st-note">{t('Server-side webhook delivery and consent management must be connected separately. No API secrets are stored here.')}</p><button type="button" className="st-secondary" onClick={() => { change('enabled', false); }}>{t('Disable tracking in draft')}</button></>}<div className="st-form-footer"><span/><button className="st-primary" disabled={busy || source.loading || !!source.error || !source.canManage}><Save size={15}/>{t(busy ? 'Saving…' : 'Save Changes')}</button></div></fieldset></Card></form>}
-  {tab === 'Event SDK' && <Card title={t('Unified tracking SDK')}><pre className="overflow-auto rounded-xl bg-slate-950 p-5 text-xs text-slate-100">{`import { Tracking } from './backend/marketingTracking';\n\nTracking.page('/dashboard');\nTracking.lead({ source: 'campaign' });\nTracking.purchase(49, 'USD', { orderId: 'verified-order' });\nTracking.bookMeeting({ meetingType: 'consultation' });\nTracking.custom('export_report', { format: 'pdf' });`}</pre><p className="st-note">{t('Call purchase only after the payment backend verifies an order. Avoid personal or sensitive data in event payloads.')}</p></Card>}
-  {tab === 'Event Library' && <><Card title={t('Standard event catalog')}><div className="st-form-grid two">{library.map(name => <div className="st-row" key={name}><CheckCircle2 size={15}/><code>{name}</code><small>{['PageView','Lead','Purchase','Signup','Login','BookMeeting','InitiateCheckout'].includes(name) ? t('Mapped to Meta & GA4') : t('Custom event')}</small></div>)}</div></Card><Card title={t('Custom events')}><Field label="Event name"><input maxLength={40} value={eventName} onChange={e => setEventName(e.target.value)}/></Field><button className="st-secondary" disabled={busy || source.loading || !!source.error || !source.canManage || !/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(eventName)} onClick={async () => { setBusy(true); setError(''); try { await source.save({ ...draft, customEvents: [...new Set([...draft.customEvents, eventName])] }); setEventName(''); } catch(e) { setError(e instanceof Error ? e.message : 'Could not save event.'); } finally { setBusy(false); } }}>{t('Add custom event')}</button><p className="st-note">{source.config.customEvents.join(', ') || t('No custom events configured.')}</p></Card></>}
-  {(tab === 'Realtime' || tab === 'Debug Logs') && <Card title={t(tab)} action={<button className="st-secondary" disabled={!events.length} onClick={exportEvents}><Download size={15}/>{t('Export CSV')}</button>}><p className="st-note">{t('Workspace records and browser event stream · delivery to Meta or Google is not verified here.')}</p><div className="st-table-scroll"><table><thead><tr>{['Time','Event','Mode','Destinations', ...(tab === 'Debug Logs' ? ['Payload'] : [])].map(h => <th key={h}>{t(h)}</th>)}</tr></thead><tbody>{events.map(e => <tr key={e.id}><td>{new Date(e.at).toLocaleTimeString()}</td><td>{e.event}</td><td><Badge tone={e.test ? 'orange' : 'purple'}>{t(e.test ? 'Local test' : 'Dispatched')}</Badge></td><td>{e.destinations.join(', ') || t('Local only')}</td>{tab === 'Debug Logs' && <td><code>{JSON.stringify(e.payload)}</code></td>}</tr>)}</tbody></table>{!events.length && <p className="st-empty">{t('No events observed in this session.')}</p>}</div></Card>}
-  {tab === 'Funnels' && <Card title={t('Session conversion pipeline')} description="Aggregate event counts, not unique-user attribution.">{['PageView','Lead','InitiateCheckout','Purchase'].map((name, i, list) => { const n = count(name), prev = count(list[i - 1]); return <div key={name} className="st-preference"><span><b>{name}</b><small>{i && prev ? `${Math.round(Math.min(n / prev, 1) * 100)}% ${t('of previous stage')}` : t('This session')}</small></span><strong>{n}</strong></div>; })}</Card>}
-  {tab === 'Analytics' && <Card title={t('Event distribution')} description="Recorded workspace events, verified transactions and observed browser events.">{[...new Set(events.filter(e => !e.test).map(e => e.event))].map(name => <div className="st-preference" key={name}><b>{name}</b><span>{count(name)}</span></div>)}{!events.some(e => !e.test) && <p className="st-note">{t('No production events observed.')}</p>}</Card>}
-  {tab === 'Health Check' && <Card title={t('Infrastructure checks')}>{checks.map(([label, ok]) => <div className="st-preference" key={label}><span>{t(label)}</span><Badge tone={ok ? 'green' : 'orange'}>{t(ok ? 'Ready' : 'Needs review')}</Badge></div>)}</Card>}
-  {tab === 'Test Center' && <Card title={t('Local test events')} description="Tests appear in Realtime and Debug Logs without sending production conversions."><div className="st-credit-amounts flex-wrap">{['PageView','Lead','Purchase','Signup','Login','BookMeeting', ...source.config.customEvents].map(name => <button key={name} onClick={() => { track(name, name === 'Purchase' ? { value: 49, currency: 'USD' } : {}, true); showToast.success('Test event added to Realtime'); }}>{name}</button>)}</div></Card>}
-  {tab === 'AI Optimization' && <Card title={t('Configuration recommendations')} description="Rule-based diagnostics from your current configuration.">{checks.filter(([, ok]) => !ok).map(([label]) => <p className="st-note" key={label}>• {t('Review')}: {t(label)}</p>)}<p className="st-note">{t('Verify delivery with Meta Test Events and Google DebugView. Add a consent manager before collecting marketing events where consent is required.')}</p></Card>}
+  const activeTab = (global ? platformTabs : workspaceTabs).find(name => name === tab) ?? (global ? platformTabs[0] : workspaceTabs[0]);
+  const writeDisabled = busy || source.loading || !!source.error || !source.canManage;
+  const conversions = count('Purchase') + count('BookMeeting');
+
+  async function saveSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      await source.save({ ...draft, metaId: draft.metaId.trim(), googleId: draft.googleId.trim().toUpperCase() });
+      showToast.success('Tracking settings saved');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Could not save tracking settings.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addCustomEvent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (writeDisabled || !/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(eventName)) return;
+    setBusy(true);
+    setError('');
+    try {
+      await source.save({ ...draft, customEvents: [...new Set([...draft.customEvents, eventName])] });
+      setEventName('');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Could not save event.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function runLocalTest(name: string) {
+    track(name, name === 'Purchase' ? { value: 49, currency: 'USD' } : {}, true);
+    showToast.success(global ? 'Test event added to Realtime' : 'Test event added to Event Logs');
+  }
+
+  const badge = (ok: boolean) => <Badge tone={ok ? 'green' : 'orange'}>{t(ok ? 'Ready' : 'Needs review')}</Badge>;
+  const saveButton = <button type="submit" className="st-primary" disabled={writeDisabled}><Save size={16} aria-hidden="true"/>{t(busy ? 'Saving…' : 'Save Changes')}</button>;
+
+  function renderConnections() {
+    return <form className="pixel-connect" onSubmit={saveSettings}>
+      <fieldset className="pixel-section-stack" disabled={writeDisabled}>
+        <div className="pixel-connect-grid">
+          {providers.map(provider => {
+            const providerChecks = checks.filter(([label]) => label === provider.idCheck || label === provider.scriptCheck);
+            return <section className="pixel-connect-card" key={provider.key} aria-label={t(provider.name)}>
+              <header className="pixel-card-header">
+                <div className="pixel-connect-heading">
+                  <span className={`pixel-connect-logo pixel-connect-${provider.style}`} aria-hidden="true">{provider.mark}</span>
+                  <div><h3>{t(provider.name)}</h3><p>{t(provider.description)}</p></div>
+                </div>
+                {badge(providerChecks.every(([, ok]) => ok))}
+              </header>
+              <Field label={provider.field}>
+                <input dir="ltr" inputMode={provider.key === 'metaId' ? 'numeric' : 'text'} placeholder={provider.placeholder} value={draft[provider.key]}
+                  onChange={event => change(provider.key, provider.key === 'googleId' ? event.target.value.toUpperCase() : event.target.value)}/>
+              </Field>
+              <ul className="pixel-status-list">
+                {providerChecks.map(([label, ok]) => <li key={label}><span>{t(label)}</span>{badge(ok)}</li>)}
+              </ul>
+              <button type="button" className="st-secondary pixel-local-test" title={t('Run a local PageView test')} onClick={() => runLocalTest('PageView')}>{t(provider.testLabel)}</button>
+            </section>;
+          })}
+          {upcomingProviders.map(provider => (
+            <section className="pixel-connect-card pixel-connect-upcoming" key={provider.style} aria-label={t(provider.name)}>
+              <header className="pixel-card-header">
+                <div className="pixel-connect-heading">
+                  <span className={`pixel-connect-logo pixel-connect-${provider.style}`} aria-hidden="true">{provider.mark}</span>
+                  <div><h3>{t(provider.name)}</h3><p>{t(provider.description)}</p></div>
+                </div>
+                <Badge tone="green">{t('Coming soon')}</Badge>
+              </header>
+            </section>
+          ))}
+        </div>
+        <Card className="pixel-card">
+          <div className="pixel-consent-row">
+            <div><h3>{t('Enable tracking after reviewing your consent requirements')}</h3><p>{t(global ? 'These defaults apply across the platform.' : 'Your workspace pixels run alongside platform defaults.')}</p></div>
+            <Toggle label="Enable tracking" checked={draft.enabled} onChange={value => change('enabled', value)}/>
+          </div>
+          <div className="pixel-card-actions">{saveButton}</div>
+        </Card>
+      </fieldset>
+    </form>;
+  }
+
+  function renderTestCenter() {
+    return <Card className="pixel-card" title={t('Test Center')} description={t('Run local test events from this page. They appear in the event logs without sending production conversions.')}>
+      <div className="pixel-event-chips">
+        {['PageView','Lead','Signup','Login','Purchase','BookMeeting', ...source.config.customEvents].map(name => (
+          <button key={name} type="button" className="st-secondary" onClick={() => runLocalTest(name)}><bdi dir="ltr">{name}</bdi></button>
+        ))}
+      </div>
+    </Card>;
+  }
+
+  function renderEventTable(title: string, withPayload: boolean) {
+    return <Card className="pixel-card" title={t(title)} description={t('Workspace records and browser event stream · delivery to Meta or Google is not verified here.')}
+      action={<button type="button" className="st-secondary" disabled={!events.length} onClick={exportEvents}><Download size={16} aria-hidden="true"/>{t('Export CSV')}</button>}>
+      {events.length ? <div className="pixel-log-scroll" tabIndex={0} aria-label={t(title)}>
+        <table className="pixel-log-table">
+          <thead><tr>{['Time','Event','Destinations','Status', ...(withPayload ? ['Payload'] : [])].map(label => <th key={label} scope="col">{t(label)}</th>)}</tr></thead>
+          <tbody>{events.map(event => <tr key={event.id}>
+            <td data-label={t('Time')}><bdi dir="ltr">{new Date(event.at).toLocaleTimeString()}</bdi></td>
+            <td data-label={t('Event')}><bdi className="pixel-event-name">{event.event}</bdi></td>
+            <td data-label={t('Destinations')}><span>{event.destinations.map(destination => t(destination)).join(' · ') || t('Local only')}</span></td>
+            <td data-label={t('Status')}><Badge tone={event.test ? 'orange' : 'green'}>{t(event.test ? 'Local test' : 'Dispatched')}</Badge></td>
+            {withPayload && <td data-label={t('Payload')}><code dir="ltr">{JSON.stringify(event.payload)}</code></td>}
+          </tr>)}</tbody>
+        </table>
+      </div> : <p className="st-empty">{t('No events observed in this session.')}</p>}
+    </Card>;
+  }
+
+  function renderPipeline() {
+    const stages = ['PageView', 'Lead', 'InitiateCheckout', 'Purchase'];
+    return <Card className="pixel-card" title={t('Session conversion pipeline')} description={t('Aggregate event counts, not unique-user attribution.')}>
+      <dl className="pixel-data-list">{stages.map((name, index) => {
+        const value = count(name), previous = count(stages[index - 1]);
+        return <div key={name}><dt><bdi>{name}</bdi><small>{index && previous ? `${Math.round(Math.min(value / previous, 1) * 100)}% ${t('of previous stage')}` : t('This session')}</small></dt><dd>{value}</dd></div>;
+      })}</dl>
+    </Card>;
+  }
+
+  function renderDistribution() {
+    const names = [...new Set(events.filter(event => !event.test).map(event => event.event))];
+    return <Card className="pixel-card" title={t('Event distribution')} description={t('Recorded workspace events, verified transactions and observed browser events.')}>
+      {names.length ? <dl className="pixel-data-list">{names.map(name => <div key={name}><dt><bdi>{name}</bdi></dt><dd>{count(name)}</dd></div>)}</dl>
+        : <p className="st-note">{t('No production events observed.')}</p>}
+    </Card>;
+  }
+
+  function renderCatalog() {
+    return <Card className="pixel-card" title={t('Event Library')} description={t('Standard events are ready to use. Add a custom event for a workspace-specific action.')}>
+      <div className="pixel-event-chips">{library.map(name => <span className="pixel-event-chip" key={name}><CheckCircle2 size={15} aria-hidden="true"/><bdi dir="ltr">{name}</bdi></span>)}
+        {source.config.customEvents.map(name => <span className="pixel-event-chip pixel-custom-chip" key={name}><bdi dir="ltr">{name}</bdi></span>)}
+      </div>
+      <details className="pixel-disclosure">
+        <summary><Plus size={15} aria-hidden="true"/>{t('Add custom event')}</summary>
+        <form className="pixel-custom-event-form" onSubmit={addCustomEvent}>
+          <Field label="Event name"><input dir="ltr" maxLength={40} value={eventName} onChange={event => setEventName(event.target.value)}/></Field>
+          <button type="submit" className="st-primary" disabled={writeDisabled || !/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(eventName)}>{t('Add custom event')}</button>
+        </form>
+      </details>
+    </Card>;
+  }
+
+  function renderSdk() {
+    return <Card className="pixel-card" title={t('Unified tracking SDK')} description={t('Use this SDK to dispatch events from the application code.')}>
+      <pre className="pixel-sdk" dir="ltr"><code>{`import { Tracking } from './backend/marketingTracking';\n\nTracking.page('/dashboard');\nTracking.lead({ source: 'campaign' });\nTracking.purchase(49, 'USD', { orderId: 'verified-order' });\nTracking.bookMeeting({ meetingType: 'consultation' });\nTracking.custom('export_report', { format: 'pdf' });`}</code></pre>
+      <p className="st-note">{t('Call purchase only after the payment backend verifies an order. Avoid personal or sensitive data in event payloads.')}</p>
+    </Card>;
+  }
+
+  function renderAdvanced() {
+    return <form onSubmit={saveSettings}>
+      <Card className="pixel-card" title={t('Advanced configuration')} description={t(global ? 'These defaults apply across the platform.' : 'Your workspace pixels run alongside platform defaults.')}>
+        <fieldset className="pixel-section-stack" disabled={writeDisabled}>
+          <div className="pixel-consent-row"><b>{t('Developer mode')}</b><Toggle label="Developer mode" checked={draft.advancedMode} onChange={value => change('advancedMode', value)}/></div>
+          <Field label="Webhook / CAPI endpoint (configuration only)"><input type="url" dir="ltr" value={draft.webhookUrl} onChange={event => change('webhookUrl', event.target.value)}/></Field>
+          <p className="st-note">{t('Server-side webhook delivery and consent management must be connected separately. No API secrets are stored here.')}</p>
+          <div className="pixel-card-actions">
+            <button type="button" className="st-secondary" onClick={() => change('enabled', false)}>{t('Disable tracking in draft')}</button>
+            {saveButton}
+          </div>
+        </fieldset>
+      </Card>
+    </form>;
+  }
+
+  function renderChecks() {
+    return <Card className="pixel-card" title={t('Infrastructure checks')}><ul className="pixel-status-list">{checks.map(([label, ok]) => <li key={label}><span>{t(label)}</span>{badge(ok)}</li>)}</ul></Card>;
+  }
+
+  function renderRecommendations() {
+    return <Card className="pixel-card" title={t('Configuration recommendations')} description={t('Rule-based diagnostics from your current configuration.')}>
+      {checks.filter(([, ok]) => !ok).map(([label]) => <p className="st-note" key={label}>• {t('Review')}: {t(label)}</p>)}
+      <p className="st-note">{t('Verify delivery with Meta Test Events and Google DebugView. Add a consent manager before collecting marketing events where consent is required.')}</p>
+    </Card>;
+  }
+
+  const metric = (label: string, value: number | string, Icon: typeof Activity) => (
+    <div className="pixel-metric" key={label}><Icon size={21} aria-hidden="true"/><div><span>{t(label)}</span><strong>{value}</strong></div></div>
+  );
+
+  function renderTab() {
+    switch (activeTab) {
+      case 'Tracking Settings':
+        return <>{renderConnections()}{renderTestCenter()}</>;
+      case 'Event Logs':
+        return <>
+          <div className="pixel-pair">{metric('Total Events', events.length, Activity)}{metric('Recorded conversions', conversions, Radio)}</div>
+          {renderEventTable('Realtime events and debug logs', true)}
+          <div className="pixel-pair">{renderPipeline()}{renderDistribution()}</div>
+        </>;
+      case 'Event Management':
+        return <>{renderCatalog()}{renderSdk()}<details className="pixel-card pixel-disclosure">
+          <summary><SlidersHorizontal size={17} aria-hidden="true"/>{t('Advanced tools')}</summary>
+          <div className="pixel-section-stack">{renderAdvanced()}<div className="pixel-pair">{renderChecks()}{renderRecommendations()}</div></div>
+        </details></>;
+      case 'Overview':
+        return <>
+          <div className="pixel-metrics">{metric('Readiness checks', `${score}%`, ShieldCheck)}{metric('Recorded events', events.filter(event => !event.test).length, Radio)}{metric('Recorded conversions', conversions, Activity)}</div>
+          <Card className="pixel-card" title={t('Quick setup')}>
+            <p className="st-note">{t('Events combine recorded workspace activity, verified transactions and this browser session. Script availability does not confirm delivery to a provider.')}</p>
+            <div className="pixel-card-actions"><button type="button" className="st-primary" onClick={() => setTab('Connect Accounts')}>{t('Connect Accounts')}</button><button type="button" className="st-secondary" onClick={() => setTab('Test Center')}>{t('Test Center')}</button></div>
+          </Card>
+        </>;
+      case 'Connect Accounts': return renderConnections();
+      case 'Event SDK': return renderSdk();
+      case 'Event Library': return renderCatalog();
+      case 'Realtime': return renderEventTable(activeTab, false);
+      case 'Debug Logs': return renderEventTable(activeTab, true);
+      case 'Funnels': return renderPipeline();
+      case 'Analytics': return renderDistribution();
+      case 'Health Check': return renderChecks();
+      case 'Test Center': return renderTestCenter();
+      case 'AI Optimization': return renderRecommendations();
+      case 'Advanced': return renderAdvanced();
+    }
+  }
+
+  return <div className="st-workspace pixel-workspace">
+    <PanelHeading title={t('Pixel')} description={t(global ? 'Manage platform-wide Meta Pixel and Google Analytics defaults.' : 'Configure workspace pixels and inspect recorded activity and observed tracking events.')}/>
+    <nav className="pixel-tabs" aria-label={t('Pixel navigation')}>
+      {(global ? platformTabs : workspaceTabs).map(name => <button type="button" key={name} aria-current={activeTab === name ? 'page' : undefined} onClick={() => setTab(name)}>{t(name)}</button>)}
+    </nav>
+    {source.loading && <p role="status">{t('Loading tracking settings…')}</p>}
+    {(source.error || error) && <p role="alert" className="st-error">{t(source.error || error)}{source.error && <button type="button" className="st-link" onClick={source.refresh}>{t('Try again')}</button>}</p>}
+    <div className="pixel-section-stack">{renderTab()}</div>
   </div>;
 }

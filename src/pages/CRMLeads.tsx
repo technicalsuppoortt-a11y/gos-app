@@ -10,7 +10,7 @@ import { selectUnifiedCRMLeads } from '../store/crmSelectors';
 import { CRMActionBoundary } from './crm/CRMActions';
 import { useCRMActions } from './crm/useCRMActions';
 import { APIQADialog } from './crm/APIQADialog';
-import { useUILanguage, localizeNode, translateText } from '../i18n/display';
+import { formatDisplayMessage, useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -360,7 +360,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                 label: `All ${field === "status" ? "active contacts" : field + "s"}`,
               },
               ...(field === "source" ? [...new Set(["Websites", "Funnel", "Forms", "Services", "Booking", "General", ...pipelineLeads.map(l => sourceGroup(l.source))])].filter(Boolean).map(value => ({ value, label: value })) : field === "stage"
-                ? pipeline.stages.map((s) => ({ value: s.id, label: s.label }))
+                ? pipeline.stages.map((s) => ({ value: s.id, label: <bdi>{s.label}</bdi> }))
                 : field === "status"
                   ? [
                       { value: "followup", label: "Needs follow-up" },
@@ -379,7 +379,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                       .sort()
                       .map((val) => ({
                         value: val as string,
-                        label: val as string,
+                        label: <bdi>{val}</bdi>,
                       }))),
             ]}
           />
@@ -390,7 +390,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
   );
   return (
     <CRMActionBoundary busy={actions.busy || api.loading}><div className="flex flex-col overflow-hidden crm2-page crm-workspace crm-pipeline-workspace">
-      {api.error && <p className="crm-error" role="alert">{api.error} <button onClick={api.retry}>Retry</button></p>}
+      {api.error && <p className="crm-error" role="alert">{api.error} <button onClick={api.retry}>{translateText("Retry")}</button></p>}
       {api.loading && <span className="sr-only" role="status" aria-live="polite">{translateText("Loading CRM…")}</span>}
       <header className="crm2-header">
         <div className="crm2-header-left">
@@ -420,7 +420,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
               resetFilters();
               setSelected([]);
             }}
-            options={pipelines.map((p) => ({ value: p.id, label: p.name }))}
+            options={pipelines.map((p) => ({ value: p.id, label: <bdi>{p.name}</bdi> }))}
           />
           {!isContactsOnly && (
             <button
@@ -433,7 +433,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
             <Plus size={15} />{translateText(isContactsOnly ? "Add Contact" : "Add Lead")}</button>
         </div>
       </header>
-      {dragged && <div className="crm-pipeline-transfer" aria-label="Move to another pipeline">{pipelines.filter(p => p.id !== pipeline.id).map(p => <button key={p.id} className="crm2-btn-secondary" onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }} onDrop={async e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain') || dragged; setDragged(null); setOver(null); if (id && p.stages[0]) { const moved = await dispatch(updateLead({ id, changes: { pipelineId: p.id, stage: p.stages[0].id, lifecycleStage: p.stages[0].id } })); if (moved) notify('Lead moved to ' + p.name); } }}>Move to {p.name}</button>)}</div>}
+      {dragged && <div className="crm-pipeline-transfer" aria-label={translateText("Move to another pipeline")}>{pipelines.filter(p => p.id !== pipeline.id).map(p => <button key={p.id} className="crm2-btn-secondary" onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }} onDrop={async e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain') || dragged; setDragged(null); setOver(null); if (id && p.stages[0]) { const moved = await dispatch(updateLead({ id, changes: { pipelineId: p.id, stage: p.stages[0].id, lifecycleStage: p.stages[0].id } })); if (moved) notify('Lead moved to ' + p.name); } }}>{translateText("Move to ")}{p.name}</button>)}</div>}
       {!isContactsOnly && (
         <nav className="crm2-subnav" aria-label={translateText("CRM navigation")}>
           {localizeNode(tabs.map((t) => (
@@ -552,7 +552,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   <section
                     key={stage.id}
                     className={`crm-kanban-column ${over === stage.id ? "crm-drop-active" : ""}`}
-                    aria-label={translateText(`${stage.label} stage`)}
+                    aria-label={formatDisplayMessage('{{0}} stage', stage.label)}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
@@ -577,7 +577,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                     <div className="crm-stage-head">
                       <div>
                         <i style={{ background: stage.color }} />
-                        <b>{localizeNode(stage.label)}</b>
+                        <b>{stage.label}</b>
                         <span>{localizeNode(cards.length)}</span>
                         <OptionsMenu
                           label={`Options for ${stage.label} stage`}
@@ -598,7 +598,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                       </small>
                       <button
                         className="crm-stage-add"
-                        aria-label={translateText(`Add lead to ${stage.label}`)}
+                        aria-label={formatDisplayMessage('Add lead to {{0}}', stage.label)}
                         onClick={() => newLead(stage.id)}
                       >
                         <Plus size={12} />{translateText("Add Lead")}</button>
@@ -734,7 +734,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                         <td className="text-center" onClick={(e) => e.stopPropagation()}>
                           <input
                             type="checkbox"
-                            aria-label={translateText(`Select ${lead.name}`)}
+                            aria-label={formatDisplayMessage('Select {{0}}', lead.name)}
                             checked={chosen.includes(lead.id)}
                             onChange={() => toggleSelected(lead.id)}
                           />
@@ -746,14 +746,14 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                             className="crm-table-person"
                           >
                             <CRMAvatar lead={lead} />
-                            <b>{localizeNode(lead.name)}</b>
+                            <b>{lead.name}</b>
                           </Link>
                         </td>
                         <td className="text-start">
                           <span>{lead.email}</span>
-                          <small>{lead.phone || "No phone added"}</small>
+                          <small>{lead.phone || translateText("No phone added")}</small>
                         </td>
-                        <td className="text-start">{localizeNode(lead.company || "—")}</td>
+                        <td className="text-start">{lead.company || "—"}</td>
                         <td className="text-center">
                           <SourceBadge source={lead.source} />{localizeNode((lead.tags || []).filter(t => /^(course|digital product|service)$/i.test(t)).map(t => <TagBadge key={t} tag={t} />))}
                         </td>
@@ -782,7 +782,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                         </td>
                         <td className="text-center">
                           <button
-                            aria-label={translateText(`Open ${lead.name}`)}
+                            aria-label={formatDisplayMessage('Open {{0}}', lead.name)}
                             onClick={(e) => {
                               e.stopPropagation();
                               openLead(lead.id);
@@ -874,7 +874,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   >
                     <Workflow size={18} />
                   </span>
-                  <h3>{localizeNode(template.name)}</h3>
+                  <h3>{template.name}</h3>
                   <p>{localizeNode(template.description)}</p>
                   <div className="crm-preset-stages">
                     {localizeNode(template.stages.map((s, i) => (
@@ -930,7 +930,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
           <div className="crm-section-heading">
             <div>
               <h2>{translateText("Activity feed")}</h2>
-              <p>{translateText("Conversations, stage changes and notes in ")}{localizeNode(pipeline.name)}.</p>
+              <p>{translateText("Conversations, stage changes and notes in ")}{pipeline.name}.</p>
             </div>
           </div>
           {localizeNode(active
@@ -948,7 +948,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                 <div>
                   <b>{localizeNode(a.title)}</b>
                   <p>
-                    {localizeNode(a.lead.name)} · {localizeNode(a.detail)}
+                    {a.lead.name} · {a.detail}
                   </p>
                 </div>
                 <small>
@@ -988,7 +988,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
               onChange={(val) => setTaskLead(val)}
               options={[
                 { value: "", label: "Select contact" },
-                ...active.map((l) => ({ value: l.id, label: l.name })),
+                ...active.map((l) => ({ value: l.id, label: <bdi>{l.name}</bdi> })),
               ]}
             />
             <CustomDatePicker
@@ -1041,7 +1041,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   <label className="crm-task-checkbox">
                     <input
                       type="checkbox"
-                      aria-label={translateText(`Complete ${task.title}`)}
+                      aria-label={formatDisplayMessage('Complete {{0}}', task.title)}
                       checked={task.done}
                       onChange={() =>
                         dispatch(
@@ -1059,14 +1059,14 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                     <span className="crm-checkmark"></span>
                   </label>
                   <div className="crm-task-content">
-                    <b>{localizeNode(task.title)}</b>
+                    <b>{task.title}</b>
                     <div className="crm-task-meta">
                       <Link
                         to={`${base}/contacts/${task.lead.id}`}
                         className="crm-task-contact-badge"
                       >
                         <CRMAvatar lead={task.lead} />
-                        {localizeNode(task.lead.name)}
+                        {task.lead.name}
                       </Link>
                       <span className={`crm-task-due-pill ${status}`}>
                         {localizeNode(task.due)}
@@ -1104,14 +1104,14 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   <Clock3 size={18} />
                 </div>
                 <div className="crm-task-content">
-                  <b>{translateText("Follow up with ")}{localizeNode(l.name)}</b>
+                  <b>{translateText("Follow up with ")}{l.name}</b>
                   <div className="crm-task-meta">
                     <Link
                       to={`${base}/contacts/${l.id}`}
                       className="crm-task-contact-badge"
                     >
                       <CRMAvatar lead={l} />
-                      {localizeNode(l.name)}
+                      {l.name}
                     </Link>
                     <span
                       className={`crm-task-due-pill ${followUpStatus(l.nextFollowUp, l.nextFollowUpAt, today)}`}
@@ -1156,7 +1156,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                 <article key={stage.id}>
                   <h3>
                     <i style={{ background: stage.color }} />
-                    {localizeNode(stage.label)}
+                    {stage.label}
                   </h3>
                   <b>
                     {localizeNode(records.length)}
@@ -1249,10 +1249,10 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                               ...owners,
                               ...leads.map((l) => l.owner),
                             ]),
-                          ].map((o) => ({ value: o, label: o }))
+                          ].map((o) => ({ value: o, label: <bdi>{o}</bdi> }))
                         : pipeline.stages.map((s) => ({
                             value: s.id,
-                            label: s.label,
+                            label: <bdi>{s.label}</bdi>,
                           }))
                     }
                   />

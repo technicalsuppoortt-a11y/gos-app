@@ -1121,3 +1121,15 @@ html.dark .st-business .st-field input:focus,html.dark .st-business .st-field se
 .st-channel-picker p{margin:0;font-size:11px}
 .st-channel-picker ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .st-channel-picker li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid var(--st-border);border-radius:6px;background:var(--st-surface);font-size:11px}
+
+@media (max-width: 480px) {
+  .st-profile-form .st-photo-actions {
+    flex-wrap: wrap;
+  }
+  .st-profile-form .st-photo-row > div:not(.st-avatar-wrap) {
+    min-inline-size: 0;
+  }
+  .st-profile-summary .st-account-list dd {
+    overflow-wrap: anywhere;
+  }
+}

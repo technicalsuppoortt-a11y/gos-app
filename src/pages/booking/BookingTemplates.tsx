@@ -96,8 +96,8 @@ export function BookingTemplates() {
                     {translateText(' min')}
                   </span>
                 </div>
-                <h2>{localizeNode(template.name)}</h2>
-                <p>{localizeNode(template.description)}</p>
+                <h2>{template.name}</h2>
+                <p>{template.description}</p>
                 <ul>
                   <li>
                     <Check size={14} />

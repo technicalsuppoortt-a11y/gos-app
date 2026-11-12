@@ -315,3 +315,149 @@ html.dark .ai-thinking-option.level-low .ai-thinking-option-badge { background: 
   .ai-thinking-trigger { height: 28px; padding: 0 8px; font-size: 9px; gap: 4px; }
   .ai-thinking-popover { width: min(252px, calc(100vw - 36px)); }
 }
+
+.ai-composer-tools > .ai-tool-actions {
+  flex: none;
+}
+.ai-tool-actions > .ai-send-button {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+  background: linear-gradient(145deg, #6d28d9, #7c3aed);
+}
+.ai-send-button > .ai-send-icon {
+  display: block;
+  inline-size: 20px;
+  block-size: 20px;
+  pointer-events: none;
+}
+.ai-send-button:focus-visible,
+.ai-copilot-toolbar .ai-mobile-history-trigger:focus-visible {
+  outline: 2px solid var(--ai-purple);
+  outline-offset: 3px;
+}
+.ai-send-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 7px #7c3aed45;
+}
+.ai-tool-actions > .ai-send-button:disabled {
+  opacity: 1;
+  color: #6540a4;
+  background: #eee7fa;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+html.dark .ai-tool-actions > .ai-send-button:disabled {
+  color: #c4b5fd;
+  background: #35264f;
+}
+.ai-mobile-history-scrim { display: none; }
+
+@media (max-width: 850px) {
+  .ai-copilot-page,
+  .ai-copilot-page.history-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ai-copilot-page[data-mobile-history-open="false"] .ai-history-panel {
+    display: none;
+  }
+  .ai-copilot-page[data-mobile-history-open="true"] .ai-history-panel {
+    inset-block: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-bottom));
+    inset-inline-end: 12px;
+    inline-size: min(350px, calc(100% - 24px));
+    max-block-size: none;
+    transform: none;
+    z-index: 60;
+  }
+  .ai-mobile-history-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 59;
+    background: rgb(17 20 50 / 42%);
+  }
+  .ai-copilot-toolbar {
+    height: auto;
+    min-height: 48px;
+    padding-block: 4px;
+    gap: 6px;
+  }
+  .ai-copilot-toolbar button {
+    min-block-size: 40px;
+    height: auto;
+    line-height: 1.25;
+    text-align: start;
+  }
+  .ai-copilot-toolbar .ai-mobile-history-trigger {
+    flex: none;
+    inline-size: 42px;
+    min-block-size: 42px;
+    justify-content: center;
+    padding: 0;
+  }
+  .ai-history-header button {
+    inline-size: 40px;
+    block-size: 40px;
+  }
+  .ai-history-item {
+    height: auto;
+    min-height: 42px;
+  }
+  .ai-history-item span {
+    font-size: 12px;
+  }
+  .ai-history-modal {
+    max-block-size: min(650px, calc(100dvh - 24px));
+  }
+  .ai-history-modal-list > button > span,
+  .ai-history-header > div:first-child {
+    min-inline-size: 0;
+  }
+  .ai-history-filter-menu {
+    max-height: calc(100% - 65px);
+  }
+  .ai-composer-tools {
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .ai-tool-group {
+    flex-wrap: wrap;
+    min-inline-size: 0;
+  }
+  .ai-tool-actions > button {
+    inline-size: 48px;
+    block-size: 48px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ai-copilot-toolbar > div {
+    display: none;
+  }
+  .ai-copilot-toolbar .ai-mobile-history-trigger {
+    margin-inline-start: auto;
+  }
+  .ai-suggestion-card strong { font-size: 12px; }
+  .ai-suggestion-card small { font-size: 11px; }
+  .ai-composer { position: relative; }
+  .ai-composer textarea { font-size: 16px; }
+  .ai-tool-group .ai-tool-pill:nth-of-type(3) { display: inline-flex; }
+  .ai-tool-group > button,
+  .ai-tool-group .ai-thinking-trigger {
+    min-block-size: 36px;
+    font-size: 11px;
+  }
+  .ai-thinking-selector { position: static; }
+  .ai-thinking-popover {
+    inset-inline: 10px auto;
+    bottom: calc(100% + 8px);
+    inline-size: min(252px, calc(100% - 20px));
+  }
+  .ai-composer-caption {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+}

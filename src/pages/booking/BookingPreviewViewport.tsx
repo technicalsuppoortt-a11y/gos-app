@@ -1,3 +1,4 @@
+import { translateText } from '../../i18n/display';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
@@ -14,7 +15,7 @@ export function BookingPreviewViewport({ children, mobile }: { children: ReactNo
     syncTheme();
     return () => observer.disconnect();
   }, [target]);
-  return <iframe title="Booking page preview" width={mobile ? 390 : 1040} height={mobile ? 844 : 800}
+  return <iframe title={translateText("Booking page preview")} width={mobile ? 390 : 1040} height={mobile ? 844 : 800}
     srcDoc="<!doctype html><html><head></head><body style='margin:0'><div id='booking-preview-root'></div></body></html>"
     onLoad={event => {
       const doc = event.currentTarget.contentDocument;

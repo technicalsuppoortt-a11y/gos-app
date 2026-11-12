@@ -50,7 +50,7 @@ export function SecurityPanel() {
   }
   return (
     <>
-      <PanelHeading title={translateText("Security")} description="Protect your account and review sign-in activity." />
+      <PanelHeading title={translateText("Security")} description={translateText("Protect your account and review sign-in activity.")} />
       {localizeNode(!settingsApiEnabled && <p className="st-note">{translateText("Local security demo · sessions and 2FA are simulated. These controls do not change your authentication account.")}</p>)}
       {localizeNode(error && !verification && !revoke && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
       {localizeNode(message && <p className="st-success" role="status">{localizeNode(message)}</p>)}
@@ -99,7 +99,7 @@ export function SecurityPanel() {
           }}>
             {localizeNode(verification.enabled && <div className="st-qr-preview"><MockQr /><p>{translateText("Mock QR illustration · no authenticator account is created.")}</p></div>)}
             <p className="st-note">{translateText("Demo verification code: ")}<strong>{localizeNode(verification.challenge)}</strong></p>
-            <Field label="Verification code">
+            <Field label={translateText("Verification code")}>
               <input required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} placeholder={translateText("6-digit code")} />
             </Field>
             {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}

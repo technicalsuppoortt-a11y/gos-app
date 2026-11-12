@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import i18n from './i18n';
 import { resolveDisplayTranslation } from './translate';
-import { toWesternDigits } from '../utils/currency';
+import patterns from './locales/patterns-ar.json';
 
 function subscribe(callback: () => void) {
   i18n.on('languageChanged', callback);
@@ -19,15 +19,22 @@ export function translateText<T>(value: T): T {
   return translateTextForLanguage(value, i18n.language);
 }
 
+/** Localize a UI message before inserting any user-authored or technical values. */
+export function formatDisplayMessage(message: string, ...values: (string | number)[]): string {
+  const translated = (patterns as Readonly<Record<string, string>>)[message];
+  const template = uiDirection() === 'rtl' ? translated ?? message : message;
+  return template.replace(/\{\{(\d+)\}\}/g, (token, index: string) => String(values[Number(index)] ?? token));
+}
+
 export function translateTextForLanguage<T>(value: T, language: string): T {
   if (typeof value !== 'string') return value;
-  if (!language.startsWith('ar')) return toWesternDigits(value) as T;
+  if (!language.startsWith('ar')) return value;
   const text = value.trim();
   const translated = resolveDisplayTranslation(text);
   if (translated !== undefined) {
-    return toWesternDigits(value.slice(0, value.indexOf(text)) + translated + value.slice(value.indexOf(text) + text.length)) as T;
+    return (value.slice(0, value.indexOf(text)) + translated + value.slice(value.indexOf(text) + text.length)) as T;
   }
-  return toWesternDigits(value) as T;
+  return value;
 }
 
 export function localizeNode<T>(value: T): T {

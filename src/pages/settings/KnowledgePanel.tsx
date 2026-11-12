@@ -1,4 +1,4 @@
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { formatDisplayMessage, useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, BookOpen, CheckCircle2, Clock, Eye, FileText, Loader2, Plus, RefreshCw, Search, Sparkles, Trash2, X } from 'lucide-react';
@@ -114,7 +114,7 @@ export function KnowledgePanel() {
     <>
       <PanelHeading
         title={translateText("Business knowledge")}
-        description="Approved answers, brand guidance and reference documents for your team and AI assistants."
+        description={translateText("Approved answers, brand guidance and reference documents for your team and AI assistants.")}
       />
 
       <div className="st-knowledge-metrics">
@@ -243,7 +243,7 @@ export function KnowledgePanel() {
                           <FileText size={16} />
                         </span>
                         <div style={{ minWidth: 0 }}>
-                          <b style={{ display: 'block', fontSize: 13, color: 'var(--st-ink)' }}>{localizeNode(source.name)}</b>
+                          <b style={{ display: 'block', fontSize: 13, color: 'var(--st-ink)' }}>{source.name}</b>
                           <small style={{ color: 'var(--st-muted)', fontSize: 11 }}>
                             {source.content ? source.content.slice(0, 60) + (source.content.length > 60 ? '…' : '') : (source.error || source.id)}
                           </small>
@@ -266,7 +266,7 @@ export function KnowledgePanel() {
                         <button
                           type="button"
                           className="st-secondary small"
-                          aria-label={translateText(`View ${source.name}`)}
+                          aria-label={formatDisplayMessage('View {{0}}', source.name)}
                           onClick={() => setViewingSource(source)}
                         >
                           <Eye size={13} />
@@ -308,7 +308,7 @@ export function KnowledgePanel() {
           disableEscapeClose
         >
           <form onSubmit={handleCreateSource}>
-            <Field label="Title">
+            <Field label={translateText("Title")}>
               <input
                 required
                 maxLength={150}
@@ -318,7 +318,7 @@ export function KnowledgePanel() {
               />
             </Field>
 
-            <Field label="Approved content">
+            <Field label={translateText("Approved content")}>
               <textarea
                 required
                 rows={8}
@@ -437,7 +437,7 @@ export function KnowledgePanel() {
             </div>
 
             {viewingSource.content ? (
-              <Field label="Source content">
+              <Field label={translateText("Source content")}>
                 <textarea
                   readOnly
                   rows={10}

@@ -1,0 +1,54 @@
+.support-launcher.support-floating-trigger {
+  position: fixed;
+  inset-inline-end: max(18px, env(safe-area-inset-right));
+  inset-block-end: max(34px, env(safe-area-inset-bottom));
+  z-index: 38;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: #6d28d9;
+  color: #fff;
+  box-shadow: 0 4px 16px rgb(109 40 217 / 36%);
+  cursor: pointer;
+}
+
+html[dir="rtl"] .support-launcher.support-floating-trigger {
+  inset-inline-end: max(18px, env(safe-area-inset-left));
+}
+
+.support-floating-trigger svg {
+  display: block;
+  flex: none;
+  inline-size: 22px;
+  block-size: 22px;
+  pointer-events: none;
+}
+
+.support-launcher.support-floating-trigger:hover {
+  background: #5b21b6;
+}
+
+.support-launcher.support-floating-trigger:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .support-launcher.support-floating-trigger {
+    inset-inline-end: max(12px, env(safe-area-inset-right));
+    inset-block-end: max(10px, env(safe-area-inset-bottom));
+  }
+  html[dir="rtl"] .support-launcher.support-floating-trigger {
+    inset-inline-end: max(12px, env(safe-area-inset-left));
+  }
+  .user-dashboard-shell:has(.support-floating-trigger) .layout-main:has(.ai-copilot-page) {
+    padding-block-end: 32px;
+  }
+  .user-dashboard-shell:has(.support-floating-trigger) .layout-main:has(.inbox-root) {
+    padding-block-end: 54px;
+  }
+}

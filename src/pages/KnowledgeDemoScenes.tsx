@@ -71,7 +71,7 @@ export function ChatScene({ time, asked, reducedMotion }: { time: number; asked:
   const count = asked ? 4 : Math.min(4, 1 + Math.floor(time / 1500));
   return <section className="kd-chat" aria-label={t('Chat simulation')}>
     <h3 className="sr-only">{t('Test your assistant')}</h3>
-    <div className="kd-signal-bar"><span><i/>{t('TEST')} · <ChannelMark channel="WhatsApp"/> WHATSAPP · <b>RIYADH</b></span><time>00:{String(Math.floor(time / 1000)).padStart(2, '0')}</time></div>
+    <div className="kd-signal-bar"><span><i/>{t('TEST')} · <ChannelMark channel="WhatsApp"/>{t(" WHATSAPP · ")}<b>{t("RIYADH")}</b></span><time>00:{String(Math.floor(time / 1000)).padStart(2, '0')}</time></div>
     <div className="kd-transcript">{transcript.slice(0, count).map((message, index) => <motion.div key={`${index}-${index === 0 ? asked : ''}`} className={`kd-chat-row ${message.ai ? 'ai' : 'customer'}`} initial={reducedMotion ? false : { opacity: 0, y: 12, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .3, ease: 'easeOut' }}>
       <span className="kd-chat-avatar">{message.ai ? 'RM' : 'A'}</span><p>{index === 0 && asked ? asked : t(message.text)}</p>
     </motion.div>)}{count < 4 && <div className="kd-typing" aria-label={t('Preparing sample reply')}><i/><i/><i/></div>}</div>
