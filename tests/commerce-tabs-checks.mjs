@@ -35,8 +35,9 @@ export async function verifyWorkspaceTabs(page) {
   await advanced('Post-purchase Automations'); await page.getByRole('switch', { name: 'Send file delivery notification', exact: true }).check(); await apply();
   await tab('Students'); await page.getByRole('button', { name: 'Add student', exact: true }).click();
   await page.getByLabel('Student name', { exact: true }).fill('QA Learner'); await page.getByLabel('Email address', { exact: true }).fill('learner@example.com');
-  await page.getByLabel('Progress (%)', { exact: true }).fill('40'); await page.getByRole('button', { name: 'Apply enrollment', exact: true }).click();
-  await tab('Analytics'); await page.getByText('40%', { exact: true }).first().waitFor();
+  assert.equal(await page.getByLabel('Progress (%)', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Apply enrollment', exact: true }).click();
+  await tab('Analytics'); await page.getByRole('heading', { name: 'Course Performance', exact: true }).waitFor();
   await tab('Settings'); await advanced('Product Settings');
   await page.getByRole('switch', { name: 'Enable completion certificates', exact: true }).check();
   await page.getByLabel('Certificate issuer', { exact: true }).fill('QA Academy'); await apply();
@@ -55,7 +56,7 @@ export async function verifyWorkspaceTabs(page) {
   assert.equal(saved.config.billing, 'Payment plan'); assert.equal(saved.config.amount, 50);
   assert.equal(saved.config.experience.oneTimeAmount, 120); assert.equal(saved.config.experience.checkout.requireTerms, true);
   assert.equal(saved.config.automations.crmTag, 'course-enrolled'); assert.equal(saved.config.automations.fileDelivery, true);
-  assert.equal(saved.config.certificateIssuer, 'QA Academy'); assert.equal(saved.config.students[0].progress, 40);
+  assert.equal(saved.config.certificateIssuer, 'QA Academy'); assert.equal(saved.config.students[0].progress, 0);
   assert.equal(saved.config.modules[0].lessons[0].kind, 'Text');
   await page.evaluate(id => {
     window.__seed('entity:orders', [{ id: 'qa-order', productId: id, customerName: 'Course Buyer', status: 'Paid', amount: 50, currency: 'EUR', createdAt: new Date().toISOString() }, { id: 'other', productId: 'other', customerName: 'Unrelated Buyer', amount: 999 }]);

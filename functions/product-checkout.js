@@ -171,23 +171,23 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
     const primaryAmount = quote.totals.selected === 'Subscription' && quote.trialDays > 0 ? 0 : quote.totals.total;
     const items = [{ productId: data.productId, productName: product.name, amount: primaryAmount, quantity: 1 }];
     if (data.bump && quote.bump) items.push({ productId: quote.bump.id, productName: quote.bump.name, amount: quote.totals.bumpTotal, quantity: 1 });
+    const isFreeInstant = quote.totals.dueToday === 0 && product.config.delivery !== 'After approval';
     const record = {
       id, orderId: id, source: 'Product checkout', productId: data.productId, productName: product.name, items, contactId: contactRef.id,
       customerName: customer.name, customerEmail: customer.email, customerPhone: customer.phone,
       currency: quote.totals.currency, amount: quote.totals.dueToday, total: quote.totals.dueToday,
       discountCode: text(data.discountCode, 100), discount: quote.totals.discount,
-      method: method?.name || 'No payment due', createdAt, status: 'Pending',
+      method: method?.name || 'No payment due', createdAt, status: isFreeInstant ? 'Paid' : 'Pending',
     };
     if (!contacts.docs.length) tx.set(contactRef, { id: contactRef.id, ...customer, status: 'Active', source: 'Checkout', createdAt }, { merge: true });
     tx.set(ref, {
-      ...record, fields, totals: quote.totals, receipt: attachment, note: text(data.note, 1000),
+      ...record, status: isFreeInstant ? 'Approved' : 'Pending', fields, totals: quote.totals, receipt: attachment, note: text(data.note, 1000),
       transferAccount: method?.account || '',
       couponCounter: promo?.counterRef?.path || '', couponClaim: promo?.claimRef?.path || '',
     });
     tx.set(root.collection('orders').doc(id), record);
     if (method) tx.set(root.collection('transactions').doc(id), record);
     const prevLead = existingLeadSnap.data();
-    const isFreeInstant = quote.totals.dueToday === 0;
     const rawProdType = String(product.type || '').trim().toLowerCase();
     const prodTypeLabel = rawProdType.includes('course')
       ? 'Course'
@@ -229,7 +229,7 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
     if (promo?.counterRef) tx.set(promo.counterRef, { uses: promo.uses + 1 }, { merge: true });
     if (promo?.claimRef) tx.set(promo.claimRef, { requestId: id });
     tx.set(limitRef, { at: sameWindow ? previous.at : at, count: sameWindow ? previous.count + 1 : 1 });
-    if (product.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutSubmitted', createdAt);
+    if (!isFreeInstant && product.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutSubmitted', createdAt);
     return true;
   }).catch(async error => {
     // Callable validation errors abort the transaction. Leave the attachment

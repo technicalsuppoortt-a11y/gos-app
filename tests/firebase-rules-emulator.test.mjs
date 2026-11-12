@@ -30,6 +30,25 @@ async function client(role, tenantId, permissions = ['*'], claims = {}) {
 try {
   const tenantA = `rules-a-${run}`, tenantB = `rules-b-${run}`;
   const owner = await client('USER', tenantA), other = await client('USER', tenantB), admin = await client('ADMIN', tenantA), superAdmin = await client('SUPER_ADMIN', tenantA), limited = await client('USER', tenantA, ['inbox']);
+  const customer = await client('CUSTOMER', tenantA, ['*'], { role: 'CUSTOMER', tenantId: tenantA });
+  await db.doc(`users/${customer.account.uid}`).update({ portalProvisioned: true });
+  const purchasePath = ['customerLibraries', customer.account.uid, 'purchases', 'paid-course'];
+  await db.doc(purchasePath.join('/')).set({ status: 'Active', customerUid: customer.account.uid, progress: 0 });
+  await db.doc(`tenants/${tenantA}/customerPurchases/paid-course`).set({ customerUid: customer.account.uid });
+  await db.doc('settings/customerPurchases_legacy/items/paid-course').set({ status: 'Active' });
+  const customerProfile = db.doc(`users/${customer.account.uid}`);
+  await customerProfile.update({ portalPasswordPolicy: 'temporary-v1', portalPasswordChangeRequired: true });
+  await denied(() => getDoc(doc(customer.db, ...purchasePath)));
+  await customerProfile.update({ portalPasswordChangeRequired: false });
+  await denied(() => getDoc(doc(customer.db, ...purchasePath)));
+  await customerProfile.update({ portalPasswordPolicy: '' });
+  assert.equal((await getDoc(doc(customer.db, ...purchasePath))).data().progress, 0);
+  await denied(() => getDoc(doc(other.db, ...purchasePath)));
+  await denied(() => updateDoc(doc(customer.db, ...purchasePath), { progress: 100 }));
+  await denied(() => getDoc(doc(customer.db, 'tenants', tenantA, 'customerPurchases', 'paid-course')));
+  await denied(() => getDoc(doc(customer.db, 'settings', 'customerPurchases_legacy', 'items', 'paid-course')));
+  await denied(() => setDoc(doc(customer.db, 'settings', 'teamMember_forged'), { role: 'Owner' }));
+  await denied(() => setDoc(doc(owner.db, 'settings', 'customerPurchases_legacy', 'items', 'forged'), { status: 'Active' }));
   const ownerProfile = doc(owner.db, 'users', owner.account.uid);
   await updateDoc(ownerProfile, { preferredCurrency: 'KWD' });
   assert.equal((await getDoc(ownerProfile)).data().preferredCurrency, 'KWD');

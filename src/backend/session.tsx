@@ -141,7 +141,6 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   const emailKey = emailLower ? emailLower.replace(/[^a-z0-9@._-]/g, '_') : '';
 
   // Check workspace team member lookup documents (by UID or email)
-  let hasTeamMembership = false;
   try {
     const [uidLookupSnap, emailLookupSnap] = await Promise.all([
       getDoc(doc(db, 'settings', `teamMemberUid_${user.uid}`)).catch(() => null),
@@ -164,7 +163,6 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     }
 
     if (teamRecord) {
-      hasTeamMembership = true;
       const isSelfOwner =
         Boolean(teamRecord.isOwner) ||
         String(teamRecord.role || '').toLowerCase() === 'owner' ||
@@ -229,32 +227,6 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
     }
   } catch (err) {
     if (err instanceof SessionError) throw err;
-  }
-
-  // Check Customer Portal account lookup if user does not already own/belong to a business workspace
-  if (!data && !hasTeamMembership) {
-    try {
-      const [custUidSnap, custEmailSnap] = await Promise.all([
-        getDoc(doc(db, 'settings', `customerAccountUid_${user.uid}`)).catch(() => null),
-        emailKey ? getDoc(doc(db, 'settings', `customerAccount_${emailKey}`)).catch(() => null) : Promise.resolve(null),
-      ]);
-      const customerRecord = (custUidSnap?.exists() ? custUidSnap.data() : null) ?? (custEmailSnap?.exists() ? custEmailSnap.data() : null);
-      if (customerRecord) {
-        if (customerRecord.deleted === true || customerRecord.active === false || suspendedStatus(customerRecord.status)) {
-          throw new SessionError('DEACTIVATED');
-        }
-        data = {
-          name: String(customerRecord.name || user.displayName || emailLower.split('@')[0] || 'Customer').trim(),
-          email: String(customerRecord.email || emailLower).trim(),
-          role: 'CUSTOMER',
-          status: 'Active',
-          tenantId: String(customerRecord.tenantId || 'customer-portal').trim(),
-          tenantName: String(customerRecord.brandName || 'Customer Portal').trim(),
-        };
-      }
-    } catch (err) {
-      if (err instanceof SessionError) throw err;
-    }
   }
 
   const rawClaimRole = typeof tokenResult.claims.role === 'string' ? tokenResult.claims.role.toUpperCase() : undefined;
@@ -329,6 +301,7 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
       id: user.uid,
       name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User',
       email: user.email || data?.email || '',
+      ...(data?.portalPasswordPolicy === 'temporary-v1' && (data.portalPasswordChangeRequired !== false || tokenResult.claims.portalPasswordReady !== true || !(Number(tokenResult.claims.auth_time) > (data.portalPasswordChangedAfter || 0))) ? { requiresPasswordChange: true } : {}),
       avatar: data?.avatar || user.photoURL || undefined,
       ...(agency ? { accountType: 'agency' } : {}),
       ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}),
@@ -379,24 +352,7 @@ export async function login(email: string, password: string) {
           }
         }
       } catch {
-        // Proceed to customer portal / Phoenix fallback if team lookup fails
-      }
-      // Check if this is a provisioned customer account whose Firebase Auth user needs lazy initialization
-      try {
-        const custSnap = await getDoc(doc(db, 'settings', `customerAccount_${emailKey}`));
-        if (custSnap.exists()) {
-          const custData = custSnap.data();
-          if (
-            !custData?.deleted &&
-            custData?.active !== false &&
-            typeof custData?.tempPassword === 'string' &&
-            custData.tempPassword === password
-          ) {
-            return await createUserWithEmailAndPassword(auth, cleanEmail, password);
-          }
-        }
-      } catch {
-        // Proceed to Phoenix fallback if customer lookup fails
+        // Proceed to Phoenix fallback if team lookup fails
       }
       usedPhoenix = true;
       return loginWithPhoenix(email, password);

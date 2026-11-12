@@ -22,8 +22,12 @@ service cloud.firestore {
       );
     }
     function member(tenantId) { return get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data; }
+    function customerAccount() {
+      return request.auth != null && (request.auth.token.get('role', '') == 'CUSTOMER'
+        || exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') == 'CUSTOMER');
+    }
     function tenant(tenantId) {
-      return featureAdmin() || (signedIn() && (
+      return featureAdmin() || (signedIn() && !customerAccount() && (
         request.auth.uid == tenantId ||
         request.auth.token.get('tenantId', '') == tenantId ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('tenantId', '') == tenantId) ||
@@ -258,6 +262,21 @@ service cloud.firestore {
         request.auth.token.get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin'] ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['SUPER_ADMIN', 'super_admin', 'platform_admin'])) || platformTeamCan(['templates']);
     }
+    function validTemplateTranslations(data) {
+      return data.get('title_en', '') is string && data.get('title_en', '').size() <= 180
+        && data.get('title_ar', '') is string && data.get('title_ar', '').size() <= 180
+        && data.get('description_en', '') is string && data.get('description_en', '').size() <= 2000
+        && data.get('description_ar', '') is string && data.get('description_ar', '').size() <= 2000
+        && data.get('category_en', '') is string && data.get('category_en', '').size() <= 100
+        && data.get('category_ar', '') is string && data.get('category_ar', '').size() <= 100
+        && data.get('tags_en', []) is list && data.get('tags_en', []).size() <= 40
+        && data.get('tags_ar', []) is list && data.get('tags_ar', []).size() <= 40
+        && data.get('content_en', {}) is map && data.get('content_ar', {}) is map
+        && data.get('content_en', {}).get('headline', '') is string && data.get('content_ar', {}).get('headline', '') is string
+        && data.get('content_en', {}).get('steps', []) is list && data.get('content_ar', {}).get('steps', []) is list
+        && data.get('builder_document_ar', {}) is map && data.get('booking_page_ar', {}) is map
+        && data.get('product_template_ar', {}) is map && data.get('pipeline_template_ar', {}) is map;
+    }
     function validTemplate() {
       return request.resource.data.name is string && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 180
@@ -269,6 +288,7 @@ service cloud.firestore {
         && request.resource.data.content.headline is string
         && request.resource.data.content.steps is list
         && request.resource.data.content.settings is map
+        && validTemplateTranslations(request.resource.data)
         && request.resource.data.updatedBy == request.auth.uid;
     }
     function myAdmin(adminUid) {
@@ -297,12 +317,12 @@ service cloud.firestore {
     // Published funnel websites (public live pages + custom domains)
     match /published_sites/{funnelId} {
       allow read: if true;
-      allow write: if accountAvailable() && !platformStaff();
+      allow write: if accountAvailable() && !platformStaff() && !customerAccount();
     }
 
     match /site_domains/{host} {
       allow read: if true;
-      allow write: if accountAvailable() && !platformStaff();
+      allow write: if accountAvailable() && !platformStaff() && !customerAccount();
     }
     match /users/{userId} {
       match /preferences/passwordPolicy {
@@ -346,7 +366,7 @@ service cloud.firestore {
       // Roles, tenant ownership and account lifecycle are controlled by manageUser.
       allow create, delete: if false;
       allow update: if request.auth != null && request.auth.uid == userId
-        && resource.data.status == 'Active'
+        && resource.data.status == 'Active' && customerPasswordReady()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'activatedAt', 'tempAuthKey']);
       allow update: if signedIn() && request.auth.uid == userId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preferredCurrency'])
@@ -355,7 +375,7 @@ service cloud.firestore {
     }
     match /tenants/{tenantId} {
       // Admin reads do not depend on membership documents in each client workspace.
-      allow get, list: if featureAdmin() || superAdmin() || tenant(tenantId) || signedIn() && resource.data.get('accountType', '') != 'agency';
+      allow get, list: if featureAdmin() || superAdmin() || tenant(tenantId) || signedIn() && !customerAccount() && resource.data.get('accountType', '') != 'agency';
       match /{adminResource}/{adminRecord} {
         allow read: if (featureAdmin() || superAdmin() || tenant(tenantId) || permit(tenantId, 'settings')) && adminResource in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'checkoutRequests', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'userTemplates', 'files', 'handoffLogs', 'aiUsage', 'modelAllocations'];
       }
@@ -419,6 +439,10 @@ service cloud.firestore {
           && !isProfileSettings() && (permit(tenantId, 'settings') || tenant(tenantId) && request.resource.data.key == 'gos.notifications.v1:' + request.auth.uid || permit(tenantId, 'products') && request.resource.data.key.matches('gos-commerce-products-v1:.*:preview:.*')) && request.resource.data.keys().hasOnly(['key', 'value', 'updatedAt', 'updatedBy']) && request.resource.data.updatedBy == request.auth.uid && request.resource.data.key.matches('gos[-._].*') && !request.resource.data.key.matches('.*(transactions|purchased|security|billing).*');
         allow delete: if stateId != 'gos.agency.landing-seed.v1' && !isProfileSettings() && permit(tenantId, 'settings');
       }
+      match /products/{productId}/reviews/{reviewId} {
+        allow read: if permit(tenantId, 'products') || permit(tenantId, 'analytics');
+        allow write: if false;
+      }
       match /products/{productId}/publicReviews/current {
         // Public review projection contains no customer emails or order data.
         allow read: if permit(tenantId, 'products') ||
@@ -445,11 +469,7 @@ service cloud.firestore {
         allow delete: if permit(tenantId, 'funnels');
       }
       match /checkoutRequests/{requestId} {
-        allow read: if featureAdmin() || superAdmin() || permit(tenantId, 'products') || tenant(tenantId) || (
-          request.auth.token.get('tenantId', '') == tenantId ||
-          profile().get('tenantId', '') == tenantId ||
-          exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid))
-        );
+        allow read: if featureAdmin() || superAdmin() || permit(tenantId, 'products') || tenant(tenantId);
         allow write: if false;
       }
       match /{collectionName}/{id} {
@@ -466,21 +486,8 @@ service cloud.firestore {
         allow create: if collectionName == 'events' && (tenant(tenantId) || featureAdmin() || superAdmin()) && request.resource.data.actorId == request.auth.uid && request.resource.data.type == 'workspace.updated';
       }
       match /customerPurchases/{purchaseId} {
-        allow read: if signedIn() && (
-          resource.data.get('customerUid', '') == request.auth.uid ||
-          resource.data.get('customerEmail', '') == request.auth.token.get('email', '') ||
-          tenant(tenantId) || featureAdmin() || superAdmin()
-        );
-        allow create, update: if signedIn() && (
-          request.resource.data.get('customerUid', '') == request.auth.uid ||
-          request.resource.data.get('customerEmail', '') == request.auth.token.get('email', '') ||
-          permit(tenantId, 'products') || tenant(tenantId) || featureAdmin() || superAdmin()
-        );
-        allow delete: if permit(tenantId, 'products') || featureAdmin() || superAdmin();
-      }
-      match /customerPortalEmails/{emailId} {
-        allow read, create, update: if permit(tenantId, 'products') || tenant(tenantId) || featureAdmin() || superAdmin();
-        allow delete: if featureAdmin() || superAdmin();
+        allow read: if permit(tenantId, 'products') || permit(tenantId, 'analytics') || superAdmin();
+        allow write: if false;
       }
       match /paymentMethods/{docId} {
         allow read: if true;
@@ -494,18 +501,33 @@ service cloud.firestore {
     }
     match /workspaces/{workspaceId} {
       allow read: if signedIn() || platformTeamCan(['templates']);
-      allow write: if featureAdmin() || superAdmin() || (signedIn() && (request.auth.uid == workspaceId || tenant(workspaceId)));
+      allow write: if featureAdmin() || superAdmin() || (signedIn() && !customerAccount() && (request.auth.uid == workspaceId || tenant(workspaceId)));
       match /{allChildren=**} {
         allow read: if signedIn() || platformTeamCan(['templates']);
-        allow write: if featureAdmin() || superAdmin() || (signedIn() && (request.auth.uid == workspaceId || tenant(workspaceId)));
+        allow write: if featureAdmin() || superAdmin() || (signedIn() && !customerAccount() && (request.auth.uid == workspaceId || tenant(workspaceId)));
       }
     }
+    function customerPasswordReady() {
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        || profile().get('portalPasswordPolicy', '') != 'temporary-v1'
+        || profile().get('portalPasswordChangeRequired', true) == false && request.auth.token.get('portalPasswordReady', false) == true
+          && request.auth.token.get('auth_time', 0) > profile().get('portalPasswordChangedAfter', 0);
+    }
+    match /customerLibraries/{uid}/purchases/{purchaseId} {
+      allow read: if signedIn() && request.auth.uid == uid && resource.data.status == 'Active'
+        && (request.auth.token.get('email_verified', false) == true
+          || profile().get('role', '') == 'CUSTOMER' && profile().get('portalProvisioned', false) == true);
+      allow write: if false;
+    }
+    function isLegacyCustomerPortalSetting(id) {
+      return id.matches('^customer(Account|Purchases|PortalEmails).*');
+    }
     match /settings/{settingId} {
-      allow read: if true;
-      allow write: if featureAdmin() || superAdmin() || signedIn() || platformRole(['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE']);
+      allow read: if !isLegacyCustomerPortalSetting(settingId);
+      allow write: if !isLegacyCustomerPortalSetting(settingId) && (featureAdmin() || superAdmin() || signedIn() && !customerAccount() || platformRole(['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE']));
       match /{allChildren=**} {
-        allow read: if true;
-        allow write: if featureAdmin() || superAdmin() || signedIn() || platformRole(['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE']);
+        allow read: if !isLegacyCustomerPortalSetting(settingId);
+        allow write: if !isLegacyCustomerPortalSetting(settingId) && (featureAdmin() || superAdmin() || signedIn() && !customerAccount() || platformRole(['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE']));
       }
     }
     match /{document=**} { allow read, write: if false; }

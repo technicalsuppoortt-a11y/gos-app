@@ -4,12 +4,12 @@ import type { PageTemplate } from '../pages/page-template-data';
 
 const OFFICIAL_PAGE_CATEGORIES = new Set(['Funnels', 'Websites', 'Forms']);
 
-export function pageCatalogTemplates(catalog: ManagedTemplate[]): PageTemplate[] {
+export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string; contentLanguage?: 'ar' | 'en' })[]): PageTemplate[] {
   const seen = new Set<string>();
   return catalog
     .filter(t => {
       if (!OFFICIAL_PAGE_CATEGORIES.has(t.category)) return false;
-      const dedupeKey = `${t.category}:${t.name.trim().toLowerCase()}`;
+      const dedupeKey = `${t.category}:${(t.title_en || t.name).trim().toLowerCase()}`;
       if (seen.has(dedupeKey)) return false;
       seen.add(dedupeKey);
       return true;
@@ -21,6 +21,10 @@ export function pageCatalogTemplates(catalog: ManagedTemplate[]): PageTemplate[]
         ...t.pageTemplate,
         id: t.id,
         name: t.name,
+        description: t.description,
+        categoryLabel: t.categoryLabel,
+        contentLanguage: t.contentLanguage,
+        tags: t.tags,
         mode: t.category === 'Forms' ? 'form' : t.category === 'Funnels' ? 'funnel' : 'website',
         industry: t.industry || t.pageTemplate?.industry || 'Professional Services',
         goal: t.goal || t.pageTemplate?.goal || 'Lead Generation',

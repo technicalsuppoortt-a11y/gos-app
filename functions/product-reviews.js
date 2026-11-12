@@ -8,7 +8,7 @@ export function reviewSummary(reviews = []) {
   const ratingTotal = valid.reduce((sum, r) => sum + r.rating, 0);
   return { reviews: valid, reviewsCount: valid.length, ratingTotal, ratingAverage: valid.length ? ratingTotal / valid.length : 0 };
 }
-function storedSummary(product) {
+export function storedSummary(product) {
   const summary = reviewSummary(product.reviews);
   if (Number.isInteger(product.reviewsCount) && product.reviewsCount >= summary.reviewsCount && Number.isInteger(product.ratingTotal) && product.ratingTotal >= product.reviewsCount && product.ratingTotal <= product.reviewsCount * 5) return { ...summary, reviewsCount: product.reviewsCount, ratingTotal: product.ratingTotal, ratingAverage: product.reviewsCount ? product.ratingTotal / product.reviewsCount : 0 };
   return summary;
@@ -29,7 +29,7 @@ export function publicProduct(p, id) {
     } };
 }
 
-export async function productReviewsRequest(request, { db, workspace, now = Date.now }) {
+export async function productReviewsRequest(request, { db, workspace, purchaseRef, now = Date.now }) {
   const { tenantId, productId, action = 'submit', review } = request.data || {};
   if (!validId(tenantId) || !validId(productId)) throw new HttpsError('invalid-argument', 'Invalid product.');
   const productRef = db.doc(`tenants/${tenantId}/products/${productId}`);
@@ -38,9 +38,10 @@ export async function productReviewsRequest(request, { db, workspace, now = Date
     if (!isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
     return publicProduct(product, productId);
   }
-  if (action !== 'submit' || !validId(review?.id) || !Number.isInteger(review?.rating) || review.rating < 1 || review.rating > 5 || typeof review.author !== 'string' || !review.author.trim() || review.author.length > 80 || typeof review.comment !== 'string' || !review.comment.trim() || review.comment.length > 1000) throw new HttpsError('invalid-argument', 'Choose 1–5 stars and enter your name and review.');
+  const verifiedPurchase = action === 'verifiedPurchase' && !!purchaseRef;
+  if ((!verifiedPurchase && (action !== 'submit' || String(review?.id).startsWith('portal-'))) || !validId(review?.id) || !Number.isInteger(review?.rating) || review.rating < 1 || review.rating > 5 || typeof review.author !== 'string' || !review.author.trim() || review.author.length > 80 || typeof review.comment !== 'string' || !review.comment.trim() || review.comment.length > 1000) throw new HttpsError('invalid-argument', 'Choose 1–5 stars and enter your name and review.');
   let staff = false;
-  if (request.auth) {
+  if (request.auth && !verifiedPurchase) {
     try { const { root } = await workspace(request, 'products'); staff = root.id === tenantId; } catch { /* Customers may submit to published products. */ }
   }
   const ipHash = createHash('sha256').update(String(request.rawRequest?.ip || 'unknown')).digest('hex');
@@ -48,11 +49,20 @@ export async function productReviewsRequest(request, { db, workspace, now = Date
   const reviewRef = db.doc(`tenants/${tenantId}/products/${productId}/reviews/${review.id}`);
   return db.runTransaction(async tx => {
     const product = (await tx.get(productRef)).data();
-    if (!product || !staff && !isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
+    if (verifiedPurchase) {
+      const purchase = (await tx.get(purchaseRef)).data();
+      if (purchase?.status !== 'Active' || purchase.customerUid !== request.auth.uid || purchase.tenantId !== tenantId || purchase.productId !== productId) {
+        throw new HttpsError('permission-denied', 'Active purchase access is required.');
+      }
+    }
+    if (!product || !verifiedPurchase && !staff && !isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
     const current = storedSummary(product);
     const existing = (await tx.get(reviewRef)).data();
-    if (existing || current.reviews.some(r => r.id === review.id)) return current; // Retried requests never count twice.
-    const limit = !staff ? (await tx.get(limitRef)).data() : null;
+    if (existing || current.reviews.some(r => r.id === review.id)) {
+      if (verifiedPurchase && existing?.createdAt) tx.update(purchaseRef, { reviewedAt: existing.createdAt });
+      return current;
+    }
+    const limit = !verifiedPurchase && !staff ? (await tx.get(limitRef)).data() : null;
     if (limit && now() - limit.at < 60000) throw new HttpsError('resource-exhausted', 'Please wait a minute before submitting another review.');
     const record = { id: review.id, rating: review.rating, author: review.author.trim(), comment: review.comment.trim(), createdAt: new Date(now()).toISOString() };
     const reviewsCount = current.reviewsCount + 1, ratingTotal = current.ratingTotal + record.rating;
@@ -60,9 +70,10 @@ export async function productReviewsRequest(request, { db, workspace, now = Date
     // document. Aggregate totals always include the entire review history.
     const summary = { reviews: [...current.reviews, record].slice(-50), reviewsCount, ratingTotal, ratingAverage: ratingTotal / reviewsCount };
     tx.set(reviewRef, record);
+    if (verifiedPurchase) tx.update(purchaseRef, { reviewedAt: record.createdAt });
     tx.update(productRef, summary);
     tx.set(db.doc(`tenants/${tenantId}/products/${productId}/publicReviews/current`), summary);
-    if (!staff) tx.set(limitRef, { at: now() });
+    if (!verifiedPurchase && !staff) tx.set(limitRef, { at: now() });
     return summary;
   });
 }

@@ -72,8 +72,6 @@ export const SuperAdminLayout: React.FC = () => {
   useEffect(() => {
     if (!mobileOpen) return;
     const previous = document.activeElement as HTMLElement | null;
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     const controls = () => Array.from(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? []).filter(node => node.getClientRects().length);
     const frame = requestAnimationFrame(() => controls()[0]?.focus());
     const keydown = (event: KeyboardEvent) => {
@@ -86,7 +84,7 @@ export const SuperAdminLayout: React.FC = () => {
     const resize = () => { if (innerWidth >= 768) setMobileOpen(false); };
     document.addEventListener('keydown', keydown); window.addEventListener('resize', resize);
     return () => {
-      cancelAnimationFrame(frame); document.body.style.overflow = overflow;
+      cancelAnimationFrame(frame);
       document.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize);
       previous?.focus();
     };

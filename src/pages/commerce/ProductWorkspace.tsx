@@ -6,6 +6,7 @@ import { ProductDeleteDialog } from './ProductDeleteDialog';
 import { ProductAdvancedAction } from './ProductAdvancedAction';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useEntities } from '../../backend/workspace';
+import { useCoursePurchaseProgress } from '../../backend/customerPortal';
 import { configureProduct, customizeProduct, withLiveProductData } from './workspaceLogic';
 import { readWorkspacePreferences } from './workspacePreferences';
 import React from 'react';
@@ -39,8 +40,8 @@ import { CourseMetrics, CourseOverview, CourseViewHeader } from './CourseWorkspa
 
 import { useProductPreview } from './previewSnapshot';
 import { withReviews } from './model';
-import { useLiveReviews } from './reviewRepository';
-import { RatingBadge } from './ProductReviews';
+import { mergeReviewHistory, useLiveReviews, useMerchantReviewHistory } from './reviewRepository';
+import { MerchantProductReviews, RatingBadge } from './ProductReviews';
 import { DigitalValidationContext, digitalIssue } from './DigitalValidation';
 import { CheckoutScreen } from './CheckoutScreen';
 import { FunnelConnections } from './FunnelConnections';
@@ -178,12 +179,19 @@ function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 
   const p = withReviews(editing ? draft : existing ? hydrateProduct(existing) : draft, liveReviews || existing || draft);
   const c = p.config ?? defaultConfig(p.type, p.price), e = c.experience ?? defaultExperience();
   const kind = productKind(p.type), view = workspaceViews[kind];
+  const courseProgress = useCoursePurchaseProgress(storageKey().replace('gos-commerce-products-v1:', ''), kind === 'course' ? existing?.id || '' : '');
   const viewConfig = withLiveProductData(p, orderRows, transactionRows, eventRows, calendarRows);
+  if (courseProgress?.size) viewConfig.students = (viewConfig.students || []).map(student => {
+    const progress = courseProgress.get(student.email.toLowerCase());
+    return progress === undefined ? student : { ...student, progress };
+  });
   const dirty = editing && (JSON.stringify(draft) !== baseline || pendingUploads > 0);
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && currentLocation.pathname !== nextLocation.pathname);
   useBeforeUnload(React.useCallback(event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } }, [dirty]));
   React.useEffect(() => { if (pendingNavigation && !dirty) navigate(pendingNavigation); }, [pendingNavigation, dirty, navigate]);
   const active = resolveTab(kind, params.get('tab') ?? defaultTab ?? params.get('section'));
+  const showReviews = active === 'information' || active === 'analytics';
+  const reviewHistory = useMerchantReviewHistory(storageKey().replace('gos-commerce-products-v1:', ''), showReviews ? existing?.id || '' : '');
   React.useEffect(() => { if (validationAttempted) setErrors(validateProduct(draft, true)); }, [draft, validationAttempted]);
   React.useEffect(() => {
     if (!errorTarget) return;
@@ -404,7 +412,7 @@ function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 
       {localizeNode(courseLayout && !editing && active !== 'information' && <CourseMetrics {...props}/>)}
       <nav className="cw-tabs tw-tabs" aria-label={translateText(`${view.title} navigation`)}>{localizeNode(navigationTabs.map(([target, label, Icon]) => <button key={target} className={active === target ? 'active' : ''} aria-current={active === target ? 'page' : undefined} onClick={() => tab(target)}><Icon size={14}/>{localizeNode(label)}</button>))}</nav>
       {localizeNode(errors.length > 0 && <div className="cw-errors" role="alert"><b>{translateText("Please review these fields")}</b><ul className="dv-error-links">{localizeNode(errors.map(message => <li key={message}><button type="button" onClick={() => focusError(message)}>{localizeNode(message)}</button></li>))}</ul></div>)}
-      {localizeNode(courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={viewConfig} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={viewConfig}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { invalid(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
+      {localizeNode(courseLayout && active === 'information' ? <CourseOverview {...props} {...courseActions}/> : courseLayout && active === 'orders' ? <ProductOrders config={viewConfig} course/> : courseLayout && active === 'access' ? <CourseStudentsPanel {...props} progressByEmail={courseProgress}/> : courseLayout && active === 'analytics' ? <CoursePerformance config={viewConfig}/> : digitalOverview ? <div className="dw-page min-w-0 overflow-x-hidden"><DigitalWorkspace {...props} disabled={disabled} onStatus={enabled => { if (enabled) { const validation = validateProduct(draft, true); if (validation.length) { invalid(validation); return; } } update({ status: enabled ? 'Active' : 'Draft' }); }} onSalesPage={salesPage} onCopy={() => { void copyLink(); }} onDuplicate={() => duplicate(false)} onDelete={() => setDeleting(true)} onFunnel={() => tab('funnel')} onAutomation={() => tab('automation')}/></div> : <div className={`tw-workspace${active === 'pricing' ? ' tw-pricing-workspace' : ''}`}><main className="tw-workspace-main">
         {localizeNode(active === 'information' && <>
           {localizeNode(kind === 'service' ? <><div className="tw-service-layout"><div className="tw-stack"><InformationForm {...props}/><MediaCard {...props}/><ServiceDetails {...props}/><BookingForm {...props}/></div><ServicePreview {...props} onBook={book}/></div><DescriptionCard {...props}/></> : <>
             <div className="tw-information-layout"><div className="tw-stack"><InformationForm {...props}/>{localizeNode(!editing && <DescriptionCard {...props}/>)}</div><div className="tw-stack"><MediaCard {...props}/>{localizeNode(kind === 'course' ? <InstructorCard {...props}/> : <ProductTags {...props}/>)}<IncludedItems {...props}/></div></div>
@@ -433,6 +441,7 @@ function ProductWorkspaceView({ mode, defaultTab }: { mode: 'create' | 'edit' | 
         </>)}
       </aside></div>)}
       {localizeNode(active === 'information' && <div className="ce-insights-grid ce-overview-insights"><ProductRecentActivity config={viewConfig}/><ProductOrders config={viewConfig} limit={5} course={kind === 'course'}/></div>)}
+      {existing && showReviews && <MerchantProductReviews product={p} reviews={mergeReviewHistory(existing.reviews, p.reviews, reviewHistory)}/>}
       {localizeNode(editing && !digitalOverview && kind !== 'service' && active !== 'pricing' && <footer className="cw-editor-footer"><span><i className={dirty ? 'dirty' : ''}/>{localizeNode(pendingUploads ? 'Uploading…' : dirty ? 'Unsaved changes' : 'All changes saved')}</span><div><a className="cw-button" href={productPreview.href} target="_blank" rel="noopener noreferrer" onClick={productPreview.prepare}><Eye size={14}/>{translateText("Preview Product")}</a><button disabled={disabled} className="cw-button primary" onClick={() => save(false)}><Save size={14}/>{translateText(" Save Changes")}</button></div></footer>)}
     </>)}
     {deleting && <ProductDeleteDialog product={p} onClose={() => setDeleting(false)} onDeleted={() => { setBaseline(JSON.stringify(draft)); setPendingNavigation(base); }}/>}

@@ -46,6 +46,9 @@ try {
     assert.equal(response.status(), 200);
     await page.getByRole('heading', { name: 'Published saved heading' }).waitFor();
     assert.equal(await page.locator('.fb-editor-header').count(), 0);
+    const bounds = await page.locator('[data-public-asset]').boundingBox();
+    assert.equal(bounds.x, 0);
+    assert.equal(Math.round(bounds.width), await page.evaluate(() => document.documentElement.clientWidth));
     assert.equal(await page.locator('.fb-live-page-nav').evaluate(node => getComputedStyle(node).display), 'flex');
     assert.ok(await page.locator('.fb-live-page-nav').evaluate(node => node.getBoundingClientRect().height >= 50));
   }
@@ -85,6 +88,10 @@ try {
   await page.goto('https://site.test/');
   await page.getByRole('heading', { name: 'Tell us about your project' }).waitFor();
   assert.equal(await page.locator('.is-form-page').count(), 1);
+  await page.setViewportSize({ width: 390, height: 760 });
+  const formBounds = await page.locator('#custom-form').boundingBox();
+  assert.equal(formBounds.x, 0);
+  assert.equal(Math.round(formBounds.width), await page.evaluate(() => document.documentElement.clientWidth));
   await page.getByLabel('Full name').fill('Custom visitor');
   await page.getByLabel('Work email').fill('custom@example.com');
   await page.getByLabel('Phone number').fill('+201234567890');

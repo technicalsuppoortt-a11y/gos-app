@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { applyActionCode } from 'firebase/auth';
 import { Link, useSearchParams } from 'react-router-dom';
 import { auth, backendError } from '../../backend/firebase';
-import { ResetPasswordPage } from './ResetPasswordPage';
+import { portalActionReturn, ResetPasswordPage } from './ResetPasswordPage';
 import { useUILanguage } from '../../i18n/display';
 
 const actions = new Map<string, Promise<void>>();
@@ -11,6 +11,8 @@ export function EmailActionPage() {
   const [params] = useSearchParams();
   const code = params.get('oobCode') || '';
   const verify = params.get('mode') === 'verifyEmail';
+  const portalReturn = portalActionReturn(params.get('continueUrl'));
+  const login = '/auth/login' + (portalReturn ? '?' + new URLSearchParams({ portal: '1', redirect: portalReturn }) : '');
   const [message, setMessage] = useState(ar ? 'جارٍ التحقق من بريدك الإلكتروني…' : 'Verifying your email…');
   useEffect(() => {
     if (!verify) return;
@@ -30,5 +32,5 @@ export function EmailActionPage() {
     return () => { active = false; };
   }, [verify, code, ar]);
   if (!verify) return <ResetPasswordPage/>;
-  return <main dir={ar ? 'rtl' : 'ltr'} className="min-h-screen grid place-items-center p-6"><section className="rounded-2xl border p-8 max-w-md"><h1 className="text-xl font-semibold">{ar ? 'التحقق من البريد الإلكتروني' : 'Email verification'}</h1><p role="status" className="my-4">{message}</p><Link to="/auth/login">{ar ? 'متابعة لتسجيل الدخول' : 'Continue to sign in'}</Link></section></main>;
+  return <main dir={ar ? 'rtl' : 'ltr'} className="min-h-screen grid place-items-center p-6"><section className="rounded-2xl border p-8 max-w-md"><h1 className="text-xl font-semibold">{ar ? 'التحقق من البريد الإلكتروني' : 'Email verification'}</h1><p role="status" className="my-4">{message}</p><Link to={login}>{ar ? 'متابعة لتسجيل الدخول' : 'Continue to sign in'}</Link></section></main>;
 }

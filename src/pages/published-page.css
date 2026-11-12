@@ -1,3 +1,25 @@
+html:has(#root > :is(.asset-standalone-preview, .fb-site-frame[data-public-asset])) {
+  overflow-y: auto;
+  scrollbar-gutter: auto;
+}
+body:has(#root > :is(.asset-standalone-preview, .fb-site-frame[data-public-asset])),
+#root:has(> :is(.asset-standalone-preview, .fb-site-frame[data-public-asset])) {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.asset-standalone-preview, .asset-standalone-frame {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+.asset-standalone-frame.tablet { max-width: 768px; margin-inline: auto; }
+.asset-standalone-frame.mobile { max-width: 390px; margin-inline: auto; }
+
 /* ==========================================================================
    Published Page & Public Forms Professional UI/UX
    ========================================================================== */
@@ -268,19 +290,19 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: clamp(24px, 5vw, 64px) 16px;
+  padding: 0;
   width: 100%;
 }
 
 .fb-standalone-form-container .fb-canvas-section {
   width: 100%;
-  max-width: 640px !important;
+  max-width: none !important;
   background: var(--form-card-bg, rgba(255, 255, 255, 0.96)) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--form-card-radius, 24px) !important;
-  border: var(--form-card-border, 1px solid rgba(226, 232, 240, 0.85)) !important;
-  box-shadow: var(--form-card-shadow, 0 20px 40px -15px rgba(0, 0, 0, 0.07)) !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
   padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 36px) !important;
   margin: 0 auto;
   text-align: start !important;
@@ -288,8 +310,6 @@
 
 .fb-site-frame.is-form-page.dark-form .fb-standalone-form-container .fb-canvas-section {
   background: var(--form-card-bg, rgba(15, 23, 42, 0.9)) !important;
-  border: var(--form-card-border, 1px solid rgba(255, 255, 255, 0.1)) !important;
-  box-shadow: var(--form-card-shadow, 0 25px 50px -12px rgba(0, 0, 0, 0.5)) !important;
   color: var(--form-text);
 }
 

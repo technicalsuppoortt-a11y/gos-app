@@ -14,6 +14,10 @@ export const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialEmail = searchParams.get('email') || '';
+  const portal = searchParams.get('portal') === '1';
+  const returnTo = (email: string) => window.location.origin + '/auth/login' + (portal ? '?' + new URLSearchParams({
+    portal: '1', email, redirect: searchParams.get('redirect') || '/portal',
+  }) : '');
 
   const [email, setEmail] = React.useState(initialEmail);
   const [busy, setBusy] = React.useState(false);
@@ -40,13 +44,13 @@ export const ForgotPasswordPage: React.FC = () => {
     if (busy || !email) return;
 
     setBusy(true);
-    try { await sendPasswordResetEmail(auth, email.trim(), { url: window.location.origin + '/auth/login' }); setSubmitted(true); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setSubmitted(true); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
   const handleResend = async () => {
     if (resendCooldown > 0 || busy) return;
     setBusy(true);
-    try { await sendPasswordResetEmail(auth, email.trim(), { url: window.location.origin + '/auth/login' }); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
   return (

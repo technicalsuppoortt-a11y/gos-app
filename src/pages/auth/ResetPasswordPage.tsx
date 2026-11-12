@@ -26,6 +26,7 @@ export const ResetPasswordPage: React.FC = () => {
   const code = searchParams.get('oobCode') || '';
   const mode = searchParams.get('mode') || '';
   const emailQuery = searchParams.get('email') || '';
+  const portalReturn = portalActionReturn(searchParams.get('continueUrl'));
   // Returning from Firebase's reset page: the password already exists, so we just sign in with it.
   const finishStage = searchParams.get('stage') === 'finish';
   const ar = uiLang === 'ar';
@@ -34,7 +35,7 @@ export const ResetPasswordPage: React.FC = () => {
   React.useEffect(() => {
     let active = true;
     if (!code) {
-      if (mode === 'activation' || emailQuery) {
+      if (!portalReturn && (mode === 'activation' || emailQuery)) {
         setVerifiedEmail(emailQuery);
         setCodeValid(true);
         return;
@@ -53,7 +54,7 @@ export const ResetPasswordPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [code, mode, emailQuery]);
+  }, [code, mode, emailQuery, portalReturn]);
 
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -121,8 +122,12 @@ export const ResetPasswordPage: React.FC = () => {
       if (code) {
         // Official Firebase reset link: set the password, then activate with it.
         await confirmPasswordReset(auth, code, password);
-        const result = await activateInvitedUser({ email: targetEmail, id: searchParams.get('id') || '', password, afterReset: true });
-        setRedirectTo(routeForRole(result.role));
+        if (portalReturn) {
+          setRedirectTo('/auth/login?' + new URLSearchParams({ portal: '1', email: targetEmail, redirect: portalReturn }));
+        } else {
+          const result = await activateInvitedUser({ email: targetEmail, id: searchParams.get('id') || '', password, afterReset: true });
+          setRedirectTo(routeForRole(result.role));
+        }
         showToast.success(translateText('Password updated successfully!'));
       } else {
         // Direct activation link generated for the admin.
@@ -466,3 +471,15 @@ export const ResetPasswordPage: React.FC = () => {
     </main>
   );
 };
+
+export function portalActionReturn(value: string | null) {
+  if (!value) return '';
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.origin !== window.location.origin || url.pathname !== '/auth/login' || url.searchParams.get('portal') !== '1') return '';
+    const redirect = url.searchParams.get('redirect') || '';
+    return /^\/portal\/[\w-]{1,310}$/.test(redirect) ? redirect : '/portal';
+  } catch {
+    return '';
+  }
+}

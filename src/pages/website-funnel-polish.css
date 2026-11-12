@@ -304,3 +304,10 @@ html.dark .aw-preview-close:hover{background:#1e293b;color:#f8fafc;border-color:
 
 @media(prefers-reduced-motion:reduce){.aw-preview-viewport,.fb-live-preview-overlay .fb-live-preview-frame,.aw-ai-spark svg{transition:none}}
 
+
+.aw-preview-scrim { padding: 0; }
+.aw-preview-modal { width: 100%; max-width: none; height: 100dvh; max-height: none; padding: 0; border: 0; border-radius: 0; }
+.aw-preview-modal-header { padding: 12px clamp(8px, 2vw, 24px); }
+.aw-preview-modal-stage { padding: 0; }
+.aw-preview-viewport.desktop { min-height: 100%; height: auto; margin: 0; }
+.aw-preview-viewport.desktop > .aw-live-preview { width: 100%; max-width: none; padding: 0; }

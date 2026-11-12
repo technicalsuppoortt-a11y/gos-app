@@ -35,3 +35,24 @@
 .sa-content > .sa-templates,.sa-shell .sa-templates.adm-shell{display:block!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;background:transparent;width:100%;min-width:0}
 .sa-shell .sa-templates .adm-workspace,.sa-shell .sa-templates .adm-live{max-width:none;padding:0;min-width:0;overflow:visible}
 .sa-content > .support-chat{width:100%;flex:1;min-width:0}
+
+html:has(.sa-shell) { overflow-y: auto; }
+body:has(.sa-shell) { height: auto; min-height: 100dvh; min-width: 0; overflow: visible; }
+.sa-shell .sa-main { flex: 1 1 0; min-inline-size: 0; }
+.sa-shell .sa-content { flex: 1 0 auto; min-inline-size: 0; }
+@media (max-width: 767px) {
+  html:has(.sa-sidebar.is-mobile-open) { overflow: hidden; }
+}
+
+/* Keep the gallery and sticky header on one native scroll surface. */
+.sa-shell:has(.sa-templates) { height: 100dvh; overflow-y: auto; overflow-x: hidden; }
+.sa-shell:has(.sa-templates) .sa-main { width: 0; }
+html[dir="rtl"] .sa-shell:has(.sa-templates) .sa-main { margin-inline: 248px 0; }
+@media (min-width: 768px) and (max-width: 1050px) {
+  html[dir="rtl"] .sa-shell:has(.sa-templates) .sa-main { margin-inline: 220px 0; }
+}
+@media (max-width: 767px) {
+  html[dir] .sa-shell:has(.sa-templates) .sa-main { margin-inline: 0; }
+  .sa-shell:has(.sa-templates) .sa-content { padding-inline: 10px; }
+  .sa-shell:has(.sa-sidebar.is-mobile-open):has(.sa-templates) { overflow: hidden; }
+}

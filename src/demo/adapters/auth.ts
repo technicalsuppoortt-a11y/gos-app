@@ -8,6 +8,7 @@ export const signInWithCustomToken = signInWithEmailAndPassword;
 export const createUserWithEmailAndPassword = signInWithEmailAndPassword;
 export const signOut = async () => {};
 export const sendPasswordResetEmail = async () => {};
+export const sendEmailVerification = async () => {};
 export const applyActionCode = async () => {};
 export const verifyPasswordResetCode = async () => demoUser.email;
 export const confirmPasswordReset = async () => {};

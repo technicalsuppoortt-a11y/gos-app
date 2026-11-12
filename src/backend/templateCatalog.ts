@@ -5,7 +5,8 @@ import { db, backendError } from './firebase';
 import type { ManagedTemplate } from '../pages/admin/managed-template';
 import type { RootState } from '../store';
 import { showToast } from '../utils/toast';
-import { templateIsActive } from '../pages/admin/managed-template';
+import { useUILanguage } from '../i18n/display';
+import { localizeManagedTemplate, templateIsActive } from '../pages/admin/managed-template';
 import { decodeFirestoreValue } from './firestoreCodec';
 /**
  * Templates a workspace can use: the super admin's general library (minus the ones the user's admin hid)
@@ -13,6 +14,7 @@ import { decodeFirestoreValue } from './firestoreCodec';
  */
 export function useTemplateCatalogState() {
   const { user, role } = useSelector((s: RootState) => s.auth);
+  const arabic = useUILanguage().startsWith('ar');
   const uid = user?.id || '';
   const [general, setGeneral] = useState<ManagedTemplate[]>([]);
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
@@ -38,7 +40,7 @@ export function useTemplateCatalogState() {
     ];
     return () => stops.forEach(stop => stop());
   }, [parent]);
-  const templates = useMemo(() => [...own, ...general.filter(template => !hidden.includes(template.id))], [own, general, hidden]);
+  const templates = useMemo(() => [...own, ...general.filter(template => !hidden.includes(template.id))].map(template => localizeManagedTemplate(template, arabic)), [own, general, hidden, arabic]);
   return { templates, loading, error };
 }
 export function useTemplateCatalog() { return useTemplateCatalogState().templates; }

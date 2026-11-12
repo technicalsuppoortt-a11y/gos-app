@@ -18,6 +18,8 @@ import { DiscountsWorkspace } from './DiscountsWorkspace';
 import { useTransactions } from './commerce/transactions';
 import { usePurchasedProducts } from './commerce/purchases';
 import { useCustomerPortalLibrary, type CustomerPurchaseRecord } from '../backend/customerPortal';
+import { ProductTypeFilter, productTypeCounts, productTypeOf, type ProductTypeValue } from '../components/ui/ProductTypeFilter';
+import { PurchaseDetailsDialog } from './commerce/PurchaseDetailsDialog';
 
 import {
   ArrowRight,
@@ -103,17 +105,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   const { isPurchased } = usePurchasedProducts();
   const { items: portalItems } = useCustomerPortalLibrary();
 
-  const findPortalRecord = React.useCallback(
-    (item: Product): CustomerPurchaseRecord | undefined =>
-      portalItems.find(
-        entry =>
-          entry.purchaseId === item.id ||
-          entry.productId === item.id ||
-          entry.productSnapshot?.id === item.id ||
-          entry.productSnapshot?.name?.toLowerCase() === item.name.toLowerCase()
-      ),
-    [portalItems]
-  );
+  const portalById = useMemo(() => new Map(portalItems.map(item => [item.purchaseId, item])), [portalItems]);
 
   const rawTab = tabParams.get('tab')?.toLowerCase();
   const selectedTab = useMemo(() => {
@@ -157,21 +149,10 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
   // Pre-calculate counts for sub-view tabs
   const allProductsCount = products.length;
   const purchasedProducts = useMemo(() => {
-    const matched = products.filter(p => isPurchased(p) || Boolean(findPortalRecord(p)));
-    const seenIds = new Set(matched.map(p => p.id.toLowerCase()));
-    const seenNames = new Set(matched.map(p => p.name.toLowerCase()));
-    const extras: Product[] = [];
-
+    const purchased: Product[] = [];
     for (const entry of portalItems) {
       const snap = entry.productSnapshot;
       if (!snap) continue;
-      if (
-        seenIds.has(String(entry.productId || '').toLowerCase()) ||
-        seenIds.has(String(snap.id || '').toLowerCase()) ||
-        seenNames.has(String(snap.name || '').toLowerCase())
-      ) {
-        continue;
-      }
       const cfg = defaultConfig(snap.type, String(entry.amount || 0));
       cfg.amount = Number(entry.amount || 0);
       cfg.currency = entry.currency || 'USD';
@@ -189,7 +170,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
         title: mod.title,
         lessons: mod.lessons,
       }));
-      extras.push({
+      purchased.push({
         id: entry.purchaseId,
         name: snap.name,
         type: snap.type,
@@ -207,8 +188,8 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
       });
     }
 
-    return [...matched, ...extras];
-  }, [products, isPurchased, findPortalRecord, portalItems]);
+    return purchased;
+  }, [portalItems]);
   const purchasedProductsCount = purchasedProducts.length;
 
   // Compute products according to active view
@@ -221,12 +202,13 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
     }
     return products;
   }, [selectedTab, activeSubTab, products, purchasedProducts]);
+  const typeCounts = useMemo(() => productTypeCounts(baseProducts, p => p.type), [baseProducts]);
 
   const displayed = useMemo(() => {
     return baseProducts
       .filter(
         p =>
-          (type === 'All Types' || p.type === type) &&
+          (type === 'All Types' || p.type === type || productTypeOf(p.type) === type) &&
           (activeSubTab === 'purchases' || status === 'All Status' || p.status === status) &&
           `${p.name} ${p.type}`.toLowerCase().includes(search.toLowerCase())
       )
@@ -410,12 +392,15 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                       }
                     />
                   </label>
-                  <ProfessionalSelect
-                    value={type}
-                    options={['All Types', 'Service', 'Digital Product', 'Course']}
+                  <ProductTypeFilter
+                    className="pp-type-filter"
+                    value={type === 'All Types' ? 'All' : (type as ProductTypeValue)}
+                    counts={typeCounts}
+                    label={translateText('Filter by product type')}
                     onChange={v => {
-                      setType(v);
-                      setFilterMetric(v === 'All Types' ? 'All Products' : v);
+                      const next = v === 'All' ? 'All Types' : v;
+                      setType(next);
+                      setFilterMetric(next === 'All Types' ? 'All Products' : next);
                     }}
                   />
                   {activeSubTab !== 'purchases' && (
@@ -522,7 +507,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                   {localizeNode(
                     displayed.map(item => {
                       const isCustomerCard = activeSubTab === 'purchases';
-                      const portalRecord = isCustomerCard ? findPortalRecord(item) : undefined;
+                      const portalRecord = isCustomerCard ? portalById.get(item.id) : undefined;
                       const portalHref = `/portal/${encodeURIComponent(
                         portalRecord?.purchaseId || item.id
                       )}`;
@@ -533,6 +518,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
                           isPurchased={isCustomerCard || isPurchased(item)}
                           customerMode={isCustomerCard}
                           portalRecord={portalRecord}
+                          customerPage={isCustomerCard ? `${portalHref}?preview=1` : `/portal/preview/${encodeURIComponent(item.id)}`}
                           onSelect={() =>
                             navigate(
                               isCustomerCard
@@ -575,6 +561,7 @@ function ProductCard({
   isPurchased = false,
   customerMode = false,
   portalRecord,
+  customerPage,
   onSelect,
   onEdit,
   notify,
@@ -583,6 +570,7 @@ function ProductCard({
   isPurchased?: boolean;
   customerMode?: boolean;
   portalRecord?: CustomerPurchaseRecord;
+  customerPage: string;
   onSelect: () => void;
   onEdit: () => void;
   notify: (message: string) => void;
@@ -590,6 +578,7 @@ function ProductCard({
   useUILanguage();
   const { formatPrice } = useCurrency();
   const [showUsers, setShowUsers] = useState(false);
+  const [showBuyer, setShowBuyer] = useState(false);
 
   const courseLessonsTotal = useMemo(() => {
     if (portalRecord?.productSnapshot?.modules) {
@@ -613,7 +602,7 @@ function ProductCard({
   const serviceStatus = portalRecord?.serviceStatus || 'Order Confirmed';
 
   return (
-    <article className="pp-product-card" onClick={onSelect}>
+    <article className={`pp-product-card${customerMode ? " pp-purchase-card" : ""}`} onClick={onSelect}>
       <button
         className="pp-art"
         onClick={event => {
@@ -640,9 +629,7 @@ function ProductCard({
         )}
       </button>
 
-      {!customerMode && (
-        <ProductCardActions product={item} onEdit={onEdit} notify={notify} />
-      )}
+      <ProductCardActions product={item} customerPage={customerPage} purchaseOnly={customerMode} onEdit={onEdit} onBuyerDetails={customerMode ? () => setShowBuyer(true) : undefined} notify={notify}/>
 
       <div className="pp-card-info">
         <div className="pp-card-header-tags">
@@ -672,7 +659,7 @@ function ProductCard({
         <b className="pp-price">{localizeNode(formatProductPrice(item.config ?? defaultConfig(item.type, item.price), formatPrice))}</b>
 
         {customerMode ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2 }}>
+          <div className="pp-purchase-progress">
             <div className="pp-product-metric" style={{ cursor: 'pointer' }}>
               {item.type === 'Course' ? (
                 <span>
@@ -695,28 +682,20 @@ function ProductCard({
                 </span>
               )}
             </div>
-            {item.type === 'Course' && (
-              <div
-                aria-hidden="true"
-                style={{
-                  width: '100%',
-                  height: 5,
-                  borderRadius: 999,
-                  background: 'rgba(124, 58, 237, 0.12)',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.max(4, Math.min(100, courseProgress))}%`,
-                    height: '100%',
-                    borderRadius: 999,
-                    background: 'linear-gradient(90deg, #7c3aed 0%, #10b981 100%)',
-                    transition: 'width 0.3s ease',
-                  }}
-                />
-              </div>
-            )}
+            {item.type === "Course" && <progress max={100} value={courseProgress} aria-label={translateText("Course progress")}/>}
+            <button
+              type="button"
+              className="pp-buyer-details-btn"
+              aria-haspopup="dialog"
+              aria-label={translateText(`View buyer details for ${item.name}`)}
+              onClick={event => {
+                event.stopPropagation();
+                setShowBuyer(true);
+              }}
+            >
+              <UserRound size={13} />
+              {translateText('View buyer details')}
+            </button>
           </div>
         ) : (
           <div
@@ -756,7 +735,7 @@ function ProductCard({
             <>
               <span className="pp-status active">
                 <span className="pp-status-dot" aria-hidden="true" />
-                {translateText('Active Access')}
+                {translateText(portalRecord?.preview ? 'Preview' : 'Active Access')}
               </span>
               <button
                 type="button"
@@ -764,28 +743,14 @@ function ProductCard({
                   event.stopPropagation();
                   onSelect();
                 }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '6px 12px',
-                  borderRadius: 9,
-                  border: '1px solid rgba(124, 58, 237, 0.24)',
-                  background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-                  color: '#ffffff',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.18)',
-                  transition: 'transform 0.16s ease, box-shadow 0.16s ease',
-                }}
+                className="pp-purchase-cta"
               >
                 <span>
                   {translateText(
-                    item.type === 'Course'
-                      ? 'Start Course'
+                    portalRecord?.preview ? 'See Customer Page' : item.type === 'Course'
+                      ? courseProgress > 0 ? 'Continue Course' : 'Start Course'
                       : item.type === 'Service'
-                      ? 'Manage Service'
+                      ? 'Access Service'
                       : 'Access Files'
                   )}
                 </span>
@@ -858,6 +823,14 @@ function ProductCard({
           defaultTab="users"
           close={() => setShowUsers(false)}
           edit={onEdit}
+        />
+      )}
+      {customerMode && showBuyer && (
+        <PurchaseDetailsDialog
+          product={item}
+          record={portalRecord}
+          customerPage={customerPage}
+          close={() => setShowBuyer(false)}
         />
       )}
     </article>

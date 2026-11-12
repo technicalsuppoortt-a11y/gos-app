@@ -955,3 +955,27 @@ html.dark .cportal-btn-emerald {
     padding: 16px;
   }
 }
+
+.cportal-review { margin-block-start: 24px; }
+.cportal-account-form { display: grid; gap: 12px; margin-block-start: 12px; }
+.cportal-account-form label { display: grid; gap: 6px; }
+.cportal-account-form :is(input, select, textarea) {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--ui-border, #cbd5e1);
+  border-radius: 8px; background: var(--ui-surface-raised, #fff); color: var(--ui-text, #0f172a);
+}
+.cportal-account-form button { justify-self: start; }
+.cportal-preview-notice { color: var(--ui-text-secondary, #64748b); margin-block-end: 12px; }
+
+.cportal-review { padding: 20px; }
+.cportal-review-header { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-block-end: 14px; }
+.cportal-review-header h2 { font-size: 18px; font-weight: 700; }
+.cportal-review-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+.cportal-review-grid .pr-review p { overflow-wrap: anywhere; }
+.cportal-review-grid .pr-star-input { display: flex; flex-wrap: wrap; gap: 5px; }
+.cportal-review-grid .pr-star-input label { position: relative; display: block; padding: 5px 6px; border-radius: 5px; color: #92400e; }
+.cportal-review-grid .pr-star-input label:has(input:checked) { background: #fef3c7; }
+.cportal-review-grid .pr-star-input label:has(input:focus-visible) { outline: 2px solid #8b5cf6; }
+@media (max-width: 700px) { .cportal-review-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.cportal-shell.cportal-password-page { display: grid; place-items: center; padding: 16px; }
+.cportal-password-page .cportal-panel-card { width: min(100%, 440px); padding: clamp(16px, 4vw, 26px); }

@@ -17,7 +17,12 @@ export function routeForRole(role: Role | null, allowedTabs?: readonly string[] 
   return '/auth/login';
 }
 
-export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Role[] }>> = ({ children, allowedRoles }) => {
+export function customerPasswordChangePath(path: string) {
+  const returnTo = /^\/portal(?:\/[\w-]+)?$/.test(path) ? path : '/portal';
+  return '/customer/change-password?' + new URLSearchParams({ returnTo });
+}
+
+export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Role[]; allowPendingPassword?: boolean }>> = ({ children, allowedRoles, allowPendingPassword = false }) => {
   useUILanguage();
   const { isAuthenticated, role, user } = useSelector((state: RootState) => state.auth);
 
@@ -27,6 +32,7 @@ export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Ro
   const sessionReady = useSessionReady();
   if (!sessionReady) return <WorkspaceSkeleton variant="spinner" fullScreen/>;
   if (!isAuthenticated || !role) return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  if (user?.requiresPasswordChange && !allowPendingPassword) return <Navigate to={customerPasswordChangePath(location.pathname)} replace/>;
   if (!allowedRoles.includes(role)) return <Navigate to={routeForRole(role, user?.allowedTabs)} replace />;
   // The onboarding redirect is temporarily disabled with the setup cycle.
   return <>{localizeNode(children)}</>;

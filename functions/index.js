@@ -19,7 +19,7 @@ import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
-import { customerPortalRequest } from './customer-portal.js';
+import { customerPasswordChangePending, customerPortalRequest, portalBootstrapKey } from './customer-portal.js';
 import { productCheckoutRequest } from './product-checkout.js';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
@@ -79,12 +79,21 @@ export const productReviews = onCall({ cors: true, invoker: 'public' }, request 
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
 export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90 }, request => productCheckoutRequest(request, { db, workspace, bucket: getStorage().bucket() }));
 export const productAccess = onCall(async request => {
+  if (request.auth) {
+    const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
+    if (customerPasswordChangePending(profile, request.auth.token)) throw new HttpsError('failed-precondition', 'Change your temporary password to access purchases.');
+  }
   if (typeof request.data?.tenantId === 'string' && /^[\w-]{1,150}$/.test(request.data.tenantId)) await checkPlatformTool(db, request.data.tenantId, 'portal');
   return productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] });
 });
-export const fulfillProductOrder = onDocumentWritten('tenants/{tenantId}/orders/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value() }));
-export const fulfillProductTransaction = onDocumentWritten('tenants/{tenantId}/transactions/{orderId}', event => fulfillCommerceOrder({ ...event.params, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value() }));
-export const customerPortal = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => customerPortalRequest(request, { db, auth, origin: appOrigin.value() }));
+const productFulfillment = collection => onDocumentWritten({ document: `tenants/{tenantId}/${collection}/{orderId}`, retry: true, secrets: [portalBootstrapKey] }, event =>
+  fulfillCommerceOrder({ ...event.params, collection, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value(), bootstrapKey: portalBootstrapKey.value() }));
+export const fulfillProductOrder = productFulfillment('orders');
+export const fulfillProductTransaction = productFulfillment('transactions');
+export const customerPortal = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60, secrets: [portalBootstrapKey] }, request => customerPortalRequest(request, {
+  db, auth, origin: appOrigin.value(), bootstrapKey: portalBootstrapKey.value(),
+  signFile: async path => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires: Date.now() + 15 * 60000, version: 'v4' }))[0],
+}));
 async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
@@ -93,7 +102,7 @@ async function actor(request) {
 }
 async function workspace(request, permission) {
   const user = await actor(request);
-  if (['PLATFORM_FINANCE', 'PLATFORM_SUPPORT'].includes(user.role)) throw new HttpsError('permission-denied', 'This role has platform access only.');
+  if (['PLATFORM_FINANCE', 'PLATFORM_SUPPORT', 'CUSTOMER'].includes(user.role || request.auth?.token?.role)) throw new HttpsError('permission-denied', 'This account does not have workspace access.');
   const [tenantDoc, memberDoc] = await Promise.all([
     db.doc(`tenants/${user.tenantId}`).get(),
     db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()

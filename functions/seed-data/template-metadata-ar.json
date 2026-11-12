@@ -1,0 +1,257 @@
+{
+  "ghl-website-framing-construction": {
+    "name": "Framing Construction",
+    "title_ar": "موقع أعمال الهياكل والإنشاءات",
+    "description_ar": "موقع لشركات الإنشاءات يعرض خدمات بناء الهياكل والخبرات السابقة ويستقبل طلبات عروض أسعار المشاريع."
+  },
+  "ghl-website-life-insurance": {
+    "name": "Life Insurance",
+    "title_ar": "موقع التأمين على الحياة",
+    "description_ar": "موقع للتأمين على الحياة وحماية الثروات يعرض الخدمات وشهادات الاعتماد ويتيح مقارنة الأسعار."
+  },
+  "ghl-website-pharmacy": {
+    "name": "Pharmacy",
+    "title_ar": "موقع الصيدلية",
+    "description_ar": "موقع لصيدلية محلية يعرض خدمة نقل الوصفات الطبية والتطعيمات والتوصيل المجاني."
+  },
+  "ghl-funnel-mortgage-company": {
+    "name": "Mortgage Company",
+    "title_ar": "مسار التمويل العقاري",
+    "description_ar": "مسار تدريجي للتأهل المبدئي للتمويل العقاري مع تقدير القدرة الشرائية وحجز موعد مع مستشار التمويل."
+  },
+  "ghl-funnel-brake-muffler": {
+    "name": "Brake & Muffler",
+    "title_ar": "مسار صيانة الفرامل والعادم",
+    "description_ar": "مسار لورش صيانة السيارات يعرض قسيمة فحص الفرامل مجانًا ويتيح حجز موعد فوري."
+  },
+  "ghl-funnel-locksmith": {
+    "name": "Locksmith",
+    "title_ar": "مسار خدمات الأقفال",
+    "description_ar": "مسار لخدمات الأقفال الطارئة على مدار الساعة مع اتصال مباشر وطلب معاودة الاتصال وإرسال الموقع."
+  },
+  "ghl-form-flooring-quote": {
+    "name": "Flooring Quote - Classic",
+    "title_ar": "نموذج عرض سعر الأرضيات",
+    "description_ar": "نموذج لتقدير أعمال الأرضيات السكنية والتجارية يتيح إدخال العنوان ونوع المواد والمساحة."
+  },
+  "ghl-form-personal-trainer": {
+    "name": "Personal Trainer",
+    "title_ar": "نموذج المدرب الشخصي",
+    "description_ar": "نموذج تقييم اللياقة لتحديد أهداف التدريب والإصابات السابقة والموافقة على استقبال الرسائل."
+  },
+  "ghl-form-architecture-studio": {
+    "name": "Architecture Studio",
+    "title_ar": "نموذج استوديو العمارة",
+    "description_ar": "نموذج استشارة للتصميم المعماري والداخلي يتيح تحديد نوع المشروع والميزانية والجدول الزمني."
+  },
+  "master-6": {
+    "name": "SaaS Waitlist",
+    "title_ar": "قائمة انتظار البرمجيات السحابية",
+    "description_ar": "اختبر الطلب على منتجك القادم من خلال قائمة انتظار."
+  },
+  "master-7": {
+    "name": "Fitness Challenge",
+    "title_ar": "تحدي اللياقة البدنية",
+    "description_ar": "استقطب المشاركين لبرنامج التدريب القادم لمدة 30 يومًا."
+  },
+  "master-8": {
+    "name": "Free Market Report",
+    "title_ar": "تقرير السوق المجاني",
+    "description_ar": "قدّم معلومات عن السوق المحلي لجذب مشترين محتملين مؤهلين."
+  },
+  "master-9": {
+    "name": "Strategy Session",
+    "title_ar": "جلسة استراتيجية",
+    "description_ar": "جلسة فردية لمراجعة أهداف عملك وتحديد أهم فرص النمو ووضع خطوات عملية."
+  },
+  "master-10": {
+    "name": "Clinic Appointment",
+    "title_ar": "موعد في العيادة",
+    "description_ar": "احجز فحصًا أو متابعة أو استشارة جديدة مع فريق الرعاية في الموعد المناسب لك."
+  },
+  "master-11": {
+    "name": "Personal Training Intro",
+    "title_ar": "جلسة تعريفية للتدريب الشخصي",
+    "description_ar": "تعرّف على مدربك وناقش أهدافك وخبرتك لوضع خطة تدريب تناسب جدولك."
+  },
+  "master-12": {
+    "name": "Agency Sales Pipeline",
+    "title_ar": "مسار مبيعات الوكالة",
+    "description_ar": "تابع فرص البيع من أول تواصل حتى توقيع العقد."
+  },
+  "master-13": {
+    "name": "Property Buyer Journey",
+    "title_ar": "رحلة مشتري العقار",
+    "description_ar": "تابع معاينات العقارات والعروض ومراحل إتمام البيع."
+  },
+  "master-14": {
+    "name": "Client Onboarding Board",
+    "title_ar": "لوحة تهيئة العملاء",
+    "description_ar": "نظّم خطوات استقبال العملاء الجدد لتقديم تجربة موحّدة."
+  },
+  "master-15": {
+    "name": "Store Shopping Concierge",
+    "title_ar": "مساعد التسوق في المتجر",
+    "description_ar": "ساعد العملاء على اكتشاف المنتجات والحصول على إجابات لأسئلتهم."
+  },
+  "master-16": {
+    "name": "Lead Qualification Agent",
+    "title_ar": "مساعد تأهيل العملاء المحتملين",
+    "description_ar": "اطرح الأسئلة المناسبة قبل تحويل العميل المحتمل إلى فريق المبيعات."
+  },
+  "master-17": {
+    "name": "Clinic Reception Assistant",
+    "title_ar": "مساعد استقبال العيادة",
+    "description_ar": "أجب عن أسئلة الزيارات وساعد العملاء على طلب المواعيد."
+  },
+  "master-18": {
+    "name": "Agency Services Playbook",
+    "title_ar": "دليل خدمات الوكالة",
+    "description_ar": "زوّد مساعدك بمعلومات الخدمات ونطاقها والأسئلة الشائعة."
+  },
+  "master-19": {
+    "name": "Store Policies & Returns",
+    "title_ar": "سياسات المتجر والمرتجعات",
+    "description_ar": "قدّم إجابات موحّدة عن التوصيل والإرجاع."
+  },
+  "master-20": {
+    "name": "Coaching Program Guide",
+    "title_ar": "دليل برنامج التدريب",
+    "description_ar": "زوّد مساعدك بتفاصيل برنامج التدريب والجلسات."
+  },
+  "master-21": {
+    "name": "New Lead Welcome Flow",
+    "title_ar": "مسار الترحيب بالعملاء المحتملين",
+    "description_ar": "رحّب بكل عميل محتمل وأهّله ووجّهه إلى الفريق المناسب."
+  },
+  "master-22": {
+    "name": "Abandoned Cart Recovery",
+    "title_ar": "استعادة عربات التسوق المتروكة",
+    "description_ar": "شجّع المتسوقين على العودة من خلال رسائل متابعة في الوقت المناسب."
+  },
+  "master-23": {
+    "name": "Appointment Reminder Flow",
+    "title_ar": "مسار التذكير بالمواعيد",
+    "description_ar": "قلّل حالات عدم الحضور عبر سلسلة من رسائل التذكير."
+  },
+  "master-24": {
+    "name": "Digital Course Bundle",
+    "title_ar": "حزمة الدورات الرقمية",
+    "description_ar": "اجمع الدروس والموارد في عرض جاهز للبيع."
+  },
+  "master-25": {
+    "name": "Agency Retainer",
+    "title_ar": "اشتراك خدمات الوكالة",
+    "description_ar": "وحّد طريقة تقديم خدمات الوكالة المتكررة عبر اشتراك."
+  },
+  "master-26": {
+    "name": "Consulting Session",
+    "title_ar": "جلسة استشارية",
+    "description_ar": "قدّم جلسة استشارية فردية مع خبير."
+  },
+  "master-27": {
+    "name": "Welcome Email Sequence",
+    "title_ar": "سلسلة رسائل الترحيب",
+    "description_ar": "عرّف العملاء بعلامتك التجارية وأرشدهم إلى الخطوة الأولى."
+  },
+  "master-28": {
+    "name": "SMS Booking Reminder",
+    "title_ar": "تذكير بالحجز عبر رسالة نصية",
+    "description_ar": "ذكّر العملاء بمواعيدهم برسالة نصية مختصرة."
+  },
+  "master-29": {
+    "name": "WhatsApp Lead Follow-Up",
+    "title_ar": "متابعة العملاء عبر واتساب",
+    "description_ar": "أعد التواصل مع العملاء المهتمين برسالة شخصية عبر واتساب."
+  },
+  "product-executive": {
+    "name": "1-on-1 Executive Strategy Session",
+    "title_ar": "جلسة استراتيجية تنفيذية فردية",
+    "description_ar": "جلسة خاصة مع سمير مورغان لتحديد فرص النمو ووضع خطة عمل لمدة 90 يومًا."
+  },
+  "product-coaching": {
+    "name": "Founder Growth Coaching",
+    "title_ar": "تدريب المؤسسين على النمو",
+    "description_ar": "حوّل أهدافك إلى خطوات أسبوعية عبر جلسة تدريب خاصة وملاحظات عملية وخطة متابعة."
+  },
+  "product-playbook": {
+    "name": "Ultimate Growth Marketing Playbook",
+    "title_ar": "الدليل الشامل لتسويق النمو",
+    "description_ar": "أنشئ نظام نمو قابلًا للتكرار باستخدام نماذج الحملات وقوائم الاستحواذ وورقة عمل للتجارب."
+  },
+  "product-toolkit": {
+    "name": "Creator Launch Toolkit",
+    "title_ar": "أدوات إطلاق مشاريع صنّاع المحتوى",
+    "description_ar": "خطّط لإطلاقك القادم عبر تمارين تحديد موقع المنتج وقوائم الإطلاق وموارد تخطيط قابلة للتعديل."
+  },
+  "product-saas": {
+    "name": "Full-Stack SaaS Masterclass",
+    "title_ar": "دورة تطوير تطبيقات البرمجيات السحابية المتكاملة",
+    "description_ar": "حوّل فكرتك إلى منتج برمجي متكامل عبر بناء تطبيق آمن وربط الفوترة والاستعداد للإطلاق."
+  },
+  "product-marketing": {
+    "name": "Growth Marketing Academy",
+    "title_ar": "أكاديمية تسويق النمو",
+    "description_ar": "أنشئ نظام تسويق قابلًا للقياس من أبحاث الجمهور وصياغة الرسائل إلى تجارب الاستحواذ وتحسين الحملات."
+  },
+  "product-preset-ebook": {
+    "name": "The Creator’s Practical E-Book",
+    "title_ar": "الدليل الإلكتروني العملي لصنّاع المحتوى",
+    "description_ar": "دليل عملي بفصول واضحة وتمارين قابلة للتطبيق ودفتر عمل قابل للتنزيل."
+  },
+  "product-preset-asset-pack": {
+    "name": "Brand & Content Asset Pack",
+    "title_ar": "حزمة موارد العلامة التجارية والمحتوى",
+    "description_ar": "مكتبة منظّمة تضم موارد للعلامة التجارية وقوالب محتوى قابلة للتعديل."
+  },
+  "product-preset-coaching": {
+    "name": "1-on-1 Coaching Session",
+    "title_ar": "جلسة تدريب فردية",
+    "description_ar": "جلسة خاصة لمراجعة أهدافك ومعالجة التحديات وتحديد خطواتك التالية."
+  },
+  "product-preset-consultation": {
+    "name": "Business Strategy Consultation",
+    "title_ar": "استشارة استراتيجية للأعمال",
+    "description_ar": "استشارة منظّمة لتحديد الفرص وترتيب القرارات ووضع خارطة طريق لمدة 90 يومًا."
+  },
+  "product-preset-masterclass": {
+    "name": "Creator Launch Masterclass",
+    "title_ar": "دورة إطلاق مشاريع صنّاع المحتوى",
+    "description_ar": "حوّل إطار عمل عمليًا إلى مشروع مكتمل من خلال تجربة تعليمية مركّزة."
+  },
+  "product-preset-video-course": {
+    "name": "From Idea to Launch: Video Course",
+    "title_ar": "من الفكرة إلى الإطلاق: دورة فيديو",
+    "description_ar": "دورة منظّمة تبدأ بالأساسيات ثم تنتقل إلى التنفيذ والمراجعة ومشروع نهائي مستقل."
+  },
+  "product-preset-subscription": {
+    "name": "Growth Resource Membership",
+    "title_ar": "اشتراك موارد النمو",
+    "description_ar": "مكتبة شهرية من الموارد العملية وأدوات التخطيط وأدلة التنفيذ لصنّاع المحتوى."
+  },
+  "pipeline-preset-0": {
+    "name": "New Lead Pipeline",
+    "title_ar": "مسار العملاء المحتملين الجدد",
+    "description_ar": "تابع العميل من أول تواصل حتى بناء علاقة مستمرة."
+  },
+  "pipeline-preset-1": {
+    "name": "Service Business Pipeline",
+    "title_ar": "مسار أعمال الخدمات",
+    "description_ar": "تابع طلبات الخدمات من الاستفسار إلى العرض والتسليم."
+  },
+  "pipeline-preset-2": {
+    "name": "Consultation / Booking Pipeline",
+    "title_ar": "مسار الاستشارات والحجوزات",
+    "description_ar": "تابع طلبات الاستشارة حتى تأكيد الحجز."
+  },
+  "pipeline-preset-3": {
+    "name": "Sales & High-Ticket Pipeline",
+    "title_ar": "مسار المبيعات والصفقات مرتفعة القيمة",
+    "description_ar": "نظّم رحلة البيع للعروض الأعلى قيمة."
+  },
+  "pipeline-preset-4": {
+    "name": "Follow-Up & Re-engagement Pipeline",
+    "title_ar": "مسار المتابعة وإعادة التواصل",
+    "description_ar": "استأنف المحادثات مع العملاء الذين توقفوا عن التفاعل."
+  }
+}

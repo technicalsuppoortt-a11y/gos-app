@@ -1234,3 +1234,19 @@ html.dark .pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(
 
 
 
+
+.pp-purchase-card .pp-card-info { min-width: 0; }
+.pp-purchase-card .pp-card-footer { gap: 8px; flex-wrap: wrap; }
+.pp-purchase-progress { display: grid; gap: 6px; margin-block: 4px; }
+.pp-purchase-progress progress { display: block; width: 100%; height: 5px; accent-color: #7c3aed; }
+.pp-purchase-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 12px; border: 0; border-radius: 8px; background: #6d28d9; color: #fff;
+  font-size: 12px; font-weight: 650; transition: background-color .16s ease;
+}
+.pp-purchase-cta:is(:hover, :focus-visible) { background: #5b21b6; }
+.pp-purchase-cta:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+
+/* Product type segmented filter in the catalog toolbar. */
+.pp-toolbar>.pp-type-filter{flex:0 1 auto;min-width:0}
+@media(max-width:650px){.pp-toolbar>.pp-type-filter{flex:1 1 100%;order:2}}

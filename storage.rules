@@ -37,11 +37,15 @@ service firebase.storage {
     }
     match /tenants/{tenantId}/commerce/{allPaths=**} {
       function workspaceAccount() {
-        let profile = /databases/(default)/documents/users/$(request.auth.uid);
-        return !firestore.exists(profile) || (
-          !(firestore.get(profile).data.get('role', '') in ['PLATFORM_SUPPORT', 'PLATFORM_FINANCE']) &&
-          !(firestore.get(profile).data.get('status', '') in ['Deactivated', 'Inactive', 'Suspended', 'Deleted'])
-        );
+        let profileRef = /databases/(default)/documents/users/$(request.auth.uid);
+        let memberRef = /databases/(default)/documents/tenants/$(tenantId)/members/$(request.auth.uid);
+        let profile = firestore.get(profileRef).data;
+        return request.auth.token.get('role', '') != 'CUSTOMER'
+          && !(profile.get('role', '') in ['PLATFORM_SUPPORT', 'PLATFORM_FINANCE', 'CUSTOMER'])
+          && !(profile.get('status', '') in ['Deactivated', 'Inactive', 'Suspended', 'Deleted'])
+          && (request.auth.uid == tenantId || profile.get('tenantId', '') == tenantId
+            || request.auth.token.get('tenantId', '') == tenantId || profile.get('role', '') in ['ADMIN', 'SUPER_ADMIN']
+            || firestore.get(memberRef).data.get('active', false));
       }
       allow read, write: if request.auth != null && workspaceAccount();
     }

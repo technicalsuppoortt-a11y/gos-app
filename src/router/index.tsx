@@ -33,6 +33,7 @@ function controlToolRoute(route: RouteObject): RouteObject {
 const AdminLayout = lazy(() => import('../components/layout/AdminLayout').then(module => ({ default: module.AdminLayout })));
 const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayout').then(module => ({ default: module.SuperAdminLayout })));
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
+const TemplatePreviewPage = lazy(() => import('../pages/TemplatePreviewPage').then(module => ({ default: module.TemplatePreviewPage })));
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const BusinessAssetsPage = lazy(() => import('../pages/admin/BusinessAssetsPage').then(module => ({ default: module.BusinessAssetsPage })));
@@ -67,6 +68,8 @@ function ProductPreviewRoute() {
   return params.has('workspace') ? <Suspended><ProductPublicPreview/></Suspended> : <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute>;
 }
 const ProductAccess = lazy(() => import('../pages/commerce/ProductAccess').then(module => ({ default: module.ProductAccess })));
+const CustomerDeliveryPreview = lazy(() => import('../pages/commerce/CustomerPortal').then(module => ({ default: module.CustomerDeliveryPreview })));
+const CustomerChangePassword = lazy(() => import('../pages/auth/CustomerChangePassword').then(module => ({ default: module.CustomerChangePassword })));
 const CustomerPortal = lazy(() => import('../pages/commerce/CustomerPortal').then(module => ({ default: module.CustomerPortal })));
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
@@ -91,8 +94,11 @@ export const router = createBrowserRouter([
   { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
   { path: '/product-preview/:token', element: <ProductPreviewRoute/> },
   { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
+  { path: '/customer/change-password', element: <ProtectedRoute allowedRoles={['CUSTOMER']} allowPendingPassword><Suspended><CustomerChangePassword/></Suspended></ProtectedRoute> },
   { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
+  { path: '/portal/preview/:productId', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><CustomerDeliveryPreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><CustomerPortal/></GuardedLayout> },
+  { path: '/template-preview/:templateId', element: <GuardedLayout roles={['USER']}><TemplatePreviewPage/></GuardedLayout> },
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
   { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage/></Suspended> },

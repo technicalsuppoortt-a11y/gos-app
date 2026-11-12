@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
   FileText,
   FolderDown,
   GraduationCap,
+  KeyRound,
   Layers,
   LogOut,
   MapPin,
@@ -27,9 +28,18 @@ import {
   UserCheck,
 } from 'lucide-react';
 import type { RootState } from '../../store';
+import { sendEmailVerification } from 'firebase/auth';
+import { auth, backendError } from '../../backend/firebase';
+import { firebaseSettingsRequest } from '../../backend/settings';
+import { useProducts } from './repository';
+import { Dialog } from './primitives';
 import { logoutFirebase } from '../../backend/session';
 import {
+  buildCustomerProductSnapshot,
+  getPortalFile,
+  readPortalReviewSummary,
   recordPortalAssetDownload,
+  submitPortalReview,
   togglePortalLessonComplete,
   updatePortalServiceStatus,
   useCustomerPortalLibrary,
@@ -37,6 +47,9 @@ import {
   type CustomerPortalLesson,
   type CustomerPurchaseRecord,
 } from '../../backend/customerPortal';
+import { RatingBadge, ReviewHistory } from './ProductReviews';
+import { useLiveReviews } from './reviewRepository';
+import { reviewMetrics, type ReviewSummary } from './model';
 import { readStoredFile } from './files';
 import { videoEmbedUrl } from './mediaMetadata';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
@@ -51,29 +64,47 @@ function formatBytes(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export const CustomerPortal: React.FC = () => {
+export function CustomerDeliveryPreview() {
+  const { productId } = useParams();
+  const tenantId = useSelector((state: RootState) => state.auth.tenant?.id || '');
+  const products = useProducts();
+  const product = products.find(item => item.id === productId);
+  const preview: CustomerPurchaseRecord | undefined = product && {
+    id: product.id, purchaseId: product.id, productId: product.id, tenantId, orderId: '', customerUid: '', customerEmail: '', customerName: '',
+    amount: product.config?.amount || 0, currency: product.config?.currency || 'USD', status: 'Active',
+    loginUrl: '', portalUrl: '', productSnapshot: buildCustomerProductSnapshot(product, product.id, product.name, product.type),
+    completedLessonIds: [], progress: 0, downloadedAssetIds: [], downloadCount: 0, serviceStatus: 'Order Confirmed', grantedAt: '', updatedAt: '', preview: true,
+  };
+  return <CustomerPortal preview={preview} previewRoute previewReviews={product && reviewMetrics(product)}/>;
+}
+
+export function CustomerPortal({ preview, previewRoute = false, previewReviews }: { preview?: CustomerPurchaseRecord; previewRoute?: boolean; previewReviews?: ReviewSummary }) {
   useUILanguage();
   const navigate = useNavigate();
   const { purchaseId } = useParams<{ purchaseId?: string }>();
   const { user, role } = useSelector((state: RootState) => state.auth);
-  const { items, loading, email } = useCustomerPortalLibrary();
+  const { items, loading, email, error, needsVerification } = useCustomerPortalLibrary();
+  const [params] = useSearchParams();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'course' | 'digital' | 'service'>('all');
 
-  const activePurchase = useMemo(() => {
+  const ownedPurchase = useMemo(() => {
     if (!purchaseId) return null;
-    const decoded = decodeURIComponent(purchaseId);
+    const decoded = purchaseId;
     return (
       items.find(
         item =>
           item.purchaseId === decoded ||
+          item.legacyId === decoded ||
           item.id === decoded ||
           item.productId === decoded ||
           item.productSnapshot.id === decoded
       ) || null
     );
   }, [items, purchaseId]);
+  const activePurchase = previewRoute ? preview : ownedPurchase && params.get('preview') === '1' ? { ...ownedPurchase, preview: true } : ownedPurchase;
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -102,6 +133,17 @@ export const CustomerPortal: React.FC = () => {
     .slice(0, 2)
     .map(part => part[0]?.toUpperCase() || '')
     .join('');
+
+  const verifyEmail = async () => {
+    const account = auth.currentUser;
+    if (!account || account.uid !== user?.id) return;
+    try {
+      await sendEmailVerification(account, { url: window.location.origin + '/auth/login?portal=1' });
+      showToast.success(t('Check your email for a verification link.'));
+    } catch (cause) {
+      showToast.error(backendError(cause));
+    }
+  };
 
   const handleSignOut = () => {
     showToast.success(t('Signed out successfully.'));
@@ -165,6 +207,7 @@ export const CustomerPortal: React.FC = () => {
             <span className="cportal-avatar">{initials || 'C'}</span>
             <span>{user?.name || email}</span>
           </div>
+          <button type="button" className="cportal-back-pill" onClick={() => setProfileOpen(true)}><KeyRound size={14}/>{t("Change password")}</button>
           <button type="button" className="cportal-logout-btn" onClick={handleSignOut}>
             <LogOut size={14} />
             <span>{t('Sign out')}</span>
@@ -172,8 +215,13 @@ export const CustomerPortal: React.FC = () => {
         </div>
       </header>
 
+      {profileOpen && <PortalPasswordDialog close={() => setProfileOpen(false)}/>}
       <main className="cportal-main">
-        {loading ? (
+        {!previewRoute && needsVerification ? <div className="cportal-empty">
+          <p role="alert">{t('Verify your email to access purchases.')}</p>
+          <button type="button" className="cportal-btn-primary" onClick={() => void verifyEmail()}>{t('Send verification email')}</button>
+        </div> : error && !previewRoute && <p role="alert">{t(error)}</p>}
+        {loading && !previewRoute ? (
           <div className="cportal-empty" role="status">
             <div className="cportal-empty-icon">
               <Sparkles size={24} />
@@ -182,8 +230,8 @@ export const CustomerPortal: React.FC = () => {
             <p>{t('Syncing your purchased courses, downloads, and service bookings from Firebase.')}</p>
           </div>
         ) : activePurchase ? (
-          <PurchaseDeliveryView key={activePurchase.purchaseId} purchase={activePurchase} email={email} />
-        ) : (
+          <React.Fragment key={activePurchase.purchaseId}>{activePurchase.preview && <p className="cportal-preview-notice">{t("Customer page preview")}</p>}<PurchaseDeliveryView purchase={activePurchase}/><PortalReview purchase={activePurchase} owned={Boolean(ownedPurchase && !ownedPurchase.preview && !previewRoute)} fallback={previewReviews}/></React.Fragment>
+        ) : (purchaseId || previewRoute) ? <p role="status">{t("This purchase is unavailable.")}</p> : (
           <>
             <section className="cportal-hero">
               <div className="cportal-hero-copy">
@@ -376,57 +424,26 @@ export const CustomerPortal: React.FC = () => {
 
 function PurchaseDeliveryView({
   purchase,
-  email,
 }: {
   purchase: CustomerPurchaseRecord;
-  email: string;
 }) {
   const snap = purchase.productSnapshot;
   if (snap.kind === 'course') {
-    return <CourseDeliveryWorkspace purchase={purchase} email={email} />;
+    return <CourseDeliveryWorkspace purchase={purchase} />;
   }
   if (snap.kind === 'service') {
-    return <ServiceDeliveryWorkspace purchase={purchase} email={email} />;
+    return <ServiceDeliveryWorkspace purchase={purchase} />;
   }
-  return <DigitalDeliveryWorkspace purchase={purchase} email={email} />;
+  return <DigitalDeliveryWorkspace purchase={purchase} />;
 }
 
 function CourseDeliveryWorkspace({
   purchase,
-  email,
 }: {
   purchase: CustomerPurchaseRecord;
-  email: string;
 }) {
   const snap = purchase.productSnapshot;
-  const modules = useMemo(
-    () =>
-      snap.modules.length > 0
-        ? snap.modules
-        : [
-            {
-              id: 'mod-welcome',
-              title: 'Module 1 · Welcome & Core Foundations',
-              lessons: [
-                {
-                  id: 'les-welcome-1',
-                  title: `Welcome to ${snap.name}`,
-                  kind: 'Video' as const,
-                  duration: '10 min',
-                  url: '',
-                },
-                {
-                  id: 'les-welcome-2',
-                  title: 'Action Plan & Implementation Roadmap',
-                  kind: 'Text' as const,
-                  duration: '15 min',
-                  url: '',
-                },
-              ],
-            },
-          ],
-    [snap.modules, snap.name]
-  );
+  const modules = snap.modules;
 
   const allLessons = useMemo(
     () =>
@@ -463,7 +480,10 @@ function CourseDeliveryWorkspace({
     let mounted = true;
     let blobUrl = '';
     setResolvedUrl(activeLesson.url || '');
-    if (activeLesson.storageId && (!activeLesson.url || activeLesson.storageId.startsWith('local-'))) {
+    if (activeLesson.storageId && !purchase.preview) {
+      setResolvedUrl('');
+      void getPortalFile(purchase, activeLesson.id).then(({ url }) => { if (mounted) setResolvedUrl(url); }).catch(() => {});
+    } else if (activeLesson.storageId && (!activeLesson.url || activeLesson.storageId.startsWith('local-'))) {
       void readStoredFile(activeLesson.storageId)
         .then(blob => {
           if (mounted) {
@@ -477,7 +497,7 @@ function CourseDeliveryWorkspace({
       mounted = false;
       if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [activeLesson?.id, activeLesson?.storageId, activeLesson?.url]);
+  }, [activeLesson?.id, activeLesson?.storageId, activeLesson?.url, purchase.purchaseId, purchase.preview]);
 
   const isCompleted = Boolean(
     activeLesson && purchase.completedLessonIds.includes(activeLesson.id)
@@ -486,17 +506,15 @@ function CourseDeliveryWorkspace({
   const embedUrl = safeMediaUrl ? videoEmbedUrl(safeMediaUrl) : '';
 
   const handleToggleComplete = async () => {
-    if (!activeLesson || !email || saving) return;
+    if (!activeLesson || purchase.preview || saving) return;
     setSaving(true);
     try {
-      const hydratedPurchase: CustomerPurchaseRecord =
-        snap.modules.length > 0
-          ? purchase
-          : { ...purchase, productSnapshot: { ...snap, modules } };
-      await togglePortalLessonComplete(email, hydratedPurchase, activeLesson.id);
+      await togglePortalLessonComplete(purchase, activeLesson.id);
       showToast.success(
         t(isCompleted ? 'Lesson marked as incomplete.' : 'Lesson completed! Progress saved.')
       );
+    } catch (error) {
+      showToast.error(backendError(error));
     } finally {
       setSaving(false);
     }
@@ -604,7 +622,7 @@ function CourseDeliveryWorkspace({
                 <button
                   type="button"
                   className={isCompleted ? 'cportal-btn-emerald' : 'cportal-btn-primary'}
-                  disabled={saving}
+                  disabled={saving || purchase.preview}
                   onClick={() => void handleToggleComplete()}
                 >
                   <CheckCircle2 size={15} />
@@ -734,34 +752,27 @@ function CourseDeliveryWorkspace({
 
 function DigitalDeliveryWorkspace({
   purchase,
-  email,
 }: {
   purchase: CustomerPurchaseRecord;
-  email: string;
 }) {
   const snap = purchase.productSnapshot;
   const [busyAsset, setBusyAsset] = useState('');
 
   const handleDownload = async (asset: CustomerPortalAsset) => {
+    if (purchase.preview || busyAsset) return;
     setBusyAsset(asset.id);
     try {
-      let targetUrl = asset.url;
-      if (asset.storageId && (!targetUrl || asset.storageId.startsWith('local-'))) {
-        const blob = await readStoredFile(asset.storageId);
-        targetUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = targetUrl;
-        link.download = asset.name || 'download';
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(targetUrl), 2000);
-      } else if (targetUrl) {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      } else {
-        showToast.info(t('Fulfillment details are ready in your access summary.'));
-      }
-      if (email) {
-        await recordPortalAssetDownload(email, purchase, asset.id);
-      }
+      const targetUrl = asset.storageId
+        ? (await getPortalFile(purchase, asset.id)).url
+        : asset.url;
+      if (!/^https?:/i.test(targetUrl)) throw new Error('File is unavailable.');
+      const link = document.createElement('a');
+      link.href = targetUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.download = asset.name || 'download';
+      link.click();
+      await recordPortalAssetDownload(purchase, asset.id);
       showToast.success(t('Download recorded.'));
     } catch {
       showToast.error(t('Could not open file. Contact support if the issue persists.'));
@@ -811,7 +822,7 @@ function DigitalDeliveryWorkspace({
                     <button
                       type="button"
                       className="cportal-btn-primary"
-                      disabled={busyAsset === asset.id}
+                      disabled={!!busyAsset || purchase.preview}
                       onClick={() => void handleDownload(asset)}
                     >
                       <Download size={14} />
@@ -878,10 +889,8 @@ function DigitalDeliveryWorkspace({
 
 function ServiceDeliveryWorkspace({
   purchase,
-  email,
 }: {
   purchase: CustomerPurchaseRecord;
-  email: string;
 }) {
   const snap = purchase.productSnapshot;
   const steps = ['Order Confirmed', 'Session Scheduled', 'Completed'] as const;
@@ -894,14 +903,13 @@ function ServiceDeliveryWorkspace({
         : 0;
 
   const handleMarkScheduled = async () => {
-    if (!email) return;
-    await updatePortalServiceStatus(
-      email,
-      purchase,
-      'Session Scheduled',
-      new Date().toISOString()
-    );
-    showToast.success(t('Session status updated to Scheduled.'));
+    if (purchase.preview) return;
+    try {
+      await updatePortalServiceStatus(purchase, new Date().toISOString());
+      showToast.success(t('Session status updated to Scheduled.'));
+    } catch (error) {
+      showToast.error(backendError(error));
+    }
   };
 
   return (
@@ -913,7 +921,7 @@ function ServiceDeliveryWorkspace({
           {snap.description && <p>{snap.description}</p>}
         </div>
 
-        {snap.bookingUrl && (
+        {snap.bookingUrl && !purchase.preview && (
           <a
             href={snap.bookingUrl}
             target={snap.bookingUrl.startsWith('http') ? '_blank' : undefined}
@@ -961,16 +969,13 @@ function ServiceDeliveryWorkspace({
             ))}
           </div>
 
-          <div style={{ padding: '0 20px 20px', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {!purchase.preview && <div style={{ padding: '0 20px 20px', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {snap.bookingUrl ? (
               <a
                 href={snap.bookingUrl}
                 target={snap.bookingUrl.startsWith('http') ? '_blank' : undefined}
                 rel="noopener noreferrer"
                 className="cportal-btn-primary"
-                onClick={() => {
-                  if (currentStepIdx === 0) void handleMarkScheduled();
-                }}
               >
                 <CalendarDays size={15} />
                 <span>{t('Open Booking Calendar')}</span>
@@ -980,14 +985,14 @@ function ServiceDeliveryWorkspace({
                 <button
                   type="button"
                   className="cportal-btn-secondary"
-                  onClick={() => void handleMarkScheduled()}
+                  disabled={purchase.preview} onClick={() => void handleMarkScheduled()}
                 >
                   <CheckCircle2 size={15} />
                   <span>{t('Confirm Session Requested')}</span>
                 </button>
               )
             )}
-          </div>
+          </div>}
         </section>
 
         <aside className="cportal-panel-card">
@@ -1041,4 +1046,84 @@ function ServiceDeliveryWorkspace({
       </div>
     </div>
   );
+}
+
+function PortalPasswordDialog({ close }: { close: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const fields = new FormData(event.currentTarget);
+    setError('');
+    setBusy(true);
+    try {
+      await firebaseSettingsRequest('/security/password', { currentPassword: fields.get('currentPassword'), newPassword: fields.get('newPassword') });
+      showToast.success(t('Your sign-in password was updated.'));
+      close();
+    } catch (cause) {
+      setError(backendError(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <Dialog title={t('Change password')} onClose={close}><form className="cportal-account-form" onSubmit={submit}>
+    <label>{t('Current password')}<input required name="currentPassword" type="password" autoComplete="current-password"/></label>
+    <label>{t('New password')}<input required minLength={8} name="newPassword" type="password" autoComplete="new-password"/></label>
+    {error && <p role="alert">{error}</p>}
+    <button type="submit" className="cportal-btn-primary" disabled={busy}>{t('Change password')}</button>
+  </form></Dialog>;
+}
+
+function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchaseRecord; owned: boolean; fallback?: ReviewSummary }) {
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [readError, setReadError] = useState('');
+  const [summary, setSummary] = useState<ReviewSummary>();
+  const live = useLiveReviews(purchase.tenantId, purchase.productId);
+  const purchaseId = purchase.purchaseId;
+  useEffect(() => {
+    if (!owned) return;
+    let active = true;
+    void readPortalReviewSummary(purchaseId).then(result => { if (active) setSummary(result); }, cause => {
+      if (active) setReadError(backendError(cause));
+    });
+    return () => { active = false; };
+  }, [owned, purchaseId]);
+  const reviews = live && live.reviewsCount >= (summary?.reviewsCount || 0) ? live : summary || fallback || reviewMetrics({});
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!owned || purchase.preview || busy || sent) return;
+    const fields = new FormData(event.currentTarget);
+    setError('');
+    setBusy(true);
+    try {
+      setSummary(await submitPortalReview(purchase, Number(fields.get('rating')), String(fields.get('comment') || '').trim()));
+      setSent(true);
+    } catch (cause) {
+      setError(backendError(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <section className="cportal-panel-card cportal-review" aria-label={t('Ratings & reviews')}>
+    <header className="cportal-review-header"><h2>{t('Ratings & reviews')}</h2><RatingBadge product={reviews}/></header>
+    <div className="cportal-review-grid">
+      {readError && !live ? <p role="alert">{readError}</p> : <ReviewHistory reviews={reviews.reviews}/>}
+      {purchase.preview ? <p>{t('Customers can leave a rating and review after signing in.')}</p>
+        : sent || purchase.reviewedAt ? <p role="status">{t('Thank you! Your review has been submitted.')}</p>
+        : <form className="cportal-account-form" onSubmit={submit}>
+          <fieldset className="pr-star-input" disabled={busy}><legend>{t('Your rating')}</legend>
+            {[1, 2, 3, 4, 5].map(value => <label key={value}>
+              <input type="radio" name="rating" required value={value} aria-label={`${value} ${t('out of 5 stars')}`}/>
+              <span aria-hidden="true">{'★'.repeat(value)}</span>
+            </label>)}
+          </fieldset>
+          <label>{t('Your review')}<textarea required name="comment" maxLength={1000} rows={3}/></label>
+          {error && <p role="alert">{error}</p>}
+          <button type="submit" className="cportal-btn-primary" disabled={busy}>{t('Submit review')}</button>
+        </form>}
+    </div>
+  </section>;
 }

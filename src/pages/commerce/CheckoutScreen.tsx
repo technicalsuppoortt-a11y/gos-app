@@ -1,9 +1,8 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Check, Copy, CreditCard, Landmark, Loader2, LockKeyhole, Tag, UploadCloud } from 'lucide-react';
-import { doc, setDoc } from 'firebase/firestore';
-import { cloudStorage, readCloud, useCloudState } from '../../backend/workspace';
-import { backendError, callBackend, db } from '../../backend/firebase';
+import { useCloudState } from '../../backend/workspace';
+import { backendError, callBackend } from '../../backend/firebase';
 import { manualBrandLogos, resolvePaymentProviderKey, usePaymentMethods } from '../../backend/paymentMethods';
 import { track } from '../../backend/marketingTracking';
 import { translateText as t, useUILanguage } from '../../i18n/display';
@@ -12,8 +11,7 @@ import type { Discount } from '../discounts-data';
 import { PolicyPreviewLink } from './PolicyPreview';
 import { checkoutFieldList, defaultExperience, productKind, type Billing, type CheckoutField, type Product } from './model';
 import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
-import { storageKey, useProducts } from './repository';
-import { provisionCustomerPurchase, type CustomerProvisionResult } from '../../backend/customerPortal';
+import { useProducts } from './repository';
 import './dynamic-checkout.css';
 import './product-checkout.css';
 
@@ -124,9 +122,8 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
   const [remote, setRemote] = useState<Quote>(), [loading, setLoading] = useState(!!tenantId);
   const [quoteError, setQuoteError] = useState(''), [submitError, setSubmitError] = useState('');
   const [reload, setReload] = useState(0), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState('');
-  const [portalAccess, setPortalAccess] = useState<CustomerProvisionResult | null>(null);
+  const [instantAccess, setInstantAccess] = useState(false);
   const [discountEmail, setDiscountEmail] = useState('');
-  const tenantPayments = usePaymentMethods(tenantId ? { scope: 'user', tenantId } : { scope: 'user' });
 
   useEffect(() => {
     if (!tenantId) return;
@@ -162,19 +159,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
     installments: config.installments, frequency: preview.billing === 'Payment plan' ? experience.paymentInterval : config.frequency, trialDays: config.trialDays,
   };
   const quote = previewQuote ?? remote, totals = quote?.totals;
-  const liveTenantMethods: Method[] | null = !preview && tenantId && !tenantPayments.loading && (tenantPayments.revision > 0 || tenantPayments.methods.length > 0)
-    ? tenantPayments.methods
-        .filter(m => m.enabled && ((m.type === 'manual' && m.account) || (m.type === 'gateway' && (m.status === 'Connected' || m.status === 'Configured'))))
-        .map(m => ({
-          id: m.id || resolvePaymentProviderKey(m.provider, m.id, m.name) || m.name,
-          provider: resolvePaymentProviderKey(m.provider, m.id, m.name),
-          type: m.type,
-          name: m.name,
-          account: m.account,
-          instructions: m.instructions,
-        }))
-    : null;
-  const methods = (liveTenantMethods ?? quote?.methods ?? []).map(m => ({
+  const methods = (quote?.methods ?? []).map(m => ({
     ...m,
     provider: resolvePaymentProviderKey(m.provider, m.id, m.name),
   }));
@@ -223,220 +208,30 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
     try {
       submission.current ||= crypto.randomUUID();
       const encodedReceipt = receipt && paymentDue ? await encodeReceipt(receipt) : undefined;
-      const ownerTenantId =
-        tenantId ||
-        tenantPayments.tenantId ||
-        storageKey().replace('gos-commerce-products-v1:', '') ||
-        'default';
-
-      if (tenantId && remote) {
-        try {
-          const result = await callBackend<{ id: string }>('productCheckout', {
-            action: 'submit',
-            tenantId,
-            productId: product.id,
-            submissionId: submission.current,
-            revision: remote.revision,
-            methodId: method?.id,
-            discountCode,
-            bump: bumpSelected,
-            name,
-            email,
-            phone,
-            note,
-            acceptedTerms,
-            fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
-            ...(encodedReceipt ? { receipt: encodedReceipt } : {}),
-          }, 90000);
-          if (!preview && totals.dueToday === 0 && config.delivery !== 'After approval') {
-            const provisioned = await provisionCustomerPurchase({
-              tenantId: ownerTenantId,
-              product,
-              productId: product.id,
-              productName: product.name,
-              productType: product.type,
-              orderId: result.id,
-              customerName: name.trim() || email.trim().split('@')[0] || 'Customer',
-              customerEmail: email.trim().toLowerCase(),
-              customerPhone: phone.trim(),
-              amount: 0,
-              currency: totals.currency,
-            }).catch(() => null);
-            if (provisioned) setPortalAccess(provisioned);
-          }
-          setConfirmation(result.id);
-          setReceipt(undefined);
-          showToast.success(t(totals.dueToday === 0 && !preview ? 'Enrollment complete! Login credentials sent to your email.' : 'Order request submitted successfully!'));
-          track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
-          return;
-        } catch {
-          // Fall back to direct Firestore checkout persistence when scoped methods or preview products are used
-        }
+      if (preview) {
+        setConfirmation(submission.current);
+        return;
       }
-
-      const reqId = (submission.current.replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '')).toLowerCase().slice(0, 64);
-      const createdAt = new Date().toISOString();
-      const customerEmail = email.trim().toLowerCase();
-      const customerName = name.trim() || customerEmail.split('@')[0] || 'Customer';
-      const customerPhone = phone.trim() || '—';
-      const items = [
-        { productId: product.id, productName: product.name, amount: totals.total, quantity: 1 },
-        ...(bumpSelected && quote.bump
-          ? [{ productId: quote.bump.id, productName: quote.bump.name, amount: totals.bumpTotal, quantity: 1 }]
-          : []),
-      ];
-      const customFields = quote.fields
-        .map(field => ({
-          label: field.label,
-          value: String(data.get('custom-' + field.id) ?? '').trim(),
-        }))
-        .filter(field => field.value);
-
-      const orderRecord = {
-        id: reqId,
-        orderId: reqId,
-        source: 'Product checkout',
+      if (!tenantId || !remote) throw new Error('Checkout is unavailable.');
+      const result = await callBackend<{ id: string }>('productCheckout', {
+        action: 'submit',
+        tenantId,
         productId: product.id,
-        productName: product.name,
-        items,
-        customerName,
-        customerEmail,
-        customerPhone,
-        currency: totals.currency,
-        amount: totals.dueToday,
-        total: totals.dueToday,
-        discountCode: discountCode.trim(),
-        discount: totals.discount,
-        method: method?.name || 'No payment due',
-        transferAccount: method?.account || '',
-        createdAt,
-        status: 'Pending' as const,
-      };
-
-      const receiptPayload = encodedReceipt
-        ? {
-            name: encodedReceipt.name,
-            type: encodedReceipt.type,
-            dataUrl: `data:${encodedReceipt.type};base64,${encodedReceipt.data}`,
-          }
-        : null;
-
-      const requestRecord = {
-        ...orderRecord,
-        fields: customFields,
-        totals: {
-          price: totals.price,
-          subtotal: totals.subtotal,
-          discount: totals.discount,
-          tax: totals.tax,
-          dueToday: totals.dueToday,
-        },
-        receipt: receiptPayload,
-        note: note.trim(),
-      };
-
-      const emailSlug = (customerEmail || reqId).replace(/[^a-z0-9]/g, '').slice(0, 24) || reqId.slice(0, 16);
-      const leadId = `lead-order-${emailSlug}`;
-      const isInstantFree = totals.dueToday === 0;
-      const rawType = String(product.type || '').trim().toLowerCase();
-      const prodTypeLabel: 'Course' | 'Digital Product' | 'Service' = rawType.includes('course')
-        ? 'Course'
-        : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
-          ? 'Service'
-          : 'Digital Product';
-      const checkoutLeadRecord = {
-        id: leadId,
-        name: customerName,
-        email: customerEmail,
-        phone: customerPhone === '—' ? '' : customerPhone,
-        company: '',
-        source: 'Services',
-        owner: 'Unassigned',
-        pipelineId: config.crmRouting?.pipelineId || 'main',
-        stage: isInstantFree ? (config.crmRouting?.stageId || 'PAYMENT_COMPLETED') : 'CONTACT_CREATED',
-        lifecycleStage: isInstantFree ? (config.crmRouting?.stageId || 'PAYMENT_COMPLETED') : 'CONTACT_CREATED',
-        value: totals.total || totals.dueToday || 0,
-        currency: totals.currency,
-        interest: `${prodTypeLabel}: ${product.name}`,
-        orderId: reqId,
-        qualificationStatus: isInstantFree ? 'Qualified' : 'Pending',
-        bookingStatus: 'Not Scheduled',
-        followUpState: isInstantFree ? 'CUSTOMER' : 'CONTACTED',
-        hasWhatsAppConsent: Boolean(customerPhone && customerPhone !== '—'),
-        hasMessagingConsent: true,
-        hasEmailConsent: Boolean(customerEmail),
-        tags: isInstantFree ? [prodTypeLabel, product.name, 'Customer'] : [prodTypeLabel, product.name],
-        attachedProducts: items.map(it => ({ productId: it.productId, productName: it.productName, productType: prodTypeLabel, attachedAt: createdAt })),
-        activities: [
-          {
-            id: `act-checkout-${reqId}`,
-            type: 'payment',
-            title: isInstantFree ? `${prodTypeLabel} enrolled` : 'Order submitted',
-            detail: `${prodTypeLabel}: ${product.name} · ${totals.currency} ${Number(totals.dueToday).toFixed(2)}`,
-            at: createdAt,
-          },
-        ],
-        notes: note.trim() ? [note.trim()] : [],
-        createdAt,
-        lastActivity: createdAt,
-      };
-
-      const instantGrant = !preview && totals.dueToday === 0 && config.delivery !== 'After approval';
-      if (instantGrant) {
-        (orderRecord as { status: string }).status = 'Paid';
-        (requestRecord as { status: string }).status = 'Approved';
-      }
-      await Promise.allSettled([
-        setDoc(doc(db, 'settings', `checkoutRequests_${ownerTenantId}`, 'items', reqId), requestRecord),
-        setDoc(doc(db, 'tenants', ownerTenantId, 'checkoutRequests', reqId), requestRecord),
-        setDoc(doc(db, 'tenants', ownerTenantId, 'orders', reqId), orderRecord, { merge: true }),
-        setDoc(doc(db, 'tenants', ownerTenantId, 'leads', leadId), checkoutLeadRecord, { merge: true }),
-      ]);
-
-      if (instantGrant && customerEmail) {
-        const provisioned = await provisionCustomerPurchase({
-          tenantId: ownerTenantId,
-          product,
-          productId: product.id,
-          productName: product.name,
-          productType: product.type,
-          orderId: reqId,
-          customerName,
-          customerEmail,
-          customerPhone,
-          amount: totals.dueToday,
-          currency: totals.currency,
-        }).catch(() => null);
-        if (provisioned) setPortalAccess(provisioned);
-      }
-
-      try {
-        if (customerEmail) {
-          const existingContacts = readCloud<Record<string, any>[]>('entity:contacts', []);
-          if (!existingContacts.some(row => String(row.email ?? '').toLowerCase() === customerEmail)) {
-            await cloudStorage.setItem(
-              'entity:contacts',
-              JSON.stringify([
-                {
-                  id: `contact-${reqId.slice(0, 12)}`,
-                  name: customerName,
-                  email: customerEmail,
-                  phone: customerPhone === '—' ? '' : customerPhone,
-                  status: 'Active',
-                  source: 'Checkout',
-                  createdAt,
-                },
-                ...existingContacts,
-              ]),
-              { silent: true }
-            );
-          }
-        }
-      } catch {
-        /* ignore local cloudStorage sync errors for guest visitors */
-      }
-
-      setConfirmation(reqId);
+        submissionId: submission.current,
+        revision: remote.revision,
+        methodId: method?.id,
+        discountCode,
+        bump: bumpSelected,
+        name,
+        email,
+        phone,
+        note,
+        acceptedTerms,
+        fields: Object.fromEntries(quote.fields.map(field => [field.id, data.get('custom-' + field.id)])),
+        ...(encodedReceipt ? { receipt: encodedReceipt } : {}),
+      }, 90000);
+      setInstantAccess(totals.dueToday === 0 && config.delivery !== 'After approval');
+      setConfirmation(result.id);
       setReceipt(undefined);
       showToast.success(t('Order request submitted successfully!'));
       track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
@@ -454,7 +249,7 @@ function CheckoutForm({ product, preview, tenantId }: { product: Product; previe
       <h1 id={title}>{t(preview ? 'Checkout Preview' : 'Secure Checkout')}</h1>
       <p>{preview ? t('Preview the customer experience. No payments are collected.') : product.name}</p>
     </div></header>
-    {confirmation ? <div className="pco-confirmation" role="status"><Check size={26}/><h2>{t(portalAccess ? 'Access Activated' : 'Request submitted')}</h2><p>{t(portalAccess ? `Your Customer Portal account is ready. Login details have been dispatched to ${portalAccess.email}.` : 'Your request is pending review. Once approved, your Customer Portal login link and password will be emailed automatically.')}</p>{portalAccess && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 10 }}><a className="pco-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10 }} href={portalAccess.loginUrl}>{t('Sign In to Customer Portal')}</a></div>}<small>{t('Reference')} <b>{confirmation.slice(0, 12).toUpperCase()}</b></small></div> :
+    {confirmation ? <div className="pco-confirmation" role="status"><Check size={26}/><h2>{t(preview ? 'Checkout Preview' : instantAccess ? 'Enrollment confirmed' : 'Request submitted')}</h2><p>{t(preview ? 'Preview the customer experience. No payments are collected.' : instantAccess ? 'Check your email for instructions to access your purchase.' : 'Once approved, you’ll receive an email with instructions to access your purchase.')}</p>{instantAccess && <a className="pco-primary" href="/auth/login?portal=1">{t('Sign In to Customer Portal')}</a>}<small>{t('Reference')} <b>{confirmation.slice(0, 12).toUpperCase()}</b></small></div> :
       <form onSubmit={submit}>
         <fieldset disabled={busy} className="pco-columns">
           <div className="pco-column">

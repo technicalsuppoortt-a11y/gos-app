@@ -2,7 +2,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { Eye, Globe2, Layers3, ShieldCheck } from 'lucide-react';
 import { useUILanguage } from '../../i18n/display';
 import { type Directory, type LiveRecord, managementRow } from './live-model';
-import { type ManagedTemplate, templateIsActive } from './managed-template';
+import { type ManagedTemplate, templateCategoryLabel, templateIsActive } from './managed-template';
 import { DetailCard, DetailField, displayDate, displayMoney, LiveDialog, StatusPill } from './AdminLiveUI';
 import type { SitePreview } from './AdminSitePreview';
 import { BookingLivePreview } from '../booking/BookingLivePreview';
@@ -16,15 +16,15 @@ export function TemplateContent({ template }: { template: ManagedTemplate }) {
     return <div className="alm-template-content"><div className="alm-template-cover">{p.image && <img src={p.image} alt="" className="alm-product-cover"/>}<span>{p.type}</span><h3>{p.name}</h3><p>{p.description}</p><strong className="alm-detail-price">{displayMoney(String(c.amount), c.currency, formatPrice)}</strong></div><div className="alm-detail-grid"><DetailCard title={t('Included benefits', 'المزايا المشمولة')}><ol className="alm-flow-list">{c.experience?.included.map(item => <li key={item.id}>{item.title}</li>)}</ol></DetailCard><DetailCard title={t('Delivery & access', 'التسليم والوصول')}><dl><DetailField label={t('Billing', 'الفوترة')} value={c.billing}/><DetailField label={t('Access', 'الوصول')} value={c.access}/><DetailField label={t('Duration', 'المدة')} value={c.duration}/><DetailField label={t('Delivery', 'التسليم')} value={c.delivery}/></dl></DetailCard>{c.modules?.map((module, index) => <DetailCard key={module.id || index} title={module.title} wide><ol className="alm-flow-list">{module.lessons.map((lesson, i) => <li key={i}>{typeof lesson === 'string' ? lesson : lesson.title}</li>)}</ol></DetailCard>)}</div></div>;
   }
   if (template.pipelineTemplate) return <div className="alm-template-content"><div className="alm-template-cover"><h3>{template.name}</h3><p>{template.description}</p></div><ol className="alm-flow-list">{template.pipelineTemplate.stages.map((stage, index) => <li key={index}><span>{index + 1}</span><strong>{stage}</strong></li>)}</ol></div>;
-  return <div className="alm-template-content"><div className="alm-template-cover"><Layers3 size={28}/><span>{template.category}</span><h3>{template.content?.headline || template.name}</h3><p>{template.description}</p></div><div className="alm-detail-grid">
+  return <div className="alm-template-content"><div className="alm-template-cover"><Layers3 size={28}/><span>{(ar ? template.category_ar : template.category_en) || templateCategoryLabel(template.category, ar)}</span><h3>{template.content?.headline || template.name}</h3><p>{template.description}</p></div><div className="alm-detail-grid">
     <DetailCard title={t('Experience flow', 'تسلسل التجربة')}><ol className="alm-flow-list">{(template.content?.steps || []).map((step, index) => <li key={index}><span>{String(index + 1).padStart(2, '0')}</span><strong>{step}</strong></li>)}</ol>{!template.content?.steps?.length && <p className="alm-muted">{t('No steps configured.', 'لم يتم إعداد خطوات.')}</p>}</DetailCard>
     <DetailCard title={t('Template settings', 'إعدادات القالب')}><dl><DetailField label={t('Language', 'اللغة')} value={template.content?.settings?.language}/><DetailField label={t('Enabled by default', 'مفعل افتراضياً')} value={template.content?.settings?.enabled ? t('Yes', 'نعم') : t('No', 'لا')}/><DetailField label={t('Industry', 'المجال')} value={template.industry}/><DetailField label={t('Goal', 'الهدف')} value={template.goal}/></dl></DetailCard>
   </div></div>;
 }
 
-export function AdminRecordDetails({ value, tenants, users, related, close, preview }: {
+export function AdminRecordDetails({ value, tenants, users, related, close, preview, templatePreviewHref }: {
   value: LiveRecord | ManagedTemplate; tenants: Directory; users: Directory; related: LiveRecord[];
-  close: () => void; preview: (value: SitePreview) => void;
+  templatePreviewHref?: string; close: () => void; preview: (value: SitePreview) => void;
 }) {
   const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
@@ -37,7 +37,7 @@ export function AdminRecordDetails({ value, tenants, users, related, close, prev
   const document = d.document || template?.builderDocument;
   const canPreview = Array.isArray(document?.pages) && document.pages.length > 0;
   return <LiveDialog title={name} subtitle={template ? t('Global system template', 'قالب نظام عام') : t('Workspace record · Read-only supervisory view', 'سجل مساحة العمل · عرض إشرافي للقراءة فقط')} close={close}
-    footer={<><span className="alm-preview-note"><ShieldCheck size={14}/>{template ? t('Workspace copies remain independent.', 'نسخ مساحات العمل مستقلة.') : t('Tenant ownership is preserved.', 'يتم الحفاظ على ملكية العميل.')}</span>{canPreview && <button className="alm-button primary" onClick={() => preview({ document, name, domain: row?.domain, image: d.image, settings: d.settings, kind: d.kind === 'funnel' ? 'funnel' : 'website' })}><Eye size={15}/>{template ? t('Preview template', 'معاينة القالب') : t('Preview site', 'معاينة الموقع')}</button>}</>}>
+    footer={<><span className="alm-preview-note"><ShieldCheck size={14}/>{template ? t('Workspace copies remain independent.', 'نسخ مساحات العمل مستقلة.') : t('Tenant ownership is preserved.', 'يتم الحفاظ على ملكية العميل.')}</span>{templatePreviewHref ? <a className="alm-button primary" href={templatePreviewHref} target="_blank" rel="noopener"><Eye size={15}/>{t('Preview template', 'معاينة القالب')}</a> : canPreview && <button className="alm-button primary" onClick={() => preview({ document, name, domain: row?.domain, image: d.image, settings: d.settings, kind: d.kind === 'funnel' ? 'funnel' : 'website' })}><Eye size={15}/>{template ? t('Preview template', 'معاينة القالب') : t('Preview site', 'معاينة الموقع')}</button>}</>}>
     <div className="alm-detail-hero"><span className="alm-record-icon large">{template ? <Layers3 size={24}/> : <Globe2 size={24}/>}</span><div><h3>{name}</h3><p>{template?.description || d.description || row?.type || t('Production record', 'سجل الإنتاج')}</p></div><StatusPill value={template ? templateIsActive(template) ? 'Published' : 'Draft' : row?.status || 'Unknown'}/></div>
     <div className="alm-detail-grid"><DetailCard title={t('Identity & ownership', 'الهوية والملكية')}><dl>
       <DetailField label={t('Workspace', 'مساحة العمل')} value={row?.tenant || t('Platform', 'المنصة')}/><DetailField label={t('Workspace ID', 'معرف مساحة العمل')} value={row?.workspaceId || 'Platform'}/><DetailField label={t('Owner', 'المالك')} value={row?.owner || t('System library', 'مكتبة النظام')}/><DetailField label={t('Record ID', 'معرف السجل')} value={record?.id || template?.id}/>

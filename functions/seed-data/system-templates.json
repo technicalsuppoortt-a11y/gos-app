@@ -300,7 +300,9 @@
                   "body": "Comprehensive structural scopes engineered for speed, safety, and code compliance.",
                   "items": "Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses",
                   "specs": "Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule",
-                  "button": "Explore Scopes"
+                  "button": "Explore Scopes",
+                  "eyebrow": "Our Services Overview",
+                  "media": "numbered"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -544,7 +546,9 @@
                   "body": "On-budget structural execution across residential and commercial sectors.",
                   "items": "Oakridge 48-Unit Townhomes · Highland Modern Timber Estate · Westgate Medical Retail Shell",
                   "specs": "Completed 2 weeks early · Engineered Glulam package · Light-gauge steel & truss hybrid",
-                  "button": "Request References"
+                  "button": "Request References",
+                  "eyebrow": "Featured Projects",
+                  "media": "numbered"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -852,7 +856,9 @@
                 "body": "Comprehensive structural scopes engineered for speed, safety, and code compliance.",
                 "items": "Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses",
                 "specs": "Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule",
-                "button": "Explore Scopes"
+                "button": "Explore Scopes",
+                "eyebrow": "Our Services Overview",
+                "media": "numbered"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -1096,7 +1102,9 @@
                 "body": "On-budget structural execution across residential and commercial sectors.",
                 "items": "Oakridge 48-Unit Townhomes · Highland Modern Timber Estate · Westgate Medical Retail Shell",
                 "specs": "Completed 2 weeks early · Engineered Glulam package · Light-gauge steel & truss hybrid",
-                "button": "Request References"
+                "button": "Request References",
+                "eyebrow": "Featured Projects",
+                "media": "numbered"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -1579,7 +1587,9 @@
                   "body": "Three clear steps from side-by-side carrier comparison to active family protection.",
                   "items": "1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval",
                   "specs": "Zero broker fees · Living benefits included · Annual policy checkups",
-                  "button": "Compare Rates Now"
+                  "button": "Compare Rates Now",
+                  "eyebrow": "How It Works",
+                  "media": "numbered"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -2098,7 +2108,9 @@
                 "body": "Three clear steps from side-by-side carrier comparison to active family protection.",
                 "items": "1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval",
                 "specs": "Zero broker fees · Living benefits included · Annual policy checkups",
-                "button": "Compare Rates Now"
+                "button": "Compare Rates Now",
+                "eyebrow": "How It Works",
+                "media": "numbered"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -2527,7 +2539,9 @@
                   "body": "Clinical precision paired with warm, unhurried patient support.",
                   "items": "Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding",
                   "specs": "All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts",
-                  "button": "Explore Clinical Services"
+                  "button": "Explore Clinical Services",
+                  "eyebrow": "Pharmacy Services",
+                  "media": "numbered"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -3045,7 +3059,9 @@
                 "body": "Clinical precision paired with warm, unhurried patient support.",
                 "items": "Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding",
                 "specs": "All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts",
-                "button": "Explore Clinical Services"
+                "button": "Explore Clinical Services",
+                "eyebrow": "Pharmacy Services",
+                "media": "numbered"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -3664,12 +3680,14 @@
                 "type": "Program Cards",
                 "content": {
                   "title": "Getting Started Is Simple",
-                  "body": "Four streamlined steps from estimate to keys in hand.",
+                  "body": "Three streamlined steps from estimate to keys in hand.",
                   "items": "01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter",
                   "specs": "Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor",
                   "button": "Start Step 1 →",
                   "destinationType": "Next Step",
-                  "destination": "mortgage-quiz"
+                  "destination": "mortgage-quiz",
+                  "eyebrow": "The Process",
+                  "media": "numbered"
                 },
                 "styles": {
                   "backgroundColor": "#F8FAFC",
@@ -4185,12 +4203,14 @@
               "type": "Program Cards",
               "content": {
                 "title": "Getting Started Is Simple",
-                "body": "Four streamlined steps from estimate to keys in hand.",
+                "body": "Three streamlined steps from estimate to keys in hand.",
                 "items": "01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter",
                 "specs": "Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor",
                 "button": "Start Step 1 →",
                 "destinationType": "Next Step",
-                "destination": "mortgage-quiz"
+                "destination": "mortgage-quiz",
+                "eyebrow": "The Process",
+                "media": "numbered"
               },
               "styles": {
                 "backgroundColor": "#F8FAFC",

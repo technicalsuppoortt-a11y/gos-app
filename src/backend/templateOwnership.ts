@@ -84,6 +84,6 @@ export async function duplicateToMyTemplates(template: ManagedTemplate) {
   const { id: _id, ...copy } = structuredClone(template) as OwnedTemplate;
   delete copy.ownerUid; delete copy.ownerName; delete copy.ownerEmail;
   const id = crypto.randomUUID();
-  await saveAdminTemplate({ ...copy, id, name: `${template.name} (copy)`.slice(0, 180), active: false, status: 'Draft', popularity: 0, pageTemplate: copy.pageTemplate ? { ...copy.pageTemplate, id } : undefined } as ManagedTemplate);
+  await saveAdminTemplate({ ...copy, id, name: `${template.name} (copy)`.slice(0, 180), title_en: `${template.title_en || template.name} (copy)`.slice(0, 180), title_ar: template.title_ar ? `${template.title_ar} (نسخة)`.slice(0, 180) : undefined, active: false, status: 'Draft', popularity: 0, pageTemplate: copy.pageTemplate ? { ...copy.pageTemplate, id } : undefined } as ManagedTemplate);
   return id;
 }

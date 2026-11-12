@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+export const normalizeFirestoreData = <T,>(value: T): T => value;
 export const flushAssetWrites = async () => {};
 const data = new Map<string, string>();
 const listeners = new Set<() => void>();

@@ -14,7 +14,7 @@ import { EditableElementPart } from './EditableElementPart';
 import { findSection } from './funnel-tree';
 import { resolveFormTheme } from './form-theme';
 
-export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection }: { productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
+export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false, showToaster = true }: { readOnly?: boolean; showToaster?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'tablet' | 'mobile' }) {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => { const resize = () => setWidth(window.innerWidth); window.addEventListener('resize', resize); return () => window.removeEventListener('resize', resize); }, []);
   const visibleWidth = viewportWidth ?? width;
@@ -27,11 +27,12 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
     setMobileNavOpen(false);
     const target = asset.document.pages.find(page => page.id === id);
     if (target && onNavigate) { onNavigate(target.id); return; }
-    if (target) window.location.assign(new URL(target.path, window.location.origin).href);
+    if (target && !readOnly) window.location.assign(new URL(target.path, window.location.origin).href);
   };
 
   const action = (item: BuilderSection) => {
     const { destinationType, destination } = item.content;
+    if (readOnly && destinationType !== 'Next Step' && destinationType !== 'Scroll to Section') return;
     if (destinationType === 'External URL' && destination) {
       try { const url = new URL(destination, window.location.origin); if (['https:', 'http:', 'mailto:', 'tel:'].includes(url.protocol)) window.location.assign(url.href); } catch { /* Invalid URLs cannot navigate. */ }
     } else if (destinationType === 'Scroll to Section' && destination) document.getElementById(destination.replace(/^#/, ''))?.scrollIntoView({ behavior: 'smooth' });
@@ -78,15 +79,21 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
   });
 
   return (
-    <BuilderFormCaptureContext.Provider value={submission => sendBuilderLead(asset.id, page.id, device, submission, capture)}>
+    <BuilderFormCaptureContext.Provider value={async submission => { if (!readOnly) return sendBuilderLead(asset.id, page.id, device, submission, capture); throw new Error('This is a read-only preview.'); }}>
       <main
         className={`fb-site-frame ${device} ${asset.formAsset ? 'is-form-page' : ''} ${isDarkBg ? 'dark-form' : ''}`}
         data-public-asset="true"
+        onClickCapture={readOnly ? event => {
+          if ((event.target as Element).closest('a[href]')) { event.preventDefault(); event.stopPropagation(); }
+        } : undefined}
+        onSubmitCapture={readOnly ? event => { event.preventDefault(); event.stopPropagation(); } : undefined}
         data-form-theme={formTheme ? (formTheme.dark ? 'dark' : 'light') : undefined}
         style={{
           width: '100%',
           maxWidth: 'none',
-          minHeight: '100vh',
+          minHeight: '100dvh',
+          margin: 0,
+          padding: 0,
           height: 'auto',
           overflow: 'visible',
           background: page.backgroundColor || (asset.formAsset ? '#f8fafc' : '#ffffff'),
@@ -171,7 +178,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
           </footer>
         ) : null}
 
-        <Toaster />
+        {showToaster && <Toaster />}
       </main>
     </BuilderFormCaptureContext.Provider>
   );

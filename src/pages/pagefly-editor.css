@@ -350,3 +350,57 @@
   color: #1e1b4b !important;
 }
 
+
+.pf-template-entry {
+  min-inline-size: 0; display: flex; flex-direction: column;
+  border: 1px solid var(--ui-border, #e2e8f0); border-radius: 10px;
+  background: var(--ui-surface-raised, #fff); overflow: hidden;
+}
+.pf-template-entry > .pf-template-card {
+  display: block; flex: 1; inline-size: 100%; min-inline-size: 0; padding: 0;
+  border: 0; border-radius: 0; overflow-wrap: anywhere;
+}
+.pf-template-entry .pf-template-preview { padding: 16px; }
+/* Live template artwork: rendered from the template itself and layered over the card button. */
+.pf-template-card-wrap { position: relative; display: flex; flex: 1; flex-direction: column; min-inline-size: 0; }
+.pf-template-card-wrap > .pf-template-card {
+  display: block; flex: 1; inline-size: 100%; min-inline-size: 0; padding: 0;
+  border: 0; border-radius: 0; overflow-wrap: anywhere;
+}
+.pf-template-live-spacer, .pf-template-live-layer { display: block; aspect-ratio: 16 / 10; }
+.pf-template-live-layer {
+  position: absolute; inset-block-start: 0; inset-inline: 0; pointer-events: none;
+  border-block-end: 1px solid var(--ui-border, #e2e8f0); overflow: hidden;
+}
+.pf-template-live-layer .tpl-live-thumb { inline-size: 100%; block-size: 100%; }
+.pf-template-live-badge {
+  position: absolute; inset-block-start: 10px; inset-inline-start: 10px; z-index: 1;
+  padding: 3px 8px; border-radius: 999px; background: rgba(15, 23, 42, .78); color: #fff;
+  font-size: 10px; font-weight: 650; letter-spacing: .3px; backdrop-filter: blur(6px);
+}
+.pf-template-card-wrap:hover .pf-template-live-layer { border-block-end-color: #a78bfa; }
+.pf-template-preview-action {
+  display: flex; justify-content: center; align-items: center; gap: 7px;
+  margin: 0 12px 12px; padding: 8px 12px; min-block-size: 36px;
+  border: 1px solid var(--ui-border, #ddd6fe); border-radius: 8px;
+  color: var(--ui-accent, #6d28d9); font-size: 12px; font-weight: 650;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+.pf-template-preview-action:hover, .pf-template-preview-action:focus-visible {
+  background: var(--ui-accent-surface, #f5f1ff); border-color: #a78bfa;
+}
+.pf-template-preview-action:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+.pf-template-library, .aw-workspace.pf-template-page .pf-template-library, .aw-workspace .aw-templates {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; overflow: visible;
+}
+@media (min-width: 768px) {
+  .pf-template-library, .aw-workspace.pf-template-page .pf-template-library, .aw-workspace .aw-templates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .pf-template-library, .aw-workspace.pf-template-page .pf-template-library, .aw-workspace .aw-templates {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) { .pf-template-preview-action { transition: none; } }

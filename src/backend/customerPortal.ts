@@ -1,27 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { deleteApp, initializeApp } from 'firebase/app';
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-} from 'firebase/auth';
-import {
-  collection,
-  doc,
-  getDoc,
-  getFirestore,
-  initializeFirestore,
-  onSnapshot,
-  setDoc,
-} from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
-import { callBackend, db, firebaseConfig, primaryAuth } from './firebase';
-import { cloudStorage, readCloud } from './workspace';
+import { auth, callBackend, db } from './firebase';
+import { readCloud } from './workspace';
 import type { RootState } from '../store';
-import { hydrateProduct, lessonData, productKind, type Product } from '../pages/commerce/model';
-import { usePurchasedProducts } from '../pages/commerce/purchases';
+import { hydrateProduct, lessonData, productKind, type Product, type ReviewSummary } from '../pages/commerce/model';
+import { useProducts } from '../pages/commerce/repository';
+import { isProductPurchased, usePurchasedProducts } from '../pages/commerce/purchases';
 
 export interface CustomerPortalLesson {
   id: string;
@@ -97,7 +82,8 @@ export interface CustomerPurchaseRecord {
   amount: number;
   currency: string;
   status: 'Active' | 'Revoked';
-  accessToken: string;
+  legacyId?: string;
+  preview?: boolean;
   loginUrl: string;
   portalUrl: string;
   productSnapshot: CustomerProductSnapshot;
@@ -107,34 +93,9 @@ export interface CustomerPurchaseRecord {
   downloadCount: number;
   serviceStatus: ServiceDeliveryStatus;
   scheduledAt?: string;
+  reviewedAt?: string;
   grantedAt: string;
   updatedAt: string;
-}
-
-export interface CustomerProvisionResult {
-  purchaseId: string;
-  uid: string;
-  email: string;
-  loginUrl: string;
-  portalUrl: string;
-  temporaryPassword?: string;
-  createdNewAuth: boolean;
-  emailDispatched: boolean;
-}
-
-export function sanitizeCustomerEmailKey(email: string): string {
-  return email.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '_');
-}
-
-export function generateCustomerTempPassword(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const bytes = new Uint8Array(8);
-  crypto.getRandomValues(bytes);
-  let suffix = '';
-  for (let i = 0; i < bytes.length; i += 1) {
-    suffix += alphabet[bytes[i] % alphabet.length];
-  }
-  return `Upc!${suffix}`;
 }
 
 function inferKind(type = '', name = ''): 'course' | 'digital' | 'service' {
@@ -256,373 +217,50 @@ export function buildCustomerProductSnapshot(
   };
 }
 
-export async function provisionCustomerPurchase(options: {
-  tenantId: string;
-  product?: Partial<Product> | Record<string, any>;
-  productId?: string;
-  productName?: string;
-  productType?: string;
-  orderId?: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  amount?: number;
-  currency?: string;
-}): Promise<CustomerProvisionResult | null> {
-  const cleanEmail = String(options.customerEmail || '').trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return null;
-
-  const tenantId = String(options.tenantId || 'default').trim() || 'default';
-  const resolvedProductId = String(options.productId || options.product?.id || 'product').trim();
-  const snapshot = buildCustomerProductSnapshot(
-    options.product,
-    resolvedProductId,
-    options.productName || 'Purchased Product',
-    options.productType || 'Digital Product'
-  );
-  const customerName =
-    String(options.customerName || '').trim() || cleanEmail.split('@')[0] || 'Customer';
-  const orderId =
-    String(options.orderId || '').trim() ||
-    `ord_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-  const purchaseId = `${tenantId}_${snapshot.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gos-app-3c7fb.web.app';
-  const loginUrl = `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(`/portal/${purchaseId}`)}`;
-  const portalUrl = `${origin}/portal/${encodeURIComponent(purchaseId)}`;
-  const emailKey = sanitizeCustomerEmailKey(cleanEmail);
-  const nowIso = new Date().toISOString();
-
-  // 1. Try Server-Side Cloud Function Provisioning + Resend Email first
-  let backendResult: Partial<CustomerProvisionResult> | null = null;
-  try {
-    backendResult = await callBackend<CustomerProvisionResult>('customerPortal', {
-      action: 'provision',
-      tenantId,
-      productId: snapshot.id,
-      productName: snapshot.name,
-      productType: snapshot.type,
-      productSnapshot: snapshot,
-      orderId,
-      customerName,
-      customerEmail: cleanEmail,
-      amount: options.amount ?? 0,
-      currency: options.currency || 'USD',
-      origin,
-    });
-  } catch {
-    backendResult = null;
-  }
-
-  // 2. Guaranteed Client-Side Firebase Auth + Firestore Sync (isolated secondary app so current user stays signed in)
-  const existingAccountSnap = await getDoc(doc(db, 'settings', `customerAccount_${emailKey}`)).catch(() => null);
-  const existingAccount = existingAccountSnap?.exists() ? existingAccountSnap.data() : null;
-
-  let uid = String(backendResult?.uid || existingAccount?.uid || '');
-  let tempPassword = String(
-    backendResult?.temporaryPassword ||
-      existingAccount?.tempPassword ||
-      generateCustomerTempPassword()
-  );
-  let createdNewAuth = Boolean(backendResult?.createdNewAuth);
-
-  const secondaryAppName = `cust_prov_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
-  const secondaryAuth = getAuth(secondaryApp);
-  let secondaryDb;
-  try {
-    secondaryDb = initializeFirestore(secondaryApp, {
-      experimentalAutoDetectLongPolling: true,
-      ignoreUndefinedProperties: true,
-    });
-  } catch {
-    secondaryDb = getFirestore(secondaryApp);
-  }
-
-  try {
-    let signedInSecondary = false;
-    try {
-      const cred = await createUserWithEmailAndPassword(secondaryAuth, cleanEmail, tempPassword);
-      uid = cred.user.uid;
-      createdNewAuth = true;
-      signedInSecondary = true;
-      await updateProfile(cred.user, { displayName: customerName }).catch(() => null);
-    } catch (authErr: any) {
-      const errCode = authErr?.code || '';
-      const errMsg = String(authErr?.message || '');
-      if (errCode === 'auth/email-already-in-use' || errMsg.includes('EMAIL_EXISTS')) {
-        if (existingAccount?.tempPassword) {
-          tempPassword = String(existingAccount.tempPassword);
-          try {
-            const signCred = await signInWithEmailAndPassword(secondaryAuth, cleanEmail, tempPassword);
-            uid = signCred.user.uid;
-            signedInSecondary = true;
-          } catch {
-            // Existing workspace user has their own custom password — keep their password intact!
-            tempPassword = '';
-          }
-        } else {
-          // Existing Firebase user with their own password
-          tempPassword = '';
-        }
-      }
-    }
-
-    const writerDb = primaryAuth.currentUser ? db : signedInSecondary ? secondaryDb : db;
-    const prevPurchaseSnap = await getDoc(
-      doc(writerDb, 'settings', `customerPurchases_${emailKey}`, 'items', purchaseId)
-    ).catch(() => null);
-    const prevPurchase = prevPurchaseSnap?.exists() ? prevPurchaseSnap.data() : null;
-
-    const accessToken =
-      prevPurchase?.accessToken ||
-      `${purchaseId.slice(0, 16)}_${crypto.randomUUID().replace(/-/g, '')}`;
-
-    const purchaseRecord: CustomerPurchaseRecord = {
-      id: purchaseId,
-      purchaseId,
-      tenantId,
-      orderId,
-      productId: snapshot.id,
-      customerUid: uid || prevPurchase?.customerUid || '',
-      customerEmail: cleanEmail,
-      customerName,
-      amount: Number(options.amount ?? prevPurchase?.amount ?? 0),
-      currency: String(options.currency || prevPurchase?.currency || 'USD'),
-      status: 'Active',
-      accessToken,
-      loginUrl,
-      portalUrl,
-      productSnapshot: snapshot,
-      completedLessonIds: Array.isArray(prevPurchase?.completedLessonIds)
-        ? prevPurchase.completedLessonIds
-        : [],
-      progress: Number(prevPurchase?.progress || 0),
-      downloadedAssetIds: Array.isArray(prevPurchase?.downloadedAssetIds)
-        ? prevPurchase.downloadedAssetIds
-        : [],
-      downloadCount: Number(prevPurchase?.downloadCount || 0),
-      serviceStatus: (prevPurchase?.serviceStatus as ServiceDeliveryStatus) || 'Order Confirmed',
-      scheduledAt: prevPurchase?.scheduledAt || '',
-      grantedAt: prevPurchase?.grantedAt || nowIso,
-      updatedAt: nowIso,
-    };
-
-    const accountDoc = {
-      uid,
-      name: customerName,
-      email: cleanEmail,
-      role: 'CUSTOMER',
-      status: 'Active',
-      active: true,
-      tenantId,
-      ...(tempPassword ? { tempPassword } : {}),
-      loginUrl,
-      updatedAt: nowIso,
-      createdAt: existingAccount?.createdAt || nowIso,
-    };
-
-    const emailSubject = `Your access to ${snapshot.name} is ready`;
-    const passwordLine = tempPassword || 'Your existing Upclick account password';
-    const emailBody = [
-      `Hello ${customerName},`,
-      '',
-      `Thank you for your purchase of "${snapshot.name}" (${snapshot.type}). Your dedicated Customer Portal is ready.`,
-      '',
-      `Secure Login Link: ${loginUrl}`,
-      `Username: ${cleanEmail}`,
-      `Temporary Password: ${passwordLine}`,
-      '',
-      `Log in anytime to access your ${
-        snapshot.kind === 'course'
-          ? 'course modules and video lessons'
-          : snapshot.kind === 'service'
-            ? 'service status tracker and session booking'
-            : 'digital product downloads and files'
-      }.`,
-    ].join('\n');
-
-    const emailRecord = {
-      id: orderId,
-      purchaseId,
-      tenantId,
-      productId: snapshot.id,
-      productName: snapshot.name,
-      productType: snapshot.type,
-      to: cleanEmail,
-      customerName,
-      subject: emailSubject,
-      text: emailBody,
-      loginUrl,
-      portalUrl,
-      username: cleanEmail,
-      temporaryPassword: tempPassword || '',
-      hasExistingAccount: !tempPassword && !createdNewAuth,
-      deliveryState: backendResult ? 'delivered' : 'dispatched_portal_outbox',
-      sentAt: nowIso,
-    };
-
-    const writes: Promise<unknown>[] = [
-      setDoc(doc(writerDb, 'settings', `customerAccount_${emailKey}`), accountDoc, { merge: true }),
-      setDoc(
-        doc(writerDb, 'settings', `customerPurchases_${emailKey}`, 'items', purchaseId),
-        purchaseRecord,
-        { merge: true }
-      ),
-      setDoc(
-        doc(writerDb, 'settings', `customerPortalEmails_${tenantId}`, 'items', orderId),
-        emailRecord,
-        { merge: true }
-      ),
-    ];
-
-    if (uid) {
-      writes.push(
-        setDoc(doc(writerDb, 'settings', `customerAccountUid_${uid}`), accountDoc, { merge: true })
-      );
-    }
-
-    await Promise.allSettled(writes);
-
-    // Sync local My Purchases badge if the signed-in user bought with their own email
-    if (
-      primaryAuth.currentUser?.email &&
-      primaryAuth.currentUser.email.trim().toLowerCase() === cleanEmail
-    ) {
-      try {
-        const rawIds = cloudStorage.getItem('gos_purchased_product_ids');
-        const currentIds: string[] = rawIds ? JSON.parse(rawIds) : [];
-        if (!currentIds.includes(snapshot.id)) {
-          const updatedIds = [...currentIds, snapshot.id];
-          await cloudStorage.setItem('gos_purchased_product_ids', JSON.stringify(updatedIds), {
-            silent: true,
-          });
-          window.dispatchEvent(new Event('gos-purchases-updated'));
-        }
-      } catch {
-        /* ignore local cache sync error */
-      }
-    }
-
-    if (signedInSecondary) {
-      await signOut(secondaryAuth).catch(() => null);
-    }
-  } finally {
-    await deleteApp(secondaryApp).catch(() => null);
-  }
-
-  return {
-    purchaseId,
-    uid,
-    email: cleanEmail,
-    loginUrl,
-    portalUrl,
-    temporaryPassword: tempPassword || undefined,
-    createdNewAuth,
-    emailDispatched: true,
-  };
+export function togglePortalLessonComplete(purchase: CustomerPurchaseRecord, lessonId: string) {
+  return callBackend('customerPortal', { action: 'lesson', purchaseId: purchase.purchaseId, lessonId, completed: !purchase.completedLessonIds.includes(lessonId) });
 }
 
-export async function togglePortalLessonComplete(
-  customerEmail: string,
-  purchase: CustomerPurchaseRecord,
-  lessonId: string
-): Promise<void> {
-  const emailKey = sanitizeCustomerEmailKey(customerEmail);
-  const totalLessons = purchase.productSnapshot.modules.reduce(
-    (sum, mod) => sum + mod.lessons.length,
-    0
-  );
-  const current = new Set(purchase.completedLessonIds || []);
-  if (current.has(lessonId)) current.delete(lessonId);
-  else current.add(lessonId);
-  const completedLessonIds = Array.from(current);
-  const progress =
-    totalLessons > 0 ? Math.min(100, Math.round((completedLessonIds.length / totalLessons) * 100)) : 0;
-  const updatedAt = new Date().toISOString();
-
-  await setDoc(
-    doc(db, 'settings', `customerPurchases_${emailKey}`, 'items', purchase.purchaseId),
-    { completedLessonIds, progress, updatedAt },
-    { merge: true }
-  );
+export function recordPortalAssetDownload(purchase: CustomerPurchaseRecord, assetId: string) {
+  return callBackend('customerPortal', { action: 'download', purchaseId: purchase.purchaseId, assetId });
 }
 
-export async function recordPortalAssetDownload(
-  customerEmail: string,
-  purchase: CustomerPurchaseRecord,
-  assetId: string
-): Promise<void> {
-  const emailKey = sanitizeCustomerEmailKey(customerEmail);
-  const downloadedAssetIds = Array.from(new Set([...(purchase.downloadedAssetIds || []), assetId]));
-  const downloadCount = Number(purchase.downloadCount || 0) + 1;
-  const updatedAt = new Date().toISOString();
-
-  await setDoc(
-    doc(db, 'settings', `customerPurchases_${emailKey}`, 'items', purchase.purchaseId),
-    { downloadedAssetIds, downloadCount, updatedAt },
-    { merge: true }
-  );
+export function updatePortalServiceStatus(purchase: CustomerPurchaseRecord, scheduledAt: string) {
+  return callBackend('customerPortal', { action: 'schedule', purchaseId: purchase.purchaseId, scheduledAt });
 }
 
-export async function updatePortalServiceStatus(
-  customerEmail: string,
-  purchase: CustomerPurchaseRecord,
-  serviceStatus: ServiceDeliveryStatus,
-  scheduledAt?: string
-): Promise<void> {
-  const emailKey = sanitizeCustomerEmailKey(customerEmail);
-  const updatedAt = new Date().toISOString();
-  const patch = {
-    serviceStatus,
-    ...(scheduledAt !== undefined ? { scheduledAt } : {}),
-    updatedAt,
-  };
+export function getPortalFile(purchase: CustomerPurchaseRecord, resourceId: string) {
+  return callBackend<{ url: string }>('customerPortal', { action: 'file', purchaseId: purchase.purchaseId, resourceId });
+}
 
-  await setDoc(
-    doc(db, 'settings', `customerPurchases_${emailKey}`, 'items', purchase.purchaseId),
-    patch,
-    { merge: true }
-  );
+export function readPortalReviewSummary(purchaseId: string) {
+  return callBackend<ReviewSummary>('customerPortal', { action: 'reviewSummary', purchaseId });
+}
+
+export function submitPortalReview(purchase: CustomerPurchaseRecord, rating: number, comment: string) {
+  return callBackend<ReviewSummary>('customerPortal', { action: 'review', purchaseId: purchase.purchaseId, rating, comment });
 }
 
 export function useCustomerPortalLibrary() {
   const { user, tenant, role } = useSelector((state: RootState) => state.auth);
   const email = (user?.email || '').trim().toLowerCase();
-  const emailKey = email ? sanitizeCustomerEmailKey(email) : '';
+  const uid = user?.id || '';
+  const emailVerified = auth.currentUser?.uid === uid && auth.currentUser?.emailVerified === true;
   const { purchasedIds } = usePurchasedProducts();
-
-  const [firestoreItems, setFirestoreItems] = useState<CustomerPurchaseRecord[]>([]);
-  const [loading, setLoading] = useState(Boolean(emailKey));
-
+  const workspaceProducts = useProducts();
+  const [library, setLibrary] = useState<{ uid: string; rows: CustomerPurchaseRecord[]; error?: string; verify?: boolean }>();
   useEffect(() => {
-    if (!emailKey) {
-      setFirestoreItems([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const colRef = collection(db, 'settings', `customerPurchases_${emailKey}`, 'items');
-    return onSnapshot(
-      colRef,
-      snap => {
-        const rows = snap.docs
-          .map(d => ({ ...(d.data() as CustomerPurchaseRecord), id: d.id, purchaseId: d.id }))
-          .filter(row => row.status !== 'Revoked')
-          .sort(
-            (a, b) =>
-              new Date(b.grantedAt || 0).getTime() - new Date(a.grantedAt || 0).getTime()
-          );
-        setFirestoreItems(rows);
-        setLoading(false);
-      },
-      () => {
-        setLoading(false);
-      }
-    );
-  }, [emailKey]);
+    if (!uid) return;
+    const unsubscribe = onSnapshot(query(collection(db, 'customerLibraries', uid, 'purchases'), where('status', '==', 'Active')), snap => {
+      setLibrary({ uid, rows: snap.docs.map(d => d.data() as CustomerPurchaseRecord).filter(row => row.status === 'Active') });
+    }, error => setLibrary({ uid, rows: [], error: 'Could not load your purchases.', verify: error.code === 'permission-denied' && !emailVerified }));
+    void callBackend('customerPortal', { action: 'restore' }).catch(() => {});
+    return unsubscribe;
+  }, [uid, emailVerified]);
+  const firestoreItems = library?.uid === uid ? library.rows : [];
+  const loading = !!uid && library?.uid !== uid;
 
-  // Also bridge any workspace-level My Purchases (e.g. courses/products purchased while logged in as USER)
-  // and backfill them to Firestore so progress/downloads persist seamlessly in Firebase!
+  // Workspace purchase markers can show a read-only preview of an older product.
   const mergedItems = useMemo(() => {
     const map = new Map<string, CustomerPurchaseRecord>();
     for (const item of firestoreItems) {
@@ -630,25 +268,11 @@ export function useCustomerPortalLibrary() {
     }
 
     if (role && role !== 'CUSTOMER' && email && purchasedIds.length > 0) {
-      const workspaceProducts = readCloud<Product[]>('entity:products', []);
       const scopeTenant = tenant?.id || 'workspace';
       for (const rawProd of workspaceProducts) {
         if (!rawProd) continue;
-        const matched =
-          purchasedIds.includes(rawProd.id) ||
-          purchasedIds.some(
-            pid =>
-              pid.toLowerCase() === String(rawProd.id || '').toLowerCase() ||
-              pid.toLowerCase() === String(rawProd.name || '').toLowerCase()
-          );
-        if (!matched) continue;
-
-        const existingByProdId = Array.from(map.values()).find(
-          entry =>
-            entry.productId === rawProd.id ||
-            entry.productSnapshot?.id === rawProd.id ||
-            entry.productSnapshot?.name?.toLowerCase() === String(rawProd.name || '').toLowerCase()
-        );
+        if (!isProductPurchased(rawProd, purchasedIds)) continue;
+        const existingByProdId = firestoreItems.some(entry => entry.tenantId === scopeTenant && entry.productId === rawProd.id);
         if (existingByProdId) continue;
 
         const purchaseId = `${scopeTenant}_${rawProd.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -667,7 +291,7 @@ export function useCustomerPortalLibrary() {
           amount: Number(rawProd.config?.amount || 0),
           currency: String(rawProd.config?.currency || 'USD'),
           status: 'Active',
-          accessToken: `ws_${rawProd.id}`,
+          preview: true,
           loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(email)}`,
           portalUrl: `${origin}/portal/${encodeURIComponent(purchaseId)}`,
           productSnapshot: snapshot,
@@ -686,22 +310,26 @@ export function useCustomerPortalLibrary() {
     return Array.from(map.values()).sort(
       (a, b) => new Date(b.grantedAt || 0).getTime() - new Date(a.grantedAt || 0).getTime()
     );
-  }, [firestoreItems, role, email, purchasedIds, tenant?.id, user?.id, user?.name]);
+  }, [firestoreItems, workspaceProducts, role, email, purchasedIds, tenant?.id, user?.id, user?.name]);
 
-  // Persist bridged workspace purchases into Firestore once so their progress/downloads stay synced
+  return { items: mergedItems, loading, email, error: library?.uid === uid ? library.error : undefined, needsVerification: library?.uid === uid && library.verify };
+}
+
+export function useCoursePurchaseProgress(tenantId: string, productId: string) {
+  const key = `${tenantId}/${productId}`;
+  const [state, setState] = useState<{ key: string; progress: Map<string, number> }>();
   useEffect(() => {
-    if (!emailKey || loading) return;
-    const existingIds = new Set(firestoreItems.map(item => item.purchaseId));
-    for (const item of mergedItems) {
-      if (!existingIds.has(item.purchaseId)) {
-        void setDoc(
-          doc(db, 'settings', `customerPurchases_${emailKey}`, 'items', item.purchaseId),
-          item,
-          { merge: true }
-        ).catch(() => null);
+    if (!tenantId || !productId) return;
+    return onSnapshot(query(collection(db, 'tenants', tenantId, 'customerPurchases'), where('productId', '==', productId)), snapshot => {
+      const progress = new Map<string, number>();
+      for (const doc of snapshot.docs) {
+        const record = doc.data() as CustomerPurchaseRecord;
+        if (record.status === 'Active' && record.customerEmail && typeof record.progress === 'number') {
+          progress.set(record.customerEmail.toLowerCase(), record.progress);
+        }
       }
-    }
-  }, [emailKey, loading, firestoreItems, mergedItems]);
-
-  return { items: mergedItems, loading, email };
+      setState({ key, progress });
+    }, () => setState(undefined));
+  }, [key, tenantId, productId]);
+  return state?.key === key ? state.progress : undefined;
 }

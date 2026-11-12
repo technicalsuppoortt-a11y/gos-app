@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { consumeAuthNotice, login, SessionError, sessionErrorMessage, type SessionErrorCode } from '../../backend/session';
 import { backendError } from '../../backend/firebase';
 import { loginSuccess } from '../../store/slices/authSlice';
-import { routeForRole } from '../../router/ProtectedRoute';
+import { customerPasswordChangePath, routeForRole } from '../../router/ProtectedRoute';
 import { canOpenPlatformPage, isPlatformTeamRole } from '../../router/platformAccess';
 import { toggleTheme, setLanguage, type Language } from '../../store/slices/uiSlice';
 import type { RootState } from '../../store';
@@ -112,6 +112,10 @@ export const LoginPage: React.FC = () => {
 
   React.useEffect(() => {
     if (auth.isAuthenticated && auth.role) {
+      if (auth.user?.requiresPasswordChange) {
+        navigate(customerPasswordChangePath(requestedReturnTo || (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/portal'), { replace: true });
+        return;
+      }
       if (isPortalInvite && requestedReturnTo.startsWith('/portal')) {
         navigate(requestedReturnTo, { replace: true });
         return;
@@ -122,7 +126,7 @@ export const LoginPage: React.FC = () => {
       }
       navigate(routeForRole(auth.role, auth.user?.allowedTabs), { replace: true });
     }
-  }, [auth.isAuthenticated, auth.role, auth.user?.allowedTabs, isPortalInvite, requestedReturnTo, navigate]);
+  }, [auth.isAuthenticated, auth.role, auth.user?.allowedTabs, auth.user?.requiresPasswordChange, isPortalInvite, requestedReturnTo, location.state, navigate]);
 
   // Explain why the user landed here after a forced sign-out (pending, deactivated, access denied…).
   React.useEffect(() => {
@@ -201,7 +205,7 @@ export const LoginPage: React.FC = () => {
       const fallbackRoute = isPortalInvite && !requestedPath
         ? '/portal'
         : routeForRole(session.role, session.user.allowedTabs);
-      navigate(canOpenRequestedPath ? requestedPath! : fallbackRoute, { replace: true });
+      navigate(session.user.requiresPasswordChange ? customerPasswordChangePath(requestedPath || '/portal') : canOpenRequestedPath ? requestedPath! : fallbackRoute, { replace: true });
     })();
   };
 
@@ -266,7 +270,7 @@ export const LoginPage: React.FC = () => {
         <div className="login-heading mb-6">
           <div className="login-tenant-pill mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>{translateText(isPortalInvite ? " CUSTOMER ACCESS PORTAL" : " NORTHSTAR STUDIO WORKSPACE")}</div>
           <h1 className="text-3xl font-bold tracking-[-1.2px] text-slate-900 dark:text-white">{translateText(isPortalInvite ? "Access your purchases" : "Welcome back")}</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{translateText(isPortalInvite ? "Sign in with your email and temporary password to open your purchased courses, files, and services." : "Sign in to keep your business moving.")}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{translateText(isPortalInvite ? "Sign in with your email and password to open your purchased courses, files, and services." : "Sign in to keep your business moving.")}</p>
         </div>
 
         {(location.state as { passwordUpdated?: boolean } | null)?.passwordUpdated && (
@@ -302,7 +306,7 @@ export const LoginPage: React.FC = () => {
             <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300 cursor-pointer"><input type="checkbox" className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 dark:bg-[#191a27]"/>{translateText(" Keep me signed in")}</label>
             <button
               type="button"
-              onClick={() => navigate('/forgot-password')}
+              onClick={() => navigate(isPortalInvite ? '/forgot-password?' + new URLSearchParams({ portal: '1', email, redirect: requestedReturnTo }) : '/forgot-password')}
               className="login-forgot-btn font-medium transition-colors"
             >
               {translateText("Forgot password?")}

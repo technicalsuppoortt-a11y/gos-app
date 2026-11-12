@@ -3,33 +3,53 @@ import { FormTemplatePreview } from './FormTemplatePreview';
 import { LazyBackground } from '../components/common/LazyBackground';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
-import { useState, useEffect } from 'react';
-import { ArrowRight, Search, LoaderCircle, X, RotateCcw } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw } from 'lucide-react';
 import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
-import type { PageTemplate } from './page-templates';
+import { pageTemplatePreviewAsset, type PageTemplate } from './page-templates';
+import { TemplateLiveThumbnail } from './TemplateLiveThumbnail';
 import './pagefly-editor.css';
 
 export function PageTemplateCards({templates=[],install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
   useUILanguage();
-  return <>{localizeNode(templates.map(template => {
-    const isBlank = template.id === 'blank-form-template';
-    return (
-      <AssetAsyncButton busyText="Creating..." className={`pf-template-card ${isBlank ? 'pf-template-blank-card' : ''}`} key={template.id} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>
-        {busy => <>
-          {template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
-            <small>{localizeNode(template.mode==='funnel'?`Funnel · ${template.builderDocument?.steps?.length || 3} steps`:`Website · ${template.builderDocument?.pages?.length || 1} ${(template.builderDocument?.pages?.length || 1) === 1 ? 'page' : 'pages'}`)}</small>
-            <strong>{localizeNode(template.title)}</strong>
-            <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>
-          </LazyBackground>}
-          <div className="pf-template-description">
-            <b>{localizeNode(template.name)}</b>
-            <small>{localizeNode(template.industry)} · {localizeNode(template.goal)}</small>
-            <span>{busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Creating...")}</> : <>{translateText(isBlank ? "Start Blank Form " : "Use Template ")}<ArrowRight size={12}/></>}</span>
-          </div>
-        </>}
-      </AssetAsyncButton>
-    );
-  }))}</>;
+  return <>{templates.map(template => <PageTemplateCard key={template.id} template={template} install={install}/>)}</>;
+}
+
+function PageTemplateCard({template,install}:{template:PageTemplate;install:(template:PageTemplate)=>void | Promise<unknown>}) {
+  useUILanguage();
+  const isBlank = template.id === 'blank-form-template';
+  // The card artwork is rendered from the same asset the preview page opens, so both always match.
+  const asset = useMemo(() => isBlank ? undefined : pageTemplatePreviewAsset(template), [template, isBlank]);
+  const scope = template.mode === 'form'
+    ? `Form · ${template.fields?.length || 1} ${(template.fields?.length || 1) === 1 ? 'field' : 'fields'}`
+    : template.mode === 'funnel'
+      ? `Funnel · ${template.builderDocument?.steps?.length || 3} steps`
+      : `Website · ${template.builderDocument?.pages?.length || 1} ${(template.builderDocument?.pages?.length || 1) === 1 ? 'page' : 'pages'}`;
+  return (
+    <article className="pf-template-entry">
+      <div className="pf-template-card-wrap">
+        <AssetAsyncButton busyText="Creating..." className={`pf-template-card ${isBlank ? 'pf-template-blank-card' : ''}`} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>
+          {busy => <>
+            {isBlank ? (template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
+              <small>{localizeNode(scope)}</small>
+              <strong>{localizeNode(template.title)}</strong>
+              <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>
+            </LazyBackground>) : <span className="pf-template-live-spacer" aria-hidden="true"/>}
+            <div className="pf-template-description">
+              <b>{localizeNode(template.name)}</b>
+              <small>{template.categoryLabel && <>{template.categoryLabel} · </>}{localizeNode(template.industry)} · {localizeNode(template.goal)}</small>
+              <span>{busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Creating...")}</> : <>{translateText(isBlank ? "Start Blank Form " : "Use Template ")}<ArrowRight size={12}/></>}</span>
+            </div>
+          </>}
+        </AssetAsyncButton>
+        {asset && <div className="pf-template-live-layer" aria-hidden="true">
+          <TemplateLiveThumbnail asset={asset} label={template.name} direction={template.contentLanguage === 'ar' ? 'rtl' : 'ltr'} fallbackImage={template.thumbnail || template.image || ''}/>
+          <small className="pf-template-live-badge">{localizeNode(scope)}</small>
+        </div>}
+      </div>
+      <a className="pf-template-preview-action" href={`/template-preview/${encodeURIComponent(template.id)}`} target="_blank" rel="noopener" aria-label={translateText('Preview') + ' · ' + template.name}><Eye size={15}/>{translateText('Preview')}</a>
+    </article>
+  );
 }
 
 export function PageTemplateLibrary({install,initialCategory='All'}:{install:(template:PageTemplate)=>void | Promise<unknown>;initialCategory?:'All'|'Funnels'|'Websites'|'Forms'}) {
@@ -53,7 +73,7 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
   const filtered=categoryTemplates.filter(template=>{
     const matchInd = industry==='All industries' || template.industry===industry;
     const matchGoal = goal==='All goals' || template.goal===goal;
-    const matchQuery = `${template.name} ${template.title} ${template.industry} ${template.goal}`.toLowerCase().includes(search.toLowerCase());
+    const matchQuery = `${template.name} ${template.title} ${template.industry} ${template.goal} ${template.description || ""} ${template.tags?.join(" ") || ""} ${template.categoryLabel || ""}`.toLowerCase().includes(search.toLowerCase());
     return matchInd && matchGoal && matchQuery;
   });
 

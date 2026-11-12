@@ -2,12 +2,13 @@ import { useRef, useState } from 'react';
 import { Star } from 'lucide-react';
 import { translateText, useUILanguage } from '../../i18n/display';
 import { backendError } from '../../backend/firebase';
-import type { Product } from './model';
+import type { Product, ProductReview } from './model';
 import { summarizeReviews, reviewMetrics, type ReviewSummary } from './model';
 import { submitProductReview } from './reviewRepository';
+import { Card } from './primitives';
 import './product-reviews.css';
 
-export function RatingBadge({ product }: { product: Product }) {
+export function RatingBadge({ product }: { product: Pick<Product, 'reviews' | 'ratingTotal' | 'reviewsCount'> }) {
   useUILanguage();
   const { ratingAverage, reviewsCount } = reviewMetrics(product);
   return <div className="pr-rating" role="status" aria-live="polite"><Star size={14} fill="currentColor" aria-hidden="true"/><b>{reviewsCount ? ratingAverage.toFixed(1) : translateText('New')}</b><span>{reviewsCount ? `(${reviewsCount} ${translateText(reviewsCount === 1 ? 'review' : 'reviews')})` : translateText('(No reviews yet)')}</span></div>;
@@ -42,4 +43,21 @@ export function ProductReviews({ product, tenantId, onSubmitted }: { product: Pr
     {error && <p className="pr-error" role="alert">{error}</p>}{success && <p className="pr-success" role="status">{translateText('Thank you! Your review has been submitted.')}</p>}
     {!product.id && <p>{translateText('Save this product before submitting a review.')}</p>}<button type="submit" disabled={pending || !product.id} className="cw-button primary">{translateText(pending ? 'Submitting…' : 'Submit review')}</button></form></div>
   </section>;
+}
+
+export function MerchantProductReviews({ product, reviews }: { product: Product; reviews: ProductReview[] }) {
+  return <Card title={translateText('Ratings & reviews')} action={<RatingBadge product={product}/>}>
+    <ReviewHistory reviews={reviews}/>
+  </Card>;
+}
+
+export function ReviewHistory({ reviews }: { reviews: ProductReview[] }) {
+  const language = useUILanguage();
+  return <div className="pr-list">
+    {reviews.length ? [...reviews].reverse().map((review, index) => <article key={review.id || index} className="pr-review">
+      <header><b>{review.author}</b><span className="pr-stars" aria-label={`${review.rating} ${translateText('out of 5 stars')}`}>{'★'.repeat(review.rating)}<span>{'☆'.repeat(5 - review.rating)}</span></span></header>
+      <p dir="auto">{review.comment}</p>
+      <time dateTime={review.createdAt}>{Number.isFinite(Date.parse(review.createdAt)) ? new Date(review.createdAt).toLocaleDateString(language) : ''}</time>
+    </article>) : <p className="cw-help">{translateText('No reviews yet')}</p>}
+  </div>;
 }

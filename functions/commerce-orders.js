@@ -1,23 +1,26 @@
 import { resolveCRMRoute } from './crm-routing.js';
-import { provisionCustomerPortalAccess } from './customer-portal.js';
+import { provisionCustomerPortalAccess, revokeCustomerPortalAccess } from './customer-portal.js';
 import { createHash } from 'node:crypto';
 
 // Orders and transactions are backend-owned. Never run fulfillment from a preview or draft save.
-export async function fulfillCommerceOrder({ tenantId, orderId, order }, { db, auth, origin, resendApiKey, now = Date.now }) {
+export async function fulfillCommerceOrder({ tenantId, orderId, order, collection = 'orders' }, { db, auth, origin, bootstrapKey, now = Date.now }) {
   const paid = /^(paid|completed|succeeded)$/i.test(order?.status || ''), refunded = /refund/i.test(order?.status || '');
   if (!paid && !refunded) return;
   const email = (order.customerEmail || order.customer_email || order.email || order.customer?.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
   const root = db.doc(`tenants/${tenantId}`), at = new Date(now()).toISOString();
+  const source = root.collection(collection).doc(orderId);
   const ids = [...new Set([order.productId || order.product_id, ...(order.items || []).map(item => item.productId || item.product_id)].filter(id => typeof id === 'string' && /^[\w-]{1,150}$/.test(id)))];
   for (const productId of ids) {
     let fulfilledProduct = null;
     await db.runTransaction(async tx => {
+      if (auth && (await tx.get(source)).data()?.status !== order.status) return;
       const receiptId = createHash('sha256').update(`${order.orderId || order.order_id || orderId}:${productId}`).digest('hex');
       const receiptRef = root.collection('commerceReceipts').doc(receiptId), productRef = root.collection('products').doc(productId);
       const receipt = (await tx.get(receiptRef)).data(), product = (await tx.get(productRef)).data();
-      if (!product?.config || receipt?.status === order.status || receipt?.fulfilled && paid) return;
-      fulfilledProduct = { id: productId, ...product };
+      if (!product?.config) return;
+      fulfilledProduct = { ...product, id: productId };
+      if (receipt?.status === order.status || receipt?.fulfilled && paid) return;
       const leadId = /^[\w-]{1,150}$/.test(order.leadId || '') ? order.leadId : createHash('sha256').update(email).digest('hex').slice(0, 32), leadRef = root.collection('leads').doc(leadId);
       const lead = (await tx.get(leadRef)).data();
       const routing = await resolveCRMRoute(tx, root, product.config.crmRouting, 'PAYMENT_COMPLETED');
@@ -37,16 +40,17 @@ export async function fulfillCommerceOrder({ tenantId, orderId, order }, { db, a
       if (product.config.webhookUrl && product.config.webhookEvents?.includes(eventType)) tx.set(root.collection('commerceDeliveries').doc(`${receiptId}-${eventType}`), { kind: 'webhook', eventType, email, productId, orderId, status: 'queued', createdAt: at });
       tx.set(receiptRef, { status: order.status, fulfilled: paid || !!receipt?.fulfilled, productId, orderId, updatedAt: at });
     });
-    if (paid && auth && fulfilledProduct) {
+    if (!auth || !fulfilledProduct) continue;
+    const current = (await source.get()).data();
+    if (current?.status !== order.status) continue;
+    const canonicalOrderId = order.orderId || order.order_id || orderId;
+    if (paid) {
       await provisionCustomerPortalAccess({
-        db,
-        auth,
-        tenantId,
-        order: { ...order, id: orderId, orderId: order.orderId || orderId, productId },
-        product: fulfilledProduct,
-        origin,
-        resendApiKey,
-      }).catch(err => console.error('Customer portal provisioning warning:', err));
+        db, auth, tenantId, order: { ...order, orderId: canonicalOrderId },
+        product: fulfilledProduct, origin, bootstrapKey, sourcePath: source.path,
+      });
+    } else {
+      await revokeCustomerPortalAccess(db, auth, tenantId, productId, canonicalOrderId, email);
     }
   }
 }

@@ -1,14 +1,16 @@
 import { request as httpsRequest } from 'node:https';
 import { createHash } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
+import { getAuth } from 'firebase-admin/auth';
+import { customerPortalSetupLink, isProvisionedCustomer, portalBootstrapKey, portalPurchaseId, temporaryCustomerPassword } from './customer-portal.js';
 import { getFirestore } from 'firebase-admin/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { deliverMessage } from './delivery.js';
 import { chargeEmail, refundRejectedEmail } from './email-metering.js';
 import { BillingError } from './billing-engine.js';
-import { commerceServiceRequest } from './commerce-service.js';
 const resendKey = defineSecret('RESEND_API_KEY');
+const portalSender = defineString('COMMERCE_PORTAL_FROM', { default: '' });
 const origin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
 export function calendarAttachment(booking, title, id) {
   const start = new Date(booking.start), end = new Date(start.getTime() + Number(booking.duration || 60) * 60000);
@@ -34,7 +36,7 @@ export async function deliverWebhook(endpoint, payload, deliveryId) {
     req.on('error', reject); req.on('timeout', () => req.destroy(new Error('Webhook timed out.'))); req.end(body);
   });
 }
-export const processCommerceDeliveries = onSchedule({ region: 'us-central1', schedule: 'every 1 minutes', secrets: [resendKey], maxInstances: 1 }, async () => {
+export const processCommerceDeliveries = onSchedule({ region: 'us-central1', schedule: 'every 1 minutes', secrets: [resendKey, portalBootstrapKey], maxInstances: 1 }, async () => {
   const db = getFirestore(), jobs = await db.collectionGroup('commerceDeliveries').where('status', '==', 'queued').limit(50).get();
   for (const job of jobs.docs) {
     const claimed = await db.runTransaction(async tx => { if ((await tx.get(job.ref)).data()?.status !== 'queued') return false; tx.update(job.ref, { status: 'processing' }); return true; });
@@ -45,7 +47,7 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
       const data = job.data(), root = job.ref.parent.parent, product = (await root.collection('products').doc(data.productId).get()).data();
       const deliveryId = createHash('sha256').update(`${root.path}:${job.id}`).digest('hex');
       if (!product) throw new Error('Product no longer exists.');
-      const order = (await root.collection('orders').doc(data.orderId).get()).data() || (await root.collection('transactions').doc(data.orderId).get()).data();
+      const order = data.kind === 'portalAccess' ? (await db.doc(data.sourcePath).get()).data() : (await root.collection('orders').doc(data.orderId).get()).data() || (await root.collection('transactions').doc(data.orderId).get()).data();
       const requestNotice = ['checkoutSubmitted', 'checkoutRejected'].includes(data.kind);
       const eligible = data.kind === 'checkoutSubmitted' ? order?.status === 'Pending'
         : data.kind === 'checkoutRejected' ? order?.status === 'Rejected'
@@ -57,6 +59,39 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
       if (data.kind === 'webhook') {
         if (!product.config.webhookEvents?.includes(data.eventType)) throw new Error('This webhook trigger has been disabled.');
         await deliverWebhook(product.config.webhookUrl, { event: data.eventType, productId: data.productId, orderId: data.orderId, email: data.email, at: data.createdAt }, deliveryId);
+      } else if (data.kind === 'portalAccess') {
+        const purchase = (await db.doc(`customerLibraries/${data.uid}/purchases/${data.purchaseId}`).get()).data();
+        if (purchase?.status !== 'Active' || !purchase.paidOrderIds?.includes(data.orderId)) {
+          await job.ref.update({ status: 'skipped' });
+          continue;
+        }
+        const integration = (await root.collection('integrations').doc('email').get()).data() || {};
+        const auth = getAuth();
+        const account = await auth.getUser(data.uid);
+        if (account.email?.toLowerCase() !== data.email || account.disabled) {
+          await job.ref.update({ status: 'skipped' });
+          continue;
+        }
+        const profile = (await db.doc(`users/${data.uid}`).get()).data();
+        const temporary = profile?.portalPasswordPolicy === 'temporary-v1' && profile.portalPasswordChangeRequired === true
+          ? temporaryCustomerPassword(portalBootstrapKey.value(), data.uid) : '';
+        const needsSetup = profile?.portalPasswordPolicy !== 'temporary-v1' &&
+          (isProvisionedCustomer(data.uid, data.email) ? !account.metadata.lastSignInTime : !account.emailVerified);
+        const setup = needsSetup
+          ? customerPortalSetupLink(await auth.generatePasswordResetLink(data.email, { url: data.loginUrl }), data.loginUrl)
+          : '';
+        const text = [
+          `Your purchase of ${product.name} is ready.`,
+          `Sign-in email: ${data.email}`,
+          temporary ? `Temporary password: ${temporary}\nChoose a new password after your first sign-in.` : '',
+          setup ? `Set your password: ${setup}` : '',
+          `Sign in to the Customer Portal: ${data.loginUrl}`,
+        ].filter(Boolean).join('\n\n');
+        const from = [integration.from, integration.verifiedSender, integration.fromEmail, portalSender.value()]
+          .find(value => typeof value === 'string' && value.trim());
+        await deliverMessage({ channel: 'email', deliveryId, subject: `Your access to ${product.name} is ready`, text }, { email: data.email },
+          { from }, { resendApiKey: resendKey.value() });
+        providerAccepted = true;
       } else {
         if (!product.config.automations?.[requestNotice ? 'confirmation' : data.kind]) throw new Error('This notification has been disabled.');
         const integration = (await root.collection('integrations').doc('email').get()).data();
@@ -66,8 +101,9 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
         if (data.kind === 'fileDelivery') {
           if (!product.config.automations.grantAccess) throw new Error('Product access must be enabled before sending download links.');
           if (!/course/i.test(product.type) && product.config.experience?.directDownload === false) throw new Error('Automatic file delivery is disabled. Grant access manually after approval.');
-          const access = await commerceServiceRequest({ data: { action: 'grant', productId: data.productId, email: data.email } }, { db, workspace: async () => ({ root, user: { uid: 'commerce-worker' } }) });
-          accessLink = `${origin.value()}/product-access?tenant=${encodeURIComponent(root.id)}&token=${access.token}`;
+          const login = new URL('/auth/login', origin.value());
+          login.search = new URLSearchParams({ portal: '1', redirect: `/portal/${portalPurchaseId(root.id, data.productId)}` }).toString();
+          accessLink = login.href;
         }
         const notice = data.kind === 'checkoutSubmitted' ? ['request received', `We received your request for ${product.name}. It is pending review.`]
           : data.kind === 'checkoutRejected' ? ['request declined', `Your request for ${product.name} was declined. Contact the seller for more information.`] : null;

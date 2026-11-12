@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useRef, useState } from 'react';
-import { collection, doc, getDoc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -20,13 +20,9 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { backendError, callBackend, db } from '../../backend/firebase';
-import { cloudStorage, readCloud } from '../../backend/workspace';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
-import { provisionCustomerPurchase } from '../../backend/customerPortal';
-import { decodeFirestoreValue } from '../../backend/firestoreCodec';
-import { normalizeFirestoreData } from '../../backend/workspace';
 import type { RootState } from '../../store';
 import './checkout-requests.css';
 
@@ -68,185 +64,11 @@ const initials = (name: string) =>
     .join('') || 'C';
 
 async function applyRequestDecision(
-  tenantId: string,
   request: RequestRow,
   decision: 'approve' | 'reject',
   note: string
 ) {
-  const nextStatus: Status = decision === 'approve' ? 'Approved' : 'Rejected';
-  const decidedAt = new Date().toISOString();
-  const trimmedNote = note.trim();
-  const updatedRequest: RequestRow = {
-    ...request,
-    status: nextStatus,
-    reviewNote: trimmedNote,
-    decidedAt,
-  };
-  try {
-    await callBackend('productCheckout', { action: 'review', id: request.id, decision, note: trimmedNote });
-  } catch {
-    // Persist directly to Firestore when the request was created in scoped/preview mode
-  }
-  const orderStatus = decision === 'approve' ? 'Paid' : 'Rejected';
-  const reqAmount = Number(request.totals?.dueToday ?? request.totals?.price ?? 0);
-  const orderPatch = {
-    ...request,
-    id: request.id,
-    orderId: request.id,
-    amount: reqAmount,
-    total: reqAmount,
-    status: orderStatus,
-    reviewNote: trimmedNote,
-    decidedAt,
-  };
-  const emailLower = String(request.customerEmail || '').trim().toLowerCase();
-  const emailSlug = (emailLower || request.id).replace(/[^a-z0-9]/g, '').slice(0, 24) || request.id.slice(0, 16);
-  const leadId = `lead-order-${emailSlug}`;
-  const writes: Promise<unknown>[] = [
-    setDoc(doc(db, 'settings', `checkoutRequests_${tenantId}`, 'items', request.id), updatedRequest, { merge: true }),
-    setDoc(doc(db, 'tenants', tenantId, 'checkoutRequests', request.id), updatedRequest, { merge: true }),
-    setDoc(doc(db, 'tenants', tenantId, 'orders', request.id), orderPatch, { merge: true }),
-  ];
-  if (decision === 'approve' || reqAmount > 0) {
-    writes.push(setDoc(doc(db, 'tenants', tenantId, 'transactions', request.id), { ...orderPatch, date: request.createdAt || decidedAt }, { merge: true }));
-  }
-  if (decision === 'approve') {
-    const products = readCloud<Record<string, any>[]>('entity:products', []);
-    const matchedProduct = products.find(
-      p => p.id === (request.productId || request.items?.[0]?.productId) || String(p.name || '').trim().toLowerCase() === String(request.productName || '').trim().toLowerCase()
-    );
-    const targetStage = matchedProduct?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED';
-    const targetPipeline = matchedProduct?.config?.crmRouting?.pipelineId || 'main';
-    const crmTag = matchedProduct?.config?.automations?.crmTag;
-    const existingLeads = readCloud<Record<string, any>[]>('entity:leads', []);
-    const prevLead = existingLeads.find(
-      l => l.id === leadId || (emailLower && String(l.email || '').trim().toLowerCase() === emailLower)
-    );
-    const resolvedLeadId = prevLead?.id || leadId;
-    const prevTags = Array.isArray(prevLead?.tags)
-      ? prevLead.tags.filter((t: string) => !/^checkout$/i.test(String(t || '').trim()))
-      : [];
-    const prevAttached = Array.isArray(prevLead?.attachedProducts) ? prevLead.attachedProducts : [];
-    const prodId = request.productId || request.items?.[0]?.productId || matchedProduct?.id || 'product';
-    const prodName = request.productName || request.items?.[0]?.productName || matchedProduct?.name || 'Product';
-    const rawType = String(matchedProduct?.type || '').trim().toLowerCase();
-    const prodTypeLabel: 'Course' | 'Digital Product' | 'Service' = rawType.includes('course')
-      ? 'Course'
-      : rawType.includes('service') || rawType.includes('booking') || rawType.includes('consult')
-        ? 'Service'
-        : /course|academy|masterclass|bootcamp/i.test(prodName)
-          ? 'Course'
-          : /service|consult|coaching|session/i.test(prodName)
-            ? 'Service'
-            : 'Digital Product';
-    const nextAttached = prevAttached.some((item: any) => item?.productId === prodId)
-      ? prevAttached.map((item: any) => (item?.productId === prodId && !item?.productType ? { ...item, productType: prodTypeLabel } : item))
-      : [...prevAttached, { productId: prodId, productName: prodName, productType: prodTypeLabel, attachedAt: decidedAt }];
-    const prevActivities = Array.isArray(prevLead?.activities) ? prevLead.activities : [];
-    const actId = `act-paid-${request.id}`;
-    const nextActivities = prevActivities.some((item: any) => item?.id === actId)
-      ? prevActivities
-      : [
-          {
-            id: actId,
-            type: 'payment',
-            title: `${prodTypeLabel} purchased`,
-            detail: `${prodTypeLabel}: ${prodName} · ${request.currency || 'USD'} ${reqAmount.toFixed(2)}`,
-            at: decidedAt,
-          },
-          ...prevActivities,
-        ];
-    const resolvedSource =
-      !prevLead?.source || /^(checkout|service|services)$/i.test(String(prevLead.source).trim())
-        ? 'Services'
-        : prevLead.source;
-    const approvedLead = {
-      ...(prevLead || {
-        id: resolvedLeadId,
-        company: '',
-        owner: 'Unassigned',
-        bookingStatus: 'Not Scheduled',
-        hasWhatsAppConsent: Boolean(request.customerPhone && request.customerPhone !== '—'),
-        hasMessagingConsent: true,
-        hasEmailConsent: Boolean(emailLower),
-        notes: [],
-        createdAt: request.createdAt || decidedAt,
-      }),
-      id: resolvedLeadId,
-      name: request.customerName || prevLead?.name || emailLower.split('@')[0] || 'Customer',
-      email: request.customerEmail || prevLead?.email || '',
-      phone: request.customerPhone && request.customerPhone !== '—' ? request.customerPhone : (prevLead?.phone || ''),
-      source: resolvedSource,
-      pipelineId: prevLead?.pipelineId || targetPipeline,
-      stage: targetStage,
-      lifecycleStage: targetStage,
-      value: Math.max(Number(prevLead?.value || 0), reqAmount),
-      currency: request.currency || prevLead?.currency || 'USD',
-      interest: prevLead?.interest && prevLead.interest !== prodName ? prevLead.interest : `${prodTypeLabel}: ${prodName}`,
-      orderId: request.id,
-      qualificationStatus: 'Qualified',
-      followUpState: 'CUSTOMER',
-      tags: [...new Set([prodTypeLabel, prodName, 'Customer', ...(crmTag ? [crmTag] : []), ...prevTags])],
-      attachedProducts: nextAttached,
-      activities: nextActivities,
-      lastActivity: decidedAt,
-    };
-    writes.push(setDoc(doc(db, 'tenants', tenantId, 'leads', resolvedLeadId), approvedLead, { merge: true }));
-    if (emailLower) {
-      let resolvedProductRecord: Record<string, any> | undefined = matchedProduct;
-      if (!resolvedProductRecord && prodId) {
-        const remoteProdSnap = await getDoc(doc(db, 'tenants', tenantId, 'products', prodId)).catch(() => null);
-        if (remoteProdSnap?.exists()) {
-          resolvedProductRecord = decodeFirestoreValue(normalizeFirestoreData({ ...remoteProdSnap.data(), id: remoteProdSnap.id }));
-        }
-      }
-      await provisionCustomerPurchase({
-        tenantId,
-        product: resolvedProductRecord,
-        productId: prodId,
-        productName: prodName,
-        productType: prodTypeLabel,
-        orderId: request.id,
-        customerName: request.customerName || emailLower.split('@')[0] || 'Customer',
-        customerEmail: emailLower,
-        customerPhone: request.customerPhone,
-        amount: reqAmount,
-        currency: request.currency || 'USD',
-      }).catch(() => null);
-    }
-  }
-  await Promise.allSettled(writes);
-  try {
-    if (emailLower) {
-      const contacts = readCloud<Record<string, any>[]>('entity:contacts', []);
-      if (!contacts.some(row => String(row.email ?? '').trim().toLowerCase() === emailLower)) {
-        await cloudStorage.setItem(
-          'entity:contacts',
-          JSON.stringify([
-            {
-              id: `contact-${request.id.slice(0, 12)}`,
-              name: request.customerName || emailLower.split('@')[0] || 'Customer',
-              email: request.customerEmail,
-              phone: request.customerPhone && request.customerPhone !== '—' ? request.customerPhone : '',
-              status: 'Active',
-              source: 'Services',
-              createdAt: request.createdAt || decidedAt,
-            },
-            ...contacts,
-          ]),
-          { silent: true }
-        );
-      }
-    }
-    const products = readCloud<Record<string, any>[]>('entity:products', []);
-    const targetProductId = request.productId || request.items?.[0]?.productId || '';
-    const targetNameLower = String(request.productName || '').trim().toLowerCase();
-    if (products.some(p => p.id === targetProductId || String(p.name || '').trim().toLowerCase() === targetNameLower)) {
-      await cloudStorage.setItem('entity:products', JSON.stringify(products), { silent: true });
-    }
-  } catch {
-    /* ignore background entity persistence errors */
-  }
+  await callBackend('productCheckout', { action: 'review', id: request.id, decision, note: note.trim() });
 }
 
 export function CheckoutRequests() {
@@ -360,7 +182,7 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     if (rowBusyId) return;
     setRowBusyId(row.id);
     try {
-      await applyRequestDecision(tenantId, row, 'approve', row.reviewNote || 'Approved by merchant');
+      await applyRequestDecision(row, 'approve', row.reviewNote || 'Approved by merchant');
       showToast.success(t('Checkout request approved.'));
     } catch (cause) {
       showToast.error(t(backendError(cause)));
@@ -742,7 +564,7 @@ function RequestDetails({
     setBusy(true);
     setError('');
     try {
-      await applyRequestDecision(tenantId, request, decision, note);
+      await applyRequestDecision(request, decision, note);
       showToast.success(t(decision === 'approve' ? 'Checkout request approved · Customer portal access & login email sent.' : 'Checkout request rejected.'));
     } catch (cause) {
       setError(backendError(cause));

@@ -119,6 +119,9 @@ export type PageTemplate = {
   id: string;
   name: string;
   description?: string;
+  categoryLabel?: string;
+  /** Language of the copy inside the template ('ar' renders right-to-left). */
+  contentLanguage?: 'ar' | 'en';
   industry: string;
   goal: string;
   title: string;
@@ -295,6 +298,8 @@ const framingWebsiteDoc: BuilderDocument = {
           ['Turnkey Truss & Lumber Takeoff', 'Complete engineered lumber packages, crane scheduling, and value-engineered structural takeoffs before mobilization.'],
         ], '#FFF7ED'),
         sec('framing-services-cards', 'Program Cards', 'Building Excellence, One Frame At A Time', 'Comprehensive structural scopes engineered for speed, safety, and code compliance.', {
+          eyebrow: 'Our Services Overview',
+          media: 'numbered',
           items: 'Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses',
           specs: 'Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule',
           button: 'Explore Scopes',
@@ -353,6 +358,8 @@ const framingWebsiteDoc: BuilderDocument = {
       featuredImage: '/template-thumbnails/ghl-website-framing-construction-hero.jpg',
       sections: [
         sec('framing-proj-cards', 'Program Cards', 'Representative Portfolio', 'On-budget structural execution across residential and commercial sectors.', {
+          eyebrow: 'Featured Projects',
+          media: 'numbered',
           items: 'Oakridge 48-Unit Townhomes · Highland Modern Timber Estate · Westgate Medical Retail Shell',
           specs: 'Completed 2 weeks early · Engineered Glulam package · Light-gauge steel & truss hybrid',
           button: 'Request References',
@@ -431,6 +438,8 @@ const lifeInsuranceWebsiteDoc: BuilderDocument = {
           ['Children’s Head-Start Policies', 'Lock in lifelong insurability and early compounding cash value for children and grandchildren.'],
         ], '#FDF6EC'),
         sec('ins-steps', 'Program Cards', 'Secure Tomorrow, Enjoy Today', 'Three clear steps from side-by-side carrier comparison to active family protection.', {
+          eyebrow: 'How It Works',
+          media: 'numbered',
           items: '1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval',
           specs: 'Zero broker fees · Living benefits included · Annual policy checkups',
           button: 'Compare Rates Now',
@@ -563,6 +572,8 @@ const pharmacyWebsiteDoc: BuilderDocument = {
           ['1-on-1 Pharmacist Guidance', 'Direct medication reviews, copay savings lookups, and proactive refill synchronization every month.'],
         ], '#ECFDF5'),
         sec('rx-services', 'Program Cards', 'Everything You Need In One Neighborhood Pharmacy', 'Clinical precision paired with warm, unhurried patient support.', {
+          eyebrow: 'Pharmacy Services',
+          media: 'numbered',
           items: 'Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding',
           specs: 'All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts',
           button: 'Explore Clinical Services',
@@ -710,7 +721,9 @@ const mortgageFunnelDoc: BuilderDocument = {
           ['Unlock Down-Payment Programs', 'Check eligibility for 3% down conventional options and local first-time buyer closing-cost grants.'],
           ['Win Competitive Offers', 'Sellers take your offer seriously when backed by a verified local lender pre-qualification letter.'],
         ], '#ffffff'),
-        sec('mort-steps-band', 'Program Cards', 'Getting Started Is Simple', 'Four streamlined steps from estimate to keys in hand.', {
+        sec('mort-steps-band', 'Program Cards', 'Getting Started Is Simple', 'Three streamlined steps from estimate to keys in hand.', {
+          eyebrow: 'The Process',
+          media: 'numbered',
           items: '01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter',
           specs: 'Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor',
           button: 'Start Step 1 →',
