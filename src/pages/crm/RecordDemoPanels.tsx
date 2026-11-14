@@ -4,7 +4,7 @@ import { CalendarDays, Mail, MessageCircle, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { CanonicalLead } from '../../store/slices/crmSlice';
 
-const formatTime = (value: string) => new Date(value).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+const formatTime = (value: string) => new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
 
 export function DemoConversations({ lead }: { lead: CanonicalLead }) {
   useUILanguage();

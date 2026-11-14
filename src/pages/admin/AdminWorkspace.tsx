@@ -18,6 +18,7 @@ import { LandingEditor } from './LandingEditor';
 import { PaymentMethodsPanel } from '../settings/PaymentMethodsPanel';
 import { AdminPlansPage } from '../billing/PlansPages';
 import { UserBillingSettingsPage } from '../billing/UserBillingSettingsPage';
+import { DomainsPage } from '../../app/admin/DomainsPage';
 
 export function AdminWorkspace() {
   const location = useLocation();
@@ -28,6 +29,7 @@ export function AdminWorkspace() {
   if (id === 'settings') return <WorkspaceBrandSettings/>;
   if (id === 'conversations' || id === 'analytics' || id === 'ai-usage' || id === 'integrations' || id === 'transactions') return <AdminOperations key={id} moduleId={id}/>;
   if (id === 'payments-gateways') return <PaymentMethodsPanel scope="admin"/>;
+  if (id === 'domains') return <DomainsPage scope="admin"/>;
   if (id === 'plans') return <AdminPlansPage/>;
   if (id === 'user-billing-settings') return <UserBillingSettingsPage/>;
   if (module.id === 'funnels-websites' && ['1', 'templates'].includes(params.get('tab') ?? '')) {

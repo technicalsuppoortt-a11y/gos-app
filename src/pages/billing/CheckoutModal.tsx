@@ -148,9 +148,9 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const standaloneIsCreditInvalid = !standaloneHasInput || standaloneIsUnderMin || standaloneIsOverMax;
 
   const standaloneValidationMsg = standaloneIsUnderMin
-    ? c.t(`Minimum is ${standaloneMinCredits.toLocaleString()} credits (${standaloneMinUnits} ${standaloneMinUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(standaloneMinCredits)} رصيد (${c.num(standaloneMinUnits)} وحدة)`)
+    ? c.t(`Minimum is ${standaloneMinCredits.toLocaleString('en-US')} credits (${standaloneMinUnits} ${standaloneMinUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(standaloneMinCredits)} رصيد (${c.num(standaloneMinUnits)} وحدة)`)
     : standaloneIsOverMax
-    ? c.t(`Maximum is ${standaloneMaxCredits.toLocaleString()} credits (${standaloneMaxUnits} units)`, `الحد الأقصى هو ${c.num(standaloneMaxCredits)} رصيد (${c.num(standaloneMaxUnits)} وحدة)`)
+    ? c.t(`Maximum is ${standaloneMaxCredits.toLocaleString('en-US')} credits (${standaloneMaxUnits} units)`, `الحد الأقصى هو ${c.num(standaloneMaxCredits)} رصيد (${c.num(standaloneMaxUnits)} وحدة)`)
     : null;
 
   const setStandaloneUnitsAndSync = (u: number) => {
@@ -219,9 +219,9 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const accordionIsCreditInvalid = !accordionHasInput || accordionIsUnderMin || accordionIsOverMax;
 
   const accordionValidationMsg = accordionIsUnderMin
-    ? c.t(`Minimum is ${accordionMinCredits.toLocaleString()} credits (${accordionMinUnits} ${accordionMinUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(accordionMinCredits)} رصيد (${c.num(accordionMinUnits)} وحدة)`)
+    ? c.t(`Minimum is ${accordionMinCredits.toLocaleString('en-US')} credits (${accordionMinUnits} ${accordionMinUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(accordionMinCredits)} رصيد (${c.num(accordionMinUnits)} وحدة)`)
     : accordionIsOverMax
-    ? c.t(`Maximum is ${accordionMaxCredits.toLocaleString()} credits (${accordionMaxUnits} units)`, `الحد الأقصى هو ${c.num(accordionMaxCredits)} رصيد (${c.num(accordionMaxUnits)} وحدة)`)
+    ? c.t(`Maximum is ${accordionMaxCredits.toLocaleString('en-US')} credits (${accordionMaxUnits} units)`, `الحد الأقصى هو ${c.num(accordionMaxCredits)} رصيد (${c.num(accordionMaxUnits)} وحدة)`)
     : null;
 
   const setAccordionUnitsAndSync = (u: number) => {
@@ -247,7 +247,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           qty: Number.isInteger(standaloneUnitsFloat) ? standaloneUnitsFloat : Math.round(standaloneUnitsFloat * 100) / 100,
           credits: dynamicStandaloneCredits,
           price: dynamicStandaloneCost,
-          name: `${dynamicStandaloneCredits.toLocaleString()} ${c.t('Custom Credits', 'رصيد مخصص')}`,
+          name: `${dynamicStandaloneCredits.toLocaleString('en-US')} ${c.t('Custom Credits', 'رصيد مخصص')}`,
           addonType: 'credits',
         }];
       }
@@ -296,7 +296,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
         qty: Number.isInteger(unitsFloat) ? unitsFloat : Math.round(unitsFloat * 100) / 100,
         credits,
         price,
-        name: `${credits.toLocaleString()} ${c.t('Custom Credits', 'رصيد مخصص')}`,
+        name: `${credits.toLocaleString('en-US')} ${c.t('Custom Credits', 'رصيد مخصص')}`,
         addonType: 'credits',
       });
     }
@@ -724,7 +724,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                   <h3 style={{ margin: '4px 0 0', fontSize: 17, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
                     {isAddon ? <Package size={17} color="var(--bl-accent)" /> : <Gem size={17} color="var(--bl-accent)" />}
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {isDynamicStandalone ? `${dynamicStandaloneCredits.toLocaleString()} ${c.t('Custom Credits Top-up', 'شحن رصيد مخصص')}` : c.pick(plan.name)}
+                      {isDynamicStandalone ? `${dynamicStandaloneCredits.toLocaleString('en-US')} ${c.t('Custom Credits Top-up', 'شحن رصيد مخصص')}` : c.pick(plan.name)}
                     </span>
                   </h3>
                 </div>
@@ -981,7 +981,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                                     <span>
                                       {a.addonType === 'seats'
                                         ? c.t(`+${a.addonSeats} seats`, `+${c.num(a.addonSeats ?? 0)} مقاعد`)
-                                        : c.t(`+${(a.credits || 0).toLocaleString()} credits`, `+${c.num(a.credits || 0)} رصيد`)}
+                                        : c.t(`+${(a.credits || 0).toLocaleString('en-US')} credits`, `+${c.num(a.credits || 0)} رصيد`)}
                                     </span>
                                   </div>
                                 </div>

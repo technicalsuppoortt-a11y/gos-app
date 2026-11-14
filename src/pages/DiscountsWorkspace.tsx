@@ -827,7 +827,7 @@ export function DiscountsWorkspace({ notify }: { notify: (message: string) => vo
                             {(ord.decidedAt || ord.createdAt) && (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                 <Clock size={11} />
-                                {new Date(ord.decidedAt || ord.createdAt || '').toLocaleString()}
+                                {new Date(ord.decidedAt || ord.createdAt || '').toLocaleString('en-US')}
                               </span>
                             )}
                           </div>

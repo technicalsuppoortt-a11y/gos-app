@@ -53,6 +53,7 @@ const MarketingTracking = lazy(() => import('../pages/MarketingTracking').then(m
 const PaymentMethodsPanel = lazy(() => import('../pages/settings/PaymentMethodsPanel').then(module => ({ default: module.PaymentMethodsPanel })));
 const SuperAdminWorkspace = lazy(() => import('../pages/super-admin/SuperAdminWorkspace').then(module => ({ default: module.SuperAdminWorkspace })));
 const SuperAdminPlansPage = lazy(() => import('../pages/billing/PlansPages').then(module => ({ default: module.SuperAdminPlansPage })));
+const DomainsPage = lazy(() => import('../app/admin/DomainsPage').then(module => ({ default: module.DomainsPage })));
 const AICopilot = lazy(() => import('../pages/AICopilot').then(module => ({ default: module.AICopilot })));
 const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePreview').then(module => ({ default: module.AssetStandalonePreview })));
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
@@ -195,7 +196,7 @@ export const router = createBrowserRouter([
       { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
       { path: 'dashboard', element: <Suspended><AdminDashboard/></Suspended> },
       { path: 'business-assets', element: <Suspended><BusinessAssetsPage/></Suspended> },
-      ...['conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
+      ...['conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
       { path: 'templates/new', element: <Suspended><AdminTemplateEditorPage scope="mine"/></Suspended> },
       { path: 'templates/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="mine"/></Suspended> },
       { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
@@ -221,6 +222,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard-management/new', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
       { path: 'dashboard-management/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
       { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { path: 'domains', element: <Suspended><DomainsPage scope="super_admin"/></Suspended> },
       { path: 'payment-methods', element: <Suspended><PaymentMethodsPanel scope="super_admin"/></Suspended> },
       { path: 'meta-app', element: <Suspended><MetaAppSettings/></Suspended> },
       { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },

@@ -31,7 +31,11 @@ async function moveWorkspaceLead(id: string, stage: string) {
 export function normalizeLead(row: ApiRecord): CanonicalLead {
   const existing = store.getState().crm.leads.find(lead => lead.id === row.id);
   const normalized = normalizeCRMLead(row, existing);
-  return mergeCRMLeads([normalized], existing ? [existing] : [])[0];
+  const merged = mergeCRMLeads([normalized], existing ? [existing] : [])[0];
+  if (existing?.assignedAgentName && (!row.owner || row.owner === 'Unassigned')) {
+    return { ...merged, owner: existing.assignedAgentName, assignedTo: existing.assignedTo, assignedAgentName: existing.assignedAgentName, handoffTimestamp: existing.handoffTimestamp };
+  }
+  return merged;
 }
 export function leadPayload(row: Partial<CanonicalLead>) {
   const body: ApiRecord = {};

@@ -691,7 +691,7 @@ function SubAccountDetailsModal({
                     fontWeight: 700,
                   }}
                 >
-                  {availableCredits.toLocaleString()} {t("Credits", "نقطة")}
+                  {availableCredits.toLocaleString('en-US')} {t("Credits", "نقطة")}
                 </span>
               </div>
               <div className="ob-details-meta-row">
@@ -699,7 +699,7 @@ function SubAccountDetailsModal({
                   {t("Lifetime Allocated", "إجمالي المشحون")}
                 </span>
                 <span className="ob-details-meta-value">
-                  {(wallet.data?.lifetimeAllocated ?? 0).toLocaleString()}
+                  {(wallet.data?.lifetimeAllocated ?? 0).toLocaleString('en-US')}
                 </span>
               </div>
               <div className="ob-details-meta-row">
@@ -707,7 +707,7 @@ function SubAccountDetailsModal({
                   {t("Lifetime Consumed", "المستهلك")}
                 </span>
                 <span className="ob-details-meta-value">
-                  {(wallet.data?.lifetimeSpent ?? 0).toLocaleString()}
+                  {(wallet.data?.lifetimeSpent ?? 0).toLocaleString('en-US')}
                 </span>
               </div>
             </div>

@@ -1,13 +1,17 @@
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   CheckSquare,
+  Clock,
   Eye,
   EyeOff,
   Filter,
+  Headset,
   KeyRound,
   Layers,
   Pencil,
+  Percent,
   Plus,
   RotateCcw,
   Search,
@@ -19,11 +23,15 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { Badge, Card, Field, Modal, PanelHeading } from './kit';
+import { Badge, Card, Field, Modal, PanelHeading, Toggle } from './kit';
 import { Select } from '../../components/ui/Select';
 import { friendlyError, settingsApiEnabled, settingsRequest } from './data';
 import {
+  ALL_SHIFT_DAYS,
   buildTabPermissionsMap,
+  defaultSupportShiftSchedule,
+  defaultWorkspaceTimezone,
+  isSupportMemberRole,
   modulePermissions,
   normalizeMemberRecord,
   permissionsForRole,
@@ -32,10 +40,13 @@ import {
   ROLE_PRESETS,
   saveLocal,
   settingsTabPermissions,
+  type DayCode,
   type Member,
   type RolePresetKey,
+  type SupportShiftSchedule,
   type TeamState,
 } from './localState';
+import { evaluateAgentShift } from '../../backend/supportRouting';
 import { useTablePagination } from '../commerce/useTablePagination';
 import { TeamPagination } from './TeamPagination';
 import { showToast } from '../../utils/toast';
@@ -52,6 +63,37 @@ const ROLE_OPTIONS = [
   'Support',
 ];
 
+const DAY_LABELS: Record<DayCode, string> = {
+  Sun: 'Sun',
+  Mon: 'Mon',
+  Tue: 'Tue',
+  Wed: 'Wed',
+  Thu: 'Thu',
+  Fri: 'Fri',
+  Sat: 'Sat',
+};
+
+function buildTimezoneOptions(extraTz?: string): { value: string; label: string }[] {
+  const base = [
+    { value: 'Africa/Cairo', label: 'Africa/Cairo (GMT+2/+3)' },
+    { value: 'Asia/Riyadh', label: 'Asia/Riyadh (GMT+3)' },
+    { value: 'Asia/Dubai', label: 'Asia/Dubai (GMT+4)' },
+    { value: 'Asia/Kuwait', label: 'Asia/Kuwait (GMT+3)' },
+    { value: 'Asia/Qatar', label: 'Asia/Qatar (GMT+3)' },
+    { value: 'Europe/Istanbul', label: 'Europe/Istanbul (GMT+3)' },
+    { value: 'Europe/London', label: 'Europe/London (GMT+0/+1)' },
+    { value: 'UTC', label: 'UTC (GMT+0)' },
+    { value: 'America/New_York', label: 'America/New_York (EST/EDT)' },
+  ];
+  const localTz = defaultWorkspaceTimezone();
+  for (const tz of [localTz, extraTz]) {
+    if (tz && !base.some(item => item.value === tz)) {
+      base.unshift({ value: tz, label: `${tz} (Local)` });
+    }
+  }
+  return base;
+}
+
 function detectPreset(perms: string[]): RolePresetKey {
   const clean = new Set(perms.filter(p => p !== 'settings' && p !== '*'));
   for (const key of ['full', 'commerce', 'support'] as const) {
@@ -65,6 +107,8 @@ function detectPreset(perms: string[]): RolePresetKey {
 
 export function TeamPanel() {
   useUILanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
   const tenant = useSelector((state: RootState) => state.auth.tenant);
   const role = useSelector((state: RootState) => state.auth.role);
@@ -137,23 +181,46 @@ export function TeamPanel() {
     void load();
   }, [load]);
 
-  const openAddMemberModal = () => {
+  const openAddMemberModal = useCallback((defaultToSupport = false) => {
     setError('');
     setShowPassword(false);
-    const initial = permissionsForRole('Manager');
+    const targetRole = defaultToSupport ? 'Support' : 'Manager';
+    const initial = permissionsForRole(targetRole);
     setDraft({
       id: crypto.randomUUID(),
       name: '',
       email: '',
       password: '',
-      role: 'Manager',
+      role: targetRole,
       active: true,
       preset: initial.preset,
       permissions: initial.permissions,
       allowedModules: initial.permissions,
       tabPermissions: buildTabPermissionsMap(initial.permissions),
+      ...(defaultToSupport
+        ? {
+            leadAllocationPercent: 50,
+            shiftSchedule: defaultSupportShiftSchedule(),
+          }
+        : {}),
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('addSupport') === '1' && canManage) {
+      openAddMemberModal(true);
+      params.delete('addSupport');
+      const nextSearch = params.toString();
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : '',
+        },
+        { replace: true },
+      );
+    }
+  }, [location.search, location.pathname, canManage, navigate, openAddMemberModal]);
 
   const applyPreset = (presetKey: RolePresetKey) => {
     if (!draft) return;
@@ -162,12 +229,20 @@ export function TeamPanel() {
       return;
     }
     const nextPerms = [...ROLE_PRESETS[presetKey].permissions];
+    const isSupportPreset = presetKey === 'support';
     setDraft({
       ...draft,
+      role: isSupportPreset && draft.role === 'Manager' ? 'Support' : draft.role,
       preset: presetKey,
       permissions: nextPerms,
       allowedModules: nextPerms,
       tabPermissions: buildTabPermissionsMap(nextPerms),
+      ...(isSupportPreset
+        ? {
+            leadAllocationPercent: draft.leadAllocationPercent ?? 50,
+            shiftSchedule: draft.shiftSchedule ?? defaultSupportShiftSchedule(),
+          }
+        : {}),
     });
   };
 
@@ -178,6 +253,7 @@ export function TeamPanel() {
       return;
     }
     const mapped = permissionsForRole(nextRole);
+    const isSupport = nextRole === 'Support' || mapped.preset === 'support';
     setDraft({
       ...draft,
       role: nextRole,
@@ -185,6 +261,12 @@ export function TeamPanel() {
       permissions: mapped.permissions,
       allowedModules: mapped.permissions,
       tabPermissions: buildTabPermissionsMap(mapped.permissions),
+      ...(isSupport
+        ? {
+            leadAllocationPercent: draft.leadAllocationPercent ?? 50,
+            shiftSchedule: draft.shiftSchedule ?? defaultSupportShiftSchedule(),
+          }
+        : {}),
     });
   };
 
@@ -264,12 +346,34 @@ export function TeamPanel() {
       return;
     }
 
+    const isSupportDraft = isSupportMemberRole(member);
+    if (
+      !remove &&
+      isSupportDraft &&
+      member.shiftSchedule?.enabled !== false &&
+      (member.shiftSchedule?.days ?? ALL_SHIFT_DAYS).length === 0
+    ) {
+      setError(translateText('Select at least one working day for the support shift schedule.'));
+      return;
+    }
+
     setBusy(true);
     setError('');
     const cleanPerms = [...new Set(member.permissions.filter(Boolean))];
     if (cleanPerms.some(p => p.startsWith('settings:')) && !cleanPerms.includes('settings')) {
       cleanPerms.push('settings');
     }
+    const clampedAllocation = isSupportDraft
+      ? Math.max(0, Math.min(100, Math.round(Number(member.leadAllocationPercent ?? 50))))
+      : member.leadAllocationPercent;
+    const normalizedShift: SupportShiftSchedule | undefined = isSupportDraft
+      ? {
+          ...(member.shiftSchedule ?? defaultSupportShiftSchedule()),
+          timezone:
+            member.shiftSchedule?.timezone?.trim() || defaultWorkspaceTimezone(),
+        }
+      : member.shiftSchedule;
+
     const updatedMember: Member = {
       ...member,
       name: member.name.trim(),
@@ -278,6 +382,8 @@ export function TeamPanel() {
       permissions: cleanPerms,
       allowedModules: cleanPerms,
       tabPermissions: buildTabPermissionsMap(cleanPerms),
+      ...(clampedAllocation !== undefined ? { leadAllocationPercent: clampedAllocation } : {}),
+      ...(normalizedShift ? { shiftSchedule: normalizedShift } : {}),
       updatedAt: new Date().toISOString(),
     };
 
@@ -440,15 +546,25 @@ export function TeamPanel() {
             : 'Demo team · changes are saved on this device.'
         }
         action={
-          <button
-            type="button"
-            className="st-primary"
-            disabled={!canManage || busy}
-            onClick={openAddMemberModal}
-          >
-            <Plus size={15} />
-            {translateText('Add member')}
-          </button>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="st-secondary"
+              onClick={() => navigate('/dashboard/settings/support-team')}
+            >
+              <Headset size={15} />
+              {translateText('Support Team')}
+            </button>
+            <button
+              type="button"
+              className="st-primary"
+              disabled={!canManage || busy}
+              onClick={() => openAddMemberModal(false)}
+            >
+              <Plus size={15} />
+              {translateText('Add member')}
+            </button>
+          </div>
         }
       >
         {localizeNode(
@@ -592,6 +708,9 @@ export function TeamPanel() {
                       .map(m => m.label)
                       .join(', ');
 
+                const isSupportRow = !isOwnerRow && isSupportMemberRole(member);
+                const shiftStatus = isSupportRow ? evaluateAgentShift(member) : null;
+
                 return (
                   <tr key={member.id}>
                     <td className="text-start">
@@ -607,10 +726,15 @@ export function TeamPanel() {
                           )}
                         </span>
                         <span>
-                          <b style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <b style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                             {member.name}
                             {isOwnerRow && (
                               <Badge tone="purple">{translateText('Owner')}</Badge>
+                            )}
+                            {isSupportRow && (
+                              <Badge tone="purple">
+                                {localizeNode(member.leadAllocationPercent ?? 50)}%
+                              </Badge>
                             )}
                           </b>
                           <small>{member.email}</small>
@@ -623,9 +747,20 @@ export function TeamPanel() {
                       </Badge>
                     </td>
                     <td className="text-center">
-                      <Badge tone={member.active ? 'green' : 'neutral'}>
-                        {localizeNode(member.active ? 'Active' : 'Inactive')}
-                      </Badge>
+                      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <Badge tone={member.active ? 'green' : 'neutral'}>
+                          {localizeNode(member.active ? 'Active' : 'Inactive')}
+                        </Badge>
+                        {isSupportRow && shiftStatus && (
+                          <span
+                            className={`st-shift-pill ${shiftStatus.onShift ? 'is-on' : 'is-off'}`}
+                            title={shiftStatus.scheduleLabel}
+                          >
+                            <span className="st-shift-dot" />
+                            {translateText(shiftStatus.onShift ? 'On Shift' : 'Off Shift')}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="text-center">
                       {isOwnerRow ? (
@@ -710,13 +845,25 @@ export function TeamPanel() {
                             const clean = member.permissions.filter(
                               p => p !== 'settings' && p !== '*',
                             );
+                            const presetVal = member.preset ?? detectPreset(clean);
+                            const isSupportEdit = isSupportMemberRole({
+                              role: member.role,
+                              preset: presetVal,
+                            });
                             setDraft({
                               ...member,
                               password: '',
-                              preset: member.preset ?? detectPreset(clean),
+                              preset: presetVal,
                               permissions: [...clean],
                               allowedModules: [...clean],
                               tabPermissions: buildTabPermissionsMap(clean),
+                              ...(isSupportEdit
+                                ? {
+                                    leadAllocationPercent: member.leadAllocationPercent ?? 50,
+                                    shiftSchedule:
+                                      member.shiftSchedule ?? defaultSupportShiftSchedule(),
+                                  }
+                                : {}),
                             });
                           }}
                         >
@@ -998,7 +1145,7 @@ export function TeamPanel() {
                       type="button"
                       onClick={() => applyPreset(presetKey)}
                       style={{
-                        textAlign: 'left',
+                        textAlign: 'start',
                         padding: '9px 11px',
                         borderRadius: 9,
                         border: isSelected ? '1.5px solid #7c3aed' : '1px solid #e2e8f0',
@@ -1050,6 +1197,260 @@ export function TeamPanel() {
                 })}
               </div>
             </div>
+
+            {/* Dynamic Support Routing & Shift Configuration (Support Role / Support Only Preset) */}
+            {isSupportMemberRole(draft) && (() => {
+              const shift = draft.shiftSchedule ?? defaultSupportShiftSchedule();
+              const allocation = Math.max(
+                0,
+                Math.min(100, Math.round(Number(draft.leadAllocationPercent ?? 50))),
+              );
+              const otherSupportTotal = team.members
+                .filter(
+                  m =>
+                    m.id !== draft.id &&
+                    !m.isOwner &&
+                    m.role !== 'Owner' &&
+                    m.active !== false &&
+                    isSupportMemberRole(m),
+                )
+                .reduce((acc, m) => acc + Math.max(0, Number(m.leadAllocationPercent ?? 50)), 0);
+              const totalPoolWeight = otherSupportTotal + (draft.active !== false ? allocation : 0);
+              const livePreview = evaluateAgentShift({
+                ...draft,
+                shiftSchedule: shift,
+              });
+
+              const updateShift = (patch: Partial<SupportShiftSchedule>) => {
+                setDraft({
+                  ...draft,
+                  shiftSchedule: {
+                    ...shift,
+                    ...patch,
+                  },
+                });
+              };
+
+              const toggleWorkingDay = (day: DayCode) => {
+                const currentDays = new Set<DayCode>(shift.days ?? ALL_SHIFT_DAYS);
+                if (currentDays.has(day)) {
+                  currentDays.delete(day);
+                } else {
+                  currentDays.add(day);
+                }
+                const ordered = ALL_SHIFT_DAYS.filter(d => currentDays.has(d));
+                updateShift({ days: ordered });
+              };
+
+              return (
+                <div className="st-support-config-box">
+                  <div className="st-support-config-head">
+                    <div className="st-support-config-title">
+                      <span className="st-support-config-icon">
+                        <Headset size={15} />
+                      </span>
+                      <div>
+                        <strong>{translateText('Support Routing & Shift Schedule')}</strong>
+                        <small>
+                          {translateText(
+                            'Unified assignment share and shift availability across Inbox, AI Follow-up & CRM',
+                          )}
+                        </small>
+                      </div>
+                    </div>
+                    <span className={`st-shift-pill ${livePreview.onShift ? 'is-on' : 'is-off'}`}>
+                      <span className="st-shift-dot" />
+                      {translateText(livePreview.onShift ? 'On Shift Now' : 'Off Shift Now')}
+                    </span>
+                  </div>
+
+                  {/* Lead Allocation Percentage */}
+                  <div className="st-support-block">
+                    <div className="st-support-block-top">
+                      <span className="st-support-label">
+                        <Percent size={13} />
+                        {translateText('Lead Allocation Percentage')}
+                      </span>
+                      <div className="st-support-quick-pills">
+                        {[25, 50, 75, 100].map(pct => (
+                          <button
+                            key={pct}
+                            type="button"
+                            className={`st-support-mini-pill${allocation === pct ? ' is-active' : ''}`}
+                            onClick={() =>
+                              setDraft({ ...draft, leadAllocationPercent: pct })
+                            }
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="st-support-slider-row">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        aria-label={translateText('Lead Allocation Percentage')}
+                        value={allocation}
+                        onChange={e =>
+                          setDraft({
+                            ...draft,
+                            leadAllocationPercent: Math.max(
+                              0,
+                              Math.min(100, Number(e.target.value) || 0),
+                            ),
+                          })
+                        }
+                        className="st-support-range"
+                      />
+                      <div className="st-support-number-wrap">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={allocation}
+                          onChange={e =>
+                            setDraft({
+                              ...draft,
+                              leadAllocationPercent: Math.max(
+                                0,
+                                Math.min(100, Math.round(Number(e.target.value) || 0)),
+                              ),
+                            })
+                          }
+                        />
+                        <span>%</span>
+                      </div>
+                    </div>
+
+                    <small className="st-support-hint">
+                      {translateText(
+                        'Agents with higher allocation percentages receive proportionally more leads when on shift.',
+                      )}{' '}
+                      ({translateText('Active support pool')}: {localizeNode(totalPoolWeight)}%)
+                    </small>
+                  </div>
+
+                  {/* Shift Schedule */}
+                  <div className="st-support-block">
+                    <div className="st-support-block-top">
+                      <span className="st-support-label">
+                        <Clock size={13} />
+                        {translateText('Shift Schedule')}
+                      </span>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                        <small style={{ fontSize: 11 }}>
+                          {translateText(
+                            shift.enabled !== false ? 'Schedule enforced' : 'Always available',
+                          )}
+                        </small>
+                        <Toggle
+                          label={translateText('Enable shift schedule')}
+                          checked={shift.enabled !== false}
+                          onChange={enabled => updateShift({ enabled })}
+                        />
+                      </div>
+                    </div>
+
+                    {shift.enabled !== false ? (
+                      <>
+                        <div className="st-support-days-head">
+                          <small>{translateText('Working Days')}</small>
+                          <div className="st-support-quick-pills">
+                            <button
+                              type="button"
+                              className="st-link"
+                              onClick={() => updateShift({ days: [...ALL_SHIFT_DAYS] })}
+                            >
+                              {translateText('All week')}
+                            </button>
+                            <button
+                              type="button"
+                              className="st-link"
+                              onClick={() =>
+                                updateShift({
+                                  days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
+                                })
+                              }
+                            >
+                              {translateText('Sun–Thu')}
+                            </button>
+                            <button
+                              type="button"
+                              className="st-link"
+                              onClick={() =>
+                                updateShift({
+                                  days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                                })
+                              }
+                            >
+                              {translateText('Mon–Fri')}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="st-support-days-grid">
+                          {ALL_SHIFT_DAYS.map(day => {
+                            const activeDay = (shift.days ?? ALL_SHIFT_DAYS).includes(day);
+                            return (
+                              <button
+                                key={day}
+                                type="button"
+                                aria-pressed={activeDay}
+                                className={`st-support-day-btn${activeDay ? ' is-active' : ''}`}
+                                onClick={() => toggleWorkingDay(day)}
+                              >
+                                {translateText(DAY_LABELS[day])}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <div className="st-support-time-grid">
+                          <Field label={translateText('Shift Start Time')}>
+                            <input
+                              type="time"
+                              value={shift.startTime || '09:00'}
+                              onChange={e => updateShift({ startTime: e.target.value || '09:00' })}
+                            />
+                          </Field>
+                          <Field label={translateText('Shift End Time')}>
+                            <input
+                              type="time"
+                              value={shift.endTime || '17:00'}
+                              onChange={e => updateShift({ endTime: e.target.value || '17:00' })}
+                            />
+                          </Field>
+                          <Field label={translateText('Workspace Timezone')} className="st-support-tz-field">
+                            <Select
+                              value={shift.timezone || defaultWorkspaceTimezone()}
+                              onChange={timezone => updateShift({ timezone })}
+                              options={buildTimezoneOptions(shift.timezone)}
+                            />
+                          </Field>
+                        </div>
+
+                        <small className="st-support-hint">
+                          {translateText(
+                            'Outside shift hours, new leads and human handoffs route to another on-shift Support agent or fall back to the Workspace Owner.',
+                          )}
+                        </small>
+                      </>
+                    ) : (
+                      <small className="st-support-hint">
+                        {translateText(
+                          'Shift schedule check is disabled — this Support agent is treated as on-shift 24/7 while Active.',
+                        )}
+                      </small>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Section 1: Platform Modules (Main Sidebar Navigation) */}
             <fieldset className="st-permissions" style={{ marginTop: 0 }}>

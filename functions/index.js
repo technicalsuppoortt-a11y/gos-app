@@ -6,6 +6,7 @@ import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { isSuspended, superAdminRequest } from './super-admin.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
+import { recordPublicAnalytics } from './public-analytics.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
 import { stripeGatewayRequest, createStripeWebhookHandler } from './stripe-gateway.js';
 import { billingServiceRequest, executeUsage, toHttpsError } from './billing-service.js';
@@ -40,6 +41,7 @@ import { createHostingClient } from './hosting-client.js';
 import { unpublishAssetRequest, publishAssetRequest, hostingDomainRequest, deleteAssetRequest } from './hosting-service.js';
 import { verifyAndProvisionDomain, disconnectSiteDomain, deleteSiteDomain, verifyDomainDns, normalizeHost } from './domain-verification.js';
 import { handleDomainProxy } from './domain-proxy.js';
+import { domainProviderRequest, createDomainProviderApiHandler } from './domain-provider.js';
 
 // Allows deploying the remaining services while the owner provisions the AI secret.
 const openaiKey = process.env.DEPLOY_COPILOT === 'true' ? defineSecret('OPENAI_API_KEY') : null;
@@ -71,6 +73,9 @@ export const adminDashboardStatus = onCall({ cors: true, invoker: 'public', time
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
 // Stripe (multi-tenant): credential test, Checkout Session creation and return verification.
 export const stripeGateway = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => stripeGatewayRequest(request, { actor, db }));
+// Multi-tier Domain Provider & Registrar System (Superadmin root provider, Admin delegated scope, User domain hub).
+export const domainProvider = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => domainProviderRequest(request, { actor, db }));
+export const domainProviderApi = onRequest({ cors: true, timeoutSeconds: 60 }, (req, res) => createDomainProviderApiHandler({ db, auth, actor })(req, res));
 // Register in Stripe Dashboard → Developers → Webhooks (event: checkout.session.completed).
 export const stripeWebhook = onRequest({ timeoutSeconds: 30 }, (req, res) => createStripeWebhookHandler({ db })(req, res));
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
@@ -79,6 +84,7 @@ export const productReviews = onCall({ cors: true, invoker: 'public' }, request 
 export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db, auth, origin: appOrigin.value() }));
 export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90, secrets: [portalBootstrapKey] }, request => productCheckoutRequest(request, {
   db, workspace, bucket: getStorage().bucket(),
+  portal: commerceFulfillmentDependencies(),
   fulfillPaidCheckout: async (root, orderId) => {
     const order = (await root.collection('orders').doc(orderId).get()).data();
     if (!order) throw new HttpsError('failed-precondition', 'The checkout order is unavailable.');
@@ -106,17 +112,31 @@ async function actor(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
   if (isSuspended(profile)) throw new HttpsError('permission-denied', 'Your account has been deactivated.');
-  return { ...profile, uid: request.auth.uid, tenantId: profile?.tenantId || request.auth.token?.tenantId || request.auth.uid };
+  let tenantId = profile?.tenantId || request.auth.token?.tenantId || '';
+  if (!tenantId) {
+    const uidLookup = (await db.doc(`settings/teamMemberUid_${request.auth.uid}`).get().catch(() => null))?.data();
+    if (uidLookup && uidLookup.active !== false && typeof uidLookup.tenantId === 'string' && uidLookup.tenantId) {
+      tenantId = uidLookup.tenantId;
+    }
+  }
+  return { ...profile, uid: request.auth.uid, tenantId: tenantId || request.auth.uid };
 }
 async function workspace(request, permission) {
   const user = await actor(request);
   if (['PLATFORM_FINANCE', 'PLATFORM_SUPPORT', 'CUSTOMER'].includes(user.role || request.auth?.token?.role)) throw new HttpsError('permission-denied', 'This account does not have workspace access.');
-  const [tenantDoc, memberDoc] = await Promise.all([
+  const [tenantDoc, memberDoc, teamUidDoc] = await Promise.all([
     db.doc(`tenants/${user.tenantId}`).get(),
-    db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get()
+    db.doc(`tenants/${user.tenantId}/members/${user.uid}`).get(),
+    db.doc(`settings/teamMemberUid_${user.uid}`).get().catch(() => null),
   ]);
   const tenant = tenantDoc.data() ?? {};
-  const member = memberDoc.data();
+  const teamUidData = teamUidDoc?.exists && teamUidDoc.data()?.tenantId === user.tenantId && !teamUidDoc.data()?.deleted ? teamUidDoc.data() : null;
+  const member = memberDoc.data() ?? (teamUidData ? {
+    role: teamUidData.role || user.teamRole || 'Viewer',
+    active: teamUidData.active !== false && teamUidData.status !== 'Suspended',
+    status: teamUidData.status || 'Active',
+    permissions: Array.isArray(teamUidData.permissions) ? teamUidData.permissions : Array.isArray(teamUidData.allowedModules) ? teamUidData.allowedModules : [],
+  } : undefined);
 
   const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role);
   const isOwner = user.role === 'Owner' || member?.role === 'Owner' || tenant.ownerId === user.uid || tenant.ownerUid === user.uid || user.tenantId === user.uid;
@@ -138,7 +158,7 @@ async function workspace(request, permission) {
     if (user.accountType === 'agency' || !isAdmin && !isOwner) throw err;
   }
 
-  return { user, root: db.doc(`tenants/${user.tenantId}`) };
+  return { user, root: db.doc(`tenants/${user.tenantId}`), canConfirmLegacyCheckout: isAdmin || isOwner };
 }
 function audit(root, user, type, resourceId, extra = {}) {
   return root.collection('events').add({ type, resourceId, actorId: user.uid, createdAt: new Date().toISOString(), ...extra });
@@ -149,6 +169,7 @@ function hostingClient() {
 export const unpublishAsset = onCall({ timeoutSeconds: 300 }, request => unpublishAssetRequest(request, { workspace, db, hosting: hostingClient() }));
 export const publishAsset = onCall({ timeoutSeconds: 300, memory: '512MiB' }, request => publishAssetRequest(request, { workspace, db, hosting: hostingClient(), appOrigin: appOrigin.value(), projectId: hostingProject.value() }));
 export const captureAssetLead = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => captureAssetLeadRequest(request, { workspace, db }));
+export const recordAnalyticsView = onCall({ cors: true, invoker: 'public', timeoutSeconds: 10 }, request => recordPublicAnalytics(request, { db }));
 // Public transport lets OPTIONS reach CORS. onCall extracts Bearer tokens and
 // uses Admin verifyIdToken; workspace() enforces the user's account/permissions.
 export const hostingDomain = onCall({ timeoutSeconds: 180, cors: true, invoker: 'public' }, request => hostingDomainRequest(request, { workspace, db, hosting: hostingClient() }));

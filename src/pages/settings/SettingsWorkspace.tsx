@@ -16,6 +16,7 @@ import { BillingPanel } from './BillingPanel';
 import { PaymentMethodsPanel } from './PaymentMethodsPanel';
 import { IntegrationsPanel } from './IntegrationsPanel';
 import { TeamPanel, SecurityPanel } from './SystemPanels';
+import { SupportTeamPanel } from './SupportTeamPanel';
 import { settingsTabs as tabs, settingsAliases as aliases } from './navigation';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PrivacyPolicyPanel } from './PrivacyPolicyPanel';
@@ -23,6 +24,7 @@ import { DomainsSettingsPanel } from './DomainsSettingsPanel';
 import { type PersonalPreferences } from '../../backend/workspacePreferences';
 import './settings-controls.css';
 import './settings.css';
+import './support-team.css';
 
 const CURRENCY_SELECT_OPTIONS = [
   { value: 'USD', label: '$ · USD (US Dollar)' },
@@ -93,7 +95,7 @@ function SettingsWorkspaceView() {
   return <div className="st-workspace w-full">
     <div className="st-layout w-full">
       <div className={`st-content st-${active.slug} w-full`} key={active.slug}>
-        {active.slug === 'billing' ? <BillingPanel data={data} integrations={loading || error ? undefined : data.integrations} refresh={refresh} saveLocal={save} agencyUid={agencyUid}/> : localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
+        {active.slug === 'support-team' ? <SupportTeamPanel/> : active.slug === 'billing' ? <BillingPanel data={data} integrations={loading || error ? undefined : data.integrations} refresh={refresh} saveLocal={save} agencyUid={agencyUid}/> : localizeNode(loading ? <div className="st-loading" role="status" aria-label={translateText("Loading settings")}><div/><div/><div/></div> : error ? <Card title={translateText("Settings could not be loaded")} className="w-full"><p className="st-error" role="alert">{localizeNode(error)}</p><button className="st-primary" onClick={() => void refresh()}>{translateText("Try again")}</button></Card> : <>
           {active.slug === 'pixel' && <MarketingTracking/>}
           {active.slug === 'domains' && <DomainsSettingsPanel/>}
           {localizeNode(active.slug === 'profile' && <ProfilePanel data={data} save={save}/>)}

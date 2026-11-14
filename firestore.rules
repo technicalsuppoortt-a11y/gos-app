@@ -324,6 +324,51 @@ service cloud.firestore {
       allow read: if true;
       allow write: if accountAvailable() && !platformStaff() && !customerAccount();
     }
+
+    // Multi-tier Domain Provider & Registrar Collections (managed server-side via domainProvider callable)
+    // Registrar API credentials (Namecheap) are strictly server-only; never readable by client SDKs.
+    match /domainRegistrarConfigurations/{provider} {
+      allow read, write: if false;
+    }
+    match /domain_settings/{docId} {
+      allow read: if signedIn() || platformSuperadmin() || platformTeamCan(['domains']);
+      allow write: if false;
+    }
+    // Wholesale registrar_price & markup breakdown are restricted to Superadmin; users/admins receive public pricing via domainProvider.
+    match /domain_pricing/{tld} {
+      allow read: if platformSuperadmin() || platformTeamCan(['domains']);
+      allow write: if false;
+    }
+    match /domains/{domainId} {
+      allow read: if platformSuperadmin() || platformTeamCan(['domains'])
+        || (featureAdmin() && (
+          resource.data.get('admin_id', '') == request.auth.uid ||
+          resource.data.get('user_id', '') == request.auth.uid ||
+          resource.data.get('tenant_id', '') == request.auth.token.get('tenantId', '')
+        ))
+        || (signedIn() && !customerAccount() && (
+          resource.data.get('user_id', '') == request.auth.uid ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && resource.data.get('tenant_id', '') == profile().get('tenantId', ''))
+        ));
+      allow write: if false;
+    }
+    match /domain_orders/{orderId} {
+      allow read: if platformSuperadmin() || platformTeamCan(['domains'])
+        || (featureAdmin() && (
+          resource.data.get('admin_id', '') == request.auth.uid ||
+          resource.data.get('user_id', '') == request.auth.uid
+        ))
+        || (signedIn() && !customerAccount() && resource.data.get('user_id', '') == request.auth.uid);
+      allow write: if false;
+    }
+    match /domain_contacts/{userId} {
+      allow read: if (signedIn() && request.auth.uid == userId) || platformSuperadmin() || platformTeamCan(['domains']);
+      allow write: if false;
+    }
+    match /domain_registrar_logs/{logId} {
+      allow read: if platformSuperadmin() || platformTeamCan(['domains', 'logs_monitoring']);
+      allow write: if false;
+    }
     match /users/{userId} {
       match /preferences/passwordPolicy {
         allow get: if signedIn() && request.auth.uid == userId;
@@ -377,7 +422,7 @@ service cloud.firestore {
       // Admin reads do not depend on membership documents in each client workspace.
       allow get, list: if featureAdmin() || superAdmin() || tenant(tenantId) || signedIn() && !customerAccount() && resource.data.get('accountType', '') != 'agency';
       match /{adminResource}/{adminRecord} {
-        allow read: if (featureAdmin() || superAdmin() || tenant(tenantId) || permit(tenantId, 'settings')) && adminResource in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'checkoutRequests', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'userTemplates', 'files', 'handoffLogs', 'aiUsage', 'modelAllocations'];
+        allow read: if adminResource in ['products', 'calendars', 'bookings', 'contacts', 'leads', 'pipelines', 'conversations', 'messages', 'workflows', 'workflowRuns', 'scheduledActions', 'knowledge', 'templates', 'discounts', 'transactions', 'orders', 'checkoutRequests', 'events', 'integrations', 'auditLogs', 'assets', 'domains', 'userTemplates', 'files', 'handoffLogs', 'aiUsage', 'modelAllocations'] && (featureAdmin() || superAdmin() || tenant(tenantId) || permit(tenantId, 'settings'));
       }
       match /preferences/general {
         allow get: if tenant(tenantId) || superAdmin();
@@ -470,6 +515,10 @@ service cloud.firestore {
       }
       match /checkoutRequests/{requestId} {
         allow read: if featureAdmin() || superAdmin() || permit(tenantId, 'products') || tenant(tenantId);
+        allow write: if false;
+      }
+      match /analyticsEvents/{eventId} {
+        allow read: if permit(tenantId, 'analytics') || superAdmin();
         allow write: if false;
       }
       match /{collectionName}/{id} {

@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useRef, useState } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -21,11 +21,17 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { backendError, callBackend, db } from '../../backend/firebase';
+import {
+  buildCustomerProductSnapshot,
+  syncMerchantPortalDelivery,
+  type CustomerPurchaseRecord,
+} from '../../backend/customerPortal';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { showToast } from '../../utils/toast';
 import type { RootState } from '../../store';
+import { useProducts } from './repository';
 import './checkout-requests.css';
 
 type Status = 'Pending' | 'Approved' | 'Rejected';
@@ -35,8 +41,10 @@ type RequestRow = {
   createdAt: string;
   decidedAt?: string;
   productId?: string;
+  product_id?: string;
+  product?: { id?: string };
   productName: string;
-  items: { productId: string; productName: string; amount?: number; quantity?: number }[];
+  items: { productId: string; product_id?: string; productName: string; amount?: number; quantity?: number }[];
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -51,10 +59,10 @@ type RequestRow = {
   fields: { label: string; value: string }[];
 };
 
-const date = (value: string) => {
+const date = (value: string, locale = 'en') => {
   if (!value) return '—';
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString('en-US');
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short', numberingSystem: 'latn' });
 };
 
 const initials = (name: string) =>
@@ -81,6 +89,7 @@ export function CheckoutRequests() {
 function RequestsView({ tenantId }: { tenantId: string }) {
   const { formatPrice: money } = useCurrency();
   const isArabic = useUILanguage().startsWith('ar');
+  const workspaceProducts = useProducts();
   const [source, setSource] = useState<{ rows: RequestRow[]; error: string; loading: boolean }>({
     rows: [],
     error: '',
@@ -103,8 +112,8 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     const recompute = () => {
       if (!active) return;
       const merged = new Map<string, RequestRow>();
-      for (const list of bySource.values()) {
-        for (const item of list) {
+      for (const source of ['mirror', 'tenant']) {
+        for (const item of bySource.get(source) || []) {
           if (item?.id) merged.set(item.id, item);
         }
       }
@@ -191,12 +200,132 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     if (rowBusyId) return;
     setRowBusyId(row.id);
     try {
-      await applyRequestDecision(row, 'approve', row.reviewNote || 'Approved by merchant');
-      showToast.success(row.status === 'Approved'
-        ? (isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : 'Customer portal access synced.')
-        : t('Checkout request approved.'));
+      if (row.status === 'Approved') {
+        const candidateId = [row.productId, row.product_id, row.product?.id, ...(row.items || []).flatMap(item => [item.productId, item.product_id])]
+          .find(id => typeof id === 'string' && /^[\w-]{1,150}$/.test(id));
+        const cleanProdName = String(row.productName || row.items?.[0]?.productName || '').trim().toLowerCase();
+        const matchedProduct = workspaceProducts.find(
+          p => (candidateId && p.id === candidateId) || (cleanProdName && p.name.trim().toLowerCase() === cleanProdName),
+        );
+        const resolvedProductId =
+          matchedProduct?.id ||
+          candidateId ||
+          (cleanProdName ? `prod_${cleanProdName.replace(/[^a-z0-9]+/g, '_').slice(0, 48)}` : 'product');
+
+        // Ensure canonical product document exists in Firestore so backend fulfillment resolves config reliably
+        if (matchedProduct?.config && /^[\w-]{1,150}$/.test(matchedProduct.id)) {
+          const {
+            reviews: _r,
+            ratingAverage: _ra,
+            reviewsCount: _rc,
+            ratingTotal: _rt,
+            ...safeProductDoc
+          } = matchedProduct as unknown as Record<string, unknown>;
+          await setDoc(
+            doc(db, 'tenants', tenantId, 'products', matchedProduct.id),
+            JSON.parse(JSON.stringify(safeProductDoc)),
+            { merge: true },
+          ).catch(() => null);
+        }
+
+        const cleanEmail = String(row.customerEmail || '').trim().toLowerCase();
+        const purchaseId = `${tenantId}_${resolvedProductId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gos-app-3c7fb.web.app';
+        const portalPath = `/portal/${encodeURIComponent(purchaseId)}`;
+        const nowIso = new Date().toISOString();
+
+        let localDeliverySynced = false;
+        if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+          const portalRecord: CustomerPurchaseRecord = {
+            id: purchaseId,
+            purchaseId,
+            legacyId: purchaseId,
+            tenantId,
+            orderId: row.id,
+            productId: resolvedProductId,
+            customerUid: '',
+            customerEmail: cleanEmail,
+            customerName: row.customerName || cleanEmail.split('@')[0] || 'Customer',
+            customerPhone: row.customerPhone || '',
+            paymentMethod: row.method || '',
+            transferAccount: row.transferAccount || '',
+            discountCode: row.discountCode || '',
+            decidedAt: row.decidedAt || nowIso,
+            amount: Number(row.totals?.dueToday ?? 0),
+            currency: row.currency || matchedProduct?.config?.currency || 'USD',
+            status: 'Active',
+            loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(portalPath)}`,
+            portalUrl: `${origin}${portalPath}`,
+            productSnapshot: buildCustomerProductSnapshot(
+              matchedProduct,
+              resolvedProductId,
+              row.productName || matchedProduct?.name || 'Purchased Product',
+              matchedProduct?.type || 'Course',
+            ),
+            completedLessonIds: [],
+            progress: 0,
+            downloadedAssetIds: [],
+            downloadCount: 0,
+            serviceStatus: 'Order Confirmed',
+            grantedAt: row.decidedAt || row.createdAt || nowIso,
+            updatedAt: nowIso,
+          };
+          await syncMerchantPortalDelivery(portalRecord);
+          localDeliverySynced = true;
+        }
+
+        let backendSynced = false;
+        try {
+          const result = await callBackend<{ ok: boolean }>('productCheckout', {
+            action: 'sync_portal_access',
+            requestId: row.id,
+            tenantId,
+            ...(resolvedProductId ? { productId: resolvedProductId } : {}),
+          }, 90000);
+          backendSynced = Boolean(result?.ok);
+        } catch (syncErr) {
+          // Repair interrupted legacy checkout approval or provision directly via commerceService
+          if (/^[a-f0-9]{64}$/i.test(row.id)) {
+            await callBackend('productCheckout', {
+              action: 'review',
+              id: row.id,
+              decision: 'approve',
+              note: row.reviewNote || 'Approved by merchant',
+            }).then(() => { backendSynced = true; }).catch(() => null);
+          }
+          if (!backendSynced && cleanEmail && /^[\w-]{1,150}$/.test(resolvedProductId)) {
+            await callBackend('commerceService', {
+              action: 'provisionCustomerPortal',
+              productId: resolvedProductId,
+              email: cleanEmail,
+              name: row.customerName,
+              orderId: row.id,
+              amount: Number(row.totals?.dueToday ?? 0),
+              currency: row.currency || 'USD',
+              paymentMethod: row.method || '',
+              customerPhone: row.customerPhone || '',
+            }).then(() => { backendSynced = true; }).catch(() => null);
+          }
+          if (!backendSynced && !localDeliverySynced) {
+            throw syncErr;
+          }
+        }
+
+        if (!backendSynced && !localDeliverySynced) {
+          throw new Error('Customer portal access could not be synced.');
+        }
+        showToast.success(isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : 'Customer portal access synced.');
+      } else {
+        await applyRequestDecision(row, 'approve', row.reviewNote || 'Approved by merchant');
+        showToast.success(t('Checkout request approved.'));
+      }
     } catch (cause) {
-      showToast.error(t(backendError(cause)));
+      const code = (cause as { code?: string })?.code;
+      showToast.error(row.status === 'Approved'
+        ? code === 'functions/failed-precondition'
+          ? (isArabic ? 'تعذرت مزامنة الوصول. تحقق من اعتماد الطلب وتوفر المنتج.' : 'Could not sync access. Check the approval and product availability.')
+          : (isArabic ? 'تعذرت مزامنة الوصول إلى البوابة. حاول مرة أخرى.' : 'Could not sync portal access. Try again.')
+        : t(backendError(cause)));
     } finally {
       setRowBusyId('');
     }
@@ -208,24 +337,6 @@ function RequestsView({ tenantId }: { tenantId: string }) {
         <div>
           <h2>{t('Checkout Requests')}</h2>
           <p>{t('Review customer submissions, transfer receipts and checkout details.')}</p>
-        </div>
-        <div className="cr-kpi-strip">
-          <div className="cr-kpi-pill">
-            <span className="cr-kpi-label">{t('Total')}</span>
-            <strong>{counts.All}</strong>
-          </div>
-          <div className="cr-kpi-pill pending">
-            <span className="cr-kpi-label">{t('Pending')}</span>
-            <strong>{counts.Pending}</strong>
-          </div>
-          <div className="cr-kpi-pill approved">
-            <span className="cr-kpi-label">{t('Approved')}</span>
-            <strong>{counts.Approved}</strong>
-          </div>
-          <div className="cr-kpi-pill rejected">
-            <span className="cr-kpi-label">{t('Rejected')}</span>
-            <strong>{counts.Rejected}</strong>
-          </div>
         </div>
       </div>
 
@@ -258,13 +369,12 @@ function RequestsView({ tenantId }: { tenantId: string }) {
         </div>
 
         <div className="cr-filter-group">
-          <div className="cr-status-tabs" role="tablist" aria-label={t('Filter by request status')}>
+          <div className="cr-status-tabs" role="group" aria-label={t('Filter by request status')}>
             {(['All', 'Pending', 'Approved', 'Rejected'] as const).map(option => (
               <button
                 key={option}
                 type="button"
-                role="tab"
-                aria-selected={status === option}
+                aria-pressed={status === option}
                 className={`cr-status-tab ${status === option ? 'active' : ''} ${option.toLowerCase()}`}
                 onClick={() => {
                   setStatus(option);
@@ -277,21 +387,6 @@ function RequestsView({ tenantId }: { tenantId: string }) {
             ))}
           </div>
 
-          <select
-            className="cr-status-select"
-            aria-label={t('Request status')}
-            value={status}
-            onChange={event => {
-              setStatus(event.target.value as Status | 'All');
-              setPage(1);
-            }}
-          >
-            {(['All', 'Pending', 'Approved', 'Rejected'] as const).map(option => (
-              <option key={option} value={option}>
-                {t(option)} ({counts[option]})
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
@@ -316,13 +411,22 @@ function RequestsView({ tenantId }: { tenantId: string }) {
         </div>
       ) : rows.length ? (
         <div className="cr-table-card">
-          <div className="request-table">
-            <table>
+          <div className="request-table" tabIndex={0} role="region" aria-label={t('Checkout Requests')}>
+            <table className="cr-requests-table">
+              <colgroup>
+                <col className="cr-col-customer" />
+                <col className="cr-col-product" />
+                <col className="cr-col-method" />
+                <col className="cr-col-total" />
+                <col className="cr-col-date" />
+                <col className="cr-col-status" />
+                <col className="cr-col-actions" />
+              </colgroup>
               <thead>
                 <tr>
                   {['Customer', 'Product', 'Method', 'Total', 'Submitted', 'Status', 'Actions'].map(label => (
                     <th key={label} scope="col">
-                      {t(label)}
+                      {label === 'Submitted' && isArabic ? 'تاريخ الإرسال' : t(label)}
                     </th>
                   ))}
                 </tr>
@@ -337,7 +441,7 @@ function RequestsView({ tenantId }: { tenantId: string }) {
                         </span>
                         <div className="cr-customer-meta">
                           <b>{row.customerName}</b>
-                          <small>{row.customerEmail}</small>
+                          <small title={row.customerEmail}><bdi>{row.customerEmail}</bdi></small>
                         </div>
                       </div>
                     </td>
@@ -351,10 +455,10 @@ function RequestsView({ tenantId }: { tenantId: string }) {
                       <span className="cr-method-badge">{row.method || t('Manual transfer')}</span>
                     </td>
                     <td>
-                      <strong className="cr-amount">{money(row.totals?.dueToday ?? 0, row.currency)}</strong>
+                      <strong className="cr-amount"><bdi>{money(row.totals?.dueToday ?? 0, row.currency)}</bdi></strong>
                     </td>
                     <td>
-                      <span className="cr-date-cell">{date(row.createdAt)}</span>
+                      <span className="cr-date-cell">{date(row.createdAt, isArabic ? 'ar' : 'en')}</span>
                     </td>
                     <td>
                       <span className={`request-status ${row.status.toLowerCase()}`}>
@@ -392,9 +496,11 @@ function RequestsView({ tenantId }: { tenantId: string }) {
                           </>
                         )}
                         {row.status === 'Approved' && (
-                          <button type="button" className="cw-button cr-action-btn" disabled={rowBusyId === row.id} onClick={() => void quickApprove(row)}>
+                          <button type="button" className="cw-button cr-action-btn cr-sync-button" disabled={Boolean(rowBusyId)} aria-busy={rowBusyId === row.id} onClick={() => void quickApprove(row)}>
                             <KeyRound size={14} />
-                            <span>{isArabic ? 'مزامنة الوصول إلى البوابة' : 'Sync portal access'}</span>
+                            <span>{rowBusyId === row.id
+                              ? (isArabic ? 'جارٍ المزامنة…' : 'Syncing…')
+                              : (isArabic ? 'مزامنة الوصول إلى البوابة' : 'Sync portal access')}</span>
                           </button>
                         )}
                         <button

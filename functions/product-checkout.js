@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { isPublicProduct } from './product-reviews.js';
+import { provisionCustomerPortalAccess } from './customer-portal.js';
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -117,8 +118,9 @@ function receiptFile(receipt) {
   return { type, name, content };
 }
 
-export async function productCheckoutRequest(request, { db, workspace, bucket, fulfillPaidCheckout, now = Date.now }) {
+export async function productCheckoutRequest(request, { db, workspace, bucket, fulfillPaidCheckout, portal, now = Date.now }) {
   const data = request.data || {};
+  if (['sync_portal_access', 'syncPortalAccess'].includes(data.action)) return syncPortalAccess(request, { db, workspace, portal });
   if (['review', 'receipt'].includes(data.action)) return reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, now });
   if (!validId(data.tenantId) || !validId(data.productId)) throw new HttpsError('invalid-argument', 'Choose a valid product.');
   const root = db.doc(`tenants/${data.tenantId}`);
@@ -243,6 +245,99 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
   if (!committed) await removeUnusedReceipt();
   if (fulfillPaidCheckout && (await ref.get()).data()?.status === 'Approved') await fulfillPaidCheckout(root, id);
   return { id };
+}
+
+async function syncPortalAccess(request, { db, workspace, portal }) {
+  const { root, user, canConfirmLegacyCheckout } = await workspace(request, 'products');
+  const { requestId } = request.data;
+  if (typeof requestId !== 'string' || !/^[\w-]{1,310}$/.test(requestId)) {
+    throw new HttpsError('invalid-argument', 'Invalid checkout request.');
+  }
+  const requestRef = root.collection('checkoutRequests').doc(requestId);
+  const canonical = (await requestRef.get()).data();
+  const legacyRef = db.doc(`settings/checkoutRequests_${root.id}/items/${requestId}`);
+  const legacy = canonical ? undefined : (await legacyRef.get()).data();
+  const checkout = canonical || legacy;
+  if (!checkout) throw new HttpsError('not-found', 'Checkout request not found.');
+  if (!/^(approved|paid)$/i.test(checkout.status || '')) {
+    throw new HttpsError('failed-precondition', 'Only approved checkout requests can be synced.');
+  }
+
+  const orderId = checkout.orderId || checkout.order_id || requestId;
+  const orderRefs = ['orders', 'transactions'].map(collection => root.collection(collection).doc(requestId));
+  if (orderId !== requestId && typeof orderId === 'string' && /^[\w-]{1,310}$/.test(orderId)) {
+    orderRefs.push(...['orders', 'transactions'].map(collection => root.collection(collection).doc(orderId)));
+  }
+  const orders = await Promise.all(orderRefs.map(async ref => ({ ref, record: (await ref.get()).data() })));
+  // The old settings mirror is client-writable. Only tenant-owned records can authorize delivery.
+  const paidStatus = /^(paid|completed|succeeded)$/i;
+  const found = orders.find(({ record }) => paidStatus.test(record?.status || ''));
+  const legacyConfirmation = !canonical && !found && canConfirmLegacyCheckout;
+  if ((!canonical && !found && !legacyConfirmation) || orders.some(({ record }) => /refund|revoke|chargeback|reject|cancel/i.test(record?.status || ''))) {
+    console.warn('Portal sync rejected: unconfirmed or reversed checkout', { requestId, tenantId: root.id });
+    throw new HttpsError('failed-precondition', 'A verified approved checkout or paid order is required.');
+  }
+  const confirmationRef = root.collection('commerceReceipts').doc(`legacy-portal-${hash(requestId)}`);
+  const source = found?.ref || (legacyConfirmation ? confirmationRef : requestRef);
+  const order = found?.record || checkout;
+  const approvedCheckoutSource = !found;
+  if (approvedCheckoutSource && !canonical && orders.some(({ record }) => record)) {
+    throw new HttpsError('failed-precondition', 'A verified approved checkout or paid order is required.');
+  }
+  const items = Array.isArray(order.items) ? order.items : [];
+  let productIds = [...new Set([order.productId || order.product_id || order.product?.id, ...items.map(item => item?.productId || item?.product_id)].filter(Boolean))];
+  let catalogProductName = productIds.length === 0 && items.length <= 1
+    ? order.productName || order.product_name || order.product?.name || items[0]?.productName || items[0]?.product_name
+    : '';
+  if (typeof catalogProductName === 'string' && catalogProductName.trim()) {
+    const matches = await root.collection('products').where('name', '==', catalogProductName).limit(2).get();
+    if (matches.docs.length === 1) productIds.push(matches.docs[0].ref.id);
+  }
+  if (!productIds.length || !productIds.every(validId)) throw new HttpsError('failed-precondition', 'The checkout product is unavailable.');
+  let products = await Promise.all(productIds.map(async id => ({ ...(await root.collection('products').doc(id).get()).data(), id })));
+  if (products.some(product => !product.config) && productIds.length === 1 && items.length <= 1) {
+    const fallbackName = order.productName || order.product_name || order.product?.name || items[0]?.productName || items[0]?.product_name;
+    if (typeof fallbackName === 'string' && fallbackName.trim()) {
+      const matches = await root.collection('products').where('name', '==', fallbackName).limit(2).get();
+      if (matches.docs.length === 1 && matches.docs[0].data()?.config) {
+        catalogProductName = fallbackName;
+        productIds = [matches.docs[0].ref.id];
+        products = [{ ...matches.docs[0].data(), id: matches.docs[0].ref.id }];
+      }
+    }
+  }
+  if (products.some(product => !product.config)) throw new HttpsError('failed-precondition', 'The checkout product is unavailable.');
+  if (legacyConfirmation) {
+    const customerEmail = text(order.customerEmail || order.customer_email || order.email || order.customer?.email, 254).toLowerCase();
+    if (!emailPattern.test(customerEmail)) throw new HttpsError('failed-precondition', 'The checkout customer email is unavailable.');
+    const confirmation = {
+      orderId: requestId, status: 'Approved', customerEmail,
+      customerName: text(order.customerName || order.customer?.name, 150),
+      items: products.map(product => {
+        const item = items.find(item => (item?.productId || item?.product_id) === product.id);
+        return { productId: product.id, amount: Number(item?.amount ?? order.amount ?? order.total ?? order.totals?.dueToday ?? 0) || 0 };
+      }),
+      currency: text(order.currency || order.totals?.currency, 8),
+      confirmedBy: user.uid, confirmedAt: new Date().toISOString(),
+    };
+    await db.runTransaction(async tx => {
+      const [prior, latest, tenantRequest] = await Promise.all([tx.get(confirmationRef), tx.get(legacyRef), tx.get(requestRef)]);
+      if (tenantRequest.exists || JSON.stringify(latest.data()) !== JSON.stringify(legacy)) {
+        throw new HttpsError('aborted', 'The checkout changed. Refresh and try again.');
+      }
+      if (!prior.exists) tx.set(confirmationRef, confirmation);
+      else if (prior.data().customerEmail !== customerEmail || JSON.stringify(prior.data().items) !== JSON.stringify(confirmation.items)) {
+        throw new HttpsError('failed-precondition', 'The legacy checkout differs from its previous confirmation.');
+      }
+    });
+    Object.assign(order, confirmation);
+  }
+  const results = await Promise.all(products.map(product => provisionCustomerPortalAccess({
+    ...portal, db, tenantId: root.id, order: { ...order, id: source.id }, product,
+    sourcePath: source.path, approvedCheckoutSource, relatedPaymentRefs: orderRefs, catalogProductName,
+  })));
+  if (!results.every(Boolean)) throw new HttpsError('failed-precondition', 'Customer portal access could not be synced.');
+  return { ok: true };
 }
 
 function queueRequestEmail(tx, root, record, kind, createdAt) {

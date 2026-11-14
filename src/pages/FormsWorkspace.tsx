@@ -217,7 +217,7 @@ function DeleteFormModal({ form, isOpen, onClose, onConfirm, deleting }: DeleteF
               <div className="delete-form-asset-meta">
                 <span>{formatDisplayMessage(fieldCount === 1 ? '{{0}} input field' : '{{0}} input fields', fieldCount)}</span>
                 <span>•</span>
-                <span>{translateText("Updated ")}{new Date(form.updated).toLocaleDateString()}</span>
+                <span>{translateText("Updated ")}{new Date(form.updated).toLocaleDateString('en-US')}</span>
               </div>
             </div>
             <span className={`form-status-pill ${isPublished ? 'published' : 'draft'}`}>
@@ -2037,7 +2037,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                         </span>
                       )}
                     </div>
-                    <small style={{ color: 'var(--form-text-muted)', fontSize: 12 }}>{translateText("Updated ")}{new Date(item.updated).toLocaleDateString()}
+                    <small style={{ color: 'var(--form-text-muted)', fontSize: 12 }}>{translateText("Updated ")}{new Date(item.updated).toLocaleDateString('en-US')}
                     </small>
                   </div>
                 </div>

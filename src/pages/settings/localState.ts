@@ -37,6 +37,7 @@ export const settingsTabPermissions: PermissionItem[] = [
   { id: 'settings:payment-methods', label: 'Payment Methods', path: '/dashboard/settings/payment-methods', category: 'settings' },
   { id: 'settings:integrations', label: 'Integrations', path: '/dashboard/settings/integrations', category: 'settings' },
   { id: 'settings:team', label: 'Team & roles', path: '/dashboard/settings/team', category: 'settings' },
+  { id: 'settings:support-team', label: 'Support Team', path: '/dashboard/settings/support-team', category: 'settings' },
   { id: 'settings:pixel', label: 'Pixel', path: '/dashboard/settings/pixel', category: 'settings' },
   { id: 'settings:security', label: 'Security', path: '/dashboard/settings/security', category: 'settings' },
   { id: 'settings:privacy', label: 'Privacy Policy', path: '/dashboard/settings/privacy', category: 'settings' },
@@ -122,6 +123,43 @@ export function buildTabPermissionsMap(allowed: string[]): Record<string, boolea
   return map;
 }
 
+export type DayCode = 'Sun' | 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat';
+
+export const ALL_SHIFT_DAYS: DayCode[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export type SupportShiftSchedule = {
+  enabled: boolean;
+  days: DayCode[];
+  startTime: string;
+  endTime: string;
+  timezone: string;
+};
+
+export function defaultWorkspaceTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
+  } catch {
+    return 'Africa/Cairo';
+  }
+}
+
+export function defaultSupportShiftSchedule(timezone?: string): SupportShiftSchedule {
+  return {
+    enabled: true,
+    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
+    startTime: '09:00',
+    endTime: '17:00',
+    timezone: timezone || defaultWorkspaceTimezone(),
+  };
+}
+
+export function isSupportMemberRole(member: Pick<Member, 'role' | 'preset'>): boolean {
+  return (
+    String(member.role || '').trim().toLowerCase() === 'support' ||
+    member.preset === 'support'
+  );
+}
+
 export type Member = {
   id: string;
   name: string;
@@ -139,6 +177,8 @@ export type Member = {
   ownerId?: string;
   ownerName?: string;
   ownerEmail?: string;
+  leadAllocationPercent?: number;
+  shiftSchedule?: SupportShiftSchedule;
   updatedAt?: string;
 };
 
@@ -267,6 +307,35 @@ export function normalizeMemberRecord(raw: Partial<Member> & Record<string, any>
     perms = [...perms, 'settings'];
   }
 
+  const rawAlloc = Number(raw.leadAllocationPercent);
+  const normalizedAlloc = Number.isFinite(rawAlloc)
+    ? Math.max(0, Math.min(100, Math.round(rawAlloc)))
+    : undefined;
+
+  let shiftSchedule: SupportShiftSchedule | undefined;
+  if (raw.shiftSchedule && typeof raw.shiftSchedule === 'object') {
+    const rawDays = Array.isArray(raw.shiftSchedule.days) ? raw.shiftSchedule.days : [];
+    const validDays = rawDays.filter((d: unknown): d is DayCode =>
+      typeof d === 'string' && (ALL_SHIFT_DAYS as string[]).includes(d),
+    );
+    shiftSchedule = {
+      enabled: raw.shiftSchedule.enabled !== false,
+      days: validDays.length > 0 ? validDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
+      startTime:
+        typeof raw.shiftSchedule.startTime === 'string' && /^\d{2}:\d{2}$/.test(raw.shiftSchedule.startTime)
+          ? raw.shiftSchedule.startTime
+          : '09:00',
+      endTime:
+        typeof raw.shiftSchedule.endTime === 'string' && /^\d{2}:\d{2}$/.test(raw.shiftSchedule.endTime)
+          ? raw.shiftSchedule.endTime
+          : '17:00',
+      timezone:
+        typeof raw.shiftSchedule.timezone === 'string' && raw.shiftSchedule.timezone.trim()
+          ? raw.shiftSchedule.timezone.trim()
+          : defaultWorkspaceTimezone(),
+    };
+  }
+
   return {
     id: String(raw.id || ''),
     name: String(raw.name || ''),
@@ -283,6 +352,8 @@ export function normalizeMemberRecord(raw: Partial<Member> & Record<string, any>
     ownerId: typeof raw.ownerId === 'string' ? raw.ownerId : undefined,
     ownerName: typeof raw.ownerName === 'string' ? raw.ownerName : undefined,
     ownerEmail: typeof raw.ownerEmail === 'string' ? raw.ownerEmail : undefined,
+    ...(normalizedAlloc !== undefined ? { leadAllocationPercent: normalizedAlloc } : {}),
+    ...(shiftSchedule ? { shiftSchedule } : {}),
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : undefined,
   };
 }

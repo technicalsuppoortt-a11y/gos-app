@@ -122,7 +122,7 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
       if (controller.signal.aborted) return;
       setLiveThreads(details.map(({ conversation: conv, messages: msgs }) => ({
         id: String(conv?.id || crypto.randomUUID()), name: String(conv?.customer_name || 'Customer'), initials: String(conv?.customer_name || 'CU').slice(0, 2).toUpperCase(),
-        channel: (conv?.channel || 'whatsapp') as Conversation['channel'], preview: String(conv?.last_message || ''), time: conv?.updated_at ? new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        channel: (conv?.channel || 'whatsapp') as Conversation['channel'], preview: String(conv?.last_message || ''), time: conv?.updated_at ? new Date(conv.updated_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
         unread: 0, tags: [], stage: String(conv?.last_action?.label || (conv?.ai_state === 'handoff' ? 'NEEDED YOUR TEAM' : conv?.ai_state === 'answered' ? 'AI ANSWERED' : String(conv?.ai_state || 'LIVE').toUpperCase())),
         source: 'Inbox', phone: String(conv?.phone || ''), email: '', location: '', assignee: '', aiAutoReply: conv?.ai_state === 'answered', takenOver: conv?.ai_state === 'handoff', followUp: false, followUpRules: [], starred: false,
         messages: Array.isArray(msgs) ? msgs.map((m, idx) => ({ id: String(m?.id || idx), sender: (m?.actor === 'assistant' ? 'ai' : 'customer') as 'ai' | 'customer', text: String(m?.body || ''), time: '' })) : [], activity: [],
@@ -145,7 +145,7 @@ export function ProductionLiveMonitor({ assistant, conversations, readySources, 
       setTurns(previous => [...previous, ...(reply ? [{ id: crypto.randomUUID(), role: 'assistant' as const, text: reply }] : []), ...(note ? [{ id: crypto.randomUUID(), role: 'note' as const, text: note }] : [])]);
       if (!conversations.length) {
         const convId = String(response.conversation?.id || threadId.current);
-        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         const actionLabel = response.action?.label || response.conversation?.last_action?.label;
         const stageLabel = String(actionLabel || (response.outcome === 'handoff' ? 'NEEDED YOUR TEAM' : response.outcome === 'answered' ? 'AI ANSWERED' : response.outcome.toUpperCase()));
         setLiveThreads(prev => {

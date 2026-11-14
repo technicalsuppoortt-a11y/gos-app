@@ -11,6 +11,7 @@ export type PlatformTabKey =
   | 'team_management'
   | 'system_settings'
   | 'integrations'
+  | 'domains'
   | 'payments'
   | 'logs_monitoring'
   | 'support';
@@ -38,6 +39,7 @@ export const PLATFORM_SIDEBAR_TABS: readonly PlatformTabDefinition[] = [
     pages: ['integrations', 'payment-methods', 'meta-app', 'marketing-tracking'],
     defaultPath: '/super-admin/integrations',
   },
+  { key: 'domains', label: 'Domains Provider', ar: 'مزود النطاقات', pages: ['domains'], defaultPath: '/super-admin/domains' },
   { key: 'payments', label: 'Payments', ar: 'المدفوعات', pages: ['payments', 'payment-methods'], defaultPath: '/super-admin/payments' },
   { key: 'logs_monitoring', label: 'Logs & Monitoring', ar: 'السجلات والمراقبة', pages: ['logs'], defaultPath: '/super-admin/logs' },
   { key: 'support', label: 'Support', ar: 'الدعم الفني', pages: ['support'], defaultPath: '/super-admin/support' },

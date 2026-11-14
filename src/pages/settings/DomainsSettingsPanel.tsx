@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { localizeNode, useUILanguage } from '../../i18n/display';
 import { useAssetWorkspace } from '../asset-store';
 import type { Asset, Dialog } from '../asset-model';
-import { DomainsView } from '../AssetViews';
+import { DomainsView as AssetDomainsView } from '../AssetViews';
 import { AssetDialog } from '../AssetDialog';
+import { DomainsView as DomainProviderHub } from '../../components/Views/DomainsView';
 import '../funnel-builder.css';
 import '../asset-workspace.css';
 import '../asset-controls.css';
@@ -36,18 +37,26 @@ export function DomainsSettingsPanel() {
 
   return (
     <div className="aw-workspace aw-domains-workspace w-full">
-      {localizeNode(
-        <DomainsView
-          workspace={workspace}
-          setWorkspace={setWorkspace}
-          query={query}
-          setQuery={setQuery}
-          status={status}
-          setStatus={setStatus}
-          go={go}
-          open={setDialog}
-        />
-      )}
+      <DomainProviderHub
+        returnPath="/dashboard/settings/domains"
+        siteDomainsCount={workspace.domains.length}
+        onConnectRegisteredDomain={() => {
+          setDialog({ type: 'domain' });
+        }}
+        siteDomainsSlot={localizeNode(
+          <AssetDomainsView
+            workspace={workspace}
+            setWorkspace={setWorkspace}
+            query={query}
+            setQuery={setQuery}
+            status={status}
+            setStatus={setStatus}
+            go={go}
+            open={setDialog}
+          />
+        )}
+      />
+
       {localizeNode(
         dialog && (
           <AssetDialog

@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../backend/firebase';
 import { isPlatformHostname, normalizeHost, SITE_DOMAINS, PUBLISHED_SITES } from '../../backend/siteDomains';
 import type { Asset } from '../../pages/asset-model';
+import type { PublicCaptureConfig } from '../../pages/builder-form-capture';
 import { Globe } from 'lucide-react';
 
 const PublishedPage = React.lazy(() => import('../../pages/PublishedPage').then(module => ({ default: module.PublishedPage })));
@@ -13,6 +14,7 @@ export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [resolvedAsset, setResolvedAsset] = useState<Asset | null>(null);
   const [resolvedPageId, setResolvedPageId] = useState<string>('');
+  const [analytics, setAnalytics] = useState<PublicCaptureConfig>();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
         };
 
         setResolvedAsset(asset);
+        setAnalytics(siteData.analytics);
         setResolvedPageId(targetPage?.id || pages[0]?.id || '');
       } catch (err: any) {
         console.error('Error resolving custom domain:', err);
@@ -159,6 +162,7 @@ export function CustomDomainInterceptor({ children }: { children: ReactNode }) {
       <PublishedPage
         asset={resolvedAsset}
         pageId={resolvedPageId}
+        analytics={analytics}
         onNavigate={(id) => setResolvedPageId(id)}
       />
     </Suspense>

@@ -160,7 +160,7 @@ export function getDTF(locale: string, options: Intl.DateTimeFormatOptions): Int
   const key = `${locale}:${JSON.stringify(options)}`;
   let dtf = dtfCache.get(key);
   if (!dtf) {
-    dtf = new Intl.DateTimeFormat(locale, options);
+    dtf = new Intl.DateTimeFormat(locale, { ...options, numberingSystem: 'latn' });
     dtfCache.set(key, dtf);
   }
   return dtf;

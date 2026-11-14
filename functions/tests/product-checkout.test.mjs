@@ -50,7 +50,7 @@ function fixture() {
     workspace: async (request, permission) => {
       assert.equal(permission, 'products');
       if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in');
-      return { user: { uid: 'staff' }, root: reference('tenants/' + request.auth.tenant) };
+      return { user: { uid: 'staff' }, root: reference('tenants/' + request.auth.tenant), canConfirmLegacyCheckout: request.auth.owner === true };
     },
     bucket: { file: path => ({
       save: async (content, options) => { assert.equal(options.preconditionOpts.ifGenerationMatch, 0); if (objects.has(path)) throw Object.assign(new Error('exists'), { code: 412 }); objects.set(path, content); },
@@ -104,6 +104,63 @@ test('paid checkout approval provisions the buyer, and an approved retry repairs
   assert.equal(purchase.customerUid, account.uid);
   assert.match(purchase.portalUrl, /\/portal\/shop_item$/);
   assert.equal([...rows.keys()].filter(path => path.endsWith('-portalAccess')).length, 1);
+});
+
+test('portal sync accepts legacy IDs and derives access from tenant-owned evidence', async () => {
+  const { call, rows, deps, staff } = fixture();
+  const requestId = 'legacy-request_' + 'a'.repeat(90);
+  const orderId = 'legacy-order';
+  const record = { status: 'Approved', orderId, customerEmail: 'buyer@example.com', items: [{ productId: 'item' }] };
+  const mirrorPath = `settings/checkoutRequests_shop/items/${requestId}`;
+  const canonicalPath = `tenants/shop/checkoutRequests/${requestId}`;
+  const paymentPath = `tenants/shop/orders/${orderId}`;
+  let account;
+  deps.portal = {
+    auth: {
+      getUserByEmail: async email => {
+        assert.equal(email, record.customerEmail);
+        if (!account) throw Object.assign(new Error('Missing account'), { code: 'auth/user-not-found' });
+        return account;
+      },
+      createUser: async ({ uid }) => (account = { uid }),
+    },
+    bootstrapKey: 'test-only-bootstrap-key-at-least-32-bytes',
+  };
+  const sync = { action: 'syncPortalAccess', requestId, email: 'other@example.com', tenantId: 'other' };
+  await assert.rejects(call(sync), { code: 'unauthenticated' });
+  await assert.rejects(call({ ...sync, requestId: '../invalid' }, staff), { code: 'invalid-argument' });
+  rows.set(mirrorPath, { ...record, customerEmail: 'other@example.com' });
+  await assert.rejects(call(sync, staff), { code: 'failed-precondition' });
+  await assert.rejects(call(sync, { tenant: 'other' }), { code: 'not-found' });
+  assert.equal(account, undefined);
+  rows.set(paymentPath, { ...record, status: 'Paid' });
+  assert.deepEqual(await call(sync, staff), { ok: true });
+  assert.deepEqual(await call(sync, staff), { ok: true });
+  const purchase = rows.get(`customerLibraries/${account.uid}/purchases/${portalPurchaseId('shop', 'item')}`);
+  assert.deepEqual(purchase.paidOrderIds, [orderId]);
+  assert.equal(purchase.customerEmail, record.customerEmail);
+  assert.equal([...rows.keys()].filter(path => path.endsWith('-portalAccess')).length, 1);
+  rows.set(canonicalPath, record);
+  rows.set(paymentPath, { ...record, status: 'Refunded' });
+  await assert.rejects(call(sync, staff), { code: 'failed-precondition' });
+  rows.delete(paymentPath);
+  rows.set(canonicalPath, { ...record, orderId: requestId });
+  assert.deepEqual(await call(sync, staff), { ok: true });
+  assert.ok([...rows.values()].some(row => row.kind === 'portalAccess' && row.sourcePath === canonicalPath));
+  rows.set(canonicalPath, { ...record, orderId: requestId, items: [], productName: 'Design session' });
+  const catalogSync = { ...sync, action: 'sync_portal_access', productId: 'untrusted-hint' };
+  assert.deepEqual(await call(catalogSync, staff), { ok: true });
+  rows.set('tenants/shop/products/duplicate', { name: 'Design session', config: {} });
+  await assert.rejects(call(catalogSync, staff), { code: 'failed-precondition' });
+  rows.delete(canonicalPath);
+  rows.set(mirrorPath, { ...record, orderId: requestId, status: 'approved' });
+  rows.get('tenants/shop/products/item').status = 'Draft';
+  const owner = { ...staff, owner: true };
+  assert.deepEqual(await call(sync, owner), { ok: true });
+  assert.deepEqual(await call(sync, owner), { ok: true });
+  assert.ok([...rows].some(([path, row]) => path.includes('/commerceReceipts/legacy-portal-') && row.confirmedBy === 'staff'));
+  rows.set(mirrorPath, { ...record, orderId: requestId, customerEmail: 'changed@example.com' });
+  await assert.rejects(call(sync, owner), { code: 'failed-precondition' });
 });
 
 test('server calculates the quote, saves a private receipt and commits request, order, transaction and customer once', async () => {

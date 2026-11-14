@@ -251,7 +251,7 @@ export function SaveNotificationBell() {
                       <p>{description(event, ar)}</p>
                       {event.type === "error" && <p>{saveFailureMessage(event.errorCode, ar)}</p>}
                       <time dateTime={new Date(event.timestamp).toISOString()}>
-                        {new Intl.DateTimeFormat(ar ? "ar-EG" : "en", {
+                        {new Intl.DateTimeFormat(ar ? "ar-EG-u-nu-latn" : "en", {
                           hour: "numeric",
                           minute: "2-digit",
                           month: "short",

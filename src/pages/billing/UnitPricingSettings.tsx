@@ -237,7 +237,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
                 value={minUnits}
                 onChange={e => setMinUnits(Math.max(1, Math.min(maxUnits, Number(e.target.value) || 1)))}
               />
-              <small>{c.t(`= ${(minUnits * creditsPerUnit).toLocaleString()} min credits`, `= ${c.num(minUnits * creditsPerUnit)} كحد أدنى`)}</small>
+              <small>{c.t(`= ${(minUnits * creditsPerUnit).toLocaleString('en-US')} min credits`, `= ${c.num(minUnits * creditsPerUnit)} كحد أدنى`)}</small>
             </label>
 
             <label className="bl-field">
@@ -250,7 +250,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
                 value={maxUnits}
                 onChange={e => setMaxUnits(Math.max(minUnits, Number(e.target.value) || minUnits))}
               />
-              <small>{c.t(`= ${(maxUnits * creditsPerUnit).toLocaleString()} max credits`, `= ${c.num(maxUnits * creditsPerUnit)} كحد أقصى`)}</small>
+              <small>{c.t(`= ${(maxUnits * creditsPerUnit).toLocaleString('en-US')} max credits`, `= ${c.num(maxUnits * creditsPerUnit)} كحد أقصى`)}</small>
             </label>
           </div>
 
@@ -262,7 +262,7 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
                 {c.t('Subscriber Slider Simulator Preview', 'معاينة تجريبية لشريط التمرير لدى المشترك')}
               </span>
               <span style={{ fontSize: 13, fontWeight: 700 }}>
-                {previewCredits.toLocaleString()} {c.t('Credits', 'رصيد')} = <span style={{ color: 'var(--bl-accent)', fontSize: 15 }}>{c.money(previewCost, currency)}</span>
+                {previewCredits.toLocaleString('en-US')} {c.t('Credits', 'رصيد')} = <span style={{ color: 'var(--bl-accent)', fontSize: 15 }}>{c.money(previewCost, currency)}</span>
               </span>
             </div>
 
@@ -276,9 +276,9 @@ export function UnitPricingSettings({ providerId, isPlatform, onSaved, onModeCha
             />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--bl-muted)', marginTop: 4 }}>
-              <span>{(minUnits * creditsPerUnit).toLocaleString()} {c.t('credits', 'رصيد')}</span>
-              <span>{c.t(`Selected: ${previewUnits} units (${previewCredits.toLocaleString()} credits) at ${c.money(pricePerUnit, currency)} / unit`, `المحدد: ${previewUnits} وحدة (${c.num(previewCredits)} رصيد) بسعر ${c.money(pricePerUnit, currency)} للوحدة`)}</span>
-              <span>{(maxUnits * creditsPerUnit).toLocaleString()} {c.t('credits', 'رصيد')}</span>
+              <span>{(minUnits * creditsPerUnit).toLocaleString('en-US')} {c.t('credits', 'رصيد')}</span>
+              <span>{c.t(`Selected: ${previewUnits} units (${previewCredits.toLocaleString('en-US')} credits) at ${c.money(pricePerUnit, currency)} / unit`, `المحدد: ${previewUnits} وحدة (${c.num(previewCredits)} رصيد) بسعر ${c.money(pricePerUnit, currency)} للوحدة`)}</span>
+              <span>{(maxUnits * creditsPerUnit).toLocaleString('en-US')} {c.t('credits', 'رصيد')}</span>
             </div>
           </div>
         </div>

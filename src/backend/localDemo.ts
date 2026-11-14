@@ -74,6 +74,6 @@ export function demoIntegrationRequest(path: string, body: unknown, method: stri
   } else if (!action && method === 'DELETE') next = { status: 'Not Connected', sync: false };
   else return undefined;
   writeDemo('integrations', { ...connections, [provider]: next });
-  writeDemo('integration-log', [`${new Date().toLocaleString()} · Demo ${provider}: ${next.status}`, ...readDemo<string[]>('integration-log', [])].slice(0, 50));
+  writeDemo('integration-log', [`${new Date().toLocaleString('en-US')} · Demo ${provider}: ${next.status}`, ...readDemo<string[]>('integration-log', [])].slice(0, 50));
   return next;
 }

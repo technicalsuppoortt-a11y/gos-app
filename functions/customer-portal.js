@@ -7,7 +7,8 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const validId = value => typeof value === 'string' && /^[\w-]{1,310}$/.test(value);
 const isPaid = status => /^(paid|completed|succeeded)$/i.test(status || '');
 const buyerEmail = order => String(order?.customerEmail || order?.customer_email || order?.email || order?.customer?.email || '').trim().toLowerCase();
-const containsProduct = (order, id) => [order?.productId || order?.product_id, ...(order?.items || []).map(item => item.productId || item.product_id)].includes(id);
+const containsProduct = (order, id) => (order?.productId || order?.product_id || order?.product?.id) === id
+  || Array.isArray(order?.items) && order.items.some(item => (item?.productId || item?.product_id) === id);
 export const portalPurchaseId = (tenantId, productId) => hash(JSON.stringify([tenantId, productId]));
 const purchases = (db, uid) => db.collection(`customerLibraries/${uid}/purchases`);
 export const portalBootstrapKey = defineSecret('CUSTOMER_BOOTSTRAP_KEY');
@@ -134,7 +135,7 @@ async function ensureCustomer(db, auth, email, name, now, bootstrapKey) {
 
 export async function provisionCustomerPortalAccess({
   db, auth, tenantId, order, product, sourcePath, bootstrapKey,
-  origin = 'https://gos-app-3c7fb.web.app', emailNotice = true,
+  origin = 'https://gos-app-3c7fb.web.app', emailNotice = true, approvedCheckoutSource = false, relatedPaymentRefs = [], catalogProductName,
 }) {
   const email = buyerEmail(order);
   const customerName = String(order.customerName || order.customer?.name || '').trim() || email.split('@')[0];
@@ -153,16 +154,29 @@ export async function provisionCustomerPortalAccess({
   const mirror = root.collection('customerPurchases').doc(hash(JSON.stringify([uid, productId])));
   const job = root.collection('commerceDeliveries').doc(`${hash(JSON.stringify([orderId, productId]))}-portalAccess`);
   const snapshot = buildProductSnapshot(product, order, productId);
-  await db.runTransaction(async tx => {
-    const [saved, queued, source] = await Promise.all([tx.get(ref), tx.get(job), tx.get(db.doc(sourcePath))]);
+  return db.runTransaction(async tx => {
+    const [saved, queued, source, ...payments] = await Promise.all([
+      tx.get(ref), tx.get(job), tx.get(db.doc(sourcePath)), ...relatedPaymentRefs.map(payment => tx.get(payment)),
+    ]);
     const currentOrder = source.data();
-    if (!isPaid(currentOrder?.status) || buyerEmail(currentOrder) !== email || !containsProduct(currentOrder, productId)) return;
+    if (!(isPaid(currentOrder?.status) || approvedCheckoutSource && /^approved$/i.test(currentOrder?.status || ''))
+      || buyerEmail(currentOrder) !== email) return false;
+    if (!containsProduct(currentOrder, productId)) {
+      const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
+      const currentName = currentOrder.productName || currentOrder.product_name || currentOrder.product?.name || items[0]?.productName || items[0]?.product_name;
+      if (!catalogProductName || currentName !== catalogProductName || items.length > 1 ||
+          currentOrder.productId || currentOrder.product_id || currentOrder.product?.id ||
+          items.some(item => item?.productId || item?.product_id)) return false;
+      const matches = await tx.get(root.collection('products').where('name', '==', catalogProductName).limit(2));
+      if (matches.docs.length !== 1 || matches.docs[0].ref.id !== productId) return false;
+    }
+    if (payments.some(payment => /refund|revoke|chargeback|reject|cancel/i.test(payment.data()?.status || ''))) return false;
     const previous = saved.data();
     const paidOrderIds = previous?.paidOrderIds || (previous?.status === 'Active' ? [previous.orderId] : []);
     const revokedOrderIds = previous?.revokedOrderIds || [];
-    if (revokedOrderIds.includes(orderId)) return;
+    if (revokedOrderIds.includes(orderId)) return false;
     const queueAccessEmail = emailNotice && (!queued.exists || queued.data()?.status === 'failed');
-    if (paidOrderIds.includes(orderId) && !queueAccessEmail) return;
+    if (paidOrderIds.includes(orderId) && !queueAccessEmail) return previous.status === 'Active';
     const validLessons = new Set(snapshot.modules.flatMap(module => module.lessons.map(lesson => lesson.id)));
     const completedLessonIds = [...new Set(previous?.completedLessonIds || [])].filter(id => validLessons.has(id));
     const record = {
@@ -170,7 +184,8 @@ export async function provisionCustomerPortalAccess({
       paidOrderIds: [...new Set([...paidOrderIds, orderId])], revokedOrderIds,
       ...(previous?.reviewedAt ? { reviewedAt: previous.reviewedAt } : {}),
       customerUid: uid, customerEmail: email, customerName, status: 'Active',
-      amount: Number(order.items?.find(item => (item.productId || item.product_id) === productId)?.amount ?? order.amount ?? order.total ?? 0),
+      amount: Number((Array.isArray(order.items) ? order.items.find(item => (item?.productId || item?.product_id) === productId)?.amount : undefined)
+        ?? order.amount ?? order.total ?? order.totals?.dueToday ?? 0),
       currency: String(order.currency || product.config.currency || 'USD'),
       loginUrl: login.href, portalUrl, productSnapshot: snapshot,
       completedLessonIds, progress: validLessons.size ? Math.round(100 * completedLessonIds.length / validLessons.size) : 0,
@@ -180,7 +195,8 @@ export async function provisionCustomerPortalAccess({
     };
     tx.set(ref, record);
     tx.set(mirror, record);
-    if (queueAccessEmail) tx.set(job, { kind: 'portalAccess', email, uid, purchaseId, productId, orderId, sourcePath, loginUrl: login.href, status: 'queued', createdAt: now });
+    if (queueAccessEmail) tx.set(job, { kind: 'portalAccess', email, uid, purchaseId, productId, orderId, sourcePath, approvedCheckoutSource, loginUrl: login.href, status: 'queued', createdAt: now });
+    return true;
   });
 }
 

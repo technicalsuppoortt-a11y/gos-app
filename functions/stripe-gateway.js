@@ -14,6 +14,7 @@
  */
 import { HttpsError } from 'firebase-functions/v2/https';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { fulfillDomainOrder } from './domains/fulfillOrder.js';
 
 const STRIPE_API = 'https://api.stripe.com/v1';
 const SESSIONS = 'stripeCheckoutSessions';
@@ -105,11 +106,15 @@ function sessionUserId(session) {
 export async function fulfillCheckoutSession(db, session) {
   if (session?.payment_status !== 'paid') return { success: false, paid: false, status: session?.payment_status ?? 'unknown' };
   const ref = db.doc(`${SESSIONS}/${session.id}`);
-  return db.runTransaction(async tx => {
+  const txResult = await db.runTransaction(async tx => {
     const snapshot = await tx.get(ref);
     const record = snapshot.data() ?? {};
-    if (record.fulfilled) return { success: true, alreadyProcessed: true, sessionId: session.id, planId: record.planId ?? '', planName: record.planName ?? '' };
     const metadata = session.metadata ?? {};
+    const kind = record.kind || metadata.kind || '';
+    const domainOrderId = record.domainOrderId || metadata.domainOrderId || '';
+    if (record.fulfilled) {
+      return { success: true, alreadyProcessed: true, sessionId: session.id, planId: record.planId ?? '', planName: record.planName ?? '', kind, domainOrderId };
+    }
     const now = new Date().toISOString();
     const userId = record.userId || sessionUserId(session);
     const requestId = record.requestId || metadata.requestId || '';
@@ -139,14 +144,37 @@ export async function fulfillCheckoutSession(db, session) {
       planName: record.planName || metadata.planName || '',
       credits: Number(record.credits ?? metadata.credits ?? 0) || 0,
       requestId,
+      ...(kind ? { kind } : {}),
+      ...(domainOrderId ? { domainOrderId } : {}),
       status: 'paid',
       fulfilled: true,
       fulfilledAt: now,
       payment,
     }, { merge: true });
     if (requestRef) tx.set(requestRef, { gatewayPayment: payment, stripeSessionId: session.id }, { merge: true });
-    return { success: true, alreadyProcessed: false, sessionId: session.id, planId: record.planId || metadata.planId || '', planName: record.planName || metadata.planName || '' };
+    return { success: true, alreadyProcessed: false, sessionId: session.id, planId: record.planId || metadata.planId || '', planName: record.planName || metadata.planName || '', kind, domainOrderId };
   });
+
+  if (txResult.kind === 'domain' && txResult.domainOrderId && /^[\w-]{1,150}$/.test(txResult.domainOrderId)) {
+    const orderRef = db.doc(`domain_orders/${txResult.domainOrderId}`);
+    const orderSnap = await orderRef.get().catch(() => null);
+    if (orderSnap?.exists && orderSnap.data()?.status === 'pending') {
+      await orderRef.set({
+        status: 'paid',
+        payment_id: typeof session.payment_intent === 'string' ? session.payment_intent : session.id,
+        stripeSessionId: session.id,
+        updated_at: new Date().toISOString(),
+      }, { merge: true });
+    }
+    const domainFulfillment = await fulfillDomainOrder(db, {
+      orderId: txResult.domainOrderId,
+      stripeSessionId: session.id,
+      paymentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.id,
+    }).catch(err => ({ ok: false, error: err?.message || 'Domain fulfillment error' }));
+    return { ...txResult, domainFulfillment };
+  }
+
+  return txResult;
 }
 
 function canManageScope(user, owner) {

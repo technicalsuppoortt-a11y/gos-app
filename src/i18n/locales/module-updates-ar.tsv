@@ -272,3 +272,103 @@ Search sections…	البحث في الأقسام…
 Search sections	البحث في الأقسام
 Search world city or country…	البحث عن مدينة أو دولة حول العالم…
 Search requests	البحث في الطلبات
+Full Access	وصول كامل
+Commerce & Funnels Only	التجارة والفانل فقط
+Support Only	الدعم فقط
+All platform modules and all workspace settings tabs	جميع أقسام المنصة وجميع تبويبات إعدادات مساحة العمل
+Products & Payments, Funnels, Booking, Contacts, Analytics & Commerce settings	المنتجات والمدفوعات، الفانل، الحجز، جهات الاتصال، التحليلات وإعدادات التجارة
+Inbox, CRM & Leads, Contacts, AI Follow-up & Booking	صندوق الرسائل، إدارة العملاء، جهات الاتصال، وكيل المبيعات الذكي والحجز
+Manually select allowed modules and settings tabs below	حدد يدويًا الأقسام وتبويبات الإعدادات المسموح بها أدناه
+Support Team	فريق الدعم
+Support Routing & Shift Schedule	توزيع الدعم ومواعيد الشيفت
+Unified assignment share and shift availability across Inbox, AI Follow-up & CRM	حصة التوزيع الموحدة وتوافر الشيفت عبر صندوق الرسائل ووكيل المبيعات الذكي وإدارة العملاء
+Lead Allocation Percentage	نسبة توزيع العملاء المحتملين
+Agents with higher allocation percentages receive proportionally more leads when on shift.	يحصل موظفو الدعم ذوو النسب الأعلى على عدد أكبر نسبيًا من العملاء المحتملين أثناء الشيفت.
+Active support pool	إجمالي حصة الدعم النشط
+Shift Schedule	مواعيد الشيفت
+Schedule enforced	الجدول مفعّل
+Always available	متاح دائمًا
+Enable shift schedule	تفعيل مواعيد الشيفت
+Working Days	أيام العمل
+All week	طوال الأسبوع
+Sun–Thu	الأحد – الخميس
+Mon–Fri	الاثنين – الجمعة
+Sun	الأحد
+Mon	الاثنين
+Tue	الثلاثاء
+Wed	الأربعاء
+Thu	الخميس
+Fri	الجمعة
+Sat	السبت
+Shift Start Time	وقت بداية الشيفت
+Shift End Time	وقت نهاية الشيفت
+Workspace Timezone	المنطقة الزمنية لمساحة العمل
+On Shift	في الشيفت
+Off Shift	خارج الشيفت
+On Shift Now	متاح في الشيفت الآن
+Off Shift Now	خارج الشيفت الآن
+Select at least one working day for the support shift schedule.	يرجى تحديد يوم عمل واحد على الأقل لجدول شيفت الدعم.
+Select at least one working day for the shift schedule.	يرجى تحديد يوم عمل واحد على الأقل لجدول الشيفت.
+Support routing & shift schedule updated.	تم تحديث إعدادات توزيع الدعم ومواعيد الشيفت.
+Support Team & Routing	فريق الدعم والتوزيع الذكي
+Live shift availability, weighted lead routing across Inbox, AI Follow-up & CRM, and per-agent revenue attribution.	حالة الشيفت المباشرة، والتوزيع المرجّح للعملاء عبر صندوق الرسائل ووكيل المبيعات الذكي وإدارة العملاء، ونسب المبيعات لكل موظف.
+Team & Roles	الفريق والأدوار
+Add Support Agent	إضافة موظف دعم
+Add First Support Agent	إضافة أول موظف دعم
+Weighted Support Routing Active	توزيع الدعم المرجّح نشط
+Owner Fallback Routing Active	التحويل التلقائي للمالك نشط
+No Support Agent On Shift	لا يوجد موظف دعم في الشيفت
+New leads and "Take Over Conversation" handoffs are automatically routed to on-shift Support agents by allocation percentage.	يتم توجيه العملاء الجدد وطلبات "تولي المحادثة" تلقائيًا إلى موظفي الدعم المتواجدين في الشيفت حسب نسبة التوزيع.
+All Support agents are currently off-shift or inactive. Incoming leads and human handoffs automatically route to Workspace Owner:	جميع موظفي الدعم خارج الشيفت أو غير نشطين حاليًا. يتم توجيه العملاء الجدد وطلبات التحويل البشري تلقائيًا إلى مالك مساحة العمل:
+Workspace Live Time	التوقيت المباشر لمساحة العمل
+On-Shift Agents	المتواجدون في الشيفت
+Ready for live handoffs	جاهزون لاستلام المحادثات مباشرة
+Fallback: Workspace Owner	البديل التلقائي: مالك مساحة العمل
+Assigned Leads	العملاء المعيّنون
+Synced across CRM, Inbox & AI	متزامن عبر إدارة العملاء وصندوق الرسائل والذكاء الاصطناعي
+Active / Resolved Chats	المحادثات النشطة / المكتملة
+Active / Resolved	نشطة / مكتملة
+Active vs. resolved threads	المحادثات الجارية مقابل المحلولة
+Attributed Revenue	الإيرادات المحققة
+Attributed Sales	المبيعات المنسوبة
+attributed sales	مبيعات منسوبة
+Support Agents & Attribution Breakdown	تفاصيل موظفي الدعم ونسب الأداء والمبيعات
+Click any agent to inspect their assigned leads, active/resolved conversations, and attributed sales.	اضغط على أي موظف لعرض العملاء المعيّنين له، والمحادثات النشطة والمكتملة، والمبيعات المنسوبة إليه.
+Search agent by name or email…	ابحث عن موظف الدعم بالاسم أو البريد الإلكتروني…
+All Agents	جميع الموظفين
+No dedicated Support agents configured yet	لم تتم إضافة موظفي دعم مخصصين بعد
+Add a team member with the Support role (or Support Only preset) to enable shift-based weighted routing. Until then, all leads and handoffs route safely to the Workspace Owner.	أضف عضو فريق بدور "الدعم" (أو إعداد "الدعم فقط") لتفعيل التوزيع المرجّح حسب مواعيد الشيفت. وحتى ذلك الحين، يتم توجيه جميع العملاء والمحادثات بأمان إلى مالك مساحة العمل.
+Owner Fallback	مالك مساحة العمل (احتياطي)
+Fallback Active	البديل نشط الآن
+Standby Fallback	جاهز كبديل تلقائي
+Fallback Routing Share (When 0 Support On Shift)	حصة التحويل الاحتياطي (عند عدم توفر دعم في الشيفت)
+Configured Lead Allocation	نسبة توزيع العملاء المحددة
+Live	الفعلي
+24/7 Automatic Fallback	تغطية تلقائية 24/7
+24/7 (Schedule disabled)	متاح 24/7 (الجدول متوقف)
+View Attribution & Leads	عرض العملاء والمبيعات
+Edit Shift & %	تعديل الشيفت والنسبة
+Configure Shift & Allocation	ضبط مواعيد الشيفت ونسبة التوزيع
+No leads are currently assigned to this agent.	لا يوجد عملاء معيّنون لهذا الموظف حاليًا.
+No conversations are currently assigned to this agent.	لا توجد محادثات معيّنة لهذا الموظف حاليًا.
+No paid orders or converted sales attributed yet.	لا توجد طلبات مدفوعة أو مبيعات محققة منسوبة حتى الآن.
+Live support conversation	محادثة دعم مباشرة
+Human Handoff	تحويل للدعم البشري
+Open Chat	فتح المحادثة
+Open in CRM	فتح في إدارة العملاء
+Open in Inbox	فتح في صندوق الرسائل
+Converted CRM Deal	صفقة محوّلة من إدارة العملاء
+Product Purchase	شراء منتج
+Assigned Contact	عميل معيّن
+Handled by	يتابعها
+Routed to	تم التوجيه إلى
+Assigned to	تم التعيين إلى
+Conversation handed off to human support	تم تحويل المحادثة إلى فريق الدعم البشري
+Take over conversation	تولي المحادثة
+Hand back to AI	إعادة المحادثة للذكاء الاصطناعي
+AI is handling this conversation again.	يتولى الذكاء الاصطناعي هذه المحادثة مجددًا.
+Unassigned (Auto-Route)	غير معيّن (توزيع تلقائي)
+Support	الدعم
+Mark all read	تحديد الكل كمقروء
+No notifications right now	لا توجد إشعارات في الوقت الحالي
+New lead assignments, human handoffs, and shift updates appear here in real time.	تظهر هنا تعيينات العملاء الجدد وطلبات التحويل البشري وتحديثات الشيفت لحظيًا.

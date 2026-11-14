@@ -15,7 +15,7 @@ export function readBookingSync():SyncState {
       const raw=cloudStorage.getItem(key);
       if(raw!==null&&!Array.isArray(JSON.parse(raw)))throw new Error('Invalid booking storage');
     }
-    return {syncStatus:'synced',lastSyncedTime:new Date().toLocaleTimeString()};
+    return {syncStatus:'synced',lastSyncedTime:new Date().toLocaleTimeString('en-US')};
   }catch{return {syncStatus:'error',lastSyncedTime:''}}
 }
 export function TroubleshootControls({page,bookings,checked,change}:{page:BookingPage;bookings:Appointment[];checked:boolean;change:(value:boolean)=>void}) {

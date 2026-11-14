@@ -116,7 +116,7 @@ export function Donut({ segments, center, className = '' }: { segments: Segment[
 }
 
 /** Legend rows for a donut: dot · (icon) · name · value · share. */
-export function DonutLegend({ segments, format = v => v.toLocaleString(), icons }: { segments: Segment[]; format?: (v: number) => string; icons?: Record<string, React.ReactNode> }) {
+export function DonutLegend({ segments, format = v => v.toLocaleString('en-US'), icons }: { segments: Segment[]; format?: (v: number) => string; icons?: Record<string, React.ReactNode> }) {
   useUILanguage();
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
   return <ul className={`an-donut-legend${icons ? ' with-icon' : ''}`}>

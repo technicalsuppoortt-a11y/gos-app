@@ -94,7 +94,7 @@ export const ActivityPage: React.FC = () => {
         return <tr key={event.id}>
           <td className="text-start"><span className={`activity-event-badge ${event.type.toLowerCase()}`}><Icon size={15}/>{localizeNode(event.type)}</span></td>
           <td className="text-start"><div className="activity-description"><b>{event.actor}</b><span>{localizeNode(event.description)}</span></div></td>
-          <td className="text-center"><time className="justify-center inline-flex" title={translateText(date.toLocaleString())} dateTime={date.toISOString()}><Clock3 size={13}/>{localizeNode(relativeTime(event.minutesAgo))}</time></td>
+          <td className="text-center"><time className="justify-center inline-flex" title={translateText(date.toLocaleString('en-US'))} dateTime={date.toISOString()}><Clock3 size={13}/>{localizeNode(relativeTime(event.minutesAgo))}</time></td>
           <td className="text-center"><span className={`activity-status mx-auto ${event.status.toLowerCase()}`}>{localizeNode(event.status === 'Completed' ? <Check size={12}/> : event.status === 'Pending' ? <Clock3 size={12}/> : <CircleX size={12}/>)} {localizeNode(event.status)}</span></td>
         </tr>;
       }))}</tbody></table></div> : <div className="activity-empty"><span><Search size={18}/></span><b>{translateText("No matching activity")}</b><p>{translateText("Try another search or adjust the selected filters.")}</p><button onClick={() => { setQuery(''); setType('All Events'); setDatePreset('Last 30 Days'); }}>{translateText("Clear filters")}</button></div>)}

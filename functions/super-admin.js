@@ -5,7 +5,7 @@ import { agencyLandingWrites } from './agency-workspace.js';
 import { newCommunicationWallet, PLATFORM } from './billing-engine.js';
 
 const teamRoles = ['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE'];
-const validTabs = ['overview', 'all_admins', 'plans_billing', 'templates', 'usage_revenue', 'meta_wallet', 'team_management', 'system_settings', 'integrations', 'payments', 'logs_monitoring', 'support'];
+const validTabs = ['overview', 'all_admins', 'plans_billing', 'templates', 'usage_revenue', 'meta_wallet', 'team_management', 'system_settings', 'integrations', 'domains', 'payments', 'logs_monitoring', 'support'];
 const parseAllowedTabs = value => Array.isArray(value)
   ? [...new Set(value.map(item => String(item).trim()).filter(item => validTabs.includes(item)))]
   : null;

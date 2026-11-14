@@ -2,6 +2,9 @@
  * Detail panels retain all cross-module dependencies. Membership is authoritative.
  */
 export function workspaceResources(pathname: string, allowed: readonly string[]): string[] {
+  if (isAnalyticsRoute(pathname)) {
+    return allowed.filter(resource => resource === 'workspaceState' || resource === 'members');
+  }
   // 1. Dashboard home & general overview routes
   if (/^\/(?:dashboard\/?|\?.*)?$/.test(pathname) || pathname === '/') {
     const needed = new Set([
@@ -32,5 +35,9 @@ export function workspaceResources(pathname: string, allowed: readonly string[])
   }
 
   return [...allowed];
+}
+
+export function isAnalyticsRoute(pathname: string) {
+  return /^\/(?:dashboard\/)?analytics\/?$/.test(pathname);
 }
 

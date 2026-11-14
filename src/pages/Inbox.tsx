@@ -3,6 +3,9 @@ import { backendError } from '../backend/firebase';
 import { gosApi } from '../backend/gosApi';
 import { useGosInbox } from '../backend/useGosInbox';
 import { localDemoEnabled, useDemoState } from '../backend/localDemo';
+import { useSupportRouting } from '../backend/supportRouting';
+import { isSupportMemberRole } from '../pages/settings/localState';
+import { matchesLocalizedSearch } from '../utils/arabicSearch';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -352,13 +355,73 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const language = useUILanguage();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const crmLead = useSelector((state: RootState) => state.crm.leads.find(lead => lead.id === params.get('leadId')));
+  const allCrmLeads = useSelector((state: RootState) => state.crm.leads);
+  const crmLead = allCrmLeads.find(lead => lead.id === params.get('leadId'));
+  const requestedConvId = params.get('conversationId') || '';
   const requestedChannel = params.get('channel');
   const linkedChannel: ChannelId = channelOrder.includes(requestedChannel as ChannelId) ? requestedChannel as ChannelId : 'webchat';
   const authUser = useSelector((state: RootState) => state.auth.user);
   const currentUser = { id: authUser?.id ?? '', name: authUser?.name ?? '', initials: (authUser?.name ?? '').slice(0,2), avatar: authUser?.avatar };
-  const members = useEntities<{ id: string; name?: string; email?: string; active: boolean }>('members');
-  const teamMembers = [currentUser, ...members.filter(member => member.id !== currentUser.id && member.active && member.name).map(member => ({ id: member.id, name: member.name!, initials: member.name!.slice(0,2), avatar: undefined }))];
+
+  const {
+    members: workspaceMembers,
+    getShiftStatus,
+    findAssignment,
+    routeRecord,
+    manualAssign,
+    updateMeta,
+  } = useSupportRouting();
+  const teamMembers = useMemo(() => {
+    const seen = new Set<string>();
+    const list: {
+      id: string;
+      name: string;
+      email?: string;
+      role?: string;
+      initials: string;
+      avatar?: string;
+      isSupport?: boolean;
+      onShift?: boolean;
+      allocation?: number;
+    }[] = [];
+    const pushMember = (item: (typeof list)[number]) => {
+      if (!item.name.trim()) return;
+      const key = (item.email || item.id || item.name).trim().toLowerCase();
+      if (seen.has(key) || list.some(x => x.name.trim().toLowerCase() === item.name.trim().toLowerCase())) return;
+      seen.add(key);
+      list.push(item);
+    };
+    if (currentUser.name) {
+      const meWs = workspaceMembers.find(
+        m => m.id === currentUser.id || m.authUid === currentUser.id || (authUser?.email && m.email?.toLowerCase() === authUser.email.toLowerCase()),
+      );
+      const isSup = meWs ? isSupportMemberRole(meWs) : false;
+      pushMember({
+        ...currentUser,
+        email: authUser?.email,
+        role: meWs?.role || authUser?.teamRole || 'Owner',
+        isSupport: isSup,
+        onShift: meWs && isSup ? getShiftStatus(meWs).onShift : true,
+        allocation: meWs?.leadAllocationPercent,
+      });
+    }
+    for (const m of workspaceMembers) {
+      if (m.active === false || !m.name) continue;
+      const isSup = !m.isOwner && m.role !== 'Owner' && isSupportMemberRole(m);
+      pushMember({
+        id: m.authUid || m.id,
+        name: m.name,
+        email: m.email,
+        role: m.role,
+        initials: m.name.slice(0, 2).toUpperCase(),
+        avatar: undefined,
+        isSupport: isSup,
+        onShift: isSup ? getShiftStatus(m).onShift : true,
+        allocation: m.leadAllocationPercent,
+      });
+    }
+    return list.length ? list : [{ ...currentUser } as (typeof list)[number]];
+  }, [workspaceMembers, currentUser.id, currentUser.name, currentUser.avatar, authUser?.email, authUser?.teamRole, getShiftStatus]);
   const liveTemplates = useEntities<{ title: string; prompt?: string; content?: string }>('templates').map(item => ({ title: item.title, body: item.prompt || item.content || '' }));
   const [apiSelectedId, setApiSelectedId] = useState('');
   const explicitDemo = import.meta.env.VITE_LOCAL_DEMO === 'true';
@@ -374,10 +437,85 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     source: crmLead.source, phone: crmLead.phone ?? '', email: crmLead.email, location: '', assignee: crmLead.owner,
     aiAutoReply: false, takenOver: true, followUp: Boolean(crmLead.nextFollowUp), followUpRules: [], starred: false, messages: [], activity: [],
   } : undefined;
-  const conversations = demoInbox ? localConversations : inboxApi.conversations;
-  const setConversations: typeof setLocalConversations = demoInbox ? setLocalConversations : () => { showToast.info('This inbox API supports viewing conversations and receiving customer messages. Staff edits require a connected delivery integration.'); };
-  const [activeId, setActiveId] = useState(() => linkedConversation?.id ?? initialConversations[0]?.id ?? '');
+  const [liveOverrides, setLiveOverrides] = useState<Record<string, Partial<Conversation>>>({});
+  const [archivedLiveIds, setArchivedLiveIds] = useState<Set<string>>(() => new Set());
+  const matchLeadForConv = (c: Pick<Conversation, 'id' | 'email' | 'phone' | 'name'>) => {
+    const email = (c.email || '').trim().toLowerCase();
+    const phone = (c.phone || '').replace(/[^\d+]/g, '');
+    return allCrmLeads.find(lead => {
+      if (c.id.startsWith(`crm-${lead.id}-`)) return true;
+      if (email && lead.email?.trim().toLowerCase() === email) return true;
+      if (phone && phone.length >= 6 && (lead.phone || '').replace(/[^\d+]/g, '') === phone) return true;
+      return false;
+    });
+  };
+  const conversations = useMemo(() => {
+    const base = demoInbox ? localConversations : inboxApi.conversations;
+    const withLinked = linkedConversation && !base.some(c => c.id === linkedConversation.id)
+      ? [linkedConversation, ...base]
+      : base;
+    return withLinked
+      .filter(c => !archivedLiveIds.has(c.id))
+      .map(c => {
+        const localPatch = demoInbox ? undefined : liveOverrides[c.id];
+        const matchedLead = matchLeadForConv(c);
+        const unified = findAssignment({
+          conversationId: c.id,
+          leadId: matchedLead?.id,
+          email: c.email,
+          phone: c.phone,
+        });
+        const merged = localPatch ? { ...c, ...localPatch } : c;
+        const resolvedAssignee =
+          unified?.assignedAgentName ||
+          (matchedLead?.assignedAgentName && matchedLead.assignedAgentName !== 'Unassigned' ? matchedLead.assignedAgentName : '') ||
+          (matchedLead?.owner && matchedLead.owner !== 'Unassigned' ? matchedLead.owner : '') ||
+          merged.assignee;
+        const validTags = Array.isArray(unified?.tags)
+          ? unified!.tags!.filter((t): t is TagId => t in tagMeta)
+          : undefined;
+        return {
+          ...merged,
+          assignee: resolvedAssignee || merged.assignee,
+          takenOver: typeof unified?.takenOver === 'boolean' ? unified.takenOver : merged.takenOver,
+          aiAutoReply: typeof unified?.aiAutoReply === 'boolean' ? unified.aiAutoReply : merged.aiAutoReply,
+          stage: unified?.stage || merged.stage,
+          tags: validTags && validTags.length ? validTags : merged.tags,
+        };
+      });
+  }, [demoInbox, localConversations, inboxApi.conversations, linkedConversation, archivedLiveIds, liveOverrides, allCrmLeads, findAssignment]);
+  const setConversations: typeof setLocalConversations = demoInbox
+    ? setLocalConversations
+    : (updater) => {
+        const nextList = typeof updater === 'function' ? updater(conversations) : updater;
+        const nextIds = new Set(nextList.map(item => item.id));
+        const removed = conversations.filter(item => !nextIds.has(item.id)).map(item => item.id);
+        if (removed.length) {
+          setArchivedLiveIds(prev => {
+            const copy = new Set(prev);
+            removed.forEach(id => copy.add(id));
+            return copy;
+          });
+        }
+        setLiveOverrides(prev => {
+          const next = { ...prev };
+          nextList.forEach(item => {
+            next[item.id] = { ...(next[item.id] || {}), ...item };
+          });
+          return next;
+        });
+      };
+  const [activeId, setActiveId] = useState(() => requestedConvId || linkedConversation?.id || initialConversations[0]?.id || '');
   useEffect(() => { setApiSelectedId(activeId); }, [activeId]);
+  useEffect(() => {
+    if (requestedConvId && conversations.some(c => c.id === requestedConvId)) {
+      setActiveId(requestedConvId);
+    } else if (linkedConversation?.id && conversations.some(c => c.id === linkedConversation.id)) {
+      setActiveId(linkedConversation.id);
+    } else if (!activeId && conversations[0]?.id) {
+      setActiveId(conversations[0].id);
+    }
+  }, [requestedConvId, linkedConversation?.id, conversations, activeId]);
   const [channelFilter, setChannelFilter] = useState<ChannelId | "all">(() => requestedChannel && crmLead ? linkedChannel : 'all');
   const [folder, setFolder] = useState<Folder>("all");
   const [search, setSearch] = useState("");
@@ -425,6 +563,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   useClickOutside(leadMenuRef, leadMenuOpen, () => setLeadMenuOpen(false));
 
   const active = conversations.find((c) => c.id === activeId) ?? conversations[0] ?? { id: '', name: '', initials: '', channel: 'webchat', preview: '', time: '', unread: 0, tags: [], stage: '', source: '', phone: '', email: '', location: '', assignee: '', aiAutoReply: false, takenOver: true, followUp: false, followUpRules: [], starred: false, messages: [], activity: [] } as Conversation;
+  const activeMatchedLead = useMemo(() => (active.id ? matchLeadForConv(active) : undefined), [active, allCrmLeads]);
   const aiReplying = aiMode && active.aiAutoReply && !active.takenOver;
 
   const channelCounts = useMemo(() => {
@@ -445,12 +584,18 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     return conversations.filter((c) => {
       if (channelFilter !== "all" && c.channel !== channelFilter) return false;
       if (folder === "unread" && c.unread === 0) return false;
-      if (folder === "mine" && c.assignee !== currentUser.name) return false;
+      if (folder === "mine") {
+        const matched = matchLeadForConv(c);
+        const unified = findAssignment({ conversationId: c.id, leadId: matched?.id, email: c.email, phone: c.phone });
+        const assignedByName = (c.assignee || '').trim().toLowerCase() === (currentUser.name || '').trim().toLowerCase();
+        const assignedById = Boolean(currentUser.id && unified?.assignedTo === currentUser.id);
+        if (!assignedByName && !assignedById) return false;
+      }
       if (tagFilter.length && !c.tags.some((t) => tagFilter.includes(t))) return false;
-      if (query && !`${c.name} ${c.preview} ${c.email}`.toLowerCase().includes(query)) return false;
+      if (query && !matchesLocalizedSearch(search, [c.name, c.preview, c.email, c.assignee])) return false;
       return true;
     });
-  }, [channelFilter, conversations, folder, search, tagFilter]);
+  }, [channelFilter, conversations, folder, search, tagFilter, currentUser.id, currentUser.name, findAssignment, allCrmLeads, language]);
 
   /* ---------------- helpers ---------------- */
   const updateActive = (patch: Partial<Conversation> | ((c: Conversation) => Partial<Conversation>)) =>
@@ -642,17 +787,65 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const addTag = (tag: TagId) => {
     updateActive((c) => ({ tags: [...c.tags, tag] }));
     logActivity("tag", `Tag added: ${tagMeta[tag].label}`);
+    void updateMeta({
+      conversationId: active.id,
+      leadId: activeMatchedLead?.id,
+      customerName: active.name || 'Visitor',
+      customerEmail: active.email,
+      customerPhone: active.phone,
+      patch: { tags: [...new Set([...active.tags, tag])] },
+    });
     setTagMenuOpen(false);
   };
 
   const removeTag = (tag: TagId) => {
     updateActive((c) => ({ tags: c.tags.filter((t) => t !== tag) }));
     logActivity("tag", `Tag removed: ${tagMeta[tag].label}`);
+    void updateMeta({
+      conversationId: active.id,
+      leadId: activeMatchedLead?.id,
+      customerName: active.name || 'Visitor',
+      customerEmail: active.email,
+      customerPhone: active.phone,
+      patch: { tags: active.tags.filter(t => t !== tag) },
+    });
   };
 
   const toggleTakeover = () => {
     const takingOver = !active.takenOver;
     updateActive({ takenOver: takingOver, aiAutoReply: !takingOver });
+    if (takingOver) {
+      void routeRecord({
+        trigger: 'handoff',
+        conversationId: active.id,
+        leadId: activeMatchedLead?.id,
+        customerName: active.name || 'Visitor',
+        customerEmail: active.email,
+        customerPhone: active.phone,
+        channel: active.channel,
+      }).then(routed => {
+        if (routed?.assignedAgentName) {
+          updateActive({
+            assignee: routed.assignedAgentName,
+            takenOver: true,
+            aiAutoReply: false,
+          });
+          if (routed.assignedAgentName.trim().toLowerCase() !== currentUser.name.trim().toLowerCase()) {
+            logActivity('handoff', `Routed to ${routed.assignedAgentName}`);
+            showToast.info(`${translateText('Routed to')} ${routed.assignedAgentName}`);
+          }
+        }
+      });
+    } else {
+      void updateMeta({
+        conversationId: active.id,
+        leadId: activeMatchedLead?.id,
+        customerName: active.name || 'Visitor',
+        customerEmail: active.email,
+        customerPhone: active.phone,
+        patch: { takenOver: false, aiAutoReply: true },
+      });
+    }
     logActivity("handoff", takingOver ? `${currentUser.name} took over` : "Conversation handed back to AI");
     showToast.success(
       takingOver ? `You're now handling ${active.name.split(" ")[0]}'s conversation.` : "AI is handling this conversation again.",
@@ -670,7 +863,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   };
 
   if (!conversations.length) return <div className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"><h2>{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2><p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : translateText("Connect a channel in Settings to start receiving messages.")}</p><button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : translateText("Connect a channel")}</button></div>;
-  const assigneeMember = teamMembers.find((m) => m.name === active.assignee) ?? teamMembers[0];
+  const assigneeMember =
+    teamMembers.find(m => m.name.trim().toLowerCase() === (active.assignee || '').trim().toLowerCase()) ??
+    (active.assignee
+      ? { id: 'assigned', name: active.assignee, initials: active.assignee.slice(0, 2).toUpperCase() }
+      : teamMembers[0]);
   const availableTags = (Object.keys(tagMeta) as TagId[]).filter((t) => !active.tags.includes(t));
 
   /* ------------------------------------------------------------------ */
@@ -918,7 +1115,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   <Sparkles size={11} fill="currentColor" />{translateText(" AI Active")}</span>
               ) : (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-300">
-                  <UserRound size={11} /> {localizeNode(active.takenOver ? "You're handling" : "AI paused")}
+                  <UserRound size={11} />{' '}
+                  {active.takenOver
+                    ? active.assignee && active.assignee.trim().toLowerCase() !== (currentUser.name || '').trim().toLowerCase()
+                      ? `${translateText('Handled by')} ${active.assignee}`
+                      : translateText("You're handling")
+                    : translateText('AI paused')}
                 </span>
               ))}
             </div>
@@ -956,6 +1158,20 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       className={MENU_ITEM}
                       onClick={() => {
                         updateActive({ assignee: currentUser.name });
+                        void manualAssign({
+                          conversationId: active.id,
+                          leadId: activeMatchedLead?.id,
+                          customerName: active.name || 'Visitor',
+                          customerEmail: active.email,
+                          customerPhone: active.phone,
+                          channel: active.channel,
+                          agent: {
+                            id: currentUser.id || 'owner',
+                            name: currentUser.name || 'Workspace Owner',
+                            email: authUser?.email,
+                            role: authUser?.teamRole || 'Owner',
+                          },
+                        });
                         logActivity("handoff", `Assigned to ${currentUser.name}`);
                         setMoreOpen(false);
                       }}
@@ -1414,6 +1630,14 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   value={active.stage}
                   onChange={(value) => {
                     updateActive({ stage: value });
+                    void updateMeta({
+                      conversationId: active.id,
+                      leadId: activeMatchedLead?.id,
+                      customerName: active.name || 'Visitor',
+                      customerEmail: active.email,
+                      customerPhone: active.phone,
+                      patch: { stage: value },
+                    });
                     logActivity("tag", `Stage changed to ${value}`);
                   }}
                   options={stages}
@@ -1449,6 +1673,20 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           className={MENU_ITEM}
                           onClick={() => {
                             updateActive({ assignee: member.name });
+                            void manualAssign({
+                              conversationId: active.id,
+                              leadId: activeMatchedLead?.id,
+                              customerName: active.name || 'Visitor',
+                              customerEmail: active.email,
+                              customerPhone: active.phone,
+                              channel: active.channel,
+                              agent: {
+                                id: member.id,
+                                name: member.name,
+                                email: member.email,
+                                role: member.role,
+                              },
+                            });
                             logActivity("handoff", `Assigned to ${member.name}`);
                             setAssigneeOpen(false);
                           }}
@@ -1460,7 +1698,21 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           ) : (
                             <Avatar person={member} size={24} />
                           ))}
-                          <span className="flex-1">{member.name}</span>
+                          <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
+                            <span className="truncate">{member.name}</span>
+                            {member.isSupport && (
+                              <span
+                                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                                  member.onShift
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-400'
+                                }`}
+                              >
+                                <span className={`h-1.5 w-1.5 rounded-full ${member.onShift ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                {typeof member.allocation === 'number' ? `${member.allocation}%` : translateText(member.onShift ? 'On Shift' : 'Off Shift')}
+                              </span>
+                            )}
+                          </span>
                           {localizeNode(member.name === active.assignee && <Check size={14} className="text-purple-600" />)}
                         </button>
                       )))}
@@ -1542,7 +1794,13 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             </button>
             <button
               id="inbox-open-crm"
-              onClick={() => navigate("/dashboard/crm")}
+              onClick={() =>
+                navigate(
+                  activeMatchedLead
+                    ? `/dashboard/crm?leadId=${encodeURIComponent(activeMatchedLead.id)}`
+                    : '/dashboard/crm',
+                )
+              }
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-200 bg-white py-2.5 text-[13px] font-medium text-purple-600 transition hover:bg-purple-50 dark:border-purple-400/30 dark:bg-transparent dark:text-purple-300 dark:hover:bg-purple-500/10"
             >
               <ExternalLink size={15} />{translateText(" Open in CRM")}</button>

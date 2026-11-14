@@ -154,7 +154,7 @@ export function MarketingTracking() {
         <table className="pixel-log-table">
           <thead><tr>{['Time','Event','Destinations','Status', ...(withPayload ? ['Payload'] : [])].map(label => <th key={label} scope="col">{t(label)}</th>)}</tr></thead>
           <tbody>{events.map(event => <tr key={event.id}>
-            <td data-label={t('Time')}><bdi dir="ltr">{new Date(event.at).toLocaleTimeString()}</bdi></td>
+            <td data-label={t('Time')}><bdi dir="ltr">{new Date(event.at).toLocaleTimeString('en-US')}</bdi></td>
             <td data-label={t('Event')}><bdi className="pixel-event-name">{event.event}</bdi></td>
             <td data-label={t('Destinations')}><span>{event.destinations.map(destination => t(destination)).join(' · ') || t('Local only')}</span></td>
             <td data-label={t('Status')}><Badge tone={event.test ? 'orange' : 'green'}>{t(event.test ? 'Local test' : 'Dispatched')}</Badge></td>

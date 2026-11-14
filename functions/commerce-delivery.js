@@ -51,7 +51,8 @@ export const processCommerceDeliveries = onSchedule({ region: 'us-central1', sch
       const requestNotice = ['checkoutSubmitted', 'checkoutRejected'].includes(data.kind);
       const eligible = data.kind === 'checkoutSubmitted' ? order?.status === 'Pending'
         : data.kind === 'checkoutRejected' ? order?.status === 'Rejected'
-        : /^(paid|completed|succeeded)$/i.test(order?.status || '') || data.eventType === 'order.refunded';
+        : /^(paid|completed|succeeded)$/i.test(order?.status || '') || data.eventType === 'order.refunded'
+          || data.kind === 'portalAccess' && data.approvedCheckoutSource === true && /^approved$/i.test(order?.status || '');
       if (!order || !eligible) {
         await job.ref.update({ status: 'skipped' });
         continue;

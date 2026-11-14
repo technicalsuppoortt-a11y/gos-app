@@ -77,7 +77,7 @@ export function CourseSidebar(props: FormProps & CourseActions) {
     const url = URL.createObjectURL(new Blob([JSON.stringify({ title: p.name, description: p.description, modules: c.modules, instructor: e.instructor }, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a'); a.href = url; a.download = `${p.name || 'course'}-content.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  const date = (value?: string) => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleString() : '—';
+  const date = (value?: string) => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleString('en-US') : '—';
   return <>
     <Card title={translateText(editing ? 'Course Status & Visibility' : 'Product Status')} action={<Status status={p.status}/>}>
       <Toggle label={editing ? 'Publish course' : 'Course active'} checked={p.status === 'Active'} disabled={props.disabled} onChange={props.onStatus}/>

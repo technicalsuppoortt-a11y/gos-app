@@ -6,6 +6,10 @@ import { formatDisplayMessage, useUILanguage, translateText, localizeNode } from
 import React from "react";
 import { gosApi, type GosSourceInput } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
+import { useGosInbox } from '../backend/useGosInbox';
+import { useSupportRouting } from '../backend/supportRouting';
+import { isSupportMemberRole } from './settings/localState';
+import { makeLead } from './crm/model';
 import { useAgentConfiguration } from '../backend/useAgentConfiguration';
 import { GosPlayground } from './GosPlayground';
 import { KnowledgeWorkflow } from './KnowledgeWorkflow';
@@ -588,7 +592,28 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const metrics = useBusinessMetrics();
-  const channels = channelDefinitions.map(channel => ({ ...channel, conversations: metrics.conversations.filter(thread => thread.channel === channel.id || channel.id === 'website' && thread.channel === 'webchat').length + ' conversations' }));
+  const explicitDemoMode = import.meta.env.VITE_LOCAL_DEMO === 'true';
+  const liveGosInbox = useGosInbox(!explicitDemoMode, '');
+  const {
+    members: workspaceMembers,
+    getShiftStatus,
+    findAssignment,
+    routeRecord,
+    manualAssign,
+    updateMeta,
+  } = useSupportRouting();
+  const channels = channelDefinitions.map(channel => {
+    const metricCount = metrics.conversations.filter(
+      thread => thread.channel === channel.id || (channel.id === 'website' && thread.channel === 'webchat'),
+    ).length;
+    const liveCount = liveGosInbox.conversations.filter(
+      thread => thread.channel === channel.id || (channel.id === 'website' && thread.channel === 'webchat'),
+    ).length;
+    return {
+      ...channel,
+      conversations: `${Math.max(metricCount, liveCount)} conversations`,
+    };
+  });
   const conversationRecords = useEntities<FollowUpConversation>('conversations');
   const leads = useSelector((state: RootState) => state.crm.leads);
   // ?tab=flows / ?tab=channels (also where Facebook Login returns) open the Flow Builder tab.
@@ -795,7 +820,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   };
   const [leadFilter, setLeadFilter] = React.useState("All states");
   const timeoutRef = React.useRef<number | undefined>(undefined);
-  const selectedLead = leads.find((lead) => lead.id === selectedId) ?? null;
+  // selectedLead is resolved below from CRM leads + live unified conversations
   const tell = (message: string) => {
     notifyParent?.(message);
     showToast.success(message);
@@ -807,11 +832,208 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     [],
   );
   const leadById = (id: string) => leads.find((lead) => lead.id === id);
-  const rows = conversationRecords
+  const entityConversationRows = conversationRecords
     .map((item) => ({ ...item, lead: leadById(item.leadId) }))
     .filter((item): item is FollowUpConversation & { lead: CanonicalLead } =>
       Boolean(item.lead),
     );
+  type MergedConversationRow = FollowUpConversation & {
+    lead: CanonicalLead;
+    conversationId?: string;
+    assignedAgentName?: string;
+    assignedTo?: string;
+    takenOver?: boolean;
+  };
+  const rows: MergedConversationRow[] = React.useMemo(() => {
+    const merged: MergedConversationRow[] = [];
+    const seenConvIds = new Set<string>();
+    const seenLeadChannels = new Set<string>();
+
+    for (const c of liveGosInbox.conversations) {
+      seenConvIds.add(c.id);
+      const cleanEmail = (c.email || '').trim().toLowerCase();
+      const cleanPhone = (c.phone || '').replace(/[^\d+]/g, '');
+      const matchedLead = leads.find(l => {
+        if (cleanEmail && l.email?.trim().toLowerCase() === cleanEmail) return true;
+        if (cleanPhone && cleanPhone.length >= 6 && (l.phone || '').replace(/[^\d+]/g, '') === cleanPhone) return true;
+        return false;
+      });
+      const unified = findAssignment({
+        conversationId: c.id,
+        leadId: matchedLead?.id,
+        email: c.email,
+        phone: c.phone,
+      });
+      const mappedChannel: FollowUpConversation['channel'] =
+        c.channel === 'webchat'
+          ? 'website'
+          : (['instagram', 'facebook', 'whatsapp', 'messenger', 'email'].includes(c.channel)
+              ? (c.channel as MessagingChannel)
+              : 'website');
+      const assignedName =
+        unified?.assignedAgentName ||
+        (matchedLead?.assignedAgentName && matchedLead.assignedAgentName !== 'Unassigned' ? matchedLead.assignedAgentName : '') ||
+        (matchedLead?.owner && matchedLead.owner !== 'Unassigned' ? matchedLead.owner : '') ||
+        (c.assignee && c.assignee !== 'Unassigned' ? c.assignee : '');
+      const isTakenOver = typeof unified?.takenOver === 'boolean' ? unified.takenOver : Boolean(c.takenOver);
+      const effectiveState: FollowUpLifecycleState = isTakenOver
+        ? 'HUMAN_HANDOFF'
+        : matchedLead?.followUpState || 'CONVERSING';
+
+      const virtualOrRealLead: CanonicalLead = matchedLead
+        ? {
+            ...matchedLead,
+            owner: assignedName || matchedLead.owner,
+            assignedAgentName: assignedName || matchedLead.assignedAgentName,
+            assignedTo: unified?.assignedTo || matchedLead.assignedTo,
+            followUpState: effectiveState,
+          }
+        : {
+            ...makeLead({
+              id: `conv-${c.id}`,
+              name: c.name || 'Visitor',
+              email: c.email || '—',
+              phone: c.phone || '',
+              company: channelDefinitions.find(ch => ch.id === mappedChannel)?.name || c.channel,
+              avatar: (c.initials || c.name || 'V').slice(0, 2).toUpperCase(),
+              source: c.source || c.channel,
+              value: 0,
+              owner: assignedName || 'Unassigned',
+              lastActivity: c.time || 'Just now',
+            }),
+            followUpState: effectiveState,
+            assignedTo: unified?.assignedTo,
+            assignedAgentName: assignedName || undefined,
+            handoffTimestamp: unified?.handoffTimestamp,
+            hasEmailConsent: Boolean(c.email),
+            hasWhatsAppConsent: c.channel === 'whatsapp',
+            hasMessagingConsent: ['instagram', 'facebook', 'messenger', 'webchat'].includes(c.channel),
+            activities: [
+              {
+                id: `act-${c.id}`,
+                type: 'message',
+                title: c.preview || 'Conversation started',
+                detail: `${c.channel} conversation`,
+                at: c.time || 'Just now',
+              },
+            ],
+          };
+
+      if (matchedLead) {
+        seenLeadChannels.add(`${matchedLead.id}:${mappedChannel}`);
+      }
+      merged.push({
+        leadId: virtualOrRealLead.id,
+        displayName: c.name || virtualOrRealLead.name,
+        channel: mappedChannel,
+        excerpt: c.preview || 'New message',
+        time: c.time || 'Just now',
+        state: effectiveState,
+        lead: virtualOrRealLead,
+        conversationId: c.id,
+        assignedAgentName: assignedName || undefined,
+        assignedTo: unified?.assignedTo,
+        takenOver: isTakenOver,
+      });
+    }
+
+    for (const item of entityConversationRows) {
+      const itemId = (item as FollowUpConversation & { id?: string }).id;
+      if (itemId && seenConvIds.has(itemId)) continue;
+      if (seenLeadChannels.has(`${item.lead.id}:${item.channel}`)) continue;
+      const unified = findAssignment({
+        conversationId: itemId,
+        leadId: item.lead.id,
+        email: item.lead.email,
+        phone: item.lead.phone,
+      });
+      const assignedName =
+        unified?.assignedAgentName ||
+        (item.lead.assignedAgentName && item.lead.assignedAgentName !== 'Unassigned' ? item.lead.assignedAgentName : '') ||
+        (item.lead.owner && item.lead.owner !== 'Unassigned' ? item.lead.owner : '');
+      const isTakenOver =
+        typeof unified?.takenOver === 'boolean'
+          ? unified.takenOver
+          : item.state === 'HUMAN_HANDOFF' || item.lead.followUpState === 'HUMAN_HANDOFF';
+      const effectiveState: FollowUpLifecycleState = isTakenOver ? 'HUMAN_HANDOFF' : item.state;
+      merged.push({
+        ...item,
+        state: effectiveState,
+        lead: {
+          ...item.lead,
+          owner: assignedName || item.lead.owner,
+          assignedAgentName: assignedName || item.lead.assignedAgentName,
+          assignedTo: unified?.assignedTo || item.lead.assignedTo,
+          followUpState: effectiveState,
+        },
+        conversationId: itemId,
+        assignedAgentName: assignedName || undefined,
+        assignedTo: unified?.assignedTo,
+        takenOver: isTakenOver,
+      });
+    }
+
+    return merged;
+  }, [liveGosInbox.conversations, entityConversationRows, leads, findAssignment]);
+
+  const selectedRow = selectedId ? rows.find(r => r.lead.id === selectedId || r.conversationId === selectedId) ?? null : null;
+  const selectedLead = (selectedId ? leads.find(lead => lead.id === selectedId) : null) ?? selectedRow?.lead ?? null;
+  const selectedUnified = selectedLead
+    ? findAssignment({
+        leadId: selectedLead.id.startsWith('conv-') ? undefined : selectedLead.id,
+        conversationId: selectedRow?.conversationId || (selectedLead.id.startsWith('conv-') ? selectedLead.id.slice(5) : undefined),
+        email: selectedLead.email !== '—' ? selectedLead.email : undefined,
+        phone: selectedLead.phone || undefined,
+      })
+    : undefined;
+  const activeTeamOptions = React.useMemo(() => {
+    const activeMembers = workspaceMembers.filter(m => m.active !== false && m.name);
+    return activeMembers.map(m => {
+      const isSup = !m.isOwner && m.role !== 'Owner' && isSupportMemberRole(m);
+      const shift = isSup ? getShiftStatus(m) : null;
+      const suffix = isSup
+        ? ` · ${shift?.onShift ? translateText('On Shift') : translateText('Off Shift')}${typeof m.leadAllocationPercent === 'number' ? ` (${m.leadAllocationPercent}%)` : ''}`
+        : m.isOwner || m.role === 'Owner'
+          ? ` · ${translateText('Owner')}`
+          : '';
+      return {
+        value: m.authUid || m.id,
+        label: `${m.name}${suffix}`,
+        member: m,
+      };
+    });
+  }, [workspaceMembers, getShiftStatus]);
+
+  const syncDrawerLifecycleState = (nextState: FollowUpLifecycleState): FollowUpLifecycleState => {
+    if (!selectedLead) return nextState;
+    const realLeadId = selectedLead.id.startsWith('conv-') ? undefined : selectedLead.id;
+    const convId = selectedRow?.conversationId || (selectedLead.id.startsWith('conv-') ? selectedLead.id.slice(5) : undefined);
+    if (nextState === 'HUMAN_HANDOFF') {
+      void routeRecord({
+        trigger: 'handoff',
+        leadId: realLeadId,
+        conversationId: convId,
+        customerName: selectedLead.name,
+        customerEmail: selectedLead.email !== '—' ? selectedLead.email : undefined,
+        customerPhone: selectedLead.phone || undefined,
+        channel: selectedRow?.channel || selectedChannel,
+      }).then(routed => {
+        if (routed?.assignedAgentName) {
+          showToast.success(`${translateText('Routed to')} ${routed.assignedAgentName}`);
+        }
+      });
+    } else if (selectedUnified?.takenOver || selectedRow?.takenOver) {
+      void updateMeta({
+        leadId: realLeadId,
+        conversationId: convId,
+        customerName: selectedLead.name,
+        customerEmail: selectedLead.email !== '—' ? selectedLead.email : undefined,
+        customerPhone: selectedLead.phone || undefined,
+        patch: { takenOver: false, aiAutoReply: true },
+      });
+    }
+    return nextState;
+  };
   const visibleRows = rows.filter((item) => {
     const selectedChannelKey =
       conversationChannel === "Website Chat"
@@ -1122,7 +1344,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       {localizeNode([
         {
           label: "Total Conversations",
-          value: String(metrics.conversations.length),
+          value: String(Math.max(metrics.conversations.length, rows.length)),
           delta: "—",
           icon: MessageSquare,
           tone: "violet",
@@ -1229,10 +1451,10 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         )))}
       </div>
       <div className="af-feed-list flex-1 min-h-0 overflow-y-auto">
-        {localizeNode(visibleRows.slice(0, 8).map((item) => (
+        {localizeNode((tab === "Conversations" ? visibleRows : visibleRows.slice(0, 8)).map((item) => (
           <button
             className="af-conversation-row"
-            key={item.lead.id}
+            key={item.conversationId || item.lead.id}
             onClick={() => setSelectedId(item.lead.id)}
           >
             <Avatar
@@ -1241,7 +1463,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               altName={item.displayName}
             />
             <div className="af-conversation-copy">
-              <b className="af-conversation-name">{localizeNode(item.displayName)}</b>
+              <b className="af-conversation-name flex items-center gap-2">
+                <span className="truncate">{localizeNode(item.displayName)}</span>
+                {item.assignedAgentName && (
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-violet-200/80 bg-violet-50/80 px-2 py-0.5 text-[10.5px] font-semibold text-violet-700 dark:border-violet-400/25 dark:bg-violet-500/15 dark:text-violet-200">
+                    <UserCheck size={10} />
+                    {item.assignedAgentName}
+                  </span>
+                )}
+              </b>
               <p>{localizeNode(item.excerpt)}</p>
             </div>
             <div className="af-conversation-side">
@@ -1457,7 +1687,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         {localizeNode([
           {
             label: "Conversations Handled",
-            value: String(metrics.conversations.length),
+            value: String(Math.max(metrics.conversations.length, rows.length)),
             change: "—",
             icon: ScanText,
           },
@@ -2132,7 +2362,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                   dispatch(
                     setLeadFollowUpState({
                       id: selectedLead.id,
-                      followUpState: value as FollowUpLifecycleState,
+                      followUpState: syncDrawerLifecycleState(value as FollowUpLifecycleState),
                     }),
                   )
                 }
@@ -2141,6 +2371,126 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                   label: item.label,
                 }))}
               />
+            </div>
+            <div className="my-3 space-y-2.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+                  {translateText('Assigned To')}
+                </span>
+                {(selectedUnified?.assignedAgentName || selectedLead.assignedAgentName || (selectedLead.owner && selectedLead.owner !== 'Unassigned' ? selectedLead.owner : '')) && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:bg-violet-500/20 dark:text-violet-200">
+                    <UserCheck size={11} />
+                    {selectedUnified?.assignedAgentName || selectedLead.assignedAgentName || selectedLead.owner}
+                  </span>
+                )}
+              </div>
+              {activeTeamOptions.length > 0 && (
+                <MenuSelect
+                  className="af-drawer-select"
+                  value={
+                    selectedUnified?.assignedTo ||
+                    selectedLead.assignedTo ||
+                    activeTeamOptions.find(
+                      opt =>
+                        opt.member.name.trim().toLowerCase() ===
+                        (selectedUnified?.assignedAgentName || selectedLead.assignedAgentName || selectedLead.owner || '').trim().toLowerCase(),
+                    )?.value ||
+                    activeTeamOptions[0].value
+                  }
+                  onChange={agentId => {
+                    const picked = activeTeamOptions.find(opt => opt.value === agentId)?.member;
+                    if (!picked) return;
+                    const realLeadId = selectedLead.id.startsWith('conv-') ? undefined : selectedLead.id;
+                    const convId = selectedRow?.conversationId || (selectedLead.id.startsWith('conv-') ? selectedLead.id.slice(5) : undefined);
+                    void manualAssign({
+                      leadId: realLeadId,
+                      conversationId: convId,
+                      customerName: selectedLead.name,
+                      customerEmail: selectedLead.email !== '—' ? selectedLead.email : undefined,
+                      customerPhone: selectedLead.phone || undefined,
+                      channel: selectedRow?.channel || selectedChannel,
+                      agent: {
+                        id: picked.authUid || picked.id,
+                        name: picked.name,
+                        email: picked.email,
+                        role: picked.role,
+                      },
+                    }).then(() => {
+                      showToast.success(`${translateText('Assigned to')} ${picked.name}`);
+                    });
+                  }}
+                  options={activeTeamOptions.map(opt => ({ value: opt.value, label: opt.label }))}
+                />
+              )}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  className="af-button-primary justify-center"
+                  onClick={() => {
+                    const realLeadId = selectedLead.id.startsWith('conv-') ? undefined : selectedLead.id;
+                    const convId = selectedRow?.conversationId || (selectedLead.id.startsWith('conv-') ? selectedLead.id.slice(5) : undefined);
+                    const currentlyTakenOver = Boolean(selectedUnified?.takenOver || selectedRow?.takenOver || selectedLead.followUpState === 'HUMAN_HANDOFF');
+                    if (!currentlyTakenOver) {
+                      if (realLeadId) {
+                        dispatch(setLeadFollowUpState({ id: realLeadId, followUpState: 'HUMAN_HANDOFF' }));
+                      }
+                      void routeRecord({
+                        trigger: 'handoff',
+                        leadId: realLeadId,
+                        conversationId: convId,
+                        customerName: selectedLead.name,
+                        customerEmail: selectedLead.email !== '—' ? selectedLead.email : undefined,
+                        customerPhone: selectedLead.phone || undefined,
+                        channel: selectedRow?.channel || selectedChannel,
+                      }).then(routed => {
+                        showToast.success(
+                          routed?.assignedAgentName
+                            ? `${translateText('Routed to')} ${routed.assignedAgentName}`
+                            : translateText('Conversation handed off to human support'),
+                        );
+                      });
+                    } else {
+                      if (realLeadId) {
+                        dispatch(setLeadFollowUpState({ id: realLeadId, followUpState: 'CONVERSING' }));
+                      }
+                      void updateMeta({
+                        leadId: realLeadId,
+                        conversationId: convId,
+                        customerName: selectedLead.name,
+                        customerEmail: selectedLead.email !== '—' ? selectedLead.email : undefined,
+                        customerPhone: selectedLead.phone || undefined,
+                        patch: { takenOver: false, aiAutoReply: true },
+                      }).then(() => {
+                        showToast.success(translateText('AI is handling this conversation again.'));
+                      });
+                    }
+                  }}
+                >
+                  {selectedUnified?.takenOver || selectedRow?.takenOver || selectedLead.followUpState === 'HUMAN_HANDOFF' ? (
+                    <>
+                      <Bot size={14} /> {translateText('Hand back to AI')}
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck size={14} /> {translateText('Take over conversation')}
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="af-button-secondary justify-center"
+                  onClick={() => {
+                    const realLeadId = selectedLead.id.startsWith('conv-') ? undefined : selectedLead.id;
+                    const convId = selectedRow?.conversationId || (selectedLead.id.startsWith('conv-') ? selectedLead.id.slice(5) : undefined);
+                    const qs = new URLSearchParams();
+                    if (convId) qs.set('conversationId', convId);
+                    if (realLeadId) qs.set('leadId', realLeadId);
+                    navigate(`/dashboard/inbox${qs.toString() ? `?${qs.toString()}` : ''}`);
+                  }}
+                >
+                  <Inbox size={14} /> {translateText('Open in Inbox')}
+                </button>
+              </div>
             </div>
             <h3>{translateText("Explicit channel consent")}</h3>
             <p className="af-drawer-note">{translateText("Phone number capture is not messaging permission. Toggle only when consent has been recorded.")}</p>
@@ -2256,7 +2606,9 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
               className="af-button-secondary af-open-crm"
               onClick={() =>
                 navigate(
-                  `/dashboard/crm?leadId=${encodeURIComponent(selectedLead.id)}`,
+                  selectedLead.id.startsWith('conv-')
+                    ? '/dashboard/crm'
+                    : `/dashboard/crm?leadId=${encodeURIComponent(selectedLead.id)}`,
                 )
               }
             >{translateText("Open canonical record ")}<ArrowRight size={14} />

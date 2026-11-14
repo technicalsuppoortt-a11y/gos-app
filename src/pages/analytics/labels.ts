@@ -1,0 +1,46 @@
+import { translateText, uiDirection } from '../../i18n/display';
+
+const arabic: Record<string, string> = {
+  Overview: 'نظرة عامة', Sales: 'المبيعات', Leads: 'العملاء المحتملون', Traffic: 'الزيارات',
+  Conversions: 'التحويلات', Conversations: 'المحادثات', Products: 'المنتجات', Reports: 'التقارير',
+  'Analytics sections': 'أقسام التحليلات', 'Date range': 'النطاق الزمني', Days: 'يوم',
+  'Start date': 'تاريخ البداية', 'End date': 'تاريخ النهاية', 'Apply range': 'تطبيق النطاق', Currency: 'العملة',
+  'Verified revenue': 'الإيرادات المؤكدة', 'New leads': 'العملاء المحتملون الجدد', 'New conversations': 'المحادثات الجديدة',
+  'Operational events': 'أحداث التشغيل', 'Workspace activity': 'نشاط مساحة العمل', 'Activity stream': 'سجل النشاط',
+  'Search events': 'البحث في الأحداث', Event: 'الحدث', Resource: 'المورد', Date: 'التاريخ',
+  'Audit entry': 'سجل تدقيق', 'Successful transactions': 'المعاملات الناجحة', 'Average order value': 'متوسط قيمة الطلب',
+  'Revenue and transactions': 'الإيرادات والمعاملات', Revenue: 'الإيرادات', Transactions: 'المعاملات',
+  'Transaction scale': 'مقياس المعاملات', 'Payment methods': 'طرق الدفع', Cash: 'نقدي',
+  Wallets: 'المحافظ الإلكترونية', Card: 'بطاقة', Unknown: 'غير معروف', 'New contacts': 'جهات الاتصال الجديدة',
+  'Won leads': 'العملاء المكتسبون', 'Win rate': 'نسبة الاكتساب', 'Pipeline stages': 'مراحل المبيعات',
+  New: 'جديد', Contacted: 'تم التواصل', Qualified: 'مؤهل', Won: 'مكتسب', Lost: 'مفقود', 'Lead sources': 'مصادر العملاء المحتملين',
+  'Website Chat': 'دردشة الموقع', 'Unique visitors': 'الزوار الفريدون', 'Page views': 'مشاهدات الصفحات',
+  Sessions: 'الجلسات', 'Unique page views': 'مشاهدات الصفحات الفريدة', 'Bounce rate': 'معدل الارتداد', 'Daily traffic': 'الزيارات اليومية', 'Traffic sources': 'مصادر الزيارات',
+  'Bounce rate counts sessions with one recorded view in the selected period.': 'يحتسب معدل الارتداد الجلسات التي سجلت مشاهدة واحدة خلال الفترة المحددة.',
+  Direct: 'مباشر', Search: 'البحث', Social: 'التواصل الاجتماعي', Campaign: 'حملة', Referral: 'إحالة',
+  Funnel: 'مسار تحويل', 'Funnel entries': 'مرات دخول المسار', 'Final step reached': 'الوصول إلى الخطوة الأخيرة',
+  'Completion rate': 'معدل الإكمال', 'Form submissions': 'النماذج المرسلة', 'Funnel steps': 'خطوات المسار', 'Drop-off': 'التسرب',
+  'Workspace checkout activity': 'نشاط إتمام الشراء في مساحة العمل', 'Checkout requests': 'طلبات إتمام الشراء', 'Approved checkouts': 'طلبات الشراء المعتمدة',
+  Channel: 'القناة', 'All channels': 'كل القنوات', Email: 'البريد الإلكتروني', 'Incoming chats': 'المحادثات الواردة',
+  'AI handled': 'رد الذكاء الاصطناعي', 'Support team handled': 'رد فريق الدعم', 'Human handoffs': 'التحويل إلى فريق الدعم',
+  'Chat handling': 'معالجة المحادثات', 'Average first response time': 'متوسط وقت الرد الأول', Minutes: 'دقائق',
+  'Chats are attributed to the first recorded reply in the selected period.': 'تُنسب المحادثات إلى صاحب أول رد مسجل خلال الفترة المحددة.',
+  'Catalog products': 'منتجات الكتالوج', 'Units sold': 'الوحدات المباعة', 'Product revenue': 'إيرادات المنتجات',
+  'Top products by revenue': 'أعلى المنتجات إيرادًا', 'Product performance': 'أداء المنتجات', Product: 'المنتج',
+  'In stock': 'المخزون', 'Product views': 'مشاهدات المنتج', 'Purchases per view': 'المشتريات لكل مشاهدة',
+  'Analytics unavailable': 'التحليلات غير متاحة', 'Could not load workspace analytics.': 'تعذّر تحميل تحليلات مساحة العمل.',
+  'Loading analytics…': 'جارٍ تحميل التحليلات…', 'No records in this period': 'لا توجد سجلات في هذه الفترة', Retry: 'إعادة المحاولة',
+  'Some analytics sources are unavailable': 'بعض مصادر التحليلات غير متاحة',
+  'Figures may be incomplete until all sources load.': 'قد تكون الأرقام غير مكتملة حتى يتم تحميل جميع المصادر.',
+  'Report generator': 'إنشاء التقارير', Format: 'التنسيق', 'Comparison start': 'بداية فترة المقارنة', 'Comparison end': 'نهاية فترة المقارنة',
+  'Compare periods': 'مقارنة الفترات', 'Previous period': 'الفترة السابقة', 'Period comparison': 'مقارنة الفترات',
+  'Export summary': 'تصدير الملخص', 'Export activity logs': 'تصدير سجلات النشاط',
+  'Could not export the report.': 'تعذّر تصدير التقرير.',
+  'Could not load comparison data.': 'تعذّر تحميل بيانات المقارنة.', 'Loading comparison…': 'جارٍ تحميل المقارنة…',
+  Metric: 'المقياس', 'Selected period': 'الفترة المحددة', 'Comparison period': 'فترة المقارنة', Change: 'التغير', 'Paid orders': 'الطلبات المدفوعة',
+  'page view': 'مشاهدة صفحة', 'product view': 'مشاهدة منتج', 'lead captured': 'تسجيل عميل محتمل',
+};
+
+export function t(label: string) {
+  return uiDirection() === 'rtl' ? arabic[label] ?? translateText(label) : label;
+}

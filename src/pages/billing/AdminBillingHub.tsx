@@ -279,7 +279,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
     const headers = ['ID', 'Date', 'Type', 'Channel', 'Customer Charge (€)', 'Provider Cost (€)', 'Margin (€)', 'Status'];
     const rows = filteredLedgerEntries.map(e => [
       e.id,
-      new Date(e.created_at).toLocaleString(),
+      new Date(e.created_at).toLocaleString('en-US'),
       e.usage_type,
       e.channel || '—',
       (e.customer_charge ?? 0).toFixed(4),
@@ -491,7 +491,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                               {ch.channel}
                             </div>
                             <div className="text-[11px] text-slate-500">
-                              {ch.count.toLocaleString()} {c.t('messages delivered', 'رسالة تم إرسالها')}
+                              {ch.count.toLocaleString('en-US')} {c.t('messages delivered', 'رسالة تم إرسالها')}
                             </div>
                           </div>
                         </div>
@@ -555,7 +555,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                           {acc.name || (acc.id.length > 14 ? `${acc.id.slice(0, 12)}…` : acc.id)}
                         </td>
                         <td className="py-2.5 text-center font-semibold text-slate-600 dark:text-slate-400">
-                          {(acc.messages_count ?? 0).toLocaleString()}
+                          {(acc.messages_count ?? 0).toLocaleString('en-US')}
                         </td>
                         <td className="py-2.5 text-end font-mono font-bold text-slate-900 dark:text-slate-100">
                           {walletAmount(acc.total_spend ?? 0)}
@@ -633,7 +633,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                       </div>
 
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
-                        <span>{c.t('Date:', 'التاريخ:')} {new Date(req.createdAt).toLocaleDateString()}</span>
+                        <span>{c.t('Date:', 'التاريخ:')} {new Date(req.createdAt).toLocaleDateString('en-US')}</span>
                         {req.transactionId && (
                           <span className="font-mono">{c.t('Ref:', 'رقم الحوالة:')} {req.transactionId}</span>
                         )}
@@ -780,7 +780,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 {filteredLedgerEntries.map(entry => (
                   <tr key={entry.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <td className="py-2.5 font-sans text-slate-600 dark:text-slate-400">
-                      {new Date(entry.created_at).toLocaleString()}
+                      {new Date(entry.created_at).toLocaleString('en-US')}
                     </td>
                     <td className="py-2.5 font-sans text-slate-800 dark:text-slate-200 max-w-[220px] truncate">
                       {entry.description || entry.usage_type}
@@ -880,7 +880,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                       {cpn.expiresAt && (
                         <>
                           <span>·</span>
-                          <span>{c.t('Expires:', 'ينتهي:')} {new Date(cpn.expiresAt).toLocaleDateString()}</span>
+                          <span>{c.t('Expires:', 'ينتهي:')} {new Date(cpn.expiresAt).toLocaleDateString('en-US')}</span>
                         </>
                       )}
                     </div>
@@ -1162,7 +1162,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                     <div>{c.t('Limit:', 'الحد:')} {newCouponMaxRedemptions || '∞'} {c.t('redemptions', 'استخدام')}</div>
                     <div>
                       {newCouponExpiry 
-                        ? `${c.t('Expires:', 'ينتهي:')} ${new Date(newCouponExpiry).toLocaleDateString()}` 
+                        ? `${c.t('Expires:', 'ينتهي:')} ${new Date(newCouponExpiry).toLocaleDateString('en-US')}`
                         : c.t('No Expiration Date', 'لا يوجد تاريخ انتهاء')}
                     </div>
                   </div>
@@ -1575,7 +1575,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                 </div>
                 <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
                   {viewingCoupon.expiresAt 
-                    ? `${c.t('Expires on', 'ينتهي في')} ${new Date(viewingCoupon.expiresAt).toLocaleDateString()}` 
+                    ? `${c.t('Expires on', 'ينتهي في')} ${new Date(viewingCoupon.expiresAt).toLocaleDateString('en-US')}`
                     : c.t('Perpetual / No expiry', 'مستمر / دون انتهاء')}
                 </div>
               </div>
@@ -1713,7 +1713,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
                             </td>
 
                             <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">
-                              {new Date(r.createdAt).toLocaleString()}
+                              {new Date(r.createdAt).toLocaleString('en-US')}
                             </td>
 
                             <td className="py-3 px-3 text-end font-mono font-bold">

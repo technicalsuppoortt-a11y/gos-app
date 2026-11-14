@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 99,
+  "scannedStylesheets": 101,
   "correctedDeclarations": 871,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 249,
+  "utilityOccurrences": 250,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -18,27 +18,27 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 238,
+      "line": 254,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 249,
+      "line": 265,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 363,
+      "line": 379,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 401,
+      "line": 417,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 403,
+      "line": 419,
       "utility": "text-gray-400"
     },
     {
@@ -268,47 +268,47 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 231,
+      "line": 269,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 243,
+      "line": 281,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 273,
+      "line": 311,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 298,
+      "line": 336,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 302,
+      "line": 340,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 302,
+      "line": 340,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 326,
+      "line": 364,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 329,
+      "line": 367,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 338,
+      "line": 376,
       "utility": "text-slate-100"
     },
     {
@@ -878,17 +878,17 @@
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 202,
+      "line": 222,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 203,
+      "line": 223,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/crm/CRMRecord.tsx",
-      "line": 203,
+      "line": 223,
       "utility": "text-slate-400"
     },
     {
@@ -1113,77 +1113,82 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 100,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 101,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 103,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 720,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 867,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 920,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 984,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1059,
+      "line": 104,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1204,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1235,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1267,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1340,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1485,
+      "line": 106,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1518,
+      "line": 917,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1064,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1117,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1200,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1275,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1420,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1451,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1483,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1556,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1708,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1737,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1770,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1530,
+      "line": 1782,
       "utility": "text-slate-400"
     },
     {
@@ -5109,7 +5114,7 @@
     },
     {
       "file": "src/pages/commerce/checkout-requests.css",
-      "line": 340,
+      "line": 409,
       "selector": ".cr-ref-code,\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
@@ -5117,7 +5122,7 @@
     },
     {
       "file": "src/pages/commerce/checkout-requests.css",
-      "line": 587,
+      "line": 669,
       "selector": ".cr-page-ellipsis",
       "before": "#94a3b8",
       "after": "#334155",

@@ -348,7 +348,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
         id: r.path,
         status: st,
         sortDate: dt,
-        values: [refText, wsName, `${curr} ${amt.toLocaleString()}`, `${methodText} · ${typeText}`, st, dt || '—'],
+        values: [refText, wsName, `${curr} ${amt.toLocaleString('en-US')}`, `${methodText} · ${typeText}`, st, dt || '—'],
         cells: renderTxnCells(refText, r.id, wsName, curr, amt, methodText, typeText, st, dt || '—'),
       };
     };
@@ -366,7 +366,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
         id: `billingRequests/${req.id}`,
         status: st,
         sortDate: dt,
-        values: [refText, accountText, `${curr} ${amt.toLocaleString()}`, `${methodText} · ${typeText}`, st, dt || '—'],
+        values: [refText, accountText, `${curr} ${amt.toLocaleString('en-US')}`, `${methodText} · ${typeText}`, st, dt || '—'],
         cells: renderTxnCells(refText, String(req.transactionId || req.id), accountText, curr, amt, methodText, typeText, st, dt || '—'),
       };
     };
@@ -383,7 +383,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
     columns = ['Reference', 'Workspace', 'Actor', 'Status', 'Details', 'Date'];
     rows = [...scoped('auditLogs'), ...scoped('events')].sort((a, b) => dateValue(b.data.createdAt).localeCompare(dateValue(a.data.createdAt))).map(r => { const entry = row(r); entry.values[2] = String(r.data.actorId ?? 'Unattributed'); return entry; });
   }
-  else if (moduleId === 'analytics' && tab === 1) { columns = ['Month / Currency', 'Revenue']; rows = stats.trends.map(([key, value]) => ({ id: key, status: '', values: [key, value.toLocaleString()] })); }
+  else if (moduleId === 'analytics' && tab === 1) { columns = ['Month / Currency', 'Revenue']; rows = stats.trends.map(([key, value]) => ({ id: key, status: '', values: [key, value.toLocaleString('en-US')] })); }
   else {
     columns = ['Workspace', 'Model', 'Tokens consumed', 'Token allocation', 'Status'];
     const grouped = new Map<string, { workspaceId: string; model: string; tokens: number; budget: number | null; status: string }>();
@@ -394,7 +394,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
       if (resourceOf(r) === 'modelAllocations') { entry.budget = numberValue(r.data.tokenBudget ?? r.data.budget); entry.status = String(r.data.status ?? 'Active'); }
       if (['aiUsage', 'modelAllocations'].includes(resourceOf(r))) grouped.set(key, entry);
     }
-    rows = [...grouped].map(([id, d]) => ({ id, status: d.status, values: [String(tenants[d.workspaceId]?.name ?? d.workspaceId), d.model, d.tokens.toLocaleString(), d.budget === null ? 'Not configured' : d.budget.toLocaleString(), d.status] }));
+    rows = [...grouped].map(([id, d]) => ({ id, status: d.status, values: [String(tenants[d.workspaceId]?.name ?? d.workspaceId), d.model, d.tokens.toLocaleString('en-US'), d.budget === null ? 'Not configured' : d.budget.toLocaleString('en-US'), d.status] }));
   }
   const statuses = [...new Set(rows.map(r => r.status))].filter(Boolean).sort();
   const visible = rows.filter(r => (!status || r.status === status) && r.values.join(' ').toLowerCase().includes(search.toLowerCase()));

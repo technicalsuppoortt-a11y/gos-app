@@ -2,7 +2,8 @@ import { BuilderFormCaptureContext, sendBuilderLead, type PublicCaptureConfig } 
 import './published-page.css';
 import { Menu, X, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { recordAnalyticsView } from '../backend/publicAnalytics';
 import { Toaster } from 'sonner';
 import { showToast } from '../utils/toast';
 import { SectionPreview } from './BuilderWorkspace';
@@ -14,7 +15,7 @@ import { EditableElementPart } from './EditableElementPart';
 import { findSection } from './funnel-tree';
 import { resolveFormTheme } from './form-theme';
 
-export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidth, viewportDevice, productSection, readOnly = false, language, thumbnail = false, templateDesign = false }: { readOnly?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'desktop' | 'tablet' | 'mobile'; language?: string; thumbnail?: boolean; templateDesign?: boolean }) {
+export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = capture, viewportWidth, viewportDevice, productSection, readOnly = false, language, thumbnail = false, templateDesign = false }: { readOnly?: boolean; productSection?: React.ReactNode; asset: Asset; pageId: string; onNavigate?: (id: string) => void; capture?: PublicCaptureConfig; analytics?: PublicCaptureConfig; viewportWidth?: number; viewportDevice?: 'desktop' | 'tablet' | 'mobile'; language?: string; thumbnail?: boolean; templateDesign?: boolean }) {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
     if (viewportWidth !== undefined) return;
@@ -27,6 +28,14 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, viewportWidt
   const device = viewportDevice ?? (visibleWidth < 640 ? 'mobile' : visibleWidth < 1024 ? 'tablet' : 'desktop');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const page = asset.document.pages.find(page => page.id === pageId) ?? (!pageId ? asset.document.pages[0] : undefined);
+  const trackedPage = useRef('');
+  useEffect(() => {
+    if (readOnly || thumbnail || templateDesign || !analytics || !page) return;
+    const key = `${analytics.tenantId}/${asset.id}/${page.id}`;
+    if (trackedPage.current === key) return;
+    trackedPage.current = key;
+    void recordAnalyticsView({ ...analytics, assetId: asset.id, pageId: page.id });
+  }, [asset.id, analytics, page, readOnly, templateDesign, thumbnail]);
   if (!page) return <p>Page not found.</p>;
 
   const navigate = (id: string) => {

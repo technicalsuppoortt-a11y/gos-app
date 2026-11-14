@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { workspaceResources } from './workspaceResources';
+import { isAnalyticsRoute, workspaceResources } from './workspaceResources';
 import { collection, doc, onSnapshot, query, setDoc, where, writeBatch } from 'firebase/firestore';
 import { db, backendError, callBackend } from './firebase';
 import { forceSignOut, SessionError } from './session';
@@ -1238,7 +1238,8 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
       };
       requestResources.current = () => {
         if (!isCurrent()) return;
-        if (!subscribed.has('__checkoutRequestsSync')) {
+        const needed = required();
+        if (!isAnalyticsRoute(pathRef.current) && !subscribed.has('__checkoutRequestsSync')) {
           subscribed.add('__checkoutRequestsSync');
           unsubscribers.push(
             onSnapshot(
@@ -1283,7 +1284,7 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
             )
           );
         }
-        for (const resource of required()) {
+        for (const resource of needed) {
           if (subscribed.has(resource)) continue;
           subscribed.add(resource);
           unsubscribers.push(onSnapshot(resource === 'copilotConversations' ? query(collection(db, 'tenants', scope, resource), where('actorId', '==', userId)) : collection(db, 'tenants', scope, resource), snapshot => {

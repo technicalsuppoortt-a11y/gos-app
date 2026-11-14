@@ -46,7 +46,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: any, metho
     const used = read<string[]>('checkout-requests', []);
     if (!used.includes(body.idempotencyKey)) {
       const balance = settings.balance + amount;
-      saveSettings({ ...settings, balance, transactions: [{ id: crypto.randomUUID(), date: new Date().toLocaleDateString(), type: 'Top Up', description: 'Simulated demo top-up', service: '—', amount, balance }, ...settings.transactions] });
+      saveSettings({ ...settings, balance, transactions: [{ id: crypto.randomUUID(), date: new Date().toLocaleDateString('en-US'), type: 'Top Up', description: 'Simulated demo top-up', service: '—', amount, balance }, ...settings.transactions] });
       write('checkout-requests', [...used, body.idempotencyKey]);
     }
     return { url: returnUrl() } as T;

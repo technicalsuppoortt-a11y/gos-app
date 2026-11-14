@@ -85,10 +85,10 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
       </header>
 
       <div className="cp-kpis">
-        <Kpi label={t('Messages sent')} value={totals.sent.toLocaleString()} />
+        <Kpi label={t('Messages sent')} value={totals.sent.toLocaleString('en-US')} />
         <Kpi label={t('Delivery rate')} value={`${pct(totals.delivered, totals.sent)}%`} />
         <Kpi label={t('Read rate')} value={`${pct(totals.read, totals.delivered)}%`} />
-        <Kpi label={t('Customer replies')} value={totals.replied.toLocaleString()} />
+        <Kpi label={t('Customer replies')} value={totals.replied.toLocaleString('en-US')} />
       </div>
 
       <section className="cp-card cp-flush">
@@ -124,7 +124,7 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
                     <td><button type="button" className="cp-row-link" dir="auto" onClick={() => onOpen(c)}>{c.name}</button></td>
                     <td className="cp-muted" dir="ltr">{c.template ? `${c.template.name} · ${c.template.language}` : '—'}</td>
                     <td><StatusBadge status={c.status} progress={c.progress} /></td>
-                    <td>{c.stats.recipients ? c.stats.recipients.toLocaleString() : '—'}</td>
+                    <td>{c.stats.recipients ? c.stats.recipients.toLocaleString('en-US') : '—'}</td>
                     <td>{c.stats.sent ? `${pct(c.stats.delivered, c.stats.sent)}% / ${pct(c.stats.read, c.stats.sent)}%` : '—'}</td>
                     <td className="cp-muted">{c.status === 'sending' ? t('Now') : c.schedule.mode === 'later' ? formatDate(c.schedule.send_at) : formatDate(c.started_at)}</td>
                   </tr>
@@ -441,7 +441,7 @@ function CampaignWizard({ initial, onDone }: { initial?: Campaign; onDone: () =>
                   <dt>{t('Variables')}</dt><dd>{Object.entries(draft.variables).map(([k, v]) => (
                     <span key={k} className="cp-var-line"><code dir="ltr">{varLabel(k)}</code> {v.source === 'text' ? v.value : `${t(LEAD_FIELDS.find(f => f.value === v.field)?.label ?? v.field)}${v.fallback ? ` (${t('fallback')}: ${v.fallback})` : ''}`}</span>
                   ))}{!Object.keys(draft.variables).length && '—'}</dd>
-                  <dt>{t('Audience')}</dt><dd>{preview?.total.toLocaleString() ?? '—'} {t('recipients')} <button type="button" className="cp-link" onClick={() => setStep(1)}>{t('Edit')}</button></dd>
+                  <dt>{t('Audience')}</dt><dd>{preview?.total.toLocaleString('en-US') ?? '—'} {t('recipients')} <button type="button" className="cp-link" onClick={() => setStep(1)}>{t('Edit')}</button></dd>
                   <dt>{t('Schedule')}</dt><dd>{draft.when === 'now' ? t('Send now') : `${formatDate(new Date(`${draft.date}T${draft.time}`).toISOString())} · ${draft.timezone}`}</dd>
                 </dl>
               </section>
@@ -471,15 +471,15 @@ function CampaignWizard({ initial, onDone }: { initial?: Campaign; onDone: () =>
           {step === 1 ? (
             <>
               <h3>{t('Total recipients')}</h3>
-              <b className="cp-total">{preview ? preview.total.toLocaleString() : '—'}</b>
+              <b className="cp-total">{preview ? preview.total.toLocaleString('en-US') : '—'}</b>
               {previewError && <p className="cp-error cp-small" role="alert">{previewError}</p>}
               {preview && (
                 <dl className="cp-breakdown">
-                  {draft.leads.on && <><dt>{t('Leads')}</dt><dd>{preview.per_source.leads.toLocaleString()}</dd></>}
-                  {draft.csv.on && <><dt>{t('CSV file')}</dt><dd>{preview.per_source.csv.toLocaleString()}</dd></>}
-                  {draft.manual.on && <><dt>{t('Manual selection')}</dt><dd>{preview.per_source.manual.toLocaleString()}</dd></>}
-                  <dt className="cp-muted">{t('Duplicates removed')}</dt><dd className="cp-muted">−{preview.duplicates.toLocaleString()}</dd>
-                  {preview.invalid > 0 && <><dt className="cp-muted">{t('Invalid numbers skipped')}</dt><dd className="cp-muted">−{preview.invalid.toLocaleString()}</dd></>}
+                  {draft.leads.on && <><dt>{t('Leads')}</dt><dd>{preview.per_source.leads.toLocaleString('en-US')}</dd></>}
+                  {draft.csv.on && <><dt>{t('CSV file')}</dt><dd>{preview.per_source.csv.toLocaleString('en-US')}</dd></>}
+                  {draft.manual.on && <><dt>{t('Manual selection')}</dt><dd>{preview.per_source.manual.toLocaleString('en-US')}</dd></>}
+                  <dt className="cp-muted">{t('Duplicates removed')}</dt><dd className="cp-muted">−{preview.duplicates.toLocaleString('en-US')}</dd>
+                  {preview.invalid > 0 && <><dt className="cp-muted">{t('Invalid numbers skipped')}</dt><dd className="cp-muted">−{preview.invalid.toLocaleString('en-US')}</dd></>}
                 </dl>
               )}
               {!preview && !previewError && <p className="cp-muted cp-small">{t('Pick at least one source to see who will receive this campaign.')}</p>}
@@ -524,7 +524,7 @@ function AudienceStep({ draft, patch, leads, stages, preview }: { draft: Draft; 
   const sourceHead = (title: string, on: boolean, setOn: (v: boolean) => void, count?: number) => (
     <div className="cp-row-between">
       <label className="cp-toggle-label"><input type="checkbox" checked={on} onChange={e => setOn(e.target.checked)} /><h3>{t(title)}</h3></label>
-      {on && count !== undefined && <span className="cp-count">{count.toLocaleString()}</span>}
+      {on && count !== undefined && <span className="cp-count">{count.toLocaleString('en-US')}</span>}
     </div>
   )
 
@@ -576,7 +576,7 @@ function AudienceStep({ draft, patch, leads, stages, preview }: { draft: Draft; 
               <FileUp size={22} aria-hidden="true" />
               <span className="cp-grow">
                 <b dir="auto">{uploading ? t('Uploading…') : draft.csv.file || (draft.csv.upload_id ? t('Uploaded file') : t('Choose a CSV file'))}</b>
-                <small className="cp-muted">{draft.csv.row_count ? `${draft.csv.row_count.toLocaleString()} ${t('rows')}${preview?.invalid ? ` · ${preview.invalid} ${t('invalid numbers will be skipped')}` : ''}` : t('First row must be the column names')}</small>
+                <small className="cp-muted">{draft.csv.row_count ? `${draft.csv.row_count.toLocaleString('en-US')} ${t('rows')}${preview?.invalid ? ` · ${preview.invalid} ${t('invalid numbers will be skipped')}` : ''}` : t('First row must be the column names')}</small>
               </span>
               <span className="cp-btn">{t(draft.csv.file ? 'Replace file' : 'Choose file')}</span>
               <input type="file" accept=".csv,text/csv" className="cp-sr-only" onChange={e => void onFile(e.target.files?.[0])} />
@@ -706,12 +706,12 @@ function CampaignReport({ id, onBack, onDuplicate }: { id: string; onBack: () =>
       {error && <p className="cp-error" role="alert">{error}</p>}
 
       <div className="cp-kpis cp-kpis-6">
-        <Kpi label={t('Recipients')} value={s.recipients.toLocaleString()} />
-        <Kpi label={t('Sent')} value={s.sent.toLocaleString()} hint={`${pct(s.sent, s.recipients)}%`} />
-        <Kpi label={t('Delivered')} value={s.delivered.toLocaleString()} hint={`${pct(s.delivered, s.recipients)}%`} />
-        <Kpi label={t('Read')} value={s.read.toLocaleString()} hint={`${pct(s.read, s.recipients)}%`} />
-        <Kpi label={t('Replied')} value={s.replied.toLocaleString()} hint={`${pct(s.replied, s.recipients)}%`} />
-        <Kpi label={t('Failed')} value={s.failed.toLocaleString()} hint={`${pct(s.failed, s.recipients)}%`} tone={s.failed ? 'danger' : undefined} />
+        <Kpi label={t('Recipients')} value={s.recipients.toLocaleString('en-US')} />
+        <Kpi label={t('Sent')} value={s.sent.toLocaleString('en-US')} hint={`${pct(s.sent, s.recipients)}%`} />
+        <Kpi label={t('Delivered')} value={s.delivered.toLocaleString('en-US')} hint={`${pct(s.delivered, s.recipients)}%`} />
+        <Kpi label={t('Read')} value={s.read.toLocaleString('en-US')} hint={`${pct(s.read, s.recipients)}%`} />
+        <Kpi label={t('Replied')} value={s.replied.toLocaleString('en-US')} hint={`${pct(s.replied, s.recipients)}%`} />
+        <Kpi label={t('Failed')} value={s.failed.toLocaleString('en-US')} hint={`${pct(s.failed, s.recipients)}%`} tone={s.failed ? 'danger' : undefined} />
       </div>
 
       <section className="cp-card cp-stack-sm">

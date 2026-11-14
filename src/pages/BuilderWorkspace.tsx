@@ -491,7 +491,7 @@ export const BuilderWorkspace: React.FC<{
     const snapshot = persistLocal('Draft'); setFunnel(snapshot.funnel);
     try {
       if (assetDocument) { await onChangeRef.current?.({ appBlocks: enabledApps, ...snapshot, steps: funnelSteps, theme: { color: themeColor, font: headingFont, corners: cornerStyle } }); await flushAssetWrites(); }
-      notify(`Draft saved just now · ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+      notify(`Draft saved just now · ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
     } catch (error) { showToast.error(backendError(error)); }
     finally { publishing.current = false; setActionBusy(false); setShowPublishMenu(false); }
   };

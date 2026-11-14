@@ -928,7 +928,7 @@ export function DiscoveryConsole() {
                     <span className={"status-badge " + item.status}>{item.status}</span> · {item.stage}
                   </strong>
                   <span>
-                    {new Date(item.startedAt).toLocaleString()} · {item.provider} ·{" "}
+                    {new Date(item.startedAt).toLocaleString('en-US')} · {item.provider} ·{" "}
                     {item.subNicheId}
                   </span>
                 </article>

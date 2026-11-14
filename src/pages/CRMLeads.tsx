@@ -80,6 +80,7 @@ import {
 } from "./crm/taskModel";
 import { TemplateDialog } from "./crm/TemplateDialog";
 import { loadCustomTemplates } from "./crm/templateStorage";
+import { useSupportRouting } from "../backend/supportRouting";
 import "./crm-leads.css";
 import "./crm/crm-workspace.css";
 import "./crm/crm-pipeline.css";
@@ -98,6 +99,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
   useUILanguage();
   const api = useGosCRM(); const { formatPrice, convertAmount, currency: activeCurrency } = useCurrency(); const stageMoney = (list: { value?: number; currency?: string }[]) => formatPrice(list.reduce((sum, item) => sum + convertAmount(item.value || 0, item.currency || 'EUR', activeCurrency), 0), activeCurrency);
   const actions = useCRMActions();
+  const { members: supportWorkspaceMembers, manualAssign } = useSupportRouting();
   const dispatch = (action: Parameters<typeof dispatchGosCRM>[0]) => actions.run(() => dispatchGosCRM(action));
   const navigate = useNavigate();
   const location = useLocation();
@@ -320,7 +322,33 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
     setParams(next);
   };
   const runBulk = async () => {
-    await actions.run(async () => { await bulkGosCRM(chosen, bulkAction as 'tag' | 'owner' | 'stage', bulkValue.trim()); notify(chosen.length + ' contacts updated.'); setSelected([]); close(); });
+    await actions.run(async () => {
+      const nextValue = bulkValue.trim();
+      await bulkGosCRM(chosen, bulkAction as 'tag' | 'owner' | 'stage', nextValue);
+      if (bulkAction === 'owner' && nextValue && nextValue !== 'Unassigned') {
+        const matched = supportWorkspaceMembers.find(m => m.name.trim().toLowerCase() === nextValue.toLowerCase());
+        for (const leadId of chosen) {
+          const targetLead = leads.find(l => l.id === leadId);
+          if (!targetLead) continue;
+          void manualAssign({
+            leadId: targetLead.id,
+            customerName: targetLead.name,
+            customerEmail: targetLead.email,
+            customerPhone: targetLead.phone,
+            channel: targetLead.source,
+            agent: {
+              id: matched?.authUid || matched?.id || nextValue,
+              name: matched?.name || nextValue,
+              email: matched?.email,
+              role: matched?.role,
+            },
+          });
+        }
+      }
+      notify(chosen.length + ' contacts updated.');
+      setSelected([]);
+      close();
+    });
   };
   const allTasks = active.flatMap((l) =>
     (l.tasks ?? []).map((t) => ({ ...t, lead: l })),
@@ -777,7 +805,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                         <td className="text-center">{localizeNode(lead.lastActivity)}</td>
                         <td className="text-center">
                           {localizeNode(lead.createdAt
-                            ? new Date(lead.createdAt).toLocaleDateString()
+                            ? new Date(lead.createdAt).toLocaleDateString('en-US')
                             : "Not recorded")}
                         </td>
                         <td className="text-center">
@@ -952,7 +980,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   </p>
                 </div>
                 <small>
-                  {localizeNode(a.at.includes("T") ? new Date(a.at).toLocaleString() : a.at)}
+                  {localizeNode(a.at.includes("T") ? new Date(a.at).toLocaleString('en-US') : a.at)}
                 </small>
                 <ArrowRight size={14} />
               </Link>
@@ -1246,6 +1274,7 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                       bulkAction === "owner"
                         ? [
                             ...new Set([
+                              ...supportWorkspaceMembers.filter(m => m.active !== false && m.name).map(m => m.name),
                               ...owners,
                               ...leads.map((l) => l.owner),
                             ]),

@@ -107,7 +107,7 @@ function ledgerToTransaction(
     : "—";
   return {
     id: row.id,
-    date: new Date(row.created_at).toLocaleDateString(),
+    date: new Date(row.created_at).toLocaleDateString('en-US'),
     type: ENTRY_TYPES[row.usage_type] ?? "Usage",
     description: `${row.description || (usage ? `${label} message` : "Wallet")}${
       row.status === "pending" ? " (pending)" : ""
@@ -148,7 +148,7 @@ function summarizeUsage(rows: WalletLedgerRow[]) {
     0,
   );
   const day = (date: Date) =>
-    date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    date.toLocaleDateString('en-US', { month: "short", day: "numeric" });
   return {
     usageRows: [...groups.entries()].map(([service, group]) => ({
       service,
@@ -584,7 +584,7 @@ export function BillingPanel({
                             translateText("Manual Transfer")}
                         </span>{" "}
                         {translateText("on")}{" "}
-                        {new Date(pendingTopup.createdAt).toLocaleDateString()}.{" "}
+                        {new Date(pendingTopup.createdAt).toLocaleDateString('en-US')}.{" "}
                         {translateText(
                           "Your request is being reviewed by administration. You cannot send another top-up request until this request is approved or rejected.",
                         )}

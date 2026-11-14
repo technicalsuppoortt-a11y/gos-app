@@ -463,9 +463,9 @@ export function MySubscription({ audience, section, onSectionChange }: {
         const isCreditInvalid = !hasInput || isUnderMin || isOverMax;
 
         const creditValidationMsg = isUnderMin
-          ? c.t(`Minimum is ${minCredits.toLocaleString()} credits (${minUnits} ${minUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(minCredits)} رصيد (${c.num(minUnits)} وحدة)`)
+          ? c.t(`Minimum is ${minCredits.toLocaleString('en-US')} credits (${minUnits} ${minUnits === 1 ? 'unit' : 'units'})`, `الحد الأدنى هو ${c.num(minCredits)} رصيد (${c.num(minUnits)} وحدة)`)
           : isOverMax
-          ? c.t(`Maximum is ${maxCredits.toLocaleString()} credits (${maxUnits} units)`, `الحد الأقصى هو ${c.num(maxCredits)} رصيد (${c.num(maxUnits)} وحدة)`)
+          ? c.t(`Maximum is ${maxCredits.toLocaleString('en-US')} credits (${maxUnits} units)`, `الحد الأقصى هو ${c.num(maxCredits)} رصيد (${c.num(maxUnits)} وحدة)`)
           : null;
 
         const setUnitsAndSync = (newUnits: number) => {
@@ -485,17 +485,17 @@ export function MySubscription({ audience, section, onSectionChange }: {
           audience,
           kind: 'addon',
           name: {
-            en: `${dynamicCredits.toLocaleString()} Custom Credits Top-up`,
-            ar: `شحن ${dynamicCredits.toLocaleString()} رصيد مخصص`,
+            en: `${dynamicCredits.toLocaleString('en-US')} Custom Credits Top-up`,
+            ar: `شحن ${dynamicCredits.toLocaleString('en-US')} رصيد مخصص`,
           },
           description: {
-            en: `${dynamicCredits.toLocaleString()} credits at ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} per ${perUnit} credits`,
-            ar: `${dynamicCredits.toLocaleString()} رصيد بسعر ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} لكل ${perUnit} رصيد`,
+            en: `${dynamicCredits.toLocaleString('en-US')} credits at ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} per ${perUnit} credits`,
+            ar: `${dynamicCredits.toLocaleString('en-US')} رصيد بسعر ${rate.pricePerUnit || 5} ${rate.currency || 'USD'} لكل ${perUnit} رصيد`,
           },
           badge: { en: 'Dynamic Top-up', ar: 'شحن مخصص' },
           cta: { en: 'Buy Credits', ar: 'شحن الرصيد' },
           features: {
-            en: [`+${dynamicCredits.toLocaleString()} platform credits`, 'Instant top-up to active balance'],
+            en: [`+${dynamicCredits.toLocaleString('en-US')} platform credits`, 'Instant top-up to active balance'],
             ar: [`+${c.num(dynamicCredits)} رصيد إضافي للمنصة`, 'شحن فوري للرصيد النشط'],
           },
           price: dynamicCost,
@@ -542,7 +542,7 @@ export function MySubscription({ audience, section, onSectionChange }: {
                       {c.money(dynamicCost, rate.currency)}
                     </div>
                     <small style={{ color: 'var(--bl-muted)', fontSize: 12 }}>
-                      +{dynamicCredits.toLocaleString()} {c.t('credits', 'رصيد')}
+                      +{dynamicCredits.toLocaleString('en-US')} {c.t('credits', 'رصيد')}
                     </small>
                   </div>
                 </div>

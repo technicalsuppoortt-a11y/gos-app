@@ -49,7 +49,7 @@ export function Simulator({ flowId, onClose }: { flowId: string; onClose: () => 
         ))}
       </div>
       {state?.run?.state === 'waiting_delay' && (
-        <div className="fb-sim-note">{translateText("Waiting until ")}{new Date(state.run.wake_at!).toLocaleString()} <button type="button" className="fb-btn fb-btn-soft" onClick={skip}>{translateText("Skip wait")}</button></div>
+        <div className="fb-sim-note">{translateText("Waiting until ")}{new Date(state.run.wake_at!).toLocaleString('en-US')} <button type="button" className="fb-btn fb-btn-soft" onClick={skip}>{translateText("Skip wait")}</button></div>
       )}
       {state?.contact && (
         <dl className="fb-sim-contact">

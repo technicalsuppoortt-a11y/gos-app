@@ -85,7 +85,7 @@ function formatLocalizedDate(value: string | undefined, isArabic: boolean): stri
   if (!value) return '—';
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleString(isArabic ? 'ar-EG' : 'en-US', {
+  return parsed.toLocaleString(isArabic ? 'ar-EG-u-nu-latn' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

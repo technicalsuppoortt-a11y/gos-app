@@ -5,7 +5,16 @@ import { store } from '../store';
 import { updateUserProfile } from '../store/slices/authSlice';
 import { personalPreferencesRef, profileSettingsRef, type PersonalPreferences } from './workspacePreferences';
 import { showToast } from '../utils/toast';
-import { buildTabPermissionsMap, modulePermissions } from '../pages/settings/localState';
+import {
+  ALL_SHIFT_DAYS,
+  buildTabPermissionsMap,
+  defaultSupportShiftSchedule,
+  defaultWorkspaceTimezone,
+  modulePermissions,
+  type DayCode,
+  type SupportShiftSchedule,
+} from '../pages/settings/localState';
+import { pushWorkspaceNotification } from './notifications';
 
 export async function firebaseSettingsRequest<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {
   const user = auth.currentUser;
@@ -380,6 +389,37 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         }
       }
 
+      const isSupportConfiguration =
+        role.toLowerCase() === 'support' || preset === 'support';
+      const rawAllocNum = Number(raw.leadAllocationPercent);
+      const leadAllocationPercent = Number.isFinite(rawAllocNum)
+        ? Math.max(0, Math.min(100, Math.round(rawAllocNum)))
+        : isSupportConfiguration
+        ? Number(existingData?.leadAllocationPercent ?? 50)
+        : undefined;
+
+      let shiftSchedule: SupportShiftSchedule | undefined;
+      if (raw.shiftSchedule && typeof raw.shiftSchedule === 'object') {
+        const rs = raw.shiftSchedule as Partial<SupportShiftSchedule>;
+        const validDays = Array.isArray(rs.days)
+          ? rs.days.filter((d): d is DayCode => typeof d === 'string' && (ALL_SHIFT_DAYS as string[]).includes(d))
+          : [];
+        shiftSchedule = {
+          enabled: rs.enabled !== false,
+          days: validDays.length > 0 ? validDays : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'],
+          startTime: typeof rs.startTime === 'string' && /^\d{2}:\d{2}$/.test(rs.startTime) ? rs.startTime : '09:00',
+          endTime: typeof rs.endTime === 'string' && /^\d{2}:\d{2}$/.test(rs.endTime) ? rs.endTime : '17:00',
+          timezone:
+            typeof rs.timezone === 'string' && rs.timezone.trim()
+              ? rs.timezone.trim()
+              : defaultWorkspaceTimezone(),
+        };
+      } else if (isSupportConfiguration && existingData?.shiftSchedule) {
+        shiftSchedule = existingData.shiftSchedule as SupportShiftSchedule;
+      } else if (isSupportConfiguration) {
+        shiftSchedule = defaultSupportShiftSchedule();
+      }
+
       const finalMemberId = provisionedUid || requestedMemberId;
 
       const payload: Record<string, unknown> = {
@@ -398,6 +438,8 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         isOwner: role.toLowerCase() === 'owner',
         ...(preset ? { preset } : {}),
         ...(effectivePassword ? { authPassword: effectivePassword, hasPassword: true } : {}),
+        ...(leadAllocationPercent !== undefined ? { leadAllocationPercent } : {}),
+        ...(shiftSchedule ? { shiftSchedule } : {}),
         permissions: allowedModules,
         allowedModules,
         tabPermissions,
@@ -433,6 +475,28 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
         createdAt: new Date().toLocaleString('en-GB'),
       };
       await setDoc(doc(db, 'settings', `team_${scope}`, 'auditLogs', auditId), auditPayload).catch(() => null);
+
+      if (isSupportConfiguration && shiftSchedule) {
+        const shiftSummary = `${shiftSchedule.days.join(', ')} · ${shiftSchedule.startTime}–${shiftSchedule.endTime} (${leadAllocationPercent ?? 0}%)`;
+        const shiftSummaryAr = `${shiftSchedule.startTime}–${shiftSchedule.endTime} · نسبة التوزيع ${leadAllocationPercent ?? 0}%`;
+        void pushWorkspaceNotification(scope, {
+          type: 'shift.updated',
+          category: 'Support',
+          recipientIds: [finalMemberId, ownerId, 'owner'].filter(Boolean),
+          recipientEmails: [email, ownerEmail].filter(Boolean),
+          titleEn: isUpdate
+            ? `Support shift updated: ${name}`
+            : `Support agent configured: ${name}`,
+          titleAr: isUpdate
+            ? `تم تحديث جدول شيفت الدعم: ${name}`
+            : `تمت تهيئة موظف الدعم: ${name}`,
+          detailEn: `${active ? 'Active' : 'Inactive'} · ${shiftSummary}`,
+          detailAr: `${active ? 'نشط' : 'غير نشط'} · ${shiftSummaryAr}`,
+          deepLink: '/dashboard/settings/support-team',
+          agentId: finalMemberId,
+          agentName: name,
+        });
+      }
 
       const safeMember = { ...payload };
       delete safeMember.authPassword;

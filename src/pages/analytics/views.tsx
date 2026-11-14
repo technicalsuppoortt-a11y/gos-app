@@ -57,7 +57,7 @@ export function SalesView({ notify, compare }: ViewProps) {
             <linearGradient id="anGrossBar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#EDE9FE" /><stop offset="1" stopColor="#efeaff" /></linearGradient>
             <linearGradient id="anNetFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7C3AED" stopOpacity=".28" /><stop offset="1" stopColor="#7C3AED" stopOpacity="0" /></linearGradient>
           </defs>
-          {localizeNode(grossRevenue.map((v, i) => { const slot = VW / DAYS, h = (Math.min(v, 2000) / 2000) * VH; return <rect key={i} className="an-bar" x={i * slot + slot * 0.2} y={VH - h} width={slot * 0.6} height={h} rx="1.2" fill="url(#anGrossBar)"><title>{localizeNode(`Sep ${i + 1} · Gross €${v.toLocaleString()} · Net €${netRevenue[i].toLocaleString()}`)}</title></rect>; }))}
+          {localizeNode(grossRevenue.map((v, i) => { const slot = VW / DAYS, h = (Math.min(v, 2000) / 2000) * VH; return <rect key={i} className="an-bar" x={i * slot + slot * 0.2} y={VH - h} width={slot * 0.6} height={h} rx="1.2" fill="url(#anGrossBar)"><title>{localizeNode(`Sep ${i + 1} · Gross €${v.toLocaleString('en-US')} · Net €${netRevenue[i].toLocaleString('en-US')}`)}</title></rect>; }))}
           {localizeNode((() => { const pts = toPoints(netRevenue, 2000, true); return <>
             <path d={areaPath(pts)} fill="url(#anNetFill)" />
             <path d={smoothPath(pts)} fill="none" stroke="#7C3AED" strokeWidth="1.9" vectorEffect="non-scaling-stroke" />
@@ -66,7 +66,7 @@ export function SalesView({ notify, compare }: ViewProps) {
         </ChartFrame>
       </Card>
       <Card title={translateText("Revenue by Category")} action={rangeAction(notify, 'Revenue by Category')}>
-        <div className="an-split"><Donut segments={revenueMix} center={<><b>{translateText("€12.4K")}</b><small>{translateText("Net revenue")}</small></>} /><DonutLegend segments={revenueMix} format={v => `€${v.toLocaleString()}`} /></div>
+        <div className="an-split"><Donut segments={revenueMix} center={<><b>{translateText("€12.4K")}</b><small>{translateText("Net revenue")}</small></>} /><DonutLegend segments={revenueMix} format={v => `€${v.toLocaleString('en-US')}`} /></div>
       </Card>
       <Card title={translateText("Transactions")} className="span-2" action={<div className="an-head-tools"><FilterPills value={status} onChange={setStatus} options={[['All', txns.length], ...(['Paid', 'Pending', 'Refunded'] as const).map(s => [s, countBy(txns, t => t.status, s)] as [string, number])]} /><button className="an-ghost" onClick={() => { downloadCsv('transactions.csv', [['ID', 'Customer', 'Product', 'Method', 'Amount', 'Date', 'Status'], ...rows.map(t => [t.id, t.customer, t.product, t.method, t.amount, t.date, t.status])]); notify('Transactions exported to CSV.'); }}><FileDown size={13} />{translateText("Export")}</button></div>}>
         <div className="an-table-wrap scroll">

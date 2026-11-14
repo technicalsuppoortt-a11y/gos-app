@@ -63,6 +63,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
     if (!response.ok) throw new Error('Deploy the published-page frontend entry before publishing assets.');
     const template = await response.text();
     const captureToken = randomBytes(32).toString('base64url');
+    const analyticsToken = randomBytes(32).toString('base64url');
     const capture = { tenantId: root.id, captureToken, endpoint: `https://us-central1-${projectId}.cloudfunctions.net/captureAssetLead` };
     const files = buildPublicationFiles(asset, template, appOrigin, true, capture);
     const manifestResponse = await fetcher(`${new URL(appOrigin).origin}/hosting-manifest.json`, { signal: AbortSignal.timeout(30000) });
@@ -87,7 +88,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
       const [latest, state] = await Promise.all([tx.get(ref), tx.get(stateRef)]);
       if (state.data()?.lease !== lease) throw new HttpsError('aborted', 'The publishing operation changed. Refresh the asset.');
       const draftChanged = !latest.exists || digest(latest.data().document) !== digest(saved.document) || digest(latest.data().crmRouting ?? {}) !== digest(saved.crmRouting ?? {});
-      tx.set(stateRef, { ...release, siteId, captureTokenHash: createHash('sha256').update(captureToken).digest('hex'), captureForms: captureForms(asset.document), crmRouting: asset.crmRouting ?? {}, lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
+      tx.set(stateRef, { ...release, siteId, captureTokenHash: createHash('sha256').update(captureToken).digest('hex'), captureForms: captureForms(asset.document), analyticsTokenHash: createHash('sha256').update(analyticsToken).digest('hex'), analyticsPages: asset.document.pages.map(page => page.id), crmRouting: asset.crmRouting ?? {}, lease: null, publishedBy: user.uid, publishedAt: new Date().toISOString(), publishedHash: digest(saved.document), draftChanged }, { merge: true });
       if (latest.exists) tx.update(ref, { publishedUrl: release.url });
       // A newer edit remains a draft; it cannot be labelled as the deployed copy.
       if (!draftChanged) tx.update(ref, { 'document.funnel.status': 'Published', 'document.pages': saved.document.pages.map(page => ({ ...page, status: 'Published' })) });
@@ -97,6 +98,7 @@ export async function publishAssetRequest(request, { workspace, db, hosting, app
       tx.set(publishedSiteRef, encodeFirestoreValue({
         ownerUid: user?.uid || '',
         tenantId: root.id,
+        analytics: { tenantId: root.id, captureToken: analyticsToken, endpoint: capture.endpoint },
         kind: asset.kind || 'funnel',
         funnelId: assetId,
         name: asset.name || '',

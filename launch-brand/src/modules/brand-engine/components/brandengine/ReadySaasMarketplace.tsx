@@ -195,7 +195,7 @@ function ReadySaasMetrics({ item, ar }: { item: ReadySaas; ar: boolean }) {
         <BarChart3 aria-hidden="true" />
         <span>
           <strong>
-            {new Intl.NumberFormat(ar ? "ar-EG" : "en-US", {
+            {new Intl.NumberFormat(ar ? "ar-EG-u-nu-latn" : "en-US", {
               style: "currency",
               currency: "USD",
               maximumFractionDigits: 0,

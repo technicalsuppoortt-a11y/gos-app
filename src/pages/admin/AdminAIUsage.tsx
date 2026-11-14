@@ -69,7 +69,7 @@ function WorkspaceCreditsCell({ ownerId, ar }: { ownerId: string; ar: boolean })
       {creditsBalance !== null ? (
         <span className="aiu-credits-badge" title={ar ? 'رصيد نقاط الخطة' : 'Plan Credits'}>
           <Coins size={12} />
-          <span>{creditsBalance.toLocaleString()} {ar ? 'نقطة' : 'Credits'}</span>
+          <span>{creditsBalance.toLocaleString('en-US')} {ar ? 'نقطة' : 'Credits'}</span>
         </span>
       ) : (
         <span style={{ fontSize: 11.5, color: '#94a3b8' }}>{ar ? 'بدون نقاط' : 'No credits'}</span>
@@ -119,7 +119,7 @@ export function AdminAIUsage({
           budget:
             settings.tokenBudgetPerWorkspace === undefined
               ? '500,000'
-              : numberValue(settings.tokenBudgetPerWorkspace).toLocaleString(),
+              : numberValue(settings.tokenBudgetPerWorkspace).toLocaleString('en-US'),
           loading: false,
           error: '',
         });

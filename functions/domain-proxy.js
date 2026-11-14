@@ -133,6 +133,7 @@ export async function handleDomainProxy(req, res, { db, appOrigin = 'https://gos
         settings: site.settings || { seo: title, color: '#2563eb' }
       },
       pageId: step?.id || site.steps?.[0]?.id || '',
+      analytics: site.analytics,
       host,
       path: requestPath
     };

@@ -768,7 +768,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                           </div>
                         </td>
                         <td className="cr-date-cell">
-                          {row.createdAt ? new Date(row.createdAt).toLocaleString() : '—'}
+                          {row.createdAt ? new Date(row.createdAt).toLocaleString('en-US') : '—'}
                         </td>
                         <td>
                           <span className={`request-status ${st.toLowerCase()}`}>
@@ -905,7 +905,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                           <strong className="cr-amount">{money(row)}</strong>
                         </td>
                         <td className="cr-date-cell">
-                          {row.createdAt ? new Date(row.createdAt).toLocaleString() : '—'}
+                          {row.createdAt ? new Date(row.createdAt).toLocaleString('en-US') : '—'}
                         </td>
                         <td>
                           <span className={`request-status ${st.toLowerCase()}`}>
@@ -1074,7 +1074,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
               {quick.createdAt && (
                 <div className="cr-detail-timestamp">
                   <Clock size={12} />
-                  <span>{new Date(quick.createdAt).toLocaleString()}</span>
+                  <span>{new Date(quick.createdAt).toLocaleString('en-US')}</span>
                 </div>
               )}
             </div>
@@ -1197,7 +1197,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                         </strong>
                         <small style={{ fontSize: 11.5, color: '#64748b' }}>
                           {ord.method || translateText("Checkout")} ·{' '}
-                          {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : ''}
+                          {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-US') : ''}
                         </small>
                       </div>
                       <div style={{ textAlign: 'right' }}>
@@ -1253,7 +1253,7 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
                         </strong>
                         <small style={{ fontSize: 11.5, color: '#64748b' }}>
                           #{String(t.id).slice(-8).toUpperCase()} ·{' '}
-                          {t.createdAt ? new Date(t.createdAt).toLocaleString() : t.at || ''}
+                          {t.createdAt ? new Date(t.createdAt).toLocaleString('en-US') : t.at || ''}
                         </small>
                       </div>
                       <em

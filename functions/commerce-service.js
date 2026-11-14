@@ -38,12 +38,12 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
       }
     } catch (err) {
       if (err?.code !== 'auth/user-not-found') throw err;
-      if (!rawPassword) throw new HttpsError('invalid-argument', 'Provide an initial password for a new customer account.');
+      const initialPassword = rawPassword || `Portal@${randomBytes(6).toString('hex')}!`;
       account = await auth.createUser({
         uid: `customer_${emailKey(cleanEmail)}`,
         email: cleanEmail,
         displayName: customerName,
-        password: rawPassword,
+        password: initialPassword,
         emailVerified: true,
       });
     }

@@ -30,6 +30,18 @@ async function client(role, tenantId, permissions = ['*'], claims = {}) {
 try {
   const tenantA = `rules-a-${run}`, tenantB = `rules-b-${run}`;
   const owner = await client('USER', tenantA), other = await client('USER', tenantB), admin = await client('ADMIN', tenantA), superAdmin = await client('SUPER_ADMIN', tenantA), limited = await client('USER', tenantA, ['inbox']);
+  const analyst = await client('USER', tenantA, ['analytics']);
+  const analyticsResources = ['orders', 'transactions', 'leads', 'contacts', 'conversations', 'messages', 'handoffLogs', 'auditLogs', 'events', 'analyticsEvents', 'checkoutRequests', 'products', 'assets'];
+  const analyticsRange = ref => query(ref, where('createdAt', '>=', '2026-11-01'), where('createdAt', '<', '2026-12-01'));
+  for (const resource of analyticsResources) {
+    const ref = collection(analyst.db, 'tenants', tenantA, resource);
+    assert.equal((await getDocs(analyticsRange(ref))).empty, true, resource);
+    await denied(() => getDocs(analyticsRange(collection(other.db, 'tenants', tenantA, resource))));
+  }
+  await db.doc(`tenants/${tenantA}/analyticsEvents/view`).set({ type: 'page.view', createdAt: '2026-11-14T11:00:00.000Z' });
+  assert.equal((await getDocs(analyticsRange(collection(analyst.db, 'tenants', tenantA, 'analyticsEvents')))).size, 1);
+  await denied(() => getDocs(collection(limited.db, 'tenants', tenantA, 'analyticsEvents')));
+  await denied(() => setDoc(doc(analyst.db, 'tenants', tenantA, 'analyticsEvents', 'fake'), { type: 'page.view' }));
   const customer = await client('CUSTOMER', tenantA, ['*'], { role: 'CUSTOMER', tenantId: tenantA });
   await db.doc(`users/${customer.account.uid}`).update({ portalProvisioned: true });
   const purchasePath = ['customerLibraries', customer.account.uid, 'purchases', 'paid-course'];

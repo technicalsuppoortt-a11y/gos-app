@@ -437,15 +437,15 @@ export async function downloadInvoicePdf(
       if ((item.credits ?? 0) > 0) {
         badges.push(
           ar
-            ? `+${item.credits?.toLocaleString()} رصيد ذكاء اصطناعي`
-            : `+${item.credits?.toLocaleString()} AI Credits`,
+            ? `+${item.credits?.toLocaleString('en-US')} رصيد ذكاء اصطناعي`
+            : `+${item.credits?.toLocaleString('en-US')} AI Credits`,
         );
       }
       if ((item.emailCredits ?? 0) > 0) {
         badges.push(
           ar
-            ? `+${item.emailCredits?.toLocaleString()} رصيد بريد`
-            : `+${item.emailCredits?.toLocaleString()} Email Credits`,
+            ? `+${item.emailCredits?.toLocaleString('en-US')} رصيد بريد`
+            : `+${item.emailCredits?.toLocaleString('en-US')} Email Credits`,
         );
       }
       ctx.fillStyle = '#4f46e5';

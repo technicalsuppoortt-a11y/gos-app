@@ -124,6 +124,84 @@ async function demoRequest(name: string, data: any): Promise<any> {
     case 'productAccess': return { name: 'Demo Product', files: [], message: 'Demo access updated.' };
     case 'activateUser': return { success: true };
     case 'billingService': return demoBilling(data);
+    case 'domainProvider': {
+      const demoPricing = read<any[]>('demo:domain_pricing', [
+        { id: 'com', extension: 'com', registrar_price: 10, renewal_cost: 12.98, transfer_cost: 10, registration_price: 14.99, renewal_price: 17.99, transfer_price: 14.99, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 33.29 },
+        { id: 'net', extension: 'net', registrar_price: 11.98, renewal_cost: 13.98, transfer_cost: 11.98, registration_price: 16.97, renewal_price: 18.97, transfer_price: 16.97, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 29.4 },
+        { id: 'org', extension: 'org', registrar_price: 10.18, renewal_cost: 13.18, transfer_cost: 10.18, registration_price: 15.17, renewal_price: 18.17, transfer_price: 15.17, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 32.89 },
+        { id: 'ai', extension: 'ai', registrar_price: 69.98, renewal_cost: 69.98, transfer_cost: 69.98, registration_price: 74.97, renewal_price: 74.97, transfer_price: 74.97, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 6.66 },
+        { id: 'co', extension: 'co', registrar_price: 9.98, renewal_cost: 24.98, transfer_cost: 9.98, registration_price: 14.97, renewal_price: 29.97, transfer_price: 14.97, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 33.33 },
+        { id: 'io', extension: 'io', registrar_price: 32.98, renewal_cost: 32.98, transfer_cost: 32.98, registration_price: 37.97, renewal_price: 37.97, transfer_price: 37.97, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 13.14 },
+        { id: 'store', extension: 'store', registrar_price: 4.98, renewal_cost: 29.98, transfer_cost: 4.98, registration_price: 9.97, renewal_price: 34.97, transfer_price: 9.97, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 50.05 },
+        { id: 'app', extension: 'app', registrar_price: 14, renewal_cost: 18, transfer_cost: 14, registration_price: 18.99, renewal_price: 22.99, transfer_price: 18.99, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 26.28 },
+        { id: 'dev', extension: 'dev', registrar_price: 12, renewal_cost: 14, transfer_cost: 12, registration_price: 16.99, renewal_price: 18.99, transfer_price: 16.99, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 29.37 },
+        { id: 'online', extension: 'online', registrar_price: 5, renewal_cost: 28, transfer_cost: 5, registration_price: 9.99, renewal_price: 32.99, transfer_price: 9.99, markup: 4.99, markup_type: 'fixed', enabled: true, currency: 'USD', profit: 4.99, profit_margin_pct: 49.95 },
+      ]);
+      const demoDomains = read<any[]>('demo:registered_domains', []);
+      const demoOrders = read<any[]>('demo:domain_orders', []);
+      const demoContact = read<any>('demo:domain_contact', { firstName: 'Demo', lastName: 'Owner', organization: 'Northstar Studio', address1: '100 Innovation Way', city: 'Cairo', state: 'Cairo', postalCode: '11511', country: 'EG', phone: '+201001234567', email: 'demo@upclick.app' });
+      const op = data.operation;
+      if (op === 'getPublicPricing') return { currency: 'USD', suggested_tlds: demoPricing.map(p => p.extension), pricing: demoPricing };
+      if (op === 'checkAvailability') {
+        const sld = String(data.domain || 'mybrand').toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('.')[0] || 'mybrand';
+        return {
+          query: `${sld}.com`,
+          sld,
+          registrarConfigured: true,
+          results: demoPricing.map(p => ({
+            domain: `${sld}.${p.extension}`,
+            extension: p.extension,
+            available: !demoDomains.some(d => d.domain === `${sld}.${p.extension}`),
+            status: demoDomains.some(d => d.domain === `${sld}.${p.extension}`) ? 'unavailable' : 'available',
+            registration_price: p.registration_price,
+            renewal_price: p.renewal_price,
+            transfer_price: p.transfer_price,
+            currency: 'USD',
+          })),
+        };
+      }
+      if (op === 'listMyDomains') return { domains: demoDomains, orders: demoOrders, walletBalance: 250, stripeAvailable: false };
+      if (op === 'getContact') return { contact: demoContact };
+      if (op === 'saveContact') { write('demo:domain_contact', data.contact); return { success: true, contact: data.contact }; }
+      if (op === 'createOrder') {
+        const ext = String(data.domain || '').split('.').slice(1).join('.') || 'com';
+        const p = demoPricing.find(x => x.extension === ext) || demoPricing[0];
+        const years = Number(data.years) || 1;
+        const order = { id: crypto.randomUUID(), domain: data.domain, extension: ext, type: data.type || 'registration', years, status: 'pending', customer_price: Math.round(p.registration_price * years * 100) / 100, currency: 'USD', created_at: new Date().toISOString() };
+        write('demo:domain_orders', [order, ...demoOrders]);
+        return { order };
+      }
+      if (op === 'createCheckout') {
+        const idx = demoOrders.findIndex(o => o.id === data.orderId);
+        const order = demoOrders[idx];
+        if (!order) throw new Error('Order not found');
+        const dom = { id: crypto.randomUUID(), domain: order.domain, extension: order.extension, status: 'active', registrar: 'namecheap', registration_price: order.customer_price, renewal_price: order.customer_price, registered_at: new Date().toISOString(), expires_at: new Date(Date.now() + (order.years || 1) * 365 * 86400000).toISOString(), auto_renew: true, nameservers: ['dns1.registrar-servers.com', 'dns2.registrar-servers.com'], dns_records: [], created_at: new Date().toISOString() };
+        write('demo:registered_domains', [dom, ...demoDomains]);
+        const nextOrders = [...demoOrders];
+        nextOrders[idx] = { ...order, status: 'completed', domain_id: dom.id };
+        write('demo:domain_orders', nextOrders);
+        return { paid: true, method: 'wallet', orderId: order.id, fulfillment: { ok: true, domainId: dom.id, domain: dom.domain } };
+      }
+      if (op === 'getDnsRecords') {
+        const dom = demoDomains.find(d => d.id === data.domainId);
+        return { records: dom?.dns_records ?? [] };
+      }
+      if (op === 'saveDnsRecords') {
+        write('demo:registered_domains', demoDomains.map(d => d.id === data.domainId ? { ...d, dns_records: data.records } : d));
+        return { success: true, records: data.records };
+      }
+      if (op === 'saveNameservers') {
+        write('demo:registered_domains', demoDomains.map(d => d.id === data.domainId ? { ...d, nameservers: data.nameservers } : d));
+        return { success: true, nameservers: data.nameservers };
+      }
+      if (op === 'setAutoRenew') {
+        write('demo:registered_domains', demoDomains.map(d => d.id === data.domainId ? { ...d, auto_renew: Boolean(data.auto_renew) } : d));
+        return { success: true, auto_renew: Boolean(data.auto_renew) };
+      }
+      if (op === 'adminOverview') return { scope: 'admin', currency: 'USD', pricing: demoPricing, domains: demoDomains, orders: demoOrders, siteDomains: [] };
+      if (op === 'superAdminOverview') return { settings: { markup: 4.99, markup_type: 'fixed' }, pricing: demoPricing, registrarConfig: { provider: 'namecheap', apiUser: '', userName: '', clientIp: '', environment: 'sandbox', sandboxSimulation: true, liveConfigured: false, configured: true, hasApiKey: false, maskedApiKey: '', defaultNameservers: ['dns1.registrar-servers.com', 'dns2.registrar-servers.com'] }, namecheapConfigured: true, domains: demoDomains, orders: demoOrders, logs: [] };
+      return { success: true };
+    }
     default: throw new Error('Unknown local demo action: ' + name);
   }
 }

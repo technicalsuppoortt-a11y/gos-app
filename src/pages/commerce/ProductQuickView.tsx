@@ -58,7 +58,7 @@ const initials = (name: string) =>
 const formatDate = (value?: string) => {
   if (!value) return '—';
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString('en-US');
 };
 
 export function ProductQuickView({
