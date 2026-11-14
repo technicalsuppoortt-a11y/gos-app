@@ -1,6 +1,6 @@
 # Upclick REST integration
 
-The API defaults to `https://gos-api.vercel.app`. Override it with
+The API defaults to `https://api.upklick.net`. Override it with
 `VITE_GOS_API_BASE_URL` in your Vite environment, then restart Vite.
 Firebase remains responsible for sign-in. Each authenticated request obtains
 the current Firebase ID token through `getIdToken()`. A 401 forces one token

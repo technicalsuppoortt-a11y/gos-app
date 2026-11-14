@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 
-const base = (process.env.GOS_API_BASE_URL || 'https://gos-api.vercel.app').replace(/\/$/, '');
+const base = (process.env.GOS_API_BASE_URL || 'https://api.upklick.net').replace(/\/$/, '');
 const token = process.env.FIREBASE_ID_TOKEN;
 if (!token) throw new Error('Set FIREBASE_ID_TOKEN to a current Firebase ID token. The token is never printed or saved.');
 async function request(path, body, method = body === undefined ? 'GET' : 'POST', publicRequest = false) {

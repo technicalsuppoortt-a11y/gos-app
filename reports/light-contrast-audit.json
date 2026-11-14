@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 101,
+  "scannedStylesheets": 103,
   "correctedDeclarations": 871,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 250,
+  "utilityOccurrences": 242,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -88,17 +88,17 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 171,
+      "line": 172,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 179,
+      "line": 180,
       "utility": "text-slate-200"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 182,
+      "line": 183,
       "utility": "text-slate-400"
     },
     {
@@ -184,46 +184,6 @@
     {
       "file": "src/components/ui/Select.tsx",
       "line": 124,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 160,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 172,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 201,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 236,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 282,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 287,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 343,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/analytics/LiveAnalytics.tsx",
-      "line": 352,
       "utility": "text-slate-500"
     },
     {

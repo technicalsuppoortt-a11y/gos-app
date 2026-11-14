@@ -22,8 +22,8 @@ function read(key: string): Product[] {
   return [];
 }
 let key = storageKey();
-let rawProducts = cloudStorage.getItem(key);
-let products = read(key);
+let rawProducts: string | null | undefined;
+let products: Product[] = [];
 function getProductsSnapshot(): Product[] {
   const nextKey = storageKey();
   const nextRaw = cloudStorage.getItem(nextKey);

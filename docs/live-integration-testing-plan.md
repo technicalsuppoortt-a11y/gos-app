@@ -13,7 +13,7 @@ Before initiating manual or automated testing, confirm your local environment an
    VITE_FIREBASE_PROJECT_ID=gos-app-3c7fb
    VITE_FIREBASE_AUTH_DOMAIN=gos-app-3c7fb.firebaseapp.com
    VITE_FIREBASE_API_KEY=<project-api-key>
-   VITE_GOS_API_BASE_URL=https://gos-api.vercel.app
+   VITE_GOS_API_BASE_URL=https://api.upklick.net
    VITE_USE_CLOUD_FUNCTIONS=true
    ```
 2. **Start the Local Development Server**:

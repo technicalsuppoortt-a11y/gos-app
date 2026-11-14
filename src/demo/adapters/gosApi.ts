@@ -16,12 +16,12 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
         instagram: { app_id: null, config_id: null, has_secret: false },
         whatsapp: { app_id: null, config_id: null, has_secret: false },
       },
-      public_url: 'https://gos-api.vercel.app',
+      public_url: 'https://api.upklick.net',
       allowed_origins: ['https://app.client-domain.com'],
       unreadable_secrets: [],
       verify_token: 'upclick_meta_verify_demo_token',
-      webhook_url: 'https://gos-api.vercel.app/api/v1/webhooks/meta',
-      redirect_uri: 'https://gos-api.vercel.app/api/v1/oauth/meta/callback',
+      webhook_url: 'https://api.upklick.net/api/v1/webhooks/meta',
+      redirect_uri: 'https://api.upklick.net/api/v1/oauth/meta/callback',
     };
     const current = read('platform.metaApp', defaultMeta);
     if (method === 'PUT') {

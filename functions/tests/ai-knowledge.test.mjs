@@ -4,7 +4,7 @@ import { queryIndexedKnowledge, readAgent, validateAgent, defaultAgent } from '.
 
 test('shared retrieval queries the indexed API with the authenticated caller and preserves grounding', async () => {
   const result = await queryIndexedKnowledge({ authorization: 'Bearer caller-token', question: 'What services are offered?', fetcher: async (url, options) => {
-    assert.equal(url, 'https://gos-api.vercel.app/api/v1/ai/playground');
+    assert.equal(url, 'https://api.upklick.net/api/v1/ai/playground');
     assert.equal(options.headers.Authorization, 'Bearer caller-token');
     assert.deepEqual(JSON.parse(options.body), { question: 'What services are offered?' });
     assert.equal('X-Tenant-ID' in options.headers, false);

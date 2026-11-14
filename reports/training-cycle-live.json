@@ -1,6 +1,6 @@
 {
   "tested_at": "2026-11-03T13:50:41.727Z",
-  "base": "https://gos-api.vercel.app/api/v1",
+  "base": "https://api.upklick.net/api/v1",
   "authenticated": false,
   "source_id_is_placeholder": true,
   "session_id_is_placeholder": true,

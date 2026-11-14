@@ -1,6 +1,6 @@
 // The indexed Upclick source store is authoritative. Both AI entry points use its
 // grounded query endpoint instead of reading the unrelated tenant/knowledge list.
-export async function queryIndexedKnowledge({ authorization, question, baseUrl = 'https://gos-api.vercel.app', gatewaySecret, fetcher = fetch }) {
+export async function queryIndexedKnowledge({ authorization, question, baseUrl = 'https://api.upklick.net', gatewaySecret, fetcher = fetch }) {
   if (!/^Bearer \S+$/i.test(authorization ?? '')) throw new Error('Sign in to query workspace knowledge.');
   const response = await fetcher(`${baseUrl.replace(/\/$/, '')}/api/v1/ai/playground`, {
     method: 'POST', redirect: 'error', headers: { Authorization: authorization, 'Content-Type': 'application/json', ...(gatewaySecret ? { 'X-GOS-Metering-Secret': gatewaySecret } : {}) },

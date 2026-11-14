@@ -12,7 +12,7 @@ test('authenticated smoke flow verifies token, posts concrete text, then polls l
   const content = fs.readFileSync(new URL('./fixtures/gos-coaching-notes.txt', import.meta.url), 'utf8');
   const calls = [];
   let reads = 0;
-  const api = createGosTransport('https://gos-api.vercel.app/', async () => 'firebase-test-token', async (url, options) => {
+  const api = createGosTransport('https://api.upklick.net/', async () => 'firebase-test-token', async (url, options) => {
     calls.push(url);
     assert.equal(options.headers.get('Authorization'), 'Bearer firebase-test-token');
     assert.equal(options.headers.get('X-Tenant-ID'), null);
@@ -27,7 +27,7 @@ test('authenticated smoke flow verifies token, posts concrete text, then polls l
   assert.equal((await api('/ai/sources', { method: 'POST', body: { name: 'Coaching notes', type: 'text', content } })).source.status, 'queued');
   assert.equal((await api('/ai/sources')).sources[0].status, 'processing');
   assert.equal((await api('/ai/sources')).sources[0].status, 'ready');
-  assert.equal(calls[0], 'https://gos-api.vercel.app/api/v1/auth/me');
+  assert.equal(calls[0], 'https://api.upklick.net/api/v1/auth/me');
 });
 test('multipart sends file bytes without overriding browser boundary', async () => {
   const form = new FormData();

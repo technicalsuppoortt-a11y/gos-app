@@ -1,6 +1,6 @@
 # Training Cycle integration verification
 
-Test date: November 3, 2026. Target: `https://gos-api.vercel.app/api/v1`.
+Test date: November 3, 2026. Target: `https://api.upklick.net/api/v1`.
 
 The production five-step workflow now sends file multipart uploads, text JSON uploads, URL JSON uploads, overall training reads, individual source reads, contextual playground questions and session continuations, channel reads and updates, assistant live settings, and customer inbox messages through the shared Firebase-authenticated transport. The transport attaches a current Firebase ID token, refreshes it once on HTTP 401, preserves multipart boundaries, and surfaces validation, timeout, and network errors.
 

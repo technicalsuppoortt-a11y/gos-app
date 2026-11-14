@@ -46,7 +46,7 @@ import { domainProviderRequest, createDomainProviderApiHandler } from './domain-
 // Allows deploying the remaining services while the owner provisions the AI secret.
 const openaiKey = process.env.DEPLOY_COPILOT === 'true' ? defineSecret('OPENAI_API_KEY') : null;
 const openaiModel = defineString('OPENAI_MODEL', { default: 'gpt-4o' });
-const gosApiBase = defineString('GOS_API_BASE_URL', { default: 'https://gos-api.vercel.app' });
+const gosApiBase = defineString('GOS_API_BASE_URL', { default: 'https://api.upklick.net' });
 const gosMeteringSecret = process.env.ENABLE_GOS_METERING_BRIDGE === 'true' ? defineSecret('GOS_METERING_SECRET') : null;
 const gosSecrets = gosMeteringSecret ? [gosMeteringSecret] : [];
 const appOrigin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 // Set FIREBASE_ID_TOKEN in the process environment; credentials are never saved.
 const token = process.env.FIREBASE_ID_TOKEN;
-const base = 'https://gos-api.vercel.app/api/v1';
+const base = 'https://api.upklick.net/api/v1';
 const rows = [];
 const marker = crypto.randomUUID();
 let sourceId = marker, sessionId = marker;

@@ -48,6 +48,7 @@ import {
   type RegistrarLog,
 } from '../../lib/domains/constants';
 import { DomainsView } from '../../components/Views/DomainsView';
+import { AdminSelect } from '../../pages/admin/AdminSelect';
 import '../../pages/domains-provider.css';
 
 export interface DomainsPageProps {
@@ -162,7 +163,10 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
         setSiteDomains(res.siteDomains || []);
       }
     } catch (err) {
-      showToast.error(err instanceof Error ? err.message : t('Failed to load domain data.', 'تعذر تحميل بيانات النطاقات.'));
+      const msg = err instanceof Error ? err.message : '';
+      if (!msg.includes('temporarily unavailable') && !msg.includes('Network') && !msg.includes('Failed to fetch')) {
+        showToast.error(msg || t('Failed to load domain data.', 'تعذر تحميل بيانات النطاقات.'));
+      }
     } finally {
       setLoading(false);
     }
@@ -467,7 +471,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                 : t('WORKSPACE DOMAIN MANAGEMENT · ADMIN', 'إدارة نطاقات مساحة العمل · المسؤول')}
             </div>
             <h1 className="dp-hero-title">
-              <Globe size={24} style={{ color: isSuper ? 'var(--dp-orange)' : 'var(--dp-accent)' }} />
+              <Globe size={24} style={{ color: 'var(--dp-accent)' }} />
               <span>
                 {isSuper
                   ? t('Admin Control Panel — Domain Provider', 'لوحة التحكم للمسؤولين — مزود النطاقات')
@@ -539,7 +543,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
           <button
             type="button"
             onClick={() => setShowRegistrarModal(true)}
-            className="dp-btn dp-btn-orange dp-btn-sm"
+            className="dp-btn dp-btn-primary dp-btn-sm"
           >
             <KeyRound size={13} />
             <span>{t('Configure Namecheap API', 'إعداد مفاتيح Namecheap')}</span>
@@ -566,10 +570,10 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
             </div>
           </div>
 
-          <div className="dp-kpi-card" data-tone="orange">
+          <div className="dp-kpi-card" data-tone="violet">
             <div className="dp-kpi-head">
               <span className="dp-kpi-label">{t('Total Domain Sales', 'إجمالي مبيعات النطاقات')}</span>
-              <span className="dp-kpi-icon" style={{ background: 'var(--dp-orange-soft)', color: 'var(--dp-orange)' }}>
+              <span className="dp-kpi-icon" style={{ background: 'var(--dp-accent-soft)', color: 'var(--dp-accent)' }}>
                 <TrendingUp size={17} />
               </span>
             </div>
@@ -650,10 +654,10 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
             </div>
           </div>
 
-          <div className="dp-kpi-card" data-tone="orange">
+          <div className="dp-kpi-card" data-tone="emerald">
             <div className="dp-kpi-head">
               <span className="dp-kpi-label">{t('Delegated Domain Orders', 'طلبات النطاقات')}</span>
-              <span className="dp-kpi-icon" style={{ background: 'var(--dp-orange-soft)', color: 'var(--dp-orange)' }}>
+              <span className="dp-kpi-icon" style={{ background: 'var(--dp-emerald-soft)', color: 'var(--dp-emerald)' }}>
                 <ShoppingBag size={17} />
               </span>
             </div>
@@ -684,7 +688,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <button
                 type="button"
                 onClick={() => setTab('pricing')}
-                className={`dp-tab-btn ${tab === 'pricing' ? 'is-active-orange' : ''}`}
+                className={`dp-tab-btn ${tab === 'pricing' ? 'is-active' : ''}`}
               >
                 <Percent size={14} />
                 <span>{t('TLD Pricing & Profit Margins', 'تسعير الامتدادات وهوامش الأرباح')}</span>
@@ -692,7 +696,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <button
                 type="button"
                 onClick={() => setTab('domains')}
-                className={`dp-tab-btn ${tab === 'domains' ? 'is-active-orange' : ''}`}
+                className={`dp-tab-btn ${tab === 'domains' ? 'is-active' : ''}`}
               >
                 <Globe size={14} />
                 <span>{t('Users Domains', 'نطاقات المستخدمين')}</span>
@@ -701,7 +705,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <button
                 type="button"
                 onClick={() => setTab('orders')}
-                className={`dp-tab-btn ${tab === 'orders' ? 'is-active-orange' : ''}`}
+                className={`dp-tab-btn ${tab === 'orders' ? 'is-active' : ''}`}
               >
                 <ShoppingBag size={14} />
                 <span>{t('Orders & Transactions', 'الطلبات وسجل العمليات')}</span>
@@ -710,7 +714,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <button
                 type="button"
                 onClick={() => setTab('analytics')}
-                className={`dp-tab-btn ${tab === 'analytics' ? 'is-active-orange' : ''}`}
+                className={`dp-tab-btn ${tab === 'analytics' ? 'is-active' : ''}`}
               >
                 <BarChart3 size={14} />
                 <span>{t('Analytics & Distribution', 'التحليلات وتوزيع النطاقات')}</span>
@@ -718,7 +722,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <button
                 type="button"
                 onClick={() => setTab('logs')}
-                className={`dp-tab-btn ${tab === 'logs' ? 'is-active-orange' : ''}`}
+                className={`dp-tab-btn ${tab === 'logs' ? 'is-active' : ''}`}
               >
                 <FileText size={14} />
                 <span>{t('Registrar Error Logs', 'سجل أخطاء المسجّل')}</span>
@@ -778,11 +782,11 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
       {isSuper && tab === 'pricing' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Global Profit & Markup Controller */}
-          <div className="dp-card" style={{ borderColor: 'rgba(234, 88, 12, 0.25)' }}>
+          <div className="dp-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
               <div>
                 <h3 className="dp-card-title">
-                  <Sparkles size={17} style={{ color: 'var(--dp-orange)' }} />
+                  <Sparkles size={17} style={{ color: 'var(--dp-accent)' }} />
                   <span>{t('Global Profit & Markup Controller', 'التحكم في نسبة وهامش الربح على النطاقات')}</span>
                 </h3>
                 <p className="dp-card-desc">
@@ -798,7 +802,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                   type="button"
                   disabled={Boolean(busy)}
                   onClick={() => void applyBulkMarkupAction()}
-                  className="dp-btn dp-btn-orange dp-btn-sm"
+                  className="dp-btn dp-btn-primary dp-btn-sm"
                 >
                   <Zap size={13} />
                   <span>
@@ -839,7 +843,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                     <button
                       type="button"
                       onClick={() => setSettings(s => ({ ...s, markup_type: 'percent' }))}
-                      className={`dp-btn dp-btn-sm ${settings.markup_type === 'percent' ? 'dp-btn-orange' : ''}`}
+                      className={`dp-btn dp-btn-sm ${settings.markup_type === 'percent' ? 'dp-btn-primary' : ''}`}
                       style={{ border: 'none', padding: '5px 11px' }}
                     >
                       {t('Percentage (%)', 'نسبة مئوية (%)')}
@@ -847,7 +851,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                     <button
                       type="button"
                       onClick={() => setSettings(s => ({ ...s, markup_type: 'fixed' }))}
-                      className={`dp-btn dp-btn-sm ${settings.markup_type === 'fixed' ? 'dp-btn-orange' : ''}`}
+                      className={`dp-btn dp-btn-sm ${settings.markup_type === 'fixed' ? 'dp-btn-primary' : ''}`}
                       style={{ border: 'none', padding: '5px 11px' }}
                     >
                       {t('Fixed Amount ($)', 'مبلغ ثابت ($)')}
@@ -882,7 +886,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                       onClick={() => setSettings(s => ({ ...s, markup_type: 'percent', markup: pct }))}
                       className={`dp-btn dp-btn-sm ${
                         settings.markup_type === 'percent' && Number(settings.markup) === pct
-                          ? 'dp-btn-orange'
+                          ? 'dp-btn-primary'
                           : ''
                       }`}
                       style={{ padding: '4px 9px', fontSize: 11.5 }}
@@ -927,7 +931,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                   {settings.markup_type === 'percent' ? `${settings.markup}%` : `$${settings.markup}`}
                 </strong>{' '}
                 = {t('Customer pays', 'يدفع العميل')}{' '}
-                <strong style={{ color: 'var(--dp-orange)' }}>${simCustomer.toFixed(2)}</strong> —{' '}
+                <strong style={{ color: 'var(--dp-accent)' }}>${simCustomer.toFixed(2)}</strong> —{' '}
                 {t('Your Net Profit:', 'صافي ربحك:')}{' '}
                 <strong style={{ color: 'var(--dp-emerald)' }}>+${simProfit.toFixed(2)}</strong>
               </span>
@@ -1026,7 +1030,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                   </select>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="submit" disabled={busy === 'add-tld'} className="dp-btn dp-btn-orange dp-btn-sm">
+                  <button type="submit" disabled={busy === 'add-tld'} className="dp-btn dp-btn-primary dp-btn-sm">
                     <Check size={13} />
                     <span>{t('Save TLD', 'حفظ الامتداد')}</span>
                   </button>
@@ -1068,8 +1072,8 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                             style={{
                               padding: '3px 9px',
                               borderRadius: 7,
-                              background: 'var(--dp-orange-soft)',
-                              color: 'var(--dp-orange)',
+                              background: 'var(--dp-accent-soft)',
+                              color: 'var(--dp-accent)',
                               fontWeight: 800,
                               fontSize: 12.5,
                             }}
@@ -1237,15 +1241,17 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               </button>
             </div>
 
-            <select
+            <AdminSelect
+              label={t('All Domains', 'جميع النطاقات')}
               value={domainStatusFilter}
-              onChange={e => setDomainStatusFilter(e.target.value as 'all' | 'active' | 'expired')}
-              className="dp-select dp-input-sm"
-            >
-              <option value="all">{t('All Domains', 'جميع النطاقات')}</option>
-              <option value="active">{t('Active Only', 'النشطة فقط')}</option>
-              <option value="expired">{t('Expired', 'المنتهية')}</option>
-            </select>
+              onChange={v => setDomainStatusFilter((v || 'all') as 'all' | 'active' | 'expired')}
+              options={[
+                { value: 'all', label: t('All Domains', 'جميع النطاقات') },
+                { value: 'active', label: t('Active Only', 'النشطة فقط') },
+                { value: 'expired', label: t('Expired', 'المنتهية') },
+              ]}
+              filter
+            />
           </div>
 
           <div className="dp-card-flush">
@@ -1425,16 +1431,18 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                   )}
             </span>
 
-            <select
+            <AdminSelect
+              label={t('All Statuses', 'جميع الحالات')}
               value={orderStatusFilter}
-              onChange={e => setOrderStatusFilter(e.target.value as 'all' | 'completed' | 'paid' | 'failed')}
-              className="dp-select dp-input-sm"
-            >
-              <option value="all">{t('All Statuses', 'جميع الحالات')}</option>
-              <option value="completed">{t('Completed', 'مكتمل')}</option>
-              <option value="paid">{t('Paid (Pending Registrar)', 'مدفوع (قيد التسجيل)')}</option>
-              <option value="failed">{t('Failed', 'فشل')}</option>
-            </select>
+              onChange={v => setOrderStatusFilter((v || 'all') as 'all' | 'completed' | 'paid' | 'failed')}
+              options={[
+                { value: 'all', label: t('All Statuses', 'جميع الحالات') },
+                { value: 'completed', label: t('Completed', 'مكتمل') },
+                { value: 'paid', label: t('Paid (Pending Registrar)', 'مدفوع (قيد التسجيل)') },
+                { value: 'failed', label: t('Failed', 'فشل') },
+              ]}
+              filter
+            />
           </div>
 
           <div className="dp-card-flush">
@@ -1512,7 +1520,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                               type="button"
                               disabled={busy === `retry:${o.id}`}
                               onClick={() => void retryOrderFulfillment(o.id)}
-                              className="dp-btn dp-btn-orange dp-btn-sm"
+                              className="dp-btn dp-btn-primary dp-btn-sm"
                             >
                               {busy === `retry:${o.id}` ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -1547,7 +1555,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
         <div className="dp-form-grid">
           <div className="dp-card">
             <h3 className="dp-card-title" style={{ marginBottom: 16 }}>
-              <BarChart3 size={17} style={{ color: 'var(--dp-orange)' }} />
+              <BarChart3 size={17} style={{ color: 'var(--dp-accent)' }} />
               <span>{t('TLD Market Share & Popularity', 'توزيع الامتدادات الأكثر طلباً')}</span>
             </h3>
             {analytics.tldDistribution.length === 0 ? (
@@ -1573,7 +1581,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                             height: '100%',
                             width: `${Math.max(pct, 5)}%`,
                             borderRadius: 999,
-                            background: 'linear-gradient(90deg, #ea580c, #fbbf24)',
+                            background: 'linear-gradient(90deg, var(--dp-accent), #a78bfa)',
                           }}
                         />
                       </div>
@@ -1686,7 +1694,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
               <div className="dp-modal-head">
                 <div>
                   <h3 className="dp-card-title">
-                    <KeyRound size={18} style={{ color: 'var(--dp-orange)' }} />
+                    <KeyRound size={18} style={{ color: 'var(--dp-accent)' }} />
                     <span>
                       {t(
                         'Root Domain Registrar Configuration (Namecheap)',
@@ -1803,7 +1811,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                 <button type="button" onClick={() => setShowRegistrarModal(false)} className="dp-btn">
                   {t('Cancel', 'إلغاء')}
                 </button>
-                <button type="submit" disabled={busy === 'save-reg'} className="dp-btn dp-btn-orange">
+                <button type="submit" disabled={busy === 'save-reg'} className="dp-btn dp-btn-primary">
                   {busy === 'save-reg' ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                   <span>{t('Save Registrar Config', 'حفظ إعدادات المسجّل')}</span>
                 </button>

@@ -7733,22 +7733,24 @@ html[data-gp-brand="true"] .aw-export-note>span:not([data-form-theme]):not([data
 html[data-gp-brand="true"] .dp-root:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *),
 html[data-gp-brand="true"] .dp-theme-scope:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
   --dp-bg: var(--gp-background, transparent) !important;
-  --dp-card-bg: var(--gp-background, #ffffff) !important;
-  --dp-border: var(--gp-border, #e2e8f0) !important;
+  --dp-card-bg: var(--gp-background, var(--adm-surface, #ffffff)) !important;
+  --dp-border: var(--gp-border, var(--adm-border, #e2e8f0)) !important;
   --dp-border-strong: var(--gp-border, #cbd5e1) !important;
-  --dp-text: var(--gp-text, #0f172a) !important;
+  --dp-text: var(--gp-text, var(--adm-text, #0f172a)) !important;
   --dp-text-muted: var(--gp-muted-text, #64748b) !important;
-  --dp-input-bg: var(--gp-background, #ffffff) !important;
-  --dp-input-border: var(--gp-border, #cbd5e1) !important;
-  --dp-accent: var(--gp-primary, #7c3aed) !important;
+  --dp-input-bg: var(--gp-background, var(--adm-surface, #ffffff)) !important;
+  --dp-input-border: var(--gp-border, var(--adm-border, #cbd5e1)) !important;
+  --dp-accent: var(--gp-primary, var(--ws-accent, #7c3aed)) !important;
   --dp-accent-hover: var(--gp-primary, #6d28d9) !important;
   --dp-accent-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
+  --dp-orange: var(--gp-primary, #7c3aed) !important;
+  --dp-orange-hover: var(--gp-primary, #6d28d9) !important;
   --dp-orange-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-emerald-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-amber-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-red-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-blue-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
-  --dp-hero-gradient: linear-gradient(135deg, color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.08)) 8%, transparent) 0%, rgba(234, 88, 12, 0.05) 55%, color-mix(in srgb, var(--gp-surface, rgba(255, 255, 255, 0.95)) 95%, transparent) 100%) !important;
+  --dp-hero-gradient: linear-gradient(135deg, color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.05)) 5%, transparent) 0%, color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.01)) 1%, transparent) 50%, var(--dp-card-bg) 100%) !important;
 }
 
 html[data-gp-brand="true"].dark .dp-root:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *),
@@ -7757,31 +7759,28 @@ html[data-gp-brand="true"] .dp-root[data-dp-theme="dark"]:not([data-form-theme])
 html[data-gp-brand="true"].dark .dp-theme-scope:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *),
 html[data-gp-brand="true"] [data-theme="dark"] .dp-theme-scope:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *),
 html[data-gp-brand="true"] .dp-theme-scope[data-dp-theme="dark"]:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
-  --dp-card-bg: var(--gp-background, #141220) !important;
-  --dp-card-hover: var(--gp-primary, #221f35) !important;
-  --dp-border: var(--gp-border, rgba(255, 255, 255, 0.08)) !important;
-  --dp-border-strong: color-mix(in srgb, var(--gp-border, rgba(255, 255, 255, 0.15)) 15%, transparent) !important;
-  --dp-text: var(--gp-text, #f8fafc) !important;
+  --dp-card-bg: var(--gp-background, var(--adm-surface, #1b1d2b)) !important;
+  --dp-border: var(--gp-border, var(--adm-border, #303348)) !important;
+  --dp-border-strong: var(--gp-border, #414561) !important;
+  --dp-text: var(--gp-text, var(--adm-text, #eef0fb)) !important;
   --dp-text-muted: var(--gp-muted-text, #94a3b8) !important;
-  --dp-input-bg: var(--gp-background, rgba(10, 9, 18, 0.72)) !important;
-  --dp-input-border: var(--gp-border, rgba(255, 255, 255, 0.12)) !important;
-  --dp-accent: var(--gp-primary, #8b5cf6) !important;
-  --dp-accent-hover: var(--gp-primary, #7c3aed) !important;
+  --dp-input-bg: var(--gp-background, rgba(22, 24, 37, 0.85)) !important;
+  --dp-input-border: var(--gp-border, var(--adm-border, #303348)) !important;
+  --dp-accent: var(--gp-primary, var(--ws-accent, #A78BFA)) !important;
+  --dp-accent-hover: var(--gp-primary, #8B5CF6) !important;
   --dp-accent-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
+  --dp-orange: var(--gp-primary, #A78BFA) !important;
+  --dp-orange-hover: var(--gp-primary, #8B5CF6) !important;
   --dp-orange-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-emerald-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-amber-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-red-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
   --dp-blue-soft: color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface)) !important;
-  --dp-hero-gradient: linear-gradient(135deg, color-mix(in srgb, var(--gp-primary, rgba(139, 92, 246, 0.16)) 16%, transparent) 0%, rgba(249, 115, 22, 0.1) 50%, color-mix(in srgb, var(--gp-surface, rgba(20, 18, 32, 0.96)) 96%, transparent) 100%) !important;
+  --dp-hero-gradient: linear-gradient(135deg, color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.08)) 8%, transparent) 0%, color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.03)) 3%, transparent) 50%, var(--dp-card-bg) 100%) !important;
 }
 
 html[data-gp-brand="true"] .dp-pill-accent:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
   border-color: color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.25)) 25%, transparent) !important;
-}
-
-html[data-gp-brand="true"] .dp-tab-btn.is-active:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.28)) 28%, transparent) !important;
 }
 
 html[data-gp-brand="true"] .dp-tab-count:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp)):not(:where(.aw-live-preview,.aw-thumbnail,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.lp) *) {

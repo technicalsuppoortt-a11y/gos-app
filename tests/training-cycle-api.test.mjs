@@ -14,7 +14,7 @@ test('Training Cycle routes paid mutations through Firebase and preserves the pa
     return Response.json({ success: true, data: {} });
   };
   const apiExports = {};
-  const source = readFileSync('src/backend/gosApi.ts', 'utf8').replace("import.meta.env.VITE_GOS_API_BASE_URL || 'https://gos-api.vercel.app'", "'https://gos-api.vercel.app'");
+  const source = readFileSync('src/backend/gosApi.ts', 'utf8').replace("import.meta.env.VITE_GOS_API_BASE_URL || 'https://api.upklick.net'", "'https://api.upklick.net'");
   const dependencies = {
     './firebase': {
       auth: { authStateReady: async () => {}, currentUser: { getIdToken: async refresh => { tokens.push(refresh); return 'qa-token'; } } },
@@ -49,7 +49,7 @@ test('Training Cycle routes paid mutations through Firebase and preserves the pa
   assert.equal(requests.length, 7);
   for (const request of requests) {
     assert.equal(request.headers.get('Authorization'), 'Bearer qa-token');
-    assert.ok(request.url.startsWith('https://gos-api.vercel.app/api/v1/'));
+    assert.ok(request.url.startsWith('https://api.upklick.net/api/v1/'));
   }
   assert.equal(tokens.length, 7);
   assert.ok(requests[0].url.endsWith('/ai/training'));

@@ -23,8 +23,8 @@ function readPurchases(): string[] {
   return seedPurchasedIds;
 }
 
-let rawPurchases: string | null = typeof window !== 'undefined' ? cloudStorage.getItem(PURCHASES_STORAGE_KEY) : null;
-let purchasesCache: string[] = typeof window !== 'undefined' ? readPurchases() : seedPurchasedIds;
+let rawPurchases: string | null | undefined;
+let purchasesCache: string[] = seedPurchasedIds;
 
 function getPurchasesSnapshot(): string[] {
   const next = cloudStorage.getItem(PURCHASES_STORAGE_KEY);
