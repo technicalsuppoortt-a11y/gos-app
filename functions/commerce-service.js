@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { buildProductSnapshot } from './customer-portal.js';
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
 const emailKey = email => createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
@@ -11,9 +12,110 @@ function checkStudent(product, email) {
   if (/course/i.test(product.type) && (!student || ['Suspended', 'Pending'].includes(student.status))) throw new HttpsError('permission-denied', 'This enrollment does not have active access.');
   return student;
 }
-export async function commerceServiceRequest(request, { workspace, db, now = Date.now }) {
+export async function commerceServiceRequest(request, { workspace, db, auth, origin = 'https://gos-app-3c7fb.web.app', now = Date.now }) {
   const { root, user } = await workspace(request, 'products');
   const { action, productId, email: rawEmail } = request.data ?? {};
+  if (action === 'provisionCustomerPortal') {
+    if (!auth) throw new HttpsError('failed-precondition', 'Authentication service is unavailable.');
+    if (!validId(productId) || typeof rawEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail.trim())) {
+      throw new HttpsError('invalid-argument', 'Choose a saved product and valid customer email.');
+    }
+    const cleanEmail = rawEmail.trim().toLowerCase();
+    const customerName = String(request.data?.name || '').trim().slice(0, 120) || cleanEmail.split('@')[0];
+    const rawPassword = typeof request.data?.password === 'string' ? request.data.password : '';
+    if (rawPassword && (rawPassword.length < 8 || rawPassword.length > 128)) {
+      throw new HttpsError('invalid-argument', 'Enter a password between 8 and 128 characters.');
+    }
+    const prodSnap = await root.collection('products').doc(productId).get();
+    const product = prodSnap.data();
+    checkProduct(product);
+    const nowIso = new Date(now()).toISOString();
+    let account;
+    try {
+      account = await auth.getUserByEmail(cleanEmail);
+      if (rawPassword) {
+        account = await auth.updateUser(account.uid, { password: rawPassword, emailVerified: true, ...(customerName ? { displayName: customerName } : {}) });
+      }
+    } catch (err) {
+      if (err?.code !== 'auth/user-not-found') throw err;
+      if (!rawPassword) throw new HttpsError('invalid-argument', 'Provide an initial password for a new customer account.');
+      account = await auth.createUser({
+        uid: `customer_${emailKey(cleanEmail)}`,
+        email: cleanEmail,
+        displayName: customerName,
+        password: rawPassword,
+        emailVerified: true,
+      });
+    }
+    const targetUid = account.uid;
+    const existingUserSnap = await db.doc(`users/${targetUid}`).get();
+    const existingProfile = existingUserSnap.data();
+    if (!existingProfile) {
+      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: true });
+      await db.doc(`users/${targetUid}`).set({
+        id: targetUid,
+        uid: targetUid,
+        email: cleanEmail,
+        name: customerName,
+        role: 'CUSTOMER',
+        portalProvisioned: true,
+        status: 'Active',
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      }, { merge: true });
+    } else if (existingProfile.role === 'CUSTOMER') {
+      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: true });
+      await db.doc(`users/${targetUid}`).set({
+        portalProvisioned: true,
+        portalPasswordPolicy: '',
+        portalPasswordChangeRequired: false,
+        portalPasswordChangedAfter: Math.floor(now() / 1000) - 5,
+        status: 'Active',
+        updatedAt: nowIso,
+      }, { merge: true });
+    }
+    const purchaseId = `${root.id}_${productId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const portalPath = `/portal/${purchaseId}`;
+    const portalUrl = new URL(portalPath, origin).href;
+    const loginLink = new URL('/auth/login', origin);
+    loginLink.search = new URLSearchParams({ portal: '1', redirect: portalPath, email: cleanEmail }).toString();
+    const orderId = validId(request.data?.orderId) ? request.data.orderId : `ord_${productId}`;
+    const amount = Number.isFinite(Number(request.data?.amount)) ? Number(request.data.amount) : Number(product.config.amount || 0);
+    const currency = typeof request.data?.currency === 'string' && request.data.currency ? request.data.currency : String(product.config.currency || 'USD');
+    const paymentMethod = typeof request.data?.paymentMethod === 'string' ? request.data.paymentMethod.slice(0, 80) : '';
+    const customerPhone = typeof request.data?.customerPhone === 'string' ? request.data.customerPhone.slice(0, 40) : '';
+    const snapshot = buildProductSnapshot({ ...product, id: productId }, { productName: product.name }, productId);
+    const record = {
+      id: purchaseId,
+      purchaseId,
+      tenantId: root.id,
+      orderId,
+      paidOrderIds: [orderId],
+      revokedOrderIds: [],
+      productId,
+      customerUid: targetUid,
+      customerEmail: cleanEmail,
+      customerName,
+      customerPhone,
+      paymentMethod,
+      amount,
+      currency,
+      status: 'Active',
+      loginUrl: loginLink.href,
+      portalUrl,
+      productSnapshot: snapshot,
+      completedLessonIds: [],
+      progress: 0,
+      downloadedAssetIds: [],
+      downloadCount: 0,
+      serviceStatus: 'Order Confirmed',
+      grantedAt: nowIso,
+      updatedAt: nowIso,
+    };
+    await db.doc(`customerLibraries/${targetUid}/purchases/${purchaseId}`).set(record, { merge: true });
+    await root.collection('customerPurchases').doc(hash(JSON.stringify([targetUid, productId]))).set(record, { merge: true });
+    return { uid: targetUid, purchaseId, portalUrl, loginUrl: loginLink.href };
+  }
   if (action === 'syncCalendar') {
     if (!validId(productId)) throw new HttpsError('invalid-argument', 'Save the product first.');
     await workspace(request, 'booking');

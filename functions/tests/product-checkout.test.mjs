@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { productCheckoutRequest } from '../product-checkout.js';
+import { fulfillCommerceOrder } from '../commerce-orders.js';
+import { portalPurchaseId } from '../customer-portal.js';
 
 function fixture() {
   const rootPath = 'tenants/shop';
@@ -26,6 +28,7 @@ function fixture() {
   let pending = Promise.resolve();
   const db = {
     doc: reference,
+    collection,
     runTransaction: fn => {
       const result = pending.then(async () => {
         const writes = [];
@@ -64,8 +67,44 @@ function fixture() {
     const quote = await call({ action: 'quote', discountCode, email: customer.email });
     return { quote, submission: { ...customer, action: 'submit', submissionId: randomUUID(), discountCode, revision: quote.revision, methodId: 'bank', receipt } };
   }
-  return { call, read, rows, objects, form, staff: { tenant: 'shop' } };
+  return { call, read, rows, objects, form, deps, staff: { tenant: 'shop' } };
 }
+
+test('paid checkout approval provisions the buyer, and an approved retry repairs interrupted fulfillment', async () => {
+  const { call, read, rows, form, deps, staff } = fixture();
+  let account;
+  let failOnce = true;
+  const auth = {
+    getUserByEmail: async () => {
+      if (!account) throw Object.assign(new Error('Missing account'), { code: 'auth/user-not-found' });
+      return account;
+    },
+    createUser: async ({ uid }) => {
+      if (failOnce) {
+        failOnce = false;
+        throw new Error('Temporary Auth failure');
+      }
+      return (account = { uid });
+    },
+  };
+  deps.fulfillPaidCheckout = (root, orderId) => fulfillCommerceOrder(
+    { tenantId: root.id, orderId, order: read('orders/' + orderId) },
+    { ...deps, auth, bootstrapKey: 'test-only-bootstrap-key-at-least-32-bytes' },
+  );
+  const { submission } = await form();
+  const { id } = await call(submission);
+  assert.equal(account, undefined);
+  const approve = { action: 'review', decision: 'approve', id };
+  await assert.rejects(call(approve, staff), /Temporary Auth failure/);
+  assert.equal(read('orders/' + id).status, 'Paid');
+  assert.deepEqual(await call(approve, staff), { status: 'Approved' });
+  assert.deepEqual(await call(approve, staff), { status: 'Approved' });
+  const purchase = rows.get(`customerLibraries/${account.uid}/purchases/${portalPurchaseId('shop', 'item')}`);
+  assert.deepEqual(purchase.paidOrderIds, [id]);
+  assert.equal(purchase.customerUid, account.uid);
+  assert.match(purchase.portalUrl, /\/portal\/shop_item$/);
+  assert.equal([...rows.keys()].filter(path => path.endsWith('-portalAccess')).length, 1);
+});
 
 test('server calculates the quote, saves a private receipt and commits request, order, transaction and customer once', async () => {
   const { call, read, rows, objects, form, staff } = fixture();

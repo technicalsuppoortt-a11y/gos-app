@@ -117,9 +117,9 @@ function receiptFile(receipt) {
   return { type, name, content };
 }
 
-export async function productCheckoutRequest(request, { db, workspace, bucket, now = Date.now }) {
+export async function productCheckoutRequest(request, { db, workspace, bucket, fulfillPaidCheckout, now = Date.now }) {
   const data = request.data || {};
-  if (['review', 'receipt'].includes(data.action)) return reviewCheckout(request, { db, workspace, bucket, now });
+  if (['review', 'receipt'].includes(data.action)) return reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, now });
   if (!validId(data.tenantId) || !validId(data.productId)) throw new HttpsError('invalid-argument', 'Choose a valid product.');
   const root = db.doc(`tenants/${data.tenantId}`);
   const at = now();
@@ -132,7 +132,10 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
   const id = hash(JSON.stringify([data.productId, data.submissionId]));
   const ref = root.collection('checkoutRequests').doc(id);
   const existing = (await ref.get()).data();
-  if (existing) return { id };
+  if (existing) {
+    if (existing.status === 'Approved' && existing.customerEmail === customer.email) await fulfillPaidCheckout?.(root, id);
+    return { id };
+  }
   const checkQuote = ({ quote }) => {
     if (data.revision !== quote.revision) throw new HttpsError('aborted', 'Checkout details changed. Review the latest total and payment instructions.');
     if (!quote.guestAllowed && customer.email !== authEmail) throw new HttpsError('failed-precondition', 'Sign in with the email address used at checkout.');
@@ -238,6 +241,7 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, n
     throw error;
   });
   if (!committed) await removeUnusedReceipt();
+  if (fulfillPaidCheckout && (await ref.get()).data()?.status === 'Approved') await fulfillPaidCheckout(root, id);
   return { id };
 }
 
@@ -245,7 +249,7 @@ function queueRequestEmail(tx, root, record, kind, createdAt) {
   tx.set(root.collection('commerceDeliveries').doc(`${record.orderId}-${kind}`), { kind, email: record.customerEmail, productId: record.productId, orderId: record.orderId, status: 'queued', createdAt });
 }
 
-async function reviewCheckout(request, { db, workspace, bucket, now }) {
+async function reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, now }) {
   const { user, root } = await workspace(request, 'products');
   const { id, action, decision } = request.data;
   if (typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id)) throw new HttpsError('invalid-argument', 'Invalid checkout request.');
@@ -259,7 +263,7 @@ async function reviewCheckout(request, { db, workspace, bucket, now }) {
   const reviewNote = text(request.data.note, 1000);
   if (!['approve', 'reject'].includes(decision) || decision === 'reject' && !reviewNote) throw new HttpsError('invalid-argument', 'Enter a reason to reject this request.');
   const status = decision === 'approve' ? 'Approved' : 'Rejected';
-  return db.runTransaction(async tx => {
+  const result = await db.runTransaction(async tx => {
     const record = (await tx.get(ref)).data();
     if (!record) throw new HttpsError('not-found', 'Checkout request not found.');
     if (record.status === status) return { status };
@@ -326,4 +330,6 @@ async function reviewCheckout(request, { db, workspace, bucket, now }) {
     if (decision === 'reject' && product?.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutRejected', decidedAt);
     return { status };
   });
+  if (result.status === 'Approved') await fulfillPaidCheckout?.(root, id);
+  return result;
 }

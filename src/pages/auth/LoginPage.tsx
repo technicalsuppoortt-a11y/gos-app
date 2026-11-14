@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, ArrowRight, ArrowUpRight, BadgeCheck, CalendarDays, Check, Eye, EyeOff, LayoutDashboard, LoaderCircle, LockKeyhole, Mail, Moon, Shield, Sparkles, Sun, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { consumeAuthNotice, login, SessionError, sessionErrorMessage, type SessionErrorCode } from '../../backend/session';
+import { consumeAuthNotice, login, logoutFirebase, SessionError, sessionErrorMessage, type SessionErrorCode } from '../../backend/session';
+import { resolveCustomerPrimaryPortalPath } from '../../backend/customerPortal';
 import { backendError } from '../../backend/firebase';
 import { loginSuccess } from '../../store/slices/authSlice';
 import { customerPasswordChangePath, routeForRole } from '../../router/ProtectedRoute';
@@ -60,7 +61,7 @@ export const LoginPage: React.FC = () => {
       case 'empty-password':
         return currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.';
       case 'short-password':
-        return currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters long.';
+        return currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.';
       case 'invalid-credentials':
         return currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'The email or password is incorrect.';
       case 'too-many-requests':
@@ -104,29 +105,60 @@ export const LoginPage: React.FC = () => {
     if (e.currentTarget.validity.valueMissing) {
       e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.');
     } else if (e.currentTarget.validity.tooShort) {
-      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters long.');
+      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.');
     } else {
       e.currentTarget.setCustomValidity('');
     }
   };
 
+  const normalizedPrefill = prefilledEmail.trim().toLowerCase();
+  const activeEmail = (auth.user?.email || '').trim().toLowerCase();
+  const hasSessionConflict = auth.isAuthenticated && Boolean(
+    auth.impersonation ||
+    (normalizedPrefill && activeEmail && normalizedPrefill !== activeEmail)
+  );
+
   React.useEffect(() => {
+    if (busy) return;
+    if (hasSessionConflict) {
+      void logoutFirebase();
+      return;
+    }
     if (auth.isAuthenticated && auth.role) {
+      let cancelled = false;
+      const stateFrom = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      const hintPath = requestedReturnTo || stateFrom || '';
+      if (auth.role === 'CUSTOMER' || isPortalInvite) {
+        void resolveCustomerPrimaryPortalPath(auth.user?.id || '', auth.user?.email || '', hintPath).then(portalTarget => {
+          if (cancelled) return;
+          if (auth.user?.requiresPasswordChange) {
+            navigate(customerPasswordChangePath(portalTarget), { replace: true });
+            return;
+          }
+          navigate(portalTarget, { replace: true });
+        });
+        return () => { cancelled = true; };
+      }
       if (auth.user?.requiresPasswordChange) {
-        navigate(customerPasswordChangePath(requestedReturnTo || (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/portal'), { replace: true });
-        return;
-      }
-      if (isPortalInvite && requestedReturnTo.startsWith('/portal')) {
-        navigate(requestedReturnTo, { replace: true });
-        return;
-      }
-      if (isPortalInvite) {
-        navigate('/portal', { replace: true });
+        navigate(customerPasswordChangePath(hintPath || '/portal'), { replace: true });
         return;
       }
       navigate(routeForRole(auth.role, auth.user?.allowedTabs), { replace: true });
     }
-  }, [auth.isAuthenticated, auth.role, auth.user?.allowedTabs, auth.user?.requiresPasswordChange, isPortalInvite, requestedReturnTo, location.state, navigate]);
+  }, [
+    busy,
+    hasSessionConflict,
+    auth.isAuthenticated,
+    auth.role,
+    auth.user?.id,
+    auth.user?.email,
+    auth.user?.allowedTabs,
+    auth.user?.requiresPasswordChange,
+    isPortalInvite,
+    requestedReturnTo,
+    location.state,
+    navigate,
+  ]);
 
   // Explain why the user landed here after a forced sign-out (pending, deactivated, access denied…).
   React.useEffect(() => {
@@ -152,9 +184,9 @@ export const LoginPage: React.FC = () => {
       showToast.error(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.');
       return;
     }
-    if (password.length < 8) {
+    if (password.length < 6) {
       setErrorCode('short-password');
-      showToast.error(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters long.');
+      showToast.error(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.');
       return;
     }
 
@@ -195,13 +227,19 @@ export const LoginPage: React.FC = () => {
       const requestedPath =
         (requestedReturnTo.startsWith('/portal') ? requestedReturnTo : undefined) ||
         (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      if (session.role === 'CUSTOMER' || isPortalInvite) {
+        const portalTarget = await resolveCustomerPrimaryPortalPath(session.user.id, session.user.email, requestedPath);
+        navigate(
+          session.user.requiresPasswordChange ? customerPasswordChangePath(portalTarget) : portalTarget,
+          { replace: true },
+        );
+        return;
+      }
       const canOpenRequestedPath = isPlatformTeamRole(session.role)
         ? requestedPath && (canOpenPlatformPage(session.role, requestedPath, session.user.allowedTabs) || requestedPath.startsWith('/portal'))
         : session.role === 'ADMIN'
           ? requestedPath?.startsWith('/admin') || requestedPath?.startsWith('/portal')
-          : session.role === 'CUSTOMER'
-            ? requestedPath?.startsWith('/portal')
-            : requestedPath?.startsWith('/dashboard') || requestedPath?.startsWith('/portal');
+          : requestedPath?.startsWith('/dashboard') || requestedPath?.startsWith('/portal');
       const fallbackRoute = isPortalInvite && !requestedPath
         ? '/portal'
         : routeForRole(session.role, session.user.allowedTabs);
@@ -209,7 +247,7 @@ export const LoginPage: React.FC = () => {
     })();
   };
 
-  return <main className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
+  return <main lang={currentLang} dir={currentLang === 'ar' ? 'rtl' : 'ltr'} className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
     <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-4 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
       {/* Top Header Bar with Brand and Controls */}
       <header className="login-top-bar flex items-center justify-between w-full">
@@ -299,10 +337,10 @@ export const LoginPage: React.FC = () => {
             </span>
           </label>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">{translateText("Password")}<span className="login-input-wrap mt-1.5 flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 transition dark:border-slate-700 dark:bg-[#191a27]">
-              <LockKeyhole size={17} className="shrink-0 text-slate-400"/><input className="w-full border-0 bg-transparent text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400 dark:text-white" type={showPassword ? 'text' : 'password'} required minLength={8} autoComplete="current-password" placeholder={translateText("Enter your password")} value={password} onInvalid={handlePasswordInvalid} onChange={event => { event.currentTarget.setCustomValidity(''); setPassword(event.target.value); if (errorCode) setErrorCode(null); }}/><button type="button" aria-label={translateText(showPassword ? 'Hide password' : 'Show password')} onClick={() => setShowPassword(!showPassword)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"><>{localizeNode(showPassword ? <EyeOff size={17}/> : <Eye size={17}/>)}</></button>
+              <LockKeyhole size={17} className="shrink-0 text-slate-400"/><input className="w-full border-0 bg-transparent text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400 dark:text-white" type={showPassword ? 'text' : 'password'} required minLength={6} autoComplete="current-password" placeholder={translateText("Enter your password")} value={password} onInvalid={handlePasswordInvalid} onChange={event => { event.currentTarget.setCustomValidity(''); setPassword(event.target.value); if (errorCode) setErrorCode(null); }}/><button type="button" aria-label={translateText(showPassword ? 'Hide password' : 'Show password')} onClick={() => setShowPassword(!showPassword)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"><>{localizeNode(showPassword ? <EyeOff size={17}/> : <Eye size={17}/>)}</></button>
             </span>
           </label>
-          <div className="login-options flex items-center justify-between pt-0.5 text-xs">
+          <div className="login-options flex flex-wrap items-center justify-between gap-x-3 gap-y-1 pt-0.5 text-xs">
             <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300 cursor-pointer"><input type="checkbox" className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 dark:bg-[#191a27]"/>{translateText(" Keep me signed in")}</label>
             <button
               type="button"
@@ -313,13 +351,13 @@ export const LoginPage: React.FC = () => {
             </button>
           </div>
           <button className="login-submit flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white transition active:scale-[0.99] disabled:cursor-wait disabled:opacity-80" type="submit" disabled={busy}>
-            {localizeNode(busy ? <><LoaderCircle size={17} className="animate-spin"/>{translateText(" Signing you in…")}</> : <>{translateText(isPortalInvite ? "Sign in to Customer Portal " : "Sign in to your workspace ")}<ArrowRight size={16}/></>)}
+            {localizeNode(busy ? <><LoaderCircle size={17} className="animate-spin"/>{translateText(" Signing you in…")}</> : <>{translateText(isPortalInvite ? "Sign in to Customer Portal " : "Sign in to your workspace ")}<ArrowRight size={16} className={currentLang === 'ar' ? 'rotate-180' : undefined}/></>)}
           </button>
         </form>
 
         {!isPortalInvite && (
           <button type="button" disabled={busy} onClick={() => startDemoSession('/dashboard')} className="login-demo-btn mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition disabled:opacity-80">
-            <ArrowRight size={16}/>{translateText('Try Demo Account')}
+            <ArrowRight size={16} className={currentLang === 'ar' ? 'rotate-180' : undefined}/>{translateText('Try Demo Account')}
           </button>
         )}
 

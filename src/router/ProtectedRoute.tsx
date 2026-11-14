@@ -18,7 +18,7 @@ export function routeForRole(role: Role | null, allowedTabs?: readonly string[] 
 }
 
 export function customerPasswordChangePath(path: string) {
-  const returnTo = /^\/portal(?:\/[\w-]+)?$/.test(path) ? path : '/portal';
+  const returnTo = /^\/portal(?:\/[\w.%-]+)?$/.test(path) ? path : '/portal';
   return '/customer/change-password?' + new URLSearchParams({ returnTo });
 }
 

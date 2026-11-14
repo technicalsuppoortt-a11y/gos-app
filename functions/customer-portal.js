@@ -40,7 +40,7 @@ function normalizeKind(type = '', name = '') {
   return 'digital';
 }
 
-function buildProductSnapshot(product = {}, order = {}, productId = '') {
+export function buildProductSnapshot(product = {}, order = {}, productId = '') {
   const c = product.config || {};
   const exp = c.experience || {};
   const kind = normalizeKind(product.type || order.productType || '', product.name || order.productName || '');
@@ -144,7 +144,7 @@ export async function provisionCustomerPortalAccess({
   const uid = await ensureCustomer(db, auth, email, customerName, now, bootstrapKey);
   const purchaseId = portalPurchaseId(tenantId, productId);
   const legacyId = `${tenantId}_${productId}`;
-  const portalPath = `/portal/${purchaseId}`;
+  const portalPath = `/portal/${encodeURIComponent(legacyId)}`;
   const portalUrl = new URL(portalPath, origin).href;
   const login = new URL('/auth/login', origin);
   login.search = new URLSearchParams({ portal: '1', redirect: portalPath, email }).toString();
@@ -161,7 +161,8 @@ export async function provisionCustomerPortalAccess({
     const paidOrderIds = previous?.paidOrderIds || (previous?.status === 'Active' ? [previous.orderId] : []);
     const revokedOrderIds = previous?.revokedOrderIds || [];
     if (revokedOrderIds.includes(orderId)) return;
-    if (paidOrderIds.includes(orderId) && (!emailNotice || queued.exists)) return;
+    const queueAccessEmail = emailNotice && (!queued.exists || queued.data()?.status === 'failed');
+    if (paidOrderIds.includes(orderId) && !queueAccessEmail) return;
     const validLessons = new Set(snapshot.modules.flatMap(module => module.lessons.map(lesson => lesson.id)));
     const completedLessonIds = [...new Set(previous?.completedLessonIds || [])].filter(id => validLessons.has(id));
     const record = {
@@ -179,7 +180,7 @@ export async function provisionCustomerPortalAccess({
     };
     tx.set(ref, record);
     tx.set(mirror, record);
-    if (emailNotice && !queued.exists) tx.set(job, { kind: 'portalAccess', email, uid, purchaseId, productId, orderId, sourcePath, loginUrl: login.href, status: 'queued', createdAt: now });
+    if (queueAccessEmail) tx.set(job, { kind: 'portalAccess', email, uid, purchaseId, productId, orderId, sourcePath, loginUrl: login.href, status: 'queued', createdAt: now });
   });
 }
 
@@ -251,7 +252,22 @@ export async function customerPortalRequest(request, { db, auth, origin, signFil
   if (action === 'restore') {
     const email = String(request.auth.token.email || '').trim().toLowerCase();
     if (email && request.auth.token.email_verified) await restoreLegacyPurchases(db, auth, uid, email, origin, bootstrapKey);
-    return { ok: true };
+    let purchaseIds = [];
+    let primaryPortalId = '';
+    try {
+      const col = purchases(db, uid);
+      if (typeof col?.where === 'function') {
+        const snap = await col.where('status', '==', 'Active').get();
+        const activeRows = snap.docs
+          .map(d => ({ ...d.data(), purchaseId: d.data()?.purchaseId || d.id }))
+          .sort((a, b) => Date.parse(b.grantedAt || 0) - Date.parse(a.grantedAt || 0));
+        purchaseIds = activeRows.map(r => r.purchaseId).filter(Boolean);
+        primaryPortalId = activeRows[0]?.legacyId || purchaseIds[0] || '';
+      }
+    } catch {
+      /* ignore list error */
+    }
+    return { ok: true, purchaseIds, primaryPurchaseId: purchaseIds[0] || '', primaryPortalId };
   }
   if (request.auth.token.email_verified !== true && !(profile?.role === 'CUSTOMER' && profile.portalProvisioned === true)) {
     throw new HttpsError('permission-denied', 'Verify your email to access purchases.');

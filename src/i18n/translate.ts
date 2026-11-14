@@ -50,7 +50,7 @@ export function resolveDisplayTranslation(text: string): string | undefined {
     if(!match)continue;
     return template.arabic.replace(/\{\{(\d+)\}\}/g,(_,index)=>{
       const value=match[template.indexes.indexOf(Number(index))+1];
-      return dictionary[value]??normalized.get(value.toLocaleLowerCase('en'))??value;
+      return dictionary[value]??normalized.get(value.toLocaleLowerCase('en'))??(value&&value!==text?resolveDisplayTranslation(value):undefined)??value;
     });
   }
   const punctuation = text.match(/^(.*?)(\s*\*|\s*\(optional\)|\s*\(required\)|[.:!?…]+)$/i);

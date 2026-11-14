@@ -5,7 +5,9 @@ import { usePaymentMethods } from '../backend/paymentMethods';
 import { formatDisplayMessage, useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { ProductCardActions } from './commerce/ProductCardActions';
 import { ProductQuickView } from './commerce/ProductQuickView';
+import { PurchaseDetailsDialog } from './commerce/PurchaseDetailsDialog';
 import { QuickDetails } from '../components/ui/QuickDetails';
+import { matchesLocalizedSearch } from '../utils/arabicSearch';
 import { showToast } from '../utils/toast';
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -212,12 +214,26 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
 
   const displayed = useMemo(() => {
     return baseProducts
-      .filter(
-        p =>
-          (type === 'All Types' || p.type === type) &&
-          (activeSubTab === 'purchases' || status === 'All Status' || p.status === status) &&
-          `${p.name} ${p.type}`.toLowerCase().includes(search.toLowerCase())
-      )
+      .filter(p => {
+        if (type !== 'All Types' && p.type !== type) return false;
+        if (activeSubTab !== 'purchases' && status !== 'All Status' && p.status !== status) return false;
+        const rec = activeSubTab === 'purchases' ? portalById.get(p.id) : undefined;
+        return matchesLocalizedSearch(search, [
+          p.name,
+          p.type,
+          translateText(p.type),
+          p.tag,
+          translateText(p.tag),
+          p.status,
+          translateText(p.status),
+          p.description,
+          rec?.customerName,
+          rec?.customerEmail,
+          rec?.paymentMethod,
+          rec?.orderId,
+          ...(rec?.buyers?.flatMap(b => [b.name, b.email, b.phone]) ?? []),
+        ]);
+      })
       .sort((a, b) =>
         sort === 'A to Z'
           ? a.name.localeCompare(b.name)
@@ -225,7 +241,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
           ? (a.config?.amount ?? 0) - (b.config?.amount ?? 0)
           : Number(new Date(b.createdAt ?? 0)) - Number(new Date(a.createdAt ?? 0))
       );
-  }, [baseProducts, type, activeSubTab, status, search, sort]);
+  }, [baseProducts, type, activeSubTab, status, search, sort, portalById]);
 
   const handleTabChange = (name: string) => {
     const slug = name.toLowerCase().replace(' ', '-');
@@ -276,7 +292,7 @@ export const ProductsPayments: React.FC<Props> = ({ notify, showModal = false, s
             );
           })
         )}
-        <div className="module-header-actions pp-header-actions"><button className="st-secondary" onClick={() => navigate("/dashboard/products?tab=templates")}>{translateText("Templates")} <ArrowRight size={14}/></button><button
+        <div className="module-header-actions pp-header-actions"><button className="st-secondary" onClick={() => navigate("/dashboard/products?tab=templates")}>{translateText("Templates")} <ArrowRight size={14} className="pp-rtl-flip"/></button><button
           className="pp-create"
           onClick={() => navigate('/dashboard/products-payments/products/new')}
         >
@@ -581,6 +597,7 @@ function ProductCard({
   useUILanguage();
   const { formatPrice } = useCurrency();
   const [showUsers, setShowUsers] = useState(false);
+  const [showBuyer, setShowBuyer] = useState(false);
 
   const courseLessonsTotal = useMemo(() => {
     if (portalRecord?.productSnapshot?.modules) {
@@ -631,7 +648,14 @@ function ProductCard({
         )}
       </button>
 
-      <ProductCardActions product={item} customerPage={customerPage} purchaseOnly={customerMode} onEdit={onEdit} notify={notify}/>
+      <ProductCardActions
+        product={item}
+        customerPage={customerPage}
+        purchaseOnly={customerMode}
+        onBuyerDetails={customerMode ? () => setShowBuyer(true) : undefined}
+        onEdit={onEdit}
+        notify={notify}
+      />
 
       <div className="pp-card-info">
         <div className="pp-card-header-tags">
@@ -662,6 +686,23 @@ function ProductCard({
 
         {customerMode ? (
           <div className="pp-purchase-progress">
+            {(portalRecord?.customerName || portalRecord?.customerEmail) && (
+              <button
+                type="button"
+                className="pp-buyer-chip"
+                title={translateText('Customer Details')}
+                onClick={event => {
+                  event.stopPropagation();
+                  setShowBuyer(true);
+                }}
+              >
+                <UserRound size={12} />
+                <span dir="auto">{portalRecord.customerName || portalRecord.customerEmail}</span>
+                {portalRecord.buyers && portalRecord.buyers.length > 1 && (
+                  <em className="pp-buyer-chip-count">+{portalRecord.buyers.length - 1}</em>
+                )}
+              </button>
+            )}
             <div className="pp-product-metric" style={{ cursor: 'pointer' }}>
               {item.type === 'Course' ? (
                 <span>
@@ -673,7 +714,7 @@ function ProductCard({
               ) : item.type === 'Service' ? (
                 <span>
                   <CalendarDays size={12} />
-                  {`${serviceDuration} min · ${translateText(serviceStatus)}`}
+                  {`${serviceDuration} ${translateText('min')} · ${translateText(serviceStatus)}`}
                 </span>
               ) : (
                 <span>
@@ -719,13 +760,27 @@ function ProductCard({
           </div>
         )}
 
-        <div className="pp-card-footer">
+        <div className={`pp-card-footer${customerMode ? ' is-purchase-footer' : ''}`}>
           {customerMode ? (
             <>
-              <span className="pp-status active">
-                <span className="pp-status-dot" aria-hidden="true" />
-                {translateText(portalRecord?.preview ? 'Preview' : 'Active Access')}
-              </span>
+              <div className="pp-purchase-footer-top">
+                <span className="pp-status active">
+                  <span className="pp-status-dot" aria-hidden="true" />
+                  {translateText(portalRecord?.preview ? 'Preview' : 'Active Access')}
+                </span>
+                <button
+                  type="button"
+                  onClick={event => {
+                    event.stopPropagation();
+                    setShowBuyer(true);
+                  }}
+                  className="pp-buyer-details-btn"
+                  title={translateText('View buyer profile, payment method, and transaction reference')}
+                >
+                  <UserRound size={13} />
+                  <span>{translateText('Customer Details')}</span>
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={event => {
@@ -743,7 +798,7 @@ function ProductCard({
                       : 'Access Files'
                   )}
                 </span>
-                <ArrowRight size={13} />
+                <ArrowRight size={13} className="pp-rtl-flip" />
               </button>
             </>
           ) : (
@@ -814,6 +869,14 @@ function ProductCard({
           edit={onEdit}
         />
       )}
+      {customerMode && showBuyer && (
+        <PurchaseDetailsDialog
+          product={item}
+          record={portalRecord}
+          customerPage={customerPage}
+          close={() => setShowBuyer(false)}
+        />
+      )}
     </article>
   );
 }
@@ -835,14 +898,16 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
   const filteredTxns = useMemo(() => {
     return transactions.filter(t => {
       const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
-      const q = txnSearch.toLowerCase();
-      const matchesSearch =
-        !txnSearch ||
-        t.productName.toLowerCase().includes(q) ||
-        (t.customerName?.toLowerCase() ?? '').includes(q) ||
-        (t.customerEmail?.toLowerCase() ?? '').includes(q) ||
-        (t.method?.toLowerCase() ?? '').includes(q) ||
-        t.id.toLowerCase().includes(q);
+      const matchesSearch = matchesLocalizedSearch(txnSearch, [
+        t.productName,
+        t.customerName,
+        t.customerEmail,
+        t.method,
+        t.method ? translateText(t.method) : '',
+        t.status,
+        translateText(t.status),
+        t.id,
+      ]);
       return matchesStatus && matchesSearch;
     });
   }, [transactions, statusFilter, txnSearch]);

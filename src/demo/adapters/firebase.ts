@@ -12,6 +12,7 @@ export const setBackendContext = () => {};
 export const backendError = (error: unknown) => error instanceof Error ? error.message : 'Demo action could not be completed.';
 export const createClientAuthUser = async (email: string) => ({ uid: crypto.randomUUID(), email });
 export const sendOfficialPasswordResetEmail = async () => true;
+export const provisionTeamMemberAuth = async () => ({ uid: crypto.randomUUID(), created: true, passwordUpdated: true });
 export async function callBackend<T>(name: string, data: any = {}): Promise<T> {
   return await demoRequest(name, data) as T;
 }
@@ -119,7 +120,7 @@ async function demoRequest(name: string, data: any): Promise<any> {
       if (data.review) { summary.reviews.push({ ...data.review, id: crypto.randomUUID(), createdAt: new Date().toISOString() }); summary.reviewsCount = summary.reviews.length; summary.ratingAverage = summary.reviews.reduce((sum: number, row: any) => sum + row.rating, 0) / summary.reviewsCount; write(key, summary); }
       return summary;
     }
-    case 'commerceService': return { message: 'Demo access updated. No real purchase or account was changed.', ...(data.action === 'certificate' ? { certificate: { id: crypto.randomUUID(), name: data.email, course: rows('products').find(row => row.id === data.productId)?.name ?? 'Demo Course', issuedAt: new Date().toISOString() } } : {}) };
+    case 'commerceService': return { ok: true, customerUid: 'customer_demo', created: false, passwordUpdated: Boolean(data.password), message: 'Demo access updated. No real purchase or account was changed.', ...(data.action === 'certificate' ? { certificate: { id: crypto.randomUUID(), name: data.email, course: rows('products').find(row => row.id === data.productId)?.name ?? 'Demo Course', issuedAt: new Date().toISOString() } } : {}) };
     case 'productAccess': return { name: 'Demo Product', files: [], message: 'Demo access updated.' };
     case 'activateUser': return { success: true };
     case 'billingService': return demoBilling(data);

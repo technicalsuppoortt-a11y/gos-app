@@ -935,7 +935,11 @@ html.dark .cportal-btn-emerald {
   color: var(--cp-muted);
 }
 
-/* Responsive Breakpoints */
+/* Responsive Breakpoints & RTL Parity */
+[dir="rtl"] .cportal-rtl-flip {
+  transform: scaleX(-1);
+}
+
 @media (max-width: 1024px) {
   .cportal-course-layout,
   .cportal-two-col {
@@ -944,6 +948,22 @@ html.dark .cportal-btn-emerald {
 }
 
 @media (max-width: 720px) {
+  .cportal-topbar {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .cportal-brand-group {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .cportal-brand-copy small {
+    display: none;
+  }
+  .cportal-actions {
+    gap: 6px;
+    margin-inline-start: auto;
+  }
   .cportal-kpis,
   .cportal-stepper {
     grid-template-columns: 1fr;
@@ -951,8 +971,62 @@ html.dark .cportal-btn-emerald {
   .cportal-user-pill span {
     display: none;
   }
+  .cportal-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cportal-search {
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+  .cportal-filter-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cportal-filter-pill {
+    flex-shrink: 0;
+  }
+  .cportal-delivery-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
   .cportal-stage-body {
     padding: 16px;
+  }
+  .cportal-stage-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .cportal-stage-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .cportal-stage-controls > button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .cportal-asset-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cportal-asset-row > .cportal-btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cportal-grid {
+    grid-template-columns: 1fr;
+  }
+  .cportal-hero {
+    padding: 18px;
+  }
+  .cportal-logout-btn span {
+    display: none;
   }
 }
 
@@ -977,5 +1051,14 @@ html.dark .cportal-btn-emerald {
 .cportal-review-grid .pr-star-input label:has(input:focus-visible) { outline: 2px solid #8b5cf6; }
 @media (max-width: 700px) { .cportal-review-grid { grid-template-columns: minmax(0, 1fr); } }
 
-.cportal-shell.cportal-password-page { display: grid; place-items: center; padding: 16px; }
-.cportal-password-page .cportal-panel-card { width: min(100%, 440px); padding: clamp(16px, 4vw, 26px); }
+.cportal-shell.cportal-password-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.cportal-password-page .cportal-panel-card,
+.cportal-password-card {
+  width: min(calc(100% - 32px), 440px);
+  margin: auto;
+  padding: clamp(18px, 4vw, 28px);
+}

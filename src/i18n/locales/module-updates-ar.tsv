@@ -67,3 +67,208 @@ Permanent access token	رمز الوصول الدائم
 Disconnect Facebook Messenger	قطع ربط Facebook Messenger
 Disconnect WhatsApp Business	قطع ربط WhatsApp Business
 Connect Facebook Messenger	ربط Facebook Messenger
+Customer Details	تفاصيل العميل
+View buyer profile, payment method, and transaction reference	عرض ملف المشتري وطريقة الدفع ومرجع المعاملة
+Buyer Profile	ملف العميل
+Verified Buyer	مشترٍ موثّق
+No email recorded	لم يتم تسجيل بريد إلكتروني
+Not provided	غير متوفّر
+Copy email	نسخ البريد الإلكتروني
+Copy phone	نسخ رقم الهاتف
+CRM Stage	مرحلة إدارة العملاء
+Payment & Transaction Details	تفاصيل الدفع والمعاملة
+Transaction Reference	مرجع المعاملة
+Transaction reference	مرجع المعاملة
+Copy transaction reference	نسخ مرجع المعاملة
+Payment Method	طريقة الدفع
+Purchase Date	تاريخ الشراء
+Approval Date	تاريخ الاعتماد
+Amount Paid	المبلغ المدفوع
+Discount Code	كود الخصم
+Purchased Customers	العملاء المشترون
+Select buyer	اختيار العميل
+Fulfillment & Portal Access	حالة التسليم ووصول البوابة
+Service Status	حالة الخدمة
+Digital Delivery	التسليم الرقمي
+downloads	مرات التنزيل
+Customer Portal	بوابة العملاء
+Customer Portal Login Link	رابط دخول بوابة العميل
+Copy login link	نسخ رابط الدخول
+Login link	رابط الدخول
+Set Customer Password	تعيين كلمة مرور العميل
+Send Reset Email	إرسال بريد استعادة كلمة المرور
+Save Password	حفظ كلمة المرور
+Minimum 8 characters	8 أحرف على الأقل
+Assign a password so this customer can sign in immediately at /auth/login:	عيّن كلمة مرور ليتمكّن العميل من تسجيل الدخول فورًا عبر بوابة الدخول:
+Customer email is required to set portal credentials.	البريد الإلكتروني للعميل مطلوب لتعيين بيانات الدخول.
+Customer portal password updated and access synced.	تم تحديث كلمة مرور بوابة العميل ومزامنة صلاحية الوصول.
+Could not update customer password. Try sending a reset email instead.	تعذّر تحديث كلمة مرور العميل. جرّب إرسال بريد استعادة كلمة المرور بدلًا من ذلك.
+Password reset email sent to customer.	تم إرسال رابط استعادة كلمة المرور إلى العميل.
+Could not send reset email. Set a password directly instead.	تعذّر إرسال بريد الاستعادة. يمكنك تعيين كلمة مرور مباشرة بدلًا من ذلك.
+Could not send reset email.	تعذّر إرسال بريد استعادة كلمة المرور.
+Could not copy to clipboard.	تعذّر النسخ إلى الحافظة.
+Direct Checkout	دفع مباشر
+Free Enrollment	تسجيل مجاني
+Course Enrollment	تسجيل في الدورة
+CRM Enrollment	تسجيل عبر إدارة العملاء
+Active Access	وصول نشط
+See Customer Page	عرض صفحة العميل
+Open Customer Portal	فتح بوابة العملاء
+Active in your account:	نشط في حسابك:
+My Purchases	مشترياتي
+My Purchases view selected.	تم اختيار عرض مشترياتي.
+All Products view selected.	تم اختيار عرض جميع المنتجات.
+Products sub-views	عروض المنتجات الفرعية
+Purchased & active in your account	تم الشراء وهو نشط في حسابك
+No purchased products yet	لا توجد منتجات مشتراة بعد
+Products and courses you purchase or enroll in via checkout will appear here in your personal library.	المنتجات والدورات التي تشتريها أو تسجل فيها عبر إتمام الشراء ستظهر هنا في مكتبتك الشخصية.
+No purchased products match your search filter.	لا توجد منتجات مشتراة تطابق بحثك.
+Explore All Products	استكشاف جميع المنتجات
+Price: Low to High	السعر: من الأقل إلى الأعلى
+Continue Course	متابعة الدورة
+Start Course	بدء الدورة
+Access Service	الوصول إلى الخدمة
+Access Files	الوصول إلى الملفات
+Continue Learning	متابعة التعلّم
+Manage & Schedule	الإدارة والجدولة
+Access Downloads	الوصول إلى التنزيلات
+CUSTOMER ACCESS PORTAL	بوابة دخول العملاء
+Access your purchases	الوصول إلى مشترياتك
+Sign in with your email and password to open your purchased courses, files, and services.	سجّل الدخول ببريدك الإلكتروني وكلمة المرور لفتح دوراتك وملفاتك وخدماتك المشتراة.
+Sign in to Customer Portal	تسجيل الدخول إلى بوابة العملاء
+Encrypted access to your purchased library	وصول مشفّر وآمن إلى مكتبة مشترياتك
+© 2026 Upclick Inc.	© 2026 شركة Upclick
+Choose a new password to access your purchases.	اختر كلمة مرور جديدة للوصول إلى مشترياتك.
+Confirm new password	تأكيد كلمة المرور الجديدة
+Use at least 12 characters, including a letter and a number or symbol.	استخدم 12 حرفًا على الأقل، بما فيها حرف ورقم أو رمز.
+The passwords do not match.	كلمتا المرور غير متطابقتين.
+Sign in again	سجّل الدخول مرة أخرى
+Purchased Library & Learning Hub	مكتبة المشتريات ومركز التعلّم
+All My Purchases	جميع مشترياتي
+Back to Dashboard	العودة إلى لوحة التحكم
+Signed out successfully.	تم تسجيل الخروج بنجاح.
+Verify your email to access purchases.	أكّد بريدك الإلكتروني للوصول إلى مشترياتك.
+Send verification email	إرسال بريد التأكيد
+Check your email for a verification link.	تحقّق من بريدك الإلكتروني لفتح رابط التأكيد.
+Loading your library…	جارٍ تحميل مكتبتك…
+Syncing your purchased courses, downloads, and service bookings from Firebase.	جارٍ مزامنة دوراتك وتنزيلاتك وحجوزات خدماتك المشتراة.
+Customer page preview	معاينة صفحة العميل
+This purchase is unavailable.	عملية الشراء هذه غير متاحة.
+Verified Customer Access	وصول عميل موثّق
+Welcome back,	مرحبًا بعودتك،
+Access all your enrolled courses, instant digital downloads, and scheduled services in one unified space.	تصفّح جميع دوراتك المسجّلة وتنزيلاتك الرقمية الفورية وخدماتك المجدولة في مساحة واحدة موحّدة.
+Active Items	العناصر النشطة
+Downloads & Services	التنزيلات والخدمات
+Product categories	فئات المنتجات
+All Purchases	جميع المشتريات
+No items match your filter	لا توجد عناصر تطابق التصفية
+Once you complete a purchase or your payment receipt is approved, your courses, digital downloads, and services appear here automatically.	بمجرد إتمام الشراء أو اعتماد إيصال الدفع، ستظهر دوراتك وتنزيلاتك الرقمية وخدماتك هنا تلقائيًا.
+Try clearing your search query or switching category tabs.	جرّب مسح عبارة البحث أو التبديل بين تبويبات الفئات.
+Structured self-paced video curriculum and downloadable resources.	منهج فيديو منظّم للتعلّم الذاتي مع موارد قابلة للتنزيل.
+Dedicated session delivery, scheduling link, and status tracking.	تقديم جلسات مخصّصة مع رابط جدولة وتتبع مباشر للحالة.
+Instant digital files, templates, and lifetime access updates.	ملفات رقمية فورية وقوالب وتحديثات وصول مدى الحياة.
+Self-paced modules	وحدات تعلّم ذاتي
+Self-paced	تعلّم ذاتي
+deliverable files	ملفات قابلة للتسليم
+Instant access	وصول فوري
+Digital File	ملف رقمي
+Enrolled Course	دورة مسجّلة
+Join Student Community	الانضمام إلى مجتمع الطلاب
+Open the attached lesson material below to study and complete this unit.	افتح مادة الدرس المرفقة أدناه لدراسة هذه الوحدة وإكمالها.
+Review the key concepts for this lesson below, then mark it complete to track your course progress.	راجع المفاهيم الأساسية لهذا الدرس أدناه، ثم ضع علامة مكتمل لتتبّع تقدّمك في الدورة.
+Open Lesson Resource	فتح مورد الدرس
+Lesson marked as incomplete.	تم تحديد الدرس كغير مكتمل.
+Lesson completed! Progress saved.	تم إكمال الدرس وحفظ التقدّم!
+Mark Complete	تحديد كمكتمل
+Mark complete	تحديد كمكتمل
+Certificate of Completion Unlocked!	تم فتح شهادة الإتمام!
+Issued by	صادرة عن
+Print Certificate	طباعة الشهادة
+Course Progress	تقدّم الدورة
+lessons completed	دروس مكتملة
+INSTRUCTOR	المدرّب
+Download recorded.	تم تسجيل التنزيل.
+Could not open file. Contact support if the issue persists.	تعذّر فتح الملف. تواصل مع الدعم إذا استمرت المشكلة.
+Your Downloadable Files & Assets	ملفاتك وأصولك القابلة للتنزيل
+Instant verified access · Downloads synced to your account	وصول فوري موثّق · تتم مزامنة التنزيلات مع حسابك
+Downloaded	تم التنزيل
+Open Resource	فتح المورد
+Complete Package	الحزمة الكاملة
+Ready in your verified customer account	جاهز في حساب العميل الموثّق الخاص بك
+Unlocked	مفتوح
+License & Fulfillment Details	تفاصيل الترخيص والتسليم
+Access Tier	مستوى الوصول
+Total Downloads	إجمالي التنزيلات
+Order Reference	مرجع الطلب
+DELIVERY NOTES	ملاحظات التسليم
+Booked Service	خدمة محجوزة
+Schedule Your Session	جدولة جلستك
+Service Fulfillment Tracker	متتبّع تنفيذ الخدمة
+Live status synced with your provider	حالة مباشرة متزامنة مع مقدّم الخدمة
+Order Confirmed	تم تأكيد الطلب
+Session Scheduled	تمت جدولة الجلسة
+Payment verified & service unlocked	تم التحقق من الدفع وتفعيل الخدمة
+Choose your preferred date & time	اختر التاريخ والوقت المفضّلين لديك
+Session delivered & notes shared	تم تقديم الجلسة ومشاركة الملاحظات
+Open Booking Calendar	فتح تقويم الحجز
+Confirm Session Requested	تأكيد طلب الجلسة
+Session status updated to Scheduled.	تم تحديث حالة الجلسة إلى مجدولة.
+Session Specifications	مواصفات الجلسة
+Delivery Mode	طريقة التقديم
+Online	عبر الإنترنت
+Specialist	الأخصائي
+PREPARATION & INSTRUCTIONS	التحضير والتعليمات
+Your sign-in password was updated.	تم تحديث كلمة مرور تسجيل الدخول الخاصة بك.
+Customers can leave a rating and review after signing in.	يمكن للعملاء إضافة تقييم ومراجعة بعد تسجيل الدخول.
+Open / Download	فتح / تنزيل
+Open full receipt	فتح الإيصال الكامل
+Could not load product access.	تعذّر تحميل صلاحية الوصول للمنتج.
+This action is unavailable.	هذا الإجراء غير متاح حاليًا.
+Updated.	تم التحديث.
+your purchased products	منتجاتك المشتراة
+your purchased courses, files, or services	دوراتك أو ملفاتك أو خدماتك المشتراة
+Search...	بحث...
+Search…	بحث…
+Search your purchased products...	البحث في منتجاتك المشتراة...
+Search your purchased courses, files, or services…	البحث في دوراتك أو ملفاتك أو خدماتك المشتراة…
+Search products...	البحث في المنتجات...
+Search by product, customer, email, method, or transaction ID...	البحث حسب المنتج أو العميل أو البريد الإلكتروني أو طريقة الدفع أو معرّف المعاملة...
+Search by customer, product, method or reference…	البحث حسب العميل أو المنتج أو طريقة الدفع أو المرجع…
+Search by user name, email, method or coupon…	البحث حسب اسم المستخدم أو البريد الإلكتروني أو طريقة الدفع أو الكوبون…
+Search product users	البحث في مستخدمي المنتج
+Search product templates	البحث في قوالب المنتجات
+Search customers by name, email, or phone...	البحث عن العملاء بالاسم أو البريد الإلكتروني أو الهاتف...
+Search templates, niches or tags…	البحث في القوالب أو المجالات أو الوسوم…
+Search templates by name, style, or topic...	البحث في القوالب حسب الاسم أو النمط أو الموضوع...
+Search assets, workspace, or owner…	البحث في الأصول أو مساحة العمل أو المالك…
+Search available contacts…	البحث في جهات الاتصال المتاحة…
+Search by invoice #, plan, payment method, reference…	البحث حسب رقم الفاتورة أو الباقة أو طريقة الدفع أو المرجع…
+Search by name or email…	البحث بالاسم أو البريد الإلكتروني…
+Search by name, email or ID…	البحث بالاسم أو البريد الإلكتروني أو المعرّف (ID)…
+Search by name, email or plan…	البحث بالاسم أو البريد الإلكتروني أو الباقة…
+Search by template name or use case…	البحث باسم القالب أو حالة الاستخدام…
+Search city or timezone…	البحث عن المدينة أو المنطقة الزمنية…
+Search clauses in Terms of Service...	البحث في بنود شروط الخدمة...
+Search countries…	البحث عن الدول…
+Search currencies…	البحث عن العملات…
+Search events, workspaces or triggers…	البحث في الأحداث أو مساحات العمل أو المشغّلات…
+Search ledger entries…	البحث في قيود السجل المالي…
+Search name, owner or workspace…	البحث بالاسم أو المالك أو مساحة العمل…
+Search policy clauses...	البحث في بنود السياسة...
+Search Privacy Policy clauses	البحث في بنود سياسة الخصوصية
+Search subscribers	البحث عن المشتركين
+Search subscribers…	البحث عن المشتركين…
+Search timezones…	البحث عن المناطق الزمنية…
+Search tools (e.g., AI, Funnel, CRM)...	البحث في الأدوات (مثل الذكاء الاصطناعي، الفانل، إدارة العملاء)...
+Search workspace name, ID, or model…	البحث باسم مساحة العمل أو المعرّف أو النموذج…
+Search workspace or owner ID…	البحث بمساحة العمل أو معرّف المالك…
+Search workspaces	البحث في مساحات العمل
+Search workspaces…	البحث في مساحات العمل…
+Search sub-accounts	البحث في الحسابات الفرعية
+Search sub-accounts...	البحث في الحسابات الفرعية...
+Search admins or sections…	البحث عن المسؤولين أو الأقسام…
+Search admins or sections	البحث عن المسؤولين أو الأقسام
+Search sections…	البحث في الأقسام…
+Search sections	البحث في الأقسام
+Search world city or country…	البحث عن مدينة أو دولة حول العالم…
+Search requests	البحث في الطلبات

@@ -19,6 +19,7 @@ import type { RootState } from '../../store';
 import { useEntities } from '../../backend/workspace';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { showToast } from '../../utils/toast';
 import { defaultConfig, formatPrice, type Product } from './model';
 import './checkout-requests.css';
@@ -127,14 +128,13 @@ export function ProductQuickView({
   const revenue = recordedRevenue?.length ? recordedRevenue.reduce((sum, order) => sum + order.amount, 0)
     : paidInCurrency.length ? paidInCurrency.reduce((sum, order) => sum + (order.total ?? order.amount ?? 0), 0)
     : Number(legacyRevenue?.replaceAll(',', '') ?? 0);
-  const q = userSearch.trim().toLowerCase();
   const filteredBuyers = buyerRows.filter(o => {
-    if (!q) return true;
     const name = o.customerName || o.customer?.name || '';
     const email = o.customerEmail || o.customer?.email || o.email || '';
     const method = o.method || '';
     const code = o.discountCode || '';
-    return [o.id, name, email, method, code].some(v => String(v || '').toLowerCase().includes(q));
+    const st = o.status || 'Pending';
+    return matchesLocalizedSearch(userSearch, [o.id, name, email, method, method ? t(method) : '', code, st, t(st)]);
   });
 
   const pipeline = pipelines.find(p => p.id === (config.crmRouting?.pipelineId || 'main'));

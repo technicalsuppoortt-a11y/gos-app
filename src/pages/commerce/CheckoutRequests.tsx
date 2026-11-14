@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Eye,
   FileText,
+  KeyRound,
   Receipt,
   Search,
   User,
@@ -22,6 +23,7 @@ import { useSelector } from 'react-redux';
 import { backendError, callBackend, db } from '../../backend/firebase';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { showToast } from '../../utils/toast';
 import type { RootState } from '../../store';
 import './checkout-requests.css';
@@ -78,7 +80,7 @@ export function CheckoutRequests() {
 
 function RequestsView({ tenantId }: { tenantId: string }) {
   const { formatPrice: money } = useCurrency();
-  useUILanguage();
+  const isArabic = useUILanguage().startsWith('ar');
   const [source, setSource] = useState<{ rows: RequestRow[]; error: string; loading: boolean }>({
     rows: [],
     error: '',
@@ -156,13 +158,20 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     };
   }, [tenantId, retry]);
 
-  const text = search.trim().toLowerCase();
   const rows = source.rows.filter(
     row =>
       (status === 'All' || row.status === status) &&
-      [row.id, row.customerName, row.customerEmail, row.customerPhone, row.productName, row.method || ''].some(value =>
-        String(value || '').toLowerCase().includes(text)
-      )
+      matchesLocalizedSearch(search, [
+        row.id,
+        row.customerName,
+        row.customerEmail,
+        row.customerPhone,
+        row.productName,
+        row.method || '',
+        row.method ? t(row.method) : '',
+        row.status,
+        t(row.status),
+      ])
   );
 
   const counts = {
@@ -183,7 +192,9 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     setRowBusyId(row.id);
     try {
       await applyRequestDecision(row, 'approve', row.reviewNote || 'Approved by merchant');
-      showToast.success(t('Checkout request approved.'));
+      showToast.success(row.status === 'Approved'
+        ? (isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : 'Customer portal access synced.')
+        : t('Checkout request approved.'));
     } catch (cause) {
       showToast.error(t(backendError(cause)));
     } finally {
@@ -380,6 +391,12 @@ function RequestsView({ tenantId }: { tenantId: string }) {
                             </button>
                           </>
                         )}
+                        {row.status === 'Approved' && (
+                          <button type="button" className="cw-button cr-action-btn" disabled={rowBusyId === row.id} onClick={() => void quickApprove(row)}>
+                            <KeyRound size={14} />
+                            <span>{isArabic ? 'مزامنة الوصول إلى البوابة' : 'Sync portal access'}</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="cw-button cr-action-btn details"
@@ -565,7 +582,7 @@ function RequestDetails({
     setError('');
     try {
       await applyRequestDecision(request, decision, note);
-      showToast.success(t(decision === 'approve' ? 'Checkout request approved · Customer portal access & login email sent.' : 'Checkout request rejected.'));
+      showToast.success(t(decision === 'approve' ? 'Checkout request approved.' : 'Checkout request rejected.'));
     } catch (cause) {
       setError(backendError(cause));
     } finally {

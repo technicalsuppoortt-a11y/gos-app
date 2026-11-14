@@ -17,3 +17,4 @@ export async function callBackend<T>(name: string): Promise<T> {
 }
 export const createClientAuthUser = async () => { throw new Error('Demo preview'); };
 export const sendOfficialPasswordResetEmail = async () => false;
+export const provisionTeamMemberAuth = async () => ({ uid: 'demo-user', created: false, passwordUpdated: false });

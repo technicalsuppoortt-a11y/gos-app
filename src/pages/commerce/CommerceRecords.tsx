@@ -1,5 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { QuickDetails } from '../../components/ui/QuickDetails';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
@@ -199,16 +200,25 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
 
   // Filtered records
   const filteredRecords = useMemo(() => {
-    const q = search.trim().toLowerCase();
     if (tab === 'Orders') {
       return allOrderRecords.filter(r => {
         const st = String(r.status || 'Pending');
         const matchesStatus =
           statusFilter === 'All' || st.toLowerCase() === statusFilter.toLowerCase();
-        const hay = `${r.id || ''} ${r.customerName || ''} ${r.customerEmail || ''} ${
-          r.productName || ''
-        } ${r.method || ''} ${r.discountCode || ''}`.toLowerCase();
-        return matchesStatus && (!q || hay.includes(q));
+        return (
+          matchesStatus &&
+          matchesLocalizedSearch(search, [
+            r.id,
+            r.customerName,
+            r.customerEmail,
+            r.productName,
+            r.method,
+            r.method ? translateText(String(r.method)) : '',
+            r.discountCode,
+            st,
+            translateText(st),
+          ])
+        );
       });
     }
     if (tab === 'Customers') {
@@ -216,8 +226,16 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
         const st = String(r.status || 'Active');
         const matchesStatus =
           statusFilter === 'All' || st.toLowerCase() === statusFilter.toLowerCase();
-        const hay = `${r.name || ''} ${r.email || ''} ${r.phone || ''}`.toLowerCase();
-        return matchesStatus && (!q || hay.includes(q));
+        return (
+          matchesStatus &&
+          matchesLocalizedSearch(search, [
+            r.name,
+            r.email,
+            r.phone,
+            st,
+            translateText(st),
+          ])
+        );
       });
     }
     // Payments tab
@@ -225,10 +243,20 @@ function RecordsView({ scope, tab, notify }: { scope: string; tab: string; notif
       const st = String(r.status || 'Paid');
       const matchesStatus =
         statusFilter === 'All' || st.toLowerCase() === statusFilter.toLowerCase();
-      const hay = `${r.id || ''} ${r.customerName || ''} ${r.customerEmail || ''} ${
-        r.productName || ''
-      } ${r.method || r.provider || ''}`.toLowerCase();
-      return matchesStatus && (!q || hay.includes(q));
+      return (
+        matchesStatus &&
+        matchesLocalizedSearch(search, [
+          r.id,
+          r.customerName,
+          r.customerEmail,
+          r.productName,
+          r.method,
+          r.provider,
+          r.method ? translateText(String(r.method)) : '',
+          st,
+          translateText(st),
+        ])
+      );
     });
   }, [tab, allOrderRecords, allCustomerRecords, payments, search, statusFilter]);
 

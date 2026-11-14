@@ -76,8 +76,15 @@ export const stripeWebhook = onRequest({ timeoutSeconds: 30 }, (req, res) => cre
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
-export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db }));
-export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90 }, request => productCheckoutRequest(request, { db, workspace, bucket: getStorage().bucket() }));
+export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db, auth, origin: appOrigin.value() }));
+export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90, secrets: [portalBootstrapKey] }, request => productCheckoutRequest(request, {
+  db, workspace, bucket: getStorage().bucket(),
+  fulfillPaidCheckout: async (root, orderId) => {
+    const order = (await root.collection('orders').doc(orderId).get()).data();
+    if (!order) throw new HttpsError('failed-precondition', 'The checkout order is unavailable.');
+    await fulfillCommerceOrder({ tenantId: root.id, orderId, order }, commerceFulfillmentDependencies());
+  },
+}));
 export const productAccess = onCall(async request => {
   if (request.auth) {
     const profile = (await db.doc(`users/${request.auth.uid}`).get()).data();
@@ -86,8 +93,9 @@ export const productAccess = onCall(async request => {
   if (typeof request.data?.tenantId === 'string' && /^[\w-]{1,150}$/.test(request.data.tenantId)) await checkPlatformTool(db, request.data.tenantId, 'portal');
   return productAccessRequest(request, { db, identityEmail: async uid => (await auth.getUser(uid)).email || '', signFile: async (path, expires) => (await getStorage().bucket().file(path).getSignedUrl({ action: 'read', expires, version: 'v4' }))[0] });
 });
+const commerceFulfillmentDependencies = () => ({ db, auth, origin: appOrigin.value(), bootstrapKey: portalBootstrapKey.value() });
 const productFulfillment = collection => onDocumentWritten({ document: `tenants/{tenantId}/${collection}/{orderId}`, retry: true, secrets: [portalBootstrapKey] }, event =>
-  fulfillCommerceOrder({ ...event.params, collection, order: event.data?.after.data() }, { db, auth, origin: appOrigin.value(), bootstrapKey: portalBootstrapKey.value() }));
+  fulfillCommerceOrder({ ...event.params, collection, order: event.data?.after.data() }, commerceFulfillmentDependencies()));
 export const fulfillProductOrder = productFulfillment('orders');
 export const fulfillProductTransaction = productFulfillment('transactions');
 export const customerPortal = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60, secrets: [portalBootstrapKey] }, request => customerPortalRequest(request, {

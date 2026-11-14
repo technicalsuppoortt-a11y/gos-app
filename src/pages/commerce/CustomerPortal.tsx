@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import {
@@ -40,6 +40,7 @@ import {
   getPortalFile,
   readPortalReviewSummary,
   recordPortalAssetDownload,
+  sha256Hex,
   submitPortalReview,
   togglePortalLessonComplete,
   updatePortalServiceStatus,
@@ -47,7 +48,9 @@ import {
   type CustomerPortalAsset,
   type CustomerPortalLesson,
   type CustomerPurchaseRecord,
+  type ServiceDeliveryStatus,
 } from '../../backend/customerPortal';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { RatingBadge, ReviewHistory } from './ProductReviews';
 import { useLiveReviews } from './reviewRepository';
 import { reviewMetrics, type ReviewSummary } from './model';
@@ -60,7 +63,7 @@ import { showToast } from '../../utils/toast';
 import './customer-portal.css';
 
 function formatBytes(bytes?: number): string {
-  if (!bytes || bytes <= 0) return 'Instant access';
+  if (!bytes || bytes <= 0) return t('Instant access');
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
@@ -80,7 +83,7 @@ export function CustomerDeliveryPreview() {
 }
 
 export function CustomerPortal({ preview, previewRoute = false, previewReviews }: { preview?: CustomerPurchaseRecord; previewRoute?: boolean; previewReviews?: ReviewSummary }) {
-  useUILanguage();
+  const language = useUILanguage();
   const navigate = useNavigate();
   const { purchaseId } = useParams<{ purchaseId?: string }>();
   const { user, tenant, role } = useSelector((state: RootState) => state.auth);
@@ -94,7 +97,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
 
   const ownedPurchase = useMemo(() => {
     if (!purchaseId) return null;
-    const decoded = decodeURIComponent(purchaseId);
+    const decoded = purchaseId;
     return (
       items.find(
         item =>
@@ -135,6 +138,49 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
 
     async function resolve() {
       try {
+        const decodedId = purchaseId || '';
+        // 0. Customer session direct lookup in verified workspace portalDeliveries
+        if (role === 'CUSTOMER' && targetTenant && email) {
+          const emailHash = await sha256Hex(email);
+          const delivId = `${decodedId}_${emailHash.slice(0, 24)}`;
+          const delivSnap = await getDoc(doc(db, 'workspaces', targetTenant, 'portalDeliveries', delivId)).catch(() => null);
+          if (delivSnap?.exists() && active) {
+            const raw = delivSnap.data() as Record<string, any>;
+            if ((!raw.customerEmailHash || raw.customerEmailHash === emailHash) && raw.status !== 'Revoked') {
+              const origin = typeof window !== 'undefined' ? window.location.origin : '';
+              setResolvedPurchase({
+                id: raw.purchaseId || decodedId,
+                purchaseId: raw.purchaseId || decodedId,
+                tenantId: raw.tenantId || targetTenant,
+                orderId: raw.orderId || `ord_${targetProduct}`,
+                productId: raw.productId || targetProduct,
+                customerUid: user?.id || '',
+                customerEmail: email,
+                customerName: raw.customerDisplayName || user?.name || email.split('@')[0] || 'Customer',
+                paymentMethod: raw.paymentMethod || '',
+                amount: Number(raw.amount || 0),
+                currency: String(raw.currency || 'USD'),
+                status: 'Active',
+                loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(`/portal/${decodedId}`)}`,
+                portalUrl: raw.portalUrl || `${origin}/portal/${encodeURIComponent(decodedId)}`,
+                productSnapshot: raw.productSnapshot,
+                completedLessonIds: Array.isArray(raw.completedLessonIds) ? raw.completedLessonIds : [],
+                progress: Number(raw.progress || 0),
+                downloadedAssetIds: Array.isArray(raw.downloadedAssetIds) ? raw.downloadedAssetIds : [],
+                downloadCount: Number(raw.downloadCount || 0),
+                serviceStatus: (raw.serviceStatus as ServiceDeliveryStatus) || 'Order Confirmed',
+                scheduledAt: raw.scheduledAt || '',
+                grantedAt: raw.grantedAt || new Date().toISOString(),
+                updatedAt: raw.updatedAt || new Date().toISOString(),
+              });
+              setResolving(false);
+              return;
+            }
+          }
+          if (active) setResolving(false);
+          return;
+        }
+
         // 1. Try reading customerPurchases mirror in tenant
         if (targetTenant) {
           const snap = await getDocs(
@@ -236,7 +282,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
     return () => {
       active = false;
     };
-  }, [purchaseId, ownedPurchase, previewRoute, tenant?.id, user?.id, products]);
+  }, [purchaseId, ownedPurchase, previewRoute, tenant?.id, user?.id, user?.name, role, email, products]);
 
   const activePurchase = previewRoute
     ? preview
@@ -245,13 +291,16 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
       : (ownedPurchase || resolvedPurchase);
 
   const filteredItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
     return items.filter(item => {
       if (filter !== 'all' && item.productSnapshot.kind !== filter) return false;
-      if (!q) return true;
-      return `${item.productSnapshot.name} ${item.productSnapshot.type} ${item.productSnapshot.description}`
-        .toLowerCase()
-        .includes(q);
+      return matchesLocalizedSearch(search, [
+        item.productSnapshot.name,
+        item.productSnapshot.type,
+        t(item.productSnapshot.type),
+        item.productSnapshot.description,
+        item.productSnapshot.instructor?.name,
+        item.serviceStatus ? t(item.serviceStatus) : '',
+      ]);
     });
   }, [items, filter, search]);
 
@@ -298,14 +347,28 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
     navigate('/auth/login', { replace: true });
   };
 
+  if (
+    isCustomerAccount &&
+    !previewRoute &&
+    !purchaseId &&
+    params.get('view') !== 'library' &&
+    !loading &&
+    items.length > 0 &&
+    items[0]?.purchaseId
+  ) {
+    return <Navigate to={`/portal/${encodeURIComponent(items[0].purchaseId)}`} replace />;
+  }
+
+  const libraryHomePath = isCustomerAccount ? '/portal?view=library' : '/portal';
+
   return (
-    <div className="cportal-shell">
+    <div className="cportal-shell" lang={language} dir={language.startsWith('ar') ? 'rtl' : 'ltr'}>
       <header className="cportal-topbar">
         <div className="cportal-brand-group">
           <button
             type="button"
             className="cportal-brand"
-            onClick={() => navigate('/portal')}
+            onClick={() => navigate(libraryHomePath)}
           >
             <span className="cportal-brand-mark">
               <img src="/upclick-mark.svg" width="22" height="22" alt="" />
@@ -320,9 +383,9 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
             <button
               type="button"
               className="cportal-back-pill"
-              onClick={() => navigate('/portal')}
+              onClick={() => navigate(libraryHomePath)}
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={14} className="cportal-rtl-flip" />
               <span>{t('All My Purchases')}</span>
             </button>
           )}
@@ -341,7 +404,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
                 )
               }
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={14} className="cportal-rtl-flip" />
               <span>{t('Back to Dashboard')}</span>
             </button>
           )}
@@ -572,7 +635,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
 
                         <button type="button" className="cportal-card-cta">
                           <span>{t(ctaLabel)}</span>
-                          <ArrowRight size={14} />
+                          <ArrowRight size={14} className="cportal-rtl-flip" />
                         </button>
                       </div>
                     </article>
@@ -768,8 +831,8 @@ function CourseDeliveryWorkspace({
             <div className="cportal-stage-bar">
               <div>
                 <small style={{ color: 'var(--cp-muted)', fontWeight: 600 }}>
-                  {activeLesson?.moduleTitle} · {activeLesson?.kind} ·{' '}
-                  {activeLesson?.duration || 'Self-paced'}
+                  {activeLesson?.moduleTitle} · {t(activeLesson?.kind || 'Lesson')} ·{' '}
+                  {t(activeLesson?.duration || 'Self-paced')}
                 </small>
                 <h2>{activeLesson?.title}</h2>
               </div>
@@ -781,7 +844,7 @@ function CourseDeliveryWorkspace({
                   disabled={currentIdx <= 0}
                   onClick={() => setSelectedLessonId(allLessons[currentIdx - 1].id)}
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={14} className="cportal-rtl-flip" />
                   <span>{t('Previous')}</span>
                 </button>
                 <button
@@ -800,7 +863,7 @@ function CourseDeliveryWorkspace({
                   onClick={() => setSelectedLessonId(allLessons[currentIdx + 1].id)}
                 >
                   <span>{t('Next')}</span>
-                  <ArrowRight size={14} />
+                  <ArrowRight size={14} className="cportal-rtl-flip" />
                 </button>
               </div>
             </div>
@@ -862,7 +925,7 @@ function CourseDeliveryWorkspace({
                   }
                 >
                   <span>{mod.title}</span>
-                  {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                  {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} className="cportal-rtl-flip" />}
                 </button>
                 {isOpen && (
                   <div className="cportal-lesson-list">
@@ -882,7 +945,7 @@ function CourseDeliveryWorkspace({
                           <span className="cportal-lesson-copy">
                             <b>{lesson.title}</b>
                             <small>
-                              {lesson.kind} · {lesson.duration || 'Self-paced'}
+                              {t(lesson.kind)} · {t(lesson.duration || 'Self-paced')}
                             </small>
                           </span>
                         </button>
@@ -978,7 +1041,7 @@ function DigitalDeliveryWorkspace({
                       <div>
                         <b>{asset.name}</b>
                         <small>
-                          {asset.resourceType || asset.mime || 'Digital File'} ·{' '}
+                          {t(asset.resourceType || asset.mime || 'Digital File')} ·{' '}
                           {formatBytes(asset.size)}
                           {downloaded ? ` · ${t('Downloaded')}` : ''}
                         </small>

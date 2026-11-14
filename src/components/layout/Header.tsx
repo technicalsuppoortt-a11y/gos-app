@@ -3,6 +3,7 @@ import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/slices/uiSlice';
@@ -114,19 +115,34 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     { title: 'AI Follow-Up', path: '/dashboard/follow-up', category: 'Navigation' },
     { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
     { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
+    { title: 'My Purchases', path: '/dashboard/products?tab=products&sub=purchases', category: 'Products' },
+    { title: 'Customer Portal', path: '/portal', category: 'Products' },
+    { title: 'Checkout Requests', path: '/dashboard/products?tab=requests', category: 'Products' },
+    { title: 'Orders', path: '/dashboard/products?tab=orders', category: 'Products' },
+    { title: 'Transactions', path: '/dashboard/products?tab=transactions', category: 'Products' },
+    { title: 'Customers', path: '/dashboard/products?tab=customers', category: 'Products' },
+    { title: 'Discounts', path: '/dashboard/products?tab=discounts', category: 'Products' },
     { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
     { title: 'Plans & Billing', path: '/dashboard/settings/billing', category: 'Settings' },
     { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
     { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
     { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
+    ...products.slice(0, 20).map(p => ({
+      title: p.name,
+      path: `/dashboard/products-payments/products/${p.id}/edit`,
+      category: p.type,
+    })),
   ];
 
   const searchResults = searchQuery.trim()
-    ? searchableNav.filter(item => {
-        const query = searchQuery.toLowerCase().trim();
-        const translatedTitle = translateText(item.title).toLowerCase();
-        return item.title.toLowerCase().includes(query) || translatedTitle.includes(query);
-      })
+    ? searchableNav.filter(item =>
+        matchesLocalizedSearch(searchQuery, [
+          item.title,
+          translateText(item.title),
+          item.category,
+          translateText(item.category),
+        ])
+      )
     : [];
 
   const handleSearchSubmit = (targetPath?: string) => {

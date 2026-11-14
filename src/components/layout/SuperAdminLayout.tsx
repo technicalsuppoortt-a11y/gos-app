@@ -7,6 +7,7 @@ import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, BarChart3, Bell, CreditCard, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
+import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { canOpenPlatformPage, isPlatformTeamRole, platformHome } from '../../router/platformAccess';
@@ -95,10 +96,9 @@ export const SuperAdminLayout: React.FC = () => {
   const [saSearchOpen, setSaSearchOpen] = useState(false);
   const saSearchRef = useRef<HTMLDivElement>(null);
   const saFilteredNav = saSearch.trim()
-    ? [...visibleNav, ...(canOpen('/super-admin/support') ? [{ label: 'Support', ar: 'الدعم', to: '/super-admin/support' }] : [])].filter(n => {
-        const q = saSearch.toLowerCase().trim();
-        return n.label.toLowerCase().includes(q) || (n.ar && n.ar.includes(q)) || translateText(n.label).toLowerCase().includes(q);
-      })
+    ? [...visibleNav, ...(canOpen('/super-admin/support') ? [{ label: 'Support', ar: 'الدعم', to: '/super-admin/support' }] : [])].filter(n =>
+        matchesLocalizedSearch(saSearch, [n.label, n.ar || '', translateText(n.label)])
+      )
     : [];
 
   const handleSaSearchSubmit = (to?: string) => {

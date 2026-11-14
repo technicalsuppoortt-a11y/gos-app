@@ -1138,10 +1138,12 @@ export function useEntities<T>(resource: typeof entityCollections[number]): T[] 
   return raw ? JSON.parse(raw) as T[] : [];
 }
 export function WorkspaceData({ children }: { children: ReactNode }) {
+  const role = useSelector((state: RootState) => state.auth.role);
   const scope = useSelector((state: RootState) => state.auth.tenant?.id);
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const hasToken = useSelector((state: RootState) => Boolean(state.auth.token));
-  const sessionKey = JSON.stringify([scope, userId, hasToken]);
+  const isCustomerSession = role === 'CUSTOMER' && Boolean(userId && hasToken);
+  const sessionKey = JSON.stringify([role, scope, userId, hasToken]);
   const { pathname } = useLocation();
   const pathRef = useRef(pathname); pathRef.current = pathname;
   const requestResources = useRef<() => void>(() => {});
@@ -1373,9 +1375,9 @@ export function WorkspaceData({ children }: { children: ReactNode }) {
     };
   }, [scope, userId, hasToken, sessionKey, retry]);
   useEffect(() => { requestResources.current(); }, [pathname]);
-  const routeReady = workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));
-  const ready = status.sessionKey === sessionKey && status.ready && routeReady;
-  const error = status.sessionKey === sessionKey ? status.error : '';
+  const routeReady = isCustomerSession || workspaceResources(pathname, allowedResources.current).every(resource => initializedResources.has(resource));
+  const ready = isCustomerSession || (status.sessionKey === sessionKey && status.ready && routeReady);
+  const error = isCustomerSession ? '' : (status.sessionKey === sessionKey ? status.error : '');
   useEffect(() => {
     setTimedOut(false);
     if (ready || error) return;

@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
 import { createUserWithEmailAndPassword, onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, query, where } from 'firebase/firestore';
 import { primaryAuth as auth, primaryDb as db, callBackend } from './firebase';
+import { sha256Hex } from './customerPortal';
 import { clearImpersonationContext, returnToAdmin } from './impersonation';
 import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
@@ -246,6 +247,30 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   }
 
   let rawDataRole = typeof data?.role === 'string' ? data.role.toUpperCase() : '';
+  if (!rawDataRole && user.uid.startsWith('customer_')) {
+    rawDataRole = 'CUSTOMER';
+  }
+  if (!rawDataRole && !claimRole && !data?.isTeamMember && emailLower) {
+    const [ownTenantSnap, libSnap, routeSnap] = await Promise.all([
+      getDoc(doc(db, 'tenants', `workspace-${user.uid}`)).catch(() => null),
+      getDocs(query(collection(db, 'customerLibraries', user.uid, 'purchases'), limit(1))).catch(() => null),
+      sha256Hex(emailLower)
+        .then(hash => getDoc(doc(db, 'settings', `portalRoute_${hash}`)))
+        .catch(() => null),
+    ]);
+    const hasOwnWorkspace = Boolean(ownTenantSnap?.exists());
+    const hasCustomerLibrary = Boolean(libSnap && !libSnap.empty);
+    const routeData = routeSnap?.exists() ? routeSnap.data() : null;
+    const hasPortalRoute = Boolean(
+      routeData &&
+      (routeData.role === 'CUSTOMER' ||
+        (typeof routeData.primaryPurchaseId === 'string' && routeData.primaryPurchaseId) ||
+        (Array.isArray(routeData.purchaseIds) && routeData.purchaseIds.length > 0)),
+    );
+    if (!hasOwnWorkspace && (hasCustomerLibrary || hasPortalRoute)) {
+      rawDataRole = 'CUSTOMER';
+    }
+  }
   if (isPlatformTeamRole(rawDataRole) || isPlatformTeamRole(claimRole)) {
     try {
       const teamPermsSnap = await getDoc(doc(db, 'settings', 'teamMemberPermissions'));
@@ -329,11 +354,15 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
 }
 
 export async function login(email: string, password: string) {
+  clearImpersonationContext();
   beginActivation();
   try {
     try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
     let usedPhoenix = false;
     const cleanEmail = email.trim().toLowerCase();
+    if (auth.currentUser && auth.currentUser.email?.trim().toLowerCase() !== cleanEmail) {
+      await signOut(auth).catch(() => {});
+    }
     let credential = await signInWithEmailAndPassword(auth, email.trim(), password).catch(async error => {
       if (!['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error.code)) throw error;
       const emailKey = cleanEmail.replace(/[^a-z0-9@._-]/g, '_');
