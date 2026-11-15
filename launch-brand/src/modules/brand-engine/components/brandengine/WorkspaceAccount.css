@@ -79,7 +79,7 @@
   align-self: stretch;
 }
 .workspace-account:focus-visible {
-  outline: 2px solid #8b75c9;
+  outline: 2px solid #269f90;
   outline-offset: 2px;
 }
 .workspace-account-menu {
@@ -99,7 +99,7 @@
   font-size: 12px;
 }
 .workspace-account-menu-tier {
-  color: #8b75c9;
+  color: #269f90;
   font-size: 11px;
 }
 .workspace-account-menu a {

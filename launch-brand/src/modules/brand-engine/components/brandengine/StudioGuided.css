@@ -159,14 +159,14 @@
 }
 .studio-palette-grid button:hover,
 .studio-color-presets .studio-palette-special:hover {
-  border-color: #8b5cf6;
+  border-color: #269f90;
 }
 .studio-color-presets button[aria-pressed="true"] {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 1px #8b5cf6;
+  border-color: #269f90;
+  box-shadow: 0 0 0 1px #269f90;
 }
 .studio-color-presets button:focus-visible {
-  outline: 2px solid #8b5cf6;
+  outline: 2px solid #269f90;
   outline-offset: 2px;
 }
 .studio-color-presets button:disabled {
@@ -573,7 +573,7 @@
 }
 .studio-element-result:hover {
   border-color: var(--studio-link);
-  box-shadow: 0 4px 18px #6035fb0d;
+  box-shadow: 0 4px 18px #007d700d;
 }
 .studio-result-number {
   font-size: 10px;
@@ -606,7 +606,7 @@
 }
 .studio-logo-dialog .bs-concept-card:hover {
   border-color: var(--studio-link);
-  box-shadow: 0 4px 16px #6035fb12;
+  box-shadow: 0 4px 16px #007d7012;
 }
 .studio-logo-dialog .bs-concept-card.selected {
   border-color: var(--studio-link);

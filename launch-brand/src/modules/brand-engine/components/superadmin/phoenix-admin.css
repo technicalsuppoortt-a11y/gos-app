@@ -13,10 +13,10 @@
   --sa-text-primary: var(--text);
   --sa-text-secondary: var(--text-dim);
   --sa-text-disabled: var(--text-dim);
-  --sa-primary: #635bff;
-  --sa-primary-hover: #7065de;
-  --sa-primary-soft: color-mix(in srgb, #635bff 10%, var(--surface));
-  --sa-accent-text: #635bff;
+  --sa-primary: #007d70;
+  --sa-primary-hover: #007d70;
+  --sa-primary-soft: color-mix(in srgb, #007d70 10%, var(--surface));
+  --sa-accent-text: #007d70;
   --sa-danger: #dc2626;
   --sa-danger-soft: color-mix(in srgb, #dc2626 8%, var(--surface));
   --dp: var(--sa-primary);
@@ -30,7 +30,7 @@
 .brand-engine-module.phoenix-brand-admin.dark {
   color-scheme: dark;
   --sa-danger: #f87171;
-  --sa-accent-text: #a99fff;
+  --sa-accent-text: #6ce7d4;
 }
 .phoenix-brand-admin > .space-y-6 { width: 100%; max-width: none; }
 .phoenix-brand-admin--discovery { height: calc(100dvh - 180px); min-height: 650px; }

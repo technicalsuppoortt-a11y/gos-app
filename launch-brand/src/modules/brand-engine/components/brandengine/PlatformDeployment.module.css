@@ -2,7 +2,7 @@
 @scope (:global(.brand-engine-module)) {
 .page {
   /* Keep deployment styling local so the embedded customer site retains its own palette. */
-  --deployment-primary: #9274F7;
+  --deployment-primary: #6ce7d4;
   --deployment-primary-foreground: oklch(0.99 0 0);
   min-height: 0;
   padding: 4px 16px 0;

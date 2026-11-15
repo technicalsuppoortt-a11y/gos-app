@@ -60,7 +60,7 @@ html.dark {
 .auth-forgot-link { color: var(--ui-accent-text); font-size: 11px; font-weight: 600; }
 .auth-forgot-link:hover { text-decoration: underline; }
 .auth-recovery-page { position: fixed; inset: 0; overflow: auto; padding: 40px 24px; background: var(--bg); color: var(--text); display: flex; font-family: var(--font-sans); }
-.auth-recovery-canvas { position: fixed; inset: 0; pointer-events: none; background-image: radial-gradient(ellipse 1000px 600px at 15% -10%, rgba(99,91,255,.16), transparent 60%), radial-gradient(ellipse 800px 600px at 100% 10%, rgba(91,141,239,.13), transparent 60%); }
+.auth-recovery-canvas { position: fixed; inset: 0; pointer-events: none; background-image: radial-gradient(ellipse 1000px 600px at 15% -10%, rgba(0, 125, 112,.16), transparent 60%), radial-gradient(ellipse 800px 600px at 100% 10%, rgba(91,141,239,.13), transparent 60%); }
 .auth-recovery-preferences { position: fixed; top: 20px; inset-inline-end: 24px; z-index: 2; display: flex; gap: 8px; }
 .auth-recovery-preferences button { display: flex; gap: 6px; align-items: center; justify-content: center; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text-dim); font-size: 11px; cursor: pointer; }
 .auth-recovery-grid { position: relative; width: 100%; max-width: 840px; margin: auto; display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
@@ -76,10 +76,10 @@ html.dark {
 .auth-recovery-form label { font-size: 12px; font-weight: 600; }
 .auth-recovery-field { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding-inline: 13px; min-width: 0; }
 .auth-recovery-field > svg { color: var(--text-dim); flex-shrink: 0; }
-.auth-recovery-field:focus-within { border-color: var(--app-indigo); box-shadow: 0 0 0 3px rgba(99,91,255,.12); }
+.auth-recovery-field:focus-within { border-color: var(--app-indigo); box-shadow: 0 0 0 3px rgba(0, 125, 112,.12); }
 .auth-recovery-field input { width: 100%; min-width: 0; height: 46px; font-size: 13px; background: transparent; color: var(--text); outline: none; border: 0; }
 .auth-recovery-field button { cursor: pointer; color: var(--text-dim); padding: 6px; }
-.auth-recovery-submit { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 14px; border-radius: 10px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 6px 18px -8px rgba(99,91,255,.45); }
+.auth-recovery-submit { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 14px; border-radius: 10px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 6px 18px -8px rgba(0, 125, 112,.45); }
 .auth-recovery-submit:disabled { opacity: .65; cursor: wait; }
 .auth-recovery-submit:hover:not(:disabled) { filter: brightness(1.05); }
 .auth-recovery-note { margin: 3px 0; color: var(--text-dim); font-size: 11px; line-height: 1.8; }
@@ -210,7 +210,7 @@ html[dir='rtl'] .app-dashboard-shell :is(h1,h2,h3,h4) { font-family: inherit; }
 .dashboard-page .grid > [class*='items-center'][class*='border'] > .w-14.h-14 svg { width: 15px; height: 15px; }
 .app-dashboard-shell :is(button,.btn) { font-size: 11px; }
 .app-dashboard-shell .btn { min-height: 34px; padding: 0 12px; border-radius: 7px; }
-.app-dashboard-shell .btn-primary { background: #7669e4; box-shadow: none; }
+.app-dashboard-shell .btn-primary { background: #007d70; box-shadow: none; }
 .app-dashboard-shell :is(button,a)[class*='from-primary-'] {
   background: var(--brand-gradient); color: #fff; box-shadow: 0 1px 3px rgba(36,32,59,.04);
   border-radius: 7px; min-height: 34px; padding: 0 12px;

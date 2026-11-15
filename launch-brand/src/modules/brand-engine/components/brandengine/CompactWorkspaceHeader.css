@@ -47,16 +47,16 @@
 .compact-workspace-header .header-actions .avatar {
   margin-inline-start: 2px;
   font-size: 10px;
-  color: #8B75C9;
+  color: #269f90;
 }
 .compact-workspace-header .header-actions .header-control:hover,
 .compact-workspace-header .header-actions .header-control.is-active,
 .compact-workspace-header .header-actions .header-control[aria-expanded="true"],
 .compact-workspace-header .header-actions .avatar:hover,
 .compact-workspace-header .header-actions .mobile-menu:hover {
-  border-color: color-mix(in srgb, #8B75C9 28%, var(--border));
-  background: linear-gradient(90deg, color-mix(in srgb, #8B75C9 12%, var(--card)) 0%, color-mix(in srgb, #8B75C9 6%, var(--card)) 100%);
-  color: #8B75C9;
+  border-color: color-mix(in srgb, #269f90 28%, var(--border));
+  background: linear-gradient(90deg, color-mix(in srgb, #269f90 12%, var(--card)) 0%, color-mix(in srgb, #269f90 6%, var(--card)) 100%);
+  color: #269f90;
 }
 .compact-workspace-header .header-control:hover .header-action-label,
 .compact-workspace-header .header-control.is-active .header-action-label {
@@ -65,11 +65,11 @@
 .compact-workspace-header .header-actions .header-control:focus-visible,
 .compact-workspace-header .header-actions .avatar:focus-visible,
 .compact-workspace-header .header-actions .mobile-menu:focus-visible {
-  outline: 2px solid #8B75C9;
+  outline: 2px solid #269f90;
   outline-offset: 3px;
 }
 .compact-workspace-header .save-bell-dot:not(.error) {
-  background: #8B75C9;
+  background: #269f90;
 }
 .compact-phase-stepper {
   display: flex;
@@ -127,18 +127,18 @@
   text-overflow: ellipsis;
 }
 .compact-phase.is-complete .compact-phase-tab {
-  background: color-mix(in oklab, #6035FB 10%, var(--card));
-  border-color: color-mix(in oklab, #6035FB 30%, var(--border));
+  background: color-mix(in oklab, #007d70 10%, var(--card));
+  border-color: color-mix(in oklab, #007d70 30%, var(--border));
   color: var(--foreground);
 }
 .compact-phase-check {
   flex: none;
   width: 12px;
   height: 12px;
-  color: #8060FF;
+  color: #269f90;
 }
 .compact-phase.is-complete .compact-phase-number {
-  color: #8060FF;
+  color: #269f90;
   opacity: 1;
 }
 .compact-phase.is-active .compact-phase-tab {
@@ -148,7 +148,7 @@
   box-shadow: 0 1px 3px color-mix(in oklab, var(--foreground) 6%, transparent);
 }
 .compact-phase.is-active .compact-phase-number {
-  color: #8060FF;
+  color: #269f90;
   opacity: 1;
 }
 .compact-phase.is-active .compact-phase-tab::after {
@@ -157,14 +157,14 @@
   inset-inline: 4px;
   bottom: -1px;
   height: 2px;
-  background: linear-gradient(90deg, #6035FB 0%, #C1B0FA 100%);
+  background: linear-gradient(90deg, #007d70 0%, #6ce7d4 100%);
 }
 .compact-phase-tab:focus-visible {
-  outline: 2px solid #6035FB;
+  outline: 2px solid #007d70;
   outline-offset: 2px;
 }
 .compact-phase-tooltip {
-  background: linear-gradient(90deg, #6035FB 0%, #C1B0FA 100%);
+  background: linear-gradient(90deg, #007d70 0%, #6ce7d4 100%);
   color: #ffffff;
 }
 @container (max-width: 1000px) {
