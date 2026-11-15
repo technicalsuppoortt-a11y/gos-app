@@ -27,21 +27,21 @@
   :root {
     --bg:#f8f9fd; --surface:#ffffff; --surface-2:#f8faff; --line:#eceef4;
     --text:#191b2d; --text-dim:#55596b;
-    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
+    --ember-1:var(--academy-accent); --ember-2:var(--academy-action-blue); --tech-1:var(--academy-action-blue); --tech-2:var(--academy-accent);
     --shadow-soft: rgba(30,25,20,.14);
   }
 
   .light {
     --bg:#f8f9fd; --surface:#ffffff; --surface-2:#f8faff; --line:#eceef4;
     --text:#191b2d; --text-dim:#55596b;
-    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
+    --ember-1:var(--academy-accent); --ember-2:var(--academy-action-blue); --tech-1:var(--academy-action-blue); --tech-2:var(--academy-accent);
     --shadow-soft: rgba(30,25,20,.14);
   }
 
   .dark {
     --bg:#0b1020; --surface:#151a27; --surface-2:#1b2030; --line:#2d3344;
     --text:#edf0f7; --text-dim:#a0aabc;
-    --ember-1:#635bff; --ember-2:#7065de; --tech-1:#5B8DEF; --tech-2:#7C6CF0;
+    --ember-1:var(--academy-accent); --ember-2:var(--academy-action-blue); --tech-1:var(--academy-action-blue); --tech-2:var(--academy-accent);
     --shadow-soft: rgba(0,0,0,.6);
   }
 
@@ -98,13 +98,13 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #635bff 0%, #7065de 100%);
+  background: linear-gradient(180deg, var(--academy-accent) 0%, var(--academy-action-blue) 100%);
 }
 
 .chat-scrollbar,
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #635bff transparent;
+  scrollbar-color: var(--academy-accent) transparent;
 }
 
 .chat-scrollbar::-webkit-scrollbar,
@@ -120,14 +120,14 @@
 
 .chat-scrollbar::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #635bff 0%, #7065de 100%);
+  background: linear-gradient(180deg, var(--academy-accent) 0%, var(--academy-action-blue) 100%);
   border-radius: 9999px;
   box-shadow: 0 0 6px rgba(118,105,228, 0.4);
 }
 
 .chat-scrollbar::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #9487f2 0%, #E11D48 100%);
+  background: linear-gradient(180deg, var(--academy-teal) 0%, #E11D48 100%);
   box-shadow: 0 0 10px rgba(118,105,228, 0.7);
 }
 

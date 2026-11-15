@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { motion } from "framer-motion";
-const logo = `${import.meta.env.BASE_URL}joe-academy-logo.svg`;
+import { joeAcademyLogoUrl as logo } from "@/components/ui/JoeAcademyLogo";
 import { Button } from "@/modules/brand-engine/components/ui/button";
 import { actions } from "@/modules/brand-engine/store/brandSlice";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";

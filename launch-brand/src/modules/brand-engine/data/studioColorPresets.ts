@@ -18,6 +18,17 @@ type StudioColorPreset = {
 // Preserve IDs so existing saved identities remain compatible.
 export const studioColorPresets: StudioColorPreset[] = [
   {
+    id: "joe-academy",
+    name: "Joe Academy",
+    nameAr: "جو أكاديمي",
+    primary: "#007D70",
+    secondary: "#005BBB",
+    background: "#F8F9FD",
+    mode: "light",
+    darkBackground: "#0B1020",
+    darkPrimary: "#00C6B8",
+  },
+  {
     id: "ai-cyber",
     name: "Cyber Blue",
     nameAr: "أزرق سيبراني",
@@ -457,11 +468,13 @@ export function studioPresetTheme(id: string, base: BrandTheme): BrandTheme {
   // GOS dashboard's original --app-indigo and --purple tokens.
   const primary = preset?.primary ?? "#635BFF";
   const secondary = preset?.secondary ?? "#7065DE";
+  const buttonBackground = id === "joe-academy" ? secondary : theme.light.buttonBackground;
   const common = {
     primary,
     secondary,
+    buttonBackground,
     focus: primary,
-    onPrimary: readableBrandForeground(theme.light.buttonBackground),
+    onPrimary: readableBrandForeground(buttonBackground),
   };
   const dark = preset
     ? [
@@ -501,7 +514,8 @@ export function studioPresetTheme(id: string, base: BrandTheme): BrandTheme {
       primary: darkPrimary,
       secondary: darkSecondary,
       focus: darkPrimary,
-      onPrimary: readableBrandForeground(theme.dark.buttonBackground),
+      buttonBackground: id === "joe-academy" ? buttonBackground : theme.dark.buttonBackground,
+      onPrimary: readableBrandForeground(id === "joe-academy" ? buttonBackground : theme.dark.buttonBackground),
       footerBackground: dark?.[4] ?? "#0B1220",
       ...(dark
         ? {

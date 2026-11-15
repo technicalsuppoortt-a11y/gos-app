@@ -58,6 +58,7 @@ import {
 } from "./StudioBrandPreview";
 import { LogoDownloadDialog } from "./LogoDownloadDialog";
 import "./BrandStudio.css";
+import { joeAcademyLogoUrl } from "@/components/ui/JoeAcademyLogo";
 import "./StudioGuided.css";
 import "./BrandStudioWorkspace.css";
 import "./StudioIdentityLayout.css";
@@ -558,8 +559,9 @@ export function BrandingStudio({
     }
   };
   const downloadLogo = async (format: "png" | "svg" = "png") => {
-    if (manualLogo && brand.logoUrl) {
-      const response = await fetch(brand.logoUrl);
+    const originalLogo = showAcademyLogo ? joeAcademyLogoUrl : manualLogo ? brand.logoUrl : undefined;
+    if (originalLogo) {
+      const response = await fetch(originalLogo);
       if (!response.ok)
         throw new Error(
           t(
@@ -579,7 +581,8 @@ export function BrandingStudio({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${state.brandName.replace(/[^\p{L}\p{N}]+/gu, "-").slice(0, 60) || "brand"}-logo${extension ? `.${extension}` : ""}`;
+      const name = showAcademyLogo ? "joe-academy" : state.brandName.replace(/[^\p{L}\p{N}]+/gu, "-").slice(0, 60) || "brand";
+      a.download = `${name}-logo${extension ? `.${extension}` : ""}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       return;
@@ -615,6 +618,11 @@ export function BrandingStudio({
     palette: state.brandPalette,
     typography: theme.typography.heading,
   };
+  const showAcademyLogo = !logoIdentity.name.trim() && !logoIdentity.logo &&
+    !state.pageParameters["branding"]?.["uploadedLogo"];
+  const currentLogoUrl = brand.logoUrl || (showAcademyLogo
+    ? joeAcademyLogoUrl
+    : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary)));
   const language = state.language;
   const showAdvanced = advanced,
     setShowAdvanced = setAdvanced;
@@ -1418,8 +1426,8 @@ export function BrandingStudio({
                   )
                 ) : (
                   <img
-                    src={logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))}
-                    alt={state.brandName}
+                    src={showAcademyLogo ? joeAcademyLogoUrl : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))}
+                    alt={showAcademyLogo ? "Joe Academy" : state.brandName}
                   />
                 )}
               </div>
@@ -1433,7 +1441,9 @@ export function BrandingStudio({
                       ? t("Not saved yet", "لم يُحفظ بعد")
                       : manualLogo
                         ? t("Current logo", "اللوجو الحالي")
-                        : isRasterBrandLogo(logoIdentity) ? t("Generated logo image", "صورة اللوجو المولّدة") : t("Vector concept", "قالب فيكتور")}
+                        : showAcademyLogo
+                          ? "Joe Academy"
+                          : isRasterBrandLogo(logoIdentity) ? t("Generated logo image", "صورة اللوجو المولّدة") : t("Vector concept", "قالب فيكتور")}
                   </span>
                 </div>
                 <p>
@@ -1712,21 +1722,15 @@ export function BrandingStudio({
             <div className="studio-assets-grid">
               <article>
                 <img
-                  src={
-                    brand.logoUrl ||
-                    logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))
-                  }
+                  src={currentLogoUrl}
                   alt={t("Current logo", "اللوجو الحالي")}
                 />
                 <strong>{t("Logo", "اللوجو")}</strong>
                 <LogoDownloadDialog
-                  logoUrl={
-                    brand.logoUrl ||
-                    logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))
-                  }
+                  logoUrl={currentLogoUrl}
                   brandName={state.brandName}
                   ar={ar}
-                  original={manualLogo}
+                  original={manualLogo || showAcademyLogo}
                   raster={isRasterBrandLogo(logoIdentity)}
                   disabled={Boolean(busy) || (manualLogo && !brand.logoUrl) || Boolean(pendingLogo)}
                   onDownload={downloadLogo}

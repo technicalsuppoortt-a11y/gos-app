@@ -17,7 +17,7 @@ export default function OpenFromAcademy() {
     <JoeAcademyLogo className="mx-auto h-14 w-14" />
     <h1 className="text-xl font-bold">{title}</h1>
     <p className="max-w-md text-sm opacity-80">{body}</p>
-    <a className="mx-auto rounded-xl bg-[#635bff] px-5 py-3 text-sm font-bold text-white" href={`${JOE_ACADEMY_ORIGIN}/dashboard`}>
+    <a className="mx-auto rounded-xl bg-primary-500 px-5 py-3 text-sm font-bold text-white" href={`${JOE_ACADEMY_ORIGIN}/dashboard`}>
       {isAr ? 'الذهاب إلى Joe Academy' : 'Go to Joe Academy'}
     </a>
   </main>;
