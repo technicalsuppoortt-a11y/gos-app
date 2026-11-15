@@ -27,7 +27,8 @@ export type SimState = {
   contact: { tags: string[]; fields: Record<string, string> } | null
 }
 
-export type Channel = { channel: string; status: 'connected' | 'idle'; enabled: boolean; external_id: string | null; name: string | null; method: string }
+export type ChannelPage = { id: string; external_id: string; name: string | null }
+export type Channel = { channel: string; status: 'connected' | 'idle'; enabled: boolean; external_id: string | null; name: string | null; method: string; pages?: ChannelPage[] }
 export type MetaPage = { id: string; name: string; instagram: { id: string; username: string } | null }
 
 /** Channels are the same ones the AI uses (ai-follow-up /ai/channels); flows reply on them too. */
@@ -43,6 +44,10 @@ export const api = {
     call<{ channel: Channel }>('PUT', '/ai/channels/whatsapp', { enabled: true, ...body }).then(r => r.channel),
   metaConnect: (channel: 'messenger' | 'instagram', pageId: string) =>
     call<{ channel: Channel }>('POST', '/ai/channels/meta/connect', { channel, page_id: pageId }).then(r => r.channel),
+  metaConnectPages: (channel: 'messenger' | 'instagram', pageIds: string[]) =>
+    call<{ channel: Channel }>('POST', '/ai/channels/meta/connect', { channel, page_ids: pageIds }).then(r => r.channel),
+  disconnectPage: (channel: string, pageId: string) =>
+    call<{ channel: Channel }>('PUT', `/ai/channels/${encodeURIComponent(channel)}`, { enabled: false, page_id: pageId }).then(r => r.channel),
   disconnect: (channel: string) => call<{ channel: Channel }>('PUT', `/ai/channels/${encodeURIComponent(channel)}`, { enabled: false }).then(r => r.channel),
   list: () => call<Pick<Flow, 'id' | 'name' | 'status' | 'has_unpublished_changes' | 'updated_at'>[]>('GET', '/flows'),
   create: (name: string) => call<Flow>('POST', '/flows', { name }),
