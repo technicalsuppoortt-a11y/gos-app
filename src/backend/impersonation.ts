@@ -6,6 +6,7 @@ import { store } from '../store';
 import { loginSuccess, startImpersonation, stopImpersonation } from '../store/slices/authSlice';
 import type { Role, Tenant, User } from '../types/auth';
 import * as phoenixBrand from './phoenixBrand';
+import { isOwnedSwitchAccount } from './switchAccountOwnership';
 
 let secondaryApp: FirebaseApp | null = null;
 let switching = false;
@@ -79,7 +80,9 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
     }
     const cached = fallbackAccount;
     const isAgency = docData?.accountType === 'agency' || cached?.accountType === 'agency';
-    if (isAgency && effectiveRole !== 'SUPER_ADMIN') throw switchError;
+    if (effectiveRole === 'ADMIN' && (
+      isAgency || !docData || !isOwnedSwitchAccount(state.user?.id, docData)
+    )) throw switchError;
     const rawRole = String(docData?.role || cached?.role || 'USER').toUpperCase();
     const resolvedRole: 'ADMIN' | 'USER' = rawRole === 'ADMIN' && effectiveRole === 'SUPER_ADMIN' ? 'ADMIN' : 'USER';
     const resolvedName = docData?.name || cached?.name || docData?.email?.split('@')[0] || cached?.email?.split('@')[0] || 'Sub-Account';

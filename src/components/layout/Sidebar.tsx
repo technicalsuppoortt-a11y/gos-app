@@ -1,3 +1,4 @@
+import { SidebarBrandLogo } from './SidebarBrandLogo';
 import { useUILanguage, localizeNode, translateText, uiDirection } from '../../i18n/display';
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -189,8 +190,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           onClick={close}
           title={previewBrandName || (collapsed ? (brandName === "Upclick" ? translateText("Upclick") : brandName) : undefined)}
         >
-          {hasWorkspaceTheme && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <img src={workspaceBrand.logoUrl} alt={`${workspaceBrand.name} logo`} className="workspace-logo"/> : savedBrand?.logo ? <img src={savedBrand.logo} alt={`${savedBrand.brand.name} logo`} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`} /> : <span className="layout-brand-icon">
-            {phoenixBrand?.logo ? <img src={phoenixBrand.logo} alt="" className="h-8 w-8 object-contain" /> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
+          {hasWorkspaceTheme && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <SidebarBrandLogo src={workspaceBrand.logoUrl} name={workspaceBrand.name} className="workspace-logo" collapsed={collapsed}/> : savedBrand?.logo ? <SidebarBrandLogo src={savedBrand.logo} name={savedBrand.brand.name} collapsed={collapsed} wordmark={savedBrand.logoHasWordmark} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`}/> : <span className="layout-brand-icon">
+            {phoenixBrand?.logo ? <SidebarBrandLogo src={phoenixBrand.logo} name={brandName} className="h-8 w-8 object-contain" collapsed={collapsed}/> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}
           </span>}
           {(!hasWorkspaceTheme || isDefaultBrandLogo(workspaceBrand.logoUrl)) && !(savedBrand?.logo && savedBrand.logoHasWordmark) && <div className="layout-brand-copy">
             <span className="layout-brand-wordmark"><b dir={previewBrandName ? 'auto' : undefined}>{brandName}</b></span>

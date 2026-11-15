@@ -82,6 +82,7 @@ function switchHarness({ rejected = false, status = 'Active' } = {}) {
     '../store': { store: { getState: () => ({ auth: state }), dispatch: action => { state = reducer(state, action); } } },
     '../store/slices/authSlice': { loginSuccess, startImpersonation, stopImpersonation },
     './phoenixBrand': { clearPhoenixBrand: () => {} },
+    './switchAccountOwnership': load('../src/backend/switchAccountOwnership.ts'),
   };
   const api = load('../src/backend/impersonation.ts', name => { assert.ok(modules[name], name); return modules[name]; }, { crypto: { randomUUID: () => 'test' } });
   return { api, events, primaryAuth, state: () => state };

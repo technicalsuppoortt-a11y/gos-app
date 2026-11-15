@@ -24,7 +24,6 @@ import { showToast } from '../../utils/toast';
 import { translateText, useUILanguage } from '../../i18n/display';
 import type { Invite } from '../../pages/onboarding/onboarding-store';
 
-const CACHE_KEY = 'admin_sub_accounts_cache';
 const PIN_KEY = 'gos_pinned_sub_accounts';
 
 const AVATAR_COLORS = [
@@ -52,7 +51,7 @@ interface SubAccountSwitcherProps {
 export type SwitchableAccount = Pick<Invite, 'id' | 'name' | 'email' | 'tenantId' | 'accountType' | 'status' | 'avatar'> & { role?: Invite['role'] };
 
 export function SubAccountSwitcher(props: SubAccountSwitcherProps) {
-  const { invites } = useAdminUsers();
+  const { invites } = useAdminUsers(true);
   return <WorkspaceSwitcher {...props} liveInvites={invites}/>;
 }
 
@@ -100,29 +99,6 @@ export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInv
 
   const isImpersonating = !!impersonation;
   const isAdminOrImpersonating = role === 'ADMIN' || role === 'SUPER_ADMIN' || isImpersonating;
-
-  // Cache persistence for seamless switching while impersonating
-  useEffect(() => {
-    if (!platform && liveInvites.length > 0) {
-      try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(liveInvites));
-      } catch {}
-    }
-  }, [liveInvites, platform]);
-
-  // Read accounts from live query or cached store
-  const allSubAccounts = useMemo<SwitchableAccount[]>(() => {
-    if (platform || liveInvites.length > 0) {
-      return liveInvites;
-    }
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        return JSON.parse(cached) as Invite[];
-      }
-    } catch {}
-    return [];
-  }, [liveInvites, platform]);
 
   // Update floating popover position relative to trigger button
   const updatePosition = () => {
@@ -199,12 +175,12 @@ export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInv
   const filteredAccounts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const list = q
-      ? allSubAccounts.filter(acc => 
+      ? liveInvites.filter(acc =>
           (acc.name && acc.name.toLowerCase().includes(q)) ||
           (acc.email && acc.email.toLowerCase().includes(q)) ||
           (acc.tenantId && acc.tenantId.toLowerCase().includes(q))
         )
-      : allSubAccounts;
+      : liveInvites;
 
     return [...list].sort((a, b) => {
       const aPinned = pinnedIds.includes(a.id);
@@ -213,7 +189,7 @@ export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInv
       if (!aPinned && bPinned) return 1;
       return 0;
     });
-  }, [allSubAccounts, searchQuery, pinnedIds]);
+  }, [liveInvites, searchQuery, pinnedIds]);
 
   const pinnedCount = useMemo(() => filteredAccounts.filter(acc => pinnedIds.includes(acc.id)).length, [filteredAccounts, pinnedIds]);
 

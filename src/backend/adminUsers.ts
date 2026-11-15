@@ -8,6 +8,7 @@ import type { Role, Tenant } from '../types/auth';
 import type { Invite } from '../pages/onboarding/onboarding-store';
 import { auth, backendError, callBackend, db, primaryDb, sendOfficialPasswordResetEmail } from './firebase';
 import { showToast } from '../utils/toast';
+import { isOwnedSwitchAccount } from './switchAccountOwnership';
 
 const links = new Map<string, string>();
 const linkRequests = new Map<string, Promise<string>>();
@@ -141,16 +142,17 @@ export async function manageAccount(operation: string, data: Record<string, unkn
   return result;
 }
 
-export function useAdminUsers() {
+export function useAdminUsers(ownedOnly = false) {
   const role = useSelector((state: RootState) => state.auth.role);
   const impersonation = useSelector((state: RootState) => state.auth.impersonation);
   const uid = useSelector((state: RootState) => state.auth.impersonation?.user.id ?? state.auth.user?.id);
   const effectiveRole = impersonation?.role ?? role;
-  const [state, setState] = useState<{ invites: Invite[]; loading: boolean; error: string }>({ invites: [], loading: true, error: '' });
+  const scope = JSON.stringify([uid, effectiveRole, ownedOnly]);
+  const [state, setState] = useState<{ scope: string; invites: Invite[]; loading: boolean; error: string }>({ scope, invites: [], loading: true, error: '' });
 
   useEffect(() => {
     if (effectiveRole !== 'ADMIN' && effectiveRole !== 'SUPER_ADMIN') {
-      setState({ invites: [], loading: false, error: '' });
+      setState({ scope, invites: [], loading: false, error: '' });
       return;
     }
     const users = collection(primaryDb, 'users');
@@ -163,13 +165,14 @@ export function useAdminUsers() {
         const items = snapshot.docs.flatMap(item => {
           const data = item.data();
           if (data.activatedUid || data.deletedAt || effectiveRole === 'ADMIN' && data.defaultAgencyFor && data.defaultAgencyFor !== uid) return [];
+          if (ownedOnly && effectiveRole === 'ADMIN' && !isOwnedSwitchAccount(uid, data)) return [];
           return [{ ...data, email: data.email || data.contactEmail || '', id: item.id } as Invite];
         });
-        setState({ invites: items, loading: false, error: '' });
+        setState({ scope, invites: items, loading: false, error: '' });
       },
       error => {
         const message = backendError(error);
-        setState(prev => ({ ...prev, loading: false, error: message }));
+        setState(prev => ({ scope, invites: prev.scope === scope ? prev.invites : [], loading: false, error: message }));
       }
     );
 
@@ -177,7 +180,7 @@ export function useAdminUsers() {
       unsubscribe();
 
     };
-  }, [effectiveRole, uid]);
+  }, [effectiveRole, uid, ownedOnly, scope]);
 
-  return state;
+  return state.scope === scope ? state : { invites: [], loading: true, error: '' };
 }

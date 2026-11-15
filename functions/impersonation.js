@@ -4,6 +4,9 @@ import { mayManageUser } from './policy.js';
 export async function createImpersonationSession(user, target, id, { db, auth }) {
   const role = target.role;
   if (!mayManageUser(user, { ...target, id }) || !(role === 'USER' || role === 'ADMIN' && user.role === 'SUPER_ADMIN')) throw new HttpsError('permission-denied', 'You cannot switch to this account.');
+  if (user.role === 'ADMIN' && target.accountType !== 'agency' && (target.supportParentId || target.createdBy) !== user.uid) {
+    throw new HttpsError('permission-denied', 'You cannot switch to this account.');
+  }
   if (!/^(active|activated)$/i.test(target.status) || typeof target.tenantId !== 'string' || !target.tenantId || target.tenantId.includes('/')) throw new HttpsError('failed-precondition', 'Choose an active user with a workspace.');
   const member = (await db.doc(`tenants/${target.tenantId}/members/${id}`).get()).data();
   const account = await auth.getUser(id);

@@ -55,6 +55,19 @@ html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"]
   height: 36px;
   flex-shrink: 0;
 }
+.layout-brand .sidebar-brand-initial {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  margin-inline: auto;
+  border-radius: 8px;
+  background: var(--gp-soft, var(--panel));
+  color: var(--gp-text, var(--ink));
+  font-size: 19px;
+  font-weight: 700;
+}
 .layout-sidebar-content.is-collapsed .layout-brand .phoenix-logo,
 .adm-sidebar.is-collapsed .layout-brand .phoenix-logo {
   width: 34px;

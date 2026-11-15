@@ -16,7 +16,17 @@ test('missing, malformed and conflicting switch identifiers fail before accessin
 });
 
 const actor = { uid: 'admin', role: 'ADMIN' };
-const target = { role: 'USER', status: 'Active', tenantId: 'workspace-user', name: 'User', email: 'user@test.com' };
+const target = { role: 'USER', supportParentId: actor.uid, status: 'Active', tenantId: 'workspace-user', name: 'User', email: 'user@test.com' };
+test('an admin cannot switch to another admin’s user or an unassigned user', async () => {
+  const deps = dependencies();
+  for (const supportParentId of ['another-admin', '']) {
+    await assert.rejects(
+      createImpersonationSession(actor, { ...target, supportParentId }, 'user', deps),
+      { code: 'permission-denied' },
+    );
+  }
+  assert.equal(deps.minted.length, 0);
+});
 function dependencies({ active = true, disabled = false } = {}) {
   const audit = [], minted = [];
   return { audit, minted, db: { doc: () => ({ get: async () => ({ data: () => ({ active }) }) }), collection: () => ({ add: async value => audit.push(value) }) }, auth: { getUser: async () => ({ disabled }), createCustomToken: async (...args) => { minted.push(args); return 'custom-token'; } } };
