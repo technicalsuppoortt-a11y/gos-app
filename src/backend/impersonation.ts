@@ -5,7 +5,7 @@ import { callBackend, firebaseConfig, primaryAuth, primaryDb, primaryFunctions, 
 import { store } from '../store';
 import { loginSuccess, startImpersonation, stopImpersonation } from '../store/slices/authSlice';
 import type { Role, Tenant, User } from '../types/auth';
-import { clearPhoenixBrand } from './phoenixBrand';
+import * as phoenixBrand from './phoenixBrand';
 
 let secondaryApp: FirebaseApp | null = null;
 let switching = false;
@@ -33,6 +33,7 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
   }
 
   const adminToken = state.impersonation?.token || state.token || '';
+  const inheritedPhoenixBrand = !state.impersonation && effectiveRole === 'ADMIN' ? phoenixBrand.getPhoenixBrand?.() ?? null : null;
   switching = true;
   let app: FirebaseApp | null = null;
   let switchError: unknown;
@@ -52,7 +53,8 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
       if (secondaryApp) clearImpersonationContext();
       secondaryApp = app;
       setBackendContext(app);
-      clearPhoenixBrand();
+      if (inheritedPhoenixBrand) phoenixBrand.restorePhoenixBrand?.(inheritedPhoenixBrand);
+      else phoenixBrand.clearPhoenixBrand();
       const role = result.role ?? 'USER';
       store.dispatch(startImpersonation({ user: result.user, tenant: result.tenant, role, token }));
       return role;
@@ -88,6 +90,7 @@ export async function switchToUser(id: string, tenantId?: string, fallbackAccoun
 
     if (!store.getState().auth.isAuthenticated || store.getState().auth.user?.id !== state.user?.id) throw switchError;
     clearImpersonationContext();
+    if (inheritedPhoenixBrand) phoenixBrand.restorePhoenixBrand?.(inheritedPhoenixBrand);
     store.dispatch(
       startImpersonation({
         user: {
@@ -115,7 +118,7 @@ export function clearImpersonationContext() {
   const app = secondaryApp;
   secondaryApp = null;
   setBackendContext();
-  clearPhoenixBrand();
+  phoenixBrand.clearPhoenixBrand();
   if (app) void signOut(getAuth(app)).catch(() => {}).finally(() => deleteApp(app).catch(() => {}));
 }
 
@@ -130,6 +133,14 @@ export async function returnToAdmin(): Promise<string> {
   if (rawRole && !['SUPER_ADMIN', 'ADMIN', 'OWNER', 'PLATFORM_ADMIN'].includes(rawRole)) throw new Error('Your original account is no longer available.');
   const resolvedRole: Role = rawRole ? rawRole === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'ADMIN' : original.role;
   clearImpersonationContext();
+  if (typeof profile?.phoenixUid === 'string' && profile.phoenixUid) {
+    await phoenixBrand.loadPhoenixBrand?.(
+      adminUid,
+      profile.phoenixUid,
+      String(profile.tenantId || original.tenant?.id || ''),
+      String(profile.email || original.user.email || ''),
+    ).catch(() => {});
+  }
   store.dispatch(loginSuccess({ ...original, role: resolvedRole }));
   store.dispatch(stopImpersonation());
   return resolvedRole === 'SUPER_ADMIN' ? '/super-admin' : '/admin/dashboard';

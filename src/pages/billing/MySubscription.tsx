@@ -137,10 +137,10 @@ export function MySubscription({ audience, section, onSectionChange }: {
       {sub?.creditBlocked && <div className="bl-banner warn"><AlertTriangle size={17} /><div><b>{c.t('Monthly credits could not be issued', 'تعذر صرف الرصيد الشهري')}</b><p>{c.t('Your provider does not have enough credits right now. They have been notified via their dashboard.', 'مزود الخدمة لا يملك رصيدًا كافيًا حاليًا.')}</p></div></div>}
       {status === 'expired' && <div className="bl-banner danger"><CalendarClock size={17} /><div><b>{c.t('Your subscription has expired', 'انتهى اشتراكك')}</b><p>{c.t('Tools are locked until you renew. Unused credits have expired.', 'الأدوات مقفلة حتى التجديد. الرصيد غير المستخدم انتهى.')}</p></div><button type="button" className="bl-btn sm danger" onClick={() => setView('plans')}><RefreshCw size={13} />{c.t('Renew now', 'جدد الآن')}</button></div>}
       {!live && (
-        <div className="bl-banner warn" style={{ borderLeft: '4px solid #7C3AED', background: 'rgba(124, 58, 237, 0.08)' }}>
-          <Crown size={18} style={{ color: '#7C3AED', flexShrink: 0 }} />
+        <div className="bl-banner warn" style={{ borderInlineStart: '4px solid var(--gp-action-bg, #7C3AED)', background: 'var(--gp-soft, rgba(124, 58, 237, 0.08))' }}>
+          <Crown size={18} style={{ color: 'var(--gp-accent-text, #7C3AED)', flexShrink: 0 }} />
           <div>
-            <b style={{ color: '#7C3AED' }}>{c.t('Subscription required to access dashboard', 'يلزم الاشتراك للوصول إلى لوحة التحكم')}</b>
+            <b style={{ color: 'var(--gp-accent-text, #7C3AED)' }}>{c.t('Subscription required to access dashboard', 'يلزم الاشتراك للوصول إلى لوحة التحكم')}</b>
             <p style={{ margin: '4px 0 0 0', opacity: 0.9 }}>{c.t('Please select a plan below to complete checkout and unlock all platform tools and features.', 'يرجى اختيار باقة أدناه لإتمام الدفع وفتح جميع أدوات ومزايا المنصة.')}</p>
           </div>
           <button type="button" className="bl-btn sm primary" onClick={() => setView('plans')}><Gem size={13} />{c.t('Choose a plan', 'اختيار باقة')}</button>

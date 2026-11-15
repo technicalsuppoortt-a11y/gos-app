@@ -105,8 +105,8 @@ export function PrivacyPage() {
               technicalsuppoortt@gmail.com
             </a>
             <span>•</span>
-            <a href="https://gos-app-3c7fb.web.app/" target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors font-medium">
-              https://gos-app-3c7fb.web.app/
+            <a href="https://app.upklick.net/" target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors font-medium">
+              https://app.upklick.net/
             </a>
             <span>•</span>
             <Link to={isAuthenticated ? '/dashboard' : '/'} className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">

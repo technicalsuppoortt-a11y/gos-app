@@ -1,7 +1,7 @@
 # Launch Brand (moved from Joe Academy)
 
 Launch Brand used to live in Joe Academy (`phoenix-app`, `/launch-brand`). It now runs on
-gos-app at `https://gos-app-3c7fb.web.app/launch-brand`, with its data in gos-app's Firebase.
+gos-app at `https://app.upklick.net/launch-brand`, with its data in gos-app's Firebase.
 
 ## Why a separate folder
 Launch Brand is built with Tailwind 4 and its own app shell; gos-app uses Tailwind 3. Building it

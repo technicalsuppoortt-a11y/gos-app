@@ -135,7 +135,7 @@ async function ensureCustomer(db, auth, email, name, now, bootstrapKey) {
 
 export async function provisionCustomerPortalAccess({
   db, auth, tenantId, order, product, sourcePath, bootstrapKey,
-  origin = 'https://gos-app-3c7fb.web.app', emailNotice = true, approvedCheckoutSource = false, relatedPaymentRefs = [], catalogProductName,
+  origin = 'https://app.upklick.net', emailNotice = true, approvedCheckoutSource = false, relatedPaymentRefs = [], catalogProductName,
 }) {
   const email = buyerEmail(order);
   const customerName = String(order.customerName || order.customer?.name || '').trim() || email.split('@')[0];

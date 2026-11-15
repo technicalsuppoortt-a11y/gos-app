@@ -169,6 +169,52 @@ export function createBrandLogoSvg(
 export const logoDataUrl = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
+export function tightenBrandLogoSvg(svg: string): string {
+  if (!svg || !svg.includes('viewBox="0 0 1200 400"')) return svg;
+  if (/<image\s+href=/.test(svg)) return svg;
+  const groupMatch = svg.match(/<g\s+transform="translate\(([-\d.]+)\s+0\)">/);
+  if (!groupMatch) return svg;
+  const offset = Number(groupMatch[1]);
+  if (!Number.isFinite(offset)) return svg;
+  const markMatch = svg.match(/<g\s+data-brand-mark="true"\s+transform="translate\(170\s+200\)">([\s\S]*?)<\/g>/);
+  const hasMark = Boolean(markMatch && markMatch[1]!.trim().length > 0);
+  let left = 0, right = 1200, top = 88, bottom = 312;
+  if (hasMark) {
+    const start = svg.includes('<path d="M310 100V300"') ? 385 : 310;
+    const textEndGroup = 1200 - 74 - 2 * offset;
+    const blockWidth = Math.max(0, textEndGroup - start);
+    const glyphSafety = Math.min(36, Math.max(10, blockWidth * 0.08));
+    left = Math.max(0, Math.floor(68 + offset - 10));
+    right = Math.min(1200, Math.ceil(textEndGroup + offset + glyphSafety + 10));
+  } else {
+    const textTag = svg.match(/<text\s+([^>]+)>/);
+    const xAttr = Number(textTag?.[1]?.match(/\bx="([-\d.]+)"/)?.[1]);
+    const sizeAttr = Number(textTag?.[1]?.match(/\bfont-size="([\d.]+)"/)?.[1] || 64);
+    const isRtlText = Boolean(textTag?.[1]?.includes('direction="rtl"'));
+    if (Number.isFinite(xAttr)) {
+      const halfWidth = Math.max(24, Math.abs(xAttr - 600));
+      const glyphSafety = Math.min(40, Math.max(12, halfWidth * 0.16));
+      left = Math.max(0, Math.floor(isRtlText ? 600 - halfWidth - glyphSafety : 600 - halfWidth - 12));
+      right = Math.min(1200, Math.ceil(isRtlText ? 600 + halfWidth + 12 : 600 + halfWidth + glyphSafety));
+    }
+    const textCount = (svg.match(/<text\b/g) || []).length;
+    if (textCount > 1) {
+      top = 116;
+      bottom = 278;
+    } else {
+      const halfHeight = Math.max(42, Math.ceil(sizeAttr * 0.68));
+      top = Math.max(0, 200 - halfHeight);
+      bottom = Math.min(400, 200 + halfHeight);
+    }
+  }
+  const width = Math.max(40, right - left);
+  const height = Math.max(40, bottom - top);
+  return svg
+    .replace(/\bwidth="1200"/, `width="${width}"`)
+    .replace(/\bheight="400"/, `height="${height}"`)
+    .replace('viewBox="0 0 1200 400"', `viewBox="${left} ${top} ${width} ${height}"`);
+}
+
 // Compact gallery presentation uses the same artwork as the horizontal export.
 export function createBrandLogoCardSvg(identity: BrandIdentity, primary: string) {
   const full = createBrandLogoSvg(identity, primary);

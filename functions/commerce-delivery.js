@@ -11,7 +11,7 @@ import { chargeEmail, refundRejectedEmail } from './email-metering.js';
 import { BillingError } from './billing-engine.js';
 const resendKey = defineSecret('RESEND_API_KEY');
 const portalSender = defineString('COMMERCE_PORTAL_FROM', { default: '' });
-const origin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
+const origin = defineString('APP_ORIGIN', { default: 'https://app.upklick.net' });
 export function calendarAttachment(booking, title, id) {
   const start = new Date(booking.start), end = new Date(start.getTime() + Number(booking.duration || 60) * 60000);
   if (!Number.isFinite(start.getTime())) throw new Error('Invalid booking start time.');

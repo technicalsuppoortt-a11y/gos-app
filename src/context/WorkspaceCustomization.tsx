@@ -5,7 +5,7 @@ import {
   inheritWorkspacePreferences,
   isDefaultBrandLogo,
   preferenceDefaults,
-   sanitizeWorkspacePreferences,
+  sanitizeWorkspacePreferences,
   savePersonalPreferences,
   saveWorkspacePreferences,
   useWorkspacePreferenceState,
@@ -27,7 +27,7 @@ const { currency: _currency, ...inheritAppearance } = inheritWorkspacePreference
 
 export function WorkspaceCustomization({ children, publicPage }: { children: ReactNode; publicPage?: boolean }) {
   const state = useWorkspacePreferenceState();
-  const { uid, tenantId, canPublish, publicSync } = state;
+  const { uid, tenantId, canPublish, hasSavedWorkspace, publicSync } = state;
   const scope = publicPage ? 'public' : state.scope;
   const values = publicPage ? state.publicValues : state.values;
   const personal = publicPage ? {} : state.personal;
@@ -42,10 +42,10 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const previewValues = draft?.scope === scope ? draft.patch : null;
   // Launch Brand's live preview always shows the brand being designed.
   const launchBrandPreview = isLaunchBrandPreview() && !!phoenix;
-  const usePhoenixDefaults = launchBrandPreview || (!publicPage && uid && !values && phoenix);
-  // Platform publishers copy their effective settings to the public site, so only
-  // workspace owners get the deployed brand merged in.
-  const phoenixFill = !publicPage && !launchBrandPreview && !canPublish && uid && phoenix ? phoenix : null;
+  const usePhoenixDefaults = launchBrandPreview || (!publicPage && Boolean(uid) && !hasSavedWorkspace && Boolean(phoenix));
+  // Deployed Launch Brand owners (both Admin and linked Agency User) get their
+  // deployed brand merged into default appearance slots without touching the global site.
+  const phoenixFill = !publicPage && !launchBrandPreview && uid && phoenix ? phoenix : null;
   const workspace = usePhoenixDefaults && phoenix ? {
     ...preferenceDefaults,
     name: phoenix.brand.name,
@@ -122,7 +122,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
 
   const adminSyncedRef = useRef('');
   useEffect(() => {
-    if (publicPage || !canPublish || !tenantId || state.loading || previewValues) return;
+    if (publicPage || !canPublish || phoenix || !tenantId || state.loading || previewValues) return;
     const desired = sanitizeWorkspacePreferences({ ...effective, currency: workspace.currency });
     const currentPublic = state.publicValues ? sanitizeWorkspacePreferences(state.publicValues) : null;
     const desiredKey = JSON.stringify({
@@ -147,9 +147,9 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       : '';
     if (desiredKey !== publicKey && adminSyncedRef.current !== desiredKey) {
       adminSyncedRef.current = desiredKey;
-      void saveWorkspacePreferences(tenantId, desired, true, inheritAppearance).catch(() => {});
+      void saveWorkspacePreferences(tenantId, desired, true, inheritAppearance, true).catch(() => {});
     }
-  }, [publicPage, canPublish, tenantId, state.loading, state.publicValues, effective, previewValues]);
+  }, [publicPage, canPublish, phoenix, tenantId, state.loading, state.publicValues, effective, workspace.currency, previewValues]);
 
   const setPreference = uid && !publicPage ? (patch: PersonalPreferences) => {
     setLastTopbarChange({ scope, patch });
@@ -173,7 +173,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
         mode: nextWorkspace.mode,
         timezone: nextWorkspace.timezone,
       });
-      void saveWorkspacePreferences(tenantId, nextWorkspace, true, inheritAppearance).catch(error =>
+      void saveWorkspacePreferences(tenantId, nextWorkspace, true, inheritAppearance, !phoenix).catch(error =>
         showToast.error(backendError(error))
       );
       return;
@@ -186,7 +186,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       topbarChange: lastTopbarChange?.scope === scope ? lastTopbarChange.patch : undefined,
       themePreview: previewValues?.theme ? previewValues : null,
       // The default palette with a deployed brand means "use the brand's colors".
-      hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && values && !(phoenixFill?.brand.theme && values.theme === 'violet'))),
+      hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && hasSavedWorkspace && values && !(phoenixFill?.brand.theme && values.theme === 'violet'))),
     }}>
       <CurrencyProvider currency={isCurrencyCode(currency) ? currency : 'USD'} language={language} enabled={!!uid && !publicPage}>
         {children}

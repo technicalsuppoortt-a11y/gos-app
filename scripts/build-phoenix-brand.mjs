@@ -23,6 +23,51 @@ const output = [];
 const scopedOutput = [];
 const scopeRoot = 'html[data-gp-brand="true"]';
 const dashboardLimit = excluded.slice(':where('.length, -1).split(',').concat(['[data-form-theme]', '[data-public-asset]']).join(', ');
+
+function shouldMapWhiteForegroundToOnAction(rule) {
+  let hasActionBackground = false;
+  rule.walkDecls(decl => {
+    if (/^background(?:-color|-image)?$/.test(decl.prop)) {
+      const converted = themeColorValue(decl.value, decl.prop);
+      if (converted.includes('--gp-action-bg') || converted.includes('--gp-primary')) {
+        hasActionBackground = true;
+      }
+    }
+  });
+  if (hasActionBackground) return true;
+  const selector = rule.selector || '';
+  if (/\.dark\b/.test(selector) && !/(?:\.(?:is-active|active|primary|solid)\b|\[aria-(?:selected|pressed)=["']?true|cta|launcher)/i.test(selector)) {
+    return false;
+  }
+  return /(?:\.(?:is-active|active|primary|solid)\b|\[aria-(?:selected|pressed)=["']?true|\.layout-plan-cta|\.support-launcher|\.ws-switcher-avatar|\.bl-head-icon|\.adm-primary|\.st-primary)/i.test(selector);
+}
+
+function transformRuleDeclarations(rule) {
+  const preserveWhiteAsOnAction = shouldMapWhiteForegroundToOnAction(rule);
+  rule.walkDecls(declaration => {
+    if (!/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow|--[\w-]+)$/.test(declaration.prop)) {
+      declaration.remove();
+      return;
+    }
+    const rawTrimmed = declaration.value.trim();
+    if (
+      preserveWhiteAsOnAction &&
+      declaration.prop === 'color' &&
+      /^(?:#fff(?:fff)?|white)(?:\s*!important)?$/i.test(rawTrimmed)
+    ) {
+      declaration.value = 'var(--gp-on-action, #ffffff)';
+      declaration.important = true;
+      return;
+    }
+    const themed = themeColorValue(declaration.value, declaration.prop);
+    if (themed === declaration.value) declaration.remove();
+    else {
+      declaration.value = themed;
+      declaration.important = true;
+    }
+  });
+}
+
 for (const file of files.sort()) {
   const input = await fs.readFile(file, 'utf8');
   const landing = file === path.join('src', 'pages', 'landing', 'landing.css');
@@ -35,24 +80,14 @@ for (const file of files.sort()) {
   const scopedPrefix = landing ? ':scope:is(html)' : ':scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand]';
   scopedRoot.walkRules(rule => {
     if (rule.selector.includes('data-gp-')) { rule.remove(); return; }
-    rule.walkDecls(declaration => {
-      if (!/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow|--[\w-]+)$/.test(declaration.prop)) { declaration.remove(); return; }
-      const themed = themeColorValue(declaration.value, declaration.prop);
-      if (themed === declaration.value) declaration.remove();
-      else { declaration.value = themed; declaration.important = true; }
-    });
+    transformRuleDeclarations(rule);
     if (!rule.nodes.length) { rule.remove(); return; }
     rule.selectors = rule.selectors.map(selector => /^(?:html|:root)(?=[\s.:[#]|$)/.test(selector) ? selector.replace(/^(html|:root)/, scopedPrefix)
       : selector.startsWith('.dark ') ? `${scopedPrefix}.dark ${selector.slice(6)}` : `${scopedPrefix} ${selector}`);
   });
   root.walkRules(rule => {
     if (rule.selector.includes('data-gp-')) { rule.remove(); return; }
-    rule.walkDecls(declaration => {
-      if (!/^(?:color|background(?:-color)?|border(?:-[\w-]+)?|outline(?:-color)?|fill|stroke|stop-color|box-shadow|--[\w-]+)$/.test(declaration.prop)) { declaration.remove(); return; }
-      const themed = themeColorValue(declaration.value, declaration.prop);
-      if (themed === declaration.value) declaration.remove();
-      else { declaration.value = themed; declaration.important = true; }
-    });
+    transformRuleDeclarations(rule);
     if (!rule.nodes.length) { rule.remove(); return; }
     rule.selectors = rule.selectors.map(selector => {
       const scope = 'html[data-gp-brand="true"]';
@@ -122,4 +157,3 @@ async function writeSafely(target, data, maxRetries = 5) {
 await writeSafely(targetFile, newContent);
 await writeSafely(path.join('src', 'context', 'phoenix-brand-scoped.css'), `/* Generated from Upclick styles with Phoenix color roles (CSS @scope version). */\n${scopedOutput.join('\n')}`);
 console.log(`Generated Phoenix brand colors for ${files.length} stylesheets.`);
-

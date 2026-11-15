@@ -653,7 +653,7 @@ export async function domainProviderRequest(request, { actor, db, fetcher = fetc
         throw new HttpsError('invalid-argument', 'Order total is below minimum card charge ($0.50).');
       }
 
-      const originHeader = request.rawRequest?.headers?.origin || data.origin || process.env.APP_ORIGIN || 'https://gos-app-3c7fb.web.app';
+      const originHeader = request.rawRequest?.headers?.origin || data.origin || process.env.APP_ORIGIN || 'https://app.upklick.net';
       const origin = String(originHeader).replace(/\/+$/, '');
       const returnPath = typeof data.returnPath === 'string' && data.returnPath.startsWith('/')
         ? data.returnPath

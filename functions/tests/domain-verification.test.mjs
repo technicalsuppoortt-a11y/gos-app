@@ -15,6 +15,7 @@ test('isPlatformHostname properly filters reserved platform domains', () => {
   assert.equal(isPlatformHostname('127.0.0.1'), true);
   assert.equal(isPlatformHostname('app.vercel.app'), true);
   assert.equal(isPlatformHostname('gos-app-3c7fb.web.app'), true);
+  assert.equal(isPlatformHostname('app.upklick.net'), true);
   assert.equal(isPlatformHostname('upklick.net'), true);
   assert.equal(isPlatformHostname('www.upklick.com'), true);
   assert.equal(isPlatformHostname('talk.com'), false);

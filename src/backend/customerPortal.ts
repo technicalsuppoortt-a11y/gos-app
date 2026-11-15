@@ -493,7 +493,7 @@ export async function provisionOrUpdateCustomerPortalCredentials(options: {
 }): Promise<{ ok: boolean; passwordUpdated?: boolean; resetSent?: boolean; loginUrl: string }> {
   const { record, password, sendResetEmail } = options;
   const cleanEmail = String(record.customerEmail || '').trim().toLowerCase();
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gos-app-3c7fb.web.app';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.upklick.net';
   const portalPath = `/portal/${encodeURIComponent(record.purchaseId)}`;
   const loginUrl = `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(portalPath)}`;
 

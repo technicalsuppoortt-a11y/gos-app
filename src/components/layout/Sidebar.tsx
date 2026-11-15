@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
   const { effective: workspaceBrand, hasWorkspaceTheme } = useWorkspacePreferences();
   const savedBrand = hasWorkspaceTheme ? null : phoenixConfig;
   const previewBrandName = isLaunchBrandPreview() ? phoenixConfig?.brand.name.trim() : undefined;
-  const brandName = previewBrandName || (hasWorkspaceTheme ? workspaceBrand.name : phoenixBrand?.name) || 'Upclick';
+  const brandName = previewBrandName || (hasWorkspaceTheme ? workspaceBrand.name : (phoenixConfig?.brand.name.trim() || phoenixBrand?.name || (workspaceBrand.name !== 'Upclick' ? workspaceBrand.name : undefined))) || 'Upclick';
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);

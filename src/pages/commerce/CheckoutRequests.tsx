@@ -230,7 +230,7 @@ function RequestsView({ tenantId }: { tenantId: string }) {
 
         const cleanEmail = String(row.customerEmail || '').trim().toLowerCase();
         const purchaseId = `${tenantId}_${resolvedProductId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gos-app-3c7fb.web.app';
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.upklick.net';
         const portalPath = `/portal/${encodeURIComponent(purchaseId)}`;
         const nowIso = new Date().toISOString();
 

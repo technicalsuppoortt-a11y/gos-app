@@ -40,7 +40,7 @@ export function TermsOfServicePage() {
   const isAuthenticated = !!auth.token || !!auth.user;
   const appName = import.meta.env.VITE_APP_NAME || "Upclick Platform";
   const supportEmail = "technicalsuppoortt@gmail.com";
-  const appUrl = "https://gos-app-3c7fb.web.app/";
+  const appUrl = "https://app.upklick.net/";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSection, setActiveSection] = useState("section-1");

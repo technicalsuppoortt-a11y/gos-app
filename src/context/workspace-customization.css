@@ -754,7 +754,8 @@ html[data-workspace-theme] :is(
   border-color: var(--ws-border-subtle) !important;
 }
 
-.workspace-logo { display:block; width:auto; max-width:160px; height:48px; object-fit:contain; }
+.workspace-logo { display:block; width:auto; max-width:168px; height:38px; object-fit:contain; object-position:left center; }
+[dir="rtl"] .workspace-logo { object-position:right center; }
 .layout-sidebar-content.is-collapsed .workspace-logo { max-width:36px; height:36px; margin-inline:auto; }
 .adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; margin-inline:auto; }
 .adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; }

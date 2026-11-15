@@ -10,7 +10,7 @@ export function brandVariableRole(property: string): string | undefined {
   if (/(?:^|-)(?:ink|text)$/.test(property)) return "text";
   if (/(?:^|-)(?:accent|brand|primary|purple|purple-dark|violet|indigo)$/.test(property)) return "primary";
   if (/(?:^|-)green$/.test(property)) return "success";
-  if (/(?:^|-)soft$/.test(property)) return "soft";
+  if (!/success|warn|danger|error|green|red|amber/i.test(property) && /(?:^|-)soft$/.test(property)) return "soft";
   return undefined;
 }
 
@@ -38,16 +38,30 @@ function themedColor(color: string, property: string): string {
   let replacement: string | undefined;
   // Violet is the captured dashboard's brand accent, including chart artwork.
   // Channel identities and success/warning/error colors retain their meaning.
-  if (hue >= 235 && hue <= 290 && saturation > .2 && max > .2) {
-    replacement = saturation < .35
-      ? `color-mix(in srgb, var(--gp-primary) ${Math.round(saturation * 100)}%, var(--gp-surface))`
-      : `var(--gp-primary, ${color})`;
+  if (hue >= 235 && hue <= 290 && saturation >= .35 && max > .25) {
+    if (/^(?:color|fill|stroke|stop-color)$/.test(property)) {
+      replacement = `var(--gp-accent-text, var(--gp-primary, ${color}))`;
+    } else if (/background|gradient/.test(property)) {
+      replacement = max > .88
+        ? `var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface)))`
+        : `var(--gp-action-bg, var(--gp-primary, ${color}))`;
+    } else {
+      replacement = `var(--gp-primary, ${color})`;
+    }
   } else if (saturation < .35 || max < .3) {
-    if (/border|outline/.test(property)) replacement = `var(--gp-border, ${color})`;
-    else if (/background|gradient/.test(property)) replacement = max > .98 || max < .3
-      ? `var(--gp-surface, ${color})` : `var(--gp-background, ${color})`;
-    else if (/^(?:color|fill|stroke|stop-color)$/.test(property) && max < .92) replacement = max < .5
-      ? `var(--gp-text, ${color})` : `var(--gp-muted-text, ${color})`;
+    if (/border|outline/.test(property)) {
+      replacement = `var(--gp-border, ${color})`;
+    } else if (/background|gradient/.test(property)) {
+      replacement = hue >= 235 && hue <= 290 && saturation > .08 && max > .84
+        ? `var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface)))`
+        : (max > .98 || max < .3 ? `var(--gp-surface, ${color})` : `var(--gp-background, ${color})`);
+    } else if (/^(?:color|fill|stroke|stop-color)$/.test(property)) {
+      if (hue >= 235 && hue <= 290 && saturation >= .14 && max >= .72) {
+        replacement = `var(--gp-accent-text, var(--gp-primary, ${color}))`;
+      } else if (max < .92) {
+        replacement = max < .52 ? `var(--gp-text, ${color})` : `var(--gp-muted-text, ${color})`;
+      }
+    }
   }
   if (!replacement) return color;
   const variableAlpha = color.match(/\/\s*(var\(--[\w-]+(?:,\s*[\d.]+)?\))\s*\)$/)?.[1];
@@ -60,7 +74,7 @@ export function themeColorValue(value: string, property: string): string {
   if (/url\(/i.test(value) || value.includes('var(--gp-') || property.startsWith("--gp-")) return value;
   const role = brandVariableRole(property);
   if (role) return role === "soft"
-    ? "color-mix(in srgb, var(--gp-primary) 8%, var(--gp-surface))"
+    ? "var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface)))"
     : `var(--gp-${role}, ${value})`;
   return value.replace(/#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{4}|[\da-f]{3})\b|rgba?\([\d\s.,%/]+(?:var\(--[\w-]+(?:,\s*[\d.]+)?\)\s*)?\)|(?<![\w-])(?:white|black)\b/gi,
     (color) => themedColor(color, property));

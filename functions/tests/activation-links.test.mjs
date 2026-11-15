@@ -4,9 +4,9 @@ import { buildActivationLink } from '../activation-links.js';
 
 test('invite links open the React handler with every Firebase action parameter intact', () => {
   const original = new URL('https://gos-app-3c7fb.firebaseapp.com/__/auth/action');
-  for (const [key, value] of Object.entries({ mode: 'resetPassword', oobCode: 'test-code+A/b==', apiKey: 'public-project-key', lang: 'ar', continueUrl: 'https://gos-app-3c7fb.web.app/dashboard?tab=home' })) original.searchParams.set(key, value);
-  const result = new URL(buildActivationLink(original.toString(), 'https://gos-app-3c7fb.web.app'));
-  assert.equal(result.origin, 'https://gos-app-3c7fb.web.app');
+  for (const [key, value] of Object.entries({ mode: 'resetPassword', oobCode: 'test-code+A/b==', apiKey: 'public-project-key', lang: 'ar', continueUrl: 'https://app.upklick.net/dashboard?tab=home' })) original.searchParams.set(key, value);
+  const result = new URL(buildActivationLink(original.toString(), 'https://app.upklick.net'));
+  assert.equal(result.origin, 'https://app.upklick.net');
   assert.equal(result.pathname, '/onboarding/activate-account');
   assert.deepEqual([...result.searchParams], [...original.searchParams]);
 });

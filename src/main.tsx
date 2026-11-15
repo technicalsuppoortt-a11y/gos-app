@@ -21,8 +21,8 @@ function retainPlatformPreloader() {
     splash.remove();
   };
   const observer = new MutationObserver(() => {
-    const handoffRoute = location.pathname === '/auth/phoenix' || location.pathname === '/dashboard';
-    if (!handoffRoute || root.querySelector('.gos-home-dashboard, [data-platform-entry-error], .route-error-panel')) dismiss();
+    const handoffRoute = location.pathname === '/auth/phoenix' || location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
+    if (!handoffRoute || root.querySelector('.gos-home-dashboard, .adm-shell, [data-platform-entry-error], .route-error-panel')) dismiss();
   });
   observer.observe(root, { childList: true, subtree: true });
   const timeout = window.setTimeout(() => {

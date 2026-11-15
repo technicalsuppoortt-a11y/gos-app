@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 103,
-  "correctedDeclarations": 872,
+  "correctedDeclarations": 865,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -1391,22 +1391,6 @@
       "before": "#94a3b8",
       "after": "#475569",
       "contrastOnWhite": 2.56
-    },
-    {
-      "file": "src/components/layout/sidebar-settings.css",
-      "line": 8,
-      "selector": ".layout-settings-link",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/components/layout/sidebar-settings.css",
-      "line": 15,
-      "selector": ".module-access-message p",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
     },
     {
       "file": "src/components/layout/super-admin.css",
@@ -7604,46 +7588,6 @@
       "file": "src/pages/settings/settings.css",
       "line": 6,
       "selector": ".st-badge.neutral",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/settings/settings.css",
-      "line": 9,
-      "selector": ".st-account-list dt svg",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/settings/settings.css",
-      "line": 10,
-      "selector": ".st-demo-note",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/settings/settings.css",
-      "line": 13,
-      "selector": ".st-category-tabs button",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/settings/settings.css",
-      "line": 13,
-      "selector": ".st-search",
-      "before": "#EDE9FE",
-      "after": "#334155",
-      "contrastOnWhite": 1.19
-    },
-    {
-      "file": "src/pages/settings/settings.css",
-      "line": 13,
-      "selector": ".st-scope-list li",
       "before": "#EDE9FE",
       "after": "#334155",
       "contrastOnWhite": 1.19

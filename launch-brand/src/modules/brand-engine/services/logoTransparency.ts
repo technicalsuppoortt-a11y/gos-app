@@ -26,6 +26,37 @@ export function removeLogoWhiteMatte(pixels: Uint8ClampedArray, width: number, h
   return changed;
 }
 
+export function findLogoContentBounds(pixels: Uint8ClampedArray, width: number, height: number, alphaThreshold = 8) {
+  if (pixels.length !== width * height * 4 || width < 1 || height < 1) throw new Error('Invalid logo pixels.');
+  let minX = width, minY = height, maxX = -1, maxY = -1;
+  for (let y = 0; y < height; y++) {
+    const row = y * width;
+    for (let x = 0; x < width; x++) {
+      if (pixels[(row + x) * 4 + 3]! > alphaThreshold) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < minX || maxY < minY) return { x: 0, y: 0, width, height, cropped: false };
+  const pad = 2;
+  const x = Math.max(0, minX - pad);
+  const y = Math.max(0, minY - pad);
+  const right = Math.min(width - 1, maxX + pad);
+  const bottom = Math.min(height - 1, maxY + pad);
+  const cropWidth = right - x + 1;
+  const cropHeight = bottom - y + 1;
+  return {
+    x,
+    y,
+    width: cropWidth,
+    height: cropHeight,
+    cropped: x > 0 || y > 0 || cropWidth < width || cropHeight < height,
+  };
+}
+
 export async function transparentLogoPng(dataUrl: string): Promise<string> {
   const image = new Image();
   image.src = dataUrl;
@@ -39,7 +70,15 @@ export async function transparentLogoPng(dataUrl: string): Promise<string> {
   context.drawImage(image, 0, 0);
   const pixels = context.getImageData(0, 0, width, height);
   const changed = removeLogoWhiteMatte(pixels.data, width, height);
-  if (!changed && dataUrl.startsWith('data:image/png;')) return dataUrl;
+  const bounds = findLogoContentBounds(pixels.data, width, height);
+  if (!changed && !bounds.cropped && dataUrl.startsWith('data:image/png;')) return dataUrl;
   context.putImageData(pixels, 0, 0);
-  return canvas.toDataURL('image/png');
+  if (!bounds.cropped) return canvas.toDataURL('image/png');
+  const croppedCanvas = document.createElement('canvas');
+  croppedCanvas.width = bounds.width;
+  croppedCanvas.height = bounds.height;
+  const croppedContext = croppedCanvas.getContext('2d');
+  if (!croppedContext) return canvas.toDataURL('image/png');
+  croppedContext.drawImage(canvas, bounds.x, bounds.y, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+  return croppedCanvas.toDataURL('image/png');
 }

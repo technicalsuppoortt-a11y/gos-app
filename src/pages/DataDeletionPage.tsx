@@ -51,7 +51,7 @@ export function DataDeletionPage() {
   const isAuthenticated = !!auth.token || !!auth.user;
   const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
   const supportEmail = 'technicalsuppoortt@gmail.com';
-  const appUrl = 'https://gos-app-3c7fb.web.app/';
+  const appUrl = 'https://app.upklick.net/';
 
   // Tab: 'request' | 'meta-steps' | 'status'
   const [activeTab, setActiveTab] = useState<'request' | 'meta-steps' | 'status'>('request');

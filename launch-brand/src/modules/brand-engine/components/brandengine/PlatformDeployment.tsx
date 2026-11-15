@@ -235,7 +235,7 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
   const hasPreview = Boolean(readySaas) || brand.builderBlocks.some((block) => block.visible);
   const workspaceBrandName = brand.brandName.trim() || brand.selectedBrandIdentity.name;
   const workspaceDescription = brand.brandDescription.trim() || brand.businessDescription.trim();
-  const platformUrl = "https://gos-app-3c7fb.web.app/dashboard";
+  const platformUrl = "https://app.upklick.net/dashboard";
   const workspaceIdentity = {
     ...brand.selectedBrandIdentity,
     name: workspaceBrandName,

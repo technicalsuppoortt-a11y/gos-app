@@ -35,7 +35,11 @@ mock.module('firebase-admin/firestore', { namedExports: { getFirestore: () => fi
   const milliseconds = serverTime;
   return { toMillis: () => milliseconds };
 } } } });
-mock.module('firebase-functions/v2/https', { namedExports: { onRequest: (options, handler) => { assert(options.cors.includes('http://localhost:5173')); return handler; } } });
+mock.module('firebase-functions/v2/https', { namedExports: { onRequest: (options, handler) => {
+  assert(options.cors.includes('http://localhost:5173'));
+  assert(options.cors.includes('https://app.upklick.net'));
+  return handler;
+} } });
 const { phoenixPlatform } = await import('../phoenix.js');
 const encode = value => value === null ? { nullValue: null } : typeof value === 'string' ? { stringValue: value } : typeof value === 'boolean' ? { booleanValue: value } : typeof value === 'number' ? { integerValue: String(value) } : Array.isArray(value) ? { arrayValue: { values: value.map(encode) } } : { mapValue: { fields: Object.fromEntries(Object.entries(value).map(([key, value]) => [key, encode(value)])) } };
 globalThis.fetch = async (url, options) => {
@@ -72,13 +76,44 @@ test('invalid Firebase identity is rejected before any write', async () => {
   reset(); validToken = false;
   assert.equal((await request()).statusCode, 401); assert.equal(documents.size, 0);
 });
-test('deploy copies all pages and assets and repeat deployment reuses the same account', async () => {
+test('deploy provisions ADMIN plus linked default agency user and repeat deployment reuses both accounts', async () => {
   reset();
   assert.equal((await request()).statusCode, 200);
   assert.equal(documents.get('users/phoenix_owner/brandEngine/current').brand.name, 'Owner Brand');
   for (const id of PAGE_IDS) assert(documents.has(`users/phoenix_owner/brandEngineSnapshots/revision-1/pages/${id}`));
   assert(documents.has('users/phoenix_owner/brandEngineSnapshots/revision-1/assets/logo-1'));
-  assert.equal((await request()).statusCode, 200); assert.equal(created, 1); assert.equal(signCount, 0);
+
+  const adminProfile = documents.get('users/phoenix_owner');
+  assert.equal(adminProfile.role, 'ADMIN');
+  assert.equal(adminProfile.status, 'Active');
+  assert.equal(adminProfile.defaultAgencyUserId, 'agency-phoenix_owner');
+  assert.deepEqual(accounts.get('phoenix_owner').customClaims, { role: 'ADMIN', phoenixUid: 'owner', tenantId: 'phoenix_owner' });
+  assert(documents.has('billingWallets/phoenix_owner'));
+  assert(documents.has('communicationWallets/phoenix_owner'));
+  assert.equal(documents.get('dashboardBrands/phoenix_owner').values.name, 'Owner Brand');
+
+  const agencyProfile = documents.get('users/agency-phoenix_owner');
+  assert.equal(agencyProfile.role, 'USER');
+  assert.equal(agencyProfile.status, 'Active');
+  assert.equal(agencyProfile.accountType, 'agency');
+  assert.equal(agencyProfile.defaultAgencyFor, 'phoenix_owner');
+  assert.equal(agencyProfile.createdBy, 'phoenix_owner');
+  assert.equal(agencyProfile.supportParentId, 'phoenix_owner');
+  assert.equal(agencyProfile.billingOwnerId, 'phoenix_owner');
+  assert.equal(agencyProfile.tenantId, 'workspace-agency-phoenix_owner');
+  assert.deepEqual(accounts.get('agency-phoenix_owner').customClaims, {
+    role: 'USER',
+    tenantId: 'workspace-agency-phoenix_owner',
+    accountType: 'agency',
+    phoenixUid: 'owner',
+  });
+  assert.equal(documents.get('tenants/workspace-agency-phoenix_owner').accountType, 'agency');
+  assert.equal(documents.get('tenants/workspace-agency-phoenix_owner').billingOwnerId, 'phoenix_owner');
+  assert.equal(documents.get('tenants/workspace-agency-phoenix_owner/members/agency-phoenix_owner').active, true);
+
+  assert.equal((await request()).statusCode, 200);
+  assert.equal(created, 2);
+  assert.equal(signCount, 0);
 });
 test('opening a deployed platform uses saved Gose data and signs only for the linked owner', async () => {
   reset(); await request(); source.clear();
@@ -93,7 +128,7 @@ test('Phoenix opens the platform only after a successful GOS sign-in following d
   await request();
   assert.deepEqual((await request('platform-status')).body, { deployed: true, ready: false });
   assert.deepEqual((await request('launch-brand-ticket', { redirectToPlatform: true })).body,
-    { url: 'https://gos-app-3c7fb.web.app/dashboard' });
+    { url: 'https://app.upklick.net/dashboard' });
   const account = accounts.get('phoenix_owner');
   account.metadata = { lastSignInTime: new Date(serverTime - 1000).toUTCString() };
   assert.deepEqual((await request('platform-status')).body, { deployed: true, ready: false });
@@ -135,7 +170,7 @@ test('linked login refreshes saved brand changes and retains hidden published sc
   assert(documents.has('users/phoenix_owner/brandEngineSnapshots/revision-2/assets/logo-2'));
   assert.equal(documents.get('users/phoenix_owner/brandEngineSnapshots/revision-2/pages/vision_journey').inheritedFromRevision, 'revision-1');
   assert.equal(documents.get('users/phoenix_owner/brandEngineSnapshots/revision-1/pages/branding').parameters.brandName, 'Owner Brand');
-  assert.equal(created, 1);
+  assert.equal(created, 2);
 });
 
 test('a failed or mixed-revision saved refresh keeps the previous published pointer', async () => {
@@ -149,23 +184,27 @@ test('a failed or mixed-revision saved refresh keeps the previous published poin
   assert.equal(signCount, 0);
 });
 
-test('opening repairs legacy profiles and provisions an active owner workspace', async () => {
+test('opening upgrades legacy USER profiles to ADMIN and provisions an active owner workspace plus agency user', async () => {
   reset(); await request(); source.clear();
-  documents.set('users/phoenix_owner', { displayName: 'Owner', phoenixUid: 'owner' });
+  documents.set('users/phoenix_owner', { displayName: 'Owner', phoenixUid: 'owner', role: 'USER' });
   documents.delete('tenants/phoenix_owner/members/phoenix_owner');
+  documents.delete('users/agency-phoenix_owner');
   const result = await request('open');
   assert.equal(result.statusCode, 200);
   assert.equal(documents.get('users/phoenix_owner').status, 'Active');
-  assert.equal(documents.get('users/phoenix_owner').role, 'USER');
+  assert.equal(documents.get('users/phoenix_owner').role, 'ADMIN');
+  assert.equal(documents.get('users/phoenix_owner').defaultAgencyUserId, 'agency-phoenix_owner');
   assert.equal(documents.get('users/phoenix_owner').tenantId, 'phoenix_owner');
   assert.deepEqual(documents.get('tenants/phoenix_owner/members/phoenix_owner').permissions, ['*']);
+  assert.equal(documents.get('users/agency-phoenix_owner').accountType, 'agency');
+  assert.equal(documents.get('users/agency-phoenix_owner').defaultAgencyFor, 'phoenix_owner');
 });
 
-test('direct Phoenix login syncs the verified source password and persistent owner claims', async () => {
+test('direct Phoenix login syncs the verified source password and persistent ADMIN owner claims', async () => {
   reset();
   assert.equal((await request('login', { password: 'source-test-password' })).statusCode, 200);
   assert.equal(syncedPasswords, 1);
-  assert.deepEqual(accounts.get('phoenix_owner').customClaims, { phoenixUid: 'owner', tenantId: 'phoenix_owner' });
+  assert.deepEqual(accounts.get('phoenix_owner').customClaims, { role: 'ADMIN', phoenixUid: 'owner', tenantId: 'phoenix_owner' });
 });
 
 test('password sync rejects a wrong password and a source identity mismatch before writing', async () => {
@@ -197,6 +236,8 @@ test('an unverified email cannot claim an existing Gose account', async () => {
   assert.equal((await request()).statusCode, 409); assert.equal(documents.size, 0); assert.equal(signCount, 0);
   verified = true; assert.equal((await request()).statusCode, 200);
   assert.equal(documents.get('phoenixAccounts/owner').gosUid, 'existing-owner');
+  assert.equal(documents.get('users/existing-owner').role, 'ADMIN');
+  assert.equal(documents.get('users/agency-existing-owner').defaultAgencyFor, 'existing-owner');
 });
 test('disabled accounts cannot receive login tokens', async () => {
   reset(); await request(); disabled = true;
@@ -207,9 +248,10 @@ test('failed asset or page writes cannot publish readiness, and retry reuses the
   assert.equal((await request()).statusCode, 409);
   assert(!documents.has('users/phoenix_owner/brandEngine/current'));
   assert(!documents.has('phoenixAccounts/owner'));
+  assert.equal(created, 1);
   failWrite = false;
   assert.equal((await request()).statusCode, 200);
-  assert.equal(created, 1);
+  assert.equal(created, 2);
 });
 test('page revision validation rejects mixed snapshots', () => {
   const pages = PAGE_IDS.map(pageId => ({ pageId, revision: 'current', schemaVersion: 1, parameters: {} }));

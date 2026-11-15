@@ -133,7 +133,7 @@ export async function savePersonalPreferences(uid: string, patch: PersonalPrefer
   await setDoc(personalPreferencesRef(uid), patch, { merge: true });
 }
 
-export async function saveWorkspacePreferences(tenantId: string, values: WorkspacePreferences, publishPlatform: boolean, personalPatch: PersonalPreferences) {
+export async function saveWorkspacePreferences(tenantId: string, values: WorkspacePreferences, publishPlatform: boolean, personalPatch: PersonalPreferences, publishPublicSite = publishPlatform) {
   const uid = auth.currentUser?.uid;
   if (!uid || !tenantId) throw new Error('Sign in to change workspace settings.');
   const batch = writeBatch(db);
@@ -142,11 +142,13 @@ export async function saveWorkspacePreferences(tenantId: string, values: Workspa
   if (publishPlatform) {
     // Preserve the existing projection for linked client workspaces.
     batch.set(doc(db, 'dashboardBrands', uid), record);
-    const { name, logoUrl, theme, language, currency, mode, timezone } = values;
-    const stampedLogoUrl = `${logoUrl.split('#')[0]}#rev=${Date.now()}`;
-    batch.set(doc(db, 'settings', 'publicAppearance'), {
-      values: { name, logoUrl: stampedLogoUrl, theme, language, currency, mode, timezone },
-    });
+    if (publishPublicSite && !tenantId.startsWith('phoenix_')) {
+      const { name, logoUrl, theme, language, currency, mode, timezone } = values;
+      const stampedLogoUrl = `${logoUrl.split('#')[0]}#rev=${Date.now()}`;
+      batch.set(doc(db, 'settings', 'publicAppearance'), {
+        values: { name, logoUrl: stampedLogoUrl, theme, language, currency, mode, timezone },
+      });
+    }
   }
   await batch.commit();
   if (Object.keys(personalPatch).length) {
@@ -284,6 +286,7 @@ export function useWorkspacePreferenceState() {
   return {
     scope, uid, tenantId,
     canPublish: !impersonation && (role === 'ADMIN' || role === 'SUPER_ADMIN'),
+    hasSavedWorkspace: Boolean(current?.workspace),
     values: current?.workspace ?? publicValues,
     publicValues,
     publicSync,
@@ -303,7 +306,7 @@ type WorkspaceContext = ReturnType<typeof useWorkspacePreferenceState> & {
 };
 
 export const WorkspacePreferencesContext = createContext<WorkspaceContext>({
-  scope: '', uid: '', tenantId: '', canPublish: false, values: null, publicValues: null, publicSync: '',
+  scope: '', uid: '', tenantId: '', canPublish: false, hasSavedWorkspace: false, values: null, publicValues: null, publicSync: '',
   hasWorkspaceTheme: false, personal: inheritWorkspacePreferences, effective: preferenceDefaults, loading: false, error: '',
   preview: () => {},
 });

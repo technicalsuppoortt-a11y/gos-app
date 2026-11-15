@@ -12,7 +12,7 @@ function checkStudent(product, email) {
   if (/course/i.test(product.type) && (!student || ['Suspended', 'Pending'].includes(student.status))) throw new HttpsError('permission-denied', 'This enrollment does not have active access.');
   return student;
 }
-export async function commerceServiceRequest(request, { workspace, db, auth, origin = 'https://gos-app-3c7fb.web.app', now = Date.now }) {
+export async function commerceServiceRequest(request, { workspace, db, auth, origin = 'https://app.upklick.net', now = Date.now }) {
   const { root, user } = await workspace(request, 'products');
   const { action, productId, email: rawEmail } = request.data ?? {};
   if (action === 'provisionCustomerPortal') {

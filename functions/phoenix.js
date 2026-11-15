@@ -28,13 +28,37 @@ function getPhoenixBridge() {
 const sourceBase = 'https://firestore.googleapis.com/v1/projects/phoenix-app-8bc7b/databases/(default)/documents';
 const LAUNCH_BRAND_DATABASE = 'launch-brand';
 const TICKET_SECONDS = 60;
-const GOS_DASHBOARD = 'https://gos-app-3c7fb.web.app/dashboard';
+const GOS_DASHBOARD = 'https://app.upklick.net/dashboard';
+const PLATFORM = 'platform';
 // Fields Launch Brand itself writes on users/{uid}. A newer value there must
 // never be replaced by the older copy on Joe Academy's profile.
 const LAUNCH_BRAND_PROFILE_FIELDS = ['isBrandEngineProvisioned', 'brandEngineProgress', 'brandMetadata'];
 const STAFF_ROLES = ['admin', 'superadmin', 'coach', 'support'];
 const ticketId = ticket => createHash('sha256').update(ticket).digest('hex');
-const allowedOrigins = ['https://academy.mohamedjoe.com', 'https://phoenix-app-8bc7b.web.app', 'https://phoenix-app-8bc7b.firebaseapp.com', 'https://gos-app-3c7fb.web.app', 'https://gos-app-3c7fb.firebaseapp.com', 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173'];
+const isSuspendedStatus = status => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(status || '').toLowerCase());
+const allowedOrigins = [
+  'https://academy.mohamedjoe.com',
+  'https://phoenix-app-8bc7b.web.app',
+  'https://phoenix-app-8bc7b.firebaseapp.com',
+  'https://app.upklick.net',
+  'https://upklick.net',
+  'https://www.upklick.net',
+  'https://gos-app-3c7fb.web.app',
+  'https://gos-app-3c7fb.firebaseapp.com',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+];
+
+function createAdminCommunicationWallet(uid, role, now, currency = 'EUR') {
+  return {
+    id: uid, ownerId: uid, role, providerId: PLATFORM, currency, balance: 0, held: 0, lifetimeTopup: 0, lifetimeSpent: 0,
+    lowBalanceThreshold: 0, lowBalance: false, autoRenew: false,
+    autoRecharge: { enabled: false, below: '', amount: '', method: '' },
+    creditAutoRecharge: { enabled: false, belowCredits: 100, addCredits: 500 },
+    createdAt: now, updatedAt: now,
+  };
+}
 
 async function getDeployedPlatform(db, uid) {
   const link = (await db.doc(`phoenixAccounts/${uid}`).get()).data();
@@ -212,24 +236,55 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       const preferredLanguage = discovery.choices?.discoverDraft?.profile?.language;
       const brand = { name: branding.brandName || branding.selectedBrandIdentity?.name || 'My platform', tagline: branding.tagline || '', description: branding.brandDescription || discovery.businessDescription || '', business: discovery.business || '', theme: branding.brandTheme || null, logoAssetId: branding.choices?.uploadedLogo?.assetId || branding.logo?.assetId || null, language: (preferredLanguage === 'both' ? discovery.choices.discoverDraft.profile.defaultLanguage : preferredLanguage || vision.language) === 'en' ? 'en' : 'ar', mode: vision.theme === 'light' ? 'light' : 'dark' };
       // Publish the pointer only after every page and asset has been confirmed saved.
-      const preferenceRefs = [db.doc(`tenants/${tenantId}/preferences/general`), db.doc(`dashboardBrands/${account.uid}`)];
+      const preferenceRef = db.doc(`tenants/${tenantId}/preferences/general`);
+      const dashboardBrandRef = db.doc(`dashboardBrands/${account.uid}`);
+      const userProfileRef = db.doc(`users/${account.uid}`);
+      const tenantRef = db.doc(`tenants/${tenantId}`);
       await db.runTransaction(async transaction => {
-        const [previousSnapshot, ...preferenceSnapshots] = await Promise.all([linkRef, ...preferenceRefs].map(ref => transaction.get(ref)));
+        const [previousSnapshot, preferenceSnapshot, dashboardBrandSnapshot, userSnapshot, tenantSnapshot] = await Promise.all(
+          [linkRef, preferenceRef, dashboardBrandRef, userProfileRef, tenantRef].map(ref => transaction.get(ref))
+        );
         const previous = previousSnapshot.data();
         if (previous?.gosUid && previous.gosUid !== account.uid) throw new Error('Account link conflict.');
         if (previous?.sourcePreparedAt > readTime) return;
         // A deployment is the owner's latest brand decision: saved workspace
         // appearance settings must not keep showing the old name, logo or palette.
         // The default logo and palette make the dashboard use the deployed ones.
-        preferenceSnapshots.forEach((snapshot, index) => {
-          const values = snapshot.data()?.values;
-          if (!values || typeof values !== 'object') return;
-          transaction.set(preferenceRefs[index], { values: { ...values, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet' }, updatedAt: FieldValue.serverTimestamp(), updatedBy: account.uid }, { merge: true });
-        });
+        const prefValues = preferenceSnapshot.data()?.values;
+        if (prefValues && typeof prefValues === 'object') {
+          transaction.set(preferenceRef, {
+            ...(preferenceSnapshot.data() ?? {}),
+            values: { ...prefValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', language: brand.language, mode: brand.mode },
+            updatedAt: FieldValue.serverTimestamp(),
+            updatedBy: account.uid,
+          }, { merge: true });
+        }
+        const existingDashboardBrand = dashboardBrandSnapshot.data();
+        const existingBrandValues = existingDashboardBrand?.values && typeof existingDashboardBrand.values === 'object' ? existingDashboardBrand.values : {};
+        transaction.set(dashboardBrandRef, {
+          ...(existingDashboardBrand ?? {}),
+          values: { ...existingBrandValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', language: brand.language, mode: brand.mode },
+          updatedAt: FieldValue.serverTimestamp(),
+          updatedBy: account.uid,
+        }, { merge: true });
         transaction.set(snapshotRef, pointer);
         transaction.set(db.doc(`users/${account.uid}/brandEngine/current`), { ...pointer, brand });
-        transaction.set(db.doc(`users/${account.uid}`), { uid: account.uid, email: account.email, displayName: account.displayName || '', phoenixUid: uid, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-        transaction.set(db.doc(`tenants/${tenantId}`), { ownerUid: account.uid, ...brand, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+        transaction.set(userProfileRef, {
+          ...(userSnapshot.data() ?? {}),
+          id: account.uid,
+          uid: account.uid,
+          email: account.email,
+          displayName: account.displayName || '',
+          phoenixUid: uid,
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+        transaction.set(tenantRef, {
+          ...(tenantSnapshot.data() ?? {}),
+          ownerId: account.uid,
+          ownerUid: account.uid,
+          ...brand,
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
         transaction.set(linkRef, {
           gosUid: account.uid, tenantId, revision, sourcePreparedAt: readTime,
           deployedAt: previous?.deployedAt ?? previous?.updatedAt ?? FieldValue.serverTimestamp(),
@@ -238,28 +293,167 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       });
       link = (await linkRef.get()).data();
     }
-    // Repair older bridge profiles too. Workspace APIs and session restoration
-    // require an active profile and owner membership, not just copied snapshots.
+    const gosAuth = getAuth(gos);
+    const adminAccount = await gosAuth.getUser(link.gosUid);
+    if (adminAccount.disabled) throw new Error('Your Gose account is disabled.');
+    const preProfile = (await db.doc(`users/${link.gosUid}`).get()).data();
+    const preMember = (await db.doc(`tenants/${link.tenantId}/members/${link.gosUid}`).get()).data();
+    if (isSuspendedStatus(preProfile?.status) || preMember?.active === false) throw new Error('Your Gose account is disabled.');
+    if (preProfile?.tenantId && preProfile.tenantId !== link.tenantId) throw new Error('Account workspace conflict. Contact support.');
+
+    const existingRoleUpper = String(preProfile?.role || '').toUpperCase();
+    const adminRole = existingRoleUpper === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'ADMIN';
+    const currentBrand = (await db.doc(`users/${link.gosUid}/brandEngine/current`).get()).data()?.brand;
+    const resolvedName = preProfile?.name || preProfile?.displayName || adminAccount.displayName || currentBrand?.name || email.split('@')[0];
+    const agencyUid = preProfile?.defaultAgencyUserId || `agency-${link.gosUid}`;
+    const agencyTenantId = `workspace-${agencyUid}`;
+
+    if (adminRole === 'ADMIN') {
+      let agencyAccount = await gosAuth.getUser(agencyUid).catch(err => {
+        if (err.code === 'auth/user-not-found') return null;
+        throw err;
+      });
+      if (!agencyAccount) {
+        try {
+          agencyAccount = await gosAuth.createUser({ uid: agencyUid, displayName: resolvedName, disabled: false });
+        } catch (creationError) {
+          if (creationError.code !== 'auth/uid-already-exists') throw creationError;
+          agencyAccount = await gosAuth.getUser(agencyUid);
+        }
+      }
+      await gosAuth.setCustomUserClaims(agencyUid, {
+        ...(agencyAccount.customClaims ?? {}),
+        role: 'USER',
+        tenantId: agencyTenantId,
+        accountType: 'agency',
+        phoenixUid: uid,
+      });
+    }
+
+    await gosAuth.setCustomUserClaims(link.gosUid, {
+      ...(adminAccount.customClaims ?? {}),
+      role: adminRole,
+      phoenixUid: uid,
+      tenantId: link.tenantId,
+    });
+
+    // Provision or repair the Admin profile, wallets, owner membership, and linked default Agency User.
     await db.runTransaction(async transaction => {
       const profileRef = db.doc(`users/${link.gosUid}`);
       const memberRef = db.doc(`tenants/${link.tenantId}/members/${link.gosUid}`);
-      const profile = (await transaction.get(profileRef)).data();
-      const member = (await transaction.get(memberRef)).data();
-      if (profile?.status === 'Deactivated' || member?.active === false) throw new Error('Your Gose account is disabled.');
+      const billingWalletRef = db.doc(`billingWallets/${link.gosUid}`);
+      const commWalletRef = db.doc(`communicationWallets/${link.gosUid}`);
+      const agencyProfileRef = db.doc(`users/${agencyUid}`);
+      const agencyTenantRef = db.doc(`tenants/${agencyTenantId}`);
+      const agencyMemberRef = db.doc(`tenants/${agencyTenantId}/members/${agencyUid}`);
+
+      const [profileSnap, memberSnap, billingWalletSnap, commWalletSnap, agencyProfileSnap, agencyTenantSnap, agencyMemberSnap] = await Promise.all(
+        [profileRef, memberRef, billingWalletRef, commWalletRef, agencyProfileRef, agencyTenantRef, agencyMemberRef].map(ref => transaction.get(ref))
+      );
+      const profile = profileSnap.data();
+      const member = memberSnap.data();
+      if (isSuspendedStatus(profile?.status) || member?.active === false) throw new Error('Your Gose account is disabled.');
       if (profile?.tenantId && profile.tenantId !== link.tenantId) throw new Error('Account workspace conflict. Contact support.');
-      transaction.set(profileRef, { name: profile?.name || profile?.displayName || email.split('@')[0], status: 'Active', role: profile?.role || 'USER', tenantId: link.tenantId }, { merge: true });
-      if (!member) transaction.set(memberRef, { id: link.gosUid, email, name: profile?.displayName || '', active: true, role: 'owner', permissions: ['*'] });
+
+      const nowIso = new Date().toISOString();
+      const finalName = profile?.name || profile?.displayName || resolvedName;
+      transaction.set(profileRef, {
+        ...(profile ?? {}),
+        id: link.gosUid,
+        uid: link.gosUid,
+        email: profile?.email || email,
+        name: finalName,
+        status: 'Active',
+        role: adminRole,
+        tenantId: link.tenantId,
+        phoenixUid: uid,
+        ...(adminRole === 'ADMIN' ? { defaultAgencyUserId: agencyUid } : {}),
+        created: profile?.created || nowIso,
+        activatedAt: profile?.activatedAt || nowIso,
+      }, { merge: true });
+
+      if (!member) {
+        transaction.set(memberRef, {
+          id: link.gosUid,
+          email,
+          name: finalName,
+          active: true,
+          status: 'Active',
+          role: 'Owner',
+          permissions: ['*'],
+        });
+      }
+
+      if (!billingWalletSnap.data()) {
+        transaction.set(billingWalletRef, {
+          id: link.gosUid,
+          ownerId: link.gosUid,
+          role: adminRole,
+          providerId: PLATFORM,
+          balance: 0,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        });
+      }
+      if (!commWalletSnap.data()) {
+        transaction.set(commWalletRef, createAdminCommunicationWallet(link.gosUid, adminRole, nowIso));
+      }
+
+      if (adminRole === 'ADMIN') {
+        const existingAgency = agencyProfileSnap.data();
+        const resolvedAgencyTenantId = existingAgency?.tenantId || agencyTenantId;
+        const agencyTenantName = existingAgency?.tenantName || `${currentBrand?.name || finalName}'s Agency workspace`;
+        if (!isSuspendedStatus(existingAgency?.status)) {
+          transaction.set(agencyProfileRef, {
+            ...(existingAgency ?? {}),
+            id: agencyUid,
+            uid: agencyUid,
+            name: existingAgency?.name || finalName,
+            contactEmail: email,
+            role: 'USER',
+            status: 'Active',
+            tenantId: resolvedAgencyTenantId,
+            tenantName: agencyTenantName,
+            accountType: 'agency',
+            defaultAgencyFor: link.gosUid,
+            createdBy: link.gosUid,
+            supportParentId: link.gosUid,
+            billingOwnerId: link.gosUid,
+            phoenixUid: uid,
+            created: existingAgency?.created || nowIso,
+            activatedAt: existingAgency?.activatedAt || nowIso,
+          }, { merge: true });
+        }
+        const existingAgencyTenant = agencyTenantSnap.data();
+        transaction.set(agencyTenantRef, {
+          ...(existingAgencyTenant ?? {}),
+          name: existingAgencyTenant?.name || agencyTenantName,
+          ownerId: agencyUid,
+          accountType: 'agency',
+          billingOwnerId: link.gosUid,
+          agencyLandingSeeded: existingAgencyTenant?.agencyLandingSeeded === true,
+        }, { merge: true });
+        if (!agencyMemberSnap.data()) {
+          transaction.set(agencyMemberRef, {
+            id: agencyUid,
+            name: finalName,
+            email,
+            role: 'Owner',
+            status: 'Active',
+            active: true,
+            permissions: ['*'],
+          });
+        }
+      }
     });
+
     if (action === 'deploy') { res.json({ status: 'prepared', revision: link.revision }); return; }
-    const account = await getAuth(gos).getUser(link.gosUid);
-    if (account.disabled) throw new Error('Your Gose account is disabled.');
-    await getAuth(gos).setCustomUserClaims(link.gosUid, { ...account.customClaims, phoenixUid: uid, tenantId: link.tenantId });
     if (action === 'login') {
       const policy = (await db.doc('users/' + link.gosUid + '/preferences/passwordPolicy').get()).data();
       if (policy?.localPassword) throw new Error('Sign in using your Upclick password.');
-      await getAuth(gos).updateUser(link.gosUid, { password: req.body.password });
+      await gosAuth.updateUser(link.gosUid, { password: req.body.password });
     }
-    const customToken = await getAuth(gos).createCustomToken(link.gosUid, { phoenixUid: identity.uid, tenantId: link.tenantId });
+    const customToken = await gosAuth.createCustomToken(link.gosUid, { role: adminRole, phoenixUid: identity.uid, tenantId: link.tenantId });
     res.json({ customToken });
   } catch (error) {
     console.error('Phoenix bridge failed', { code: error.code || error.name, message: error.message });
@@ -293,7 +487,7 @@ async function createLaunchBrandTicket(identity, bearer, body, db) {
     expiresAt: new Date(Date.now() + TICKET_SECONDS * 1000),
   });
   // LAUNCH_BRAND_URL (functions/.env.local) points local testing at the dev server.
-  return { ticket, url: `${process.env.LAUNCH_BRAND_URL || 'https://gos-app-3c7fb.web.app/launch-brand'}#ticket=${ticket}` };
+  return { ticket, url: `${process.env.LAUNCH_BRAND_URL || 'https://app.upklick.net/launch-brand'}#ticket=${ticket}` };
 }
 
 async function exchangeLaunchBrandTicket(req, res, gos, db, launchBrandDb) {

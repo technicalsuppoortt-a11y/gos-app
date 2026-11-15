@@ -34,6 +34,7 @@ function mount(impersonating = false) {
     },
     'firebase/storage': {},
     './firebase': { auth: { currentUser: { uid: 'client' } }, db: 'clientDb', primaryDb: 'primaryDb' },
+    '../utils/currency': { isCurrencyCode: value => typeof value === 'string' && /^[A-Z]{3}$/.test(value) },
   };
   const exports = {};
   vm.runInNewContext(outputText, { exports, require: id => modules[id] });

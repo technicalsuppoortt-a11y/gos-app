@@ -49,7 +49,7 @@ const openaiModel = defineString('OPENAI_MODEL', { default: 'gpt-4o' });
 const gosApiBase = defineString('GOS_API_BASE_URL', { default: 'https://api.upklick.net' });
 const gosMeteringSecret = process.env.ENABLE_GOS_METERING_BRIDGE === 'true' ? defineSecret('GOS_METERING_SECRET') : null;
 const gosSecrets = gosMeteringSecret ? [gosMeteringSecret] : [];
-const appOrigin = defineString('APP_ORIGIN', { default: 'https://gos-app-3c7fb.web.app' });
+const appOrigin = defineString('APP_ORIGIN', { default: 'https://app.upklick.net' });
 const hostingProject = defineString('HOSTING_PROJECT_ID', { default: 'gos-app-3c7fb' });
 setGlobalOptions({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', maxInstances: 10 });
 

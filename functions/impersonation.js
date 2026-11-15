@@ -9,7 +9,8 @@ export async function createImpersonationSession(user, target, id, { db, auth })
   const account = await auth.getUser(id);
   if (!member?.active || account.disabled) throw new HttpsError('failed-precondition', 'This user cannot access their workspace.');
   const agencyIdentity = target.accountType === 'agency' ? { accountType: 'agency' } : {};
-  const customToken = await auth.createCustomToken(id, { role, tenantId: target.tenantId, impersonatedBy: user.uid, ...agencyIdentity });
+  const phoenixIdentity = typeof target.phoenixUid === 'string' && target.phoenixUid ? { phoenixUid: target.phoenixUid } : {};
+  const customToken = await auth.createCustomToken(id, { role, tenantId: target.tenantId, impersonatedBy: user.uid, ...agencyIdentity, ...phoenixIdentity });
   await db.collection('userManagementAudit').add({ actorId: user.uid, type: 'user.impersonated', userId: id, tenantId: target.tenantId, createdAt: new Date().toISOString() });
   return { customToken, role, user: { id, name: target.name || target.email, email: target.email || target.contactEmail || '', ...(target.avatar ? { avatar: target.avatar } : {}), ...agencyIdentity }, tenant: { id: target.tenantId, name: target.tenantName || 'Your workspace' } };
 }

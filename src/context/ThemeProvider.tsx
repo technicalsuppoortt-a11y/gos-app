@@ -7,6 +7,7 @@ import { storageSet } from '../utils/browserStorage';
 import { usePhoenixBrand } from '../backend/phoenixBrand';
 import './phoenix-brand.css';
 import { bindCapturedBrandColors } from '../branding/themeColors';
+import { resolveDashboardBrandTokens } from '../branding/dashboardBrandTokens';
 import fontCatalog from '../branding/brandFontCatalog.json';
 import { useWorkspacePreferences } from '../backend/workspacePreferences';
 import { workspaceTheme } from '../branding/workspaceTheme';
@@ -45,15 +46,39 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
       // Browsers with CSS @scope get the same rules in a far smaller, faster stylesheet.
       void ('CSSScopeRule' in window ? import('./phoenix-brand-scoped.css') : import('./phoenix-brand-generated.css'));
     }
-    for (const [key, value] of Object.entries(design[theme])) {
+    const modeColors = design[theme];
+    for (const [key, value] of Object.entries(modeColors)) {
       if (typeof value === 'string' && CSS.supports('color', value)) set(key, value);
     }
+    const resolvedTokens = resolveDashboardBrandTokens(modeColors, theme, {
+      isWorkspacePalette: design === workspace,
+    });
     if (design === workspace) {
       if (customWorkspace) root.dataset.gpWorkspace = '';
       for (const [key, value] of Object.entries(workspace.gradients[theme])) {
         if (CSS.supports('background-image', value)) set(key, value);
       }
+      if (
+        customWorkspace &&
+        resolvedTokens.actionBg.toLowerCase() !== (modeColors.buttonBackground || '').toLowerCase()
+      ) {
+        set('button-gradient', resolvedTokens.actionGradient);
+        set('nav-gradient', resolvedTokens.actionGradient);
+      }
     }
+    set('action-bg', resolvedTokens.actionBg);
+    set('action-hover', resolvedTokens.actionHover);
+    set('on-action', resolvedTokens.onAction);
+    set('action-gradient', resolvedTokens.actionGradient);
+    set('button-background', resolvedTokens.buttonBackground);
+    set('on-primary', resolvedTokens.onPrimary);
+    set('on-brand', resolvedTokens.onBrand);
+    set('accent-text', resolvedTokens.accentText);
+    set('soft', resolvedTokens.soft);
+    set('hover', resolvedTokens.hover);
+    set('header-text', resolvedTokens.headerText);
+    set('footer-text', resolvedTokens.footerText);
+
     const font = (value: string) => `"${value.replace(/["\\]/g, '')}", sans-serif`;
     set('body-font', font(language === 'ar' ? design.typography.arabic : design.typography.body));
     set('heading-font', font(language === 'ar' ? design.typography.arabic : design.typography.heading));
@@ -64,17 +89,6 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
     fontSheet.rel = 'stylesheet';
     fontSheet.href = `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
     if (families.length) document.head.append(fontSheet);
-    const foreground = (value: string) => {
-      const channels = value.replace('#', '').match(/.{2}/g)?.slice(0,3).map(channel => {
-        const c = parseInt(channel,16)/255;
-        return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4;
-      }) || [0,0,0];
-      return channels[0]*.2126 + channels[1]*.7152 + channels[2]*.0722 > .179 ? '#11152d' : '#ffffff';
-    };
-    set('on-primary', foreground(design[theme].buttonBackground));
-    set('on-brand', foreground(design[theme].primary));
-    set('header-text', foreground(design[theme].headerBackground));
-    set('footer-text', foreground(design[theme].footerBackground));
     set('radius', `${design.appearance.radius}px`);
     set('button-radius', design.buttons.shape === 'pill' ? '999px' : design.buttons.shape === 'square' ? '0px' : `${design.appearance.radius}px`);
     root.dataset.gpButtons = design.buttons.variant;

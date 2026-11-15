@@ -1,7 +1,7 @@
 html[data-gp-brand="true"] {
-  --app-indigo: var(--gp-primary);
-  --purple: var(--gp-primary);
-  --purple-dark: var(--gp-primary);
+  --app-indigo: var(--gp-action-bg, var(--gp-primary));
+  --purple: var(--gp-action-bg, var(--gp-primary));
+  --purple-dark: var(--gp-action-hover, var(--gp-primary));
   --bg: var(--gp-background);
   --panel: var(--gp-surface);
   --ink: var(--gp-text);
@@ -11,44 +11,70 @@ html[data-gp-brand="true"] {
   --ui-text: var(--gp-text);
   --ui-text-muted: var(--gp-muted-text);
   --ui-border: var(--gp-border);
+  --bl-accent: var(--gp-action-bg, var(--gp-primary));
+  --bl-accent-2: var(--gp-accent-text, var(--gp-primary));
+  --bl-accent-soft: var(--gp-soft);
+  --bl-gradient: var(--gp-action-gradient, linear-gradient(115deg, var(--gp-action-bg), var(--gp-action-hover)));
 }
 html[data-gp-brand] body { font-family: var(--gp-body-font); }
 html[data-gp-brand] :is(button,input,textarea,select) { font-family: var(--gp-body-font) !important; }
 html[data-gp-brand] { --font-head: var(--gp-heading-font); }
 html[data-gp-brand] :is(h1,h2,h3,h4,.layout-brand-wordmark) { font-family: var(--gp-heading-font); }
 html[data-gp-brand="true"] :is(body,.layout-workspace,.layout-main,.layout-route-content,.gos-home-dashboard) { background: var(--gp-background) !important; color: var(--gp-text); }
-html[data-gp-brand="true"] :is(.layout-sidebar,.layout-mobile-sidebar) { background: color-mix(in srgb,var(--gp-primary) 8%,var(--gp-background)) !important; border-color: var(--gp-border); }
+html[data-gp-brand="true"] :is(.layout-sidebar,.layout-mobile-sidebar) { background: color-mix(in srgb,var(--gp-action-bg, var(--gp-primary)) 6%,var(--gp-surface)) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .layout-header { background: var(--gp-header-background) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .layout-footer { background: var(--gp-footer-background) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] :is(.hd-panel,.hd-kpi-card,.hd-section,.st-card,.pp-panel,.crm2-panel) { background: var(--gp-surface) !important; color: var(--gp-text); border-color: var(--gp-border); border-radius: var(--gp-radius); }
-html[data-gp-brand="true"] :is(.layout-nav-item.is-active,.button-primary,.st-button.primary,.aw-primary) { background: var(--gp-button-background,var(--gp-primary)) !important; color: var(--gp-on-primary) !important; border-color: var(--gp-primary) !important; border-radius: var(--gp-button-radius); }
-html[data-gp-brand="true"] .layout-nav-item.is-active > svg { color: inherit !important; }
-html[data-gp-brand="true"] :is(.layout-sidebar,.layout-mobile-sidebar) .layout-nav-item.is-active { background: linear-gradient(110deg,var(--gp-primary),color-mix(in srgb,var(--gp-primary) 64%,#fff)) !important; color:var(--gp-on-brand) !important; }
 html[data-gp-brand="true"] .layout-header :is(h1,.layout-header-breadcrumb,.layout-header-user) { color: var(--gp-header-text) !important; }
 html[data-gp-brand="true"] .layout-footer { color:var(--gp-footer-text) !important; }
-html[data-gp-brand="true"] button[data-phoenix-action] { background:var(--gp-button-background) !important; color:var(--gp-on-primary) !important; border:1px solid var(--gp-primary) !important; border-radius:var(--gp-button-radius) !important; }
-html[data-gp-brand="true"][data-gp-buttons="outline"] button[data-phoenix-action] { background:transparent !important; color:var(--gp-primary) !important; }
 html[data-gp-brand="true"] .gos-home-dashboard img[src$="/hero-landscape.png"] { filter:grayscale(1); mix-blend-mode:luminosity; }
-html[data-gp-brand="true"] .gos-home-dashboard div:has(>img[src$="/hero-landscape.png"]) { background:var(--gp-primary); isolation:isolate; }
-html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] figure { background:var(--gp-primary) !important; color:var(--gp-on-brand) !important; }
+html[data-gp-brand="true"] .gos-home-dashboard div:has(>img[src$="/hero-landscape.png"]) { background:var(--gp-action-bg, var(--gp-primary)); isolation:isolate; }
+html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] figure { background:var(--gp-action-bg, var(--gp-primary)) !important; color:var(--gp-on-action, var(--gp-on-brand)) !important; }
 html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] figure blockquote { color:inherit !important; }
-.layout-brand .phoenix-logo { display:block; width:156px; height:44px; object-fit:contain; }
-.layout-brand .phoenix-logo-wordmark { width:200px; height:72px; max-width:100%; }
-.layout-brand .phoenix-logo-mark { width:52px; height:52px; }
+
+/* Tight, zero-dead-space sidebar logo presentation (preview & live accounts). */
+.layout-brand .phoenix-logo {
+  display: block;
+  width: auto;
+  max-width: min(176px, 100%);
+  height: 38px;
+  object-fit: contain;
+  object-position: left center;
+}
+[dir="rtl"] .layout-brand .phoenix-logo {
+  object-position: right center;
+}
+.layout-brand .phoenix-logo-wordmark {
+  width: auto;
+  max-width: min(180px, 100%);
+  height: 38px;
+}
+.layout-brand .phoenix-logo-mark {
+  width: 36px;
+  max-width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
 .layout-sidebar-content.is-collapsed .layout-brand .phoenix-logo,
-.adm-sidebar.is-collapsed .layout-brand .phoenix-logo { width:36px; max-width:36px; height:36px; margin-inline:auto; }
-html[data-gp-brand] :is(.layout-sidebar-content.is-collapsed, .adm-sidebar.is-collapsed) .workspace-logo { width:36px; max-width:36px; height:36px; padding:4px; margin-inline:auto; }
-html[data-gp-brand="true"] :is(input,textarea,select) { accent-color: var(--gp-primary); }
-/* Match the generated surface guards so action foregrounds stay paired with their button token. */
-html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.layout-nav-item.is-active,.login-submit,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
-  background:var(--gp-button-background) !important;
-  color:var(--gp-on-primary) !important;
-  border-color:var(--gp-button-background) !important;
+.adm-sidebar.is-collapsed .layout-brand .phoenix-logo {
+  width: 34px;
+  max-width: 34px;
+  height: 34px;
+  object-position: center;
+  margin-inline: auto;
 }
-html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,button[data-phoenix-action]):hover:not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
-  background:color-mix(in srgb,var(--gp-button-background) 88%,#000) !important;
+html[data-gp-brand] :is(.layout-sidebar-content.is-collapsed, .adm-sidebar.is-collapsed) .workspace-logo {
+  width: 34px;
+  max-width: 34px;
+  height: 34px;
+  padding: 2px;
+  object-position: center;
+  margin-inline: auto;
 }
-html[data-gp-brand] :is(.workspace-logo,.workspace-logo-preview) { background:#fff; border-radius:10px; padding:8px; }
+html[data-gp-brand] .workspace-logo-preview { background:#fff; border-radius:10px; padding:8px; }
+html[data-gp-brand] .layout-brand .workspace-logo { background:transparent; border-radius:0; padding:0; }
+
+html[data-gp-brand="true"] :is(input,textarea,select) { accent-color: var(--gp-action-bg, var(--gp-primary)); }
 html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] { background: var(--gp-surface) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .gos-home-dashboard #dash-greeting { color: var(--gp-text); }
 
@@ -61,6 +87,121 @@ html[data-gp-brand="true"] :is(.adm-sidebar, .adm-topbar) {
   border-color: var(--gp-border);
 }
 
+/* High-specificity WCAG contrast enforcement above generated @scope [data-gp-brand]x4 rules. */
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
+  .layout-sidebar .layout-nav-item.is-active,
+  .layout-mobile-sidebar .layout-nav-item.is-active,
+  .adm-sidebar nav a.active
+):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  background: var(--gp-action-gradient, var(--gp-action-bg, var(--gp-primary))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  border-color: var(--gp-action-bg, var(--gp-primary)) !important;
+  border-radius: var(--gp-button-radius);
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
+  .layout-sidebar .layout-nav-item.is-active,
+  .layout-mobile-sidebar .layout-nav-item.is-active,
+  .adm-sidebar nav a.active
+) :is(svg, span, .layout-nav-icon, .layout-nav-label, .layout-nav-text):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  color: var(--gp-on-action, #ffffff) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-nav-item:hover:not(.is-active):not([data-public-asset]):not([data-public-asset] *) {
+  background: var(--gp-soft) !important;
+  color: var(--gp-accent-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-nav-item:hover:not(.is-active) :is(svg, .layout-nav-icon):not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-accent-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-settings-link:not(.is-active) {
+  color: var(--gp-muted-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-settings-link.is-active {
+  background: var(--gp-soft) !important;
+  color: var(--gp-accent-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-settings-link.is-active > svg {
+  color: var(--gp-accent-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .layout-settings-link.is-active::before {
+  background: var(--gp-action-bg, var(--gp-primary)) !important;
+}
+
+/* Billing & workspace tabs readability in Light and Dark mode across all palettes. */
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .st-billing-tabs button:not(.active):not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-muted-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .st-billing-tabs button:not(.active):hover:not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-text) !important;
+  background: var(--gp-soft) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .st-billing-tabs button.active:not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-accent-text) !important;
+  border-bottom-color: var(--gp-action-bg, var(--gp-primary)) !important;
+  background: var(--gp-soft) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .st-billing-tabs button.active svg:not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-accent-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(.bl-tabs, .bl-switch) button:not([aria-selected="true"]):not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-muted-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(.bl-tabs, .bl-switch) button[aria-selected="true"]:not([data-public-asset]):not([data-public-asset] *) {
+  background: var(--gp-action-gradient, var(--gp-action-bg)) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(.bl-tabs, .bl-switch) button[aria-selected="true"] :is(svg, span:not(.bl-count), small):not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+/* Primary action buttons & floating launcher contrast across all themes and modes. */
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
+  .button-primary,
+  .st-button.primary,
+  .st-primary,
+  .adm-primary,
+  .bl-btn.primary,
+  .crm2-btn-primary,
+  .aw-primary,
+  .layout-header .layout-plan-cta,
+  .support-launcher,
+  .login-submit,
+  button[data-phoenix-action]
+):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *,.landing-page,.landing-page *,.lp,.lp *)) {
+  background: var(--gp-button-background, var(--gp-action-bg)) !important;
+  color: var(--gp-on-primary, var(--gp-on-action, #ffffff)) !important;
+  border-color: var(--gp-button-background, var(--gp-action-bg)) !important;
+  border-radius: var(--gp-button-radius);
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
+  .button-primary,
+  .st-button.primary,
+  .st-primary,
+  .adm-primary,
+  .bl-btn.primary,
+  .crm2-btn-primary,
+  .aw-primary,
+  .layout-header .layout-plan-cta,
+  .support-launcher,
+  .login-submit,
+  button[data-phoenix-action]
+):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *,.landing-page,.landing-page *,.lp,.lp *)) :is(svg, span) {
+  color: inherit !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
+  .adm-primary,
+  .st-primary,
+  .st-button.primary,
+  .bl-btn.primary,
+  button[data-phoenix-action]
+):hover:not(:disabled):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *,.landing-page,.landing-page *,.lp,.lp *)) {
+  background: var(--gp-action-hover, color-mix(in srgb, var(--gp-button-background) 88%, #000)) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-buttons="outline"] button[data-phoenix-action]:not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *,.landing-page,.landing-page *,.lp,.lp *)) {
+  background: transparent !important;
+  color: var(--gp-accent-text) !important;
+  border: 1.5px solid var(--gp-accent-text) !important;
+}
+
 /* Workspace gradients sit above the generated color roles. Authored previews keep their own design. */
 html[data-gp-workspace][data-workspace-theme] :is(.layout-sidebar,.layout-mobile-sidebar,.adm-sidebar):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
   background: var(--gp-sidebar-gradient) !important;
@@ -68,16 +209,16 @@ html[data-gp-workspace][data-workspace-theme] :is(.layout-sidebar,.layout-mobile
 html[data-gp-workspace][data-workspace-theme] :is(.adm-main,.layout-main,.layout-route-content,.lp):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
   background: var(--gp-canvas-gradient) !important;
 }
-html[data-gp-workspace][data-workspace-theme] :is(.adm-sidebar nav a.active,.layout-sidebar .layout-nav-item.is-active,.layout-mobile-sidebar .layout-nav-item.is-active):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-sidebar nav a.active,.layout-sidebar .layout-nav-item.is-active,.layout-mobile-sidebar .layout-nav-item.is-active):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
   background: var(--gp-nav-gradient) !important;
-  color: var(--gp-on-primary) !important;
+  color: var(--gp-on-action, var(--gp-on-primary)) !important;
 }
-html[data-gp-workspace][data-workspace-theme] :is(.adm-sidebar nav a.active,.layout-nav-item.is-active) :is(svg,.layout-nav-icon,.layout-nav-label):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
-  color: var(--gp-on-primary) !important;
+html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-sidebar nav a.active,.layout-nav-item.is-active) :is(svg,.layout-nav-icon,.layout-nav-label,span):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
+  color: var(--gp-on-action, var(--gp-on-primary)) !important;
 }
-html[data-gp-workspace][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.crm2-btn-primary,.button-primary,.aw-primary,.layout-header .layout-plan-cta,.support-launcher,.lp .lp-btn--primary,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *)) {
+html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-primary,.st-primary,.st-button.primary,.crm2-btn-primary,.button-primary,.aw-primary,.bl-btn.primary,.layout-header .layout-plan-cta,.support-launcher,.lp .lp-btn--primary,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *)) {
   background: var(--gp-button-gradient) !important;
-  color: var(--gp-on-primary) !important;
+  color: var(--gp-on-action, var(--gp-on-primary)) !important;
   border-color: transparent !important;
 }
 html[data-gp-workspace][data-workspace-theme] :is(.ws-section-head,.st-card > .st-card-heading,.crm-pipeline-workspace .crm-stage-head,.adm-tabs button.active,.adm-group-nav a.active,.st-tabs a.active):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
@@ -92,11 +233,10 @@ html[data-gp-workspace][data-gp-brand="true"] .st-profile .st-card:not([data-for
   background: var(--gp-surface) !important;
 }
 
-
 /* Preserve high-contrast Current Plan hero & billing action readability across Phoenix and Workspace themes. */
 html[data-gp-brand="true"] .bl .bl-plan-hero:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
-  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #4f46e5 100%) !important;
-  color: #ffffff !important;
+  background: var(--gp-action-gradient, linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #4f46e5 100%)) !important;
+  color: var(--gp-on-action, #ffffff) !important;
 }
 html[data-gp-brand="true"] .bl .bl-plan-hero.empty:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
   background: radial-gradient(120% 140% at 0% 0%, #334155 0%, #1e293b 60%, #0f172a 100%) !important;
@@ -106,7 +246,10 @@ html[data-gp-brand="true"] .bl .bl-plan-hero.expired:not([data-form-theme]):not(
   background: radial-gradient(120% 140% at 0% 0%, #9f1239 0%, #7f1d1d 60%, #450a0a 100%) !important;
   color: #ffffff !important;
 }
-html[data-gp-brand="true"] .bl .bl-plan-hero :is(small, h2, p, .bl-hero-meta, .bl-hero-meta span, .bl-pill):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+html[data-gp-brand="true"] .bl .bl-plan-hero:not(.empty):not(.expired) :is(small, h2, p, .bl-hero-meta, .bl-hero-meta span, .bl-pill):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
+  color: var(--gp-on-action, #ffffff) !important;
+}
+html[data-gp-brand="true"] .bl .bl-plan-hero:is(.empty, .expired) :is(small, h2, p, .bl-hero-meta, .bl-hero-meta span, .bl-pill):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
   color: #ffffff !important;
 }
 html[data-gp-brand="true"] .bl .bl-plan-hero .bl-hero-actions .bl-btn:not(.solid):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
@@ -120,7 +263,7 @@ html[data-gp-brand="true"] .bl .bl-plan-hero .bl-hero-actions .bl-btn.solid:not(
   border-color: #ffffff !important;
 }
 html[data-gp-brand="true"] .bl :is(.bl-ref-ribbon, .bl-ref-cta-btn.wallet-pay):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
-  color: #ffffff !important;
+  color: var(--gp-on-action, #ffffff) !important;
 }
 html[data-gp-brand="true"]:not(.dark) .bl .bl-ref-cta-btn.current:not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *) {
   background: rgba(16, 185, 129, 0.14) !important;

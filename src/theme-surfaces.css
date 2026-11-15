@@ -1125,6 +1125,8 @@ html.dark :is(
   .pp-description,
   .pp-open,
   .fb-standalone-footer,
+  .st-demo-note,
+  .st-search,
   .st-audit-list,
   .st-team-role-pill,
   .st-modal-guide-list,
@@ -1814,14 +1816,14 @@ html.dark :is(
   .pp-auto-row b,
   .pp-secondary-heading p,
   .pp-modal p,
+  .st-category-tabs button,
+  .st-scope-list li,
   .st-member-cell small,
   .st-knowledge-metrics span,
   .st-knowledge-item small,
   .st-knowledge-item p,
   .st-qr-preview p,
-  .st-category-tabs button,
   .st-guideline-step-card p,
-  .st-scope-list li,
   .st-support-config-title small,
   .spt-banner-copy p,
   .spt-kpi-copy small,
@@ -2733,7 +2735,8 @@ html.dark :is(
   .fb-price-grid article li,
   .pp-select>button svg,
   .pp-settings-cards>button>svg,
-  .pp-modal header>button
+  .pp-modal header>button,
+  .st-account-list dt svg
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     color: var(--ui-text-secondary)
 }

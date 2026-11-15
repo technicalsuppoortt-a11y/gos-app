@@ -39,8 +39,8 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
   // Environment variables with solid fallbacks
   const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
   const supportEmail = 'technicalsuppoortt@gmail.com';
-  const appUrl = 'https://gos-app-3c7fb.web.app/';
-  const fallbackWebUrl = 'https://gos-app-3c7fb.web.app/';
+  const appUrl = 'https://app.upklick.net/';
+  const fallbackWebUrl = 'https://app.upklick.net/';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState<string>('intro');

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/modules/brand-engine/store/hooks";
 import { useDashboardBrand } from "../useDashboardBrand";
-import { createBrandLogoSvg, prepareBrandLogoSvg, logoDataUrl } from "@/modules/brand-engine/services/brandLogo";
+import { createBrandLogoSvg, prepareBrandLogoSvg, tightenBrandLogoSvg, logoDataUrl } from "@/modules/brand-engine/services/brandLogo";
 import { selectBrandPreview } from "../gos-preview/model/selectBrandPreview";
 import { dashboardLogo } from "../gos-preview/model/dashboardLogo";
 
@@ -32,14 +32,14 @@ export function useLiveBrandConfiguration(language?: "ar" | "en"): LiveBrandConf
     let active = true;
     if (!brand.logoUrl && !asset?.assetId && !asset?.url) {
       prepareBrandLogoSvg(brand.identity, brand.primary)
-        .then((svg) => { if (active) setPrepared({ signature, url: logoDataUrl(svg) }); })
+        .then((svg) => { if (active) setPrepared({ signature, url: logoDataUrl(tightenBrandLogoSvg(svg)) }); })
         .catch(() => {});
     }
     return () => { active = false; };
   }, [signature, brand.logoUrl, asset?.assetId, asset?.url]);
   const currentVector = prepared?.signature === signature
     ? prepared.url
-    : logoDataUrl(createBrandLogoSvg(brand.identity, brand.primary));
+    : logoDataUrl(tightenBrandLogoSvg(createBrandLogoSvg(brand.identity, brand.primary)));
   const logo = dashboardLogo(brand.logoUrl, asset, currentVector);
   const model = selectBrandPreview(state, logo);
   return {

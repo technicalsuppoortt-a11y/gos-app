@@ -25,7 +25,7 @@ export function pickPublishedStep(site, path = '/') {
   return steps.find(s => s.path === '/' || s.published) || steps[0] || null;
 }
 
-export async function handleDomainProxy(req, res, { db, appOrigin = 'https://gos-app-3c7fb.web.app' }) {
+export async function handleDomainProxy(req, res, { db, appOrigin = 'https://app.upklick.net' }) {
   const hostHeader = req.headers['x-forwarded-host'] || req.headers.host || '';
   const host = normalizeHost(hostHeader);
 
