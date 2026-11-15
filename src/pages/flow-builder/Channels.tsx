@@ -55,9 +55,19 @@ export function useMetaChannels() {
     const result = await api.metaClaim(claim)
     if (result.channel) { update(result.channel); return }
     if (channel === 'whatsapp') return
-    const pages = result.pages ?? []
-    setPicking({ channel, pages: channel === 'instagram' ? pages.filter(p => p.instagram) : pages })
+    const all = result.pages ?? []
+    const pages = channel === 'instagram' ? all.filter(p => p.instagram) : all
+    // The person already chose these Pages in Meta's window, so connect every one of them.
+    // The picker only shows up to explain why nothing could be connected.
+    if (pages.length === 0) { setPicking({ channel, pages }); return }
+    update(await api.metaConnectPages(channel, pages.map(p => p.id)))
+    setPicking(null)
   })
+
+  const disconnectPage = (c: Channel, pageId: string, name: string) => {
+    if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', name))) return
+    run(pageId, async () => update(await api.disconnectPage(c.channel, pageId)))
+  }
 
   const connectManual = (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,12 +88,12 @@ export function useMetaChannels() {
     run(c.channel, async () => update(await api.disconnect(c.channel)))
   }
 
-  return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect }
+  return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect, disconnectPage }
 }
 
 export function Channels() {
   useUILanguage()
-  const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, pick, disconnect } = useMetaChannels()
+  const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, disconnect, disconnectPage } = useMetaChannels()
   return (
     <main className="fb-list-page">
       <h1>{translateText("Channels")}</h1>
@@ -127,12 +137,20 @@ export function Channels() {
 
             {connected && (
               <ul className="fb-page-list">
-                <li className="fb-page-row">
-                  <span className="fb-page-avatar" aria-hidden="true">{(c!.name ?? card.title)[0]}</span>
-                  <span dir="auto">{c!.name ?? c!.external_id}</span>
-                  <span className="fb-badge badge-live">{translateText("CONNECTED")}</span>
-                </li>
+                {(c!.pages?.length ? c!.pages : [{ id: c!.external_id ?? '', external_id: c!.external_id ?? '', name: c!.name }]).map(page => (
+                  <li key={page.id} className="fb-page-row">
+                    <span className="fb-page-avatar" aria-hidden="true">{(page.name ?? card.title)[0]}</span>
+                    <span dir="auto">{page.name ?? page.external_id}</span>
+                    <span className="fb-badge badge-live">{translateText("CONNECTED")}</span>
+                    {card.id !== 'whatsapp' && (c!.pages?.length ?? 0) > 1 && (
+                      <button type="button" className="fb-btn fb-btn-ghost" onClick={() => disconnectPage(c!, page.id, page.name ?? page.external_id)} disabled={busy !== null}>{busy === page.id ? translateText("Disconnecting…") : translateText("Disconnect")}</button>
+                    )}
+                  </li>
+                ))}
               </ul>
+            )}
+            {connected && card.id !== 'whatsapp' && (
+              <button type="button" className="fb-btn fb-btn-soft fb-self-start" onClick={() => connect(card.id)} disabled={busy !== null}>{translateText(card.id === 'instagram' ? "Add another account" : "Add another page")}</button>
             )}
 
             {picking?.channel === card.id && (
@@ -145,15 +163,6 @@ export function Channels() {
                       : translateText("No pages found. You need to manage the page, and allow it in the Meta window.")}
                   </p>
                 )}
-                <ul className="fb-page-list">
-                  {picking.pages.map(p => (
-                    <li key={p.id} className="fb-page-row">
-                      <span className="fb-page-avatar" aria-hidden="true">{p.name[0]}</span>
-                      <span dir="auto">{card.id === 'instagram' ? `@${p.instagram?.username} · ${p.name}` : p.name}</span>
-                      <button type="button" className="fb-btn fb-btn-soft" onClick={() => pick(p)} disabled={busy !== null}>{busy === p.id ? translateText("Connecting…") : translateText("Connect")}</button>
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
           </section>
