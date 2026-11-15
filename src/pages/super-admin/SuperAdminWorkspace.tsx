@@ -252,7 +252,7 @@ const RetryContext = createContext<() => void>(() => {});
 
 function Heading({ title, description, children, platform }: PropsWithChildren<{ title: string; description: string; platform?: string }>) {
   const { phase } = useContext(SyncStatusContext);
-  const tooltipText = t('Using cached offline data — sync in progress with Firebase');
+  const tooltipText = t('Using cached offline data — cloud sync in progress');
 
   return (
     <header className="saw-heading">
@@ -1078,7 +1078,7 @@ function Logs() {
       <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-audit.csv', ['Time', 'Actor', 'Action', 'Target', 'Severity'], visible.map(row => [row.time?.toISOString() ?? '', row.actor, row.action, row.target, row.severity]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
     </Heading>
     <LiveContent sources={[source]}>
-      <div className="saw-stats"><Stat label="Audit feed" value={t(source.cached ? 'Cached' : 'Live')} note="Firebase event stream"/><Stat label="Recorded events" value={source.data.length} note="Latest 500 events"/><Stat label="Warnings" value={source.data.filter(row => row.severity === 'Warning').length} note="In loaded audit history"/><Stat label="Errors" value={source.data.filter(row => row.severity === 'Error').length} note="In loaded audit history"/></div>
+      <div className="saw-stats"><Stat label="Audit feed" value={t(source.cached ? 'Cached' : 'Live')} note="Live event stream"/><Stat label="Recorded events" value={source.data.length} note="Latest 500 events"/><Stat label="Warnings" value={source.data.filter(row => row.severity === 'Warning').length} note="In loaded audit history"/><Stat label="Errors" value={source.data.filter(row => row.severity === 'Error').length} note="In loaded audit history"/></div>
       <div className="saw-section-head"><h2>{t('Audit trail')}</h2><span>{t('Latest 500 events')}</span></div>
       <Filters {...filters} options={['Info', 'Warning', 'Error']}/>
       <Grid columns={['Timestamp', 'Actor', 'Event', 'Severity']} rows={visible.map(row => ({ id: row.id, cells: [row.time?.toLocaleString('en-US') ?? '—', row.actor, <div key="event"><b>{row.action || '—'}</b><small>{row.target}</small></div>, <Badge key="severity" value={row.severity}/>] }))}/>

@@ -908,6 +908,16 @@ html.dark .spt-agent-actions,
 /* ============================================================================
    Responsive Breakpoints (Tablet & Mobile)
    ============================================================================ */
+.spt-agent-identity > div,
+.spt-kpi-copy,
+.spt-banner-copy {
+  min-width: 0;
+}
+
+.spt-agent-identity small {
+  white-space: nowrap;
+}
+
 @media (max-width: 1100px) {
   .spt-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -920,24 +930,227 @@ html.dark .spt-agent-actions,
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .spt-panel {
+    gap: 14px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .spt-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .spt-header-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .spt-header-actions > button {
+    flex: 1 1 140px;
+    justify-content: center;
+    min-height: 38px;
+  }
+
+  .spt-routing-banner {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .spt-banner-main {
+    align-items: flex-start;
+    gap: 11px;
+    flex-basis: 100%;
+  }
+
+  .spt-banner-orb {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .spt-banner-meta {
+    width: 100%;
+  }
+
+  .spt-clock-chip {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11.5px;
+  }
+
   .spt-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .spt-kpi-card {
+    padding: 13px 14px;
+    gap: 8px;
+  }
+
+  .spt-kpi-copy strong {
+    font-size: 19px;
+    overflow-wrap: anywhere;
+  }
+
+  .spt-kpi-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .spt-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .spt-toolbar > .st-search {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  .spt-filter-pills {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .spt-filter-pill {
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .spt-agents-grid {
     grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
-  .st-support-days-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  .spt-agent-card {
+    padding: 15px;
+    gap: 12px;
+    min-width: 0;
   }
-  .st-support-time-grid {
-    grid-template-columns: minmax(0, 1fr);
+
+  .spt-agent-top {
+    flex-wrap: wrap;
+    gap: 10px;
   }
+
+  .spt-agent-identity {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  .spt-agent-identity small {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .spt-allocation-row {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .spt-shift-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
   .spt-metrics-row,
   .spt-drawer-summary {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
+
+  .spt-metric-cell {
+    padding: 9px 6px;
+    min-width: 0;
+  }
+
+  .spt-metric-cell strong {
+    font-size: 13.5px;
+    overflow-wrap: anywhere;
+  }
+
+  .spt-metric-cell small {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .spt-agent-actions {
+    gap: 8px;
+  }
+
+  .spt-agent-actions > button {
+    flex: 1 1 140px;
+    justify-content: center;
+    min-height: 34px !important;
+  }
+
+  .spt-drawer {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
   .spt-drawer-head,
   .spt-drawer-body,
   .spt-drawer-tabs,
   .spt-drawer-summary {
-    padding-inline: 15px;
+    padding-inline: 14px;
+  }
+
+  .spt-drawer-head {
+    padding-block: 16px 14px;
+  }
+
+  .spt-drill-row {
+    align-items: flex-start;
+    padding: 11px 12px;
+  }
+
+  .spt-drill-row > div:first-child {
+    min-width: 0;
+    flex: 1 1 180px;
+    overflow-wrap: anywhere;
+  }
+
+  .st-support-days-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .st-support-time-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .st-support-slider-row {
+    flex-wrap: wrap;
+  }
+
+  .st-modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .st-modal-actions > button {
+    flex: 1 1 120px;
+  }
+}
+
+@media (max-width: 390px) {
+  .spt-kpi-grid,
+  .spt-metrics-row,
+  .spt-drawer-summary {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

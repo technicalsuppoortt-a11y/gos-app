@@ -124,11 +124,11 @@ html.dark .gos-home-dashboard { --icon-cut: #13172b; }
   inset-inline-end:0;
   min-width:max(168px, 100%);
   width:max-content;
-  background:#141a33;
-  border:1px solid rgba(255,255,255,0.12);
+  background:#ffffff;
+  border:1px solid #e2e8f0;
   border-radius:12px;
   padding:4px;
-  box-shadow:0 16px 36px -10px rgba(15,21,53,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+  box-shadow:0 16px 36px -10px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.04);
   z-index:50
 }
 html.dark .gos-home-dashboard #hero-create-list{background:#121730;border-color:rgba(167,139,250,0.22)}

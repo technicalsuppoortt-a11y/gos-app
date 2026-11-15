@@ -8,9 +8,18 @@ html[data-gp-brand="true"] {
   --muted: var(--gp-muted-text);
   --line: var(--gp-border);
   --ui-surface: var(--gp-surface);
+  --ui-surface-raised: var(--gp-surface);
+  --ui-surface-hover: var(--gp-soft);
+  --ui-accent-surface: var(--gp-soft);
   --ui-text: var(--gp-text);
+  --ui-text-secondary: var(--gp-muted-text);
   --ui-text-muted: var(--gp-muted-text);
+  --ui-accent-text: var(--gp-accent-text);
   --ui-border: var(--gp-border);
+  --ws-accent: var(--gp-action-bg, var(--gp-primary));
+  --ws-hover: var(--gp-action-hover, var(--gp-hover));
+  --ws-soft: var(--gp-soft);
+  --ws-glow: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary)) 26%, transparent);
   --bl-accent: var(--gp-action-bg, var(--gp-primary));
   --bl-accent-2: var(--gp-accent-text, var(--gp-primary));
   --bl-accent-soft: var(--gp-soft);
@@ -91,6 +100,30 @@ html[data-gp-brand="true"] :is(input,textarea,select) { accent-color: var(--gp-a
 html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"] { background: var(--gp-surface) !important; border-color: var(--gp-border); }
 html[data-gp-brand="true"] .gos-home-dashboard #dash-greeting { color: var(--gp-text); }
 
+/* Bind Admin shell & Admin Live management tokens in both Light and Dark mode. */
+html[data-gp-brand="true"] .adm-shell,
+html.dark[data-gp-brand="true"] .adm-shell {
+  --adm-bg: var(--gp-background);
+  --adm-surface: var(--gp-surface);
+  --adm-soft: var(--gp-soft);
+  --adm-text: var(--gp-text);
+  --adm-muted: var(--gp-muted-text);
+  --adm-border: var(--gp-border);
+  --adm-accent: var(--gp-accent-text, var(--gp-action-bg));
+  --adm-accent-soft: var(--gp-soft);
+}
+html[data-gp-brand="true"] :is(.adm-live, .adm-live-dialog),
+html.dark[data-gp-brand="true"] :is(.adm-live, .adm-live-dialog) {
+  --alm-primary: var(--gp-accent-text, var(--gp-action-bg));
+  --alm-secondary: var(--gp-accent-text, var(--gp-primary));
+  --alm-surface: var(--gp-surface);
+  --alm-soft: var(--gp-soft);
+  --alm-text: var(--gp-text);
+  --alm-muted: var(--gp-muted-text);
+  --alm-border: var(--gp-border);
+  --alm-tint: var(--gp-soft);
+  --adm-accent: var(--gp-accent-text, var(--gp-action-bg));
+}
 html[data-gp-brand="true"] :is(.adm-shell, .adm-main, .layout-workspace, .layout-main) {
   background: var(--gp-background);
   color: var(--gp-text);
@@ -139,6 +172,44 @@ html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-
   background: var(--gp-action-bg, var(--gp-primary)) !important;
 }
 
+/* Notification badge, language switcher active pill, & Home Create New menu readability across Light & Dark mode. */
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .nc-count {
+  background: var(--gp-action-bg, #7C3AED) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  border-color: var(--gp-header-background, var(--gp-surface, #ffffff)) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .global-language-control button.is-active {
+  background: var(--gp-action-bg, #7C3AED) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  border-color: transparent !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .global-language-control button:not(.is-active) {
+  color: var(--gp-muted-text) !important;
+  background: transparent !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard :is(.hero-create-menu, #hero-create-list) {
+  background: var(--gp-surface) !important;
+  color: var(--gp-text) !important;
+  border-color: var(--gp-border) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard #hero-create-new {
+  color: var(--gp-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard #hero-create-new:hover {
+  background: var(--gp-soft) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard .hero-create-plus {
+  background: var(--gp-action-gradient, var(--gp-action-bg)) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard #hero-create-list button {
+  color: var(--gp-text) !important;
+}
+html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-home-dashboard #hero-create-list button:hover {
+  background: var(--gp-soft) !important;
+  color: var(--gp-accent-text) !important;
+}
+
 /* Billing & workspace tabs readability in Light and Dark mode across all palettes. */
 html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .st-billing-tabs button:not(.active):not([data-public-asset]):not([data-public-asset] *) {
   color: var(--gp-muted-text) !important;
@@ -172,6 +243,8 @@ html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-
   .st-button.primary,
   .st-primary,
   .adm-primary,
+  .alm-button.primary,
+  .alm-category-tabs button[aria-selected="true"] > span,
   .bl-btn.primary,
   .crm2-btn-primary,
   .aw-primary,
@@ -190,6 +263,7 @@ html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-
   .st-button.primary,
   .st-primary,
   .adm-primary,
+  .alm-button.primary,
   .bl-btn.primary,
   .crm2-btn-primary,
   .aw-primary,
@@ -202,6 +276,7 @@ html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-
 }
 html[data-gp-brand="true"][data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(
   .adm-primary,
+  .alm-button.primary,
   .st-primary,
   .st-button.primary,
   .bl-btn.primary,
@@ -229,7 +304,7 @@ html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data
 html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-sidebar nav a.active,.layout-nav-item.is-active) :is(svg,.layout-nav-icon,.layout-nav-label,span):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {
   color: var(--gp-on-action, var(--gp-on-primary)) !important;
 }
-html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-primary,.st-primary,.st-button.primary,.crm2-btn-primary,.button-primary,.aw-primary,.bl-btn.primary,.layout-header .layout-plan-cta,.support-launcher,.lp .lp-btn--primary,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *)) {
+html[data-gp-workspace][data-workspace-theme][data-gp-brand][data-gp-brand][data-gp-brand] :is(.adm-primary,.alm-button.primary,.st-primary,.st-button.primary,.crm2-btn-primary,.button-primary,.aw-primary,.bl-btn.primary,.layout-header .layout-plan-cta,.support-launcher,.lp .lp-btn--primary,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *):not(:where(.aw-live-preview,.aw-live-preview *,.pf-page,.pf-page *,.pf-renderer,.pf-renderer *,.pf-canvas,.pf-canvas *)) {
   background: var(--gp-button-gradient) !important;
   color: var(--gp-on-action, var(--gp-on-primary)) !important;
   border-color: transparent !important;

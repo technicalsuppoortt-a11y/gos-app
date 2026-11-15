@@ -35,7 +35,7 @@ export const apiRequests = [
   },
   {
     "group": "Health and auth",
-    "name": "Firestore status",
+    "name": "Cloud storage status",
     "method": "GET",
     "url": "{{baseUrl}}/api/v1/firestore/status",
     "body": "",

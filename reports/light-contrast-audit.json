@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 242,
+  "utilityOccurrences": 241,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -28,62 +28,62 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 379,
+      "line": 380,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 417,
+      "line": 418,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 419,
+      "line": 422,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 350,
+      "line": 326,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 366,
+      "line": 342,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 397,
+      "line": 373,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 411,
+      "line": 387,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 481,
+      "line": 457,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 514,
+      "line": 490,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 531,
+      "line": 507,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 584,
+      "line": 560,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 601,
+      "line": 577,
       "utility": "text-gray-400"
     },
     {
@@ -803,32 +803,32 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 586,
+      "line": 593,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 589,
+      "line": 596,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 613,
+      "line": 620,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 693,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 693,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 686,
+      "line": 693,
       "utility": "text-slate-500"
     },
     {
@@ -864,12 +864,7 @@
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
       "line": 715,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 734,
-      "utility": "text-slate-200"
+      "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
@@ -1073,82 +1068,82 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 103,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 104,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 105,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 106,
+      "line": 107,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 939,
+      "line": 943,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1086,
+      "line": 1090,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1139,
+      "line": 1149,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1222,
+      "line": 1233,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1297,
+      "line": 1308,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1442,
+      "line": 1453,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1473,
+      "line": 1484,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1505,
+      "line": 1516,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1578,
+      "line": 1595,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1730,
+      "line": 1747,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1759,
+      "line": 1776,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1792,
+      "line": 1809,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1804,
+      "line": 1821,
       "utility": "text-slate-400"
     },
     {

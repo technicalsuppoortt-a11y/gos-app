@@ -64,6 +64,46 @@ function statusLabel(status: string, ar: boolean): string {
     active: ['Active', 'نشط'],
     paused: ['Paused', 'متوقف'],
     failed: ['Failed', 'فشل'],
+    open: ['Open', 'مفتوحة'],
+    resolved: ['Resolved', 'تم الحل'],
+    closed: ['Closed', 'مغلقة'],
+    'human handoff': ['Human handoff', 'تحويل لموظف'],
+    unknown: ['Unknown', 'غير معروف'],
+    healthy: ['Healthy', 'سليمة'],
+    operational: ['Operational', 'تعمل'],
+    'needs attention': ['Needs attention', 'تحتاج متابعة'],
+    warning: ['Warning', 'تنبيه'],
+    queued: ['Queued', 'في الانتظار'],
+    delivered: ['Delivered', 'تم التسليم'],
+    undelivered: ['Undelivered', 'لم يُسلّم'],
+    succeeded: ['Succeeded', 'ناجحة'],
+    confirmed: ['Confirmed', 'مؤكدة'],
+    won: ['Won', 'صفقة ناجحة'],
+    expired: ['Expired', 'منتهية'],
+    error: ['Error', 'خطأ'],
+    trialing: ['Trialing', 'تجريبي'],
+    'not configured': ['Not configured', 'غير مضبوط'],
+  };
+  const found = map[clean.toLowerCase()];
+  if (found) return ar ? found[1] : found[0];
+  return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : '—';
+}
+
+function channelLabel(channel: string, ar: boolean): string {
+  const clean = channel.trim();
+  if (!clean || clean === '—') return '—';
+  const map: Record<string, [string, string]> = {
+    whatsapp: ['WhatsApp', 'واتساب'],
+    messenger: ['Messenger', 'ماسنجر'],
+    facebook: ['Facebook', 'فيسبوك'],
+    instagram: ['Instagram', 'إنستغرام'],
+    email: ['Email', 'البريد الإلكتروني'],
+    sms: ['SMS', 'رسائل SMS'],
+    telegram: ['Telegram', 'تيليجرام'],
+    webchat: ['Web Chat', 'دردشة الويب'],
+    web: ['Web Chat', 'دردشة الويب'],
+    livechat: ['Live Chat', 'دردشة مباشرة'],
+    support: ['Support', 'الدعم الفني'],
   };
   const found = map[clean.toLowerCase()];
   if (found) return ar ? found[1] : found[0];
@@ -191,15 +231,50 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   const workspace = (r: LiveRecord) => String(tenants[r.workspaceId]?.name ?? r.workspaceId);
   const row = (r: LiveRecord): Row => {
     const d: Record<string, unknown> = r.data;
-    return { id: r.path, status: String(d.status ?? (d.takenOver ? 'Human handoff' : 'Unknown')), values: [String(d.name ?? d.subject ?? d.title ?? d.conversationId ?? r.id), workspace(r), String(d.channel ?? '—'), String(d.status ?? (d.takenOver ? 'Human handoff' : 'Unknown')), String(d.text ?? d.description ?? d.type ?? d.reason ?? '—'), dateValue(d.createdAt ?? d.updatedAt ?? d.at) || '—'] };
+    return { id: r.path, status: String(d.status ?? (d.takenOver ? 'Human handoff' : 'Unknown')), values: [String(d.name ?? d.subject ?? d.title ?? d.conversationId ?? r.id), workspace(r), channelLabel(String(d.channel ?? '—'), ar), statusLabel(String(d.status ?? (d.takenOver ? 'Human handoff' : 'Unknown')), ar), String(d.text ?? d.description ?? d.type ?? d.reason ?? '—'), dateValue(d.createdAt ?? d.updatedAt ?? d.at) || '—'] };
   };
-  let columns = ['Reference', 'Workspace', 'Channel', 'Status', 'Details', 'Date'];
+  let columns = [t('Reference', 'المرجع'), t('Workspace', 'مساحة العمل'), t('Channel', 'القناة'), t('Status', 'الحالة'), t('Details', 'التفاصيل'), t('Date', 'التاريخ')];
   let rows: Row[] = [];
   if (moduleId === 'conversations') {
-    rows = scoped(['conversations', 'messages', 'handoffLogs', 'integrations'][tab]).map(row);
+    rows = scoped(['conversations', 'messages', 'handoffLogs', 'integrations'][tab]).map(r => {
+      const base = row(r);
+      const pretty = formatPrettyDate(base.values[5], ar);
+      return {
+        ...base,
+        cells: [
+          <span style={{ fontWeight: 600, color: 'var(--adm-text)' }} dir="auto">{base.values[0]}</span>,
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span className="adm-avatar" style={{ width: 26, height: 26, fontSize: 9.5, borderRadius: 7 }}>{initialsOf(base.values[1])}</span><span style={{ fontWeight: 500 }} dir="auto">{base.values[1]}</span></div>,
+          <span className="adm-badge neutral">{base.values[2]}</span>,
+          <span className={`adm-badge ${statusTone(base.status)}`}><i />{statusLabel(base.status, ar)}</span>,
+          <span dir="auto" style={{ color: 'var(--adm-muted)', fontSize: 12 }}>{base.values[4]}</span>,
+          pretty ? <div title={base.values[5]} style={{ lineHeight: 1.35 }}><div style={{ fontWeight: 500 }}>{pretty.day}</div><small style={{ color: 'var(--adm-muted)', fontSize: 10.5 }}>{pretty.time}</small></div> : <span>{base.values[5]}</span>,
+        ],
+      };
+    });
     if (tab === 3) {
-      columns = ['Channel', 'Workspace', 'Connection', 'Messages', 'Failed', 'Last update'];
-      rows = channelIntegrations.map(r => { const messages = scoped('messages').filter(m => m.workspaceId === r.workspaceId && m.data.channel === (r.data.channel ?? r.id)); return { id: r.path, status: String(r.data.status ?? 'Unknown'), values: [String(r.data.channel ?? r.id), workspace(r), String(r.data.status ?? 'Unknown'), String(messages.length), String(messages.filter(m => /failed|undelivered/i.test(String(m.data.status))).length), dateValue(r.data.updatedAt ?? r.data.lastSyncAt) || '—'] }; });
+      columns = [t('Channel', 'القناة'), t('Workspace', 'مساحة العمل'), t('Connection', 'حالة الاتصال'), t('Messages', 'الرسائل'), t('Failed', 'الفاشلة'), t('Last update', 'آخر تحديث')];
+      rows = channelIntegrations.map(r => {
+        const messages = scoped('messages').filter(m => m.workspaceId === r.workspaceId && m.data.channel === (r.data.channel ?? r.id));
+        const rawStatus = String(r.data.status ?? 'Unknown');
+        const chText = channelLabel(String(r.data.channel ?? r.id), ar);
+        const wsName = workspace(r);
+        const dtText = dateValue(r.data.updatedAt ?? r.data.lastSyncAt) || '—';
+        const pretty = formatPrettyDate(dtText, ar);
+        const failedCount = String(messages.filter(m => /failed|undelivered/i.test(String(m.data.status))).length);
+        return {
+          id: r.path,
+          status: rawStatus,
+          values: [chText, wsName, statusLabel(rawStatus, ar), String(messages.length), failedCount, dtText],
+          cells: [
+            <span className="adm-badge neutral">{chText}</span>,
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span className="adm-avatar" style={{ width: 26, height: 26, fontSize: 9.5, borderRadius: 7 }}>{initialsOf(wsName)}</span><span style={{ fontWeight: 500 }} dir="auto">{wsName}</span></div>,
+            <span className={`adm-badge ${statusTone(rawStatus)}`}><i />{statusLabel(rawStatus, ar)}</span>,
+            <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{messages.length}</span>,
+            <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: Number(failedCount) > 0 ? 'var(--adm-danger)' : undefined }}>{failedCount}</span>,
+            pretty ? <div title={dtText} style={{ lineHeight: 1.35 }}><div style={{ fontWeight: 500 }}>{pretty.day}</div><small style={{ color: 'var(--adm-muted)', fontSize: 10.5 }}>{pretty.time}</small></div> : <span>{dtText}</span>,
+          ],
+        };
+      });
     }
   } else if (moduleId === 'integrations') {
     const integrationRecords = scoped('integrations');
@@ -380,12 +455,12 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
         : [...workspaceTxnRows, ...billingReqRows, ...workspaceOrderRows];
     rows = combined.sort((a, b) => b.sortDate.localeCompare(a.sortDate));
   } else if (moduleId === 'analytics' && tab === 0) {
-    columns = ['Reference', 'Workspace', 'Actor', 'Status', 'Details', 'Date'];
-    rows = [...scoped('auditLogs'), ...scoped('events')].sort((a, b) => dateValue(b.data.createdAt).localeCompare(dateValue(a.data.createdAt))).map(r => { const entry = row(r); entry.values[2] = String(r.data.actorId ?? 'Unattributed'); return entry; });
+    columns = [t('Reference', 'المرجع'), t('Workspace', 'مساحة العمل'), t('Actor', 'المنفّذ'), t('Status', 'الحالة'), t('Details', 'التفاصيل'), t('Date', 'التاريخ')];
+    rows = [...scoped('auditLogs'), ...scoped('events')].sort((a, b) => dateValue(b.data.createdAt).localeCompare(dateValue(a.data.createdAt))).map(r => { const entry = row(r); entry.values[2] = String(r.data.actorId ?? t('Unattributed', 'غير منسوب')); return entry; });
   }
-  else if (moduleId === 'analytics' && tab === 1) { columns = ['Month / Currency', 'Revenue']; rows = stats.trends.map(([key, value]) => ({ id: key, status: '', values: [key, value.toLocaleString('en-US')] })); }
+  else if (moduleId === 'analytics' && tab === 1) { columns = [t('Month / Currency', 'الشهر / العملة'), t('Revenue', 'الإيرادات')]; rows = stats.trends.map(([key, value]) => ({ id: key, status: '', values: [key, value.toLocaleString('en-US')] })); }
   else {
-    columns = ['Workspace', 'Model', 'Tokens consumed', 'Token allocation', 'Status'];
+    columns = [t('Workspace', 'مساحة العمل'), t('Model', 'النموذج'), t('Tokens consumed', 'الرموز المستهلكة'), t('Token allocation', 'الحصة المخصصة'), t('Status', 'الحالة')];
     const grouped = new Map<string, { workspaceId: string; model: string; tokens: number; budget: number | null; status: string }>();
     for (const r of records) {
       const key = `${r.workspaceId}:${String(r.data.model ?? 'Unspecified')}`;
@@ -394,10 +469,10 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
       if (resourceOf(r) === 'modelAllocations') { entry.budget = numberValue(r.data.tokenBudget ?? r.data.budget); entry.status = String(r.data.status ?? 'Active'); }
       if (['aiUsage', 'modelAllocations'].includes(resourceOf(r))) grouped.set(key, entry);
     }
-    rows = [...grouped].map(([id, d]) => ({ id, status: d.status, values: [String(tenants[d.workspaceId]?.name ?? d.workspaceId), d.model, d.tokens.toLocaleString('en-US'), d.budget === null ? 'Not configured' : d.budget.toLocaleString('en-US'), d.status] }));
+    rows = [...grouped].map(([id, d]) => ({ id, status: d.status, values: [String(tenants[d.workspaceId]?.name ?? d.workspaceId), d.model, d.tokens.toLocaleString('en-US'), d.budget === null ? t('Not configured', 'غير مضبوط') : d.budget.toLocaleString('en-US'), statusLabel(d.status, ar)] }));
   }
   const statuses = [...new Set(rows.map(r => r.status))].filter(Boolean).sort();
-  const visible = rows.filter(r => (!status || r.status === status) && r.values.join(' ').toLowerCase().includes(search.toLowerCase()));
+  const visible = rows.filter(r => (!status || r.status === status) && `${r.values.join(' ')} ${statusLabel(r.status, ar)}`.toLowerCase().includes(search.toLowerCase()));
   const pages = Math.max(1, Math.ceil(visible.length / 15)), current = Math.min(page, pages);
   const title = moduleId === 'conversations'
     ? t('Conversations', 'المحادثات')
@@ -429,12 +504,12 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   })();
 
   const metrics: [string, string | number, typeof Activity][] = moduleId === 'conversations'
-    ? [['Threads', scoped('conversations').length, MessagesSquare], ['Messages', scoped('messages').length, Activity], ['Human handoffs', scoped('handoffLogs').length, Users], ['Connected channels', channelIntegrations.filter(r => /^connected$/i.test(String(r.data.status))).length, Plug]]
+    ? [[t('Threads', 'المحادثات'), scoped('conversations').length, MessagesSquare], [t('Messages', 'الرسائل'), scoped('messages').length, Activity], [t('Human handoffs', 'التحويلات البشرية'), scoped('handoffLogs').length, Users], [t('Connected channels', 'القنوات المتصلة'), channelIntegrations.filter(r => /^connected$/i.test(String(r.data.status))).length, Plug]]
     : moduleId === 'integrations'
       ? [[t('Connected integrations', 'التكاملات المتصلة'), connectedIntegrationsCount, CheckCircle2], [t('Total integrations', 'إجمالي التكاملات'), scoped('integrations').length + (trackingSettings ? 1 : 0), Plug], [t('Webhook & sync events', 'أحداث المزامنة وWebhooks'), scoped('events').length + scoped('auditLogs').length, Webhook], [t('Workspaces', 'مساحات العمل'), Object.keys(tenants).length, Building2]]
       : moduleId === 'transactions'
         ? [[t('Total transactions', 'إجمالي المعاملات'), allTransactionsCount, Receipt], [t('Completed / Approved', 'مكتملة / مقبولة'), completedTransactionsCount, CheckCircle2], [t('Pending review', 'قيد الانتظار'), pendingTransactionsCount, Clock], [t('Billing requests', 'طلبات الباقات والرصيد'), billingRequests.length, Layers]]
-        : [['Leads', stats.leads, Users], ['Lead conversion (Won / all leads)', stats.conversion === null ? '—' : `${stats.conversion.toFixed(1)}%`, TrendingUp], ['AI tokens', stats.tokens, Sparkles], ['Workspaces', Object.keys(tenants).length, Building2]];
+        : [[t('Leads', 'العملاء المحتملون'), stats.leads, Users], [t('Lead conversion (Won / all leads)', 'معدل تحويل العملاء (ناجح / الكل)'), stats.conversion === null ? '—' : `${stats.conversion.toFixed(1)}%`, TrendingUp], [t('AI tokens', 'رموز الذكاء الاصطناعي'), stats.tokens, Sparkles], [t('Workspaces', 'مساحات العمل'), Object.keys(tenants).length, Building2]];
   const metricSources = moduleId === 'conversations'
     ? [['conversations'], ['messages'], ['handoffLogs'], ['integrations', 'conversations']]
     : moduleId === 'integrations'
@@ -463,15 +538,15 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
     downloadCSV(csvRows, `${moduleId}-${tab}.csv`);
   };
 
-  const syncTooltip = t('Using cached offline data — sync in progress with Firebase', 'يتم استخدام البيانات المخزنة مؤقتاً — جاري المزامنة الحية مع Firebase');
+  const syncTooltip = t('Using cached offline data — cloud sync in progress', 'يتم استخدام البيانات المخزنة مؤقتاً — جاري المزامنة السحابية');
 
-  return <div className="adm-workspace"><div className="adm-page-head"><div><div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}><span className="adm-eyebrow">{t('LIVE PLATFORM OPERATIONS', 'عمليات المنصة الحية')}</span>{loading && <span className="saw-live-sync-chip" role="status" aria-live="polite" title={syncTooltip}><span className="saw-live-sync-dot" aria-hidden="true"/><span className="saw-live-sync-text">{t('Syncing with cloud…', 'جاري المزامنة…')}</span><span className="saw-live-sync-tooltip" role="tooltip">{syncTooltip}</span></span>}</div><h1>{title}</h1><p>{t('Live workspace records · All recorded time', 'بيانات حية · جميع الفترات')}</p></div><div className="adm-actions"><button type="button" onClick={() => setReload(n => n + 1)} disabled={loading}><RefreshCw size={14} className={loading ? 'adm-spin' : ''}/>{t('Refresh', 'تحديث')}</button><button type="button" onClick={exportCurrentRows} disabled={!visible.length}><Download size={14}/>{t('Export CSV', 'تصدير CSV')}</button></div></div>
+  return <div className="adm-workspace" data-module={moduleId}><div className="adm-page-head"><div><div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}><span className="adm-eyebrow">{t('LIVE PLATFORM OPERATIONS', 'عمليات المنصة الحية')}</span>{loading && <span className="saw-live-sync-chip" role="status" aria-live="polite" title={syncTooltip}><span className="saw-live-sync-dot" aria-hidden="true"/><span className="saw-live-sync-text">{t('Syncing with cloud…', 'جاري المزامنة…')}</span><span className="saw-live-sync-tooltip" role="tooltip">{syncTooltip}</span></span>}</div><h1>{title}</h1><p>{t('Live workspace records · All recorded time', 'بيانات حية · جميع الفترات')}</p></div><div className="adm-actions"><button type="button" onClick={() => setReload(n => n + 1)} disabled={loading}><RefreshCw size={14} className={loading ? 'adm-spin' : ''}/>{t('Refresh', 'تحديث')}</button><button type="button" onClick={exportCurrentRows} disabled={!visible.length}><Download size={14}/>{t('Export CSV', 'تصدير CSV')}</button></div></div>
     {error && <p role="alert">{error}</p>}
     {incomplete && <section className="adm-notice" role="status"><div><p>{t('Some sources are unavailable. Other metrics remain live. Partial values include only accessible records.', 'بعض المصادر غير متاحة. تبقى المقاييس الأخرى حية، وتشمل القيم الجزئية السجلات المتاحة فقط.')}</p>{Object.keys(sourceErrors).length > 0 && <details><summary>{t('Unavailable sources', 'المصادر غير المتاحة')}</summary><ul>{Object.entries(sourceErrors).map(([source, message]) => <li key={source}>{source}: {message}</li>)}</ul></details>}<button onClick={() => setReload(n => n + 1)}>{t('Try again', 'إعادة المحاولة')}</button></div></section>}
     <div className="adm-metrics">{metrics.map(([label, value, Icon], index) => { const state = availability(...metricSources[index]); return <div className="adm-metric" key={label} data-source-state={state}><div><span>{label}</span><i><Icon size={17}/></i></div><strong>{state === 'loading' ? <span className="inline-block h-6 w-16 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" /> : state === 'unavailable' ? t('Unavailable', 'غير متاح') : value}</strong>{state === 'partial' && <small>{t('Partial · accessible records only', 'جزئي · السجلات المتاحة فقط')}</small>}</div>; })}</div>
-    {(moduleId === 'analytics' || moduleId === 'transactions') && <section className="adm-panel" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--adm-success-bg)', color: 'var(--adm-success)', display: 'grid', placeItems: 'center', flex: 'none' }}><CreditCard size={18}/></span><div><h2 style={{ fontSize: 14, fontWeight: 650 }}>Recorded revenue</h2><small style={{ color: 'var(--adm-muted)', fontSize: 11 }}>{t('Approved & completed payments grouped by currency', 'المدفوعات المكتملة والمقبولة مصنفة حسب العملة')}</small></div></div><div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>{revenueState === 'loading' && !transactionRevenueEntries.length ? <span className="inline-block h-6 w-28 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" /> : revenueState === 'unavailable' && !transactionRevenueEntries.length ? <p>{t('Revenue records are unavailable.', 'سجلات الإيرادات غير متاحة.')}</p> : <>{revenueState === 'partial' && <small style={{ color: 'var(--adm-muted)' }}>{t('Partial revenue · accessible workspaces only', 'إيرادات جزئية · مساحات العمل المتاحة فقط')}</small>}{transactionRevenueEntries.length ? transactionRevenueEntries.map(([c, v]) => <p key={c} style={{ padding: '6px 12px', borderRadius: 8, background: 'var(--adm-soft)', border: '1px solid var(--adm-border)', fontWeight: 700, fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>{`${c}: ${formatPrice(v, c)}`}</p>) : <p style={{ color: 'var(--adm-muted)', fontSize: 12 }}>{t('No completed transactions recorded.', 'لا توجد معاملات مكتملة مسجلة.')}</p>}</>}</div></section>}
+    {(moduleId === 'analytics' || moduleId === 'transactions') && <section className="adm-panel" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--adm-success-bg)', color: 'var(--adm-success)', display: 'grid', placeItems: 'center', flex: 'none' }}><CreditCard size={18}/></span><div><h2 style={{ fontSize: 14, fontWeight: 650 }}>{t('Recorded revenue', 'الإيرادات المسجلة')}</h2><small style={{ color: 'var(--adm-muted)', fontSize: 11 }}>{t('Approved & completed payments grouped by currency', 'المدفوعات المكتملة والمقبولة مصنفة حسب العملة')}</small></div></div><div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>{revenueState === 'loading' && !transactionRevenueEntries.length ? <span className="inline-block h-6 w-28 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" /> : revenueState === 'unavailable' && !transactionRevenueEntries.length ? <p>{t('Revenue records are unavailable.', 'سجلات الإيرادات غير متاحة.')}</p> : <>{revenueState === 'partial' && <small style={{ color: 'var(--adm-muted)' }}>{t('Partial revenue · accessible workspaces only', 'إيرادات جزئية · مساحات العمل المتاحة فقط')}</small>}{transactionRevenueEntries.length ? transactionRevenueEntries.map(([c, v]) => <p key={c} style={{ padding: '6px 12px', borderRadius: 8, background: 'var(--adm-soft)', border: '1px solid var(--adm-border)', fontWeight: 700, fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>{`${c}: ${formatPrice(v, c)}`}</p>) : <p style={{ color: 'var(--adm-muted)', fontSize: 12 }}>{t('No completed transactions recorded.', 'لا توجد معاملات مكتملة مسجلة.')}</p>}</>}</div></section>}
     <div className="adm-tabs" role="tablist" aria-label={title}>{tabs.map((label, i) => <button key={label} role="tab" aria-selected={tab === i} className={tab === i ? 'active' : ''} onClick={() => setParams({ tab: String(i) })}>{label}</button>)}</div>
-    <section className="adm-panel"><div className="adm-panel-heading"><div><h2>{tabs[tab]}</h2><p>{t('Real-time synchronized records from Firebase Firestore.', 'سجلات حية متزامنة مباشرة من قاعدة بيانات Firebase.')}</p></div><span className="adm-badge neutral">{visible.length} {t('records', 'سجل')}</span></div><div className="adm-filters"><label className="adm-search"><Search size={15}/><input aria-label="Search records" placeholder={t('Search records…', 'ابحث في السجلات…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/></label><select aria-label="Status filter" value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}><option value="">{t('All statuses', 'كل الحالات')}</option>{statuses.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+    <section className="adm-panel"><div className="adm-panel-heading"><div><h2>{tabs[tab]}</h2><p>{t('Real-time synchronized workspace records.', 'سجلات حية متزامنة مباشرة عبر مساحات العمل.')}</p></div><span className="adm-badge neutral">{visible.length} {t('records', 'سجل')}</span></div><div className="adm-filters"><label className="adm-search"><Search size={15}/><input aria-label={t('Search records', 'بحث في السجلات')} placeholder={t('Search records…', 'ابحث في السجلات…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/></label><select aria-label={t('Status filter', 'فلتر الحالة')} value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}><option value="">{t('All statuses', 'كل الحالات')}</option>{statuses.map(s => <option key={s} value={s}>{statusLabel(s, ar)}</option>)}</select></div>
       {tableState === 'partial' && <p role="status">{t('Showing accessible records; some workspace sources are unavailable.', 'تظهر السجلات المتاحة؛ بعض مصادر مساحات العمل غير متاحة.')}</p>}
       <div className="adm-table-wrap"><table><thead><tr>{columns.map(c => <th key={c}>{c}</th>)}</tr></thead><tbody>{tableState === 'loading' && !visible.length ? Array.from({ length: 5 }, (_, rIdx) => <tr key={rIdx} className="animate-pulse">{columns.map((c, cIdx) => <td key={`${c}-${cIdx}`}><span style={{ display: 'block', height: 14, width: cIdx === 0 ? '70%' : '50%', borderRadius: 6, background: 'var(--adm-border)' }}/></td>)}</tr>) : visible.slice((current - 1) * 15, current * 15).map(r => <tr key={r.id}>{(r.cells ?? r.values).map((v, i) => <td key={i} style={{ maxWidth: 360, overflowWrap: 'anywhere', whiteSpace: 'normal', verticalAlign: 'middle' }}>{v}</td>)}</tr>)}</tbody></table></div>{!visible.length && tableState !== 'loading' && <div className="adm-empty">{tableState === 'unavailable' || tableState === 'partial' ? t('No accessible records in this view. Retry or check workspace permissions.', 'لا توجد سجلات متاحة في هذا العرض. أعد المحاولة أو راجع صلاحيات مساحة العمل.') : t('No matching records.', 'لا توجد سجلات مطابقة.')}</div>}
       <div className="adm-pagination"><span>{current} / {pages}</span><div><button disabled={current <= 1} onClick={() => setPage(current - 1)}>{t('Previous', 'السابق')}</button><button disabled={current >= pages} onClick={() => setPage(current + 1)}>{t('Next', 'التالي')}</button></div></div>

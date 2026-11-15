@@ -22,7 +22,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
   try {
     if (path === '/security' && method === 'GET') return {
       sessions: [{ id: 'current', device: 'This browser', lastActive: user.metadata.lastSignInTime ?? 'Active now', current: true }],
-      history: user.metadata.lastSignInTime ? [`${user.metadata.lastSignInTime} · Last Firebase sign-in`] : [], mfa: multiFactor(user).enrolledFactors.length > 0,
+      history: user.metadata.lastSignInTime ? [`${user.metadata.lastSignInTime} · Last cloud sign-in`] : [], mfa: multiFactor(user).enrolledFactors.length > 0,
     } as T;
     if (path === '/security/password' && method === 'POST') {
       if (store.getState().auth.impersonation) throw new Error('Return to your own account to change your password.');
@@ -43,7 +43,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       await updatePassword(user, data.newPassword);
       return { message: 'Your sign-in password was updated.' } as T;
     }
-    if (path.startsWith('/security/')) throw new Error('This security feature requires additional Firebase Authentication configuration.');
+    if (path.startsWith('/security/')) throw new Error('This security feature requires additional authentication configuration.');
     const session = store.getState().auth;
     if (path === '/settings' && method !== 'GET' && session.impersonation && session.user?.id !== user.uid) {
       throw new Error('Sign in to your account to update these settings.');

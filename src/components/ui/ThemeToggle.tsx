@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { toggleTheme } from '../../store/slices/uiSlice';
+import { setTheme } from '../../store/slices/uiSlice';
 import { Moon, Sun } from 'lucide-react';
 
 export const ThemeToggle: React.FC = () => {
@@ -15,8 +15,9 @@ export const ThemeToggle: React.FC = () => {
   const theme = useSelector((state: RootState) => state.ui.theme);
 
   const handleToggle = () => {
-    if (setPreference) setPreference({ mode: theme === 'light' ? 'dark' : 'light' });
-    else dispatch(toggleTheme());
+    const nextMode = theme === 'light' ? 'dark' : 'light';
+    dispatch(setTheme(nextMode));
+    if (setPreference) setPreference({ mode: nextMode });
   };
 
   return (

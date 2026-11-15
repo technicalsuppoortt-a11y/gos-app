@@ -200,7 +200,7 @@ export async function hostingDomainRequest(request, { workspace, db, hosting }) 
       if (state.data()?.lease === lease) tx.update(hostingRef, { lease: null });
     });
     if (error instanceof HttpsError) throw error;
-    throw new HttpsError('failed-precondition', /acme|http get|challenge|caa/i.test(error.message ?? '') ? domainIssueGuidance(error.message) : 'Unable to check this domain right now. Your DNS settings are retained. Try again shortly, or review Firebase Hosting permissions if this continues.');
+    throw new HttpsError('failed-precondition', /acme|http get|challenge|caa/i.test(error.message ?? '') ? domainIssueGuidance(error.message) : 'Unable to check this domain right now. Your DNS settings are retained. Try again shortly, or review hosting permissions if this continues.');
   }
 }
 

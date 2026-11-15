@@ -11,4 +11,4 @@ Connection lost. Check your network and try again.	انقطع الاتصال. ت
 You do not have permission for this action.	ليس لديك الصلاحية المطلوبة لتسجيل الدخول.
 This account has been disabled. Please contact support.	تم تعطيل هذا الحساب. يرجى التواصل مع الدعم الفني.
 Invalid credentials. Please try again.	البريد الإلكتروني أو كلمة المرور غير صحيحة.
-Cloud Function is not deployed or unreachable. Please deploy Firebase Functions (requires Blaze plan).	خدمة Cloud Function غير منشورة أو غير متاحة. يرجى نشر دوال Firebase (يتطلب خطة Blaze).
+Cloud Function is not deployed or unreachable. Please deploy backend functions.	الخدمة السحابية غير منشورة أو غير متاحة حاليًا. يرجى التحقق من نشر الخدمات الخلفية.

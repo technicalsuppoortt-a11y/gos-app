@@ -3,10 +3,12 @@
    ========================================================================== */
 
 .ba-hub {
+  --adm-ink: var(--adm-text, #0f172a);
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  min-width: 0;
   color: var(--adm-ink, #0f172a);
 }
 
@@ -998,5 +1000,248 @@
   }
   .ba-hero {
     padding: 18px;
+  }
+}
+
+.dark .ba-hero,
+[data-theme="dark"] .ba-hero {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(79, 70, 229, 0.06) 50%, var(--adm-surface, #14182e) 100%);
+}
+
+/* Mobile Responsive Polish for /admin/business-assets (<= 768px only; Desktop untouched) */
+@media (max-width: 768px) {
+  .ba-hub {
+    gap: 14px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .ba-hero {
+    padding: 16px;
+    border-radius: 14px;
+    gap: 14px;
+  }
+
+  .ba-eyebrow {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .ba-hero-copy {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ba-hero-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .ba-hero-actions .ba-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 140px;
+    white-space: normal;
+    text-align: center;
+    padding: 8px 12px;
+    height: auto;
+  }
+
+  .ba-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ba-kpi-card {
+    min-width: 0;
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .ba-kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .ba-kpi-meta strong {
+    font-size: 19px;
+  }
+
+  .ba-agency-bar {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 12px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ba-agency-bar-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ba-scope-pills {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ba-scope-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ba-scope-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .ba-workspace-picker {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ba-select {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ba-agency-strip {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .ba-agency-card {
+    min-width: 0;
+    padding: 12px 14px;
+  }
+
+  .ba-agency-card-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ba-agency-card-foot > .ba-btn {
+    width: 100%;
+  }
+
+  .ba-composer {
+    padding: 16px;
+    border-radius: 14px;
+    gap: 14px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ba-composer-head {
+    flex-wrap: wrap;
+  }
+
+  .ba-composer-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .ba-field {
+    min-width: 0;
+  }
+
+  .ba-field input,
+  .ba-field select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .ba-cat-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .ba-dropzone {
+    min-height: 156px;
+    padding: 16px;
+  }
+
+  .ba-explorer {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 12px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .ba-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ba-cat-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .ba-cat-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ba-cat-tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .ba-toolbar-right {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .ba-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  .ba-view-toggle {
+    flex-shrink: 0;
+  }
+
+  .ba-asset-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .ba-asset-card {
+    min-width: 0;
+  }
+
+  .ba-asset-actions {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .ba-explorer .adm-table-wrap table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ba-kpi-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

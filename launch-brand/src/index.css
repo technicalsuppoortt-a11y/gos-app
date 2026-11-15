@@ -25,22 +25,22 @@
 
 @layer base {
   :root {
-    --bg:#F7F5F1; --surface:#FFFFFF; --surface-2:#F1EEE8; --line:rgba(20,18,14,.09);
-    --text:#1C1A17; --text-dim:#767068;
+    --bg:#f8f9fd; --surface:#ffffff; --surface-2:#f8faff; --line:#eceef4;
+    --text:#191b2d; --text-dim:#55596b;
     --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
     --shadow-soft: rgba(30,25,20,.14);
   }
 
   .light {
-    --bg:#F7F5F1; --surface:#FFFFFF; --surface-2:#F1EEE8; --line:rgba(20,18,14,.09);
-    --text:#1C1A17; --text-dim:#767068;
+    --bg:#f8f9fd; --surface:#ffffff; --surface-2:#f8faff; --line:#eceef4;
+    --text:#191b2d; --text-dim:#55596b;
     --ember-1:#635bff; --ember-2:#7065de; --tech-1:#4A75D6; --tech-2:#6C5CE0;
     --shadow-soft: rgba(30,25,20,.14);
   }
 
   .dark {
-    --bg:#08090D; --surface:#12141B; --surface-2:#191C25; --line:rgba(255,255,255,.07);
-    --text:#F2F1EE; --text-dim:#8B8F9C;
+    --bg:#0b1020; --surface:#151a27; --surface-2:#1b2030; --line:#2d3344;
+    --text:#edf0f7; --text-dim:#a0aabc;
     --ember-1:#635bff; --ember-2:#7065de; --tech-1:#5B8DEF; --tech-2:#7C6CF0;
     --shadow-soft: rgba(0,0,0,.6);
   }

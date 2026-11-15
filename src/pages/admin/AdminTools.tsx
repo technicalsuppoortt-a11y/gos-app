@@ -416,7 +416,7 @@ export function AdminTools() {
 
                 <div className="adm-tool-telemetry">
                   <span>
-                    {t('Source:', 'المصدر:')} <b>Firebase</b>
+                    {t('Source:', 'المصدر:')} <b>{t('Cloud Sync', 'مزامنة سحابية')}</b>
                   </span>
                   <span>
                     {t('Plans:', 'الخطط:')} <b>{tool.accessTier === 'all' ? t('All', 'الكل') : tool.accessTier === 'agency_only' ? 'Agency' : 'Pro / Agency'}</b>
@@ -766,7 +766,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
             </div>
             <div className="adm-drawer-tele-item">
               <small>{t('Data Source', 'مصدر البيانات')}</small>
-              <strong>Firebase Firestore</strong>
+              <strong>{t('Cloud Storage', 'التخزين السحابي')}</strong>
             </div>
             <div className="adm-drawer-tele-item">
               <small>{t('Workspace Access', 'وصول المساحات')}</small>

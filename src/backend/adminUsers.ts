@@ -58,8 +58,8 @@ const ACTIVATION_MESSAGES: Record<ActivationErrorCode, { en: string; ar: string 
     ar: 'لم يتم العثور على دعوة معلقة لهذا البريد الإلكتروني. اطلب دعوة جديدة من المسؤول.',
   },
   LOOKUP_BLOCKED: {
-    en: 'Your invitation could not be read because the database security rules blocked it. Ask your administrator to deploy the latest Firestore rules, then try again.',
-    ar: 'تعذرت قراءة دعوتك لأن قواعد أمان قاعدة البيانات منعت ذلك. اطلب من المسؤول نشر أحدث قواعد Firestore ثم حاول مرة أخرى.',
+    en: 'Your invitation could not be read due to workspace security permissions. Ask your administrator to update access permissions, then try again.',
+    ar: 'تعذرت قراءة دعوتك بسبب صلاحيات أمان مساحة العمل. اطلب من المسؤول تحديث صلاحيات الوصول ثم حاول مرة أخرى.',
   },
   DEACTIVATED: {
     en: 'This account has been deactivated. Contact your administrator.',

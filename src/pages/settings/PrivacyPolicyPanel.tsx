@@ -59,7 +59,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
         effectiveDateLabel: 'تاريخ السريان:',
         effectiveDateValue: '15 أكتوبر 2026',
         badgeCompliance: 'متوافق مع معايير Meta',
-        badgeSecurity: 'مشفر عبر Google Firebase',
+        badgeSecurity: 'تشفير سحابي متقدم',
         searchPlaceholder: 'البحث في بنود سياسة الخصوصية...',
         actions: {
           copyLink: 'نسخ الرابط',
@@ -123,7 +123,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
         },
         section3: {
           title: '3. تخزين البيانات وحمايتها',
-          lead: `يتم تخزين بياناتك، بما في ذلك رموز الوصول الخاصة بـ Meta (Meta Access Tokens)، بأمان تام على Google Firebase / Firestore.`,
+          lead: `يتم تخزين بياناتك، بما في ذلك رموز الوصول الخاصة بـ Meta (Meta Access Tokens)، بأمان تام على خوادم المنصة السحابية المشفرة.`,
           boxTitle: 'تشفير متقدم وعزل تام للبيانات متعدد المستأجرين',
           boxDesc: `نحن نطبق قواعد أمان مشددة (Strict Security Rules) وتشفيرًا متقدمًا لضمان عزل رموزك وبيانات عملك عزلًا تامًا، بحيث لا يمكن الوصول إليها من قِبل أي مستخدمين غير مصرح لهم أو أي عملاء آخرين على المنصة.`,
         },
@@ -146,7 +146,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
           stepSaaSTitle: 'لحذف بياناتك بالكامل نهائياً من خوادم المنصة:',
           stepSaaSLead: `يرجى إرسال رسالة بريد إلكتروني إلى ${supportEmail} مع كتابة سطر الموضوع:`,
           subjectExample: 'Data Deletion Request (طلب حذف البيانات)',
-          slaText: 'ضمان الحذف: سيتم حذف حسابك ورموز الوصول وكافة البيانات المرتبطة به نهائياً من قاعدة بيانات Firebase خلال 48 ساعة من استلام الطلب.',
+          slaText: 'ضمان الحذف: سيتم حذف حسابك ورموز الوصول وكافة البيانات المرتبطة به نهائياً من خوادم المنصة خلال 48 ساعة من استلام الطلب.',
         },
         section6: {
           title: '6. التغييرات على سياسة الخصوصية',
@@ -166,7 +166,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
       effectiveDateLabel: 'Effective Date:',
       effectiveDateValue: 'October 15, 2026',
       badgeCompliance: 'Meta Platform Compliant',
-      badgeSecurity: 'Google Firebase Encrypted',
+      badgeSecurity: 'Enterprise Cloud Encrypted',
       searchPlaceholder: 'Search policy clauses...',
       actions: {
         copyLink: 'Copy Link',
@@ -230,7 +230,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
       },
       section3: {
         title: '3. Data Storage and Security',
-        lead: 'Your data, including Meta Access Tokens, is securely stored on Google Firebase / Firestore.',
+        lead: 'Your data, including Meta Access Tokens, is securely stored on encrypted cloud infrastructure.',
         boxTitle: 'Enterprise-grade isolation and encryption',
         boxDesc: 'We implement strict security rules and encryption to ensure that your tokens and business data are isolated and cannot be accessed by unauthorized users or other clients on our platform.',
       },
@@ -253,7 +253,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
         stepSaaSTitle: 'To completely delete your data from our SaaS platform:',
         stepSaaSLead: `Please send an email to ${supportEmail} with the subject line:`,
         subjectExample: 'Data Deletion Request',
-        slaText: 'Guaranteed SLA: We will permanently delete your account, tokens, and associated data from our Firebase database within 48 hours of your request.',
+        slaText: 'Guaranteed SLA: We will permanently delete your account, tokens, and associated data from our cloud servers within 48 hours of your request.',
       },
       section6: {
         title: '6. Changes to This Privacy Policy',

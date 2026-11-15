@@ -15,11 +15,9 @@ export const LanguageSwitcher: React.FC<{ onLanguageChange?: (language: Language
   const language = useSelector((state: RootState) => state.ui.language);
 
   const selectLanguage = (newLang: Language) => {
+    void i18n.changeLanguage(newLang);
+    dispatch(setLanguage(newLang));
     if (setPreference) setPreference({ language: newLang });
-    else {
-      void i18n.changeLanguage(newLang);
-      dispatch(setLanguage(newLang));
-    }
     onLanguageChange?.(newLang);
   };
 

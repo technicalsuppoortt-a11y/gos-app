@@ -18,6 +18,7 @@ function harness(serverOnly = true, resources = ['transactions']) {
     },
     './firebase': { primaryAuth: {}, primaryDb: {}, backendError: error => error.message },
     './firestoreCodec': { decodeFirestoreValue: value => value },
+    '../router/platformAccess': { isPlatformTeamRole: role => ['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE'].includes(role) },
   };
   const exports = {};
   const source = fs.readFileSync(new URL('../src/backend/adminManagement.ts', import.meta.url), 'utf8');

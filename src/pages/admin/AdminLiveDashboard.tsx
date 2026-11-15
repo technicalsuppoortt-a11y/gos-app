@@ -185,11 +185,11 @@ export function AdminDashboard() {
       <div className="adm-health-row" key={item.id}>
         <div className="adm-health-row-main">
           <div>
-            <strong>{item.name}</strong>
+            <strong>{item.id === "firestore" || /firestore/i.test(item.name) ? t("Cloud Data Sync", "مزامنة البيانات السحابية") : item.id === "functions" || /firebase\s*functions/i.test(item.name) ? t("Backend Services", "الخدمات الخلفية") : item.name.replace(/firebase|firestore|database/gi, "Cloud").trim()}</strong>
             <small>
               {item.kind} · {item.mode}
             </small>
-            <small>{item.detail}</small>
+            <small>{item.detail.replace(/firebase|firestore|database/gi, "cloud")}</small>
           </div>
         </div>
         <div className="adm-health-row-meta">

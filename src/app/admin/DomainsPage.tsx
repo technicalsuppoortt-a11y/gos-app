@@ -1221,8 +1221,8 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
           ===================================================================== */}
       {tab === 'domains' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260 }}>
+          <div className="dp-domains-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div className="dp-domains-search-row" style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260 }}>
               <div className="dp-search-input-wrap" style={{ maxWidth: 420 }}>
                 <Search size={15} className="dp-search-icon" />
                 <input
@@ -1704,7 +1704,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
                   </h3>
                   <p className="dp-card-desc">
                     {t(
-                      'Stored encrypted server-side in Firestore. Never exposed to Admins or Users.',
+                      'Stored encrypted server-side. Never exposed to Admins or Users.',
                       'تُحفظ المفاتيح بشكل آمن في الخادم ولا تظهر إطلاقاً للمسؤولين أو المستخدمين.'
                     )}
                   </p>

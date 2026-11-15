@@ -29,8 +29,8 @@ export async function adminDashboardStatusRequest(request, { actor, db, apiBase,
   const paymentDoc = await db.doc('settings/paymentMethods').get();
   const firestoreLatency = Math.round(performance.now() - start);
   const services = [
-    { id: 'firestore', name: 'Cloud Firestore', kind: 'Infrastructure', status: 'healthy', mode: 'server', latencyMs: firestoreLatency, detail: 'Server read completed.' },
-    { id: 'functions', name: 'Firebase Functions', kind: 'Backend', status: 'healthy', mode: 'server', latencyMs: null, detail: 'Authenticated dashboard callable completed.' },
+    { id: 'firestore', name: 'Cloud Data Sync', kind: 'Infrastructure', status: 'healthy', mode: 'server', latencyMs: firestoreLatency, detail: 'Server read completed.' },
+    { id: 'functions', name: 'Backend Services', kind: 'Backend', status: 'healthy', mode: 'server', latencyMs: null, detail: 'Authenticated dashboard callable completed.' },
   ];
   const apiStart = performance.now();
   const apiCheck = (async () => {

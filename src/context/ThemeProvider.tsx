@@ -1,5 +1,5 @@
 import { useUILanguage, localizeNode } from '../i18n/display';
-import React, { useEffect, useLayoutEffect } from 'react';
+import React, { useLayoutEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import i18n from '../i18n/i18n';
@@ -7,7 +7,7 @@ import { storageSet } from '../utils/browserStorage';
 import { usePhoenixBrand } from '../backend/phoenixBrand';
 import './phoenix-brand.css';
 import { bindCapturedBrandColors } from '../branding/themeColors';
-import { resolveDashboardBrandTokens } from '../branding/dashboardBrandTokens';
+import { normalizeDashboardModeColors, resolveDashboardBrandTokens } from '../branding/dashboardBrandTokens';
 import fontCatalog from '../branding/brandFontCatalog.json';
 import { useWorkspacePreferences } from '../backend/workspacePreferences';
 import { workspaceTheme } from '../branding/workspaceTheme';
@@ -46,12 +46,17 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
       // Browsers with CSS @scope get the same rules in a far smaller, faster stylesheet.
       void ('CSSScopeRule' in window ? import('./phoenix-brand-scoped.css') : import('./phoenix-brand-generated.css'));
     }
-    const modeColors = design[theme];
+    const rawModeColors = design[theme] as Record<string, string>;
+    const modeColors =
+      design === workspace
+        ? rawModeColors
+        : normalizeDashboardModeColors(rawModeColors, theme, design.light?.primary);
     for (const [key, value] of Object.entries(modeColors)) {
       if (typeof value === 'string' && CSS.supports('color', value)) set(key, value);
     }
     const resolvedTokens = resolveDashboardBrandTokens(modeColors, theme, {
       isWorkspacePalette: design === workspace,
+      lightPrimary: design.light?.primary,
     });
     if (design === workspace) {
       if (customWorkspace) root.dataset.gpWorkspace = '';
@@ -65,6 +70,9 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
         set('button-gradient', resolvedTokens.actionGradient);
         set('nav-gradient', resolvedTokens.actionGradient);
       }
+    } else {
+      set('nav-gradient', resolvedTokens.actionGradient);
+      set('button-gradient', resolvedTokens.actionGradient);
     }
     set('action-bg', resolvedTokens.actionBg);
     set('action-hover', resolvedTokens.actionHover);
@@ -140,7 +148,7 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
     storageSet('theme', theme);
   }, [theme]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const direction = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.dir = direction;
     document.documentElement.lang = language;

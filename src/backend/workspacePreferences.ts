@@ -34,6 +34,7 @@ export type WorkspacePreferences = {
   timezone: string;
   supportEmail: string;
   dateFormat?: string;
+  themeSource?: 'workspace' | 'phoenix';
 };
 
 export const preferenceDefaults: WorkspacePreferences = {
@@ -81,6 +82,7 @@ export function sanitizeWorkspacePreferences(
     timezone: rawTz,
     supportEmail: rawEmail,
     ...(typeof obj.dateFormat === 'string' && { dateFormat: obj.dateFormat }),
+    ...((obj.themeSource === 'workspace' || obj.themeSource === 'phoenix') && { themeSource: obj.themeSource }),
   };
 }
 
@@ -182,7 +184,25 @@ export function useWorkspacePreferenceState() {
   }, error => console.warn('Public appearance could not be loaded', backendError(error))), []);
 
   useEffect(() => {
-    if (!uid || !tenantId) return;
+    if (!uid) return;
+    if (!tenantId) {
+      let active = true;
+      const stopPersonal = onSnapshot(
+        personalPreferencesRef(uid),
+        snapshot => {
+          if (!active) return;
+          setAccount({ scope, workspace: null, personal: readPersonal(snapshot.data()), loading: false, error: '' });
+        },
+        () => {
+          if (!active) return;
+          setAccount({ scope, workspace: null, personal: {}, loading: false, error: '' });
+        }
+      );
+      return () => {
+        active = false;
+        stopPersonal();
+      };
+    }
     const workspaceDb = db;
     let active = true;
     let tenantValues: WorkspacePreferences | null = null;

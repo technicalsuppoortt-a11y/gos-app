@@ -1,6 +1,6 @@
 
 @scope (.brand-engine-module) {
-/* Shared GOS shell palette; keep page content and preview branding independent. */
+/* Shared Joe Academy shell palette; keep page content and preview branding independent. */
 :scope:not(.dark) .app-shell.has-sidebar {
   --background: #f8f9fd;
   background: #f8f9fd;
@@ -12,16 +12,30 @@
   background: #f8f9fd;
 }
 
+:scope.dark .app-shell.has-sidebar,
+:scope.dark .app-shell.has-sidebar > .workspace-column,
+:scope.dark .app-shell.has-sidebar .workspace-layout,
+:scope.dark .app-shell.has-sidebar .workspace-main {
+  --background: #0b1020;
+  background: #0b1020;
+}
+
 .workspace-sidebar:is(.force-light, .force-dark) {
   min-height: 0;
   max-height: 100%;
   padding: 12px 10px;
   overflow: hidden;
-  background: var(--ui-surface);
+  background: linear-gradient(180deg, #f7faff 0%, #f3f7fc 100%);
   border-inline-end: 1px solid var(--ui-border);
   box-shadow: none;
   color: var(--ui-text-secondary);
   font-family: var(--app-font-sans, var(--font-sans));
+}
+
+.workspace-sidebar.force-dark,
+:scope.dark .workspace-sidebar {
+  background: #111522;
+  border-inline-end-color: #252b3a;
 }
 
 .workspace-sidebar:is(.force-light, .force-dark) .sidebar-brand {
@@ -39,7 +53,7 @@
 }
 
 .workspace-sidebar:is(.force-light, .force-dark) .sidebar-brand-copy small {
-  color: var(--ui-text-muted);
+  color: var(--ui-accent-text);
   font-size: 11px;
   line-height: 1.4;
   font-weight: 500;
@@ -78,7 +92,9 @@
 }
 
 .workspace-sidebar:is(.force-light, .force-dark) button.active {
+  background: var(--brand-gradient);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(110, 84, 228, 0.22);
 }
 
 .workspace-sidebar:is(.force-light, .force-dark) .sidebar-item-icon {
@@ -213,6 +229,10 @@
 
 :scope:not(.dark) .mobile-workspace-drawer {
   background: var(--ui-surface);
+}
+
+:scope.dark .mobile-workspace-drawer {
+  background: #111522;
 }
 
 }

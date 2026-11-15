@@ -302,10 +302,85 @@ function resolveAccentText(
   return rgbToHex(best);
 }
 
+/**
+ * Normalizes theme mode surfaces so Launch Brand themes (including previously deployed
+ * snapshots) maintain crisp dark/light surface hierarchy and readable text/borders.
+ */
+export function normalizeDashboardModeColors(
+  colors: Record<string, string> | undefined,
+  mode: DashboardBrandMode,
+  lightPrimary?: string,
+): Record<string, string> {
+  const next: Record<string, string> = { ...(colors ?? {}) };
+  if (mode === 'light') {
+    if (!parseBrandColorRgb(next.background)) next.background = '#F8FAFC';
+    if (!parseBrandColorRgb(next.surface)) next.surface = '#FFFFFF';
+    if (!parseBrandColorRgb(next.headerBackground)) next.headerBackground = next.surface;
+    if (!parseBrandColorRgb(next.footerBackground)) next.footerBackground = next.background;
+    if (!parseBrandColorRgb(next.text) || brandContrastRatio(next.text, next.surface) < 7) next.text = '#0F172A';
+    if (!parseBrandColorRgb(next.mutedText) || brandContrastRatio(next.mutedText, next.surface) < 4.5) {
+      next.mutedText = '#475569';
+    }
+    if (!parseBrandColorRgb(next.border)) next.border = '#E2E8F0';
+    return next;
+  }
+
+  const hueSeed =
+    parseBrandColorRgb(lightPrimary) ??
+    parseBrandColorRgb(next.primary) ??
+    ([99, 91, 255] as Rgb);
+
+  let bgRgb = parseBrandColorRgb(next.background);
+  if (!bgRgb || relativeLuminance(bgRgb) > 0.08) {
+    bgRgb = mixRgb(hueSeed, [11, 16, 32], 0.12);
+    next.background = rgbToHex(bgRgb);
+  }
+  const bgHex = rgbToHex(bgRgb);
+
+  let surfRgb = parseBrandColorRgb(next.surface);
+  if (
+    !surfRgb ||
+    relativeLuminance(surfRgb) > 0.12 ||
+    relativeLuminance(surfRgb) < relativeLuminance(bgRgb) ||
+    brandContrastRatio(rgbToHex(surfRgb), bgHex) < 1.04
+  ) {
+    surfRgb = mixRgb(hueSeed, [21, 28, 47], 0.14);
+    next.surface = rgbToHex(surfRgb);
+  }
+  const surfHex = rgbToHex(surfRgb);
+
+  const headerRgb = parseBrandColorRgb(next.headerBackground);
+  if (!headerRgb || relativeLuminance(headerRgb) > 0.12) {
+    next.headerBackground = surfHex;
+  }
+
+  const footerRgb = parseBrandColorRgb(next.footerBackground);
+  if (!footerRgb || relativeLuminance(footerRgb) > 0.10) {
+    next.footerBackground = rgbToHex(mixRgb(hueSeed, [8, 12, 24], 0.10));
+  }
+
+  const textRgb = parseBrandColorRgb(next.text);
+  if (!textRgb || brandContrastRatio(rgbToHex(textRgb), surfHex) < 7) {
+    next.text = '#F1F5F9';
+  }
+
+  const mutedRgb = parseBrandColorRgb(next.mutedText);
+  if (!mutedRgb || brandContrastRatio(rgbToHex(mutedRgb), surfHex) < 4.5) {
+    next.mutedText = '#94A3B8';
+  }
+
+  const borderRgb = parseBrandColorRgb(next.border);
+  if (!borderRgb || brandContrastRatio(rgbToHex(borderRgb), surfHex) < 1.15) {
+    next.border = rgbToHex(mixRgb(hueSeed, [45, 54, 76], 0.16));
+  }
+
+  return next;
+}
+
 export function resolveDashboardBrandTokens(
   colors: Record<string, string>,
   mode: DashboardBrandMode,
-  options?: { isWorkspacePalette?: boolean },
+  options?: { isWorkspacePalette?: boolean; lightPrimary?: string },
 ): ResolvedDashboardBrandTokens {
   const surfaceRgb = parseBrandColorRgb(colors.surface) ?? (mode === 'dark' ? ([16, 30, 46] as Rgb) : ([255, 255, 255] as Rgb));
   const backgroundRgb = parseBrandColorRgb(colors.background) ?? (mode === 'dark' ? ([8, 19, 31] as Rgb) : ([248, 250, 252] as Rgb));
@@ -317,7 +392,22 @@ export function resolveDashboardBrandTokens(
   const hasExplicitButtonBg =
     Boolean(parseBrandColorRgb(rawButtonBg)) && rawButtonBg.trim().toUpperCase() !== '#FFFFFF';
 
-  const actionSeed = hasExplicitButtonBg ? rawButtonBg : rawPrimary;
+  let actionSeed = hasExplicitButtonBg ? rawButtonBg : rawPrimary;
+  if (mode === 'dark' && !hasExplicitButtonBg && options?.lightPrimary) {
+    const darkPrimRgb = parseBrandColorRgb(rawPrimary);
+    const lightPrimRgb = parseBrandColorRgb(options.lightPrimary);
+    if (
+      darkPrimRgb &&
+      lightPrimRgb &&
+      relativeLuminance(darkPrimRgb) > 0.34 &&
+      relativeLuminance(lightPrimRgb) >= 0.03 &&
+      relativeLuminance(lightPrimRgb) < 0.34 &&
+      hsvStats(lightPrimRgb).saturation >= 0.25
+    ) {
+      actionSeed = rgbToHex(mixRgb(lightPrimRgb, [255, 255, 255], 0.88));
+    }
+  }
+
   const { actionBg, onAction } = resolveActionPair(actionSeed, colors.secondary, surfaceHex, mode);
 
   const actionRgb = parseBrandColorRgb(actionBg) ?? ([124, 58, 237] as Rgb);

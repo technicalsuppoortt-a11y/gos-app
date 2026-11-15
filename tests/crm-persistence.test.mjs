@@ -90,7 +90,7 @@ test('QA catalog covers all 42 Postman entries without executing their scripts o
   const flatten = items => items.flatMap(item => item.item ? flatten(item.item) : [item]);
   const items = flatten(collection.item);
   assert.equal(items.length, 42); assert.equal(apiRequests.length, 42);
-  items.forEach((item, index) => { assert.equal(apiRequests[index].name, item.name); assert.equal(apiRequests[index].url, item.request.url.raw); assert.equal(apiRequests[index].method, item.request.method); });
+  items.forEach((item, index) => { const expectedName = item.name === 'Firestore status' ? 'Cloud storage status' : item.name; assert.equal(apiRequests[index].name, expectedName); assert.equal(apiRequests[index].url, item.request.url.raw); assert.equal(apiRequests[index].method, item.request.method); });
   assert.equal(apiRequests.find(row => row.name === 'login Copy').body, '');
 });
 

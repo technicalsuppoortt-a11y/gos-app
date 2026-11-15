@@ -87,9 +87,9 @@ export function publicationResourcePaths(asset, manifest, template = '') {
 
 export function domainIssueGuidance(message) {
   const text = String(message || '');
-  if (/acme|http get|challenge/i.test(text)) return 'SSL validation is waiting for your domain to reach Firebase Hosting. Apply the DNS changes below, remove only the conflicting A/AAAA records marked REMOVE, and disable any proxy or redirect blocking the challenge. Keep ownership TXT records in place. Firebase retries certificate validation automatically; propagation can take up to 24 hours.';
-  if (/caa/i.test(text)) return 'Certificate issuance is blocked by CAA records. Apply the CAA changes supplied by Firebase below to authorize its certificate authority.';
-  return 'DNS or SSL verification is pending. Apply the required DNS changes below and allow time for propagation. If this persists after 24 hours, review the domain in Firebase Hosting.';
+  if (/acme|http get|challenge/i.test(text)) return 'SSL validation is waiting for your domain to reach cloud hosting. Apply the DNS changes below, remove only the conflicting A/AAAA records marked REMOVE, and disable any proxy or redirect blocking the challenge. Keep ownership TXT records in place. Certificate validation retries automatically; propagation can take up to 24 hours.';
+  if (/caa/i.test(text)) return 'Certificate issuance is blocked by CAA records. Apply the CAA changes supplied below to authorize the certificate authority.';
+  return 'DNS or SSL verification is pending. Apply the required DNS changes below and allow time for propagation. If this persists after 24 hours, review your domain DNS settings.';
 }
 
 export function domainVerification(domain) {

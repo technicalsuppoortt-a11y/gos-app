@@ -48,7 +48,7 @@ export function WorkspaceBrandSettings() {
 
   useEffect(() => {
     const { theme, mode, language, currency } = edits;
-    preview(resetting ? preferenceDefaults : dirty && tab === 'general' ? {
+    preview(resetting ? { ...preferenceDefaults, themeSource: 'workspace' } : dirty && tab === 'general' ? {
       ...(theme && { theme }),
       ...(mode && { mode }),
       ...(language && { language }),
@@ -73,7 +73,7 @@ export function WorkspaceBrandSettings() {
   }, [topbarChange]);
 
   function update<K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) {
-    setEdits(current => ({ ...current, [key]: value }));
+    setEdits(current => ({ ...current, [key]: value, ...(key === 'theme' ? { themeSource: 'workspace' } : {}) }));
     setSaved(false);
   }
 
@@ -84,14 +84,14 @@ export function WorkspaceBrandSettings() {
       for (const key of ['workspace_theme', 'workspace_preferences_local', 'gos-theme-mode']) {
         browserStorage.removeItem(key);
       }
-      preview(preferenceDefaults);
+      preview({ ...preferenceDefaults, themeSource: 'workspace' });
     } else {
       setBusy(true);
     }
     setError('');
     setSaved(false);
     try {
-      const next = reset ? preferenceDefaults : draft;
+      const next: WorkspacePreferences = reset ? { ...preferenceDefaults, themeSource: 'workspace' } : draft;
       Intl.DateTimeFormat('en', { timeZone: next.timezone });
       if (next.logoUrl && !/^(https:\/\/|\/(?!\/)|data:image\/)/.test(next.logoUrl.trim())) {
         throw new Error('Use an HTTPS logo URL, a local path (/...), or upload an image.');

@@ -42,7 +42,7 @@ function themedColor(color: string, property: string): string {
     if (/^(?:color|fill|stroke|stop-color)$/.test(property)) {
       replacement = `var(--gp-accent-text, var(--gp-primary, ${color}))`;
     } else if (/background|gradient/.test(property)) {
-      replacement = max > .88
+      replacement = max > .88 && min > .72
         ? `var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface)))`
         : `var(--gp-action-bg, var(--gp-primary, ${color}))`;
     } else {

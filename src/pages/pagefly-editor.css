@@ -386,3 +386,199 @@
   }
 }
 @media (prefers-reduced-motion: reduce) { .pf-template-preview-action { transition: none; } }
+
+/* Mobile-only editor pane switcher (hidden on desktop) */
+.fb-mobile-editor-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .funnel-builder-page .fb-editor-header {
+    height: auto !important;
+    min-height: 46px !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    flex-wrap: wrap;
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+
+  .funnel-builder-page .fb-editor-title {
+    flex: 1 1 auto;
+    min-width: 140px;
+    gap: 6px;
+  }
+
+  .funnel-builder-page .fb-editor-title input {
+    width: auto !important;
+    flex: 1 1 90px;
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  .funnel-builder-page .fb-main-actions {
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-inline-start: auto;
+  }
+
+  .funnel-builder-page .fb-mobile-editor-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    padding: 6px 8px;
+    flex: 0 0 auto;
+    background: #ffffff;
+    border-bottom: 1px solid var(--fb-line, #e8eaf1);
+    z-index: 25;
+  }
+
+  .funnel-builder-page .fb-mobile-editor-bar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 33px;
+    padding: 0 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .funnel-builder-page .fb-mobile-editor-bar button.active {
+    background: var(--ui-accent-surface, #eef2ff);
+    border-color: var(--fb-accent, #7c3aed);
+    color: var(--fb-accent, #7c3aed);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  html.dark .funnel-builder-page .fb-mobile-editor-bar {
+    background: #0f172a;
+    border-bottom-color: #1e293b;
+  }
+
+  html.dark .funnel-builder-page .fb-mobile-editor-bar button {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+
+  html.dark .funnel-builder-page .fb-mobile-editor-bar button.active {
+    background: rgba(124, 58, 237, 0.2);
+    border-color: #a78bfa;
+    color: #f8fafc;
+  }
+
+  .funnel-builder-page .fb-builder-grid,
+  .funnel-builder-page .fb-builder-grid.pf-variants-open,
+  .fn-focused-editor .fb-builder-grid,
+  .form-advanced-editor .fb-builder-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .funnel-builder-page .fb-builder-grid[data-mobile-pane="canvas"] > :is(.fb-left-panel, .fb-right-panel) {
+    display: none !important;
+  }
+
+  .funnel-builder-page .fb-builder-grid[data-mobile-pane="blocks"] > :is(.fb-center-panel, .fb-right-panel) {
+    display: none !important;
+  }
+
+  .funnel-builder-page .fb-builder-grid[data-mobile-pane="inspector"] > :is(.fb-left-panel, .fb-center-panel) {
+    display: none !important;
+  }
+
+  .funnel-builder-page .fb-builder-grid > :is(.fb-left-panel, .fb-center-panel, .fb-right-panel) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    border-inline: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  .funnel-builder-page .fb-left-panel .pf-variant-panel {
+    width: 132px;
+    flex: 0 0 132px;
+    max-width: 44vw;
+    overflow-y: auto;
+  }
+
+  .funnel-builder-page .fb-canvas-controls {
+    height: auto !important;
+    min-height: 38px !important;
+    flex-wrap: wrap;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  .funnel-builder-page .fb-page-picker {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .funnel-builder-page .fb-url-input {
+    order: 4;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .funnel-builder-page .fb-site-frame {
+    padding: 8px !important;
+  }
+
+  .funnel-builder-page .fb-site-frame.tablet .fb-site-window,
+  .funnel-builder-page .fb-site-frame.mobile .fb-site-window {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .funnel-builder-page .fb-hero-copy {
+    width: 100% !important;
+  }
+
+  .funnel-builder-page .fb-program-grid,
+  .funnel-builder-page .fb-site-stats {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .pf-template-filters label,
+  .pf-template-filters select {
+    min-width: 0 !important;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .pf-start-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pf-initialization {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .funnel-builder-page .fb-published-link span,
+  .funnel-builder-page .fb-preview-btn span,
+  .funnel-builder-page .fb-flow-button span {
+    display: none;
+  }
+
+  .funnel-builder-page .fb-published-link,
+  .funnel-builder-page .fb-preview-btn,
+  .funnel-builder-page .fb-flow-button {
+    padding: 0 8px !important;
+  }
+}

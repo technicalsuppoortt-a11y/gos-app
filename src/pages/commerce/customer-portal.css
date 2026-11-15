@@ -1062,3 +1062,234 @@ html.dark .cportal-btn-emerald {
   margin: auto;
   padding: clamp(18px, 4vw, 28px);
 }
+
+/* Mobile UX & RTL Responsive Refinements (<= 768px only, desktop untouched) */
+@media (max-width: 768px) {
+  .cportal-shell {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .cportal-topbar {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    gap: 8px 10px;
+    min-height: 56px;
+  }
+
+  .cportal-brand-group {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .cportal-brand {
+    min-width: 0;
+  }
+
+  .cportal-brand-copy {
+    min-width: 0;
+  }
+
+  .cportal-brand-copy b {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 140px;
+  }
+
+  .cportal-brand-copy small {
+    display: none;
+  }
+
+  .cportal-actions {
+    flex: 0 1 auto;
+    gap: 6px;
+    margin-inline-start: auto;
+    justify-content: flex-end;
+  }
+
+  .cportal-user-pill {
+    padding: 3px;
+  }
+
+  .cportal-user-pill span:not(.cportal-avatar) {
+    display: none;
+  }
+
+  .cportal-back-pill,
+  .cportal-logout-btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11.5px;
+  }
+
+  /* Avoid duplicate full-text Back button clutter on narrow viewports */
+  .cportal-brand-group:has(.cportal-back-pill) + .cportal-actions .cportal-logout-btn span {
+    display: none;
+  }
+
+  .cportal-main {
+    padding: 16px 12px 40px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .cportal-preview-notice {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+    font-size: 11.5px;
+    font-weight: 700;
+    margin-block-end: 12px;
+  }
+
+  .cportal-hero {
+    padding: 18px 16px;
+    border-radius: 16px;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .cportal-hero h1,
+  .cportal-delivery-title h1,
+  .cportal-stage-bar h2,
+  .cportal-card-body h3,
+  .cportal-asset-info b {
+    overflow-wrap: anywhere;
+  }
+
+  .cportal-kpis {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cportal-kpi {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .cportal-kpi b {
+    font-size: 17px;
+  }
+
+  .cportal-kpi span {
+    font-size: 10.5px;
+    display: block;
+    line-height: 1.3;
+  }
+
+  .cportal-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .cportal-course-layout,
+  .cportal-two-col {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .cportal-player-frame:has(.cportal-lesson-placeholder) {
+    aspect-ratio: auto;
+    min-height: 210px;
+    padding: 22px 16px;
+  }
+
+  .cportal-lesson-placeholder {
+    padding: 4px;
+    max-width: 100%;
+  }
+
+  .cportal-lesson-placeholder-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+  }
+
+  .cportal-lesson-placeholder h3 {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .cportal-stage-body {
+    padding: 14px 16px;
+  }
+
+  .cportal-stage-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .cportal-stage-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .cportal-stage-controls > .cportal-btn-primary,
+  .cportal-stage-controls > .cportal-btn-emerald {
+    grid-column: 1 / -1;
+    order: -1;
+    justify-content: center;
+  }
+
+  .cportal-stage-controls > button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .cportal-lesson-copy b {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.35;
+  }
+
+  .cportal-vault-list,
+  .cportal-stepper,
+  .cportal-info-list,
+  .cportal-review {
+    padding: 14px 16px;
+  }
+
+  .cportal-stepper {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .cportal-info-row {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .cportal-info-row b {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: end;
+  }
+
+  .cportal-certificate {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cportal-certificate > .cportal-btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 390px) {
+  .cportal-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

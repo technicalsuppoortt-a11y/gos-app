@@ -254,7 +254,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         if (prefValues && typeof prefValues === 'object') {
           transaction.set(preferenceRef, {
             ...(preferenceSnapshot.data() ?? {}),
-            values: { ...prefValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', language: brand.language, mode: brand.mode },
+            values: { ...prefValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', themeSource: 'phoenix', language: brand.language, mode: brand.mode },
             updatedAt: FieldValue.serverTimestamp(),
             updatedBy: account.uid,
           }, { merge: true });
@@ -263,7 +263,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         const existingBrandValues = existingDashboardBrand?.values && typeof existingDashboardBrand.values === 'object' ? existingDashboardBrand.values : {};
         transaction.set(dashboardBrandRef, {
           ...(existingDashboardBrand ?? {}),
-          values: { ...existingBrandValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', language: brand.language, mode: brand.mode },
+          values: { ...existingBrandValues, name: brand.name, logoUrl: '/upclick-logo.svg', theme: 'violet', themeSource: 'phoenix', language: brand.language, mode: brand.mode },
           updatedAt: FieldValue.serverTimestamp(),
           updatedBy: account.uid,
         }, { merge: true });

@@ -139,7 +139,7 @@ export function TermsOfServicePage() {
             clauses: [
               {
                 title: "رموز الوصول المشفرة",
-                text: "يتم تشفير وتأمين جميع مفاتيح الوصول في طبقات Firestore السحابية المحمية.",
+                text: "يتم تشفير وتأمين جميع مفاتيح الوصول في طبقات التخزين السحابية المحمية.",
               },
               {
                 title: "حظر السبام",
@@ -235,7 +235,7 @@ export function TermsOfServicePage() {
           clauses: [
             {
               title: "High Availability",
-              text: "We design our architecture with target 99.9% uptime and redundant database persistence.",
+              text: "We design our architecture with target 99.9% uptime and redundant cloud storage persistence.",
             },
             {
               title: "Continuous Evolution",
@@ -275,7 +275,7 @@ export function TermsOfServicePage() {
           clauses: [
             {
               title: "Encrypted Credential Storage",
-              text: "Authentication tokens and webhooks reside in isolated, authenticated Firebase vaults.",
+              text: "Authentication tokens and webhooks reside in isolated, authenticated cloud vaults.",
             },
             {
               title: "Anti-Spam Mandate",

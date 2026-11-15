@@ -1407,3 +1407,154 @@ html.dark .pp-page .ce-settings-form .course-modal-actions .cw-button:hover:not(
 /* Product type segmented filter in the catalog toolbar. */
 .pp-toolbar>.pp-type-filter{flex:0 1 auto;min-width:0}
 @media(max-width:650px){.pp-toolbar>.pp-type-filter{flex:1 1 100%;order:2}}
+
+/* Mobile Responsive Layout Unlock & Touch Polish (<= 768px only) */
+@media (max-width: 768px) {
+  .pp-page {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding-bottom: 24px;
+    gap: 10px !important;
+  }
+
+  .pp-tabs {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding-bottom: 8px;
+    min-height: 0 !important;
+  }
+
+  .pp-tabs > button {
+    min-height: 34px !important;
+    padding: 0 11px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .pp-tabs > .pp-header-actions {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-inline-start: 0 !important;
+    padding-top: 4px;
+  }
+
+  .pp-tabs > .pp-header-actions > button {
+    flex: 1 1 140px;
+    justify-content: center;
+    min-height: 38px;
+    margin-inline-start: 0 !important;
+  }
+
+  .pp-subnav {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pp-subnav-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .pp-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+
+  .pp-metric {
+    min-height: 68px !important;
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .pp-metric > span {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .pp-metric small {
+    font-size: 11px !important;
+  }
+
+  .pp-metric b {
+    font-size: 18px !important;
+  }
+
+  .pp-metric em {
+    font-size: 10px !important;
+  }
+
+  .pp-workspace {
+    grid-template-columns: minmax(0, 1fr) !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+
+  .pp-catalog {
+    min-height: 0 !important;
+    padding: 10px !important;
+  }
+
+  .pp-toolbar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .pp-page .pp-search {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-height: 38px !important;
+  }
+
+  .pp-toolbar > .pp-select {
+    flex: 1 1 calc(50% - 4px) !important;
+    width: auto !important;
+    min-width: 130px;
+  }
+
+  .pp-toolbar-divider {
+    display: none !important;
+  }
+
+  .pp-products {
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+
+  .pp-secondary-view {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    min-height: 0 !important;
+  }
+
+  .pp-secondary-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .pp-payments-banner {
+    margin: 12px !important;
+    padding: 12px 14px !important;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pp-card-actions {
+    max-width: calc(100vw - 24px);
+  }
+}
+
+@media (max-width: 380px) {
+  .pp-metrics {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

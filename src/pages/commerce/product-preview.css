@@ -229,3 +229,25 @@ html.dark .cw-dialog .cp-checkout {
   border: 0;
   box-shadow: none;
 }
+
+@media (max-width: 768px) {
+  .cp-preview {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  .cp-two-fields,
+  .cp-digital-features > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cp-service-visual > div {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    inset-inline: 12px;
+    bottom: 12px;
+  }
+  .cx-thankyou-trigger {
+    margin: 14px 16px;
+    max-width: calc(100% - 32px);
+  }
+}

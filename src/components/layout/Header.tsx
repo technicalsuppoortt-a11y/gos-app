@@ -223,7 +223,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         </button>
       )}
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
-        <div className="relative" ref={searchContainerRef}>
+        <div className="relative layout-search-wrap" ref={searchContainerRef}>
           <label className="layout-search">
             <Search size={15}/>
             <input 
@@ -249,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute start-0 top-[calc(100%+6px)] w-72 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 p-1.5"
+                className="layout-search-results absolute start-0 top-[calc(100%+6px)] w-72 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 p-1.5"
               >
                 <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-2 py-1 uppercase tracking-wider">
                   {translateText("Pages & Navigation")}
@@ -287,6 +287,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       {localizeNode(
         isTeamMember && ownerDisplayName && (
           <div
+            className="layout-team-owner-pill"
             title={
               ownerDisplayEmail
                 ? `${translateText('Workspace Owner')}: ${ownerDisplayName} (${ownerDisplayEmail})`
@@ -415,6 +416,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
               <div className="p-1.5">
                 <button onClick={() => { navigate('/dashboard/settings/profile'); setProfileOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
                   <User size={15} className="text-gray-400" />{translateText(" View Profile")}</button>
+                <button onClick={() => { navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans')); setProfileOpen(false); }} className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
+                  <Sparkles size={15} className="text-purple-500" /><span>{planLabel}</span></button>
                 <button onClick={() => { navigate('/dashboard/settings'); setProfileOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
                   <Settings size={15} className="text-gray-400" />{translateText(" Account Settings")}</button>
               </div>

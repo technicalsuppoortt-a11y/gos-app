@@ -695,7 +695,7 @@ function CreateNewMenu() {
         setOpen(false);
         triggerRef.current?.focus();
       }}
-      className="relative w-full rounded-xl border border-white/10 bg-[#141a33] p-1.5 text-white shadow-[0_16px_32px_-12px_rgba(15,21,53,0.6)] md:w-[154px] dark:bg-[#0d1226]"
+      className="hero-create-menu relative w-full rounded-xl border border-slate-200/90 bg-white p-1.5 text-slate-900 shadow-[0_12px_28px_-10px_rgba(15,23,42,0.18)] md:w-[154px] dark:border-white/10 dark:bg-[#0d1226] dark:text-white dark:shadow-[0_16px_32px_-12px_rgba(15,21,53,0.6)]"
     >
       <button
         type="button"
@@ -704,15 +704,15 @@ function CreateNewMenu() {
         aria-expanded={open}
         aria-controls="hero-create-list"
         onClick={() => setOpen((o) => !o)}
-        className="group flex w-full items-center gap-2 rounded-lg p-1 transition hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+        className="group flex w-full items-center gap-2 rounded-lg p-1 text-slate-900 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 dark:text-white dark:hover:bg-white/[0.08]"
       >
-        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#7C3AED] shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
+        <span className="hero-create-plus grid h-5 w-5 shrink-0 place-items-center rounded-md bg-gradient-to-br from-[#4F6BFF] to-[#7C3AED] text-white shadow-[0_4px_10px_-3px_rgba(79,107,255,0.8)] transition-transform group-hover:scale-105">
           <Plus size={13} strokeWidth={3} />
         </span>
         <span className="flex-1 text-sm font-semibold leading-normal text-start">{translateText("Create New")}</span>
         <ChevronDown
           size={13}
-          className={`text-slate-400 transition-transform duration-200 ${open ? "" : "-rotate-90 rtl:rotate-90"}`}
+          className={`text-slate-500 transition-transform duration-200 dark:text-slate-400 ${open ? "" : "-rotate-90 rtl:rotate-90"}`}
         />
       </button>
       <div
@@ -731,7 +731,7 @@ function CreateNewMenu() {
                   navigate(item.to);
                 }}
                 tabIndex={open ? 0 : -1}
-                className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-xs font-medium text-slate-200 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400"
+                className="group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-xs font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <span
                   className="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] text-white transition-transform group-hover:scale-110"

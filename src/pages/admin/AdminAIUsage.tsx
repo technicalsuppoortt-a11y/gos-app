@@ -317,7 +317,7 @@ export function AdminAIUsage({
           <div className="aiu-kpi-meta">
             <span>{t('Connected Workspaces', 'مساحات العمل النشطة')}</span>
             <strong>{loading ? '…' : Object.keys(tenants).length}</strong>
-            <small>{t('Monitored in real-time Firestore', 'تتم متابعتها مباشرة عبر فايرستور')}</small>
+            <small>{t('Monitored in real time', 'تتم متابعتها بشكل مباشر')}</small>
           </div>
         </div>
 

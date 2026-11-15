@@ -108,10 +108,16 @@ export const themePaletteDetails: Record<
 type WorkspaceGradients = Record<'buttonGradient' | 'navGradient' | 'sidebarGradient' | 'canvasGradient' | 'cardHeaderGradient', string>;
 type WorkspaceTheme = NonNullable<PhoenixBrand['theme']> & { gradients: Record<'light' | 'dark', WorkspaceGradients> };
 
+function mixHex(baseHex: string, targetHex: string, weight: number): string {
+  const parse = (h: string) => [0, 2, 4].map(i => parseInt(h.replace('#', '').slice(i, i + 2), 16));
+  const a = parse(baseHex), b = parse(targetHex);
+  return '#' + a.map((ch, idx) => Math.round(ch * (1 - weight) + b[idx] * weight).toString(16).padStart(2, '0')).join('');
+}
+
 export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceTheme {
   const p = themePaletteDetails[id] ?? themePaletteDetails.violet;
   const violet = id === 'violet';
-  const darkSurface = violet ? '#14182e' : 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
+  const darkSurface = violet ? '#14182e' : mixHex(p.darkBg, '#ffffff', 0.08);
   const buttonEnd = violet ? '#A78BFA' : 'color-mix(in srgb, ' + p.primary + ' 80%, ' + p.hover + ')';
   const buttonGradient = 'linear-gradient(115deg, ' + p.primary + ', ' + buttonEnd + ')';
   const lightBackground = violet ? '#f3f7fc' : '#f8fafc';
@@ -146,7 +152,7 @@ export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceThem
       background: lightBackground,
       surface: '#ffffff',
       text: violet ? '#0F172A' : '#172033',
-      mutedText: violet ? '#94A38B' : '#475569',
+      mutedText: '#475569',
       border: '#cbd5e1',
       soft: p.soft,
       success: '#047857',

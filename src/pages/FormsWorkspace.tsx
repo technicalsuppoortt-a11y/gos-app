@@ -287,7 +287,9 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   const currentFunnelId = useMemo(() => searchParams.get('currentFunnelId') || (location.state as any)?.currentFunnelId || '', [searchParams, location.state]);
 
   const [selected, setSelected] = useState<string>(initialSelected ?? querySelected);
+  const ar = useUILanguage().startsWith('ar');
   const [formMode, setFormMode] = useState<'fast' | 'advanced'>('fast');
+  const [mobileStudioPane, setMobileStudioPane] = useState<'canvas' | 'fields' | 'settings'>('canvas');
   const [activeTab, setActiveTab] = useState<'builder' | 'preview'>('builder');
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   const [busy, setBusy] = useState(false);
@@ -429,6 +431,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
     const next = [...fields, newField];
     void changeFields(next);
     setSelectedFieldId(id);
+    setMobileStudioPane('canvas');
     showToast.success(`Added ${newField.label}`);
   };
 
@@ -834,7 +837,13 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               onPublish={() => publishWorkspaceAsset(asset.id)} />
           </div>
         ) : activeTab === 'builder' ? (
-          <div className="form-studio-layout">
+          <>
+          <div className="form-mobile-pane-tabs" role="tablist" aria-label={ar ? 'أقسام محرر النموذج' : 'Form studio panels'}>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'canvas'} className={mobileStudioPane === 'canvas' ? 'active' : ''} onClick={() => setMobileStudioPane('canvas')}><Eye size={14} /><span>{ar ? 'النموذج' : 'Canvas'}</span></button>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'fields'} className={mobileStudioPane === 'fields' ? 'active' : ''} onClick={() => setMobileStudioPane('fields')}><Plus size={14} /><span>{ar ? 'إضافة حقول' : 'Add Fields'}</span></button>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'settings'} className={mobileStudioPane === 'settings' ? 'active' : ''} onClick={() => setMobileStudioPane('settings')}><Settings2 size={14} /><span>{ar ? 'خصائص الحقل' : 'Field Settings'}</span></button>
+          </div>
+          <div data-mobile-pane={mobileStudioPane} className="form-studio-layout">
             {/* COLUMN 1: FIELD PALETTE */}
             <aside className="form-studio-panel">
               <div className="form-panel-header">
@@ -1014,6 +1023,13 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 
                           <div className="form-field-card-actions" onClick={e => e.stopPropagation()}>
                             <button
+                              className="form-icon-btn form-mobile-edit-btn"
+                              title={ar ? 'خصائص الحقل' : 'Field Settings'}
+                              onClick={() => { setSelectedFieldId(field.id); setMobileStudioPane('settings'); }}
+                            >
+                              <Settings2 size={14} />
+                            </button>
+                            <button
                               className="form-icon-btn"
                               title={translateText("Move Up")}
                               disabled={idx === 0}
@@ -1102,7 +1118,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                     gap: 14
                   }}
                 >
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div className="form-footer-config-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--form-text-muted)', display: 'block', marginBottom: 4 }}>
                         {translateText("Submit Button Text")}
@@ -1410,6 +1426,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
               </div>
             </aside>
           </div>
+          </>
         ) : (
           /* =========================================================================
              VIEW: LIVE INTERACTIVE PREVIEW
@@ -1430,6 +1447,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             }}
           >
             <div
+              className="form-live-preview-card"
               style={{
                 maxWidth: 680,
                 width: '100%',
@@ -1661,7 +1679,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                   <label style={{ fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }}>
                     {translateText("Embed Directly into Existing Funnel or Website Page")}
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                  <div className="form-embed-select-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                     <DashboardSelect
                       className="form-select-control"
                       value={targetId}

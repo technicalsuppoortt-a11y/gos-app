@@ -14,6 +14,7 @@ import type { RootState } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Archive,
+  ArrowLeft,
   ArrowRight,
   BellOff,
   Bot,
@@ -304,7 +305,7 @@ function VoicePlayer({ note, tone = "light" }: { note: VoiceNote; tone?: "light"
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   return (
-    <div className="flex min-w-[200px] items-center gap-2.5">
+    <div className="flex min-w-[165px] max-w-full items-center gap-2.5 sm:min-w-[200px]">
       <audio ref={audioRef} src={note.url} onEnded={() => setPlaying(false)} className="hidden" />
       <button
         type="button"
@@ -528,6 +529,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const [assigneeOpen, setAssigneeOpen] = useState(false);
   const [editingLead, setEditingLead] = useState(false);
   const [leadMenuOpen, setLeadMenuOpen] = useState(false);
+  const [mobileInboxPane, setMobileInboxPane] = useState<"list" | "thread" | "details">(() => (requestedConvId || linkedConversation?.id ? "thread" : "list"));
 
   const [mode, setMode] = useState<ComposerMode>("reply");
   const [draft, setDraft] = useState("");
@@ -622,6 +624,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     setDraft("");
     setMode("reply");
     setEditingLead(false);
+    setMobileInboxPane("thread");
   };
 
   /* ---------------- effects ---------------- */
@@ -858,6 +861,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (!remaining.length) return;
     setConversations(remaining);
     setActiveId(remaining[0].id);
+    setMobileInboxPane("list");
     setMoreOpen(false);
     showToast.success(`Conversation with ${active.name} archived.`);
   };
@@ -894,12 +898,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
 
   /* ------------------------------------------------------------------ */
   return (
-    <div className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
+    <div data-mobile-pane={mobileInboxPane} className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
       {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>{translateText("Retry")}</button></div>}
       {!demoInbox && inboxApi.initialLoading && <div role="status" className="sr-only" aria-label={translateText("Loading conversations")} />}
       {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>{translateText("No conversations yet. Connected channels will appear here when customer messages arrive.")}</p>}
       {/* ============ Channel filter strip ============ */}
-      <div className={`${CARD} flex h-[54px] shrink-0 items-center gap-3 px-2.5`}>
+      <div className={`${CARD} inbox-channel-strip flex h-[54px] shrink-0 items-center gap-2 sm:gap-3 px-2.5`}>
         <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label={translateText("Filter by channel")}>
           {localizeNode((["all", ...channelOrder] as const).map((id) => {
             const isActive = channelFilter === id;
@@ -948,7 +952,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         </div>
         <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 ps-3 pe-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
           <Sparkles size={15} className="text-[#7C3AED]" fill="currentColor" />
-          <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : 'AI Active')}</span>
+          <span className="hidden sm:inline text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : 'AI Active')}</span>
           <Toggle
             checked={aiMode}
             onChange={(value) => {
@@ -963,7 +967,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       {/* ============ 3-column workspace ============ */}
       <div className="flex min-h-0 flex-1 gap-3 overflow-hidden">
         {/* ---------- Column 1: conversation list ---------- */}
-        <aside className={`${CARD} hidden min-h-0 w-[300px] shrink-0 flex-col md:flex 2xl:w-[340px]`} aria-label={translateText("Conversations")}>
+        <aside className={`${CARD} inbox-col-list flex min-h-0 w-[300px] shrink-0 flex-col 2xl:w-[340px]`} aria-label={translateText("Conversations")}>
           <div className="flex shrink-0 items-center gap-1 border-b border-slate-100 px-3 pt-2 dark:border-white/[0.06]" role="tablist">
             {localizeNode((
               [
@@ -1119,9 +1123,15 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         </aside>
 
         {/* ---------- Column 2: chat thread ---------- */}
-        <section className={`${CARD} flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={translateText(`Conversation with ${active.name}`)}>
+        <section className={`${CARD} inbox-col-thread flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={translateText(`Conversation with ${active.name}`)}>
           {/* chat header */}
-          <header className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/[0.06]">
+          <header className="inbox-thread-header flex shrink-0 items-center gap-2 sm:gap-3 border-b border-slate-100 px-3 sm:px-5 py-2.5 sm:py-3 dark:border-white/[0.06]">
+            <button type="button" onClick={() => setMobileInboxPane("list")} aria-label={language === "ar" ? "العودة للمحادثات" : "Back to conversations"} className={`${ICON_BTN} relative h-9 w-9 md:hidden`}>
+              <ArrowLeft size={16} className="rtl:rotate-180" />
+              {unreadTotal > 0 && <span className="absolute -end-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{unreadTotal}</span>}
+            </button>
+          {/* chat header */}
+
             <Avatar person={active} size={42} />
             <div className="min-w-0">
               <h2 className={`truncate text-[15px] font-bold leading-5 ${HEADING}`}>{active.name}</h2>
@@ -1155,6 +1165,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             >
               <Star size={16} fill={active.starred ? "currentColor" : "none"} />
             </button>
+            <button type="button" onClick={() => setMobileInboxPane("details")} aria-label={language === "ar" ? "تفاصيل العميل" : "Lead details"} className={`${ICON_BTN} h-9 w-9 md:hidden`}><UserRound size={16} /></button>
             <div className="relative" ref={moreRef}>
               <button
                 id="inbox-more"
@@ -1373,7 +1384,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   <LayoutTemplate size={14} />{translateText(" Templates")}</button>
                 <AnimatePresence>
                   {templatesOpen && (
-                    <motion.div {...popIn} className={`${POPOVER} bottom-[calc(100%+6px)] start-0 w-72`}>
+                    <motion.div {...popIn} className={`${POPOVER} bottom-[calc(100%+6px)] start-0 w-72 max-w-[calc(100vw-32px)]`}>
                       <p className={`px-2.5 pb-1 pt-1.5 text-[10.5px] font-bold uppercase tracking-wider ${SUBTLE}`}>{translateText("Saved replies")}</p>
                       {replyTemplates.map((t) => (
                         <button
@@ -1416,7 +1427,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 />
                 <button
                   onClick={() => navigate("/dashboard/follow-up")}
-                  className={`flex items-center gap-0.5 text-[12px] font-medium transition hover:text-purple-600 ${MUTED}`}
+                  className={`hidden sm:flex items-center gap-0.5 text-[12px] font-medium transition hover:text-purple-600 ${MUTED}`}
                 >
                   {localizeNode(!aiMode ? "AI paused workspace-wide" : aiReplying ? "AI will reply automatically" : "AI auto-reply off")}
                   <ChevronRight size={14} />
@@ -1525,7 +1536,13 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         </section>
 
         {/* ---------- Column 3: CRM + AI context ---------- */}
-        <aside className="inbox-scroll hidden min-h-0 w-[300px] shrink-0 flex-col gap-2.5 overflow-y-auto min-[1200px]:flex 2xl:w-[330px]" aria-label={translateText("Lead details")}>
+        <aside className="inbox-scroll inbox-col-details hidden min-h-0 w-[300px] shrink-0 flex-col gap-2.5 overflow-y-auto min-[1200px]:flex 2xl:w-[330px]" aria-label={translateText("Lead details")}>
+          <div className={`${CARD} flex shrink-0 items-center gap-2.5 px-3 py-2.5 md:hidden`}>
+            <button type="button" onClick={() => setMobileInboxPane("thread")} aria-label={language === "ar" ? "العودة للمحادثة" : "Back to chat"} className={`${ICON_BTN} h-8 w-8`}>
+              <ArrowLeft size={15} className="rtl:rotate-180" />
+            </button>
+            <b className={`text-[13.5px] font-bold ${HEADING}`}>{language === "ar" ? "تفاصيل العميل" : translateText("Lead Details")}</b>
+          </div>
           {/* contact summary */}
           <div className={`${CARD} shrink-0 p-3.5`}>
             <div className="flex items-start gap-3">

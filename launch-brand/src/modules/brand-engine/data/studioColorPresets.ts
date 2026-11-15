@@ -465,15 +465,15 @@ export function studioPresetTheme(id: string, base: BrandTheme): BrandTheme {
   };
   const dark = preset
     ? [
-        preset.darkBackground,
-        mix(preset.darkBackground, "#FFFFFF", 0.94),
+        mix(primary, "#0B1020", 0.14),
+        mix(primary, "#151C2F", 0.16),
         "#F2F4F8",
-        mix(preset.darkBackground, "#FFFFFF", 0.78),
-        mix(preset.darkBackground, "#000000", 0.7),
+        mix(primary, "#2D364C", 0.18),
+        mix(primary, "#080C18", 0.12),
       ]
     : undefined;
-  const darkPrimary = preset ? (preset.darkPrimary ?? mix(primary, "#FFFFFF", 0.45)) : primary;
-  const darkSecondary = preset ? mix(secondary, "#FFFFFF", 0.5) : secondary;
+  const darkPrimary = preset ? mix(primary, "#FFFFFF", 0.82) : primary;
+  const darkSecondary = preset ? mix(secondary, "#FFFFFF", 0.78) : secondary;
   return {
     ...theme,
     paletteId: preset?.id ?? "dashboard-default",

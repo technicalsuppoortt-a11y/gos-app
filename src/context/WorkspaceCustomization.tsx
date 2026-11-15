@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   DEFAULT_BRAND_NAME,
   inheritWorkspacePreferences,
@@ -16,6 +16,9 @@ import {
 import { backendError } from '../backend/firebase';
 import { usePhoenixBrand } from '../backend/phoenixBrand';
 import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
+import type { RootState } from '../store';
+import { storageGet } from '../utils/browserStorage';
+import i18n from '../i18n/i18n';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
 import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
@@ -35,12 +38,34 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const [lastTopbarChange, setLastTopbarChange] = useState<{ scope: string; patch: PersonalPreferences }>();
   const phoenix = usePhoenixBrand();
   const dispatch = useDispatch();
+  const role = useSelector((s: RootState) => s.auth.role);
   const [draft, setDraft] = useState<{ scope: string; patch: Partial<WorkspacePreferences> } | null>(null);
+  const [previewPersonal, setPreviewPersonal] = useState<PersonalPreferences>({});
+  const [localPersonal, setLocalPersonal] = useState<{ scope: string; patch: PersonalPreferences }>({ scope: '', patch: {} });
+  const prevPhoenixAppearanceRef = useRef<{ mode?: string; language?: string }>({
+    mode: phoenix?.brand.mode,
+    language: phoenix?.brand.language,
+  });
+
+  useEffect(() => {
+    const prev = prevPhoenixAppearanceRef.current;
+    const nextMode = phoenix?.brand.mode;
+    const nextLanguage = phoenix?.brand.language;
+    if (prev.mode !== nextMode || prev.language !== nextLanguage) {
+      prevPhoenixAppearanceRef.current = { mode: nextMode, language: nextLanguage };
+      setPreviewPersonal(current => ({
+        ...current,
+        ...(prev.mode !== nextMode ? { mode: undefined } : {}),
+        ...(prev.language !== nextLanguage ? { language: undefined } : {}),
+      }));
+    }
+  }, [phoenix?.brand.mode, phoenix?.brand.language]);
+
   const preview = useCallback((patch: Partial<WorkspacePreferences> | null) => {
     setDraft(current => patch ? { scope, patch } : current?.scope === scope ? null : current);
   }, [scope]);
   const previewValues = draft?.scope === scope ? draft.patch : null;
-  // Launch Brand's live preview always shows the brand being designed.
+  // Launch Brand's live preview always shows the brand being designed, while allowing interactive dark/light and language toggles inside Demo Account.
   const launchBrandPreview = isLaunchBrandPreview() && !!phoenix;
   const usePhoenixDefaults = launchBrandPreview || (!publicPage && Boolean(uid) && !hasSavedWorkspace && Boolean(phoenix));
   // Deployed Launch Brand owners (both Admin and linked Agency User) get their
@@ -60,15 +85,22 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     name: values.name === DEFAULT_BRAND_NAME && phoenixFill.brand.name.trim() ? phoenixFill.brand.name.trim() : values.name,
     logoUrl: isDefaultBrandLogo(values.logoUrl) && phoenixFill.logo ? phoenixFill.logo : values.logoUrl,
   } : values ?? preferenceDefaults;
-  const legacyCurrency = isCurrencyCode(personal.currency) ? personal.currency : undefined;
+  const activePersonal = localPersonal.scope === scope ? { ...personal, ...localPersonal.patch } : personal;
+  const storedCustomerLang = role === 'CUSTOMER' ? storageGet('i18nextLng') : null;
+  const storedCustomerMode = role === 'CUSTOMER' ? storageGet('theme') : null;
+  const legacyCurrency = isCurrencyCode(activePersonal.currency) ? activePersonal.currency : undefined;
   const displayCurrency = currencyPreference.value === undefined ? legacyCurrency : currencyPreference.value;
   const effective = {
     ...workspace,
-    language: launchBrandPreview ? workspace.language : personal.language ?? workspace.language,
+    language: launchBrandPreview
+      ? (previewPersonal.language ?? workspace.language)
+      : (activePersonal.language ?? (storedCustomerLang === 'ar' || storedCustomerLang === 'en' ? storedCustomerLang : workspace.language)),
     currency: displayCurrency ?? workspace.currency,
-    mode: launchBrandPreview ? workspace.mode : personal.mode ?? workspace.mode,
-    timezone: personal.timezone ?? workspace.timezone,
-    dateFormat: personal.dateFormat ?? workspace.dateFormat,
+    mode: launchBrandPreview
+      ? (previewPersonal.mode ?? workspace.mode)
+      : (activePersonal.mode ?? (storedCustomerMode === 'dark' || storedCustomerMode === 'light' ? storedCustomerMode : workspace.mode)),
+    timezone: activePersonal.timezone ?? workspace.timezone,
+    dateFormat: activePersonal.dateFormat ?? workspace.dateFormat,
     ...previewValues,
   };
 
@@ -151,12 +183,24 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     }
   }, [publicPage, canPublish, phoenix, tenantId, state.loading, state.publicValues, effective, workspace.currency, previewValues]);
 
-  const setPreference = uid && !publicPage ? (patch: PersonalPreferences) => {
+  const setPreference = (uid || launchBrandPreview) && !publicPage ? (patch: PersonalPreferences) => {
     setLastTopbarChange({ scope, patch });
+    setLocalPersonal(prev => ({ scope, patch: { ...(prev.scope === scope ? prev.patch : {}), ...patch } }));
+    if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
+    if (patch.language === 'ar' || patch.language === 'en') {
+      void i18n.changeLanguage(patch.language);
+      dispatch(setLanguage(patch.language));
+    }
+    if (launchBrandPreview) {
+      setPreviewPersonal(current => ({ ...current, ...patch }));
+      if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
+      if (patch.language === 'ar' || patch.language === 'en') dispatch(setLanguage(patch.language));
+      if (!uid) return;
+    }
     const { currency, ...appearance } = patch;
     if (currency === null || isCurrencyCode(currency)) currencyPreference.setCurrencyPreference(currency);
-    if (!Object.keys(appearance).length) return;
-    if (canPublish && tenantId) {
+    if (!Object.keys(appearance).length || !uid) return;
+    if (canPublish && tenantId && !launchBrandPreview) {
       const nextWorkspace = sanitizeWorkspacePreferences({
         ...effective,
         currency: workspace.currency,
@@ -178,15 +222,29 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       );
       return;
     }
-    void savePersonalPreferences(uid, appearance).catch(error => showToast.error(backendError(error)));
+    void savePersonalPreferences(uid, appearance).catch(error => {
+      if (role === 'CUSTOMER' || (error as { code?: string })?.code === 'permission-denied') return;
+      showToast.error(backendError(error));
+    });
   } : undefined;
+
+  const explicitWorkspaceTheme = Boolean(
+    previewValues?.theme ||
+    (previewValues?.themeSource === 'workspace') ||
+    (!usePhoenixDefaults &&
+      hasSavedWorkspace &&
+      values &&
+      (values.theme !== 'violet' || values.themeSource === 'workspace' || !phoenixFill?.brand.theme))
+  );
+
   return (
     <WorkspacePreferencesContext.Provider value={{
       ...state, values: usePhoenixDefaults ? workspace : values, effective, preview, setPreference,
       topbarChange: lastTopbarChange?.scope === scope ? lastTopbarChange.patch : undefined,
       themePreview: previewValues?.theme ? previewValues : null,
-      // The default palette with a deployed brand means "use the brand's colors".
-      hasWorkspaceTheme: !!(previewValues?.theme || (!usePhoenixDefaults && hasSavedWorkspace && values && !(phoenixFill?.brand.theme && values.theme === 'violet'))),
+      // Selecting a theme or resetting to default in Admin Settings sets themeSource='workspace'
+      // so Violet Indigo cleanly overrides an earlier Launch Brand deployment.
+      hasWorkspaceTheme: explicitWorkspaceTheme,
     }}>
       <CurrencyProvider currency={isCurrencyCode(currency) ? currency : 'USD'} language={language} enabled={!!uid && !publicPage}>
         {children}

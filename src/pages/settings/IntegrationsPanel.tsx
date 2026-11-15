@@ -283,7 +283,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
   const list = providers.filter(
     p =>
       (category === 'All integrations' || p.category === category) &&
-      `${p.name} ${p.description} ${p.capabilities.join(' ')}`.toLowerCase().includes(search.toLowerCase()),
+      `${p.name} ${p.description} ${p.capabilities.join(' ')} ${translateText(p.name)} ${translateText(p.description)} ${p.capabilities.map(c => translateText(c)).join(' ')}`.toLowerCase().includes(search.toLowerCase()),
   );
 
   // Messenger, Instagram and WhatsApp use the real channel connection (the same one the AI and flows reply on).
@@ -374,7 +374,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
     <>
       <PanelHeading
         title={translateText('Integrations')}
-        description={translateText("Connect your core communication and scheduling channels with real-time Firebase workspace sync.")}
+        description={translateText("Connect your core communication and scheduling channels with real-time cloud workspace sync.")}
       />
 
       {/* Summary & Filter Toolbar */}
@@ -572,7 +572,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                 </p>
               </div>
             </div>
-            <Badge tone="purple">{translateText('Firebase Cloud Synced')}</Badge>
+            <Badge tone="purple">{translateText('Cloud Synced')}</Badge>
           </div>
 
           {/* Channel Selector Tabs inside Guideline */}
@@ -692,7 +692,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
         <ShieldCheck size={18} />
         <p>
           {translateText(
-            'You control what you connect. All integration states are securely synced with your Firebase workspace, and disconnecting a tool preserves your historical data.',
+            'You control what you connect. All integration states are securely synced with your cloud workspace, and disconnecting a tool preserves your historical data.',
           )}
         </p>
         {localizeNode(
@@ -892,7 +892,7 @@ function ConnectionModal({
               </ol>
             </div>
 
-            <Field label={provider.accountLabel}>
+            <Field label={translateText(provider.accountLabel)}>
               <input
                 value={accountInput}
                 onChange={e => setAccountInput(e.target.value)}
@@ -913,7 +913,7 @@ function ConnectionModal({
             </ul>
             <p className="st-note">
               {translateText(
-                'You’ll authorize access securely and sync your connection state with Firebase. You can disconnect at any time.',
+                'You’ll authorize access securely and sync your connection state in the cloud. You can disconnect at any time.',
               )}
             </p>
             <button

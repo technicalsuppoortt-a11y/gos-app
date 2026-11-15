@@ -62,10 +62,24 @@ import { localizeNode, translateText as t, useUILanguage } from '../../i18n/disp
 import { showToast } from '../../utils/toast';
 import './customer-portal.css';
 
-function formatBytes(bytes?: number): string {
+function formatBytes(bytes?: number, ar = false): string {
   if (!bytes || bytes <= 0) return t('Instant access');
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} ${ar ? 'ك.ب' : 'KB'}`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} ${ar ? 'م.ب' : 'MB'}`;
+}
+
+function formatPortalLabel(value: string | undefined, ar: boolean): string {
+  if (!value) return '';
+  if (!ar) return value;
+  const trimmed = value.trim();
+  const modMatch = trimmed.match(/^Module\s+(\d+)$/i);
+  if (modMatch) return `الوحدة ${modMatch[1]}`;
+  const lesMatch = trimmed.match(/^Lesson\s+(\d+)$/i);
+  if (lesMatch) return `الدرس ${lesMatch[1]}`;
+  const resMatch = trimmed.match(/^Resource\s+(\d+)$/i);
+  if (resMatch) return `المورد ${resMatch[1]}`;
+  if (trimmed === 'Purchased Product') return 'منتج مشترى';
+  return t(value);
 }
 
 export function CustomerDeliveryPreview() {
@@ -455,7 +469,7 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
               <Sparkles size={24} />
             </div>
             <h2>{t('Loading your library…')}</h2>
-            <p>{t('Syncing your purchased courses, downloads, and service bookings from Firebase.')}</p>
+            <p>{t('Syncing your purchased courses, downloads, and service bookings.')}</p>
           </div>
         ) : activePurchase ? (
           <React.Fragment key={activePurchase.purchaseId}>{activePurchase.preview && <p className="cportal-preview-notice">{t("Customer page preview")}</p>}<PurchaseDeliveryView purchase={activePurchase}/><PortalReview purchase={activePurchase} owned={Boolean(ownedPurchase && !ownedPurchase.preview && !previewRoute)} fallback={previewReviews}/></React.Fragment>
@@ -655,6 +669,7 @@ function PurchaseDeliveryView({
 }: {
   purchase: CustomerPurchaseRecord;
 }) {
+  useUILanguage();
   const snap = purchase.productSnapshot;
   if (snap.kind === 'course') {
     return <CourseDeliveryWorkspace purchase={purchase} />;
@@ -670,7 +685,9 @@ function CourseDeliveryWorkspace({
 }: {
   purchase: CustomerPurchaseRecord;
 }) {
+  useUILanguage();
   const snap = purchase.productSnapshot;
+  const ar = useUILanguage().startsWith('ar');
   const modules = snap.modules;
 
   const allLessons = useMemo(
@@ -831,10 +848,10 @@ function CourseDeliveryWorkspace({
             <div className="cportal-stage-bar">
               <div>
                 <small style={{ color: 'var(--cp-muted)', fontWeight: 600 }}>
-                  {activeLesson?.moduleTitle} · {t(activeLesson?.kind || 'Lesson')} ·{' '}
+                  {formatPortalLabel(activeLesson?.moduleTitle, ar)} · {t(activeLesson?.kind || 'Lesson')} ·{' '}
                   {t(activeLesson?.duration || 'Self-paced')}
                 </small>
-                <h2>{activeLesson?.title}</h2>
+                <h2>{formatPortalLabel(activeLesson?.title, ar)}</h2>
               </div>
 
               <div className="cportal-stage-controls">
@@ -877,7 +894,7 @@ function CourseDeliveryWorkspace({
                       {t('Certificate of Completion Unlocked!')}
                     </b>
                     <small style={{ color: 'var(--cp-muted)' }}>
-                      {t('Issued by')} {snap.certificateIssuer || 'Upclick Academy'} ·{' '}
+                      {t('Issued by')} {t(snap.certificateIssuer || 'Upclick Academy')} ·{' '}
                       {purchase.customerName}
                     </small>
                   </div>
@@ -924,7 +941,7 @@ function CourseDeliveryWorkspace({
                     setOpenModules(prev => ({ ...prev, [mod.id]: !isOpen }))
                   }
                 >
-                  <span>{mod.title}</span>
+                  <span>{formatPortalLabel(mod.title, ar)}</span>
                   {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} className="cportal-rtl-flip" />}
                 </button>
                 {isOpen && (
@@ -943,7 +960,7 @@ function CourseDeliveryWorkspace({
                             <Check size={12} strokeWidth={3} />
                           </span>
                           <span className="cportal-lesson-copy">
-                            <b>{lesson.title}</b>
+                            <b>{formatPortalLabel(lesson.title, ar)}</b>
                             <small>
                               {t(lesson.kind)} · {t(lesson.duration || 'Self-paced')}
                             </small>
@@ -983,7 +1000,9 @@ function DigitalDeliveryWorkspace({
 }: {
   purchase: CustomerPurchaseRecord;
 }) {
+  useUILanguage();
   const snap = purchase.productSnapshot;
+  const ar = useUILanguage().startsWith('ar');
   const [busyAsset, setBusyAsset] = useState('');
 
   const handleDownload = async (asset: CustomerPortalAsset) => {
@@ -1039,10 +1058,10 @@ function DigitalDeliveryWorkspace({
                         <FileText size={19} />
                       </span>
                       <div>
-                        <b>{asset.name}</b>
+                        <b>{formatPortalLabel(asset.name, ar)}</b>
                         <small>
                           {t(asset.resourceType || asset.mime || 'Digital File')} ·{' '}
-                          {formatBytes(asset.size)}
+                          {formatBytes(asset.size, ar)}
                           {downloaded ? ` · ${t('Downloaded')}` : ''}
                         </small>
                       </div>
@@ -1120,6 +1139,7 @@ function ServiceDeliveryWorkspace({
 }: {
   purchase: CustomerPurchaseRecord;
 }) {
+  useUILanguage();
   const snap = purchase.productSnapshot;
   const steps = ['Order Confirmed', 'Session Scheduled', 'Completed'] as const;
   const currentStepIdx =
@@ -1277,6 +1297,7 @@ function ServiceDeliveryWorkspace({
 }
 
 function PortalPasswordDialog({ close }: { close: () => void }) {
+  useUILanguage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -1304,6 +1325,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
 }
 
 function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchaseRecord; owned: boolean; fallback?: ReviewSummary }) {
+  useUILanguage();
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');

@@ -1,5 +1,5 @@
 /* Inbox viewport layout: the global header/footer stay fixed while only the inner panels scroll. */
-.layout-workspace-inbox{height:100vh;min-height:0;overflow:hidden}
+.layout-workspace-inbox{height:100vh;height:100dvh;min-height:0;overflow:hidden}
 .layout-main-inbox{display:flex;min-height:0;overflow:hidden;padding:0}
 .layout-route-content-inbox{display:flex;min-height:0;flex:1;width:100%;max-width:none;margin:0;overflow:hidden}
 
@@ -43,4 +43,62 @@ html.dark .inbox-skel-shimmer{
 @media (prefers-reduced-motion:reduce){
   .inbox-wave{animation:none;height:10px}
   .inbox-skel-shimmer{animation:none}
+}
+
+/* Mobile single-pane master-detail navigation (desktop >= 768px unaffected) */
+@media (max-width: 767px) {
+  .inbox-root {
+    padding: 8px !important;
+    gap: 8px !important;
+  }
+
+  .inbox-root:not([data-mobile-pane="list"]) .inbox-channel-strip {
+    display: none !important;
+  }
+
+  .inbox-root[data-mobile-pane="list"] .inbox-col-list {
+    display: flex !important;
+    width: 100% !important;
+    flex: 1 1 0% !important;
+  }
+
+  .inbox-root[data-mobile-pane="list"] .inbox-col-thread,
+  .inbox-root[data-mobile-pane="list"] .inbox-col-details {
+    display: none !important;
+  }
+
+  .inbox-root[data-mobile-pane="thread"] .inbox-col-list,
+  .inbox-root[data-mobile-pane="thread"] .inbox-col-details {
+    display: none !important;
+  }
+
+  .inbox-root[data-mobile-pane="thread"] .inbox-col-thread {
+    display: flex !important;
+    width: 100% !important;
+    flex: 1 1 0% !important;
+  }
+
+  .inbox-root[data-mobile-pane="details"] .inbox-col-list,
+  .inbox-root[data-mobile-pane="details"] .inbox-col-thread {
+    display: none !important;
+  }
+
+  .inbox-root[data-mobile-pane="details"] .inbox-col-details {
+    display: flex !important;
+    width: 100% !important;
+    flex: 1 1 0% !important;
+  }
+
+  .inbox-thread-header {
+    flex-wrap: nowrap;
+  }
+
+  .inbox-thread-header > div:nth-of-type(1) {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .inbox-thread-header > div:nth-of-type(2) {
+    display: none;
+  }
 }

@@ -587,3 +587,228 @@ html.dark .crm-record input:disabled,.crm-record select:disabled,html.dark .crm-
 @media (prefers-reduced-motion: reduce) { .crm-loading-overlay { animation: none; } }
 
 .crm-product-share { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+
+/* Mobile responsive polish for CRM & Leads + Contact Record (desktop > 768px untouched) */
+@media (max-width: 768px) {
+  .crm-workspace .crm2-subnav {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 12px !important;
+  }
+
+  .crm-workspace .crm2-subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .crm-workspace .crm2-subnav-btn {
+    flex: 0 0 auto !important;
+    padding: 10px 10px !important;
+  }
+
+  .crm-workspace-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    margin: 8px 12px 0 !important;
+  }
+
+  .crm-workspace-summary > div {
+    padding: 6px 8px !important;
+    border-inline-end: 0 !important;
+    border: 1px solid #edf0f7;
+    border-radius: 8px;
+    gap: 8px !important;
+  }
+
+  html.dark .crm-workspace-summary > div {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .crm-filter-bar label {
+    min-width: calc(50% - 6px);
+  }
+
+  .crm-presets-viewport {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .crm-presets-viewport .crm-presets {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto !important;
+    flex: none !important;
+  }
+
+  /* Contact Detail Record (/dashboard/crm/contacts/:id?tab=Overview) */
+  .crm2-page.crm-record {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .crm-record .crm-record-breadcrumb {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px !important;
+    min-width: 0;
+  }
+
+  .crm-record .crm-record-breadcrumb b {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .crm-record .crm-record-header {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 12px !important;
+    padding: 10px 12px 14px !important;
+  }
+
+  .crm-record .crm-record-header > .crm-person-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .crm-record .crm-record-header > div:first-of-type {
+    min-width: 0;
+  }
+
+  .crm-record .crm-record-header h1 {
+    font-size: 17px !important;
+    line-height: 1.25;
+    flex-wrap: wrap;
+    gap: 6px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .crm-record .crm-record-header p {
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+  }
+
+  .crm-record .crm-record-header > div:last-child {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-inline-start: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px !important;
+  }
+
+  .crm-record .crm-record-action {
+    width: 100% !important;
+    height: 52px !important;
+    padding: 4px 2px;
+    min-width: 0;
+  }
+
+  .crm-record .crm-record-action > span:last-child {
+    font-size: 9.5px !important;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .crm-record > nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding-inline: 12px !important;
+  }
+
+  .crm-record .crm-record-content {
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding: 12px !important;
+  }
+
+  .crm-record .crm-record-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: none !important;
+    gap: 12px !important;
+  }
+
+  .crm-record .crm-record-panel {
+    flex: none !important;
+    overflow: visible !important;
+    padding: 14px !important;
+    min-width: 0;
+  }
+
+  .crm-record .crm-form-grid,
+  .crm-dialog .crm-form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .crm-record input:not([type=checkbox]):not([type=hidden]),
+  .crm-record .crm-custom-select-trigger {
+    height: 38px !important;
+    font-size: 13px !important;
+    padding: 6px 11px !important;
+  }
+
+  .crm-custom-select-popup {
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px);
+  }
+
+  .crm-contact-form-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .crm-contact-form-buttons {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .crm-contact-form-buttons > button {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 36px;
+  }
+
+  .crm-inline-form {
+    flex-wrap: wrap;
+  }
+
+  .crm-inline-form input {
+    min-width: 140px;
+  }
+
+  .crm-section-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .crm-order-metrics,
+  .crm-conversation-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .crm-deal-stages {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .crm-deal-stages button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}

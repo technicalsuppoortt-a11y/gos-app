@@ -23,8 +23,8 @@ Create team member	إنشاء حساب عضو في الفريق
 Superadmin	المسؤول الأعلى
 Confirm Password	تأكيد كلمة المرور
 Passwords must match.	يجب أن تتطابق كلمتا المرور.
-Loading Firebase data…	جارٍ تحميل البيانات من Firebase…
-Showing cached data while connecting to Firebase.	تُعرض البيانات المخزنة مؤقتًا أثناء الاتصال بـ Firebase.
+Loading cloud data…	جارٍ تحميل البيانات السحابية…
+Showing cached data while connecting to cloud services.	تُعرض البيانات المخزنة مؤقتًا أثناء الاتصال بالخدمات السحابية.
 Admin and default Agency user created.	تم إنشاء المسؤول ومستخدم الوكالة الافتراضي.
 Admin details saved.	تم حفظ بيانات المسؤول.
 Admin deleted.	تم حذف المسؤول.

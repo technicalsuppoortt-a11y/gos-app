@@ -95,7 +95,7 @@ export function DataDeletionPage() {
         copySuccess: 'تم نسخ الرابط إلى الحافظة!',
         codeCopied: 'تم نسخ رمز المتابعة!',
         formTitle: 'تقديم طلب حذف بيانات فوري',
-        formDesc: 'أدخل بريدك الإلكتروني أو معرّف Meta / Facebook لطلب مسح وتطهير بياناتك من قواعد بيانات المنصة.',
+        formDesc: 'أدخل بريدك الإلكتروني أو معرّف Meta / Facebook لطلب مسح وتطهير بياناتك من خوادم المنصة.',
         scopes: [
           { id: 'meta-tokens', label: 'رموز الوصول وأذونات تطبيقات Meta (Facebook / Instagram / WhatsApp)' },
           { id: 'inbox-messages', label: 'سجلات المحادثات وصندوق الوارد الموحد والمرفقات' },
@@ -136,7 +136,7 @@ export function DataDeletionPage() {
       copySuccess: 'Link copied to clipboard!',
       codeCopied: 'Tracking code copied!',
       formTitle: 'Submit Instant Data Deletion Request',
-      formDesc: 'Enter your registered email address or Meta / Facebook User ID to initiate automated data erasure from our database clusters.',
+      formDesc: 'Enter your registered email address or Meta / Facebook User ID to initiate automated data erasure from our cloud servers.',
       scopes: [
         { id: 'meta-tokens', label: 'Meta Access Tokens & Social Credentials (Facebook, Instagram, WhatsApp)' },
         { id: 'inbox-messages', label: 'Unified Inbox conversations, attachments, and messaging archives' },
@@ -716,10 +716,10 @@ export function DataDeletionPage() {
               <div className="legal-clause-card">
                 <span className="legal-clause-card-title">
                   <CheckCircle2 size={14} className="text-emerald-500" />
-                  {translateText("Phase 2: Database Records Purge (< 48 Hours)")}
+                  {translateText("Phase 2: Cloud Records Purge (< 48 Hours)")}
                 </span>
                 <span className="legal-clause-card-desc">
-                  {translateText("Conversation histories, customer contacts, CRM deals, and generated AI embeddings are permanently deleted from active Firestore collections.")}
+                  {translateText("Conversation histories, customer contacts, CRM deals, and generated AI embeddings are permanently deleted from active cloud storage.")}
                 </span>
               </div>
 
