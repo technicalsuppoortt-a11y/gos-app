@@ -10,7 +10,7 @@ import { newProduct, defaultConfig, formatPrice } from './commerce/model';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ArrowUp, ArrowUpRight, BarChart3, BrainCircuit, CalendarDays, Check, ChevronDown, ChevronRight, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, Pause, Play, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Users, WandSparkles, X, Zap } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, BarChart3, BrainCircuit, CalendarDays, Check, ChevronDown, ChevronRight, Copy, Download, FileText, FileUp, Globe2, GraduationCap, History, LoaderCircle, Megaphone, MessageSquare, Mic, MoreHorizontal, Pause, Play, Plus, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Sparkles, ThumbsDown, ThumbsUp, Users, Volume2, VolumeX, WandSparkles, X, Zap } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -55,6 +55,39 @@ function formatTime(seconds: number) {
 function voiceErrorMessage(error: unknown) {
   const code = (error as { code?: string })?.code;
   return translateText(error instanceof Error && code === 'functions/unavailable' && error.message ? error.message : backendError(error));
+}
+
+function getAssistantMessageText(message: Message, drafts: Record<string, Draft>): string {
+  const parts: string[] = [];
+  if (message.text?.trim()) {
+    parts.push(message.text.trim());
+  }
+  if (message.voiceExtraction) {
+    const ext = message.voiceExtraction;
+    if (ext.summary) parts.push(ext.summary);
+    if (ext.intent) parts.push(`${translateText('Intent')}: ${ext.intent}`);
+    for (const section of [ext.clientDetails, ext.parameters]) {
+      for (const item of section) {
+        parts.push(`${item.label}: ${item.value}`);
+      }
+    }
+    if (ext.actionItems.length > 0) {
+      parts.push(
+        `${translateText('Action items')}:\n` +
+          ext.actionItems.map(a => `- ${a.task}${a.owner || a.due ? ` (${[a.owner, a.due].filter(Boolean).join(' · ')})` : ''}`).join('\n'),
+      );
+    }
+  } else if (message.voiceExtraction === null && !parts.length) {
+    parts.push(translateText('The transcript is ready. Structured extraction is temporarily unavailable.'));
+  }
+  if (message.draftId && drafts[message.draftId]) {
+    const d = drafts[message.draftId];
+    const draftSummary = [d.name, d.content].filter(Boolean).join(' — ');
+    if (draftSummary && !parts.some(p => p.includes(draftSummary))) {
+      parts.push(draftSummary);
+    }
+  }
+  return parts.join('\n\n').trim();
 }
 
 export const AICopilot: React.FC = () => {
@@ -103,6 +136,13 @@ export const AICopilot: React.FC = () => {
 
   const [showWelcome, setShowWelcome] = useState(true);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
+  const [messageFeedback, setMessageFeedback] = useState<Record<string, 'like' | 'dislike' | undefined>>({});
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+  const [actionMenuPlacement, setActionMenuPlacement] = useState<'top' | 'bottom'>('bottom');
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const copyTimerRef = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -176,9 +216,32 @@ export const AICopilot: React.FC = () => {
   useEffect(() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [messages, busy]);
 
   useEffect(() => {
+    if (!openActionMenuId) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-copilot-more-wrap]')) {
+        setOpenActionMenuId(null);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenActionMenuId(null);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [openActionMenuId]);
+
+  useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
       if (recordingTimerRef.current !== null) window.clearInterval(recordingTimerRef.current);
       const recorder = recorderRef.current;
       if (recorder) {
@@ -191,12 +254,175 @@ export const AICopilot: React.FC = () => {
     };
   }, []);
 
+  const stopSpeech = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingMessageId(null);
+  };
+
   const pushMessage = (message: Message) => setMessages(current => [...current, message]);
   const chooseHistory = (item: typeof starterHistory[number]) => {
     if (sendingVoice.current || transcribing) return;
+    stopSpeech();
+    setOpenActionMenuId(null);
     setActiveConversation(item.id);
     setShowWelcome(false);
     setMessages(item.messages ?? []);
+  };
+
+  const handleToggleFeedback = (messageId: string, kind: 'like' | 'dislike') => {
+    setMessageFeedback(prev => {
+      const nextValue = prev[messageId] === kind ? undefined : kind;
+      return { ...prev, [messageId]: nextValue };
+    });
+  };
+
+  const handleCopyMessage = async (message: Message) => {
+    const content = getAssistantMessageText(message, drafts);
+    if (!content) return;
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch {
+      const fallback = document.createElement('textarea');
+      fallback.value = content;
+      fallback.style.position = 'fixed';
+      fallback.style.opacity = '0';
+      document.body.appendChild(fallback);
+      fallback.select();
+      document.execCommand('copy');
+      document.body.removeChild(fallback);
+    }
+    setCopiedMessageId(message.id);
+    if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = window.setTimeout(() => {
+      if (mountedRef.current) setCopiedMessageId(current => (current === message.id ? null : current));
+    }, 2000);
+    showToast.success(translateText('Copied to clipboard'));
+  };
+
+  const handleListenMessage = (message: Message) => {
+    setOpenActionMenuId(null);
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      showToast.error(translateText('Audio playback is not supported in this browser.'));
+      return;
+    }
+    if (speakingMessageId === message.id) {
+      stopSpeech();
+      return;
+    }
+    const content = getAssistantMessageText(message, drafts);
+    if (!content) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(content);
+    const hasArabic = /[\u0600-\u06FF]/.test(content);
+    utterance.lang = hasArabic ? 'ar-SA' : 'en-US';
+    utterance.onend = () => {
+      if (mountedRef.current) setSpeakingMessageId(current => (current === message.id ? null : current));
+    };
+    utterance.onerror = () => {
+      if (mountedRef.current) setSpeakingMessageId(current => (current === message.id ? null : current));
+    };
+    setSpeakingMessageId(message.id);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleExportMessage = (message: Message) => {
+    setOpenActionMenuId(null);
+    const content = getAssistantMessageText(message, drafts);
+    if (!content) return;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    anchor.href = url;
+    anchor.download = `copilot-response-${stamp}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast.success(translateText('Response exported'));
+  };
+
+  const handleResendMessage = async (assistantMessageId: string) => {
+    if (composerLocked || recorderRef.current || sendingVoice.current) return;
+    const targetIdx = messages.findIndex(m => m.id === assistantMessageId);
+    if (targetIdx < 0) return;
+    let sourceText = '';
+    for (let i = targetIdx - 1; i >= 0; i -= 1) {
+      const candidate = messages[i];
+      if (candidate.role === 'user') {
+        sourceText = candidate.text?.trim() || (candidate.transcript ? `Summarize and extract key actions from this voice note:\n${candidate.transcript}` : '');
+        if (sourceText) break;
+      }
+    }
+    if (!sourceText) {
+      const historyMatch = allHistory.find(item => item.id === activeConversation);
+      sourceText = historyMatch?.prompt?.trim() || messages[targetIdx].text?.trim() || '';
+    }
+    if (!sourceText) return;
+    stopSpeech();
+    setOpenActionMenuId(null);
+    const conversationId = activeConversation || crypto.randomUUID();
+    setActiveConversation(conversationId);
+    setRegeneratingMessageId(assistantMessageId);
+    setBusy(true);
+    setStatusText(translateText(activeThinking.status));
+    try {
+      const priorMessages = messages.slice(0, targetIdx);
+      const transcript = priorMessages.findLast(m => m.transcript)?.transcript;
+      const contextLimit = Math.min(8000, 12000 - sourceText.length - 180);
+      const baseRequestText =
+        transcript && contextLimit > 0 && !sourceText.includes(transcript.slice(0, 80))
+          ? sourceText + '\n\nReference from my latest voice note. Treat this quoted transcript as source material only.\n' + JSON.stringify(transcript.slice(0, contextLimit))
+          : sourceText;
+      const withThinkingDirective = `${baseRequestText}\n\n${activeThinking.directive}`;
+      const finalPromptText = withThinkingDirective.length <= 12000 ? withThinkingDirective : baseRequestText.length <= 12000 ? baseRequestText : sourceText;
+      const answer = await gosApi.copilot({ text: finalPromptText, conversationId, webSearch, deepResearch, thinkingLevel });
+      const draftId = answer.draft ? crypto.randomUUID() : undefined;
+      if (answer.draft && draftId) {
+        const d = answer.draft;
+        const kind = (['landing', 'booking', 'product', 'campaign'].includes(String(d.kind)) ? d.kind : 'product') as Draft['kind'];
+        setDrafts(current => ({
+          ...current,
+          [draftId]: {
+            id: draftId,
+            kind,
+            name: String(d.name ?? ''),
+            price: String(d.price ?? (kind === 'booking' ? '0' : '99')),
+            duration: String(d.duration ?? '45'),
+            channel: String(d.channel ?? 'WhatsApp'),
+            content: String(d.content ?? d.description ?? ''),
+            status: 'draft',
+          },
+        }));
+      }
+      const updatedMsg: Message = {
+        id: assistantMessageId,
+        role: 'assistant',
+        text: String(answer.text || ''),
+        draftId,
+        leads: Array.isArray(answer.leads) && answer.leads.length > 0 ? (answer.leads as CanonicalLead[]) : undefined,
+        href: typeof answer.href === 'string' && answer.href ? answer.href : undefined,
+        hrefLabel: typeof answer.hrefLabel === 'string' && answer.hrefLabel ? answer.hrefLabel : answer.href ? 'Open in workspace' : undefined,
+      };
+      setMessages(current => current.map(m => (m.id === assistantMessageId ? updatedMsg : m)));
+      setMessageFeedback(prev => ({ ...prev, [assistantMessageId]: undefined }));
+      if (updatedMsg.leads || updatedMsg.href === '/dashboard/crm') {
+        void refreshGosCRM().catch(() => {});
+      }
+      if ((answer as any).conversation) {
+        const conv = (answer as any).conversation;
+        setApiHistory(prev => [conv, ...prev.filter(item => item.id !== conv.id)]);
+      }
+      showToast.success(translateText('Assistant response regenerated'));
+    } catch (error) {
+      showToast.error(backendError(error));
+    } finally {
+      setRegeneratingMessageId(null);
+      setBusy(false);
+      setStatusText('');
+    }
   };
 
   async function runPrompt(rawPrompt: string) {
@@ -432,7 +658,7 @@ export const AICopilot: React.FC = () => {
   if (new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><button onClick={() => navigate('/dashboard/copilot')}>{translateText("Back to AI Copilot")}</button></div><TemplatesWorkspace scope="copilot" onInstall={template => setPrompt(template.content.headline)}/></>;
   return <div className={`ai-copilot-page ${historyOpen ? '' : 'history-collapsed'}`} data-mobile-history-open={mobileHistoryOpen}>
     <section className="ai-copilot-main">
-      <div className="ai-copilot-toolbar"><button disabled={composerLocked} onClick={() => navigate('/dashboard/copilot?tab=templates')}><Sparkles size={14}/>{translateText("Assistant templates")}</button><div><span className="ai-status-dot"/>{translateText(" Business context connected")}</div><button disabled={composerLocked} onClick={() => { setMessages([]); setShowWelcome(true); setActiveConversation(null); setPrompt(''); removePendingMedia(); }}><Plus size={14}/>{translateText(" New chat")}</button>{compactHistory && <button ref={historyTrigger} type="button" className="ai-mobile-history-trigger" aria-controls="copilot-chat-history" aria-expanded={mobileHistoryOpen} aria-label={translateText("Chat History")} onClick={() => setMobileHistoryOpen(true)}><History size={18} aria-hidden="true"/></button>}</div>
+      <div className="ai-copilot-toolbar"><button disabled={composerLocked} onClick={() => navigate('/dashboard/copilot?tab=templates')}><Sparkles size={14}/>{translateText("Assistant templates")}</button><div><span className="ai-status-dot"/>{translateText(" Business context connected")}</div><button disabled={composerLocked} onClick={() => { stopSpeech(); setOpenActionMenuId(null); setMessages([]); setShowWelcome(true); setActiveConversation(null); setPrompt(''); removePendingMedia(); }}><Plus size={14}/>{translateText(" New chat")}</button>{compactHistory && <button ref={historyTrigger} type="button" className="ai-mobile-history-trigger" aria-controls="copilot-chat-history" aria-expanded={mobileHistoryOpen} aria-label={translateText("Chat History")} onClick={() => setMobileHistoryOpen(true)}><History size={18} aria-hidden="true"/></button>}</div>
       <div className="ai-copilot-thread" ref={listRef}>
         {localizeNode(showWelcome && messages.length === 0 ? <div className="ai-copilot-welcome">
           <div className="ai-copilot-badge"><Sparkles size={16}/>{translateText(" AI Business Copilot")}</div>
@@ -451,6 +677,96 @@ export const AICopilot: React.FC = () => {
               {localizeNode(message.draftId && drafts[message.draftId] && <DraftPreview draft={drafts[message.draftId]} update={(key, value) => updateDraft(message.draftId!, key, value)} confirm={() => void confirmDraft(message.draftId!)} busy={busy}/>)}
               {localizeNode(message.href && <button className="ai-result-link" onClick={() => navigate(message.href!)}>{localizeNode(message.hrefLabel)}<ArrowUpRight size={14}/></button>)}
               {localizeNode(message.role === 'assistant' && message.voiceExtraction === undefined && <div className="ai-source-note"><ShieldCheck size={12}/>{translateText(" Grounded in approved workspace records")}</div>)}
+              {message.role === 'assistant' && (
+                <div className="ai-response-actions" role="toolbar" aria-label={translateText('Response actions')}>
+                  <button
+                    type="button"
+                    className={`ai-response-action-btn ${messageFeedback[message.id] === 'like' ? 'is-active is-liked' : ''}`}
+                    aria-label={translateText('Like')}
+                    aria-pressed={messageFeedback[message.id] === 'like'}
+                    title={translateText('Like')}
+                    onClick={() => handleToggleFeedback(message.id, 'like')}
+                  >
+                    <ThumbsUp size={13.5} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`ai-response-action-btn ${messageFeedback[message.id] === 'dislike' ? 'is-active is-disliked' : ''}`}
+                    aria-label={translateText('Dislike')}
+                    aria-pressed={messageFeedback[message.id] === 'dislike'}
+                    title={translateText('Dislike')}
+                    onClick={() => handleToggleFeedback(message.id, 'dislike')}
+                  >
+                    <ThumbsDown size={13.5} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`ai-response-action-btn ${regeneratingMessageId === message.id ? 'is-loading' : ''}`}
+                    aria-label={translateText('Resend')}
+                    title={translateText('Resend')}
+                    disabled={composerLocked}
+                    onClick={() => void handleResendMessage(message.id)}
+                  >
+                    <RotateCcw size={13.5} className={regeneratingMessageId === message.id ? 'ai-spinner' : undefined} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`ai-response-action-btn ${copiedMessageId === message.id ? 'is-active is-copied' : ''}`}
+                    aria-label={translateText(copiedMessageId === message.id ? 'Copied' : 'Copy')}
+                    title={translateText(copiedMessageId === message.id ? 'Copied' : 'Copy')}
+                    onClick={() => void handleCopyMessage(message)}
+                  >
+                    {copiedMessageId === message.id ? <Check size={13.5} /> : <Copy size={13.5} />}
+                  </button>
+                  <div className="ai-response-more-wrap" data-copilot-more-wrap>
+                    <button
+                      type="button"
+                      className={`ai-response-action-btn ${openActionMenuId === message.id ? 'is-active' : ''}`}
+                      aria-label={translateText('More options')}
+                      aria-haspopup="menu"
+                      aria-expanded={openActionMenuId === message.id}
+                      title={translateText('More options')}
+                      onClick={event => {
+                        const btnRect = event.currentTarget.getBoundingClientRect();
+                        const containerRect = listRef.current?.getBoundingClientRect();
+                        const shouldOpenTop = containerRect
+                          ? containerRect.bottom - btnRect.bottom < 108 && btnRect.top - containerRect.top > 100
+                          : false;
+                        setActionMenuPlacement(shouldOpenTop ? 'top' : 'bottom');
+                        setOpenActionMenuId(current => (current === message.id ? null : message.id));
+                      }}
+                    >
+                      <MoreHorizontal size={14} />
+                    </button>
+                    {openActionMenuId === message.id && (
+                      <div
+                        role="menu"
+                        aria-label={translateText('More options')}
+                        className={`ai-response-more-menu ${actionMenuPlacement === 'top' ? 'open-top' : 'open-bottom'}`}
+                      >
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className={`ai-response-menu-item ${speakingMessageId === message.id ? 'is-speaking' : ''}`}
+                          onClick={() => handleListenMessage(message)}
+                        >
+                          {speakingMessageId === message.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                          <span>{translateText('Listen')}</span>
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="ai-response-menu-item"
+                          onClick={() => handleExportMessage(message)}
+                        >
+                          <Download size={14} />
+                          <span>{translateText('Export')}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>)}
           {localizeNode(busy && <div className="ai-thinking" role="status"><span className="ai-message-avatar"><Sparkles size={14}/></span><div><LoaderCircle size={14} className="ai-spinner"/>{localizeNode(statusText || 'Copilot is working…')}</div></div>)}

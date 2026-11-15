@@ -23,9 +23,9 @@ import { usePhoenixBrand } from '../../backend/phoenixBrand';
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
 const CARD =
-  "rounded-xl border border-slate-100 bg-white shadow-sm dark:border-white/10 dark:bg-[#121829]";
+  "rounded-xl border border-slate-100 bg-white shadow-sm dark:border-purple-300/[0.14] dark:bg-[#13172b] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_12px_28px_-18px_rgba(3,5,16,0.84)]";
 const H = "text-slate-900 dark:text-white";
-const MUTED = "text-slate-500 dark:text-slate-400";
+const MUTED = "text-slate-500 dark:text-slate-300";
 
 type Tone =
   | "purple"

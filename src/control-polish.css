@@ -1,6 +1,6 @@
 /* Shared app controls. Visitor-authored content keeps its own theme. */
 :root { --control-primary: var(--ws-accent, #7C3AED); --control-secondary: var(--ws-hover, #A78BFA); --control-panel: rgb(255 255 255 / .94); --control-ink: #334155; --control-line: var(--ws-border-subtle, #ddd6fe); --control-active: var(--ws-soft, #f3e8ff); }
-html.dark { --control-panel: rgb(25 32 51 / .95); --control-ink: #f1f5f9; --control-line: var(--ws-border-subtle, #514367); --control-active: var(--ws-soft, #35264f); }
+html.dark { --control-panel: rgb(20 24 46 / .96); --control-ink: #f6f7ff; --control-line: var(--ws-border-subtle, #4b3d70); --control-active: var(--ws-soft, #312352); }
 :is(.crm-custom-select-popup,.crm-options-popup,.dc-select-popup,.fb-dropdown,.fb-step-popup,.form-custom-select-dropdown,.adm-tools-cat-popup,.ai-history-filter-menu) {
   background: var(--control-panel) !important; color: var(--control-ink) !important;
   border-color: var(--control-line) !important; border-radius: 12px;
@@ -53,11 +53,11 @@ html body .pf-template-card:not(.pf-template-blank-card) .pf-template-preview > 
 .pf-template-card.pf-template-blank-card .pf-form-template-preview::after { content: none; }
 .pf-template-card.pf-template-blank-card .pf-form-template-preview > small { color: #334155 !important; text-shadow: none; }
 .pf-template-card.pf-template-blank-card .pf-form-template-preview > span { color: #fff !important; }
-html.dark .pf-template-card, html.dark .pf-template-description { background: #151a27; border-color: #3c3650; color: #f1f5f9; }
+html.dark .pf-template-card, html.dark .pf-template-description { background: #14182e; border-color: rgba(167, 139, 250, 0.22); color: #f6f7ff; }
 html.dark .pf-template-description b { color: #f1f5f9; }
 html.dark .pf-template-description small { color: #cbd5e1; }
 html.dark .pf-template-description > span { color: #A78BFA; }
-html.dark .pf-template-filters > label, html.dark .pf-template-filters .aw-select-trigger { background: #192033; border-color: #514367; color: #f1f5f9; }
+html.dark .pf-template-filters > label, html.dark .pf-template-filters .aw-select-trigger { background: #181d38; border-color: rgba(167, 139, 250, 0.26); color: #f6f7ff; }
 html.dark .pf-template-filters input { background: transparent; color: #f1f5f9; }
 html.dark .pf-template-filters input::placeholder { color: #cbd5e1; }
 @keyframes control-open { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }

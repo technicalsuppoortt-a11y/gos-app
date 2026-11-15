@@ -110,6 +110,33 @@ body.layout-locked #root {
 }
 
 .layout-sidebar-content.is-collapsed .layout-brand-row {
+  width: 100%;
+  justify-content: center;
+  padding: 2px 0 8px;
+  gap: 0;
+}
+
+.layout-sidebar-content.is-collapsed .layout-brand,
+.layout-sidebar.is-collapsed .layout-brand {
+  flex: 0 0 auto;
+  width: 100%;
+  justify-content: center;
+  gap: 0;
+  margin-inline: auto;
+}
+
+.layout-sidebar-content.is-collapsed .layout-brand-copy,
+.layout-sidebar.is-collapsed .layout-brand-copy {
+  display: none;
+}
+
+.layout-sidebar-content.is-collapsed .layout-brand-icon,
+.layout-sidebar.is-collapsed .layout-brand-icon {
+  margin-inline: auto;
+}
+
+/* Unused legacy rule below kept for transition fallback */
+.layout-sidebar-content.is-collapsed .layout-brand-row {
   justify-content: center;
   padding: 2px 0 8px;
 }
@@ -1181,13 +1208,13 @@ html.dark .layout-brand-wordmark b {
 }
 
 html.dark .layout-brand-copy small {
-  color: #9ba3b5;
+  color: #b7c1e2;
 }
 
 html.dark .layout-collapse-btn {
-  background: #191e2c;
-  border-color: #2a3144;
-  color: #aab0c2;
+  background: #1a203b;
+  border-color: rgba(167, 139, 250, 0.24);
+  color: #ccd4ef;
 }
 
 html.dark .layout-collapse-btn:hover {
@@ -1197,11 +1224,11 @@ html.dark .layout-collapse-btn:hover {
 }
 
 html.dark .layout-nav-item {
-  color: #aeb5c5;
+  color: #cdd5ef;
 }
 
 html.dark .layout-nav-item>svg {
-  color: #8992a6;
+  color: #aeb8da;
 }
 
 html.dark .layout-nav-item:hover {
@@ -1236,11 +1263,11 @@ html.dark .layout-profile-copy b {
 }
 
 html.dark .layout-profile-copy small {
-  color: #9ba3b5;
+  color: #b7c1e2;
 }
 
 html.dark .layout-help-card {
-  background: #191e2c;
+  background: #1a203b;
   border-color: #292e3e;
 }
 
@@ -1427,7 +1454,7 @@ html.dark .layout-header-breadcrumb h1 {
   }
   html.dark .layout-mobile-close {
     background: #1d2232;
-    color: #aeb5c5;
+    color: #cdd5ef;
   }
 }
 

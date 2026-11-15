@@ -98,14 +98,14 @@ type ComposerMode = "reply" | "note";
 /* Design tokens                                                       */
 /* ------------------------------------------------------------------ */
 const CARD =
-  "rounded-2xl border border-slate-100 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04)] dark:border-white/[0.06] dark:bg-[#111522]";
-const HEADING = "text-slate-900 dark:text-slate-100";
-const MUTED = "text-slate-500 dark:text-slate-400";
-const SUBTLE = "text-slate-400 dark:text-slate-500";
+  "rounded-2xl border border-slate-100 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04)] dark:border-purple-300/[0.14] dark:bg-[#13172b] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_12px_28px_-16px_rgba(3,5,16,0.82)]";
+const HEADING = "text-slate-900 dark:text-[#f6f7ff]";
+const MUTED = "text-slate-500 dark:text-[#c7d0ec]";
+const SUBTLE = "text-slate-400 dark:text-[#a2aed0]";
 const ICON_BTN =
-  "grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-slate-200/80 bg-white text-slate-500 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400 dark:hover:bg-purple-500/10 dark:hover:text-purple-300";
+  "grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-slate-200/80 bg-white text-slate-500 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-600 dark:border-purple-300/[0.16] dark:bg-white/[0.04] dark:text-[#bcc6e5] dark:hover:border-purple-400/35 dark:hover:bg-purple-500/15 dark:hover:text-purple-200";
 const POPOVER =
-  "absolute z-40 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-[0_18px_45px_-12px_rgba(30,27,75,0.25)] dark:border-white/10 dark:bg-[#161b2b]";
+  "absolute z-40 overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 shadow-[0_18px_45px_-12px_rgba(30,27,75,0.25)] dark:border-purple-300/[0.2] dark:bg-[#171c36]";
 const MENU_ITEM =
   "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-[12.5px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white";
 
@@ -862,7 +862,29 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     showToast.success(`Conversation with ${active.name} archived.`);
   };
 
-  if (!conversations.length) return <div className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"><h2>{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2><p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : translateText("Connect a channel in Settings to start receiving messages.")}</p><button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : translateText("Connect a channel")}</button></div>;
+  const isInitialInboxLoading = !demoInbox && inboxApi.initialLoading && !conversations.length;
+  if (isInitialInboxLoading) {
+    return (
+      <InboxWorkspaceSkeleton
+        cardClass={CARD}
+        loadingLabel={language === 'ar' ? 'جاري تحميل المحادثات...' : translateText('Loading conversations...')}
+      />
+    );
+  }
+  if (!conversations.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"
+      >
+        <h2>{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2>
+        <p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : translateText("Connect a channel in Settings to start receiving messages.")}</p>
+        <button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : translateText("Connect a channel")}</button>
+      </motion.div>
+    );
+  }
   const assigneeMember =
     teamMembers.find(m => m.name.trim().toLowerCase() === (active.assignee || '').trim().toLowerCase()) ??
     (active.assignee
@@ -874,7 +896,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   return (
     <div className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
       {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>{translateText("Retry")}</button></div>}
-      {!demoInbox && inboxApi.loading && <div role="status" className="af-knowledge-loading" aria-label={translateText("Loading conversations")}><i/><i/></div>}
+      {!demoInbox && inboxApi.initialLoading && <div role="status" className="sr-only" aria-label={translateText("Loading conversations")} />}
       {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>{translateText("No conversations yet. Connected channels will appear here when customer messages arrive.")}</p>}
       {/* ============ Channel filter strip ============ */}
       <div className={`${CARD} flex h-[54px] shrink-0 items-center gap-3 px-2.5`}>
@@ -1084,7 +1106,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 </li>
               );
             }))}
-            {localizeNode(!visible.length && (
+            {localizeNode(!visible.length && !(!demoInbox && inboxApi.initialLoading) && (
               <li className="flex flex-col items-center px-6 py-14 text-center">
                 <span className="mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-purple-50 text-purple-500 dark:bg-purple-500/15">
                   <Search size={18} />
@@ -1838,5 +1860,138 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     </div>
   );
 };
+
+function InboxWorkspaceSkeleton({
+  cardClass,
+  loadingLabel,
+}: {
+  cardClass: string;
+  loadingLabel: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label={loadingLabel}
+      className="inbox-root inbox-skeleton-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent"
+    >
+      {/* Top channel filter bar skeleton */}
+      <div className={`${cardClass} flex h-[54px] shrink-0 items-center justify-between gap-3 px-3`}>
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          {[92, 108, 104, 112, 96, 88].map((w, idx) => (
+            <span
+              key={idx}
+              style={{ width: w }}
+              className="inbox-skel-shimmer h-9 shrink-0 rounded-xl"
+            />
+          ))}
+        </div>
+        <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100/80 bg-purple-50/50 px-3 py-1.5 dark:border-purple-400/20 dark:bg-purple-500/10">
+          <LoaderCircle size={14} className="animate-spin text-[#7C3AED] dark:text-[#A78BFA]" />
+          <span className="text-[12.5px] font-semibold text-slate-700 dark:text-slate-200">{loadingLabel}</span>
+        </div>
+      </div>
+
+      {/* 3-column workspace skeleton */}
+      <div className="flex min-h-0 flex-1 gap-3 overflow-hidden">
+        {/* Column 1: conversation list skeleton */}
+        <aside className={`${cardClass} flex min-h-0 w-full shrink-0 flex-col md:w-[300px] 2xl:w-[340px]`} aria-hidden="true">
+          <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 px-3 py-2.5 dark:border-white/[0.07]">
+            <span className="inbox-skel-shimmer h-6 w-14 rounded-lg" />
+            <span className="inbox-skel-shimmer h-6 w-16 rounded-lg" />
+            <span className="inbox-skel-shimmer h-6 w-24 rounded-lg" />
+          </div>
+          <div className="flex shrink-0 items-center gap-2 p-3">
+            <span className="inbox-skel-shimmer h-9 flex-1 rounded-xl" />
+            <span className="inbox-skel-shimmer h-9 w-9 shrink-0 rounded-lg" />
+          </div>
+          <div className="min-h-0 flex-1 space-y-1.5 overflow-hidden px-2.5 pb-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-3 rounded-xl border p-2.5 ${
+                  i === 0
+                    ? 'border-purple-100/80 bg-purple-50/40 dark:border-purple-400/15 dark:bg-purple-500/[0.07]'
+                    : 'border-transparent'
+                }`}
+              >
+                <span className="inbox-skel-shimmer h-10 w-10 shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inbox-skel-shimmer h-3.5 w-28 rounded-md" />
+                    <span className="inbox-skel-shimmer h-2.5 w-10 rounded-md" />
+                  </div>
+                  <span className="inbox-skel-shimmer block h-3 w-full rounded-md" />
+                  <span className="inbox-skel-shimmer block h-2.5 w-2/3 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Column 2: thread skeleton */}
+        <section className={`${cardClass} hidden min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex`} aria-hidden="true">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-5 py-3 dark:border-white/[0.07]">
+            <div className="flex items-center gap-3">
+              <span className="inbox-skel-shimmer h-[42px] w-[42px] shrink-0 rounded-full" />
+              <div className="space-y-2">
+                <span className="inbox-skel-shimmer block h-4 w-36 rounded-md" />
+                <span className="inbox-skel-shimmer block h-3 w-24 rounded-md" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inbox-skel-shimmer h-8 w-24 rounded-lg" />
+              <span className="inbox-skel-shimmer h-8 w-8 rounded-lg" />
+            </div>
+          </div>
+          <div className="inbox-thread-bg flex min-h-0 flex-1 flex-col justify-between gap-4 p-5">
+            <div className="space-y-4">
+              <div className="flex items-start gap-2.5">
+                <span className="inbox-skel-shimmer h-8 w-8 shrink-0 rounded-full" />
+                <span className="inbox-skel-shimmer h-16 w-64 max-w-[70%] rounded-2xl" />
+              </div>
+              <div className="flex justify-end">
+                <span className="inbox-skel-shimmer h-14 w-72 max-w-[72%] rounded-2xl" />
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="inbox-skel-shimmer h-8 w-8 shrink-0 rounded-full" />
+                <span className="inbox-skel-shimmer h-20 w-80 max-w-[75%] rounded-2xl" />
+              </div>
+            </div>
+            <div className="flex items-center justify-center py-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-purple-200/60 bg-white/90 px-3.5 py-1.5 text-[12px] font-medium text-slate-600 shadow-sm dark:border-purple-400/20 dark:bg-[#171c32]/90 dark:text-slate-200">
+                <LoaderCircle size={13} className="animate-spin text-[#7C3AED] dark:text-[#A78BFA]" />
+                <span>{loadingLabel}</span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-slate-100 p-3 dark:border-white/[0.07]">
+            <span className="inbox-skel-shimmer block h-16 w-full rounded-xl" />
+          </div>
+        </section>
+
+        {/* Column 3: contact details skeleton */}
+        <aside className={`${cardClass} hidden min-h-0 w-[290px] shrink-0 flex-col gap-4 p-4 xl:flex 2xl:w-[320px]`} aria-hidden="true">
+          <div className="flex flex-col items-center gap-2.5 border-b border-slate-100 pb-4 pt-2 dark:border-white/[0.07]">
+            <span className="inbox-skel-shimmer h-14 w-14 rounded-full" />
+            <span className="inbox-skel-shimmer h-4 w-32 rounded-md" />
+            <span className="inbox-skel-shimmer h-3 w-24 rounded-md" />
+          </div>
+          <div className="space-y-3">
+            <span className="inbox-skel-shimmer block h-3 w-20 rounded-md" />
+            <span className="inbox-skel-shimmer block h-9 w-full rounded-xl" />
+            <span className="inbox-skel-shimmer block h-9 w-full rounded-xl" />
+            <span className="inbox-skel-shimmer block h-9 w-full rounded-xl" />
+          </div>
+          <div className="mt-auto space-y-2.5 border-t border-slate-100 pt-4 dark:border-white/[0.07]">
+            <span className="inbox-skel-shimmer block h-3 w-28 rounded-md" />
+            <span className="inbox-skel-shimmer block h-7 w-full rounded-lg" />
+            <span className="inbox-skel-shimmer block h-7 w-5/6 rounded-lg" />
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
 
 export default Inbox;

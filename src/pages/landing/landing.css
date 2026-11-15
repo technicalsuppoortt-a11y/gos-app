@@ -1498,3 +1498,18 @@
 .lp .lp-mock-replica { grid-template-columns: 148px minmax(0, 1fr); }
 
 @media (max-width: 520px) { .lp .lp-mock-replica { grid-template-columns: 116px minmax(0,1fr); } .lp .lp-mock-replica .lp-mock__side { display: block; padding-inline: 3px; } .lp .lp-mock-replica .lp-mock__side button { font-size: 6px; gap: 3px; padding: 6px 3px; } .lp .lp-mock-replica .lp-mock__side button svg { width: 9px; } .lp-replica-welcome h3 { font-size: 9px; } .lp-replica-kpis { gap: 3px; } .lp-replica-kpis>div { padding: 5px; } .lp-replica-kpis span { font-size: 4px; gap: 1px; } .lp-replica-kpis span svg { width: 8px; } .lp-replica-kpis b { font-size: 10px; } }
+
+
+/* Dark mode contrast & brand glow polish */
+.dark .lp .lp-faq__item > button svg, [data-theme='dark'] .lp .lp-faq__item > button svg {
+  color: #a8b4d6;
+}
+.dark .lp .lp-faq__answer p, [data-theme='dark'] .lp .lp-faq__answer p {
+  color: #c4cde9;
+}
+.dark .lp .lp-pricing-card small, [data-theme='dark'] .lp .lp-pricing-card small {
+  color: #b4bedf;
+}
+.dark .lp .lp-cms-footer, [data-theme='dark'] .lp .lp-cms-footer {
+  color: #a8b4d6;
+}

@@ -18,7 +18,7 @@ export const themePaletteDetails: Record<
     accent: '#a78bfa',
     soft: '#ede9fe',
     hover: '#a78bfa',
-    darkBg: '#111827',
+    darkBg: '#0a0c1b',
     badge: ['Default Brand', 'السمة الافتراضية'],
     desc: ['Signature royal violet & indigo contrast', 'بنفسجي ملكي متوازن وعصري'],
   },
@@ -111,7 +111,7 @@ type WorkspaceTheme = NonNullable<PhoenixBrand['theme']> & { gradients: Record<'
 export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceTheme {
   const p = themePaletteDetails[id] ?? themePaletteDetails.violet;
   const violet = id === 'violet';
-  const darkSurface = violet ? '#242538' : 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
+  const darkSurface = violet ? '#14182e' : 'color-mix(in srgb, ' + p.darkBg + ', white 8%)';
   const buttonEnd = violet ? '#A78BFA' : 'color-mix(in srgb, ' + p.primary + ' 80%, ' + p.hover + ')';
   const buttonGradient = 'linear-gradient(115deg, ' + p.primary + ', ' + buttonEnd + ')';
   const lightBackground = violet ? '#f3f7fc' : '#f8fafc';
@@ -133,9 +133,9 @@ export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceThem
         buttonGradient,
         navGradient: navGradient,
         sidebarGradient: violet
-          ? 'linear-gradient(180deg, #151a27 0%, #101521 100%)'
+          ? 'linear-gradient(180deg, #12162b 0%, #0d1022 100%)'
           : 'linear-gradient(180deg, ' + darkSurface + ', ' + p.darkBg + ')',
-        canvasGradient: 'linear-gradient(160deg, color-mix(in srgb, ' + p.darkBg + ', ' + p.primary + ' 10%), ' + p.darkBg + ')',
+        canvasGradient: violet ? 'radial-gradient(65% 48% at 14% 0%, rgba(124, 58, 237, 0.16), transparent 68%), radial-gradient(52% 42% at 88% 8%, rgba(167, 139, 250, 0.10), transparent 65%), linear-gradient(180deg, #0b0e20 0%, #090b19 100%)' : 'linear-gradient(160deg, color-mix(in srgb, ' + p.darkBg + ', ' + p.primary + ' 12%), ' + p.darkBg + ')',
         cardHeaderGradient: 'linear-gradient(105deg, color-mix(in srgb, ' + darkSurface + ', ' + p.primary + ' 15%), ' + darkSurface + ')',
       },
     },
@@ -159,13 +159,13 @@ export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceThem
       buttonBackground: p.primary,
       background: p.darkBg,
       surface: darkSurface,
-      text: '#f1f5f9',
-      mutedText: '#cbd5e1',
-      border: 'color-mix(in srgb, ' + darkSurface + ', white 18%)',
-      soft: 'color-mix(in srgb, ' + darkSurface + ', ' + p.accent + ' 14%)',
+      text: '#f6f7ff',
+      mutedText: '#c8d1ed',
+      border: violet ? '#2d3558' : 'color-mix(in srgb, ' + darkSurface + ', white 18%)',
+      soft: violet ? '#271f4a' : 'color-mix(in srgb, ' + darkSurface + ', ' + p.accent + ' 16%)',
       success: '#6ee7b7',
-      headerBackground: darkSurface,
-      footerBackground: darkSurface,
+      headerBackground: violet ? '#11152a' : darkSurface,
+      footerBackground: violet ? '#11152a' : darkSurface,
     },
     typography: { heading: 'Inter', body: 'Inter', arabic: 'Cairo' },
     buttons: { shape: 'rounded', variant: 'solid' },

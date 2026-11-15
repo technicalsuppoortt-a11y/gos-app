@@ -755,7 +755,8 @@ html[data-workspace-theme] :is(
 }
 
 .workspace-logo { display:block; width:auto; max-width:160px; height:48px; object-fit:contain; }
-.layout-sidebar-content.is-collapsed .workspace-logo { max-width:36px; height:36px; }
+.layout-sidebar-content.is-collapsed .workspace-logo { max-width:36px; height:36px; margin-inline:auto; }
+.adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; margin-inline:auto; }
 .adm-sidebar.is-collapsed .workspace-logo { max-width:36px; height:36px; }
 
 html[data-workspace-theme] :is(.adm-shell, .workspace-customization-panel) {

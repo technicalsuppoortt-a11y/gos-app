@@ -13,5 +13,5 @@
 .layout-settings-link.is-active>svg{opacity:1}
 .layout-settings-link:focus-visible,.layout-submenu-toggle:focus-visible{outline:2px solid #A78BFA;outline-offset:2px}
 .module-access-message{margin:24px;padding:24px;border:1px solid #ded9f2;border-radius:14px;background:linear-gradient(135deg,#faf9ff,#eff3ff)}.module-access-message h1{font-size:20px;margin-bottom:8px}.module-access-message p{font-size:14px;color:#EDE9FE}
-.dark .layout-settings-submenu{border-color:#3b354d}.dark .layout-settings-link{color:#bab8d1}.dark .layout-settings-link:hover{background:#2e293d;color:#A78BFA}.dark .layout-settings-link.is-active{background:linear-gradient(110deg,#39304e,#322a45);color:#A78BFA}
+.dark .layout-settings-submenu{border-color:#443a63}.dark .layout-settings-link{color:#d5dcf4}.dark .layout-settings-link:hover{background:#262044;color:#c4b5fd}.dark .layout-settings-link.is-active{background:linear-gradient(110deg,#36285a,#281f47);color:#ddd6fe;box-shadow:0 2px 10px rgba(124,58,237,0.18)}
 @media(prefers-reduced-motion:reduce){.layout-settings-link,.layout-submenu-toggle,.layout-submenu-toggle svg{transition:none}}

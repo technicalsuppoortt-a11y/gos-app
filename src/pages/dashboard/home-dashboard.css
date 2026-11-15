@@ -114,7 +114,7 @@
   max-width: 100%;
 }
 
-html.dark .gos-home-dashboard { --icon-cut: #121829; }
+html.dark .gos-home-dashboard { --icon-cut: #13172b; }
 
 .gos-home-dashboard [data-dashboard-section=hero]{position:relative;z-index:30;overflow:visible}
 .gos-home-dashboard [data-dashboard-section=hero] nav{position:relative}
@@ -131,7 +131,7 @@ html.dark .gos-home-dashboard { --icon-cut: #121829; }
   box-shadow:0 16px 36px -10px rgba(15,21,53,0.7), 0 0 0 1px rgba(255,255,255,0.06);
   z-index:50
 }
-html.dark .gos-home-dashboard #hero-create-list{background:#0d1226;border-color:rgba(255,255,255,0.12)}
+html.dark .gos-home-dashboard #hero-create-list{background:#121730;border-color:rgba(167,139,250,0.22)}
 .gos-home-dashboard #hero-create-list:not(.opacity-100){pointer-events:none}
 
 .gos-home-dashboard #hero-create-new,

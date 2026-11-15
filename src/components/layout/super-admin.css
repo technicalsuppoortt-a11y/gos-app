@@ -15,6 +15,7 @@
 .sa-dashboard{gap:12px}.sa-welcome{min-height:72px;padding:13px 17px;border-radius:12px}.sa-crown{width:40px;height:40px;border-radius:10px}.sa-crown svg{width:21px;height:21px}.sa-welcome>span:last-child{gap:3px}.sa-welcome b{font-size:17px}.sa-welcome small{font-size:10px}.sa-overview-panel{flex:0 0 auto;gap:9px;padding:13px;border-radius:12px}.sa-overview-label{height:20px;font-size:10px}.sa-metrics-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.sa-metric{min-height:84px;padding:12px 14px;border-radius:9px}.sa-metric-label{font-size:10px}.sa-metric-label svg{width:17px;height:17px}.sa-metric-value{margin-top:8px;font-size:22px}.sa-metric-delta{inset-inline-end:11px;bottom:11px;padding:3px 6px;font-size:8px}.sa-clients-card{flex:0 0 auto;margin:0;padding:12px 14px 6px;border-radius:10px}.sa-clients-heading{margin-bottom:5px}.sa-clients-heading h2{font-size:12px}.sa-clients-heading button{font-size:9px}.sa-table-scroll{flex:0 0 auto}.sa-table-scroll th{height:28px;font-size:8px}.sa-table-scroll td{height:32px;font-size:10px}.sa-status{padding:3px 7px;font-size:8px}.sa-manage-clients{min-height:24px;font-size:9px}.sa-content{padding-top:16px;padding-bottom:14px}.sa-topbar{height:56px}.sa-search{height:32px}.sa-search:focus-within{width:288px}@media(max-width:1100px){.sa-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sa-metric{min-height:84px}}@media(max-width:760px){.sa-dashboard{gap:10px}.sa-content{padding-top:12px}.sa-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sa-metric{min-height:80px;padding:10px}.sa-metric-value{font-size:20px}.sa-table-scroll table{min-width:510px}}
 
 /* Super Admin shell alignment; shared dashboard branding supplies logo typography. */
+@media(max-width:760px){.sa-sidebar:not(.is-mobile-open) .sa-brand{justify-content:center!important;padding-inline:0!important;gap:0!important;width:100%!important;flex:0 0 auto!important}.sa-sidebar:not(.is-mobile-open) .sa-brand .layout-brand-copy{display:none!important}.sa-sidebar:not(.is-mobile-open) .sa-brand .layout-brand-icon{margin-inline:auto!important}}
 .sa-shell .sa-brand{flex:none;gap:8px}
 .sa-shell .sa-sidebar{overflow-y:auto}
 .sa-shell .sa-sidebar-footer{margin-top:auto;padding-top:12px;flex-shrink:0}
@@ -56,3 +57,26 @@ html[dir="rtl"] .sa-shell:has(.sa-templates) .sa-main { margin-inline: 248px 0; 
   .sa-shell:has(.sa-templates) .sa-content { padding-inline: 10px; }
   .sa-shell:has(.sa-sidebar.is-mobile-open):has(.sa-templates) { overflow: hidden; }
 }
+
+
+/* Brand-aligned dark depth & high-legibility Super Admin surfaces */
+html.dark .sa-welcome {
+  background:
+    radial-gradient(65% 90% at 0% 0%, rgba(124, 58, 237, 0.24), transparent 65%),
+    linear-gradient(115deg, #1d173d 0%, #14182f 92%);
+  border-color: rgba(167, 139, 250, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 28px -18px rgba(3, 5, 16, 0.85);
+}
+html.dark .sa-crown {
+  background: linear-gradient(145deg, #7C3AED, #A78BFA);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+}
+html.dark .sa-welcome small { color: #c4cde9; }
+html.dark .sa-nav-label { color: #9da8ca; }
+html.dark .sa-nav-link { color: #cdd5ef; }
+html.dark .sa-nav-link:hover { background: #1e2340; color: #ffffff; }
+html.dark .sa-search { background: #151a33; border-color: rgba(167, 139, 250, 0.22); color: #b5bfe0; }
+html.dark .sa-search input { color: #f6f7ff; }
+html.dark .sa-table-scroll th { color: #b2bcdd; }
+html.dark .sa-table-scroll td { color: #e8ecf9; border-top-color: rgba(167, 139, 250, 0.14); }

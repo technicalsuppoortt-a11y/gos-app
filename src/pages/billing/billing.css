@@ -36,15 +36,15 @@
   animation: bl-rise .35s ease both;
 }
 html.dark .bl, html.dark .bl-scrim {
-  --bl-surface: #0f1522;
-  --bl-surface-2: #0b111c;
-  --bl-surface-3: #172033;
-  --bl-border: rgba(148, 163, 184, .14);
-  --bl-border-strong: rgba(148, 163, 184, .24);
-  --bl-text: #e7ebf3;
-  --bl-muted: #95a0b6;
-  --bl-faint: #6c7790;
-  --bl-accent-soft: rgba(124, 58, 237, .16);
+  --bl-surface: #14182e;
+  --bl-surface-2: #0d1022;
+  --bl-surface-3: #1d2342;
+  --bl-border: rgba(167, 139, 250, .18);
+  --bl-border-strong: rgba(167, 139, 250, .30);
+  --bl-text: #f6f7ff;
+  --bl-muted: #bfc9e8;
+  --bl-faint: #98a4c8;
+  --bl-accent-soft: rgba(124, 58, 237, .22);
   --bl-success: #34d399;
   --bl-success-soft: rgba(16, 185, 129, .14);
   --bl-warning: #fbbf24;

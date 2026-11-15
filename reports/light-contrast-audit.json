@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 103,
-  "correctedDeclarations": 871,
+  "correctedDeclarations": 872,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -1088,67 +1088,67 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 917,
+      "line": 939,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1064,
+      "line": 1086,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1117,
+      "line": 1139,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1200,
+      "line": 1222,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1275,
+      "line": 1297,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1420,
+      "line": 1442,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1451,
+      "line": 1473,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1483,
+      "line": 1505,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1556,
+      "line": 1578,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1708,
+      "line": 1730,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1737,
+      "line": 1759,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1770,
+      "line": 1792,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1782,
+      "line": 1804,
       "utility": "text-slate-400"
     },
     {
@@ -3162,7 +3162,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 178,
+      "line": 205,
       "selector": ".layout-brand-copy small",
       "before": "#85899a",
       "after": "#475569",
@@ -3170,7 +3170,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 297,
+      "line": 324,
       "selector": ".layout-nav-icon",
       "before": "#777b8e",
       "after": "#334155",
@@ -3178,7 +3178,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 438,
+      "line": 465,
       "selector": ".layout-profile-copy small",
       "before": "#9295a3",
       "after": "#475569",
@@ -3186,7 +3186,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 496,
+      "line": 523,
       "selector": ".layout-help-card small",
       "before": "#999baa",
       "after": "#475569",
@@ -3194,7 +3194,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 508,
+      "line": 535,
       "selector": ".layout-help-card>button",
       "before": "#9295a3",
       "after": "#334155",
@@ -3202,7 +3202,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 665,
+      "line": 692,
       "selector": ".layout-logout",
       "before": "#777b8b",
       "after": "#334155",
@@ -3210,7 +3210,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 795,
+      "line": 822,
       "selector": ".layout-header-title p",
       "before": "#7c8091",
       "after": "#334155",
@@ -3218,7 +3218,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 809,
+      "line": 836,
       "selector": ".layout-header-breadcrumb>span",
       "before": "#797d8f",
       "after": "#334155",
@@ -3226,7 +3226,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 814,
+      "line": 841,
       "selector": ".layout-header-breadcrumb>i",
       "before": "#b8bac5",
       "after": "#334155",
@@ -3234,7 +3234,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 990,
+      "line": 1017,
       "selector": ".layout-header-user small",
       "before": "#9396a5",
       "after": "#475569",
@@ -3242,7 +3242,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1050,
+      "line": 1077,
       "selector": ".layout-booking-tab svg",
       "before": "#85899a",
       "after": "#334155",
@@ -3250,7 +3250,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1130,
+      "line": 1157,
       "selector": ".layout-footer",
       "before": "#9699a7",
       "after": "#475569",
@@ -3258,7 +3258,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1425,
+      "line": 1452,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",
@@ -3679,6 +3679,14 @@
       "before": "#7f859e",
       "after": "#475569",
       "contrastOnWhite": 3.65
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 570,
+      "selector": ".ai-response-menu-item svg",
+      "before": "#737a96",
+      "after": "#334155",
+      "contrastOnWhite": 4.24
     },
     {
       "file": "src/pages/ai-followup.css",

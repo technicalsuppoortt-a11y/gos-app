@@ -1,19 +1,19 @@
 /* Shared dashboard palette; the Inbox provides the reference surfaces. */
 html.dark {
-  --ui-surface: #151a27;
-  --ui-surface-raised: #1b2030;
-  --ui-surface-hover: #252b3b;
-  --ui-border: #2d3344;
-  --ui-text: #edf0f7;
-  --ui-text-secondary: #c0c7d5;
-  --ui-text-muted: #a0aabc;
-  --ui-accent-text: #A78BFA;
-  --ui-accent-surface: #292440;
+  --ui-surface: #13172b;
+  --ui-surface-raised: #191e38;
+  --ui-surface-hover: #22294a;
+  --ui-border: #2f375c;
+  --ui-text: #f6f7ff;
+  --ui-text-secondary: #d9dff5;
+  --ui-text-muted: #b2bcdd;
+  --ui-accent-text: #c4b5fd;
+  --ui-accent-surface: #271f4a;
   --panel: var(--ui-surface);
   --ink: var(--ui-text);
   --muted: var(--ui-text-muted);
   --line: var(--ui-border);
-  --bg: #0b1020;
+  --bg: #0a0c1b;
 }
 
 /* The booking editor's 34 x 19 track and 15px thumb are the standard.
@@ -125,3 +125,378 @@ html[dir=rtl] .sa-sidebar.is-mobile-open { animation-name: sa-drawer-in-rtl; }
 .af-status-switch[aria-checked=true] .bk-switch-track { background: var(--switch-active) !important; }
 .af-status-switch[aria-checked=true] .bk-switch-track::after { transform: translateX(15px) !important; }
 html[dir=rtl] .af-status-switch[aria-checked=true] .bk-switch-track::after { transform: translateX(-15px) !important; }
+
+
+/* ==========================================================================
+   Brand-Aligned Dark Mode Depth, Ambient Glows & WCAG Contrast Revamp
+   ========================================================================== */
+html.dark {
+  --dark-canvas-glow:
+    radial-gradient(64% 46% at 14% 0%, rgba(124, 58, 237, 0.16), transparent 68%),
+    radial-gradient(50% 40% at 88% 8%, rgba(167, 139, 250, 0.11), transparent 64%),
+    radial-gradient(45% 38% at 50% 100%, rgba(99, 102, 241, 0.08), transparent 70%),
+    linear-gradient(180deg, #0b0e20 0%, #090b19 100%);
+  --dark-sidebar-surface:
+    radial-gradient(95% 42% at 0% 0%, rgba(124, 58, 237, 0.14), transparent 62%),
+    linear-gradient(180deg, #12162b 0%, #0d1022 100%);
+  --dark-topbar-surface:
+    linear-gradient(90deg, rgba(19, 23, 45, 0.94) 0%, rgba(23, 27, 52, 0.92) 52%, rgba(18, 22, 43, 0.94) 100%);
+  --dark-card-surface:
+    linear-gradient(165deg, rgba(27, 32, 60, 0.94) 0%, rgba(19, 23, 43, 0.97) 100%);
+  --dark-card-border: rgba(167, 139, 250, 0.16);
+  --dark-card-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 12px 30px -18px rgba(3, 5, 16, 0.84);
+}
+
+html.dark body {
+  background-color: #0a0c1b;
+  color: var(--ui-text);
+}
+
+html.dark:not([data-gp-brand="true"]) :is(
+  .layout-dashboard-shell,
+  .adm-shell,
+  .sa-shell,
+  .role-shell
+) {
+  background: var(--dark-canvas-glow) !important;
+  color: var(--ui-text);
+}
+
+html.dark:not([data-gp-brand="true"]) :is(
+  .layout-workspace,
+  .layout-main,
+  .layout-route-content,
+  .adm-main,
+  .sa-main,
+  .role-shell-main
+) {
+  background: transparent !important;
+}
+
+html.dark[data-gp-workspace][data-workspace-theme] .layout-route-content {
+  background: transparent !important;
+}
+
+html.dark:not([data-gp-brand="true"]) :is(
+  .layout-sidebar,
+  .reference-user-sidebar,
+  .layout-mobile-sidebar,
+  .adm-sidebar,
+  .sa-sidebar
+) {
+  background: var(--dark-sidebar-surface) !important;
+  border-color: rgba(167, 139, 250, 0.15) !important;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+html[dir="rtl"].dark:not([data-gp-brand="true"]) :is(
+  .layout-sidebar,
+  .reference-user-sidebar,
+  .layout-mobile-sidebar,
+  .adm-sidebar,
+  .sa-sidebar
+) {
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+html.dark:not([data-gp-brand="true"]) :is(
+  .layout-header,
+  .layout-booking-tabs,
+  .layout-footer,
+  .adm-topbar,
+  .sa-topbar
+) {
+  background: var(--dark-topbar-surface) !important;
+  border-color: rgba(167, 139, 250, 0.15) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Elevated, brand-tinted dark cards & panels across all workspace modules */
+html.dark:not([data-gp-brand="true"]) :is(
+  .panel,
+  .metric-card,
+  .aw-asset-card,
+  .aw-panel,
+  .aw-stat-card,
+  .st-card,
+  .st-modal,
+  .bk-card,
+  .bk-booking-card,
+  .bk-dialog,
+  .cw-card,
+  .cw-dialog,
+  .crm-lead-card,
+  .crm-workspace-summary,
+  .crm-contacts-table,
+  .crm-dialog,
+  .adm-metric,
+  .adm-panel,
+  .adm-dialog,
+  .sa-overview-panel,
+  .sa-metric,
+  .sa-clients-card,
+  .saw-stat,
+  .saw-panel,
+  .saw-grid,
+  .saw-modal,
+  .bl-card,
+  .bl-stat,
+  .an-kpi,
+  .an-card,
+  .an-reports-bar,
+  .an-report,
+  .an-modal,
+  .pp-panel,
+  .pp-card,
+  .pp-kpi,
+  .crm2-panel,
+  .crm2-card,
+  .af-card,
+  .af-panel
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page) *) {
+  background: var(--dark-card-surface) !important;
+  border-color: var(--dark-card-border) !important;
+  box-shadow: var(--dark-card-shadow);
+}
+
+/* Module-scoped custom ink/muted/border tokens in dark mode */
+html.dark .an-page {
+  --an-ink: #f6f7ff;
+  --an-muted: #bcc6e6;
+  --an-line: rgba(167, 139, 250, 0.16);
+  --an-violet: #c4b5fd;
+  color: var(--an-ink);
+}
+
+html.dark .pp-page {
+  --pp-ink: #f6f7ff;
+  --pp-muted: #bcc6e6;
+  color: var(--pp-ink);
+}
+
+html.dark .af-page {
+  --af-ink: #f6f7ff;
+  --af-muted: #bcc6e6;
+  --af-line: rgba(167, 139, 250, 0.16);
+}
+
+html.dark :is(.aw-shell, .fb-shell):not([data-form-theme]):not([data-public-asset]) {
+  --fb-ink: #f6f7ff;
+  --fb-muted: #bcc6e6;
+  --fb-line: rgba(167, 139, 250, 0.18);
+}
+
+/* High-contrast dark product badges, profile initials, and domain primary CTAs */
+html.dark .pp-type-tag {
+  background: rgba(56, 189, 248, 0.16) !important;
+  color: #7dd3fc !important;
+}
+html.dark .pp-type-tag.service {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #6ee7b7 !important;
+}
+html.dark .pp-type-tag.subscription {
+  background: rgba(245, 158, 11, 0.16) !important;
+  color: #fcd34d !important;
+}
+html.dark .pp-type-tag.bundle {
+  background: rgba(236, 72, 153, 0.16) !important;
+  color: #f9a8d4 !important;
+}
+
+html.dark :is(.st-initials, .st-member-avatar, .spt-agent-avatar) {
+  background-color: rgba(124, 58, 237, 0.24) !important;
+  color: #ede9fe !important;
+  border: 1px solid rgba(167, 139, 250, 0.28);
+}
+
+html.dark :is(.dp-btn-primary, .dp-btn-orange, .dp-tab-btn.is-active) {
+  background-image: linear-gradient(115deg, #6d28d9 0%, #7c3aed 100%) !important;
+  background-color: #6d28d9 !important;
+  border-color: rgba(167, 139, 250, 0.35) !important;
+  color: #ffffff !important;
+}
+
+html.dark :is(.dp-btn-primary, .dp-btn-orange):hover:not(:disabled) {
+  background-image: linear-gradient(115deg, #7c3aed 0%, #8b5cf6 100%) !important;
+  background-color: #7c3aed !important;
+}
+
+/* High-legibility dark placeholders & form fields inside app chrome */
+html.dark :is(.layout-dashboard-shell, .adm-shell, .sa-shell, .role-shell, [role="dialog"]) :is(input, textarea):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page) *)::placeholder {
+  color: #98a4c8;
+  opacity: 1;
+}
+
+/* Boost dim slate-500/gray-500 utility labels & icons inside dark app chrome while preserving authored previews */
+html.dark :is(.layout-dashboard-shell, .adm-shell, .sa-shell, .role-shell) :is(.text-slate-500, .text-gray-500, .text-zinc-500):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page) *) {
+  color: #a8b4d6;
+}
+
+html.dark :is(.layout-dashboard-shell, .adm-shell, .sa-shell, .role-shell) :is(.text-slate-400, .text-gray-400, .text-zinc-400):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page)):not(:where(.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page) *) {
+  color: #c4cde9;
+}
+
+/* Crisp navigation, header, search, and control icon visibility in dark mode */
+html.dark :is(
+  .layout-nav-item:not(.is-active) > svg,
+  .layout-nav-item:not(.is-active) .layout-nav-icon,
+  .adm-sidebar nav a:not(.active) svg,
+  .sa-nav-link:not(.active) svg,
+  .layout-booking-tab:not(.is-active) svg,
+  .layout-search > svg,
+  .adm-search > svg,
+  .sa-search > svg,
+  .saw-search > svg,
+  .st-search > svg
+) {
+  color: #aeb8da;
+}
+
+/* Dark-mode brand utility bridge: restores alpha surfaces, borders, gradients,
+   and luminous lavender foregrounds where CSS-variable Tailwind tokens omit /alpha */
+html.dark :is(
+  [class~="dark:bg-purple-500/[0.07]"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.1) !important;
+}
+
+html.dark :is(
+  [class~="dark:bg-purple-500/10"],
+  [class~="dark:bg-indigo-400/10"],
+  [class~="dark:bg-indigo-500/10"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.14) !important;
+}
+
+html.dark :is(
+  [class~="dark:bg-purple-500/15"],
+  [class~="dark:bg-violet-500/15"],
+  [class~="dark:bg-indigo-500/15"],
+  [class~="dark:data-[state=checked]:bg-purple-500/15"][data-state="checked"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.18) !important;
+}
+
+html.dark :is(
+  [class~="dark:bg-purple-500/20"],
+  [class~="dark:bg-violet-500/20"],
+  [class~="dark:bg-indigo-500/20"],
+  [class~="dark:data-[highlighted]:bg-purple-500/20"][data-highlighted]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.23) !important;
+}
+
+html.dark :is(
+  [class~="dark:bg-purple-500/25"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.28) !important;
+}
+
+html.dark :is(
+  [class~="dark:hover:bg-purple-500/10"]:hover,
+  [class~="dark:hover:bg-purple-500/15"]:hover,
+  [class~="dark:hover:bg-indigo-500/15"]:hover,
+  [class~="dark:hover:bg-indigo-400/20"]:hover
+):not([data-form-theme] *):not([data-public-asset] *) {
+  background-color: rgba(124, 58, 237, 0.24) !important;
+}
+
+html.dark :is(
+  [class~="dark:border-purple-300/[0.14]"],
+  [class~="dark:border-purple-300/[0.16]"],
+  [class~="dark:border-purple-400/15"],
+  [class~="dark:border-purple-400/20"],
+  [class~="dark:border-purple-500/20"],
+  [class~="dark:border-indigo-400/20"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  border-color: rgba(167, 139, 250, 0.2) !important;
+}
+
+html.dark :is(
+  [class~="dark:border-purple-300/[0.2]"],
+  [class~="dark:border-purple-400/30"],
+  [class~="dark:border-purple-500/25"],
+  [class~="dark:border-purple-500/30"],
+  [class~="dark:border-violet-400/25"],
+  [class~="dark:border-indigo-500/25"],
+  [class~="dark:border-indigo-500/40"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+
+html.dark :is(
+  [class~="dark:hover:border-purple-400/35"]:hover,
+  [class~="dark:hover:border-purple-500/40"]:hover,
+  [class~="dark:hover:border-indigo-500/40"]:hover
+):not([data-form-theme] *):not([data-public-asset] *) {
+  border-color: rgba(167, 139, 250, 0.46) !important;
+}
+
+html.dark :is(
+  [class~="dark:text-purple-100"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  color: #f3ecff !important;
+}
+
+html.dark :is(
+  [class~="dark:text-purple-200"],
+  [class~="dark:text-violet-200"],
+  [class~="dark:text-indigo-200"],
+  [class~="dark:data-[highlighted]:text-purple-200"][data-highlighted],
+  [class~="dark:data-[state=checked]:text-purple-200"][data-state="checked"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  color: #e6ddff !important;
+}
+
+html.dark :is(
+  [class~="dark:text-purple-300"],
+  [class~="dark:text-violet-300"],
+  [class~="dark:text-indigo-300"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  color: #cfc2ff !important;
+}
+
+html.dark :is(
+  [class~="dark:text-purple-400"],
+  [class~="dark:text-indigo-400"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  color: #b8a5ff !important;
+}
+
+html.dark :is(
+  [class~="dark:hover:text-purple-200"]:hover,
+  [class~="dark:hover:text-purple-300"]:hover,
+  [class~="dark:hover:text-purple-400"]:hover,
+  [class~="dark:hover:text-indigo-300"]:hover
+):not([data-form-theme] *):not([data-public-asset] *) {
+  color: #ede7ff !important;
+}
+
+html.dark [class~="dark:from-purple-500/10"]:not([data-form-theme] *):not([data-public-asset] *) {
+  --tw-gradient-from: rgba(124, 58, 237, 0.14) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgba(124, 58, 237, 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark [class~="dark:from-purple-500/25"]:not([data-form-theme] *):not([data-public-asset] *) {
+  --tw-gradient-from: rgba(124, 58, 237, 0.26) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgba(124, 58, 237, 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark [class~="dark:from-purple-500/40"]:not([data-form-theme] *):not([data-public-asset] *) {
+  --tw-gradient-from: rgba(124, 58, 237, 0.44) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgba(124, 58, 237, 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+html.dark :is(
+  [class~="dark:to-purple-400/20"],
+  [class~="dark:to-purple-500/10"]
+):not([data-form-theme] *):not([data-public-asset] *) {
+  --tw-gradient-to: rgba(167, 139, 250, 0.2) var(--tw-gradient-to-position);
+}

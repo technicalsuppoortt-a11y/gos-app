@@ -309,3 +309,46 @@ html.dark .login-footer,
  .login-page .login-trust{display:none}.login-page .login-form-content>button{margin-top:8px}
 }
 
+
+/* Brand-aligned dark depth & high-legibility login enhancements */
+html.dark .login-page,
+.dark .login-page {
+  background:
+    radial-gradient(60% 50% at 22% 10%, rgba(124, 58, 237, 0.2), transparent 70%),
+    #0a0c1b !important;
+  color: #f6f7ff !important;
+}
+
+html.dark .login-form-side,
+.dark .login-form-side {
+  background:
+    radial-gradient(75% 55% at 50% 0%, rgba(124, 58, 237, 0.16), transparent 68%),
+    linear-gradient(180deg, #12162c 0%, #0c0f20 100%) !important;
+}
+
+html.dark .login-fields label > span,
+.dark .login-fields label > span {
+  background: #161b35 !important;
+  border-color: rgba(167, 139, 250, 0.26) !important;
+  color: #b5bfe0 !important;
+}
+
+html.dark .login-fields label > span > input::placeholder,
+.dark .login-fields label > span > input::placeholder {
+  color: #98a4c8 !important;
+}
+
+html.dark .login-fields label > span > button,
+.dark .login-fields label > span > button,
+html.dark .login-footer,
+.dark .login-footer {
+  color: #b5bfe0 !important;
+}
+
+html.dark .login-lang-switch,
+.dark .login-lang-switch,
+html.dark .login-theme-btn,
+.dark .login-theme-btn {
+  background: #161b35 !important;
+  border-color: rgba(167, 139, 250, 0.24) !important;
+}

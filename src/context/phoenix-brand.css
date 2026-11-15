@@ -35,6 +35,9 @@ html[data-gp-brand="true"] .gos-home-dashboard [aria-labelledby="dash-greeting"]
 .layout-brand .phoenix-logo { display:block; width:156px; height:44px; object-fit:contain; }
 .layout-brand .phoenix-logo-wordmark { width:200px; height:72px; max-width:100%; }
 .layout-brand .phoenix-logo-mark { width:52px; height:52px; }
+.layout-sidebar-content.is-collapsed .layout-brand .phoenix-logo,
+.adm-sidebar.is-collapsed .layout-brand .phoenix-logo { width:36px; max-width:36px; height:36px; margin-inline:auto; }
+html[data-gp-brand] :is(.layout-sidebar-content.is-collapsed, .adm-sidebar.is-collapsed) .workspace-logo { width:36px; max-width:36px; height:36px; padding:4px; margin-inline:auto; }
 html[data-gp-brand="true"] :is(input,textarea,select) { accent-color: var(--gp-primary); }
 /* Match the generated surface guards so action foregrounds stay paired with their button token. */
 html[data-gp-brand="true"][data-workspace-theme] :is(.adm-primary,.st-primary,.st-button.primary,.layout-nav-item.is-active,.login-submit,button[data-phoenix-action]):not([data-public-asset]):not([data-public-asset] *):not([data-form-theme]):not([data-form-theme] *) {

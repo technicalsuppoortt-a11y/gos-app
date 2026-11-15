@@ -10,17 +10,37 @@
 .inbox-scroll::-webkit-scrollbar-track{background:transparent}
 .inbox-scroll::-webkit-scrollbar-thumb{border-radius:999px;background:transparent}
 .inbox-scroll:hover::-webkit-scrollbar-thumb{background:#EDE9FE}
-html.dark .inbox-scroll:hover{scrollbar-color:#0F172A transparent}
-html.dark .inbox-scroll:hover::-webkit-scrollbar-thumb{background:#0F172A}
+html.dark .inbox-scroll:hover{scrollbar-color:#352c57 transparent}
+html.dark .inbox-scroll:hover::-webkit-scrollbar-thumb{background:#352c57}
 
 .inbox-scroll-x{scrollbar-width:none}
 .inbox-scroll-x::-webkit-scrollbar{display:none}
 
 /* Soft lavender wash behind the message thread */
 .inbox-thread-bg{background:radial-gradient(120% 60% at 100% 0%,rgba(124,92,252,.045),transparent 60%),linear-gradient(180deg,#fcfcff 0%,#fafbfe 100%)}
-html.dark .inbox-thread-bg{background:radial-gradient(120% 60% at 100% 0%,rgba(124,92,252,.08),transparent 60%),#0f1320}
+html.dark .inbox-thread-bg{background:radial-gradient(120% 70% at 100% 0%,rgba(124,58,237,.13),transparent 62%),radial-gradient(90% 60% at 0% 100%,rgba(99,102,241,.07),transparent 58%),linear-gradient(180deg,#0f1224 0%,#0b0e1c 100%)}
+
+/* Inbox loading skeleton shimmer */
+.inbox-skel-shimmer{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(90deg,#eef1f8 0%,#f7f5ff 48%,#eef1f8 100%);
+  background-size:220% 100%;
+  animation:inbox-skel-wave 1.55s ease-in-out infinite;
+}
+html.dark .inbox-skel-shimmer{
+  background:linear-gradient(90deg,rgba(30,36,64,.85) 0%,rgba(124,58,237,.2) 48%,rgba(30,36,64,.85) 100%);
+  background-size:220% 100%;
+}
+@keyframes inbox-skel-wave{
+  0%{background-position:100% 50%}
+  100%{background-position:-100% 50%}
+}
 
 /* Live recording waveform */
 .inbox-wave{height:6px;animation:inbox-wave .8s ease-in-out infinite alternate}
 @keyframes inbox-wave{from{height:4px;opacity:.6}to{height:18px;opacity:1}}
-@media (prefers-reduced-motion:reduce){.inbox-wave{animation:none;height:10px}}
+@media (prefers-reduced-motion:reduce){
+  .inbox-wave{animation:none;height:10px}
+  .inbox-skel-shimmer{animation:none}
+}
