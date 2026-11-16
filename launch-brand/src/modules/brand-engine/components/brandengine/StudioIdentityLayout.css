@@ -1125,24 +1125,24 @@
 }
 /* Apply the supplied lavender swatch to every brand generation action. */
 .bs-root.studio-workspace.studio-reference-workspace .studio-element-generate {
-  border-color: #d6cfea;
-  background: linear-gradient(135deg, #f8f6fc 0%, #f1eff9 100%);
-  color: #24134f;
+  border-color: #b6e6dc;
+  background: linear-gradient(135deg, #f8f6fc 0%, #eef9f7 100%);
+  color: #153c39;
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-guided-section .studio-section-heading > .studio-element-generate {
   border-style: solid;
-  background: linear-gradient(135deg, #f8f6fc 0%, #f1eff9 100%);
-  color: #24134f;
+  background: linear-gradient(135deg, #f8f6fc 0%, #eef9f7 100%);
+  color: #153c39;
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-element-generate:hover {
-  border-color: #d6cfea;
-  background: linear-gradient(135deg, #f1eff9 0%, #e9e5f4 100%);
-  color: #1f1044;
+  border-color: #b6e6dc;
+  background: linear-gradient(135deg, #eef9f7 0%, #b6e6dc 100%);
+  color: #102b2b;
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-guided-section .studio-section-heading > .studio-element-generate:hover {
   border-style: solid;
-  background: linear-gradient(135deg, #f1eff9 0%, #e9e5f4 100%);
-  color: #1f1044;
+  background: linear-gradient(135deg, #eef9f7 0%, #b6e6dc 100%);
+  color: #102b2b;
 }
 
 /* Make the live color choices read like clear, labeled swatches. */

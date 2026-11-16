@@ -28,6 +28,7 @@ import { friendlyError, safeExternalUrl, settingsApiEnabled, settingsRequest } f
 import type { IntegrationState, SettingsData } from './data';
 import { PanelHeading } from './kit';
 import { useMetaChannels, type MetaChannel } from '../flow-builder/Channels';
+import type { Channel, ChannelPage } from '../flow-builder/api';
 import { localDemoEnabled, useDemoState } from '../../backend/localDemo';
 
 type GuideStep = {
@@ -288,12 +289,18 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
 
   // Messenger, Instagram and WhatsApp use the real channel connection (the same one the AI and flows reply on).
   const meta = useMetaChannels();
+  const pagesOf = (c: Channel): ChannelPage[] =>
+    c.pages?.length ? c.pages : [{ id: c.external_id ?? '', external_id: c.external_id ?? '', name: c.name }];
   const stateOf = (p: Provider): IntegrationState => {
     if (!p.channel) return data.integrations[p.connectionId] ?? { status: 'Not Connected' };
     const c = meta.channels?.find(x => x.channel === p.channel);
-    return c?.status === 'connected'
-      ? { status: 'Connected', account: c.name ?? c.external_id ?? undefined, providerStatus: 'operational' }
-      : { status: 'Not Connected' };
+    if (c?.status !== 'connected') return { status: 'Not Connected' };
+    const pages = pagesOf(c);
+    // Messenger / Instagram list their Pages under the card, so the summary only counts them.
+    const account = p.channel !== 'whatsapp' && pages.length > 1
+      ? `${pages.length} ${translateText(p.channel === 'instagram' ? 'accounts' : 'pages')}`
+      : c.name ?? c.external_id ?? undefined;
+    return { status: 'Connected', account, providerStatus: 'operational' };
   };
   const connectedCount = providers.filter(p => stateOf(p).status === 'Connected').length;
   const activeGuide = providers.find(p => p.id === activeGuideId) ?? providers[0];
@@ -317,6 +324,7 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
   const renderChannelExtras = (p: Provider) => {
     const isWhatsApp = p.channel === 'whatsapp';
     const connected = stateOf(p).status === 'Connected';
+    const channel = meta.channels?.find(x => x.channel === p.channel);
     return (
       <>
         {meta.error && meta.busy === null && p.channel === 'messenger' && (
@@ -330,17 +338,26 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
                 ? 'No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.'
                 : 'No pages found. You need to manage the page, and allow it in the Meta window.')}</p>
             )}
+            <button type="button" className="st-guide-trigger" onClick={() => meta.setPicking(null)}>{translateText('Close')}</button>
+          </div>
+        )}
+        {connected && !isWhatsApp && channel && (
+          <div className="st-channel-picker">
             <ul>
-              {meta.picking!.pages.map(page => (
+              {pagesOf(channel).map(page => (
                 <li key={page.id}>
-                  <span dir="auto">{p.channel === 'instagram' ? `@${page.instagram?.username} · ${page.name}` : page.name}</span>
-                  <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.pick(page)}>
-                    {localizeNode(meta.busy === page.id ? 'Connecting…' : 'Connect')}
-                  </button>
+                  <span dir="auto">{page.name ?? page.external_id}</span>
+                  {pagesOf(channel).length > 1 && (
+                    <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.disconnectPage(channel, page.id, page.name ?? page.external_id)}>
+                      {localizeNode(meta.busy === page.id ? 'Disconnecting…' : 'Disconnect')}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
-            <button type="button" className="st-guide-trigger" onClick={() => meta.setPicking(null)}>{translateText('Cancel')}</button>
+            <button type="button" className="st-guide-trigger" disabled={meta.busy !== null} onClick={() => meta.connect(p.channel!)}>
+              {translateText(p.channel === 'instagram' ? 'Add another account' : 'Add another page')}
+            </button>
           </div>
         )}
         {isWhatsApp && !connected && !meta.manual && (

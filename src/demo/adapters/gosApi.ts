@@ -75,20 +75,133 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     }
     if (parts[1] === 'copilot') {
       if (parts[2] === 'conversations') return { conversations: rows('copilotConversations') } as T;
+      if (parts[2] === 'transcribe') {
+        const isAr = String(body.language ?? '').startsWith('ar');
+        return { transcript: isAr ? 'عاوز أضيف عميل جديد اسمه كريم محمود تليفونه 01012345678' : 'Add a new lead named Sarah Jenkins phone +14155550199' } as T;
+      }
       if (parts[2] === 'draft') {
         const resource = body.draft?.kind === 'landing' ? 'assets' : body.draft?.kind === 'campaign' ? 'templates' : body.draft?.kind === 'booking' ? 'calendars' : 'products';
         const id = body.requestId || crypto.randomUUID();
-        entityMutation(resource, id, { ...(body.record ?? {}), id });
+        const href = body.draft?.kind === 'landing' ? '/dashboard/funnels' : body.draft?.kind === 'campaign' ? '/dashboard/follow-up' : body.draft?.kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
+        entityMutation(resource, id, { ...(body.record ?? body.draft ?? {}), id });
         if (resource === 'assets') write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
-        return { success: true, id, resource } as T;
+        return { success: true, id, resource, href } as T;
+      }
+      if (parts[2] === 'action') {
+        const kind = String(body.kind ?? 'product');
+        const values = (body.values ?? {}) as Record<string, string>;
+        const ar = /[\u0600-\u06FF]/.test(Object.values(values).join(' ')) || String(body.uiLanguage ?? '').startsWith('ar');
+        const id = body.requestId || crypto.randomUUID();
+        if (kind === 'create_lead') {
+          const lead = makeLead({ id, name: values.name || 'New Lead', email: values.email || '', phone: values.phone || '', company: values.company || '', value: Number(values.value || 0), pipelineId: values.pipeline_id || 'main', stage: (values.stage as any) || 'LEAD_CAPTURED' });
+          entityMutation('leads', lead.id, lead);
+          return { ok: true, kind, recordId: lead.id, message: ar ? `تمت إضافة العميل **${lead.name}** بنجاح.` : `Created lead **${lead.name}** in CRM.`, href: '/dashboard/crm', hrefLabel: ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads', leads: [lead] } as T;
+        }
+        if (kind === 'update_lead_stage') {
+          const existing = rows('leads').find(l => l.id === values.lead_id || String(l.name ?? '').toLowerCase().includes(String(values.lead_id ?? '').toLowerCase())) ?? rows('leads')[0];
+          if (existing) {
+            const updated = { ...existing, stage: values.stage || 'QUALIFIED', lifecycleStage: values.stage || 'QUALIFIED' };
+            entityMutation('leads', existing.id, updated);
+            return { ok: true, kind, recordId: existing.id, message: ar ? `تم نقل **${existing.name}** إلى المرحلة الجديدة.` : `Moved **${existing.name}** to ${values.stage}.`, href: '/dashboard/crm', hrefLabel: ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads', leads: [updated] } as T;
+          }
+        }
+        if (kind === 'create_contact') {
+          const contact = { id, name: values.name, email: values.email || '', phone: values.phone || '', company: values.company || '' };
+          entityMutation('contacts', id, contact);
+          return { ok: true, kind, recordId: id, message: ar ? `تمت إضافة جهة الاتصال **${values.name}**.` : `Added **${values.name}** to Contacts.`, href: '/dashboard/contacts', hrefLabel: ar ? 'فتح جهات الاتصال' : 'Open Contacts' } as T;
+        }
+        if (kind === 'create_appointment') {
+          const booking = { id, name: values.customerName, serviceName: values.serviceName || 'Strategy Session', date: values.date, time: values.time, duration: Number(values.duration || 45), location: values.location || 'Google Meet', whatsapp: values.whatsapp || '', email: values.email || '', status: 'Confirmed' };
+          entityMutation('bookings', id, booking);
+          return { ok: true, kind, recordId: id, message: ar ? `تم تأكيد موعد **${booking.serviceName}** للعميل **${booking.name}**.` : `Confirmed appointment for **${booking.name}** on ${booking.date} at ${booking.time}.`, href: '/dashboard/booking?tab=bookings', hrefLabel: ar ? 'فتح الحجوزات والتقويم' : 'Open Booking & Calendar' } as T;
+        }
+        if (kind === 'create_knowledge') {
+          const src = { id, name: values.name, type: values.sourceType || 'text', url: values.url || null, content: values.content || '', status: 'ready', chunk_count: 2 };
+          entityMutation('knowledge', id, src);
+          return { ok: true, kind, recordId: id, message: ar ? `تمت إضافة **${values.name}** إلى قاعدة المعرفة.` : `Added **${values.name}** to AI Knowledge Base.`, href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
+        }
+        if (kind === 'update_assistant') {
+          write('assistant', { live_enabled: values.live_enabled === 'true', channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' } });
+          return { ok: true, kind, recordId: 'assistant', message: ar ? 'تم تحديث إعدادات المساعد الذكي بنجاح.' : 'Updated AI Assistant settings.', href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
+        }
+        const resource = kind === 'landing' ? 'assets' : kind === 'campaign' ? 'templates' : kind === 'booking' ? 'calendars' : 'products';
+        const href = kind === 'landing' ? '/dashboard/funnels' : kind === 'campaign' ? '/dashboard/follow-up' : kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
+        entityMutation(resource, id, { ...(body.record ?? values), id, name: values.name });
+        if (resource === 'assets') write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
+        return { ok: true, kind, recordId: id, message: ar ? `تم حفظ **${values.name}** بنجاح.` : `Saved **${values.name}** in your workspace.`, href, hrefLabel: ar ? 'فتح في مساحة العمل' : 'Open in Workspace' } as T;
       }
       spendCredits();
-      const cleanUserText = String(body.text ?? '').replace(/\n\n\[Thinking level: [^\]]+\]$/, ''); const levelNote = body.thinkingLevel === 'low' ? ' (Quick summary)' : body.thinkingLevel === 'high' ? ' (Deep strategic breakdown)' : ''; const text = `Demo response${levelNote}: I can help you build a follow-up plan, draft a product, or create a landing page. Start with a clear offer, invite interested leads to a discovery call, and send a friendly reminder after 24 hours. All actions here stay in your demo workspace.`;
+      const rawPrompt = String(body.text ?? body.focus ?? '').replace(/\n\n\[Thinking level: [^\]]+\]$/, '').trim();
+      const ar = /[\u0600-\u06FF]/.test(rawPrompt) || String(body.uiLanguage ?? '').startsWith('ar');
+      const demoLeads = rows('leads');
+      const demoPipelines = rows('pipelines').length ? rows('pipelines') : [mainPipeline];
+      const meta = {
+        pipelines: demoPipelines.map((p: any) => ({ id: p.id || 'main', name: p.name || 'Main Pipeline', stages: (p.stages ?? mainPipeline.stages).map((s: any) => ({ id: s.id, label: s.label })) })),
+        calendars: rows('calendars').map((c: any) => ({ id: c.id, name: c.name, duration: c.duration || 45, location: c.location || 'Google Meet' })),
+        leads: demoLeads.slice(0, 20).map((l: any) => ({ id: l.id, name: l.name, stage: l.stage || 'LEAD_CAPTURED', pipelineId: l.pipelineId || 'main', phone: l.phone || '', email: l.email || '' })),
+        currency: 'USD',
+      };
+      let text = '';
+      let form: any = null;
+      let leadsOut: any[] | undefined;
+      let href: string | undefined;
+      let hrefLabel: string | undefined;
+
+      if (/عامل\s*ايه|ازيك|إزيك|اسمك\s*ايه|انت\s*مين|أنت\s*مين|صباح\s*الخير|مساء\s*الخير|مرحبا|اهلا|أهلا/i.test(rawPrompt) || /^(hi|hello|hey|how are you|what('?s| is) your name|who are you)/i.test(rawPrompt)) {
+        text = ar
+          ? `أهلاً بك! أنا بخير الحمد لله، اسمي **مساعد الأعمال الذكي من UpKlick (AI Copilot)**. حالياً متصل بمساحة عملك وبها **${demoLeads.length} عميل محتمل** — تقدر تسألني عن أي أرقام أو تحليلات، أو تقولي مثلاً «عاوز أضيف عميل جديد» أو «اعمل حملة واتساب» وهفتحلك فورم تفاعلية جاهزة فوراً!`
+          : `Hello! I'm doing great — I'm your **UpKlick AI Business Copilot**. I'm connected to your workspace (${demoLeads.length} leads active). Ask me anything about your performance, or tell me what you'd like to create (a lead, appointment, campaign, product, or landing page) and I'll open an interactive form right here!`;
+      } else if (/show.*lead|hot\s+lead|وريني\s+العملاء|اعرض\s+العملاء|العملاء\s+المحتملين/i.test(rawPrompt)) {
+        leadsOut = demoLeads.slice(0, 4);
+        href = '/dashboard/crm';
+        hrefLabel = ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads';
+        text = ar ? `إليك أبرز **${leadsOut.length}** عملاء محتملين في مساحة عملك حالياً:` : `Here are the top **${leadsOut.length}** leads in your CRM right now:`;
+      } else {
+        const formKind =
+          /انقل|تغيير\s+مرحلة|\bmove\s+lead/i.test(rawPrompt) ? 'update_lead_stage' :
+          /اضف\s+عميل|أضف\s+عميل|ضيف\s+عميل|عاوز\s+اضيف\s+عميل|عميل\s+جديد|\b(add|create|new)\s+(a\s+)?lead/i.test(rawPrompt) ? 'create_lead' :
+          /جهة\s+اتصال|\b(add|create)\s+(a\s+)?contact/i.test(rawPrompt) ? 'create_contact' :
+          /احجز\s+(موعد|ميعاد)|\b(book|schedule)\s+(an?\s+)?(appointment|call)/i.test(rawPrompt) ? 'create_appointment' :
+          /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
+          /حملة|campaign/i.test(rawPrompt) ? 'campaign' :
+          /منتج|كورس|course|product/i.test(rawPrompt) ? 'product' :
+          /صفحة\s+هبوط|فانل|landing|funnel/i.test(rawPrompt) ? 'landing' :
+          /معلومة|قاعدة\s+المعرفة|knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
+        if (formKind) {
+          const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+          const phoneMatch = rawPrompt.match(/(?:\+?\d[\d\s-]{7,16}\d)/);
+          const nameMatch = rawPrompt.match(/(?:اسمه|اسمها|باسم|named|called)\s+([\u0600-\u06FFA-Za-z\s]{2,30}?)(?=\s+(?:تليفون|رقم|phone|email)|$)/i);
+          const defaults: Record<string, Record<string, string>> = {
+            create_lead: { name: nameMatch?.[1]?.trim() ?? '', phone: phoneMatch?.[0]?.trim() ?? '', email: '', company: '', value: '', pipeline_id: meta.pipelines[0]?.id || 'main', stage: 'LEAD_CAPTURED', notes: '' },
+            update_lead_stage: { lead_id: meta.leads[0]?.id || '', pipeline_id: meta.pipelines[0]?.id || 'main', stage: 'QUALIFIED', notes: '' },
+            create_contact: { name: nameMatch?.[1]?.trim() ?? '', phone: phoneMatch?.[0]?.trim() ?? '', email: '', company: '' },
+            create_appointment: { customerName: nameMatch?.[1]?.trim() ?? '', serviceName: meta.calendars[0]?.name || (ar ? 'جلسة استشارية' : 'Strategy Session'), date: tomorrow, time: '11:00', duration: '45', location: 'Google Meet', whatsapp: phoneMatch?.[0]?.trim() ?? '', email: '' },
+            booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
+            campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
+            product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
+            landing: { name: ar ? 'صفحة العرض الرئيسي' : 'High-Converting Offer Page', headline: ar ? 'ضاعف نتائج أعمالك بخطوات واضحة' : 'Grow Faster With a Proven System', goal: 'Capture Leads', content: ar ? 'صفحة هبوط احترافية مصممة لتحويل الزوار إلى عملاء.' : 'Conversion-focused landing page tailored to your audience.' },
+            create_knowledge: { name: ar ? 'معلومات عن خدماتنا' : 'Business Overview', sourceType: 'text', url: '', content: '' },
+          };
+          form = { id: `form-${crypto.randomUUID()}`, kind: formKind, status: 'pending', values: defaults[formKind] ?? {}, meta };
+          text = ar
+            ? 'سمعتك جيداً! جهزت لك النموذج التفاعلي بالأسفل — راجع البيانات أو أكمل الحقول المطلوبة واضغط تأكيد.'
+            : 'Got it! Fill in or review the interactive form below and click Confirm to save it to your workspace.';
+        } else {
+          text = ar
+            ? `بناءً على بيانات مساحة عملك الحالية (**${demoLeads.length} عميل محتمل** و **${rows('products').length} منتجات**)، أنصح بالتركيز على متابعة العملاء المؤهلين عبر واتساب خلال أول 15 دقيقة لرفع معدل الإغلاق. هل ترغب أن أفتح لك نموذج إنشاء حملة أو إضافة عميل جديد؟`
+            : `Based on your live workspace (**${demoLeads.length} leads** and **${rows('products').length} products**), following up with qualified leads within 15 minutes via WhatsApp yields the highest conversion lift. Would you like me to open a form to launch a campaign or add a new lead?`;
+        }
+      }
       const before = rows('copilotConversations').find(row => row.id === body.conversationId);
       const convId = body.conversationId || crypto.randomUUID();
-      entityMutation('copilotConversations', convId, { title: before?.title ?? cleanUserText.slice(0, 60), group: 'Today', category: 'Business', time: 'Just now', prompt: cleanUserText, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), { id: crypto.randomUUID(), role: 'user', text: cleanUserText }, { id: crypto.randomUUID(), role: 'assistant', text }] });
-      const kind = /landing|funnel|website/i.test(body.text) ? 'landing' : /course|product/i.test(body.text) ? 'product' : /booking|appointment/i.test(body.text) ? 'booking' : /campaign/i.test(body.text) ? 'campaign' : undefined;
-      return { text, conversationId: convId, ...(kind ? { draft: { kind, name: 'Demo Growth Offer', price: '99', currency: 'USD', channel: 'WhatsApp', content: 'A personalized demo offer to help customers reach their next milestone.', description: 'Sample demo draft', duration: '30' } } : {}) } as T;
+      const userMsg = { id: body.requestId || crypto.randomUUID(), role: 'user', text: rawPrompt };
+      const assistantMsg = { id: crypto.randomUUID(), role: 'assistant', text, ...(form ? { form } : {}), ...(leadsOut ? { leads: leadsOut } : {}), ...(href ? { href, hrefLabel } : {}) };
+      const updatedThread = { id: convId, title: before?.title ?? rawPrompt.slice(0, 60), group: 'Today', category: 'General', time: 'Just now', prompt: rawPrompt, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), userMsg, assistantMsg] };
+      entityMutation('copilotConversations', convId, updatedThread);
+      if (parts[2] === 'voice') {
+        return { transcript: rawPrompt || (ar ? 'رسالة صوتية' : 'Voice note'), conversationId: convId, user: { ...userMsg, transcript: rawPrompt }, assistant: assistantMsg, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
+      }
+      return { text, conversationId: convId, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
     }
   }
   if (parts[0] === 'inbox') {
@@ -272,7 +385,35 @@ export const gosApi = {
   sources: () => request('/ai/sources'), source: (id: string) => request('/ai/sources/' + id), createSource: (body: any) => request('/ai/sources', 'POST', body), deleteSource: (id: string) => request('/ai/sources/' + id, 'DELETE'),
   training: () => request('/ai/training'), channels: () => request('/ai/channels'), updateChannel: (channel: string, enabled: boolean, credentials?: any) => request('/ai/channels/' + channel, 'PUT', { enabled, ...credentials }),
   assistant: () => request('/ai/assistant'), updateAssistant: (body: any) => request('/ai/assistant', 'PUT', body), playground: () => request('/ai/playground'), ask: (question: string) => request('/ai/playground', 'POST', { question }), grade: (id: string, verdict: string, note: string) => request('/ai/playground/' + id + '/grade', 'POST', { verdict, note }),
-  copilotConversations: () => request('/ai/copilot/conversations'), copilot: (body: any) => request('/ai/copilot', 'POST', body), createCopilotDraft: (body: any) => request('/ai/copilot/draft', 'POST', body),
+  copilotConversations: () => request('/ai/copilot/conversations'),
+  copilot: (body: any) => request('/ai/copilot', 'POST', body),
+  copilotStream: async (body: any, handlers: any = {}) => {
+    handlers.onStatus?.('generating');
+    const res = await request('/ai/copilot', 'POST', body);
+    const words = String(res?.text ?? '').split(/(\s+)/).filter(Boolean);
+    for (let i = 0; i < words.length; i += 2) {
+      handlers.onDelta?.(words.slice(i, i + 2).join(''));
+      await new Promise(resolve => setTimeout(resolve, 18));
+    }
+    return res;
+  },
+  submitCopilotAction: (body: any) => request('/ai/copilot/action', 'POST', body),
+  transcribeCopilotAudio: (body: any) => request('/ai/copilot/transcribe', 'POST', body),
+  copilotVoice: (body: any) => request('/ai/copilot/voice', 'POST', body),
+  copilotVoiceStream: async (body: any, handlers: any = {}) => {
+    handlers.onStatus?.('transcribing');
+    const res = await request('/ai/copilot/voice', 'POST', body);
+    if (res?.transcript) {
+      handlers.onTranscript?.({ transcript: res.transcript, conversationId: res.conversationId, user: res.user });
+    }
+    const words = String(res?.assistant?.text ?? '').split(/(\s+)/).filter(Boolean);
+    for (let i = 0; i < words.length; i += 2) {
+      handlers.onDelta?.(words.slice(i, i + 2).join(''));
+      await new Promise(resolve => setTimeout(resolve, 18));
+    }
+    return res;
+  },
+  createCopilotDraft: (body: any) => request('/ai/copilot/draft', 'POST', body),
   smartReply: (question: string) => request('/ai/playground', 'POST', { question }),
   conversations: () => request('/inbox/conversations'), conversation: (id: string) => request('/inbox/conversations/' + id), inboxSummary: () => request('/inbox/conversations'), receiveMessage: (body: any) => request('/inbox/messages', 'POST', body),
   pipelines: () => request('/crm/pipelines'), pipeline: (id: string) => request('/crm/pipelines/' + id), presets: () => request('/crm/pipelines/presets'), installPreset: () => request('/crm/pipelines', 'POST', { ...mainPipeline, id: crypto.randomUUID() }), createPipeline: (body: any) => request('/crm/pipelines', 'POST', body), updatePipeline: (id: string, body: any) => request('/crm/pipelines/' + id, 'PUT', body),

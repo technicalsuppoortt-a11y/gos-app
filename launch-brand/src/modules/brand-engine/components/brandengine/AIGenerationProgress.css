@@ -20,7 +20,7 @@
   margin-block-end: 8px;
 }
 .ai-generation-progress.is-running .ai-generation-progress-title {
-  color: var(--studio-accent, #6336ff);
+  color: var(--studio-accent, #007d70);
 }
 .ai-generation-progress.is-success .ai-generation-progress-title {
   color: #087f5b;

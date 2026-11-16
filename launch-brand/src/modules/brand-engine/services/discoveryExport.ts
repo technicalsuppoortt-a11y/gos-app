@@ -196,6 +196,6 @@ export function printDiscoveryReport(report: DiscoveryReport, ar: boolean) {
     frame.contentWindow?.focus();
     frame.contentWindow?.print();
   };
-  frame.srcdoc = `<!doctype html><html lang="${ar ? "ar" : "en"}" dir="${ar ? "rtl" : "ltr"}"><head><meta charset="utf-8"><title>GOS Discovery Report</title><style>body{font:14px Arial,sans-serif;color:#111a3b;margin:32px}h1{color:#6d3df5}h2{font-size:16px}p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}section{break-inside:avoid;border-bottom:1px solid #e7eaf3;padding:12px 0}@page{margin:16mm}</style></head><body><h1>GOS · ${ar ? "تقرير اكتشاف النشاط" : "Business Discovery Report"}</h1><p>${escape(new Date().toISOString())}</p>${sections.map(([title, body]) => `<section><h2>${escape(title)}</h2><p>${escape(body)}</p></section>`).join("")}</body></html>`;
+  frame.srcdoc = `<!doctype html><html lang="${ar ? "ar" : "en"}" dir="${ar ? "rtl" : "ltr"}"><head><meta charset="utf-8"><title>GOS Discovery Report</title><style>body{font:14px Arial,sans-serif;color:#111a3b;margin:32px}h1{color:#007d70}h2{font-size:16px}p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}section{break-inside:avoid;border-bottom:1px solid #e7eaf3;padding:12px 0}@page{margin:16mm}</style></head><body><h1>GOS · ${ar ? "تقرير اكتشاف النشاط" : "Business Discovery Report"}</h1><p>${escape(new Date().toISOString())}</p>${sections.map(([title, body]) => `<section><h2>${escape(title)}</h2><p>${escape(body)}</p></section>`).join("")}</body></html>`;
   document.body.append(frame);
 }

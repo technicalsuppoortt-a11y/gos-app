@@ -2,6 +2,7 @@ import { useCloudState, useEntities } from '../backend/workspace';
 import { backendError } from '../backend/firebase';
 import { gosApi } from '../backend/gosApi';
 import { useGosInbox } from '../backend/useGosInbox';
+import { api as channelsApi } from './flow-builder/api';
 import { localDemoEnabled, useDemoState } from '../backend/localDemo';
 import { useSupportRouting } from '../backend/supportRouting';
 import { isSupportMemberRole } from '../pages/settings/localState';
@@ -440,6 +441,14 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   } : undefined;
   const [liveOverrides, setLiveOverrides] = useState<Record<string, Partial<Conversation>>>({});
   const [archivedLiveIds, setArchivedLiveIds] = useState<Set<string>>(() => new Set());
+  // The connected channels decide which filters show, and keep the inbox open while it is still empty.
+  const [connectedChannels, setConnectedChannels] = useState<ChannelId[] | null>(null);
+  useEffect(() => {
+    if (demoInbox) return;
+    channelsApi.channels()
+      .then(list => setConnectedChannels(list.filter(c => c.status === 'connected').map(c => c.channel as ChannelId).filter(id => channelOrder.includes(id))))
+      .catch(() => setConnectedChannels(null));
+  }, [demoInbox]);
   const matchLeadForConv = (c: Pick<Conversation, 'id' | 'email' | 'phone' | 'name'>) => {
     const email = (c.email || '').trim().toLowerCase();
     const phone = (c.phone || '').replace(/[^\d+]/g, '');
@@ -485,6 +494,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         };
       });
   }, [demoInbox, localConversations, inboxApi.conversations, linkedConversation, archivedLiveIds, liveOverrides, allCrmLeads, findAssignment]);
+  // Connected channels, plus any channel that already has conversations, so old threads stay reachable.
+  const visibleChannels = demoInbox || !connectedChannels ? channelOrder : channelOrder.filter(id => connectedChannels.includes(id) || conversations.some(c => c.channel === id));
   const setConversations: typeof setLocalConversations = demoInbox
     ? setLocalConversations
     : (updater) => {
@@ -856,14 +867,23 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (takingOver) inputRef.current?.focus();
   };
 
-  const archiveActive = () => {
+  const archiveActive = async () => {
+    if (!active.id) return;
+    if (!confirm(`Delete the conversation with ${active.name}?`)) return;
+    if (!demoInbox) {
+      try {
+        await gosApi.deleteConversation(active.id);
+      } catch (e) {
+        showToast.error((e as Error).message || 'Could not delete the conversation.');
+        return;
+      }
+    }
     const remaining = conversations.filter((c) => c.id !== active.id);
-    if (!remaining.length) return;
     setConversations(remaining);
-    setActiveId(remaining[0].id);
+    setActiveId(remaining[0]?.id ?? '');
     setMobileInboxPane("list");
     setMoreOpen(false);
-    showToast.success(`Conversation with ${active.name} archived.`);
+    showToast.success(`Conversation with ${active.name} deleted.`);
   };
 
   const isInitialInboxLoading = !demoInbox && inboxApi.initialLoading && !conversations.length;
@@ -875,7 +895,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       />
     );
   }
-  if (!conversations.length) {
+  if (!conversations.length && !connectedChannels?.length) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -884,8 +904,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center gap-3 px-5 text-center"
       >
         <h2>{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2>
-        <p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'اربط إحدى قنوات التواصل من الإعدادات لبدء استقبال الرسائل.' : translateText("Connect a channel in Settings to start receiving messages.")}</p>
-        <button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'ربط قناة تواصل' : translateText("Connect a channel")}</button>
+        <p className="w-full max-w-sm whitespace-normal break-words">{language === 'ar' ? 'ستظهر هنا رسائل العملاء من القنوات المربوطة فور وصولها.' : translateText("Customer messages from your connected channels will appear here as soon as they arrive.")}</p>
+        <button className="button-primary" onClick={() => navigate('/dashboard/settings/integrations')}>{language === 'ar' ? 'إدارة القنوات' : translateText("Manage channels")}</button>
       </motion.div>
     );
   }
@@ -901,11 +921,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     <div data-mobile-pane={mobileInboxPane} className="inbox-root flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-slate-50/50 p-3 dark:bg-transparent">
       {!demoInbox && inboxApi.error && <div role="alert" className={CARD + ' p-3'}>{inboxApi.error} <button onClick={inboxApi.retry}>{translateText("Retry")}</button></div>}
       {!demoInbox && inboxApi.initialLoading && <div role="status" className="sr-only" aria-label={translateText("Loading conversations")} />}
-      {!demoInbox && !inboxApi.loading && !inboxApi.error && !conversations.length && <p className={CARD + ' p-3'}>{translateText("No conversations yet. Connected channels will appear here when customer messages arrive.")}</p>}
       {/* ============ Channel filter strip ============ */}
       <div className={`${CARD} inbox-channel-strip flex h-[54px] shrink-0 items-center gap-2 sm:gap-3 px-2.5`}>
         <div className="inbox-scroll-x flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist" aria-label={translateText("Filter by channel")}>
-          {localizeNode((["all", ...channelOrder] as const).map((id) => {
+          {localizeNode((["all", ...visibleChannels] as const).map((id) => {
             const isActive = channelFilter === id;
             return (
               <button
@@ -1122,6 +1141,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           </ul>
         </aside>
 
+        {conversations.length > 0 ? (<>
         {/* ---------- Column 2: chat thread ---------- */}
         <section className={`${CARD} inbox-col-thread flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={translateText(`Conversation with ${active.name}`)}>
           {/* chat header */}
@@ -1873,6 +1893,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             </ol>
           </div>
         </aside>
+        </>) : (
+        <section className={`${CARD} flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-2 px-5 text-center`} aria-label={translateText("Conversations")}>
+          <h2 className="text-[15px] font-semibold">{language === 'ar' ? 'لا توجد محادثات بعد' : translateText("No conversations yet")}</h2>
+          <p className={`max-w-sm text-[13px] ${MUTED}`}>{language === 'ar' ? 'ستظهر هنا رسائل العملاء من القنوات المربوطة فور وصولها.' : translateText("Customer messages from your connected channels will appear here as soon as they arrive.")}</p>
+        </section>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { copilotAction } from './credit-actions.js';
 
 const playground = { path: '/ai/playground', fields: ['question', 'channel', 'city', 'session_id', 'source_id'] };
 const actions = {
-  copilot: { path: '/ai/copilot', permission: 'copilot', tool: 'ai-copilot', fields: ['text', 'conversationId', 'webSearch', 'deepResearch', 'thinkingLevel'], credit: copilotAction },
+  copilot: { path: '/ai/copilot', permission: 'copilot', tool: 'ai-copilot', fields: ['text', 'conversationId', 'webSearch', 'deepResearch', 'thinkingLevel', 'uiLanguage'], credit: copilotAction },
   playground: { ...playground, permission: 'follow-up', tool: 'ai-followup', credit: () => 'playground_test' },
   inboxSmartReply: { ...playground, permission: 'inbox', tool: 'unified-inbox', credit: () => 'inbox_smart_reply' },
   inboxSimulation: { path: '/inbox/messages', permission: 'inbox', tool: 'unified-inbox', fields: ['body', 'channel', 'external_thread_id', 'external_message_id', 'customer_name', 'phone'], credit: () => 'inbox_simulation' },
