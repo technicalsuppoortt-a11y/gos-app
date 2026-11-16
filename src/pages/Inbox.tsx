@@ -22,6 +22,8 @@ import {
   CalendarDays,
   Check,
   CheckCheck,
+  CircleAlert,
+  Clock3,
   ChevronDown,
   ChevronRight,
   Circle,
@@ -95,6 +97,7 @@ type Props = {
 
 type Folder = "all" | "unread" | "mine";
 type ComposerMode = "reply" | "note";
+const serverOwnedFields = new Set<keyof Conversation>(['id', 'messages', 'preview', 'time', 'unread']);
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
@@ -441,6 +444,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   } : undefined;
   const [liveOverrides, setLiveOverrides] = useState<Record<string, Partial<Conversation>>>({});
   const [archivedLiveIds, setArchivedLiveIds] = useState<Set<string>>(() => new Set());
+  const [pendingReplies, setPendingReplies] = useState<Record<string, Message[]>>({});
   // The connected channels decide which filters show, and keep the inbox open while it is still empty.
   const [connectedChannels, setConnectedChannels] = useState<ChannelId[] | null>(null);
   useEffect(() => {
@@ -475,7 +479,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           email: c.email,
           phone: c.phone,
         });
-        const merged = localPatch ? { ...c, ...localPatch } : c;
+        const patched = localPatch ? { ...c, ...localPatch } : c;
+        // Replies on their way to the customer show at once, until the server copy arrives.
+        const pending = demoInbox ? [] : (pendingReplies[c.id] || []).filter(p => p.status === 'sending' || !c.messages.some(m => m.sender === 'agent' && m.text === p.text && Date.parse(m.time) >= Date.parse(p.time) - 60000));
+        const merged = pending.length ? { ...patched, messages: [...patched.messages, ...pending], preview: pending.at(-1)?.text || patched.preview } : patched;
         const resolvedAssignee =
           unified?.assignedAgentName ||
           (matchedLead?.assignedAgentName && matchedLead.assignedAgentName !== 'Unassigned' ? matchedLead.assignedAgentName : '') ||
@@ -493,7 +500,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           tags: validTags && validTags.length ? validTags : merged.tags,
         };
       });
-  }, [demoInbox, localConversations, inboxApi.conversations, linkedConversation, archivedLiveIds, liveOverrides, allCrmLeads, findAssignment]);
+  }, [demoInbox, localConversations, inboxApi.conversations, linkedConversation, archivedLiveIds, liveOverrides, pendingReplies, allCrmLeads, findAssignment]);
   // Connected channels, plus any channel that already has conversations, so old threads stay reachable.
   const visibleChannels = demoInbox || !connectedChannels ? channelOrder : channelOrder.filter(id => connectedChannels.includes(id) || conversations.some(c => c.channel === id));
   const setConversations: typeof setLocalConversations = demoInbox
@@ -509,10 +516,19 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             return copy;
           });
         }
+        // Keep only the fields the user changed here. Messages, preview, time and unread come from the
+        // server, so a local copy of them would hide new messages until the page reloads.
+        const current = new Map(conversations.map(item => [item.id, item]));
         setLiveOverrides(prev => {
           const next = { ...prev };
           nextList.forEach(item => {
-            next[item.id] = { ...(next[item.id] || {}), ...item };
+            const before = current.get(item.id);
+            const patch: Partial<Conversation> = {};
+            (Object.keys(item) as (keyof Conversation)[]).forEach(key => {
+              if (serverOwnedFields.has(key) || (before && before[key] === item[key])) return;
+              (patch as Record<string, unknown>)[key] = item[key];
+            });
+            if (Object.keys(patch).length) next[item.id] = { ...(next[item.id] || {}), ...patch };
           });
           return next;
         });
@@ -732,6 +748,31 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
 
   const canSend = !sending && Boolean(draft.trim() || attachments.length || voiceDraft);
 
+  // Shows the reply as "Sending…" at once; a rejected reply stays in the thread with Meta's reason and a retry.
+  const deliverReply = async (conversationId: string, text: string, messageId: string) => {
+    const put = (patch: Partial<Message>) => setPendingReplies(prev => {
+      const list = prev[conversationId] || [];
+      const base: Message = { id: messageId, sender: 'agent', text, time: new Date().toISOString() };
+      const exists = list.some(m => m.id === messageId);
+      return { ...prev, [conversationId]: exists ? list.map(m => (m.id === messageId ? { ...m, ...patch } : m)) : [...list, { ...base, ...patch }] };
+    });
+    put({ status: 'sending', error: undefined });
+    setSending(true);
+    try {
+      await gosApi.replyToConversation(conversationId, text);
+      // The server copy replaces this one on the next refresh.
+      put({ status: undefined });
+      setSent(true);
+      inboxApi.retry();
+    } catch (error) {
+      const reason = backendError(error);
+      put({ status: 'failed', error: reason });
+      showToast.error(reason);
+    } finally { setSending(false); }
+  };
+  const dismissFailedReply = (conversationId: string, messageId: string) =>
+    setPendingReplies(prev => ({ ...prev, [conversationId]: (prev[conversationId] || []).filter(m => m.id !== messageId) }));
+
   const send = async () => {
     if (!canSend) return;
     const text = draft.trim();
@@ -740,12 +781,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       // The API sends text replies only; notes, files and voice notes stay demo-only for now.
       if (mode === 'note' || attachments.length || voiceDraft || !text) { showToast.info('Only text replies can be sent to customers for now.'); return; }
       setSending(true);
-      try {
-        await gosApi.replyToConversation(active.id, text);
-        setDraft('');
-        setSent(true);
-        inboxApi.retry();
-      } catch (error) { showToast.error(backendError(error)); } finally { setSending(false); }
+      const conversationId = active.id;
+      setDraft('');
+      await deliverReply(conversationId, text, requestId);
       return;
     }
     const message: Message = {
@@ -1336,8 +1374,25 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           ))}
                           {localizeNode(m.sender === "agent" && <>{currentUser.name} ·</>)}
                           {localizeNode(m.time)}
-                          {localizeNode((m.sender === "ai" || m.sender === "agent") && <CheckCheck size={13} className="text-purple-400" />)}
+                          {m.status === 'sending' ? (
+                            <span className="inline-flex items-center gap-1 text-slate-400"><Clock3 size={12} />{translateText("Sending…")}</span>
+                          ) : m.status === 'failed' ? (
+                            <span className="inline-flex items-center gap-1 font-medium text-rose-500"><CircleAlert size={12} />{translateText("Not sent")}</span>
+                          ) : m.status === 'unconfirmed' ? (
+                            <span className="inline-flex items-center gap-1 text-amber-500" title={m.error}><CircleAlert size={12} />{translateText("Not confirmed")}</span>
+                          ) : localizeNode((m.sender === "ai" || m.sender === "agent") && <CheckCheck size={13} className="text-purple-400" />)}
                         </span>
+                        {(m.status === 'failed' || m.status === 'unconfirmed') && m.error && (
+                          <div className={`mt-1 max-w-[320px] rounded-lg px-2.5 py-1.5 text-[11.5px] leading-snug ${m.status === 'failed' ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'}`}>
+                            {m.error}
+                            {m.status === 'failed' && (
+                              <span className="mt-1 flex gap-3">
+                                <button type="button" disabled={sending} className="font-semibold underline disabled:opacity-50" onClick={() => void deliverReply(active.id, m.text || '', m.id)}>{translateText("Retry")}</button>
+                                <button type="button" className="underline opacity-80" onClick={() => dismissFailedReply(active.id, m.id)}>{translateText("Remove")}</button>
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   );

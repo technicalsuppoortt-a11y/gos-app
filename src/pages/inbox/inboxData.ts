@@ -26,6 +26,10 @@ export type Message = {
   card?: "consultation";
   attachments?: Attachment[];
   voice?: VoiceNote;
+  /** Delivery state of a staff reply: on its way, rejected by Meta, or sent with no answer from Meta. */
+  status?: 'sending' | 'failed' | 'unconfirmed';
+  /** Why a reply failed or could not be confirmed. */
+  error?: string;
 };
 
 export type Activity = { id: string; kind: ActivityKind; text: string; time: string };
