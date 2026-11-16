@@ -1,12 +1,16 @@
 import { auth, callBackend } from './firebase';
 import { checkGosToolPolicy } from './gosToolPolicy';
-import { createGosTransport, GosApiError } from './gosTransport';
+import { createGosStreamTransport, createGosTransport, GosApiError, type GosStreamHandlers } from './gosTransport';
 
-export const gosRequest = createGosTransport((import.meta.env.VITE_GOS_API_BASE_URL || 'https://api.upklick.net').replace(/^http:\/\/localhost(?=[:/]|$)/i, 'http://127.0.0.1'), async refresh => {
+const gosBaseUrl = (import.meta.env.VITE_GOS_API_BASE_URL || 'https://api.upklick.net').replace(/^http:\/\/localhost(?=[:/]|$)/i, 'http://127.0.0.1');
+const gosTokenProvider = async (refresh?: boolean) => {
   await auth.authStateReady();
   if (!auth.currentUser) throw new Error('Sign in to connect to the Upclick API.');
   return auth.currentUser.getIdToken(refresh);
-}, fetch, checkGosToolPolicy);
+};
+
+export const gosRequest = createGosTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy);
+export const gosStreamRequest = createGosStreamTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy);
 
 async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSignal): Promise<T> {
   signal?.throwIfAborted();
@@ -24,7 +28,37 @@ export type PlaygroundCitation = { source_id?: string; source_name?: string; exc
 export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: (PlaygroundCitation | string | unknown)[]; verdict?: string; note?: string | null; context_consistent?: boolean; channel?: string | null; city?: string | null; messages?: { role: 'user' | 'assistant'; content: string }[]; created_at?: string | null; session_id?: string; source_id?: string };
 export type ApiRecord = Record<string, any>;
 export type CopilotThinkingLevel = 'low' | 'medium' | 'high';
-export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel };
+export type CopilotFormKind =
+  | 'create_lead'
+  | 'update_lead_stage'
+  | 'create_contact'
+  | 'create_appointment'
+  | 'booking'
+  | 'campaign'
+  | 'product'
+  | 'landing'
+  | 'create_knowledge'
+  | 'update_assistant';
+export type CopilotFormMeta = {
+  pipelines?: Array<{ id: string; name: string; stages: Array<{ id: string; label: string }> }>;
+  calendars?: Array<{ id: string; name: string; duration: number; location: string }>;
+  leads?: Array<{ id: string; name: string; stage: string; pipelineId: string; phone?: string; email?: string }>;
+  currency?: string;
+};
+export type CopilotForm = {
+  id: string;
+  kind: CopilotFormKind;
+  status: 'pending' | 'submitting' | 'completed' | 'failed';
+  values: Record<string, string>;
+  meta?: CopilotFormMeta;
+  resultNote?: string;
+  resultHref?: string;
+  resultHrefLabel?: string;
+};
+export type CopilotHistoryMessage = { id?: string; role: 'user' | 'assistant'; text: string; transcript?: string };
+export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
+export type CopilotResponse = { text?: string; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; form?: CopilotForm | null; draft?: ApiRecord | null; conversation?: ApiRecord };
+export type CopilotActionInput = { kind: CopilotFormKind; values: Record<string, string>; conversationId?: string; formId?: string; record?: ApiRecord; requestId?: string; uiLanguage?: string };
 type InboxSimulationInput = { channel: string; external_thread_id: string; external_message_id: string; customer_name: string; phone?: string; body: string };
 type FileSourceInput = { type: 'file'; name: string; file: { name: string; mime: string; data: string } };
 type MeteredGosRequest =
@@ -73,8 +107,33 @@ export const gosApi = {
   smartReply: (question: string) => meteredRequest<{ test: PlaygroundTest }>({ action: 'inboxSmartReply', payload: { question } }),
   grade: (testId: string, verdict: string, note = '') => gosRequest<{ test: PlaygroundTest }>(`/ai/playground/${id(testId)}/grade`, { method: 'POST', body: { verdict, note } }),
   copilotConversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/ai/copilot/conversations', { signal }),
-  copilot: (body: CopilotInput, signal?: AbortSignal) => meteredRequest<{ text?: string; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; draft?: ApiRecord; actionExecuted?: ApiRecord }>({ action: 'copilot', payload: body }, signal),
-  createCopilotDraft: (body: { draft: ApiRecord; record: ApiRecord; requestId: string }) => callBackend<{ success: boolean; id?: string; resource?: string; href?: string; hrefLabel?: string }>('createCopilotDraft', body),
+  copilot: (body: CopilotInput, signal?: AbortSignal) => gosRequest<CopilotResponse>('/ai/copilot', { method: 'POST', body, signal }),
+  copilotStream: async (body: CopilotInput, handlers: GosStreamHandlers = {}, signal?: AbortSignal): Promise<CopilotResponse> => {
+    try {
+      return await gosStreamRequest<CopilotResponse>('/ai/copilot/stream', body, handlers, signal);
+    } catch (error) {
+      if (error instanceof GosApiError && error.status === 404) {
+        const res = await gosRequest<CopilotResponse>('/ai/copilot', { method: 'POST', body, signal });
+        if (res.text) handlers.onDelta?.(res.text);
+        return res;
+      }
+      throw error;
+    }
+  },
+  submitCopilotAction: (body: CopilotActionInput, signal?: AbortSignal) => gosRequest<{ ok: boolean; kind: CopilotFormKind; formId?: string | null; recordId?: string; message: string; href?: string; hrefLabel?: string; leads?: ApiRecord[] | null; conversation?: ApiRecord | null }>('/ai/copilot/action', { method: 'POST', body, signal }),
+  transcribeCopilotAudio: (body: { audio: string; format: string; language?: string } | FormData, signal?: AbortSignal) => gosRequest<{ transcript: string }>('/ai/copilot/transcribe', { method: 'POST', body, signal }),
+  copilotVoice: (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, signal?: AbortSignal) => gosRequest<ApiRecord>('/ai/copilot/voice', { method: 'POST', body, signal }),
+  copilotVoiceStream: async (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, handlers: GosStreamHandlers = {}, signal?: AbortSignal): Promise<ApiRecord> => {
+    try {
+      return await gosStreamRequest<ApiRecord>('/ai/copilot/voice/stream', body, handlers, signal);
+    } catch (error) {
+      if (error instanceof GosApiError && error.status === 404) {
+        return gosRequest<ApiRecord>('/ai/copilot/voice', { method: 'POST', body, signal });
+      }
+      throw error;
+    }
+  },
+  createCopilotDraft: (body: { draft: ApiRecord; record: ApiRecord; requestId: string }) => gosRequest<{ id?: string; name?: string; kind?: string; href?: string; hrefLabel?: string }>('/ai/copilot/draft', { method: 'POST', body }),
   conversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/inbox/conversations', { signal }),
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),
   // A team member's reply, sent to the customer through the connected Messenger, Instagram or WhatsApp channel.
