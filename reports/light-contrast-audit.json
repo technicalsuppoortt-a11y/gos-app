@@ -1,10 +1,10 @@
 {
   "scannedStylesheets": 104,
-  "correctedDeclarations": 867,
+  "correctedDeclarations": 869,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 241,
+  "utilityOccurrences": 242,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -1068,82 +1068,87 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 105,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 106,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 108,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 962,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1109,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1169,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1253,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1328,
+      "line": 109,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1473,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1504,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1536,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1615,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1767,
+      "line": 111,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1796,
+      "line": 1000,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1829,
+      "line": 1147,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1207,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1291,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1366,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1378,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1528,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1559,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1591,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1670,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1822,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1851,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1884,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1841,
+      "line": 1896,
       "utility": "text-slate-400"
     },
     {
@@ -3684,6 +3689,22 @@
       "contrastOnWhite": 3.65
     },
     {
+      "file": "src/pages/ai-copilot.css",
+      "line": 1295,
+      "selector": ".ai-code-header",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 1307,
+      "selector": ".ai-code-header button",
+      "before": "#cbd5e1",
+      "after": "#334155",
+      "contrastOnWhite": 1.48
+    },
+    {
       "file": "src/pages/ai-followup.css",
       "line": 1,
       "selector": ".af-disconnected",
@@ -4934,7 +4955,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5078,7 +5099,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
