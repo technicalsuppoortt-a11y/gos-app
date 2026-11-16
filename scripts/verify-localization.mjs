@@ -40,7 +40,7 @@ assert.equal(tr('Price (Optional)'),'السعر (اختياري)');
 assert.equal(tr('SKU_CUSTOM_123'),undefined);
 assert.equal(tr('https://example.com'),undefined);
 assert.equal(tr('a.user@example.com'),undefined);
-const brandCopy = new Map([['Upclick','Upclick'], ['AI Copilot','AI Agent'], ['AI Assistant ·','AI Agent ·'], ['AI Assistants', 'Ai Agent']]);
+const brandCopy = new Map([['Upklick','Upklick'], ['AI Copilot','AI Agent'], ['AI Assistant ·','AI Agent ·'], ['AI Assistants', 'Ai Agent']]);
 for(const [english,arabic]of Object.entries(catalog)) {
   assert.ok(english.trim());assert.ok(arabic.trim());
   if (brandCopy.get(english) !== arabic) assert.match(arabic,/[\u0600-\u06ff]/,`Arabic text missing: ${english}`);

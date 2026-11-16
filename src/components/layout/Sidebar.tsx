@@ -131,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
   const { effective: workspaceBrand, hasWorkspaceTheme } = useWorkspacePreferences();
   const savedBrand = hasWorkspaceTheme ? null : phoenixConfig;
   const previewBrandName = isLaunchBrandPreview() ? phoenixConfig?.brand.name.trim() : undefined;
-  const brandName = previewBrandName || (hasWorkspaceTheme ? workspaceBrand.name : (phoenixConfig?.brand.name.trim() || phoenixBrand?.name || (workspaceBrand.name !== 'Upclick' ? workspaceBrand.name : undefined))) || 'Upclick';
+  const brandName = previewBrandName || (hasWorkspaceTheme ? workspaceBrand.name : (phoenixConfig?.brand.name.trim() || phoenixBrand?.name || (workspaceBrand.name !== 'Upklick' ? workspaceBrand.name : undefined))) || 'Upklick';
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.sidebarOpen);
   const isCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
@@ -188,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           to={basePath}
           className={`layout-brand${previewBrandName ? ' is-launch-brand-preview' : ''}`}
           onClick={close}
-          title={previewBrandName || (collapsed ? (brandName === "Upclick" ? translateText("Upclick") : brandName) : undefined)}
+          title={previewBrandName || (collapsed ? (brandName === "Upklick" ? translateText("Upklick") : brandName) : undefined)}
         >
           {hasWorkspaceTheme && !isDefaultBrandLogo(workspaceBrand.logoUrl) ? <SidebarBrandLogo src={workspaceBrand.logoUrl} name={workspaceBrand.name} className="workspace-logo" collapsed={collapsed}/> : savedBrand?.logo ? <SidebarBrandLogo src={savedBrand.logo} name={savedBrand.brand.name} collapsed={collapsed} wordmark={savedBrand.logoHasWordmark} className={`phoenix-logo ${savedBrand.logoHasWordmark ? 'phoenix-logo-wordmark' : 'phoenix-logo-mark'}`}/> : <span className="layout-brand-icon">
             {phoenixBrand?.logo ? <SidebarBrandLogo src={phoenixBrand.logo} name={brandName} className="h-8 w-8 object-contain" collapsed={collapsed}/> : <img src="/upclick-mark.svg" alt="" width="32" height="32" />}

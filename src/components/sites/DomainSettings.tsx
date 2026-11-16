@@ -212,7 +212,7 @@ export const DomainSettings: React.FC<SiteDomainSettingsProps> = ({
           <div className="dp-alert dp-alert-emerald">
             <span>
               {t(
-                `You own ${matchingOwned.domain} in Upclick Domains — configure DNS in 1 click!`,
+                `You own ${matchingOwned.domain} in Upklick Domains — configure DNS in 1 click!`,
                 `أنت تملك ${matchingOwned.domain} على المنصة — يمكنك ضبط سجلات DNS بضغطة واحدة!`
               )}
             </span>

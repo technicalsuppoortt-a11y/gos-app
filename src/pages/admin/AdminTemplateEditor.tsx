@@ -53,6 +53,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   const [error, setError] = useState('');
   const [showContentPreview, setShowContentPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const thumbnail = draft.thumbnail ?? draft.pageTemplate?.thumbnail ?? '';
   const imageInput = useRef<HTMLInputElement>(null);
   const documentRef = useRef(draft.builderDocument);
   const arabicDocumentRef = useRef(draft.builder_document_ar);
@@ -98,14 +99,11 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     if (failure) setError(failure);
   }
   async function chooseThumbnail(file: File | undefined) {
-    if (!file || uploading) return;
+    if (!file || busy || uploading) return;
     setUploading(true); setError('');
     try {
       const thumbnail = await uploadTemplateThumbnail(draft.id, file, ownerUid);
-      // The template image is also the page builder's featured image (funnel, website and form pages).
-      const current = documentRef.current;
-      if (current?.pages?.length) documentRef.current = { ...current, pages: current.pages.map((page, index) => index === 0 || page.featuredImage ? { ...page, featuredImage: thumbnail } : page) };
-      setDraft(d => ({ ...d, thumbnail, builderDocument: documentRef.current, pageTemplate: d.pageTemplate ? { ...d.pageTemplate, image: thumbnail } : d.pageTemplate }));
+      setDraft(d => ({ ...d, thumbnail, useThumbnail: true }));
     }
     catch (cause) { setError(backendError(cause)); }
     finally { setUploading(false); if (imageInput.current) imageInput.current.value = ''; }
@@ -263,11 +261,11 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
           <button type="button" className="alm-button" onClick={() => openNativeEditor(draft.category === 'Products' ? 'product' : 'booking', true)}>{t('Edit Arabic content', 'تحرير المحتوى العربي')}<ArrowRight size={15}/></button>
         </div>
       </section>}
-      {web && <section className="alm-editor-section alm-thumbnail-editor"><header><div><h3>{t('Template image', 'صورة القالب')}</h3><p>{t('Shown on this template card in the user template gallery.', 'تظهر على بطاقة هذا القالب في مكتبة قوالب المستخدمين.')}</p></div><ImagePlus size={20}/></header>
-        <div className="alm-thumbnail-row">{draft.thumbnail ? <img className="alm-thumbnail-preview" src={draft.thumbnail} alt={t('Template image preview', 'معاينة صورة القالب')}/> : <div className="alm-thumbnail-preview alm-thumbnail-empty">{t('No image yet · the default card art is used.', 'لا توجد صورة بعد · يتم استخدام شكل البطاقة الافتراضي.')}</div>}
-          <div className="alm-inline-actions"><input ref={imageInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => void chooseThumbnail(e.target.files?.[0])}/><button type="button" className="alm-button" disabled={busy || uploading} onClick={() => imageInput.current?.click()}><ImagePlus size={15}/>{uploading ? t('Uploading…', 'جار الرفع…') : draft.thumbnail ? t('Change image', 'تغيير الصورة') : t('Upload image', 'رفع صورة')}</button>{draft.thumbnail && <button type="button" className="alm-button subtle" disabled={busy || uploading} onClick={() => setDraft(d => ({ ...d, thumbnail: '' }))}><Trash2 size={15}/>{t('Remove', 'إزالة')}</button>}</div></div>
-        <small className="alm-muted">{t('PNG, JPG or WebP up to 5 MB · landscape 16:9 works best. Uploading also sets the featured image in the page builder. Save the template to apply.', 'PNG أو JPG أو WebP حتى 5 ميجابايت · الأفضل صورة عرضية 16:9. رفع الصورة يغير أيضاً الصورة الرئيسية في محرر الصفحات. احفظ القالب للتطبيق.')}</small>
-      </section>}
+      <section className="alm-editor-section alm-thumbnail-editor"><header><div><h3>{t('Template image', 'صورة القالب')}</h3><p>{t('Shown on this template card in the user template gallery.', 'تظهر على بطاقة هذا القالب في مكتبة قوالب المستخدمين.')}</p></div><ImagePlus size={20}/></header>
+        <div className="alm-thumbnail-row">{thumbnail ? <img className="alm-thumbnail-preview" src={thumbnail} alt={t('Template image preview', 'معاينة صورة القالب')}/> : <div className="alm-thumbnail-preview alm-thumbnail-empty">{t('No image yet · the default card art is used.', 'لا توجد صورة بعد · يتم استخدام شكل البطاقة الافتراضي.')}</div>}
+          <div className="alm-inline-actions"><input ref={imageInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => void chooseThumbnail(e.target.files?.[0])}/><button type="button" className="alm-button" disabled={busy || uploading} onClick={() => imageInput.current?.click()}><ImagePlus size={15}/>{uploading ? t('Uploading…', 'جار الرفع…') : thumbnail ? t('Change image', 'تغيير الصورة') : t('Upload image', 'رفع صورة')}</button>{thumbnail && <button type="button" className="alm-button subtle" disabled={busy || uploading} onClick={() => setDraft(d => ({ ...d, thumbnail: '', useThumbnail: false }))}><Trash2 size={15}/>{t('Remove', 'إزالة')}</button>}</div></div>
+        <small className="alm-muted">{t('PNG, JPG or WebP up to 5 MB. Save the template to apply.', 'PNG أو JPG أو WebP حتى 5 ميجابايت. احفظ القالب للتطبيق.')}</small>
+      </section>
       {web && <section className="alm-builder-entry"><LayoutTemplate size={26}/><div><h3>{t('Visual page design', 'التصميم المرئي للصفحة')}</h3><p>{documentRef.current ? t('Continue editing the saved page layout.', 'تابع تعديل تخطيط الصفحة المحفوظ.') : t('Design pages, sections, typography and responsive layouts.', 'صمم الصفحات والأقسام والخطوط والتخطيطات المتجاوبة.')}</p></div><div className="alm-inline-actions"><button type="button" className="alm-button" onClick={() => openBuilder(false)}>{t('Open page builder', 'فتح محرر الصفحات')}<ArrowRight size={15}/></button><button type="button" className="alm-button" onClick={() => openBuilder(true)}>{t('Edit Arabic design', 'تحرير التصميم العربي')}<ArrowRight size={15}/></button></div></section>}
       <label className="alm-visibility"><span><strong>{t('Publish to workspaces', 'النشر في مساحات العمل')}</strong><small>{t('Active templates appear in the existing user template galleries.', 'تظهر القوالب النشطة في مكتبات قوالب المستخدمين الحالية.')}</small></span><input role="switch" aria-label={t('Active / Published', 'نشط / منشور')} type="checkbox" checked={templateIsActive(draft)} onChange={e => setDraft({ ...draft, active: e.target.checked, status: e.target.checked ? 'Published' : 'Draft' })}/></label>
       {error && <div className="alm-error-inline" role="alert">{error}</div>}

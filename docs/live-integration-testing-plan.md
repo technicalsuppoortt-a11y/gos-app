@@ -1,4 +1,4 @@
-# Upclick Platform Live Integration & Manual Testing Plan
+# Upklick Platform Live Integration & Manual Testing Plan
 **Target Project:** `gos-app-3c7fb` | **Architecture:** Firebase Auth + Firestore + v2 Functions + `gos-api`
 
 ---

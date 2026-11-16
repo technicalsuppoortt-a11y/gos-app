@@ -484,7 +484,7 @@ export function Dialog({ title, close, children }: { title: string; close: () =>
       <div ref={ref} className="adm-dialog" role="dialog" aria-modal="true" aria-labelledby="adm-dialog-title">
         <header>
           <div>
-            <span className="adm-eyebrow">{ar ? 'إدارة Upclick' : 'Upclick ADMIN'}</span>
+            <span className="adm-eyebrow">{ar ? 'إدارة Upklick' : 'Upklick ADMIN'}</span>
             <h2 id="adm-dialog-title">{title}</h2>
           </div>
           <button onClick={close} aria-label={ar ? 'إغلاق' : 'Close'}>

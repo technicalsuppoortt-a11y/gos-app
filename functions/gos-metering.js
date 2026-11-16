@@ -107,13 +107,13 @@ export async function meteredGosRequest(request, { db, workspace, baseUrl, gatew
     headers: { Authorization: authorization, Accept: 'application/json', ...(typeof body === 'string' ? { 'Content-Type': 'application/json' } : {}), ...(gatewaySecret ? { 'X-GOS-Metering-Secret': gatewaySecret } : {}) },
     body,
     signal: AbortSignal.timeout(90000),
-  }).catch(() => { throw new HttpsError('unavailable', 'The Upclick API could not complete the request.'); });
+  }).catch(() => { throw new HttpsError('unavailable', 'The Upklick API could not complete the request.'); });
   const result = await response.json().catch(() => null);
   if (!response.ok || result?.success === false) {
     const code = { 400: 'invalid-argument', 401: 'unauthenticated', 403: 'permission-denied', 404: 'not-found', 413: 'invalid-argument', 422: 'invalid-argument', 429: 'resource-exhausted' }[response.status];
-    throw new HttpsError(code ?? 'unavailable', result?.error?.message || result?.message || 'The Upclick API could not complete the request.');
+    throw new HttpsError(code ?? 'unavailable', result?.error?.message || result?.message || 'The Upklick API could not complete the request.');
   }
-  if (result?.data === undefined) throw new HttpsError('internal', 'The Upclick API returned an unexpected response.');
+  if (result?.data === undefined) throw new HttpsError('internal', 'The Upklick API returned an unexpected response.');
   if (savedResult) {
     const encoded = JSON.stringify(result.data);
     if (Buffer.byteLength(encoded) < 700000) {

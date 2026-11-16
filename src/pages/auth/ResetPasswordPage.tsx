@@ -154,9 +154,9 @@ export const ResetPasswordPage: React.FC = () => {
       {/* Form Side */}
       <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-6 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
         <header className="flex items-center justify-between">
-          <a href="/auth/login" aria-label={translateText("Upclick home")} className="login-brand flex w-fit items-center gap-2">
+          <a href="/auth/login" aria-label={translateText("Upklick home")} className="login-brand flex w-fit items-center gap-2">
             <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
-            <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upclick")}<span className="text-indigo-600">.</span></span>
+            <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upklick")}<span className="text-indigo-600">.</span></span>
           </a>
           <button
             type="button"
@@ -382,7 +382,7 @@ export const ResetPasswordPage: React.FC = () => {
         </motion.div>
 
         <footer className="login-footer flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400">
-          <span>{translateText("© 2025 Upclick Inc.")}</span>
+          <span>{translateText("© 2025 Upklick Inc.")}</span>
           <div className="flex gap-4">
             <a className="transition hover:text-slate-700 dark:hover:text-white" href="/privacy">
               {translateText("Privacy")}
@@ -410,7 +410,7 @@ export const ResetPasswordPage: React.FC = () => {
               <img src="/upclick-mark.svg" width="36" height="36" alt=""/>
             </span>
             <span className="text-lg font-bold tracking-[-1px]">
-              {translateText("Upclick")}
+              {translateText("Upklick")}
               <span className="text-violet-300">.</span>
             </span>
           </div>
@@ -461,7 +461,7 @@ export const ResetPasswordPage: React.FC = () => {
         </div>
 
         <div className="login-showcase-footer relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-indigo-100/45">
-          <span>{translateText("Upclick Identity Protection")}</span>
+          <span>{translateText("Upklick Identity Protection")}</span>
           <span className="flex items-center gap-1.5">
             <Shield size={12} />
             {translateText("256-Bit TLS 1.3")}

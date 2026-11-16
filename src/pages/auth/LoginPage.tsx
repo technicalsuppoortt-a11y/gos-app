@@ -251,9 +251,9 @@ export const LoginPage: React.FC = () => {
     <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-4 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
       {/* Top Header Bar with Brand and Controls */}
       <header className="login-top-bar flex items-center justify-between w-full">
-        <a href="/auth/login" aria-label={translateText("Upclick home")} className="login-brand flex items-center gap-2">
+        <a href="/auth/login" aria-label={translateText("Upklick home")} className="login-brand flex items-center gap-2">
           <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl font-bold text-white shadow-lg" style={{ background: 'var(--ws-accent, #7C3AED)', boxShadow: '0 7px 20px var(--ws-glow, rgba(124,58,237,0.22))' }}><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
-          <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upclick")}<span style={{ color: 'var(--ws-accent, #7C3AED)' }}>.</span></span>
+          <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upklick")}<span style={{ color: 'var(--ws-accent, #7C3AED)' }}>.</span></span>
         </a>
 
         {/* Top Controls: Language Switcher (EN/AR) & Dark/Light Mode Switcher */}
@@ -365,7 +365,7 @@ export const LoginPage: React.FC = () => {
       </motion.div>
 
       <footer className="login-footer flex flex-wrap items-center justify-between gap-y-2 text-[11px] text-slate-400 dark:text-slate-400 mt-6">
-        <span>{translateText("© 2026 Upclick Inc.")}</span>
+        <span>{translateText("© 2026 Upklick Inc.")}</span>
         <nav aria-label="Legal"><Link to="/terms-of-service">{translateText("Service")}</Link><span aria-hidden="true">•</span><Link to="/privacy">{translateText("Privacy Policy")}</Link><span aria-hidden="true">•</span><Link to="/data-deletion">{translateText("Data Deletion")}</Link></nav>
       </footer>
     </section>
@@ -373,7 +373,7 @@ export const LoginPage: React.FC = () => {
     <motion.aside className="login-showcase relative hidden min-h-[100dvh] overflow-hidden bg-[#201d3b] text-white lg:flex lg:flex-col lg:justify-between lg:px-10 lg:py-8 xl:px-14" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .6 }}>
       <div className="login-showcase-backdrop pointer-events-none absolute inset-0"/>
       <div className="pointer-events-none absolute -right-40 -top-48 h-[560px] w-[560px] rounded-full border border-white/[.06] shadow-[0_0_0_50px_rgba(255,255,255,.025),0_0_0_110px_rgba(255,255,255,.018)]"/>
-      <div className="login-showcase-header relative z-10 flex items-center justify-between"><div className="login-showcase-brand flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 font-bold text-white ring-1 ring-white/15"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span><span className="text-lg font-bold tracking-[-1px]">{translateText("Upclick")}<span className="login-showcase-dot">.</span></span></div><span className="login-showcase-badge flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-1.5 text-[10px] font-medium tracking-wide text-slate-100"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" YOUR BUSINESS, IN SYNC")}</span></div>
+      <div className="login-showcase-header relative z-10 flex items-center justify-between"><div className="login-showcase-brand flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 font-bold text-white ring-1 ring-white/15"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span><span className="text-lg font-bold tracking-[-1px]">{translateText("Upklick")}<span className="login-showcase-dot">.</span></span></div><span className="login-showcase-badge flex items-center gap-2 rounded-full border border-white/10 bg-white/[.06] px-3 py-1.5 text-[10px] font-medium tracking-wide text-slate-100"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400"/>{translateText(" YOUR BUSINESS, IN SYNC")}</span></div>
 
       <div className="login-showcase-content relative z-10 mx-auto my-auto w-full max-w-xl py-9">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .12, duration: .55 }}>

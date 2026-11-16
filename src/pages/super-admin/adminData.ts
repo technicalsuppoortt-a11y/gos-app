@@ -26,7 +26,7 @@ export function seedAdminData(): AdminData {
     { id: 'sendgrid', name: 'SendGrid', description: 'Transactional email and delivery events', connected: true },
     { id: 'slack', name: 'Slack', description: 'Operational alerts for your team', connected: false },
     { id: 'analytics', name: 'Google Analytics', description: 'Acquisition and product usage reporting', connected: false },
-  ], settings: { name: 'Upclick', email: 'operations@example.com', timezone: 'Africa/Cairo', trialDays: 14, maintenance: false, registrations: true, alerts: true, mfa: true } };
+  ], settings: { name: 'Upklick', email: 'operations@example.com', timezone: 'Africa/Cairo', trialDays: 14, maintenance: false, registrations: true, alerts: true, mfa: true } };
 }
 // Reject incomplete or foreign snapshots instead of letting malformed storage break a page.
 function validSnapshot(value: unknown): value is AdminData {

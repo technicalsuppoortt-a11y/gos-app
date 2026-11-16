@@ -21,7 +21,7 @@ export type PlatformSettings = {
   registrations: boolean; maintenance: boolean; mfa: boolean; alerts: boolean;
 };
 export const platformTimezones = ['Africa/Cairo', 'UTC', 'Europe/London', 'America/New_York', 'Asia/Dubai'];
-const defaults: PlatformSettings = { name: 'Upclick', email: '', timezone: 'Africa/Cairo', trialDays: 14, registrations: true, maintenance: false, mfa: false, alerts: false };
+const defaults: PlatformSettings = { name: 'Upklick', email: '', timezone: 'Africa/Cairo', trialDays: 14, registrations: true, maintenance: false, mfa: false, alerts: false };
 
 type Credentials = { name: string; email: string; password: string; requestId: string; language: string };
 type Operation = ({ operation: 'createAdmin' } & Credentials)
@@ -847,10 +847,11 @@ export function usePlatformAudit() {
   };
 }
 
+const platformName = (value: unknown) => string(value).replace(/^upclick$/i, defaults.name) || defaults.name;
 const mapSettings = (row: DocumentData) => ({
   revision: amount(row.revision) ?? 0,
   settings: {
-    name: string(row.name) || defaults.name, email: string(row.email), timezone: platformTimezones.includes(row.timezone) ? String(row.timezone) : defaults.timezone,
+    name: platformName(row.name), email: string(row.email), timezone: platformTimezones.includes(row.timezone) ? String(row.timezone) : defaults.timezone,
     trialDays: amount(row.trialDays) ?? defaults.trialDays, registrations: typeof row.registrations === 'boolean' ? row.registrations : defaults.registrations,
     maintenance: row.maintenance === true, mfa: row.mfa === true, alerts: row.alerts === true,
   } satisfies PlatformSettings,
@@ -865,7 +866,10 @@ export function usePlatformSettings() {
   }, [state.loading, state.error, state.fallback, state.data.revision]);
   return {
     ...state,
-    data: state.fallback && mirror.platformSettings ? mirror.platformSettings : state.data,
+    data: state.fallback && mirror.platformSettings ? {
+      ...mirror.platformSettings,
+      settings: { ...mirror.platformSettings.settings, name: platformName(mirror.platformSettings.settings.name) },
+    } : state.data,
   };
 }
 

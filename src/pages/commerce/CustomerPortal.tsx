@@ -894,7 +894,7 @@ function CourseDeliveryWorkspace({
                       {t('Certificate of Completion Unlocked!')}
                     </b>
                     <small style={{ color: 'var(--cp-muted)' }}>
-                      {t('Issued by')} {t(snap.certificateIssuer || 'Upclick Academy')} ·{' '}
+                      {t('Issued by')} {t(snap.certificateIssuer || 'Upklick Academy')} ·{' '}
                       {purchase.customerName}
                     </small>
                   </div>

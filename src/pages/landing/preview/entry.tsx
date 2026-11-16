@@ -28,7 +28,7 @@ import './frame.css';
 
 // The Vite ?landing-demo graph uses only the read-only adapters in this folder.
 // These are the production page components, not separate preview renderers.
-store.dispatch(loginSuccess({ user: { id: 'landing-demo-user', name: 'Mohamed Joe', email: 'demo@example.com' }, tenant: { id: 'landing-demo', name: 'Upclick Demo Workspace' }, role: 'USER', token: 'demo-only' }));
+store.dispatch(loginSuccess({ user: { id: 'landing-demo-user', name: 'Mohamed Joe', email: 'demo@example.com' }, tenant: { id: 'landing-demo', name: 'Upklick Demo Workspace' }, role: 'USER', token: 'demo-only' }));
 const daysAgo = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
 const leads = ['Sarah Ahmed', 'Omar Khaled', 'Lina Hassan', 'Adam Ali', 'Mona Samir', 'Youssef Adel'].map((name, i) => makeLead({
   id: `demo-lead-${i}`, name, email: `contact${i + 1}@example.com`, source: ['Instagram', 'WhatsApp', 'Website'][i % 3],

@@ -7,7 +7,7 @@ import { store, type RootState } from '../store';
 import { updateUserProfile } from '../store/slices/authSlice';
 import { isCurrencyCode } from '../utils/currency';
 
-export const DEFAULT_BRAND_NAME = 'Upclick';
+export const DEFAULT_BRAND_NAME = 'Upklick';
 export const DEFAULT_BRAND_LOGO_URL = '/upclick-logo.svg';
 export const DEFAULT_SUPPORT_EMAIL = 'support@upclick.app';
 
@@ -73,7 +73,7 @@ export function sanitizeWorkspacePreferences(
   const rawTz = validTimezone(obj.timezone) ? obj.timezone : preferenceDefaults.timezone;
 
   return {
-    name: rawName,
+    name: /^upclick$/i.test(rawName) ? DEFAULT_BRAND_NAME : rawName,
     logoUrl: validLogo,
     theme: rawTheme,
     language: rawLang,

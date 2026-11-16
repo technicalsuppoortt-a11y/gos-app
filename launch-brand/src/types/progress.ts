@@ -35,7 +35,7 @@ export interface Milestone {
   executionProgress: number;
   weight: number;
   prerequisiteKeys?: string[];
-  sourceLabel?: 'marketing' | 'upclick' | 'launch';
+  sourceLabel?: 'marketing' | 'upklick' | 'launch';
   sourceRoute: string;
   order?: number;
   createdAt?: unknown;
@@ -80,7 +80,7 @@ export interface LaunchPlan {
 export interface ProductProgressEvent {
   id: string;
   userId: string;
-  source: 'launch' | 'marketing' | 'upclick' | 'admin' | 'system';
+  source: 'launch' | 'marketing' | 'upklick' | 'admin' | 'system';
   sourceKey: string;
   outcome: 'started' | 'completed' | 'submitted_for_review' | 'verified' | 'failed';
   occurredAt: unknown;

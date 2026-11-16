@@ -453,8 +453,8 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
             </h1>
             <p className="dp-hero-subtitle">
               {t(
-                'Search live domain availability across 10+ extensions, register your custom brand domain, manage DNS & nameservers, and connect directly to your Upclick websites & funnels.',
-                'ابحث عن توفر النطاقات، اشترِ دومينك الخاص، تحكم في سجلات DNS واربطه بمواقعك ومتاجرك على Upclick فوراً.'
+                'Search live domain availability across 10+ extensions, register your custom brand domain, manage DNS & nameservers, and connect directly to your Upklick websites & funnels.',
+                'ابحث عن توفر النطاقات، اشترِ دومينك الخاص، تحكم في سجلات DNS واربطه بمواقعك ومتاجرك على Upklick فوراً.'
               )}
             </p>
           </div>
@@ -1350,7 +1350,7 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                   <button type="button" onClick={applyPlatformDnsPreset} className="dp-btn dp-btn-sm" style={{ color: 'var(--dp-accent)' }}>
                     <Zap size={13} />
-                    <span>{t('Auto-fill Upclick Site Records (A + CNAME)', 'تعبئة تلقائية لربط مواقع المنصة (A + CNAME)')}</span>
+                    <span>{t('Auto-fill Upklick Site Records (A + CNAME)', 'تعبئة تلقائية لربط مواقع المنصة (A + CNAME)')}</span>
                   </button>
 
                   <button

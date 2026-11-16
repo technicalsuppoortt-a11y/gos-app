@@ -1,4 +1,4 @@
-# Upclick REST integration
+# Upklick REST integration
 
 The API defaults to `https://api.upklick.net`. Override it with
 `VITE_GOS_API_BASE_URL` in your Vite environment, then restart Vite.
@@ -106,7 +106,7 @@ Dashboard simulations are already charged by their callable.
 - `npm run smoke:gos-api`: authenticated live text/file upload and indexing.
 
 For the live smoke test, set `FIREBASE_ID_TOKEN` in the process environment to
-a fresh token for a user provisioned in the Upclick API. Do not put a real token in
+a fresh token for a user provisioned in the Upklick API. Do not put a real token in
 source control or the Postman collection. The script verifies health, current
 user and token; uploads the fixture as text and a real TXT multipart file;
 checks both are listed and ready with indexed chunks; then checks the grounded

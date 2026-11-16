@@ -553,7 +553,7 @@ export function TeamPanel() {
               onClick={() => navigate('/dashboard/settings/support-team')}
             >
               <Headset size={15} />
-              {translateText('Support Team')}
+              {translateText('Sales Team')}
             </button>
             <button
               type="button"

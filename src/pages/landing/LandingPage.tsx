@@ -207,14 +207,14 @@ function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | nu
 
       <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
         <aside className="lp-mock__side">
-          <div className="lp-mock__logo" role="img" aria-label={brand?.brand.name ?? 'Upclick'}>
+          <div className="lp-mock__logo" role="img" aria-label={brand?.brand.name ?? 'Upklick'}>
             {brand ? <PreviewBrandMark brand={brand} /> : <>
               <img className="lp-preview-logo lp-preview-logo-dark" src="/upclick-logo.svg" width="84" height="27" alt=""/>
               <img className="lp-preview-logo lp-preview-logo-light" src="/upclick-logo-light.svg" width="84" height="27" alt=""/>
             </>}
             <span>WORKSPACE</span>
           </div>
-          <ul role="tablist" aria-orientation="vertical" aria-label={brand?.brand.name ?? 'Upclick'}>
+          <ul role="tablist" aria-orientation="vertical" aria-label={brand?.brand.name ?? 'Upklick'}>
             {navItems.map(({ label: item, Icon }, index) => {
               const selected = activeTab === index;
               return (
@@ -877,7 +877,7 @@ export const LandingPage: React.FC = () => {
     const original = cms[language] ?? cms.en;
     const content: LandingCopy = brandName ? JSON.parse(JSON.stringify(original), (key, value) =>
       typeof value === 'string' && key !== 'id' && !/^(?:https?:|\/)/i.test(value)
-        ? value.replace(/\bUpclick\b/gi, () => brandName)
+        ? value.replace(/\bUpklick\b/gi, () => brandName)
         : value,
     ) : original;
     return { ...content, nav: { ...content.nav, links: content.nav.links.filter(link => link.id !== 'pricing') } };

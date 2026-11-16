@@ -195,7 +195,7 @@ export function BookingBuilder({
       ? activeDesign.name
       : draft.templateSettings.previewMode === 'template'
         ? 'Custom template'
-        : 'Standard Upclick',
+        : 'Standard Upklick',
     'After booking':
       draft.templateSettings.postBookingMode === 'standard'
         ? 'Confirmation'
@@ -520,7 +520,7 @@ export function BookingBuilder({
                   <ColorPicker value={draft.color} change={v => field('color', v)} />
                 </div>
                 <Toggle
-                  label="Display Upclick branding"
+                  label="Display Upklick branding"
                   checked={draft.displayBranding}
                   change={v => field('displayBranding', v)}
                 />
@@ -971,7 +971,7 @@ export function BookingBuilder({
                       }
                     }}
                   >
-                    <option value="default">{translateText('Standard Upclick booking page')}</option>
+                    <option value="default">{translateText('Standard Upklick booking page')}</option>
                     {workspaceDesigns.map(design => (
                       <option key={design.id} value={design.id}>
                         {formatDisplayMessage('Website · {{0}} ({{1}})', design.name, design.industry)}
@@ -1032,7 +1032,7 @@ export function BookingBuilder({
                         <CalendarDays size={16} />
                       </div>
                       <div className="bk-tpl-picker-meta">
-                        <b>{translateText('Standard Upclick Calendar')}</b>
+                        <b>{translateText('Standard Upklick Calendar')}</b>
                         <small>{translateText('Focused 2-panel Koalendar layout')}</small>
                       </div>
                       {draft.templateSettings.previewMode === 'default' && (

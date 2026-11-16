@@ -37,7 +37,7 @@ export const settingsTabPermissions: PermissionItem[] = [
   { id: 'settings:payment-methods', label: 'Payment Methods', path: '/dashboard/settings/payment-methods', category: 'settings' },
   { id: 'settings:integrations', label: 'Integrations', path: '/dashboard/settings/integrations', category: 'settings' },
   { id: 'settings:team', label: 'Team & roles', path: '/dashboard/settings/team', category: 'settings' },
-  { id: 'settings:support-team', label: 'Support Team', path: '/dashboard/settings/support-team', category: 'settings' },
+  { id: 'settings:support-team', label: 'Sales Team', path: '/dashboard/settings/support-team', category: 'settings' },
   { id: 'settings:pixel', label: 'Pixel', path: '/dashboard/settings/pixel', category: 'settings' },
   { id: 'settings:security', label: 'Security', path: '/dashboard/settings/security', category: 'settings' },
   { id: 'settings:privacy', label: 'Privacy Policy', path: '/dashboard/settings/privacy', category: 'settings' },

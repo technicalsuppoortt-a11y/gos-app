@@ -1,12 +1,12 @@
-# Upclick Knowledge Base & Operating Manual
+# Upklick Knowledge Base & Operating Manual
 
-# دليل وقاعدة معرفة منصة أبكليك (Upclick GOS)
+# دليل وقاعدة معرفة منصة أبكليك (Upklick GOS)
 
 ---
 
 ## 1. نبذة عامة عن المنصة | Platform Overview
 
-منصة **أبكليك (Upclick)** هي نظام تشغيل متكامل لإدارة الأعمال والتسويق والأتمتة وخدمة العملاء بالذكاء الاصطناعي (All-in-One Business OS & AI Automations).
+منصة **أبكليك (Upklick)** هي نظام تشغيل متكامل لإدارة الأعمال والتسويق والأتمتة وخدمة العملاء بالذكاء الاصطناعي (All-in-One Business OS & AI Automations).
 المنصة تمكّن الشركات والوكالات وأصحاب الأعمال من:
 
 - إدارة المحادثات وقنوات التواصل الموحدة (WhatsApp, Instagram, Messenger, SMS, Email, Webchat).

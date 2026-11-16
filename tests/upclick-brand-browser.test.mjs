@@ -61,6 +61,6 @@ try {
     await fs.writeFile(`public/app-icon-${size}.png`,Buffer.from(data,'base64'));
   }
   assert.deepEqual(errors,[]);
-  console.log('Upclick: drawer content, FAQs, focus containment, Escape, guide navigation, dark mode and mobile sizing passed. Install icons generated.');
+  console.log('Upklick: drawer content, FAQs, focus containment, Escape, guide navigation, dark mode and mobile sizing passed. Install icons generated.');
 } catch(error) { console.error(error); throw error; }
 finally { await browser?.close(); server.httpServer.closeAllConnections(); await new Promise(resolve => server.httpServer.close(resolve)); }

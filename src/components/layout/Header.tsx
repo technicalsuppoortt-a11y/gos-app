@@ -46,7 +46,7 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/knowledge': { title: 'Business Knowledge', description: 'Manage the sources that your assistant uses.' },
   '/dashboard/activity': { title: 'Activity Log', description: 'View changes and events in your workspace.' },
   '/dashboard/content': { title: 'Content Generator', description: 'Create content for your business.' },
-  '/dashboard/academy': { title: 'Upclick Academy', description: 'Explore learning resources.' },
+  '/dashboard/academy': { title: 'Upklick Academy', description: 'Explore learning resources.' },
   '/dashboard/settings/privacy': { title: 'Privacy Policy', description: 'Review how we protect your personal and business data.' },
 };
 

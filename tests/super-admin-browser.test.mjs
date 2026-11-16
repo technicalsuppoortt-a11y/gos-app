@@ -24,7 +24,7 @@ const fixture = `
   export const usePlatformWallet = () => live({ balance: 40, held: 10, available: 30, currency: 'EUR' });
   export const useManagedWallets = () => live([]);
   export const usePlatformSubscriptions = () => live([]);
-  export const usePlatformSettings = () => live({ revision: 0, settings: { name: 'Upclick', email: '', timezone: 'UTC', trialDays: 14 } });
+  export const usePlatformSettings = () => live({ revision: 0, settings: { name: 'Upklick', email: '', timezone: 'UTC', trialDays: 14 } });
   export const usePlatformPayments = () => live([{ id: 'invoice-123', key: 'billingRequests/invoice-123', amount: 45, currency: 'EUR', name: 'Ahmed Ali', method: 'Bank', scope: 'Platform billing', platformRevenue: true, status: 'Approved', date: new Date() }]);
   export async function updatePlatform(input) {
     window.lastOperation = input.operation;

@@ -1,4 +1,4 @@
-// Apply the same color-role conversion used by Phoenix's Upclick preview.
+// Apply the same color-role conversion used by Phoenix's Upklick preview.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import postcss from 'postcss';
@@ -116,7 +116,7 @@ for (const file of files.sort()) {
   if (css) scopedOutput.push(`@scope (${scopeRoot}) to (${landing ? '.lp-native-preview' : dashboardLimit}) {\n${css}\n}`);
 }
 const targetFile = path.join('src', 'context', 'phoenix-brand-generated.css');
-const newContent = `/* Generated from Upclick styles with Phoenix color roles. */\n${output.join('\n')}`;
+const newContent = `/* Generated from Upklick styles with Phoenix color roles. */\n${output.join('\n')}`;
 
 async function writeSafely(target, data, maxRetries = 5) {
   try {
@@ -155,5 +155,5 @@ async function writeSafely(target, data, maxRetries = 5) {
 }
 
 await writeSafely(targetFile, newContent);
-await writeSafely(path.join('src', 'context', 'phoenix-brand-scoped.css'), `/* Generated from Upclick styles with Phoenix color roles (CSS @scope version). */\n${scopedOutput.join('\n')}`);
+await writeSafely(path.join('src', 'context', 'phoenix-brand-scoped.css'), `/* Generated from Upklick styles with Phoenix color roles (CSS @scope version). */\n${scopedOutput.join('\n')}`);
 console.log(`Generated Phoenix brand colors for ${files.length} stylesheets.`);

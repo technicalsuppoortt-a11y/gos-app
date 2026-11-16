@@ -405,7 +405,7 @@ export function BookingLivePreview({ page: draft }: { page: BookingPage }) {
                   {!activeDesign && (
                     <header className="bk-public-brand">
                       <CalendarDays size={21} />
-                      <b>{translateText('Upclick')}</b>
+                      <b>{translateText('Upklick')}</b>
                       <span>{translateText('Booking')}</span>
                     </header>
                   )}

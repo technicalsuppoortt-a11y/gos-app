@@ -78,7 +78,7 @@ export function StandaloneTemplatePreview({ title, asset, children, language, te
   }, [hasCanvas]);
   useEffect(() => {
     const previous = document.title;
-    document.title = title + ' | Upclick';
+    document.title = title + ' | Upklick';
     return () => { document.title = previous; };
   }, [title]);
   const navigate = (id: string) => {

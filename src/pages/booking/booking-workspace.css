@@ -180,7 +180,7 @@
 
 
 
-/* Advanced sections from BookingSection.tsx retain the Upclick form language. */
+/* Advanced sections from BookingSection.tsx retain the Upklick form language. */
 .bk-section-form{max-width:920px}
 .bk-media-preview{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .bk-media-preview img,.bk-media-preview video{width:140px;height:110px;object-fit:cover;border:1px solid var(--bk-line);border-radius:12px}
@@ -258,7 +258,7 @@
 .bk-preview-calendar .bk-guest{grid-template-columns:1fr 30px}.bk-preview-calendar .bk-guest>label{grid-column:1}.bk-preview-calendar .bk-guest>.bk-icon{grid-column:2;grid-row:1}
 .bk-appointment-questions{padding:15px;border:1px solid var(--bk-line);border-radius:12px;background:var(--bk-bg)}
 .bk-appointment-form-heading b{font-size:11px}.bk-appointment-form-heading small{display:block;font-size:10px;color:var(--bk-muted);margin-top:4px}
-/* Shared accessible Upclick selects, including portals inside native dialogs. */
+/* Shared accessible Upklick selects, including portals inside native dialogs. */
 .bk-select{display:inline-block;position:relative;min-width:0;vertical-align:middle}
 .bk-form .bk-select,.bk-public-details .bk-select{display:block;width:100%;margin-top:6px}
 .bk-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:34px;padding:7px 11px;border:1px solid var(--bk-line);border-radius:12px;background:var(--bk-card);box-shadow:0 1px 3px #17234503;color:var(--bk-text);font-size:11px;font-weight:450;cursor:pointer;text-align:start;outline:none}
@@ -362,7 +362,7 @@
 
 .bk-section-summary{max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px;padding:3px 6px;background:var(--bk-bg);color:var(--bk-muted);font-size:9px}
 
-/* Troubleshoot follows PublicBooking.tsx reason cards inside the Upclick calendar. */
+/* Troubleshoot follows PublicBooking.tsx reason cards inside the Upklick calendar. */
 .bk-troubleshoot-controls{width:100%;position:relative;align-self:flex-start}
 .bk-troubleshoot-toggle{display:inline-flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--bk-line);border-radius:10px;background:var(--bk-card);color:var(--bk-muted);font-size:10px!important;line-height:1.2;box-shadow:0 1px 4px #17234505;transition:background .18s,border-color .18s}
 .bk-troubleshoot-toggle:hover{background:var(--bk-soft);border-color:var(--bk-muted,#526078)}

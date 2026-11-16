@@ -90,7 +90,7 @@
 
 # Advanced
 - Move Launch brand in gos => done
-- Make Upclick Domain
+- Make Upklick Domain
 - Plan and subscription from joe academy => option can apply free plan
 - Upload Vercel to VPS Server
 ===================

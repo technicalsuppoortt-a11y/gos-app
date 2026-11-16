@@ -34,12 +34,12 @@ const txns: Txn[] = ([
   ['#TX-2046', 'Lina Mansour', 45, 'Agency Starter Kit', 'Card', '€67', 'Oct 25, 2024', 'Pending'],
   ['#TX-2045', 'Ahmed Ali', 15, 'WhatsApp Automation Setup', 'Bank transfer', '€497', 'Oct 25, 2024', 'Paid'],
   ['#TX-2044', 'Nour Hassan', 44, 'Business Growth Bundle', 'Card', '€197', 'Oct 24, 2024', 'Refunded'],
-  ['#TX-2043', 'Youssef Adel', 33, 'Upclick Pro Membership', 'Card', '€29', 'Oct 24, 2024', 'Paid'],
+  ['#TX-2043', 'Youssef Adel', 33, 'Upklick Pro Membership', 'Card', '€29', 'Oct 24, 2024', 'Paid'],
   ['#TX-2042', 'Mariam Saleh', 49, 'Social Media Templates Pack', 'Apple Pay', '€47', 'Oct 23, 2024', 'Paid'],
   ['#TX-2041', 'Karim Nabil', 51, 'Done-For-You Funnel Setup', 'PayPal', '€497', 'Oct 23, 2024', 'Pending'],
   ['#TX-2040', 'Hana Fawzy', 41, 'Complete AI Marketing Course', 'Card', '€297', 'Oct 22, 2024', 'Paid'],
   ['#TX-2039', 'Tarek Samir', 53, 'Agency Starter Kit', 'Card', '€67', 'Oct 22, 2024', 'Refunded'],
-  ['#TX-2038', 'Dina Mostafa', 36, 'Upclick Pro Membership', 'Card', '€29', 'Oct 21, 2024', 'Paid'],
+  ['#TX-2038', 'Dina Mostafa', 36, 'Upklick Pro Membership', 'Card', '€29', 'Oct 21, 2024', 'Paid'],
   ['#TX-2037', 'Mostafa Gamal', 59, 'Strategy Call (1-on-1)', 'Apple Pay', '€97', 'Oct 21, 2024', 'Paid'],
 ] as const).map(([id, customer, av, product, method, amount, date, status]) => ({ id, customer, avatar: av, product, method, amount, date, status }));
 
@@ -328,13 +328,13 @@ const productLines = [
   { name: 'Templates Pack', color: '#7C3AED', data: series(DAYS, 6, 0.25, 2.4, 1) },
   { name: 'Agency Starter Kit', color: '#ec4899', data: series(DAYS, 4, 0.18, 2, 3) },
   { name: 'AI Marketing Course', color: '#3b82f6', data: series(DAYS, 2.5, 0.12, 1.4, 5) },
-  { name: 'Upclick Pro', color: '#14b8a6', data: series(DAYS, 1.5, 0.08, 1.1, 7) },
+  { name: 'Upklick Pro', color: '#14b8a6', data: series(DAYS, 1.5, 0.08, 1.1, 7) },
 ];
 const productRows = [
   { name: 'Social Media Templates Pack', img: socialPackImg, type: 'Digital Product', price: '€47', units: 312, revenue: '€14,664', conv: '6.8%', refunds: 2, spark: [8, 9, 11, 10, 12, 14, 13, 15, 17, 16, 19] },
   { name: 'Agency Starter Kit', img: agencyKitImg, type: 'Digital Product', price: '€67', units: 210, revenue: '€14,070', conv: '5.9%', refunds: 1, spark: [8, 9, 11, 10, 12, 11, 13, 12, 15, 14, 17] },
   { name: 'Complete AI Marketing Course', img: aiCourseImg, type: 'Online Course', price: '€297', units: 124, revenue: '€36,828', conv: '4.2%', refunds: 2, spark: [8, 10, 9, 12, 11, 14, 12, 15, 18, 16, 20] },
-  { name: 'Upclick Pro Membership', img: gosProImg, type: 'Subscription', price: '€29/mo', units: 86, revenue: '€2,494', conv: '3.8%', refunds: 0, spark: [7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14] },
+  { name: 'Upklick Pro Membership', img: gosProImg, type: 'Subscription', price: '€29/mo', units: 86, revenue: '€2,494', conv: '3.8%', refunds: 0, spark: [7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14] },
   { name: 'Business Growth Bundle', img: growthBundleImg, type: 'Bundle', price: '€197', units: 54, revenue: '€10,638', conv: '3.1%', refunds: 1, spark: [9, 8, 10, 11, 10, 12, 13, 12, 14, 15, 17] },
   { name: '1-on-1 Strategy Call', img: strategyCallImg, type: 'Service', price: '€97', units: 48, revenue: '€4,656', conv: '5.2%', refunds: 0, spark: [9, 10, 9, 11, 10, 12, 11, 13, 12, 14, 16] },
   { name: 'WhatsApp Automation Setup', img: whatsappSetupImg, type: 'Service', price: '€497', units: 36, revenue: '€17,892', conv: '2.7%', refunds: 1, spark: [7, 9, 8, 10, 12, 11, 13, 12, 14, 16, 18] },

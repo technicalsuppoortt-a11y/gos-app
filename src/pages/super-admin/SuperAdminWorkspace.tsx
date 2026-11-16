@@ -259,7 +259,7 @@ function Heading({ title, description, children, platform }: PropsWithChildren<{
       <div>
         <div className="saw-eyebrow-row">
           <span className="saw-eyebrow">
-            {platform ? `${platform.toUpperCase()} / ${t('PLATFORM CONTROL')}` : t('UPCLICK / PLATFORM CONTROL')}
+            {platform ? `${platform.toUpperCase()} / ${t('PLATFORM CONTROL')}` : t('UPKLICK / PLATFORM CONTROL')}
           </span>
           {phase !== 'idle' && (
             <div
@@ -323,7 +323,7 @@ function SubUsersPage({ adminId }: { adminId: string }) {
           disabled={source.loading || !!source.error || !visible.length}
           onClick={() =>
             exportCsv(
-              `upclick-sub-users-${adminId}.csv`,
+              `upklick-sub-users-${adminId}.csv`,
               ['ID', 'Name', 'Email', 'Account Type', 'Status'],
               visible.map(row => [row.id, row.name, row.email, row.agency ? 'Agency user' : 'User', row.status])
             )
@@ -476,7 +476,7 @@ function Accounts({ team = false }: { team?: boolean }) {
   }
   return <>
     <Heading title={team ? 'Team Management' : 'All Admins'} description={team ? 'Give your team the access they need to do their best work.' : 'Manage platform admins and their linked users.'}>
-      {!team && <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-admins.csv', ['ID', 'Name', 'Email', 'Status'], visible.map(row => [row.id, row.name, row.email, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>}
+      {!team && <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upklick-admins.csv', ['ID', 'Name', 'Email', 'Status'], visible.map(row => [row.id, row.name, row.email, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>}
       <button className="saw-primary" disabled={source.loading || !!source.error} onClick={() => open({ kind: 'create' })}><Plus size={16}/>{t(team ? 'Add team member' : 'Add admin')}</button>
     </Heading>
     {notice && <div className="saw-notice" role="status"><Check size={16}/>{t(notice)}<button aria-label={t('Dismiss notification')} onClick={() => setNotice('')}><X size={16}/></button></div>}
@@ -987,7 +987,7 @@ function Payments() {
   return <>
     <Heading title="Payments" description="Track billing requests, invoices and gateway transactions across the platform.">
       <Link className="saw-primary" to="/super-admin/payment-methods"><CreditCard size={16}/>{t('Payment Methods')}</Link>
-      <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-payments.csv', ['Invoice', 'Account', 'Source', 'Method', 'Date', 'Amount', 'Currency', 'Status'], visible.map(row => [row.id, row.name, row.scope, row.method, row.date?.toISOString() ?? '', row.amount ?? '', row.currency, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
+      <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upklick-payments.csv', ['Invoice', 'Account', 'Source', 'Method', 'Date', 'Amount', 'Currency', 'Status'], visible.map(row => [row.id, row.name, row.scope, row.method, row.date?.toISOString() ?? '', row.amount ?? '', row.currency, row.status]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
     </Heading>
     <LiveContent sources={[source]}>
       <div className="saw-stats"><Stat label="Paid" value={totals(source.data.filter(row => row.status === 'Paid'), formatPrice)} note="Recorded commerce payments"/><Stat label="Pending" value={source.data.filter(row => row.status === 'Pending').length} note="Awaiting payment or review"/><Stat label="Failed" value={source.data.filter(row => row.status === 'Failed').length} note="Reported transaction failures"/><Stat label="Refunded" value={source.data.filter(row => row.status === 'Refunded' || row.status === 'Partially refunded').length} note="Full and partial refunds"/></div>
@@ -1075,7 +1075,7 @@ function Logs() {
   const visible = source.data.filter(row => filters.matches([row.action, row.actor, row.target, row.id], row.severity));
   return <>
     <Heading title="Logs & Monitoring" description="Follow recorded administrative and operational events.">
-      <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upclick-audit.csv', ['Time', 'Actor', 'Action', 'Target', 'Severity'], visible.map(row => [row.time?.toISOString() ?? '', row.actor, row.action, row.target, row.severity]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
+      <button disabled={source.loading || !!source.error || !visible.length} onClick={() => exportCsv('upklick-audit.csv', ['Time', 'Actor', 'Action', 'Target', 'Severity'], visible.map(row => [row.time?.toISOString() ?? '', row.actor, row.action, row.target, row.severity]))}><ArrowDownToLine size={16}/>{t('Export CSV')}</button>
     </Heading>
     <LiveContent sources={[source]}>
       <div className="saw-stats"><Stat label="Audit feed" value={t(source.cached ? 'Cached' : 'Live')} note="Live event stream"/><Stat label="Recorded events" value={source.data.length} note="Latest 500 events"/><Stat label="Warnings" value={source.data.filter(row => row.severity === 'Warning').length} note="In loaded audit history"/><Stat label="Errors" value={source.data.filter(row => row.severity === 'Error').length} note="In loaded audit history"/></div>

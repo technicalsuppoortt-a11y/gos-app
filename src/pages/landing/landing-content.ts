@@ -1,4 +1,4 @@
-/* Bilingual copy for the public Upclick landing page.
+/* Bilingual copy for the public Upklick landing page.
    The Arabic object is typed against the English one so both stay in sync. */
 
 /* ---------- Hero preview tab views ----------
@@ -315,9 +315,9 @@ const enViews: Record<
 const en = {
   meta: {
     title:
-      "Upclick — Turn Every Lead Into a Real Opportunity with AI Follow-Up",
+      "Upklick — Turn Every Lead Into a Real Opportunity with AI Follow-Up",
     description:
-      "Upclick helps you respond instantly, follow up automatically and book appointments with AI — so no lead is ever lost.",
+      "Upklick helps you respond instantly, follow up automatically and book appointments with AI — so no lead is ever lost.",
   },
   nav: {
     links: [
@@ -337,7 +337,7 @@ const en = {
     badge: "Complete Follow-Up System",
     titleA: "Turn Every Lead Into a Real Opportunity",
     titleB: "with AI Follow-Up.",
-    lead: "Upclick helps you automatically respond quickly, follow up and book appointments — so no lead gets lost and they reach your business.",
+    lead: "Upklick helps you automatically respond quickly, follow up and book appointments — so no lead gets lost and they reach your business.",
     checks: [
       "Instant and consistent responses",
       "Automate follow-ups and reminders",
@@ -346,7 +346,7 @@ const en = {
     ],
     primary: "Book a Free Consultation",
     video: "Watch a Quick Video",
-    note: "No obligation call • we’ll understand your situation and show you how Upclick can help.",
+    note: "No obligation call • we’ll understand your situation and show you how Upklick can help.",
     builtFor: "Built for different types of businesses:",
     businesses: [
       "Coaches & Consultants",
@@ -459,7 +459,7 @@ const en = {
     quoteA: "AI follow-up doesn’t replace your team.",
     quoteB: "It makes sure",
     quoteBold: "no opportunity is lost between these steps.",
-    engine: { title: "Upclick", sub: "Follow-Up System" },
+    engine: { title: "Upklick", sub: "Follow-Up System" },
     nodes: {
       ai: { title: "AI Follow-Up", text: "Understands, replies and qualifies" },
       team: {
@@ -542,8 +542,8 @@ const en = {
     badge: "Before vs After",
     title: "From Lost Opportunities to Real Revenue.",
     text: "Same leads. A completely different result.",
-    beforeTitle: "Before Upclick",
-    afterTitle: "After Upclick",
+    beforeTitle: "Before Upklick",
+    afterTitle: "After Upklick",
     before: [
       "Slow and inconsistent responses",
       "Leads get forgotten",
@@ -580,7 +580,7 @@ const en = {
   tools: {
     badge: "Everything in One Place",
     title: "All the Tools You Need to Manage and Grow Your Business.",
-    text: "Upclick gives you all the essential tools to capture, follow up and convert leads — in one system.",
+    text: "Upklick gives you all the essential tools to capture, follow up and convert leads — in one system.",
     items: [
       { title: "AI Copilot", text: "Your AI business assistant" },
       { title: "AI Follow-Up", text: "Respond, qualify, follow up and book" },
@@ -600,11 +600,11 @@ const en = {
   testimonials: {
     badge: "Real Results",
     title: "From Students to Business Owners.",
-    text: "See how our students are building real businesses, getting customers and creating recurring revenue with Upclick.",
+    text: "See how our students are building real businesses, getting customers and creating recurring revenue with Upklick.",
     items: [
       {
         quote:
-          "“Upclick helped me go from an idea to real customers in just two months. The step-by-step process made everything clear.”",
+          "“Upklick helped me go from an idea to real customers in just two months. The step-by-step process made everything clear.”",
         name: "Ahmed T.",
         role: "Coach",
       },
@@ -625,7 +625,7 @@ const en = {
   faq: {
     badge: "FAQ",
     title: "Frequently Asked Questions.",
-    text: "Quick answers to the most common questions about Upclick and the AI Follow-Up system.",
+    text: "Quick answers to the most common questions about Upklick and the AI Follow-Up system.",
     viewAll: "View All Questions",
     showLess: "Show Fewer Questions",
     items: [
@@ -635,15 +635,15 @@ const en = {
       },
       {
         q: "Can I take over the conversation anytime?",
-        a: "Yes. You can pause the AI on any conversation with one click and reply yourself from the Upclick Inbox. The AI resumes only when you allow it.",
+        a: "Yes. You can pause the AI on any conversation with one click and reply yourself from the Upklick Inbox. The AI resumes only when you allow it.",
       },
       {
         q: "Can I use it on WhatsApp and Instagram?",
-        a: "Yes. Upclick connects to WhatsApp, Instagram, Messenger, email and your website forms so every lead lands in a single inbox.",
+        a: "Yes. Upklick connects to WhatsApp, Instagram, Messenger, email and your website forms so every lead lands in a single inbox.",
       },
       {
         q: "Do I need to change my existing tools?",
-        a: "No. Upclick works alongside your current setup and can replace disconnected tools gradually, at your own pace.",
+        a: "No. Upklick works alongside your current setup and can replace disconnected tools gradually, at your own pace.",
       },
       {
         q: "Can I train it on my business information?",
@@ -663,7 +663,7 @@ const en = {
       },
       {
         q: "What happens after the free consultation?",
-        a: "We share a clear plan for your business. If it’s a fit, we help you set up Upclick step by step — with no obligation.",
+        a: "We share a clear plan for your business. If it’s a fit, we help you set up Upklick step by step — with no obligation.",
       },
       {
         q: "Can I see results in the dashboard?",
@@ -674,7 +674,7 @@ const en = {
   cta: {
     badge: "Your Next Step",
     title: "Start Building Your Business Today.",
-    text: "Get access to the complete Upclick system and follow the proven process to turn more of your leads into paying customers.",
+    text: "Get access to the complete Upklick system and follow the proven process to turn more of your leads into paying customers.",
     primary: "Book a Free Consultation",
     video: "Watch a Quick Video",
     perks: [
@@ -684,13 +684,13 @@ const en = {
     ],
   },
   video: {
-    title: "How Upclick turns leads into booked calls",
+    title: "How Upklick turns leads into booked calls",
     close: "Close",
     play: "Play",
     pause: "Pause",
   },
   footer: {
-    rights: "© 2026 Upclick — Upclick. All rights reserved.",
+    rights: "© 2026 Upklick — Upklick. All rights reserved.",
   },
 };
 
@@ -983,9 +983,9 @@ const arViews: typeof enViews = {
 const ar: LandingCopy = {
   meta: {
     title:
-      "Upclick — حوّل كل عميل محتمل إلى فرصة حقيقية مع المتابعة بالذكاء الاصطناعي",
+      "Upklick — حوّل كل عميل محتمل إلى فرصة حقيقية مع المتابعة بالذكاء الاصطناعي",
     description:
-      "Upclick يساعدك على الرد الفوري والمتابعة التلقائية وحجز المواعيد بالذكاء الاصطناعي — حتى لا يضيع أي عميل محتمل.",
+      "Upklick يساعدك على الرد الفوري والمتابعة التلقائية وحجز المواعيد بالذكاء الاصطناعي — حتى لا يضيع أي عميل محتمل.",
   },
   nav: {
     links: [
@@ -1005,7 +1005,7 @@ const ar: LandingCopy = {
     badge: "نظام متابعة متكامل",
     titleA: "حوّل كل عميل محتمل إلى فرصة حقيقية",
     titleB: "مع المتابعة بالذكاء الاصطناعي.",
-    lead: "Upclick يساعدك على الرد بسرعة والمتابعة تلقائياً وحجز المواعيد — حتى لا يضيع أي عميل محتمل ويصل إلى عملك.",
+    lead: "Upklick يساعدك على الرد بسرعة والمتابعة تلقائياً وحجز المواعيد — حتى لا يضيع أي عميل محتمل ويصل إلى عملك.",
     checks: [
       "ردود فورية ومتسقة",
       "أتمتة المتابعات والتذكيرات",
@@ -1014,7 +1014,7 @@ const ar: LandingCopy = {
     ],
     primary: "احجز استشارة مجانية",
     video: "شاهد فيديو سريع",
-    note: "مكالمة بدون أي التزام • سنفهم وضعك ونوضح لك كيف يمكن لـ Upclick مساعدتك.",
+    note: "مكالمة بدون أي التزام • سنفهم وضعك ونوضح لك كيف يمكن لـ Upklick مساعدتك.",
     builtFor: "مصمم لأنواع مختلفة من الأعمال:",
     businesses: [
       "المدربون والمستشارون",
@@ -1124,7 +1124,7 @@ const ar: LandingCopy = {
     quoteA: "المتابعة بالذكاء الاصطناعي لا تحل محل فريقك.",
     quoteB: "بل تضمن",
     quoteBold: "عدم ضياع أي فرصة بين هذه الخطوات.",
-    engine: { title: "Upclick", sub: "نظام المتابعة" },
+    engine: { title: "Upklick", sub: "نظام المتابعة" },
     nodes: {
       ai: { title: "المتابعة الذكية", text: "يفهم ويرد ويؤهل العملاء" },
       team: {
@@ -1202,8 +1202,8 @@ const ar: LandingCopy = {
     badge: "قبل وبعد",
     title: "من فرص مفقودة إلى مبيعات حقيقية.",
     text: "نفس العملاء المحتملين. نتيجة مختلفة تماماً.",
-    beforeTitle: "قبل استخدام Upclick",
-    afterTitle: "بعد استخدام Upclick",
+    beforeTitle: "قبل استخدام Upklick",
+    afterTitle: "بعد استخدام Upklick",
     before: [
       "ردود بطيئة وغير منتظمة",
       "نسيان العملاء المحتملين",
@@ -1234,7 +1234,7 @@ const ar: LandingCopy = {
   tools: {
     badge: "كل شيء في مكان واحد",
     title: "كل ما تحتاجه لإدارة عملائك وتنمية مبيعاتك.",
-    text: "Upclick يمنحك كل الأدوات الأساسية لالتقاط العملاء ومتابعتهم وتحويلهم — في نظام واحد.",
+    text: "Upklick يمنحك كل الأدوات الأساسية لالتقاط العملاء ومتابعتهم وتحويلهم — في نظام واحد.",
     items: [
       { title: "AI Agent", text: "مساعدك الذكي للأعمال" },
       { title: "المتابعة الذكية", text: "رد وتأهيل ومتابعة وحجز" },
@@ -1248,11 +1248,11 @@ const ar: LandingCopy = {
   testimonials: {
     badge: "نتائج حقيقية",
     title: "من طلاب إلى أصحاب أعمال حقيقيين.",
-    text: "شاهد كيف يبني طلابنا أعمالاً حقيقية ويحصلون على عملاء ويحققون إيرادات متكررة مع Upclick.",
+    text: "شاهد كيف يبني طلابنا أعمالاً حقيقية ويحصلون على عملاء ويحققون إيرادات متكررة مع Upklick.",
     items: [
       {
         quote:
-          "“ساعدني Upclick في الانتقال من فكرة إلى عملاء حقيقيين خلال شهرين فقط. الخطوات الواضحة جعلت كل شيء سهلاً.”",
+          "“ساعدني Upklick في الانتقال من فكرة إلى عملاء حقيقيين خلال شهرين فقط. الخطوات الواضحة جعلت كل شيء سهلاً.”",
         name: "أحمد ت.",
         role: "مدرب",
       },
@@ -1273,7 +1273,7 @@ const ar: LandingCopy = {
   faq: {
     badge: "الأسئلة الشائعة",
     title: "أكثر الأسئلة شيوعاً.",
-    text: "إجابات سريعة على أكثر الأسئلة شيوعاً حول Upclick ونظام المتابعة بالذكاء الاصطناعي.",
+    text: "إجابات سريعة على أكثر الأسئلة شيوعاً حول Upklick ونظام المتابعة بالذكاء الاصطناعي.",
     viewAll: "عرض كل الأسئلة",
     showLess: "عرض أسئلة أقل",
     items: [
@@ -1287,11 +1287,11 @@ const ar: LandingCopy = {
       },
       {
         q: "هل يمكنني استخدامه على واتساب وإنستغرام؟",
-        a: "نعم. يتصل Upclick بواتساب وإنستغرام وماسنجر والبريد ونماذج موقعك ليصل كل عميل إلى صندوق وارد واحد.",
+        a: "نعم. يتصل Upklick بواتساب وإنستغرام وماسنجر والبريد ونماذج موقعك ليصل كل عميل إلى صندوق وارد واحد.",
       },
       {
         q: "هل أحتاج إلى تغيير أدواتي الحالية؟",
-        a: "لا. يعمل Upclick جنباً إلى جنب مع أدواتك الحالية ويمكنه استبدال الأدوات المتفرقة تدريجياً وبالسرعة التي تناسبك.",
+        a: "لا. يعمل Upklick جنباً إلى جنب مع أدواتك الحالية ويمكنه استبدال الأدوات المتفرقة تدريجياً وبالسرعة التي تناسبك.",
       },
       {
         q: "هل يمكنني تدريبه على معلومات عملي؟",
@@ -1311,7 +1311,7 @@ const ar: LandingCopy = {
       },
       {
         q: "ماذا يحدث بعد الاستشارة المجانية؟",
-        a: "نشاركك خطة واضحة لعملك. وإذا كان مناسباً، نساعدك في إعداد Upclick خطوة بخطوة — بدون أي التزام.",
+        a: "نشاركك خطة واضحة لعملك. وإذا كان مناسباً، نساعدك في إعداد Upklick خطوة بخطوة — بدون أي التزام.",
       },
       {
         q: "هل يمكنني رؤية النتائج في لوحة التحكم؟",
@@ -1322,19 +1322,19 @@ const ar: LandingCopy = {
   cta: {
     badge: "خطوتك التالية",
     title: "ابدأ في بناء عملك اليوم.",
-    text: "احصل على نظام Upclick المتكامل واتبع العملية المجربة لتحويل المزيد من عملائك المحتملين إلى عملاء يدفعون.",
+    text: "احصل على نظام Upklick المتكامل واتبع العملية المجربة لتحويل المزيد من عملائك المحتملين إلى عملاء يدفعون.",
     primary: "احجز استشارة مجانية الآن",
     video: "شاهد فيديو سريع",
     perks: ["نظام متكامل", "إرشاد خطوة بخطوة", "نتائج أعمال حقيقية"],
   },
   video: {
-    title: "كيف يحوّل Upclick العملاء المحتملين إلى مكالمات محجوزة",
+    title: "كيف يحوّل Upklick العملاء المحتملين إلى مكالمات محجوزة",
     close: "إغلاق",
     play: "تشغيل",
     pause: "إيقاف مؤقت",
   },
   footer: {
-    rights: "© 2026 Upclick — نظام تشغيل النمو. جميع الحقوق محفوظة.",
+    rights: "© 2026 Upklick — نظام تشغيل النمو. جميع الحقوق محفوظة.",
   },
 };
 

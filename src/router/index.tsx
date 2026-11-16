@@ -178,7 +178,7 @@ export const router = createBrowserRouter([
       { path: 'marketing-tracking', element: <Navigate to="/dashboard/settings/pixel" replace/> },
       { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
       { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
-      { path: 'academy', element: <Suspended><PagePlaceholder title="Upclick Academy"/></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title="Upklick Academy"/></Suspended> },
       { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
       { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
       { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },

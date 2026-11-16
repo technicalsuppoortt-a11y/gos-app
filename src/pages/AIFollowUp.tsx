@@ -260,7 +260,7 @@ const AssistantRobot = () => { useUILanguage(); return ((
     className="af-robot-render"
     viewBox="0 0 64 64"
     role="img"
-    aria-label={translateText("Upclick assistant robot")}
+    aria-label={translateText("Upklick assistant robot")}
   >
     <defs>
       <linearGradient id="af-robot-shell" x1="10%" y1="8%" x2="90%" y2="100%">
@@ -1508,8 +1508,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
             type="button" role="switch" aria-checked={assistantEnabled} disabled={api.loading || api.saving || Boolean(api.error)}
             aria-label={
               translateText(assistantEnabled
-                ? "Pause Upclick Assistant"
-                : "Activate Upclick Assistant")
+                ? "Pause Upklick Assistant"
+                : "Activate Upklick Assistant")
             }
             onClick={() => {
               void setAssistantEnabled(!assistantEnabled);
@@ -2673,7 +2673,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                       onChange={(event) =>
                         setNewAssistantName(event.target.value)
                       }
-                      placeholder={translateText("e.g. Upclick Fitness Coach")}
+                      placeholder={translateText("e.g. Upklick Fitness Coach")}
                     />
                   </label>
                   <label>{translateText("Role / persona")}<input

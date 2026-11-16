@@ -450,14 +450,14 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
     if (action === 'deploy') { res.json({ status: 'prepared', revision: link.revision }); return; }
     if (action === 'login') {
       const policy = (await db.doc('users/' + link.gosUid + '/preferences/passwordPolicy').get()).data();
-      if (policy?.localPassword) throw new Error('Sign in using your Upclick password.');
+      if (policy?.localPassword) throw new Error('Sign in using your Upklick password.');
       await gosAuth.updateUser(link.gosUid, { password: req.body.password });
     }
     const customToken = await gosAuth.createCustomToken(link.gosUid, { role: adminRole, phoenixUid: identity.uid, tenantId: link.tenantId });
     res.json({ customToken });
   } catch (error) {
     console.error('Phoenix bridge failed', { code: error.code || error.name, message: error.message });
-    res.status(409).json({ code: error.code || 'platform/preparation-failed', error: error.code === 'auth/insufficient-permission' ? 'تعذر إصدار توكن الدخول للمنصة بسبب صلاحيات خدمة Upclick. تواصل مع الدعم.' : error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
+    res.status(409).json({ code: error.code || 'platform/preparation-failed', error: error.code === 'auth/insufficient-permission' ? 'تعذر إصدار توكن الدخول للمنصة بسبب صلاحيات خدمة Upklick. تواصل مع الدعم.' : error.code ? 'Could not prepare your platform. Retry or contact support.' : error.message });
   }
 });
 

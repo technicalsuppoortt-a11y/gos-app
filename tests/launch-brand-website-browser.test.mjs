@@ -136,7 +136,7 @@ try {
   assert.match(buttonGradient, /rgb\(21, 107, 98\)/);
   const hero = landing.locator('.lp-hero__lead');
   await hero.filter({ hasText: brandName }).waitFor();
-  assert.doesNotMatch(await hero.textContent(), /Upclick/i);
+  assert.doesNotMatch(await hero.textContent(), /Upklick/i);
   await landing.locator('.lp-header__brand').getByText(brandName, { exact: true }).waitFor();
   for (const element of ['.lp-header__brand img', '.lp-mock__logo img']) {
     const logo = landing.locator(element);

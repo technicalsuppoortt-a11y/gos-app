@@ -25,10 +25,10 @@ async function createFixture() {
     ['users/client', user],
     ['users/agency-staff', agencyMember],
     ['settings/platformOperations', {
-      settings: { name: 'Upclick Enterprise', email: 'ops@upclick.app' },
+      settings: { name: 'Upklick Enterprise', email: 'ops@upclick.app' },
     }],
     ['dashboardBrands/super', {
-      values: { name: 'Upclick Global', logoUrl: 'https://cdn.example.com/super-logo.png', supportEmail: 'hq@upclick.app' },
+      values: { name: 'Upklick Global', logoUrl: 'https://cdn.example.com/super-logo.png', supportEmail: 'hq@upclick.app' },
     }],
     ['dashboardBrands/agency', {
       values: { name: 'Apex Growth Studio', logoUrl: 'https://cdn.example.com/apex-logo.png', supportEmail: 'care@apex.io' },
@@ -171,7 +171,7 @@ test('Admin wallet pays Super Admin and receives Super Admin hierarchical brandi
   const adminInvoice = rows.get(`billingInvoices/${request.invoiceId}`);
   assert.equal(adminInvoice.status, 'paid');
   assert.equal(adminInvoice.issuer.role, 'SUPER_ADMIN');
-  assert.equal(adminInvoice.issuer.brandName, 'Upclick Global');
+  assert.equal(adminInvoice.issuer.brandName, 'Upklick Global');
   assert.equal(adminInvoice.issuer.logoUrl, 'https://cdn.example.com/super-logo.png');
 
   // Direct Pay (Pay Now) from Admin routes to Super Admin approval queue

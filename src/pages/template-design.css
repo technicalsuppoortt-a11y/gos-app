@@ -8,6 +8,7 @@
 }
 .template-design-thumbnail-stage { position: absolute; inset-block-start: 0; inset-inline-start: 0; }
 .pf-template-design-cover { aspect-ratio: 960 / 1240; overflow: hidden; }
+.pf-template-cover-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .pf-template-entry.has-template-design { position: relative; }
 .pf-template-entry.has-template-design > .pf-template-card { position: static; transform: none; }
 .pf-template-entry.has-template-design > .pf-template-card::before { content: ''; position: absolute; inset: 0; }

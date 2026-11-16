@@ -27,6 +27,7 @@ export type ManagedTemplate = Template & {
   pipeline_template_ar?: ManagedTemplate['pipelineTemplate'];
   /** Gallery card image shown to users; managed from the admin template editor. */
   thumbnail?: string;
+  useThumbnail?: boolean;
 };
 export function templateIsActive(template: { active?: boolean; status?: string }) {
   return template.active !== false && (!template.status || template.status === 'Published');

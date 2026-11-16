@@ -27,4 +27,6 @@ export async function saveAdminTemplate(template: any) { return saveManagedTempl
 export async function deleteAdminTemplate(id: string) { return deleteManagedTemplate(id); }
 export async function setGeneralTemplateHidden() {}
 export async function duplicateToMyTemplates() {}
-export async function uploadTemplateThumbnail() { return ''; }
+export async function uploadTemplateThumbnail(id: string, file: File, ownerUid?: string) {
+  return '/test-covers/' + (ownerUid || 'system') + '/' + id + '/' + file.name;
+}

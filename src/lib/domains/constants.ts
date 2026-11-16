@@ -31,7 +31,7 @@ export interface ContactFieldConfig {
 export const CONTACT_FIELDS: readonly ContactFieldConfig[] = [
   { key: 'firstName', labelEn: 'First Name', labelAr: 'الاسم الأول', placeholder: 'Ahmed', required: true },
   { key: 'lastName', labelEn: 'Last Name', labelAr: 'اسم العائلة', placeholder: 'Hassan', required: true },
-  { key: 'organization', labelEn: 'Organization / Company (Optional)', labelAr: 'الشركة / المنظمة (اختياري)', placeholder: 'Upclick Studio' },
+  { key: 'organization', labelEn: 'Organization / Company (Optional)', labelAr: 'الشركة / المنظمة (اختياري)', placeholder: 'Upklick Studio' },
   { key: 'address1', labelEn: 'Street Address', labelAr: 'العنوان بالكامل', placeholder: '123 Tahrir St', required: true },
   { key: 'city', labelEn: 'City', labelAr: 'المدينة', placeholder: 'Cairo', required: true },
   { key: 'state', labelEn: 'State / Province', labelAr: 'المحافظة / الولاية', placeholder: 'Cairo' },

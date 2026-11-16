@@ -298,7 +298,7 @@ export function synthesizeInvoiceFromRequest(r: BillingRequest): BillingInvoice 
     transactionId: r.transactionId || '',
     couponCode: r.coupon?.code || null,
     issuer: isPlatform
-      ? { id: PLATFORM, role: 'SUPER_ADMIN', name: 'Upclick', brandName: 'Upclick', logoUrl: '/upclick-logo.svg', email: 'ops@upclick.app' }
+      ? { id: PLATFORM, role: 'SUPER_ADMIN', name: 'Upklick', brandName: 'Upklick', logoUrl: '/upclick-logo.svg', email: 'ops@upclick.app' }
       : { id: r.providerId, role: 'ADMIN', name: 'Workspace Provider', brandName: 'Workspace Provider', logoUrl: '/upclick-logo.svg', email: '' },
     customer: {
       id: r.requesterId,
@@ -370,7 +370,7 @@ export function useProviderBranding(providerId: string | null, subscriberRole: '
     if (!shouldReadParentAdmin) {
       return {
         role: 'SUPER_ADMIN' as const,
-        brandName: 'Upclick',
+        brandName: 'Upklick',
         logoUrl: '/upclick-logo.svg',
         email: 'ops@upclick.app',
         loading: false,

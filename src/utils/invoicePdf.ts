@@ -222,7 +222,7 @@ export async function downloadInvoicePdf(
   ctx.textBaseline = 'top';
   ctx.fillStyle = '#0f172a';
   ctx.font = `800 36px ${fontSans}`;
-  ctx.fillText(brand.brandName || 'Upclick', brandTextX, y + 6);
+  ctx.fillText(brand.brandName || 'Upklick', brandTextX, y + 6);
 
   ctx.fillStyle = '#64748b';
   ctx.font = `600 20px ${fontSans}`;
@@ -296,7 +296,7 @@ export async function downloadInvoicePdf(
 
   ctx.fillStyle = '#0f172a';
   ctx.font = `700 28px ${fontSans}`;
-  ctx.fillText(brand.brandName || 'Upclick', PAD + 32, y + 66);
+  ctx.fillText(brand.brandName || 'Upklick', PAD + 32, y + 66);
 
   ctx.fillStyle = '#475569';
   ctx.font = `500 21px ${fontSans}`;

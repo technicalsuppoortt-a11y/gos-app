@@ -38,7 +38,7 @@ export function TermsOfServicePage() {
   const navigate = useNavigate();
   const auth = useSelector((s: RootState) => s.auth);
   const isAuthenticated = !!auth.token || !!auth.user;
-  const appName = import.meta.env.VITE_APP_NAME || "Upclick Platform";
+  const appName = import.meta.env.VITE_APP_NAME || "Upklick Platform";
   const supportEmail = "technicalsuppoortt@gmail.com";
   const appUrl = "https://app.upklick.net/";
 
@@ -60,7 +60,7 @@ export function TermsOfServicePage() {
       return {
         title: `شروط الخدمة واتفاقية الاستخدام - ${appName}`,
         subtitle:
-          "اتفاقية قانونية ملزمة تحدد شروط وضوابط استخدام منصة Upclick وخدمات الأتمتة والذكاء الاصطناعي.",
+          "اتفاقية قانونية ملزمة تحدد شروط وضوابط استخدام منصة Upklick وخدمات الأتمتة والذكاء الاصطناعي.",
         effectiveDate: "تاريخ السريان: 20 أكتوبر 2026",
         badgeCompliance: "متوافق مع سياسات Meta وGoogle",
         badgeLegal: "اتفاقية ترخيص SaaS رسمية",
@@ -154,7 +154,7 @@ export function TermsOfServicePage() {
             desc: "حقوق الملكية للمحتوى ومساحات العمل.",
             body: [
               `يحتفظ المستخدم بملكية كاملة ومطلقة لجميع البيانات والجهات الاتصالية والصفحات والمحتوى الذي يتم رفعه أو إنشاؤه داخل مساحة عمله (Your Data Stays Yours). لا تدعي المنصة أي حق ملكية لمحتوى عملائك.`,
-              `جميع العلامات التجارية، والشفرات البرمجية، وتصميمات واجهة المستخدم، ومحركات الأتمتة الخاصة بالمنصة هي ملكية فكرية حصرية لشركة Upclick Inc. ومحمية بقوانين الملكية الفكرية الدولية.`,
+              `جميع العلامات التجارية، والشفرات البرمجية، وتصميمات واجهة المستخدم، ومحركات الأتمتة الخاصة بالمنصة هي ملكية فكرية حصرية لشركة Upklick Inc. ومحمية بقوانين الملكية الفكرية الدولية.`,
             ],
           },
           {
@@ -196,7 +196,7 @@ export function TermsOfServicePage() {
     return {
       title: `Terms of Service & User Agreement - ${appName}`,
       subtitle:
-        "A legally binding agreement outlining the terms, rights, and responsibilities governing your use of the Upclick Platform.",
+        "A legally binding agreement outlining the terms, rights, and responsibilities governing your use of the Upklick Platform.",
       effectiveDate: "Effective Date: October 20, 2026",
       badgeCompliance: "Meta Platform & Google Cloud Compliant",
       badgeLegal: "Official SaaS Service License",
@@ -290,7 +290,7 @@ export function TermsOfServicePage() {
           desc: "Clear boundaries: Your data remains yours; our code remains ours.",
           body: [
             `You retain 100% full, exclusive ownership of all customer leads, contact rosters, conversation archives, visual assets, and funnel content uploaded or created within your workspace ("Your Data Stays Yours"). We claim no intellectual property rights over your proprietary business materials.`,
-            `All software source code, visual components, algorithmic workflows, templates, brand assets, and platform trademarks are the sole and exclusive intellectual property of Upclick Inc. and are protected under international copyright and software treaties.`,
+            `All software source code, visual components, algorithmic workflows, templates, brand assets, and platform trademarks are the sole and exclusive intellectual property of Upklick Inc. and are protected under international copyright and software treaties.`,
           ],
         },
         {

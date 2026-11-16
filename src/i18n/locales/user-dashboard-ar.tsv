@@ -211,7 +211,7 @@ Reference	المرجع
 Template details	تفاصيل القالب
 Use booking changes	استخدام تغييرات الحجز
 Choose Website or Funnel Template	اختر موقعًا إلكترونيًا أو قالب مسار مبيعات
-Standard Upclick Calendar	تقويم Upclick القياسي
+Standard Upklick Calendar	تقويم Upklick القياسي
 Focused 2-panel Koalendar layout	تخطيط Koalendar بلوحتين
 My Website	موقعي الإلكتروني
 Choose any Website from Funnel & Website or any template from the Templates Library to frame this booking calendar in a matching landing page UI.	اختر موقعًا من قسم المواقع ومسارات المبيعات أو قالبًا من مكتبة القوالب لعرض تقويم الحجز ضمن صفحة هبوط متناسقة.
@@ -267,7 +267,7 @@ Customer Information	بيانات العميل
 Payment & Settlement	الدفع والتسوية
 Transaction ID	معرّف المعاملة
 Amount Settled	المبلغ المسوّى
-Upclick PRO	باقة Upclick Pro
+Upklick PRO	باقة Upklick Pro
 Sort products	ترتيب المنتجات
 Could not save changes.	تعذّر حفظ التغييرات.
 Total Customers	إجمالي العملاء
@@ -1033,7 +1033,7 @@ Could not create your product. Please try again.	تعذّر إنشاء المن�
 THE PRODUCT STUDIO	استوديو المنتجات
 Start with something great.	ابدأ بقالب جاهز.
 Expertly structured services, downloads and courses. Ready for your brand.	قوالب احترافية للخدمات والملفات القابلة للتنزيل والدورات. خصّصها لعلامتك التجارية.
-Curated by Upclick	من اختيار Upclick
+Curated by Upklick	من اختيار Upklick
 Sort templates	ترتيب القوالب
 templates · Ready to customize	قوالب · جاهزة للتخصيص
 Creating…	جارٍ الإنشاء…
@@ -1245,7 +1245,7 @@ Return to Admin Dashboard	العودة إلى لوحة المسؤول
 Could not return to admin.	تعذّر العودة إلى لوحة المسؤول.
 File is unavailable.	الملف غير متاح.
 In Progress	قيد التنفيذ
-Upclick Academy	أكاديمية Upclick
+Upklick Academy	أكاديمية Upklick
 Connect your core communication and scheduling channels with real-time cloud workspace sync.	اربط قنوات التواصل والجدولة الأساسية بمزامنة سحابية فورية لمساحة عملك.
 Facebook Messenger	فيسبوك ماسنجر
 Instagram	إنستغرام
@@ -1255,7 +1255,7 @@ Google Calendar	تقويم Google
 ~1 min setup	إعداد خلال دقيقة
 ~2 min setup	إعداد خلال دقيقتين
 ~3 min setup	إعداد خلال 3 دقائق
-e.g. Upclick Official Page	مثال: صفحة Upclick الرسمية
+e.g. Upklick Official Page	مثال: صفحة Upklick الرسمية
 Unified Inbox DMs	رسائل صندوق الوارد الموحد
 Comment Replies	الرد على التعليقات
 AI Auto-Responder	الرد التلقائي الذكي
@@ -1275,7 +1275,7 @@ Authorize via Meta Business Login	امنح الصلاحية عبر تسجيل د
 Click "Connect" below, sign in with your Facebook Admin account, and select the Instagram account you want to sync.	انقر على «ربط» أدناه، وسجّل الدخول بحساب مسؤول فيسبوك، ثم اختر حساب إنستغرام الذي تريد مزامنته.
 Instagram uses the same Meta login as Facebook Messenger; connecting either one connects both.	يستخدم إنستغرام نفس تسجيل دخول Meta الخاص بفيسبوك ماسنجر؛ ربط أحدهما يربط الآخر تلقائيًا.
 WhatsApp Business Phone Number / WABA Name	رقم واتساب للأعمال / اسم حساب WABA
-e.g. +20 100 000 0000 · Upclick Support	مثال: +20 100 000 0000 · دعم Upclick
+e.g. +20 100 000 0000 · Upklick Support	مثال: +20 100 000 0000 · دعم Upklick
 WhatsApp Cloud API	واجهة سحابة واتساب الرسمية
 Automated Follow-ups	متابعات تلقائية
 Approved Templates	قوالب معتمدة
@@ -1295,7 +1295,7 @@ Open the Gmail connection modal and review the email read/send permissions requi
 Select Your Google Account	اختر حساب Google الخاص بك
 Choose your preferred business Gmail or Google Workspace address in the secure Google sign-in window.	اختر بريد العمل المفضّل على Gmail أو Google Workspace في نافذة تسجيل الدخول الآمنة من Google.
 Approve Gmail Workspace Scopes	وافق على صلاحيات البريد
-Check the permission boxes to allow Upclick to send follow-up emails and sync incoming customer replies.	حدّد مربعات الصلاحيات للسماح لـ Upclick بإرسال رسائل المتابعة ومزامنة ردود العملاء الواردة.
+Check the permission boxes to allow Upklick to send follow-up emails and sync incoming customer replies.	حدّد مربعات الصلاحيات للسماح لـ Upklick بإرسال رسائل المتابعة ومزامنة ردود العملاء الواردة.
 Confirm Sender Address & Sync	أكّد عنوان المرسل والمزامنة
 Run the connection test to verify SMTP/API readiness and save your preferences to start emailing leads from CRM and Inbox.	شغّل اختبار الاتصال للتحقق من الجاهزية واحفظ تفضيلاتك لبدء مراسلة العملاء من CRM وصندوق الوارد.
 Connecting a custom domain Google Workspace address (e.g., hello@yourdomain.com) significantly improves email deliverability and customer trust.	ربط بريد Google Workspace بنطاق مخصص (مثل hello@yourdomain.com) يعزّز وصول الرسائل وثقة العملاء بشكل ملحوظ.
@@ -1315,10 +1315,10 @@ Click "Connect" on the Google Calendar card to start linking your scheduling cal
 Sign In with Your Google Account	سجّل الدخول بحساب Google
 Select the Google account that hosts the main calendar where you manage your daily appointments.	اختر حساب Google الذي يضم التقويم الرئيسي الذي تدير منه مواعيدك اليومية.
 Grant Calendar Read & Write Access	امنح صلاحية القراءة والكتابة للتقويم
-Approve calendar availability and event creation permissions so Upclick can block busy slots and add new client bookings.	وافق على صلاحيات معرفة التوفر وإنشاء الأحداث ليتمكن Upclick من حجب الأوقات المشغولة وإضافة حجوزات العملاء الجدد.
+Approve calendar availability and event creation permissions so Upklick can block busy slots and add new client bookings.	وافق على صلاحيات معرفة التوفر وإنشاء الأحداث ليتمكن Upklick من حجب الأوقات المشغولة وإضافة حجوزات العملاء الجدد.
 Verify Two-Way Sync	تحقّق من المزامنة ثنائية الاتجاه
 Click "Test Connection" and enable "Automatic sync" so every appointment booked on your Booking Pages appears on your calendar instantly.	انقر على «اختبار الاتصال» وفعّل «المزامنة التلقائية» ليظهر كل موعد محجوز عبر صفحات الحجز في تقويمك فورًا.
-Mark personal appointments as "Busy" in your Google Calendar—Upclick automatically hides those time slots on your public booking pages.	حدّد مواعيدك الشخصية كـ «مشغول» في تقويم Google—وسيخفي Upclick تلك الأوقات تلقائيًا من صفحات الحجز العامة.
+Mark personal appointments as "Busy" in your Google Calendar—Upklick automatically hides those time slots on your public booking pages.	حدّد مواعيدك الشخصية كـ «مشغول» في تقويم Google—وسيخفي Upklick تلك الأوقات تلقائيًا من صفحات الحجز العامة.
 Authorization is not complete. Return to the provider and approve the requested access.	لم يكتمل التفويض بعد. ارجع إلى المزوّد ووافق على الصلاحيات المطلوبة.
 This channel is not available yet. Please contact your provider.	هذه القناة غير متاحة بعد. يرجى التواصل مع مزوّد الخدمة.
 Your browser blocked the Facebook window. Allow popups, then try again.	حظر المتصفح نافذة فيسبوك المنبثقة. اسمح بالنوافذ المنبثقة ثم حاول مرة أخرى.

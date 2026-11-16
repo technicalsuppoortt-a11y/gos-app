@@ -11,7 +11,7 @@ const server = await createServer({ optimizeDeps: { noDiscovery: true, include: 
     id = id.replaceAll('\\', '/');
     if (id.endsWith('/src/backend/workspacePreferences.ts')) return `
       import {useSyncExternalStore} from 'react';
-      export const DEFAULT_BRAND_NAME='Upclick';
+      export const DEFAULT_BRAND_NAME='Upklick';
       export const DEFAULT_BRAND_LOGO_URL='/upclick-logo.svg';
       export const DEFAULT_SUPPORT_EMAIL='support@upclick.app';
       export const isDefaultBrandLogo = (url) => !url || url === DEFAULT_BRAND_LOGO_URL || url === '/upclick-logo.svg';

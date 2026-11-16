@@ -5,7 +5,7 @@ import { createGosStreamTransport, createGosTransport, GosApiError, type GosStre
 const gosBaseUrl = (import.meta.env.VITE_GOS_API_BASE_URL || 'https://api.upklick.net').replace(/^http:\/\/localhost(?=[:/]|$)/i, 'http://127.0.0.1');
 const gosTokenProvider = async (refresh?: boolean) => {
   await auth.authStateReady();
-  if (!auth.currentUser) throw new Error('Sign in to connect to the Upclick API.');
+  if (!auth.currentUser) throw new Error('Sign in to connect to the Upklick API.');
   return auth.currentUser.getIdToken(refresh);
 };
 
@@ -152,7 +152,7 @@ export const gosApi = {
   lead: async (leadId: string, signal?: AbortSignal): Promise<{ lead: ApiRecord | null; leads?: ApiRecord[] }> => {
     try {
       const result = await gosRequest<{ lead: ApiRecord }>('/crm/leads/' + id(leadId), { signal });
-      if (!result.lead || result.lead.id !== leadId) throw new Error('The Upclick API returned a mismatched contact ID.');
+      if (!result.lead || result.lead.id !== leadId) throw new Error('The Upklick API returned a mismatched contact ID.');
       return result;
     }
     catch (error) {

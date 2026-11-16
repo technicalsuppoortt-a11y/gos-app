@@ -8,9 +8,9 @@ export interface WorkspacePreferences {
   paymentMethods?: Array<{ id: string; provider: string; name: string; type: string; status: string; createdAt?: string }>;
 }
 export const defaultWorkspacePreferences: WorkspacePreferences = {
-  name: 'Upclick Store', email: 'billing@example.com', currency: 'EUR', timezone: 'Africa/Cairo',
+  name: 'Upklick Store', email: 'billing@example.com', currency: 'EUR', timezone: 'Africa/Cairo',
   stripe: true, paypal: true, applePay: true, googlePay: true,
-  taxRate: 0, inclusiveTax: false, receipts: true, receiptPrefix: 'Upclick',
+  taxRate: 0, inclusiveTax: false, receipts: true, receiptPrefix: 'Upklick',
   guestCheckout: true, collectName: true, requirePhone: false, redirectUrl: '',
   paymentMethods: [],
 };

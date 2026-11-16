@@ -57,7 +57,7 @@ export function PublicBookingSkeleton() {
     >
       <header className="bk-public-brand">
         <CalendarDays size={21} className="bk-brand-pulse" />
-        <b>Upclick</b>
+        <b>Upklick</b>
         <span>{translateText('Booking')}</span>
         <div className="bk-loading-indicator" role="status" aria-live="polite">
           <i aria-hidden="true" />
@@ -152,7 +152,7 @@ export default function PublicBookingPage() {
         >
           <header className="bk-public-brand">
             <CalendarDays size={21} />
-            <b>Upclick</b>
+            <b>Upklick</b>
             <span>{translateText('Booking')}</span>
           </header>
           <div className="bk-public-scroll custom-scrollbar">
@@ -212,7 +212,7 @@ export default function PublicBookingPage() {
       >
         <header className="bk-public-brand">
           <CalendarDays size={21} />
-          <b>Upclick</b>
+          <b>Upklick</b>
           <span>{translateText('Booking')}</span>
         </header>
         <div className="bk-public-scroll custom-scrollbar">
@@ -390,7 +390,7 @@ function PublicBookingFlow({
       >
         <header className="bk-public-brand">
           <CalendarDays size={21} />
-          <b>{translateText('Upclick')}</b>
+          <b>{translateText('Upklick')}</b>
           <span>{translateText('Booking')}</span>
         </header>
         <div className="bk-public-scroll custom-scrollbar">
@@ -751,7 +751,7 @@ function PublicBookingFlow({
       {!activeDesign && (
         <header className="bk-public-brand">
           <CalendarDays size={21} />
-          <b>{translateText('Upclick')}</b>
+          <b>{translateText('Upklick')}</b>
           <span>{screeningText(locale.lang, 'Booking')}</span>
         </header>
       )}

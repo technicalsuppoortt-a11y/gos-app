@@ -15,15 +15,17 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
   return <>{localizeNode(templates.map(template => {
     const isBlank = template.id === 'blank-form-template';
     const hasDesign = !!template.design || (!!template.previewSource && !isBlank);
+    const cover = !isBlank && (!hasDesign || template.useThumbnail) && template.thumbnail;
     const previewHref = `/template-preview/${encodeURIComponent(template.id)}?${new URLSearchParams({ source: template.previewSource || 'catalog', lang: language.startsWith('ar') ? 'ar' : 'en' })}`;
     return (
-      <article key={`${template.previewSource || 'catalog'}:${template.id}`} className={`pf-template-entry ${hasDesign ? 'has-template-design' : ''}`}>
-      {hasDesign && <div className="pf-template-design-cover">
-        <TemplateDesignThumbnail asset={templateDesignAsset(template)} language={language}/>
+      <article key={`${template.previewSource || 'catalog'}:${template.id}`} className={`pf-template-entry ${hasDesign || cover ? 'has-template-design' : ''}`}>
+      {(hasDesign || cover) && <div className="pf-template-design-cover">
+        {cover ? <img className="pf-template-cover-image" src={cover} alt="" loading="lazy" decoding="async"/> :
+          <TemplateDesignThumbnail asset={templateDesignAsset(template)} language={language}/>}
       </div>}
       <AssetAsyncButton busyText="Creating..." className={`pf-template-card ${isBlank ? 'pf-template-blank-card' : ''}`} data-template-id={template.id} onClick={()=>install(template)} aria-label={translateText('Use '+template.name+' template')}>
         {busy => <>
-          {!hasDesign && (template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
+          {!hasDesign && !cover && (template.mode === 'form' ? <FormTemplatePreview template={template}/> : <LazyBackground className="pf-template-preview" image={template.image || template.thumbnail || ''}>
             <small>{localizeNode(template.mode==='funnel'?`Funnel · ${template.builderDocument?.steps?.length || 3} steps`:`Website · ${template.builderDocument?.pages?.length || 1} ${(template.builderDocument?.pages?.length || 1) === 1 ? 'page' : 'pages'}`)}</small>
             <strong>{localizeNode(template.title)}</strong>
             <span style={{backgroundColor:template.color}}>{localizeNode(template.cta)}</span>

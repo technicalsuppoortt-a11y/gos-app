@@ -107,12 +107,14 @@ try {
   for (const category of ['Websites', 'Funnels', 'Forms']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.equal(await page.locator('.alm-ghl-card').count(), 3); }
   for (const category of ['Booking Pages', 'CRM Pipelines', 'Products', 'Automations']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.ok(await page.locator('tbody tr').count() > 0); }
   await page.getByRole('tab', { name: 'All templates', exact: true }).click();
+  const selectCover = name => page.locator('.alm-thumbnail-editor input[type=file]').setInputFiles({ name, mimeType: 'image/png', buffer: Buffer.from('cover fixture') });
   for (const [category, name] of [['Booking Pages', 'Native booking'], ['Products', 'Native course'], ['CRM Pipelines', 'Native pipeline'], ['Forms', 'Native form'], ['Automations', 'Native automation']]) {
     await page.getByRole('button', { name: 'Create template', exact: true }).click();
     await page.waitForFunction(() => window.__templateRouter.state.location.pathname.endsWith('/new'));
     assert.equal(await page.getByRole('dialog').count(), 0);
     await page.getByLabel('Name', { exact: true }).fill(name);
     await choose('Category', category);
+    if (category === 'Forms') await selectCover('system.png');
     if (category === 'Booking Pages') {
       await page.getByRole('button', { name: 'Open editor', exact: true }).click();
       await page.getByLabel('Booking page title', { exact: true }).fill('Native booking updated');
@@ -155,6 +157,8 @@ try {
     if (category === 'Booking Pages') { assert.equal(saved.bookingPage.name, 'Native booking updated'); assert.ok(saved.bookingPage.availability.length); }
     if (category === 'Forms') {
       assert.equal(saved.assetType, 'form');
+      assert.equal(saved.thumbnail, '/test-covers/system/' + saved.id + '/system.png');
+      assert.equal(saved.useThumbnail, true);
       assert.equal(saved.title_en, name);
       assert.equal(saved.title_ar, 'نموذج التواصل');
       assert.equal(saved.description_ar, 'وصف النموذج');
@@ -169,17 +173,25 @@ try {
   await page.getByRole('button', { name: 'Create template', exact: true }).click();
   await page.waitForFunction(() => window.__templateRouter.state.location.pathname === '/admin/templates/new');
   await page.getByLabel('Name', { exact: true }).fill('Owned funnel template');
+  await selectCover('first.png');
   await page.getByRole('button', { name: 'Save template', exact: true }).click();
   const owned = page.locator('tbody tr').filter({ hasText: 'Owned funnel template' });
   await owned.getByRole('button', { name: 'Edit template', exact: true }).click();
   await page.waitForFunction(() => /^\/admin\/templates\/[^/]+\/edit$/.test(window.__templateRouter.state.location.pathname));
   await page.getByLabel('Name', { exact: true }).fill('Updated owned funnel');
+  await page.getByRole('button', { name: 'Change image', exact: true }).waitFor();
+  await selectCover('replacement.png');
   await page.getByRole('button', { name: 'Save template', exact: true }).click();
   await page.locator('tbody tr').filter({ hasText: 'Updated owned funnel' }).waitFor();
+  const updated = await page.evaluate(() => window.__systemCatalog.rows().find(row => row.name === 'Updated owned funnel'));
+  assert.equal(updated.thumbnail, '/test-covers/fixture/' + updated.id + '/replacement.png');
   await open('pages'); await page.getByRole('tab', { name: 'Forms', exact: true }).click();
   await page.locator('.pf-template-card').first().waitFor();
   const formCount = await page.locator('.pf-template-card').count();
   const firstId = await page.locator('.pf-template-card').first().getAttribute('data-template-id');
+  const coveredForm = page.locator('.pf-template-entry').filter({ has: page.locator('[data-template-id=ghl-form-architecture-studio]') });
+  await page.evaluate(() => window.__systemCatalog.translate('ghl-form-architecture-studio', { thumbnail: '/test-covers/system.png', useThumbnail: true }));
+  assert.equal(await coveredForm.locator('.pf-template-cover-image').getAttribute('src'), '/test-covers/system.png');
   await page.evaluate(id => {
     window.__systemCatalog.translate(id, { title_ar: 'القالب العربي', description_ar: 'وصف القالب' });
     return window.__setTemplateLanguage('ar');
@@ -193,7 +205,7 @@ try {
   assert.equal(await columns(), 2);
   await page.evaluate(() => window.__setTemplateLanguage('en'));
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await checkPreview(page.locator('.pf-template-preview-action').first(), /\/template-preview\//, firstId);
+  if (!process.argv.includes('--editors-only')) await checkPreview(page.locator('.pf-template-preview-action').first(), /\/template-preview\//, firstId);
   assert.equal(await page.evaluate(() => window.__installedPage), undefined);
   await page.evaluate(id => window.__systemCatalog.hide(id), firstId);
   assert.equal(await page.locator('.pf-template-card').count(), formCount - 1, 'Inactive records do not return through static defaults');

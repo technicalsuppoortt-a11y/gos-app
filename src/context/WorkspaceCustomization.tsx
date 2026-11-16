@@ -79,7 +79,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     mode: phoenix.brand.mode,
   } : phoenixFill && values ? {
     // A deployed Launch Brand fills in whatever the workspace settings still
-    // leave at Upclick's defaults, so an untouched settings document can never
+    // leave at Upklick's defaults, so an untouched settings document can never
     // hide the brand name or logo the owner deployed.
     ...values,
     name: values.name === DEFAULT_BRAND_NAME && phoenixFill.brand.name.trim() ? phoenixFill.brand.name.trim() : values.name,

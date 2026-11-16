@@ -6,7 +6,7 @@ export function useBookingTemplateCatalogState() {
   const state = useTemplateCatalogState();
   const templates: BookingTemplatePreset[] = state.templates.filter(t => t.category === 'Booking Pages').map(value => {
     const t = initializeTemplateAsset(value), page = t.bookingPage!;
-    return { key: t.id, category: t.industry, name: t.name, description: t.description, image: page.image, duration: page.duration, location: page.location, color: page.color, questions: page.questions, bookingPage: page };
+    return { key: t.id, category: t.industry, name: t.name, description: t.description, image: t.thumbnail || page.image, duration: page.duration, location: page.location, color: page.color, questions: page.questions, bookingPage: page };
   });
   return { ...state, templates };
 }
@@ -15,7 +15,7 @@ export function useProductTemplateCatalogState() {
   const state = useTemplateCatalogState();
   const templates: ProductTemplate[] = state.templates.filter(t => t.category === 'Products').map(value => {
     const t = initializeTemplateAsset(value);
-    return { ...t.productTemplate!, id: t.id, industry: t.industry, tags: t.tags, product: { ...t.productTemplate!.product, name: t.name, description: t.description } };
+    return { ...t.productTemplate!, id: t.id, industry: t.industry, tags: t.tags, thumbnail: t.thumbnail, product: { ...t.productTemplate!.product, name: t.name, description: t.description } };
   });
   return { ...state, templates };
 }

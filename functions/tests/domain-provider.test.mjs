@@ -280,7 +280,7 @@ function createNamecheapMockFetcher({ failCreate = false } = {}) {
 const VALID_CONTACT = {
   firstName: 'Mahmoud',
   lastName: 'Ali',
-  organization: 'Upclick Agency',
+  organization: 'Upklick Agency',
   address1: '10 Nile Corniche',
   city: 'Cairo',
   state: 'Cairo',

@@ -47,7 +47,7 @@ export function MarketingTracking() {
   function exportEvents() {
     const cell = (s: string) => `"${(/^[=+@\-\t\r]/.test(s) ? "'" : '') + s.replaceAll('"', '""')}"`;
     const csv = [['Time', 'Event', 'Test', 'Destinations', 'Payload'], ...events.map(e => [e.at, e.event, String(e.test), e.destinations.join(', '), JSON.stringify(e.payload)])].map(row => row.map(cell).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'upclick-tracking-events.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'upklick-tracking-events.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   const activeTab = (global ? platformTabs : workspaceTabs).find(name => name === tab) ?? (global ? platformTabs[0] : workspaceTabs[0]);
   const writeDisabled = busy || source.loading || !!source.error || !source.canManage;

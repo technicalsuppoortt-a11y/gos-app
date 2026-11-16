@@ -49,7 +49,7 @@ export function DataDeletionPage() {
   const [searchParams] = useSearchParams();
   const auth = useSelector((s: RootState) => s.auth);
   const isAuthenticated = !!auth.token || !!auth.user;
-  const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
+  const appName = import.meta.env.VITE_APP_NAME || 'Upklick Platform';
   const supportEmail = 'technicalsuppoortt@gmail.com';
   const appUrl = 'https://app.upklick.net/';
 
@@ -481,7 +481,7 @@ export function DataDeletionPage() {
                       className="legal-search-input"
                     />
                     <small className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block">
-                      {translateText("The email associated with your Upclick workspace account.")}
+                      {translateText("The email associated with your Upklick workspace account.")}
                     </small>
                   </div>
 
@@ -587,7 +587,7 @@ export function DataDeletionPage() {
                 <FacebookIcon size={20} className="text-[#1877F2]" />
                 <div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 m-0">
-                    {translateText("How to Remove Upclick & Delete Data from Facebook Directly")}
+                    {translateText("How to Remove Upklick & Delete Data from Facebook Directly")}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">
                     {translateText("Follow these four steps in your Facebook account to revoke app permissions and trigger a server callback.")}

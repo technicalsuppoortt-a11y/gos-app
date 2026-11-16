@@ -202,7 +202,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
                 return (
                   <article key={row.id} className="alm-ghl-card" data-status={row.status}>
                     <div className="alm-ghl-frame">
-                      {pageTemplate ? (
+                      {pageTemplate && !tpl?.useThumbnail ? (
                         <>
                           <TemplateDesignThumbnail asset={templateDesignAsset(pageTemplate)} language={ar ? 'ar' : 'en'}/>
                           <a className="alm-ghl-image-link alm-ghl-design-link" href={previewHref(row.id)} target="_blank" rel="noopener" aria-label={`${t('Preview', 'معاينة')} · ${row.name}`}/>

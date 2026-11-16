@@ -61,7 +61,7 @@ export function CustomerChangePassword() {
       <div className="cportal-brand">
         <span className="cportal-brand-mark"><img src="/upclick-mark.svg" width="32" height="32" alt=""/></span>
         <div>
-          <strong>{translateText('Upclick')}</strong>
+          <strong>{translateText('Upklick')}</strong>
           <small>{translateText('Customer Portal')}</small>
         </div>
       </div>

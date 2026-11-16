@@ -95,7 +95,7 @@ export function buildProductSnapshot(product = {}, order = {}, productId = '') {
     location: String(exp.location || ''),
     communityUrl: String(c.communityUrl || ''),
     certificateEnabled: Boolean(c.certificateEnabled ?? kind === 'course'),
-    certificateIssuer: String(c.certificateIssuer || exp.instructor?.name || 'Upclick Academy'),
+    certificateIssuer: String(c.certificateIssuer || exp.instructor?.name || 'Upklick Academy'),
     instructor: {
       name: String(exp.instructor?.name || exp.provider || ''),
       bio: String(exp.instructor?.bio || ''),

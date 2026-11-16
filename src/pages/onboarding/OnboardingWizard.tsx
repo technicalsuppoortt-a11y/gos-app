@@ -304,7 +304,7 @@ export function OnboardingWizard() {
       <header className="ob-top">
         <Link to="/" className="ob-brand">
           <img src="/upclick-mark.svg" width="33" height="33" alt="" />
-          Upclick
+          Upklick
         </Link>
         <span className="ob-top-center">
           <span className="ob-live-dot" />
@@ -944,7 +944,7 @@ export function OnboardingWizard() {
           </div>
           <div ref={previewScope} className="ob-preview-window">
             <div className="ob-window-dots">
-              ● ● ● <span>upclick.workspace</span>
+              ● ● ● <span>upklick.workspace</span>
               <ShieldCheck size={12} />
             </div>
             <div className="ob-preview-brand">

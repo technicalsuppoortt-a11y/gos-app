@@ -1319,7 +1319,7 @@ function Artwork({ kind }: { kind: string }) {
         ) : kind === 'funnel' ? (
           <>
             <div className="art-dashboard">
-              <b>{translateText('Upclick')}</b>
+              <b>{translateText('Upklick')}</b>
               <i />
               <i />
               <i />
@@ -1334,7 +1334,7 @@ function Artwork({ kind }: { kind: string }) {
               {translateText('Starter Kit')}
             </span>
             <div className="art-dashboard">
-              <b>{translateText('Upclick')}</b>
+              <b>{translateText('Upklick')}</b>
               <i />
               <i />
               <span>{translateText('Launch system')}</span>
@@ -1347,7 +1347,7 @@ function Artwork({ kind }: { kind: string }) {
               {translateText('Premium')}<br />
               {translateText('Membership')}
             </b>
-            <small>{translateText('Upclick PRO')}</small>
+            <small>{translateText('Upklick PRO')}</small>
           </>
         ) : (
           <>

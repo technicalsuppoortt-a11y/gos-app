@@ -551,7 +551,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       const adminPref = (await store.get(`tenants/admin-${providerId}/preferences/general`)) || (await store.get(`tenants/workspace-${providerId}/preferences/general`));
       const adminUser = await store.get(`users/${providerId}`);
       const values = brandDoc?.values || adminPref?.values || {};
-      const brandName = values.name || adminUser?.businessName || adminUser?.name || 'Upclick';
+      const brandName = values.name || adminUser?.businessName || adminUser?.name || 'Upklick';
       const logoUrl = values.logoUrl || adminUser?.logoUrl || '/upclick-logo.svg';
       const email = values.supportEmail || adminUser?.email || 'support@upclick.app';
       return { id: providerId, role: 'ADMIN', name: adminUser?.name || brandName, brandName, logoUrl, email };
@@ -561,7 +561,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const parentId = subProfile?.supportParentId || '';
     const parentUser = parentId ? await store.get(`users/${parentId}`) : null;
     const saBrand = parentUser?.role === 'SUPER_ADMIN' ? await store.get(`dashboardBrands/${parentId}`) : null;
-    const brandName = saBrand?.values?.name || opsDoc?.settings?.name || 'Upclick';
+    const brandName = saBrand?.values?.name || opsDoc?.settings?.name || 'Upklick';
     const logoUrl = saBrand?.values?.logoUrl || '/upclick-logo.svg';
     const email = saBrand?.values?.supportEmail || opsDoc?.settings?.email || 'ops@upclick.app';
     return { id: PLATFORM, role: 'SUPER_ADMIN', name: brandName, brandName, logoUrl, email };

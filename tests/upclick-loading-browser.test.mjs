@@ -18,7 +18,7 @@ try{
   assert.equal(await loader.getAttribute('aria-busy'),'true');
   await page.locator('.ws-brand-mark img').evaluate(async image=>{await image.decode();});
   assert.equal(await page.locator('.ws-brand-mark img').getAttribute('src'),'/upclick-mark.svg');
-  assert.equal(await page.locator('.ws-splash-brand b').innerText(),'Upclick');
+  assert.equal(await page.locator('.ws-splash-brand b').innerText(),'Upklick');
   assert.equal(await page.locator('.ws-brand-ring').evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(124, 58, 237)');
   await mkdir('artifacts/upclick-loading',{recursive:true});
   await page.screenshot({path:'artifacts/upclick-loading/light.png'});
@@ -31,14 +31,14 @@ try{
   await page.emulateMedia({reducedMotion:'reduce'});
   for(const selector of ['.workspace-loading','.ws-brand-ring','.ws-brand-glow','.ws-splash-progress>span'])assert.equal(await page.locator(selector).evaluate(el=>getComputedStyle(el).animationName),'none');
   await page.goto(url+'?login',{waitUntil:'domcontentloaded'});
-  const link=page.getByRole('link',{name:'Visit Upclick website',exact:true});await link.waitFor();
+  const link=page.getByRole('link',{name:'Visit Upklick website',exact:true});await link.waitFor();
   assert.equal(await link.getAttribute('href'),'/');
   assert.equal(await page.locator('input[type="email"]').count(),1);assert.equal(await page.locator('input[type="password"]').count(),1);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.screenshot({path:'artifacts/upclick-loading/login-mobile.png'});
   await page.getByRole('button',{name:'عربي',exact:true}).click();
-  const arabicLink=page.getByRole('link',{name:'زيارة موقع Upclick',exact:true});await arabicLink.waitFor();
+  const arabicLink=page.getByRole('link',{name:'زيارة موقع Upklick',exact:true});await arabicLink.waitFor();
   await arabicLink.click();await page.getByRole('heading',{name:'Landing page destination'}).waitFor();
   assert.deepEqual(errors,[]);
-  console.log('PASS: Upclick loader asset/palette, light/dark, mobile/Arabic, reduced motion, login inputs, localized website button and landing navigation.');
+  console.log('PASS: Upklick loader asset/palette, light/dark, mobile/Arabic, reduced motion, login inputs, localized website button and landing navigation.');
 }catch(error){console.error(error);throw error;}finally{await browser?.close();await server.close();}

@@ -34,7 +34,7 @@ export async function firebaseSettingsRequest<T>(path: string, body?: unknown, m
       if (!user.email) throw new Error('This account does not have a password sign-in.');
       await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, data.currentPassword));
       if (auth.currentUser !== user) throw new Error('The signed-in account changed.');
-      // Keep Phoenix password sign-in from replacing a password managed in Upclick.
+      // Keep Phoenix password sign-in from replacing a password managed in Upklick.
       const accountRef = doc(db, 'users', user.uid);
       if ((await getDoc(accountRef)).data()?.phoenixUid) {
         await setDoc(doc(db, 'users', user.uid, 'preferences', 'passwordPolicy'), { localPassword: true });

@@ -12,7 +12,7 @@ export const backendError = (error: unknown) => error instanceof Error ? error.m
 export async function callBackend<T>(name: string): Promise<T> {
   if (name === 'marketingTrackingConfiguration') return { config: { schemaVersion: 1, metaId: '', googleId: '', enabled: false, customEvents: [], advancedMode: false, webhookUrl: '' }, canManage: true } as T;
   if (name === 'configurePaymentMethods') return { methods: [], revision: 0, canManage: false } as T;
-  if (name === 'agentConfiguration') return { agent: { name: 'Upclick Assistant', role: 'Business assistant', language: 'English', goal: 'Appointments' } } as T;
+  if (name === 'agentConfiguration') return { agent: { name: 'Upklick Assistant', role: 'Business assistant', language: 'English', goal: 'Appointments' } } as T;
   if (name === 'domainProvider') return { currency: 'USD', pricing: [], domains: [], orders: [], siteDomains: [], logs: [], settings: { markup: 4.99, markup_type: 'fixed' }, namecheapConfigured: false } as T;
   throw new Error('This is a read-only demonstration.');
 }

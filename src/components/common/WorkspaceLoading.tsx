@@ -17,7 +17,7 @@ export function WorkspaceSkeleton({ variant = 'dashboard', fullScreen = false }:
     <span className="ws-sr-only">{label}</span>
     {variant === 'spinner' ? <div className="ws-splash" aria-hidden="true">
       <div className="ws-brand-loader"><span className="ws-brand-glow"/><span className="ws-brand-ring"/><span className="ws-brand-mark"><img src="/upclick-mark.svg" width="56" height="60" alt=""/></span></div>
-      <div className="ws-splash-brand"><b>Upclick</b><span>{ar ? 'من الأفكار إلى الأثر' : 'Ideas to impact'}</span></div>
+      <div className="ws-splash-brand"><b>Upklick</b><span>{ar ? 'من الأفكار إلى الأثر' : 'Ideas to impact'}</span></div>
       <div className="ws-splash-progress"><span/></div>
       <p className="ws-splash-caption">{ar ? 'جارٍ تجهيز مساحة عملك' : 'Getting your workspace ready'}</p>
     </div> :

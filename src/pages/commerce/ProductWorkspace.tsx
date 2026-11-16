@@ -130,7 +130,7 @@ const PIPELINE_STEPS = [
     metrics: [{ label: 'CRM Sync', value: '100% Real-time' }, { label: 'Retention', value: 'Automated Follow-up' }],
     highlights: [
       'Automatic lead creation and customer tagging',
-      'Direct synchronization with Upclick AI Follow-Up',
+      'Direct synchronization with Upklick AI Follow-Up',
       'Customer lifetime value (LTV) and revenue analytics'
     ]
   }

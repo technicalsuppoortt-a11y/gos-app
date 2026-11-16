@@ -1,4 +1,4 @@
-/* Official Upclick palette. Keep these values literal for asset/theme parity. */
+/* Official Upklick palette. Keep these values literal for asset/theme parity. */
 :root{--upclick-primary:#7C3AED;--upclick-secondary:#A78BFA;--upclick-tint:#EDE9FE;--upclick-text:#0F172A;--upclick-muted:#94A38B;--upclick-gradient:linear-gradient(115deg,#7C3AED,#A78BFA);--upclick-gradient-soft:linear-gradient(115deg,#EDE9FE,#A78BFA);--purple:#7C3AED;--purple-dark:#7C3AED;--app-indigo:#7C3AED;--ink:#0F172A;--muted:#94A38B}
 html:not(.dark){color:#0F172A}
 .lp{--lp-primary:#7C3AED;--lp-primary-600:#7C3AED;--lp-primary-700:#7C3AED;--lp-primary-50:#EDE9FE;--lp-primary-100:#EDE9FE;--lp-primary-200:#A78BFA;--lp-ink:#0F172A;--lp-muted:#94A38B}

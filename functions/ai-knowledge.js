@@ -1,4 +1,4 @@
-// The indexed Upclick source store is authoritative. Both AI entry points use its
+// The indexed Upklick source store is authoritative. Both AI entry points use its
 // grounded query endpoint instead of reading the unrelated tenant/knowledge list.
 export async function queryIndexedKnowledge({ authorization, question, baseUrl = 'https://api.upklick.net', gatewaySecret, fetcher = fetch }) {
   if (!/^Bearer \S+$/i.test(authorization ?? '')) throw new Error('Sign in to query workspace knowledge.');
@@ -14,7 +14,7 @@ export async function queryIndexedKnowledge({ authorization, question, baseUrl =
   return { answer, citations, outcome };
 }
 
-export const defaultAgent = { name: 'Upclick Assistant', role: 'Business assistant', language: 'Auto-detect Arabic / English', goal: 'Appointments' };
+export const defaultAgent = { name: 'Upklick Assistant', role: 'Business assistant', language: 'Auto-detect Arabic / English', goal: 'Appointments' };
 
 export function validateAgent(value) {
   const agent = {};

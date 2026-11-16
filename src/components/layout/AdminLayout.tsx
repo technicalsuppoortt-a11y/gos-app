@@ -22,7 +22,7 @@ export function AdminLayout() {
  const phoenixConfig = usePhoenixBrand();
  const { effective: workspaceBrand, hasWorkspaceTheme } = useWorkspacePreferences();
  const savedBrand = hasWorkspaceTheme ? null : phoenixConfig;
- const brandName = (hasWorkspaceTheme ? workspaceBrand?.name : (phoenixConfig?.brand.name.trim() || workspaceBrand?.name)) || 'Upclick';
+ const brandName = (hasWorkspaceTheme ? workspaceBrand?.name : (phoenixConfig?.brand.name.trim() || workspaceBrand?.name)) || 'Upklick';
  const hasCustomWorkspaceLogo = Boolean(hasWorkspaceTheme && workspaceBrand?.logoUrl && !isDefaultBrandLogo(workspaceBrand.logoUrl));
  const hasFallbackWorkspaceLogo = Boolean(workspaceBrand?.logoUrl && !isDefaultBrandLogo(workspaceBrand.logoUrl));
  const language=useUILanguage(); const ar=language.startsWith('ar'); const location=useLocation(); const navigate=useNavigate(); const [open,setOpen]=useState(false);

@@ -8,7 +8,7 @@ export const settingsTabs = [
   { slug: 'payment-methods', name: 'Payment Methods', icon: Landmark },
   { slug: 'integrations', name: 'Integrations', icon: Link2 },
   { slug: 'team', name: 'Team & roles', icon: Users },
-  { slug: 'support-team', name: 'Support Team', icon: Headset },
+  { slug: 'support-team', name: 'Sales Team', icon: Headset },
   { slug: 'pixel', name: 'Pixel', icon: Radio },
   { slug: 'security', name: 'Security', icon: ShieldCheck },
   { slug: 'privacy', name: 'Privacy Policy', icon: ShieldAlert },

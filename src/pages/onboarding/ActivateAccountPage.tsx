@@ -73,9 +73,9 @@ function ActivateAccountForm() {
 
   return <main className="gos-activation" dir={ar ? 'rtl' : 'ltr'}>
     <section className="gos-activation-card" aria-labelledby="activation-title">
-      <Link to="/" className="gos-activation-brand" aria-label="Upclick">
+      <Link to="/" className="gos-activation-brand" aria-label="Upklick">
         <span className="gos-activation-logo" style={{ background: '#EDE9FE' }}><img src="/upclick-mark.svg" width="30" height="32" alt=""/></span>
-        <span><b>Upclick</b><small>{t('Ideas to impact', 'من الأفكار إلى الأثر')}</small></span>
+        <span><b>Upklick</b><small>{t('Ideas to impact', 'من الأفكار إلى الأثر')}</small></span>
       </Link>
       {success ? <div className="gos-activation-success" role="status">
         <span className="gos-activation-state-icon"><CheckCircle2 size={30}/></span>
@@ -98,7 +98,7 @@ function ActivateAccountForm() {
         <p>{t('Your invitation link is missing, expired, or has already been used. Ask your administrator for a new activation link. If you already saved your password, sign in to finish activation.', 'رابط الدعوة غير مكتمل أو انتهت صلاحيته أو تم استخدامه. اطلب رابط تفعيل جديدًا من المسؤول. إذا حفظت كلمة المرور بالفعل، سجّل الدخول لإكمال التفعيل.')}</p>
         <Link to="/auth/login" className="gos-activation-primary">{t('Go to sign in', 'الانتقال إلى تسجيل الدخول')}<ArrowRight size={17}/></Link>
       </div> : <>
-        <div className="gos-activation-heading"><span className="gos-activation-eyebrow"><ShieldCheck size={14}/>{t('ACCOUNT ACTIVATION', 'تفعيل الحساب')}</span><h1 id="activation-title">{t('Set up your account', 'إعداد حسابك')}</h1><p>{t('Choose a password to activate your account and open your Upclick workspace.', 'اختر كلمة مرور لتفعيل حسابك وفتح مساحة عملك في Upclick.')}</p></div>
+        <div className="gos-activation-heading"><span className="gos-activation-eyebrow"><ShieldCheck size={14}/>{t('ACCOUNT ACTIVATION', 'تفعيل الحساب')}</span><h1 id="activation-title">{t('Set up your account', 'إعداد حسابك')}</h1><p>{t('Choose a password to activate your account and open your Upklick workspace.', 'اختر كلمة مرور لتفعيل حسابك وفتح مساحة عملك في Upklick.')}</p></div>
         <div className="gos-activation-account"><span>{t('Your invitation', 'دعوتك')}</span><b dir="ltr">{email}</b></div>
         <form className="gos-activation-form" onSubmit={submit}>
           <div className="gos-activation-field"><label htmlFor="activation-password">{t('New password', 'كلمة المرور الجديدة')}</label><div className="gos-activation-input"><LockKeyhole size={17} aria-hidden="true"/><input id="activation-password" name="new-password" autoComplete="new-password" dir="ltr" type={visible ? 'text' : 'password'} value={password} onChange={event => setPassword(event.target.value)} minLength={8} required disabled={busy || passwordSaved} aria-describedby="activation-password-help"/><button type="button" aria-label={visible ? t('Hide password', 'إخفاء كلمة المرور') : t('Show password', 'إظهار كلمة المرور')} aria-pressed={visible} onClick={() => setVisible(value => !value)}>{visible ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></div>
@@ -112,6 +112,6 @@ function ActivateAccountForm() {
       </>}
       <footer className="gos-activation-footer"><ShieldCheck size={13}/>{t('Secure account setup', 'إعداد آمن للحساب')}</footer>
     </section>
-    <p className="gos-activation-caption">Upclick · {t('Your business, in one workspace.', 'أعمالك في مساحة عمل واحدة.')}</p>
+    <p className="gos-activation-caption">Upklick · {t('Your business, in one workspace.', 'أعمالك في مساحة عمل واحدة.')}</p>
   </main>;
 }

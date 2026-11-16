@@ -309,7 +309,7 @@ export function parseCSV(text: string): string[][] {
 }
 
 
-export const resolveBrandingName = (hostName?: string | null, userName?: string | null) => hostName?.trim() || userName?.trim() || 'Upclick';
+export const resolveBrandingName = (hostName?: string | null, userName?: string | null) => hostName?.trim() || userName?.trim() || 'Upklick';
 export const isUpcomingAppointment = (booking: Appointment, now = Date.now()) => booking.status !== 'Canceled' && Date.parse(booking.start) + booking.duration * 60000 > now;
 // Use the latest shared snapshot; rescheduling replaces a record instead of incrementing counts.
 export function persistAppointment(booking: Appointment) {
@@ -335,7 +335,7 @@ export function availabilityIntervals(page: BookingPage, date: string) {
 }
 // PublicBooking.tsx source: reveal blocked slots, keep its reason precedence, and
 // use the 10:00–18:00 diagnostic fallback for days without availability.
-// Each decision uses the same timezone, capacity and rules as the Upclick booking engine.
+// Each decision uses the same timezone, capacity and rules as the Upklick booking engine.
 export function troubleshootSlots(page: BookingPage, date: string, duration: number, bookings: Appointment[], now = new Date(), excludeId?:string, email=''):TroubleshootSlot[] {
   const configured = availabilityIntervals(page,date);
   const intervals = configured.length ? configured : [{start:'10:00',end:'18:00'}];

@@ -52,7 +52,7 @@ export function createGosStreamTransport(
           });
         } catch (error) {
           if (externalSignal?.aborted) throw error;
-          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the Upclick API. Check your connection and try again.');
+          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the Upklick API. Check your connection and try again.');
         }
 
         if (response.status === 401 && attempt === 0) continue;
@@ -62,7 +62,7 @@ export function createGosStreamTransport(
           const errors = payload?.error?.details ?? payload?.errors;
           const detail = errors && typeof errors === 'object' ? Object.values(errors).flat().filter(v => typeof v === 'string').join(' ') : '';
           throw new GosApiError(
-            detail || payload?.error?.message || payload?.message || `Upclick API request failed (${response.status}).`,
+            detail || payload?.error?.message || payload?.message || `Upklick API request failed (${response.status}).`,
             response.status,
             payload?.error?.code ?? (typeof payload?.error === 'string' ? payload.error : payload?.code),
             errors && typeof errors === 'object' && !Array.isArray(errors) ? (errors as Record<string, unknown>) : undefined,
@@ -163,7 +163,7 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
           });
         } catch (error) {
           if (options.signal?.aborted) throw error;
-          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the Upclick API. Check your connection and try again.');
+          throw new Error(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot reach the Upklick API. Check your connection and try again.');
         }
         if (response.status === 401 && !options.public && attempt === 0) continue;
         options.onResponse?.(response.status);
@@ -174,13 +174,13 @@ export function createGosTransport(baseUrl: string, token: TokenProvider, fetche
           const errors = payload?.error?.details ?? payload?.errors;
           const detail = errors && typeof errors === 'object' ? Object.values(errors).flat().filter(v => typeof v === 'string').join(' ') : '';
           throw new GosApiError(
-            detail || payload?.error?.message || payload?.message || `Upclick API request failed (${response.status}).`,
+            detail || payload?.error?.message || payload?.message || `Upklick API request failed (${response.status}).`,
             response.status,
             payload?.error?.code ?? (typeof payload?.error === 'string' ? payload.error : payload?.code),
             errors && typeof errors === 'object' && !Array.isArray(errors) ? (errors as Record<string, unknown>) : undefined,
           );
         }
-        if (payload?.data === undefined) throw new Error('The Upclick API returned an unexpected response.');
+        if (payload?.data === undefined) throw new Error('The Upklick API returned an unexpected response.');
         return payload.data as T;
       }
       throw new Error('Your session has expired. Sign in again.');

@@ -364,7 +364,7 @@ export function MetaAppSettings() {
       <header className="saw-heading">
         <div>
           <div className="saw-eyebrow-row">
-            <span className="saw-eyebrow">{t('UPCLICK / PLATFORM CONTROL')}</span>
+            <span className="saw-eyebrow">{t('UPKLICK / PLATFORM CONTROL')}</span>
             {(loading || refreshing) ? (
               <div className="saw-live-sync-chip" role="status" aria-live="polite">
                 <span className="saw-live-sync-dot" aria-hidden="true" />

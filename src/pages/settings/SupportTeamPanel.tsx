@@ -709,7 +709,7 @@ export function SupportTeamPanel() {
         members: updatedMembers,
       });
       window.dispatchEvent(new Event('gos-settings-changed'));
-      showToast.success(translateText('Support routing & shift schedule updated.'));
+      showToast.success(translateText('Sales routing & shift schedule updated.'));
       setEditMember(null);
     } catch (err) {
       setEditError(friendlyError(err));
@@ -722,7 +722,7 @@ export function SupportTeamPanel() {
     <div className="spt-panel">
       <div className="spt-header-row">
         <PanelHeading
-          title={translateText('Support Team & Routing')}
+          title={translateText('Sales Team')}
           description={translateText(
             'Live shift availability, weighted lead routing across Inbox, AI Follow-up & CRM, and per-agent revenue attribution.',
           )}
@@ -743,7 +743,7 @@ export function SupportTeamPanel() {
               onClick={() => navigate('/dashboard/settings/team?addSupport=1')}
             >
               <Plus size={15} />
-              {translateText('Add Support Agent')}
+              {translateText('Add Sales Agent')}
             </button>
           )}
         </div>
@@ -759,7 +759,7 @@ export function SupportTeamPanel() {
             <strong>
               {onShiftSupportCount > 0 ? (
                 <>
-                  {translateText('Weighted Support Routing Active')}
+                  {translateText('Weighted Sales Routing Active')}
                   <Badge tone="green">
                     {localizeNode(onShiftSupportCount)}/{localizeNode(supportOnlyStats.length)}{' '}
                     {translateText('On Shift')}
@@ -768,17 +768,17 @@ export function SupportTeamPanel() {
               ) : (
                 <>
                   {translateText('Owner Fallback Routing Active')}
-                  <Badge tone="orange">{translateText('No Support Agent On Shift')}</Badge>
+                  <Badge tone="orange">{translateText('No Sales Agent On Shift')}</Badge>
                 </>
               )}
             </strong>
             <p>
               {onShiftSupportCount > 0
                 ? translateText(
-                    'New leads and "Take Over Conversation" handoffs are automatically routed to on-shift Support agents by allocation percentage.',
+                    'New leads and "Take Over Conversation" handoffs are automatically routed to on-shift Sales agents by allocation percentage.',
                   )
                 : `${translateText(
-                    'All Support agents are currently off-shift or inactive. Incoming leads and human handoffs automatically route to Workspace Owner:',
+                    'All Sales agents are currently off-shift or inactive. Incoming leads and human handoffs automatically route to Workspace Owner:',
                   )} ${ownerMember.name}.`}
             </p>
           </div>
@@ -850,7 +850,7 @@ export function SupportTeamPanel() {
 
       {/* Filter & Search Toolbar */}
       <Card
-        title={translateText('Support Agents & Attribution Breakdown')}
+        title={translateText('Sales Agents & Attribution Breakdown')}
         description={translateText(
           'Click any agent to inspect their assigned leads, active/resolved conversations, and attributed sales.',
         )}
@@ -901,11 +901,11 @@ export function SupportTeamPanel() {
           >
             <Headset size={28} style={{ color: '#7c3aed', marginBottom: 8 }} />
             <h4 style={{ margin: '0 0 6px', fontSize: 14 }}>
-              {translateText('No dedicated Support agents configured yet')}
+              {translateText('No dedicated Sales agents configured yet')}
             </h4>
             <p style={{ maxWidth: 460, margin: '0 auto 12px', fontSize: 12 }}>
               {translateText(
-                'Add a team member with the Support role (or Support Only preset) to enable shift-based weighted routing. Until then, all leads and handoffs route safely to the Workspace Owner.',
+                'Use Add Sales Agent to enable shift-based weighted routing. Until then, all leads and handoffs route safely to the Workspace Owner.',
               )}
             </p>
             {canManage && (
@@ -915,7 +915,7 @@ export function SupportTeamPanel() {
                 onClick={() => navigate('/dashboard/settings/team?addSupport=1')}
               >
                 <Plus size={14} />
-                {translateText('Add First Support Agent')}
+                {translateText('Add First Sales Agent')}
               </button>
             )}
           </div>
@@ -950,7 +950,7 @@ export function SupportTeamPanel() {
                           <Badge tone="purple">{translateText('Owner Fallback')}</Badge>
                         ) : (
                           <Badge tone={member.active !== false ? 'purple' : 'neutral'}>
-                            {translateText(member.role || 'Support')}
+                            {translateText(member.role?.trim().toLowerCase() === 'support' ? 'Sales' : member.role || 'Sales')}
                           </Badge>
                         )}
                       </h4>
@@ -971,7 +971,7 @@ export function SupportTeamPanel() {
                   <div className="spt-allocation-row">
                     <span>
                       {isOwnerFallback
-                        ? translateText('Fallback Routing Share (When 0 Support On Shift)')
+                        ? translateText('Fallback Routing Share (When 0 Sales On Shift)')
                         : translateText('Configured Lead Allocation')}
                     </span>
                     <strong>
@@ -1388,7 +1388,7 @@ export function SupportTeamPanel() {
                             </small>
                           </strong>
                           <small>
-                            {conv.preview || translateText('Live support conversation')}
+                            {conv.preview || translateText('Live sales conversation')}
                           </small>
                         </div>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>

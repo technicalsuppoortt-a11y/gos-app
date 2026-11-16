@@ -37,7 +37,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
   const isRtl = uiDirection() === 'rtl';
 
   // Environment variables with solid fallbacks
-  const appName = import.meta.env.VITE_APP_NAME || 'Upclick Platform';
+  const appName = import.meta.env.VITE_APP_NAME || 'Upklick Platform';
   const supportEmail = 'technicalsuppoortt@gmail.com';
   const appUrl = 'https://app.upklick.net/';
   const fallbackWebUrl = 'https://app.upklick.net/';

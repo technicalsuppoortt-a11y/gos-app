@@ -2,7 +2,7 @@ import { defaultConfig, formatPrice, lessonData, newProduct, type Product, type 
 
 export interface ProductTemplate {
   id: string; category: 'Services' | 'Digital Products' | 'Courses'; industry: string; tags: string[];
-  features: string[]; product: Product;
+  features: string[]; product: Product; thumbnail?: string;
 }
 const definitions: Array<[string, ProductType, string, number, string, string, string, string[]]> = [
   ['executive', 'Service', '1-on-1 Executive Strategy Session', 150, 'Business & Consulting', '/dashboard/product-consultation.png', 'Make your next business decision with clarity. Work privately with Samir Morgan to uncover growth opportunities and leave with a focused 90-day action plan.', ['Leadership', 'Strategy', 'Consulting']],

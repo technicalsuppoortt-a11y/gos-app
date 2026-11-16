@@ -7,7 +7,7 @@ const sources = [
 ];
 await fs.mkdir('public/payment-brands', { recursive: true });
 await Promise.all(sources.map(async ([file, url]) => {
-  const response = await fetch(url, { signal: AbortSignal.timeout(30000), headers: { 'User-Agent': 'Upclick-AssetSetup/1.0' } });
+  const response = await fetch(url, { signal: AbortSignal.timeout(30000), headers: { 'User-Agent': 'Upklick-AssetSetup/1.0' } });
   if (!response.ok) throw new Error(`${file}: ${response.status}`);
   const bytes = Buffer.from(await response.arrayBuffer());
   if (file.endsWith('.svg') && (!bytes.toString().includes('<svg') || /<script/i.test(bytes.toString()))) throw new Error('Invalid SVG');

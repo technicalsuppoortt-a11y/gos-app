@@ -3,7 +3,7 @@ import { doc, onSnapshot, runTransaction, serverTimestamp } from 'firebase/fires
 import { auth, backendError, db } from '../../backend/firebase';
 import { useUILanguage } from '../../i18n/display';
 
-const defaults = { name: 'Upclick', supportEmail: '', logoUrl: '/upclick-logo.svg', primaryColor: '#7C3AED', timezone: 'Africa/Cairo', smtpHost: '', smtpPort: 587, senderEmail: '', smtpSecretReference: '' };
+const defaults = { name: 'Upklick', supportEmail: '', logoUrl: '/upclick-logo.svg', primaryColor: '#7C3AED', timezone: 'Africa/Cairo', smtpHost: '', smtpPort: 587, senderEmail: '', smtpSecretReference: '' };
 export function AdminGeneral() {
   const ar = useUILanguage().startsWith('ar');
   const [draft, setDraft] = useState(defaults), [revision, setRevision] = useState(0);

@@ -74,7 +74,7 @@ export function InvoicesPanel({
     if (isAdminInvoice) {
       const saIssuer = inv.issuer?.role === 'SUPER_ADMIN' ? inv.issuer : null;
       return {
-        brandName: saIssuer?.brandName || saIssuer?.name || 'Upclick',
+        brandName: saIssuer?.brandName || saIssuer?.name || 'Upklick',
         logoUrl: saIssuer?.logoUrl || '/upclick-logo.svg',
         email: saIssuer?.email || 'ops@upclick.app',
         roleLabel: c.t('Super Admin · Platform Billing', 'الإدارة العليا · فوترة المنصة'),
@@ -93,7 +93,7 @@ export function InvoicesPanel({
         ? inv.issuer.brandName
         : '') ||
       inv.issuer?.name ||
-      'Upclick';
+      'Upklick';
 
     const parentLogoUrl =
       liveParentAdminBrand.logoUrl ||

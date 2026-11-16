@@ -131,6 +131,7 @@ export type PageTemplate = {
   image: string;
   /** Admin-managed gallery image. Only used on template cards, never inside the page. */
   thumbnail?: string;
+  useThumbnail?: boolean;
   popularity?: number;
   tags?: string[];
   benefits?: string[];

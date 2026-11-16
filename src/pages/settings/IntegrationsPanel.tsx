@@ -46,7 +46,7 @@ const providers = [
     category: 'Communication',
     setupTime: '~2 min setup',
     accountLabel: 'Connected Facebook Page',
-    accountPlaceholder: 'e.g. Upclick Official Page',
+    accountPlaceholder: 'e.g. Upklick Official Page',
     description: 'Manage Facebook Page messages in your unified inbox and automations.',
     capabilities: ['Unified Inbox DMs', 'Comment Replies', 'AI Auto-Responder'],
     scopes: [
@@ -122,7 +122,7 @@ const providers = [
     category: 'Communication',
     setupTime: '~3 min setup',
     accountLabel: 'WhatsApp Business Phone Number / WABA Name',
-    accountPlaceholder: 'e.g. +20 100 000 0000 · Upclick Support',
+    accountPlaceholder: 'e.g. +20 100 000 0000 · Upklick Support',
     description: 'Connect WhatsApp Cloud API for customer messaging, broadcasts, and automated AI follow-ups.',
     capabilities: ['WhatsApp Cloud API', 'Automated Follow-ups', 'Approved Templates'],
     scopes: [
@@ -194,7 +194,7 @@ const providers = [
       {
         step: '03',
         title: 'Approve Gmail Workspace Scopes',
-        detail: 'Check the permission boxes to allow Upclick to send follow-up emails and sync incoming customer replies.',
+        detail: 'Check the permission boxes to allow Upklick to send follow-up emails and sync incoming customer replies.',
       },
       {
         step: '04',
@@ -240,7 +240,7 @@ const providers = [
       {
         step: '03',
         title: 'Grant Calendar Read & Write Access',
-        detail: 'Approve calendar availability and event creation permissions so Upclick can block busy slots and add new client bookings.',
+        detail: 'Approve calendar availability and event creation permissions so Upklick can block busy slots and add new client bookings.',
       },
       {
         step: '04',
@@ -248,7 +248,7 @@ const providers = [
         detail: 'Click "Test Connection" and enable "Automatic sync" so every appointment booked on your Booking Pages appears on your calendar instantly.',
       },
     ] as GuideStep[],
-    proTip: 'Mark personal appointments as "Busy" in your Google Calendar—Upclick automatically hides those time slots on your public booking pages.',
+    proTip: 'Mark personal appointments as "Busy" in your Google Calendar—Upklick automatically hides those time slots on your public booking pages.',
     icon: CalendarDays,
     color: 'blue',
     status: 'https://www.google.com/appsstatus/dashboard/',
@@ -1031,7 +1031,7 @@ function ConnectionModal({
             <div className="st-preference">
               <span>
                 <b>{translateText('Automatic sync')}</b>
-                <small>{translateText('Keep your connected account and Upclick up to date.')}</small>
+                <small>{translateText('Keep your connected account and Upklick up to date.')}</small>
               </span>
               <Toggle label="Automatic sync" checked={sync} onChange={setSync} />
             </div>

@@ -1,9 +1,9 @@
-Upclick Platform Knowledge Base & Operating Manual
+Upklick Platform Knowledge Base & Operating Manual
 
 ============================================================
 1. Platform Overview
 ============================================================
-Upclick (GOS Platform) is an all-in-one business operating system designed for modern agencies, eCommerce brands, service providers, and enterprises. The platform unifies:
+Upklick (GOS Platform) is an all-in-one business operating system designed for modern agencies, eCommerce brands, service providers, and enterprises. The platform unifies:
 - Omnichannel Communication: Centralized inbox connecting WhatsApp Business API, Instagram Direct, Facebook Messenger, SMS, Email, and live Web Chat.
 - AI Copilot & Automations: Autonomous customer service agents and smart follow-up workflows powered by real-time Knowledge Base retrieval (RAG).
 - SaaS Subscription & Reseller Hub: Multi-tier client management, custom branded pricing plans, add-ons, and permission-based sub-accounts.
@@ -66,7 +66,7 @@ Teams can scale specific features without upgrading entire plans:
 4. AI Copilot & Knowledge Base Integration
 ============================================================
 How AI Copilot Uses This Knowledge Base:
-The Upclick AI Copilot uses Retrieval-Augmented Generation (RAG) to provide human-like, accurate answers to incoming inquiries across WhatsApp, Messenger, and live chat:
+The Upklick AI Copilot uses Retrieval-Augmented Generation (RAG) to provide human-like, accurate answers to incoming inquiries across WhatsApp, Messenger, and live chat:
 1. Context Extraction: When a customer asks a question, the system searches indexed Knowledge Base sources for semantically relevant passages.
 2. Strict Guardrails: The AI is instructed to answer strictly based on approved company documentation, preventing hallucinations or unauthorized promises.
 3. Seamless Human Handoff: If an inquiry falls outside the indexed knowledge or requires human intervention, the AI automatically flags the conversation and alerts team agents.

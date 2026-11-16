@@ -121,7 +121,7 @@ export function workspaceTheme(id: WorkspacePreferences['theme']): WorkspaceThem
   const buttonEnd = violet ? '#A78BFA' : 'color-mix(in srgb, ' + p.primary + ' 80%, ' + p.hover + ')';
   const buttonGradient = 'linear-gradient(115deg, ' + p.primary + ', ' + buttonEnd + ')';
   const lightBackground = violet ? '#f3f7fc' : '#f8fafc';
-  // Upclick's official palette (671c48c) and shell (202efed's parent).
+  // Upklick's official palette (671c48c) and shell (202efed's parent).
   const navGradient = violet ? 'linear-gradient(105deg, #7C3AED 0%, #A78BFA 58%, #A78BFA 100%)' : buttonGradient;
   return {
     paletteId: `workspace-${id}`,
