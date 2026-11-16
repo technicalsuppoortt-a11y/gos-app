@@ -8,7 +8,20 @@ export function captureForms(document) {
   const forms = [];
   const visit = (items, page) => {
     for (const item of items ?? []) {
-      if (['Form', 'Contact Form'].includes(item.type) && !item.content?.publishedFormUrl) forms.push({ pageId: page.id, formId: item.id, step: page.name, ...(item.content?.customFields ? { fieldSchema: item.content.customFields } : {}) });
+      if (['Form', 'Contact Form'].includes(item.type) && !item.content?.publishedFormUrl) {
+        const elementRoute = item.content?.crmPipelineId || item.content?.crmStageId
+          ? { pipelineId: item.content.crmPipelineId || 'main', ...(item.content.crmStageId ? { stageId: item.content.crmStageId } : {}) }
+          : page.crmRouting?.pipelineId || page.crmRouting?.stageId
+            ? { pipelineId: page.crmRouting.pipelineId || 'main', ...(page.crmRouting.stageId ? { stageId: page.crmRouting.stageId } : {}) }
+            : undefined;
+        forms.push({
+          pageId: page.id,
+          formId: item.id,
+          step: page.name,
+          ...(item.content?.customFields ? { fieldSchema: item.content.customFields } : {}),
+          ...(elementRoute ? { crmRouting: elementRoute } : {}),
+        });
+      }
       for (const column of item.children ?? []) {
         let children = Array.isArray(column?.gosNestedArrayV1) ? column.gosNestedArrayV1 : column;
         if (typeof column?.gosNestedArrayV1 === 'string') { try { children = JSON.parse(column.gosNestedArrayV1); } catch { children = []; } }
@@ -83,7 +96,8 @@ export async function captureAssetLeadRequest(request, { db, workspace, now = ()
     const timestamp = now(), previous = limit.data();
     const recent = previous && timestamp - previous.windowStart < 60000;
     if (recent && previous.count >= 20) throw new HttpsError('resource-exhausted', 'Too many submissions. Please wait a minute and try again.');
-    const routing = await resolveCRMRoute(tx, root, preview ? asset.data().crmRouting : state.data()?.crmRouting);
+    const configuredRoute = form.crmRouting ?? (preview ? asset.data().crmRouting : state.data()?.crmRouting);
+    const routing = await resolveCRMRoute(tx, root, configuredRoute);
     const createdAt = new Date(timestamp).toISOString(), source = asset.data().formAsset ? 'Forms' : asset.data().kind === 'funnel' ? 'Funnel' : 'Website';
     tx.set(rateRef, { windowStart: recent ? previous.windowStart : timestamp, count: recent ? previous.count + 1 : 1 });
     tx.set(leadRef, {

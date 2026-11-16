@@ -28,7 +28,7 @@ export type PFType =
   // Funnel
   | 'pricing' | 'testimonial' | 'booking' | 'checkout' | 'rating';
 
-export type PFActionType = 'none' | 'link' | 'scroll' | 'popup' | 'email' | 'phone' | 'next-step';
+export type PFActionType = 'none' | 'link' | 'scroll' | 'popup' | 'email' | 'phone' | 'next-step' | 'specific-page' | 'submit-form' | 'download';
 export type PFAction = { type: PFActionType; url?: string; newTab?: boolean; target?: string };
 export type PFAnimation = { appear?: string; hover?: string; duration?: string; delay?: string };
 export type PFTracking = { fb?: string; ga?: string; tiktok?: string };

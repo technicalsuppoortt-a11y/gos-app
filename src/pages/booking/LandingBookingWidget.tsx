@@ -187,7 +187,24 @@ export function LandingBookingWidget({
   }, [remoteData, localMatchedPage, item.content]);
 
   const locale = bookingLocale(uiLanguage, basePage.language);
-  const page = useMemo(() => ({ ...basePage, language: locale.lang }), [basePage, locale.lang]);
+  const elementCrmRouting = useMemo(
+    () =>
+      item.content.crmPipelineId || item.content.crmStageId
+        ? {
+            pipelineId: item.content.crmPipelineId || 'main',
+            ...(item.content.crmStageId ? { stageId: item.content.crmStageId } : {}),
+          }
+        : undefined,
+    [item.content.crmPipelineId, item.content.crmStageId]
+  );
+  const page = useMemo(
+    () => ({
+      ...basePage,
+      language: locale.lang,
+      ...(elementCrmRouting ? { crmRouting: elementCrmRouting } : {}),
+    }),
+    [basePage, locale.lang, elementCrmRouting]
+  );
   const bookings = remoteData?.bookings ?? storedAppointments;
 
   const [date, setDate] = useState(() => firstAvailableDate(page, bookings));
@@ -346,12 +363,18 @@ export function LandingBookingWidget({
       if (isPublicAsset && effectiveSlug && page.id !== 'landing-demo-calendar') {
         const token = crypto.randomUUID();
         sessionStorage.setItem('gos.booking.token.' + draftBooking.id, token);
+        const hostMain = rootRef.current?.closest('[data-asset-id]') as HTMLElement | null;
         const result = await callBackend<BookingSubmission>('publicBooking', {
           slug: effectiveSlug,
           operation: 'create',
           booking: draftBooking,
           token,
           screeningAnswers: submittedScreening,
+          sourceContext: {
+            assetId: hostMain?.getAttribute('data-asset-id') || '',
+            pageId: hostMain?.getAttribute('data-page-id') || '',
+            elementId: item.id,
+          },
         });
         if ('qualification' in result) {
           if (result.qualification.status === 'ineligible') {

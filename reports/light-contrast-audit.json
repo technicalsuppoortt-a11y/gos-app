@@ -1,6 +1,6 @@
 {
-  "scannedStylesheets": 103,
-  "correctedDeclarations": 865,
+  "scannedStylesheets": 104,
+  "correctedDeclarations": 867,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -188,17 +188,17 @@
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 309,
+      "line": 313,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 309,
+      "line": 313,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 309,
+      "line": 313,
       "utility": "text-slate-500"
     },
     {
@@ -803,32 +803,32 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 593,
+      "line": 600,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 596,
+      "line": 603,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 620,
+      "line": 627,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 693,
+      "line": 701,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 693,
+      "line": 701,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 693,
+      "line": 701,
       "utility": "text-slate-500"
     },
     {
@@ -1068,82 +1068,82 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 104,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 105,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 106,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 107,
+      "line": 108,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 943,
+      "line": 962,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1090,
+      "line": 1109,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1149,
+      "line": 1169,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1233,
+      "line": 1253,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1308,
+      "line": 1328,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1453,
+      "line": 1473,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1484,
+      "line": 1504,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1516,
+      "line": 1536,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1595,
+      "line": 1615,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1747,
+      "line": 1767,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1776,
+      "line": 1796,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1809,
+      "line": 1829,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1821,
+      "line": 1841,
       "utility": "text-slate-400"
     },
     {
@@ -3668,6 +3668,22 @@
       "contrastOnWhite": 4.24
     },
     {
+      "file": "src/pages/ai-copilot.css",
+      "line": 752,
+      "selector": ".ai-iform-title-wrap p",
+      "before": "#747b96",
+      "after": "#334155",
+      "contrastOnWhite": 4.19
+    },
+    {
+      "file": "src/pages/ai-copilot.css",
+      "line": 963,
+      "selector": ".ai-iform-safe-note",
+      "before": "#7e85a0",
+      "after": "#334155",
+      "contrastOnWhite": 3.65
+    },
+    {
       "file": "src/pages/ai-followup.css",
       "line": 1,
       "selector": ".af-disconnected",
@@ -4918,7 +4934,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5062,7 +5078,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56

@@ -42,10 +42,38 @@ function buildLeadCustomFields(calendar, customAnswers, responses = []) {
   return { fields, labels };
 }
 
+function findBookingElementRoute(document, pageId, elementId) {
+  const pages = Array.isArray(document?.pages) ? document.pages : [];
+  const page = pages.find(p => p?.id === pageId) ?? pages[0];
+  if (!page) return undefined;
+  let matchedRoute;
+  const visit = items => {
+    for (const item of items ?? []) {
+      if (item?.id === elementId && item?.type === 'Booking') {
+        if (item.content?.crmPipelineId || item.content?.crmStageId) {
+          matchedRoute = {
+            pipelineId: item.content.crmPipelineId || 'main',
+            ...(item.content.crmStageId ? { stageId: item.content.crmStageId } : {}),
+          };
+        }
+        return;
+      }
+      for (const col of item?.children ?? []) {
+        const nested = Array.isArray(col?.gosNestedArrayV1) ? col.gosNestedArrayV1 : col;
+        if (Array.isArray(nested)) visit(nested);
+      }
+    }
+  };
+  if (elementId) visit(page.sections);
+  if (matchedRoute) return matchedRoute;
+  if (page.crmRouting?.pipelineId || page.crmRouting?.stageId) return page.crmRouting;
+  return undefined;
+}
+
 // Public callers get calendar presentation and anonymous busy intervals only.
 export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'gos-app-3c7fb@appspot.gserviceaccount.com', maxInstances: 5 }, async request => {
   const db = getFirestore();
-  const { slug, password = '', operation = 'availability', booking, token, bookingId, screeningAnswers } = request.data ?? {};
+  const { slug, password = '', operation = 'availability', booking, token, bookingId, screeningAnswers, sourceContext } = request.data ?? {};
   if (typeof slug !== 'string' || !/^[\p{L}\p{N}_-]{1,150}$/u.test(slug)) throw new HttpsError('invalid-argument', 'Invalid booking link.');
   const matches = await db.collectionGroup('calendars').where('slug', '==', slug).limit(2).get();
   if (matches.size !== 1 || !matches.docs[0].data().active) throw new HttpsError('not-found', 'Booking page not found.');
@@ -80,6 +108,14 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     const lock = root.collection('bookingLocks').doc('schedule');
     const lockDoc = await tx.get(lock);
     const calendar = (await tx.get(calendarRef)).data();
+    let embeddedRoute;
+    if (sourceContext && typeof sourceContext === 'object' && typeof sourceContext.assetId === 'string' && /^[\w-]{1,150}$/.test(sourceContext.assetId)) {
+      const assetSnap = await tx.get(root.collection('assets').doc(sourceContext.assetId));
+      if (assetSnap.exists) {
+        embeddedRoute = findBookingElementRoute(assetSnap.data()?.document, sourceContext.pageId, sourceContext.elementId);
+      }
+    }
+    const effectiveCrmRoute = embeddedRoute || calendar?.crmRouting;
     if (!calendar?.active || calendar.slug !== slug || calendar.passwordProtect && password !== calendar.password) throw new HttpsError('permission-denied', 'This booking page is unavailable.');
     const ref = root.collection('bookings').doc(booking.id);
     const old = (await tx.get(ref)).data();
@@ -104,7 +140,7 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
           const now = new Date().toISOString();
           const leadRef = root.collection('leads').doc(createHash('sha256').update(email).digest('hex').slice(0, 32));
           const lead = (await tx.get(leadRef)).data();
-          const routing = await resolveCRMRoute(tx, root, calendar.crmRouting, 'LEAD_CAPTURED');
+          const routing = await resolveCRMRoute(tx, root, effectiveCrmRoute, 'LEAD_CAPTURED');
           const { fields, labels } = buildLeadCustomFields(calendar, booking.customAnswers, result.responses);
           const existingTags = Array.isArray(lead?.tags) ? lead.tags : [];
           const keepBooked = lead?.bookingStatus === 'Booked' || lead?.bookingStatus === 'Completed';
@@ -122,7 +158,7 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
             email,
             phone: String(booking.whatsapp || lead?.phone || '').slice(0, 80),
             interest: calendar.name || lead?.interest || 'Booking inquiry',
-            ...(!lead || calendar.crmRouting?.pipelineId ? routing : {}),
+            ...(!lead || effectiveCrmRoute?.pipelineId ? routing : {}),
             qualificationStatus: 'Unqualified',
             bookingStatus: keepBooked ? lead.bookingStatus : 'Pending Booking',
             followUpState: keepBooked ? (lead.followUpState || 'BOOKED') : (lead?.followUpState || 'QUALIFYING'),
@@ -158,7 +194,7 @@ export const publicBooking = onCall({ region: 'us-central1', serviceAccount: 'go
     }
     const leadRef = root.collection('leads').doc(createHash('sha256').update(saved.email).digest('hex').slice(0, 32));
     const lead = (await tx.get(leadRef)).data();
-    const routing = await resolveCRMRoute(tx, root, calendar.crmRouting, 'BOOKING');
+    const routing = await resolveCRMRoute(tx, root, effectiveCrmRoute, 'BOOKING');
     if (operation !== 'cancel') {
       const now = new Date().toISOString();
       const { fields, labels } = buildLeadCustomFields(calendar, saved.customAnswers, qualificationResponses);

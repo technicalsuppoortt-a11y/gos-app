@@ -384,3 +384,98 @@ Stop listening	إيقاف الاستماع
 Response exported	تم تصدير الرد
 Assistant response regenerated	تمت إعادة توليد رد المساعد
 Audio playback is not Salesed in this browser.	تشغيل الصوت غير مدعوم في هذا المتصفح.
+Build an Audience	بناء جمهور
+Collect email addresses and build your email list	جمع عناوين البريد الإلكتروني وبناء قائمة البريد الإلكتروني الخاصة بك
+Sell	بيع
+Sell a product or service	بيع منتج أو خدمة
+Custom	مخصص
+Build a custom funnel from scratch	قم ببناء مسار مخصص من الصفر
+Create With AI	الإنشاء بالذكاء الاصطناعي
+Generate a personalized funnel layout from your business brief	إنشاء مسار تحويل متكامل ومخصص بالذكاء الاصطناعي لمشروعك
+Enter a funnel name to continue.	يرجى إدخال اسم المسار للمتابعة.
+Could not create funnel.	تعذّر إنشاء المسار.
+Create Funnel	إنشاء مسار
+Funnel name	اسم المسار
+Enter funnel name	أدخل اسم المسار
+Funnel domain	دومين المسار
+Choose funnel goal	اختر هدف المسار
+Currency	العملة
+Funnel currency	عملة المسار
+Funnel Settings	إعدادات المسار
+Back to Steps	العودة إلى الخطوات
+Add at least one step to your funnel before publishing.	أضف خطوة واحدة على الأقل إلى المسار قبل النشر.
+Per-Element CRM Lead Routing	توجيه عملاء CRM لكل عنصر بشكل مستقل
+Each Form and Booking Calendar routes leads independently to its own pipeline and initial stage.	يقوم كل نموذج وتقويم حجز بتوجيه العملاء بشكل مستقل إلى مسار المبيعات والمرحلة المحددة له.
+No Form or Booking Calendar elements found yet. Add a Form or Calendar in the Page Builder to configure its CRM routing.	لا توجد عناصر نماذج أو تقويم حجز بعد. أضف نموذجاً أو تقويماً في محرر الصفحات لضبط توجيه CRM الخاص به.
+Form CRM Lead Routing	توجيه عملاء النموذج إلى CRM
+Booking Calendar CRM Lead Routing	توجيه عملاء تقويم الحجز إلى CRM
+Button action type	نوع إجراء الزر
+Action destination	وجهة إجراء الزر
+Go to Next Funnel Step	الانتقال للخطوة التالية في المسار
+Go to Specific Page / Step	الانتقال لصفحة أو خطوة محددة
+External URL	رابط خارجي
+Submit Form / Trigger Order	إرسال النموذج / إتمام الطلب
+Scroll to Section	التمرير لقسم في الصفحة
+Open Popup / Modal	فتح نافذة منبثقة
+Open Booking Modal	فتح نافذة حجز المواعيد
+Download File	تحميل ملف
+Phone Call (tel:)	اتصال هاتفي (tel:)
+Send Email (mailto:)	إرسال بريد إلكتروني (mailto:)
+Next step override (optional)	تحديد الخطوة التالية يدوياً (اختياري)
+Automatic (Next step in funnel flow)	تلقائي (الخطوة التالية في المسار)
+Target page / step	الصفحة أو الخطوة المستهدفة
+Choose a page or step...	اختر صفحة أو خطوة...
+Destination URL	الرابط الخارجي المستهدف
+Open in new tab	فتح في تبويب جديد
+Target Form / Order	النموذج أو الطلب المستهدف
+Auto (First Form / Order on page)	تلقائي (أول نموذج أو طلب في الصفحة)
+Choose section on page	اختر قسماً في الصفحة
+Select a section...	حدد القسم...
+Target section ID	معرّف القسم المستهدف
+#pricing or section ID	معرّف القسم مثل #pricing
+Popup source	مصدر النافذة المنبثقة
+Built-in Lead Capture Popup	نافذة جمع بيانات العملاء المدمجة
+Built-in Special Offer Modal	نافذة العرض الخاص المدمجة
+Page Popup	نافذة الصفحة المنبثقة
+Popup headline	عنوان النافذة المنبثقة
+Enter popup headline	أدخل عنوان النافذة المنبثقة
+Popup description	وصف النافذة المنبثقة
+Supporting popup message	رسالة توضيحية للنافذة المنبثقة
+Popup CTA label	نص زر النافذة المنبثقة
+Submit & Continue	إرسال ومتابعة
+Get Instant Access	احصل على وصول فوري
+Enter your details below to unlock immediate access.	أدخل بياناتك أدناه للحصول على وصول فوري.
+File URL	رابط الملف
+File name (optional)	اسم الملف عند التحميل (اختياري)
+Phone number	رقم الهاتف
+Phone number (optional)	رقم الهاتف (اختياري)
+Email subject (optional)	عنوان البريد الإلكتروني (اختياري)
+Inquiry from website	استفسار من الموقع
+This is the final step in the funnel flow.	هذه هي الخطوة الأخيرة في المسار.
+Choose a target page or step in button settings.	اختر الصفحة أو الخطوة المستهدفة من إعدادات الزر.
+Add a destination URL in button settings.	أضف الرابط المستهدف من إعدادات الزر.
+Invalid destination URL.	الرابط المستهدف غير صالح.
+Add a Form or Order element on this page to submit.	أضف عنصر نموذج أو طلب في هذه الصفحة لإرساله.
+Add a file URL to download in button settings.	أضف رابط الملف المراد تحميله من إعدادات الزر.
+Unable to start download.	تعذّر بدء تحميل الملف.
+Add a phone number in button settings.	أضف رقم الهاتف من إعدادات الزر.
+Add an email address in button settings.	أضف البريد الإلكتروني من إعدادات الزر.
+Configure an action for this button in the Page Builder.	قم بضبط إجراء لهذا الزر من محرر الصفحات.
+Submitted successfully!	تم الإرسال بنجاح!
+Your submission has been received.	تم استلام طلبك بنجاح.
+SPECIAL OFFER	عرض خاص
+INSTANT ACCESS	وصول فوري
+100% secure & private	آمن وخاص بنسبة 100%
+Configuration	الإعدادات
+Automation Rules	قواعد التشغيل الآلي
+A/B Test	اختبار A/B
+Stats	الإحصائيات
+Deadline Settings	إعدادات الموعد النهائي
+Inactive Page	صفحة غير نشطة
+Fallback	البديل
+Displayed when the funnel is disabled	يتم عرض هذه الصفحة عند تعطيل المسار
+Order Form	نموذج الطلب
+Thank You Page	صفحة الشكر
+Opt-in / Squeeze Page	صفحة الاشتراك
+Funnel Step Templates	قوالب خطوات المسارات
+Global Funnel Step Templates Library	مكتبة قوالب خطوات المسارات العامة

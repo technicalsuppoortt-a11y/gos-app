@@ -24,9 +24,8 @@ try{
  assert.deepEqual(names,['Personal coaching','Nutrition consultation','Agency growth','Product launch','Online masterclass','Studio membership']);
  await shot('template-library');
  await page.getByRole('button',{name:'Create Funnel',exact:true}).click();
- await page.getByRole('dialog',{name:'Create a new page'}).waitFor();
- await page.getByRole('tab',{name:'Template',exact:true}).click();
- assert.deepEqual(await page.getByRole('dialog').locator('.pf-template-description>b').allTextContents(),names);
+ await page.getByRole('dialog',{name:'Create Funnel'}).waitFor();
+ assert.equal(await page.getByRole('dialog').locator('[data-goal-id]').count(),4);
  await page.getByRole('button',{name:'Close dialog',exact:true}).click();
  await page.getByRole('button',{name:'Use Personal coaching template',exact:true}).click();
  await page.locator('.fb-editor-header').waitFor();

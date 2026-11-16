@@ -28,7 +28,7 @@ export const PLATFORM_SIDEBAR_TABS: readonly PlatformTabDefinition[] = [
   { key: 'overview', label: 'Overview', ar: 'نظرة عامة', pages: [''], defaultPath: '/super-admin' },
   { key: 'all_admins', label: 'All Admins', ar: 'جميع المسؤولين', pages: ['clients'], defaultPath: '/super-admin/clients' },
   { key: 'plans_billing', label: 'Plans & Billing', ar: 'الباقات والفوترة', pages: ['plans', 'subscriptions'], defaultPath: '/super-admin/plans' },
-  { key: 'templates', label: 'Templates', ar: 'القوالب', pages: ['dashboard-management', 'templates'], defaultPath: '/super-admin/dashboard-management' },
+  { key: 'templates', label: 'Templates', ar: 'القوالب', pages: ['dashboard-management', 'templates', 'funnel-templates'], defaultPath: '/super-admin/dashboard-management' },
   { key: 'usage_revenue', label: 'Usage & Revenue', ar: 'الاستخدام والإيرادات', pages: ['analytics'], defaultPath: '/super-admin/analytics' },
   { key: 'team_management', label: 'Team Management', ar: 'إدارة الفريق', pages: ['users'], defaultPath: '/super-admin/users' },
   { key: 'system_settings', label: 'System Settings', ar: 'إعدادات النظام', pages: ['settings'], defaultPath: '/super-admin/settings' },

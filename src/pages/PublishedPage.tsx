@@ -1,4 +1,5 @@
 import { BuilderFormCaptureContext, sendBuilderLead, type PublicCaptureConfig } from './builder-form-capture';
+import { executeButtonAction, BuilderActionPopupModal } from './button-actions';
 import './published-page.css';
 import { Menu, X, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
@@ -27,7 +28,59 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
   const visibleWidth = viewportWidth ?? width;
   const device = viewportDevice ?? (visibleWidth < 640 ? 'mobile' : visibleWidth < 1024 ? 'tablet' : 'desktop');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const page = asset.document.pages.find(page => page.id === pageId) ?? (!pageId ? asset.document.pages[0] : undefined);
+  const [popupTrigger, setPopupTrigger] = useState<BuilderSection | null>(null);
+  const [deadlineExpired, setDeadlineExpired] = useState(false);
+  const funnelDisabled = asset.kind === 'funnel' && asset.document.funnel?.funnelActive === false;
+  const requestedPage = pageId === '__inactive__'
+    ? asset.document.inactivePage
+    : asset.document.pages.find(page => page.id === pageId) ?? (!pageId ? asset.document.pages[0] : undefined);
+  const page = funnelDisabled && asset.document.inactivePage
+    ? asset.document.inactivePage
+    : deadlineExpired && asset.document.funnel?.deadlineSettings?.redirectStepId === '__inactive__' && asset.document.inactivePage
+      ? asset.document.inactivePage
+      : requestedPage;
+
+  useEffect(() => {
+    if (readOnly || thumbnail || templateDesign || asset.kind !== 'funnel') return;
+    const dl = asset.document.funnel?.deadlineSettings;
+    if (!dl?.enabled || !requestedPage) {
+      setDeadlineExpired(false);
+      return;
+    }
+    const stepProtected = !dl.enabledStepIds?.length || dl.enabledStepIds.includes(requestedPage.id);
+    if (!stepProtected) {
+      setDeadlineExpired(false);
+      return;
+    }
+    try {
+      const storageKey = `upklick_dl_${asset.id}`;
+      let firstSeen = Number(window.localStorage.getItem(storageKey) || '0');
+      if (!firstSeen) {
+        firstSeen = Date.now();
+        window.localStorage.setItem(storageKey, String(firstSeen));
+      }
+      let expiresAt = firstSeen + Math.max(1, Number(dl.days) || 1) * 86400000;
+      if (dl.expireAtTimeEnabled && dl.expireAtTime) {
+        const [hh, mm] = dl.expireAtTime.split(':').map(Number);
+        const d = new Date(expiresAt);
+        if (!Number.isNaN(hh)) d.setHours(hh, Number.isNaN(mm) ? 59 : mm, 59, 999);
+        expiresAt = d.getTime();
+      }
+      if (Date.now() > expiresAt) {
+        if (dl.redirectStepId && dl.redirectStepId !== '__inactive__' && dl.redirectStepId !== requestedPage.id) {
+          const redirectTarget = asset.document.pages.find(p => p.id === dl.redirectStepId);
+          if (redirectTarget) {
+            if (onNavigate) onNavigate(redirectTarget.id);
+            else window.location.assign(new URL(redirectTarget.path, window.location.origin).href);
+            return;
+          }
+        }
+        setDeadlineExpired(true);
+      }
+    } catch {
+      // Storage blocked in sandboxed context; allow page render
+    }
+  }, [asset.id, asset.kind, asset.document.funnel?.deadlineSettings, asset.document.pages, onNavigate, readOnly, requestedPage, templateDesign, thumbnail]);
   const trackedPage = useRef('');
   useEffect(() => {
     if (readOnly || thumbnail || templateDesign || !analytics || !page) return;
@@ -46,17 +99,16 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
   };
 
   const action = (item: BuilderSection) => {
-    const { destinationType, destination } = item.content;
-    if (readOnly && destinationType !== 'Next Step' && destinationType !== 'Scroll to Section') return;
-    if (destinationType === 'External URL' && destination) {
-      try { const url = new URL(destination, window.location.origin); if (['https:', 'http:', 'mailto:', 'tel:'].includes(url.protocol)) window.location.assign(url.href); } catch { /* Invalid URLs cannot navigate. */ }
-    } else if (destinationType === 'Scroll to Section' && destination) document.getElementById(destination.replace(/^#/, ''))?.scrollIntoView({ behavior: 'smooth' });
-    else if (destinationType === 'Next Step') {
-      const flow = asset.document.funnel.pagesFlow;
-      navigate(destination || flow[flow.indexOf(pageId) + 1]);
-    } else if (item.content.bookingUrl) {
-      try { const url = new URL(item.content.bookingUrl); if (url.protocol === 'https:') window.location.assign(url.href); } catch { /* Require a configured booking link. */ }
-    } else showToast.info('This action needs a connected booking or checkout link.');
+    executeButtonAction(item, {
+      currentPageId: page.id,
+      pagesFlow: asset.document.funnel.pagesFlow,
+      pages: asset.document.pages,
+      readOnly,
+      isPreview: Boolean(onNavigate),
+      rootSelector: '[data-public-asset="true"]',
+      onNavigatePage: navigate,
+      onOpenPopup: sec => setPopupTrigger(sec),
+    });
   };
 
   const formTheme = asset.formAsset ? resolveFormTheme(page, page.sections.find(section => ['Form', 'Contact Form'].includes(section.type))) : undefined;
@@ -98,6 +150,8 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
       <main
         className={`fb-site-frame ${device} ${asset.formAsset ? 'is-form-page' : ''} ${isDarkBg ? 'dark-form' : ''}`}
         data-public-asset="true"
+        data-asset-id={asset.id}
+        data-page-id={page.id}
         lang={language}
         dir={language ? (language.startsWith('ar') ? 'rtl' : 'ltr') : undefined}
         onClickCapture={readOnly ? event => {
@@ -195,6 +249,36 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
           </footer>
         ) : null}
 
+        {popupTrigger && !thumbnail && (
+          <BuilderActionPopupModal
+            triggerItem={popupTrigger}
+            isDark={isDarkBg}
+            onClose={() => setPopupTrigger(null)}
+            onSubmitLead={async data => {
+              if (!readOnly) {
+                await sendBuilderLead(
+                  asset.id,
+                  page.id,
+                  device,
+                  {
+                    formId: popupTrigger.id,
+                    requestId: crypto.randomUUID(),
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
+                    message: 'Popup opt-in',
+                  },
+                  capture
+                ).catch(() => {});
+              }
+            }}
+            onNextStep={() => {
+              const flow = asset.document.funnel.pagesFlow;
+              const nextId = flow[flow.indexOf(page.id) + 1];
+              if (nextId) navigate(nextId);
+            }}
+          />
+        )}
         {!thumbnail && <Toaster />}
       </main>
     </BuilderFormCaptureContext.Provider>

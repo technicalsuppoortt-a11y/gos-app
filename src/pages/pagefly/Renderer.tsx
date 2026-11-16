@@ -435,6 +435,9 @@ export function PFRenderer({ nodes, mode, device, theme, page, selectedId = null
       }
       case 'popup': event?.preventDefault(); if (action.target) openPopup(action.target); return;
       case 'email': case 'phone': if (!(event?.currentTarget instanceof HTMLAnchorElement) && action.url) window.location.href = `${action.type === 'email' ? 'mailto' : 'tel'}:${action.url}`; return;
+      case 'download': { event?.preventDefault(); const url = normalizeUrl(action.url); if (url) { const a = document.createElement('a'); a.href = url; a.download = action.target || ''; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); a.remove(); } return; }
+      case 'submit-form': { event?.preventDefault(); const form = rootRef.current?.querySelector('form'); if (form) form.requestSubmit(); return; }
+      case 'specific-page': { event?.preventDefault(); if (action.url) window.location.assign(normalizeUrl(action.url)); return; }
       case 'next-step': event?.preventDefault(); if (onNextStep) onNextStep(); else notify('In the live funnel this moves the visitor to the next step.', 'info'); return;
     }
   }, [mode, notify, openPopup, onNextStep]);

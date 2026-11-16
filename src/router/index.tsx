@@ -35,6 +35,7 @@ const SuperAdminLayout = lazy(() => import('../components/layout/SuperAdminLayou
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const TemplatePreviewPage = lazy(() => import('../pages/TemplatePreviewPage').then(module => ({ default: module.TemplatePreviewPage })));
 const AdminTemplateEditorPage = lazy(() => import('../pages/admin/AdminTemplateEditorPage'));
+const SuperAdminFunnelTemplates = lazy(() => import('../pages/admin/SuperAdminFunnelTemplates'));
 const AdminWorkspace = lazy(() => import('../pages/admin/AdminWorkspace').then(module => ({ default: module.AdminWorkspace })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const BusinessAssetsPage = lazy(() => import('../pages/admin/BusinessAssetsPage').then(module => ({ default: module.BusinessAssetsPage })));
@@ -218,6 +219,7 @@ export const router = createBrowserRouter([
       { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
       { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace/> },
+      { path: 'funnel-templates', element: <Suspended><div className="adm-shell sa-templates"><div className="adm-workspace adm-live"><SuperAdminFunnelTemplates/></div></div></Suspended> },
       { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
       { path: 'dashboard-management/new', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
       { path: 'dashboard-management/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
