@@ -44,7 +44,7 @@ export function useGosInbox(enabled: boolean, selectedId: string) {
         if (controller.signal.aborted) return;
         setConversations(result.conversations.map(row => detail && detail.conversation.id === row.id ? normalizeConversation(detail.conversation, detail.messages) : normalizeConversation(row)));
         setSettledOnce(true);
-        setLoading(false); timer = setTimeout(load, 10000);
+        setLoading(false); timer = setTimeout(load, document.hidden ? 15000 : 3000);
       } catch (e) {
         if (!controller.signal.aborted) {
           setSettledOnce(true);
