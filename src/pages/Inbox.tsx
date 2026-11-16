@@ -856,14 +856,23 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (takingOver) inputRef.current?.focus();
   };
 
-  const archiveActive = () => {
+  const archiveActive = async () => {
+    if (!active.id) return;
+    if (!confirm(`Delete the conversation with ${active.name}?`)) return;
+    if (!demoInbox) {
+      try {
+        await gosApi.deleteConversation(active.id);
+      } catch (e) {
+        showToast.error((e as Error).message || 'Could not delete the conversation.');
+        return;
+      }
+    }
     const remaining = conversations.filter((c) => c.id !== active.id);
-    if (!remaining.length) return;
     setConversations(remaining);
-    setActiveId(remaining[0].id);
+    setActiveId(remaining[0]?.id ?? '');
     setMobileInboxPane("list");
     setMoreOpen(false);
-    showToast.success(`Conversation with ${active.name} archived.`);
+    showToast.success(`Conversation with ${active.name} deleted.`);
   };
 
   const isInitialInboxLoading = !demoInbox && inboxApi.initialLoading && !conversations.length;

@@ -138,6 +138,7 @@ export const gosApi = {
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),
   // A team member's reply, sent to the customer through the connected Messenger, Instagram or WhatsApp channel.
   replyToConversation: (conversationId: string, body: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/replies`, { method: 'POST', body: { body } }),
+  deleteConversation: (conversationId: string) => gosRequest<{ deleted: boolean }>(`/inbox/conversations/${id(conversationId)}`, { method: 'DELETE' }),
   inboxSummary: (signal?: AbortSignal) => gosRequest<{ conversations_today: number; needed_team: number; conversations: ApiRecord[] }>('/inbox/summary', { signal }),
   // This ingests customer messages; it is not an outbound staff-reply API.
   receiveMessage: (body: InboxSimulationInput) => meteredRequest<{ outcome: string; conversation: ApiRecord; inbound?: ApiRecord; reply: ApiRecord | null; action?: { type: string; label: string; detail?: string; lead_id?: string | null } | null }>({ action: 'inboxSimulation', payload: body }),
