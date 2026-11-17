@@ -38,7 +38,8 @@ export const api = {
     ? r.channels
     : Object.entries(r.channels).map(([channel, enabled]): Channel => ({ channel, status: enabled ? 'connected' : 'idle', enabled, external_id: null, name: null, method: 'manual' }))),
   metaConfig: () => call<{ meta: MetaConfig }>('GET', '/ai/channels/meta/config').then(r => r.meta),
-  metaLoginUrl: (channel: 'messenger' | 'instagram' | 'whatsapp') => call<{ url: string }>('POST', '/ai/channels/meta/login-url', { channel }).then(r => r.url),
+  /** Instagram `page` connects an account linked to a Facebook Page; the default is Unified Login (business portfolio). */
+  metaLoginUrl: (channel: 'messenger' | 'instagram' | 'whatsapp', method: 'default' | 'page' = 'default') => call<{ url: string }>('POST', '/ai/channels/meta/login-url', { channel, method }).then(r => r.url),
   metaClaim: (claim: string) => call<{ pages?: MetaPage[]; channel?: Channel }>('POST', '/ai/channels/meta/claim', { claim }),
   whatsappManual: (body: { external_id: string; access_token: string; app_secret: string }) =>
     call<{ channel: Channel }>('PUT', '/ai/channels/whatsapp', { enabled: true, ...body }).then(r => r.channel),

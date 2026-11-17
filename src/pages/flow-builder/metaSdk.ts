@@ -1,4 +1,4 @@
-export type MetaConfig = { app_id: string | null; graph_version: string; login_config_id: string | null; whatsapp_config_id: string | null; ready: boolean; channels: Record<'messenger' | 'instagram' | 'whatsapp', boolean>; webhook_url: string; verify_token: string | null }
+export type MetaConfig = { app_id: string | null; graph_version: string; login_config_id: string | null; whatsapp_config_id: string | null; ready: boolean; channels: Record<'messenger' | 'instagram' | 'whatsapp', boolean>; instagram_page?: boolean; webhook_url: string; verify_token: string | null }
 
 /**
  * Runs Meta's connect window, which lives on our API's domain so white-label domains need no

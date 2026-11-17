@@ -48,10 +48,10 @@ const providers = [
     accountLabel: 'Connected Facebook Page',
     accountPlaceholder: 'e.g. Upklick Official Page',
     description: 'Manage Facebook Page messages in your unified inbox and automations.',
-    capabilities: ['Unified Inbox DMs', 'Comment Replies', 'AI Auto-Responder'],
+    capabilities: ['Unified Inbox DMs', 'AI Auto-Responder'],
     scopes: [
       'Read the Facebook Pages you manage',
-      'Receive and reply to Page messages and comments in real time',
+      'Receive and reply to Page messages in real time',
     ],
     prerequisites: [
       'Admin access to a Facebook Business Page',
@@ -94,11 +94,11 @@ const providers = [
     setupTime: '~2 min setup',
     accountLabel: 'Connected Instagram Handle',
     accountPlaceholder: 'e.g. @upclick.app',
-    description: 'Manage Instagram Business DMs, story and comment replies in your unified inbox.',
-    capabilities: ['Instagram DMs', 'Story & Comment Replies', 'AI Auto-Responder'],
+    description: 'Manage Instagram Business DMs in your unified inbox.',
+    capabilities: ['Instagram DMs', 'AI Auto-Responder'],
     scopes: [
       'Read linked Instagram Business accounts',
-      'Receive and reply to Instagram direct messages and comments in real time',
+      'Receive and reply to Instagram direct messages in real time',
     ],
     prerequisites: [
       'An Instagram Professional (Business or Creator) account linked to your Facebook Page',
@@ -359,6 +359,11 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
               {translateText(p.channel === 'instagram' ? 'Add another account' : 'Add another page')}
             </button>
           </div>
+        )}
+        {p.channel === 'instagram' && !connected && meta.config?.instagram_page && (
+          <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.connect('instagram', true)}>
+            {translateText('Connect through a Facebook Page instead')}
+          </button>
         )}
         {isWhatsApp && !connected && !meta.manual && (
           <button type="button" className="st-secondary small" onClick={openManualWhatsApp}>

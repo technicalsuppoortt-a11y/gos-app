@@ -41,13 +41,13 @@ export function useMetaChannels() {
     setBusy(null)
   }
 
-  const connect = (channel: MetaChannel) => run(channel, async () => {
-    if (!config?.channels[channel]) throw new Error('This channel is not available yet. Please contact your provider.')
+  const connect = (channel: MetaChannel, viaPage = false) => run(channel, async () => {
+    if (viaPage ? !config?.instagram_page : !config?.channels[channel]) throw new Error('This channel is not available yet. Please contact your provider.')
     const popup = window.open('about:blank', 'meta-connect', 'width=640,height=760')
     if (!popup) throw new Error('Your browser blocked the Facebook window. Allow popups, then try again.')
     let claim: string
     try {
-      claim = await metaConnectWindow(popup, await api.metaLoginUrl(channel))
+      claim = await metaConnectWindow(popup, await api.metaLoginUrl(channel, viaPage ? 'page' : 'default'))
     } catch (e) {
       popup.close()
       throw e
@@ -113,6 +113,9 @@ export function Channels() {
               {connected
                 ? <button type="button" className="fb-btn fb-btn-ghost" onClick={() => disconnect(c!, card.title)} disabled={busy !== null}>{busy === card.id ? translateText("Disconnecting…") : translateText("Disconnect")}</button>
                 : <button type="button" className="fb-btn fb-btn-primary" onClick={() => connect(card.id)} disabled={busy !== null || channels === null}>{translateText(busy === card.id ? "Opening Meta…" : card.button)}</button>}
+              {!connected && card.id === 'instagram' && config?.instagram_page && (
+                <button type="button" className="fb-btn fb-btn-soft" onClick={() => connect('instagram', true)} disabled={busy !== null || channels === null}>{translateText("Connect through a Facebook Page")}</button>
+              )}
             </div>
 
             {card.id === 'whatsapp' && !connected && !manual && (
