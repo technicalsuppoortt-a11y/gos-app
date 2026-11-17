@@ -1125,23 +1125,23 @@
 }
 /* Apply the supplied lavender swatch to every brand generation action. */
 .bs-root.studio-workspace.studio-reference-workspace .studio-element-generate {
-  border-color: #b6e6dc;
-  background: linear-gradient(135deg, #f8f6fc 0%, #eef9f7 100%);
-  color: #153c39;
+  border-color: var(--academy-accent-border);
+  background: linear-gradient(135deg, #f8f6fc 0%, var(--ui-surface-hover) 100%);
+  color: var(--academy-accent-surface-dark);
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-guided-section .studio-section-heading > .studio-element-generate {
   border-style: solid;
-  background: linear-gradient(135deg, #f8f6fc 0%, #eef9f7 100%);
-  color: #153c39;
+  background: linear-gradient(135deg, #f8f6fc 0%, var(--ui-surface-hover) 100%);
+  color: var(--academy-accent-surface-dark);
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-element-generate:hover {
-  border-color: #b6e6dc;
-  background: linear-gradient(135deg, #eef9f7 0%, #b6e6dc 100%);
+  border-color: var(--academy-accent-border);
+  background: linear-gradient(135deg, var(--ui-surface-hover) 0%, var(--academy-accent-border) 100%);
   color: #102b2b;
 }
 .bs-root.studio-workspace.studio-reference-workspace .studio-guided-section .studio-section-heading > .studio-element-generate:hover {
   border-style: solid;
-  background: linear-gradient(135deg, #eef9f7 0%, #b6e6dc 100%);
+  background: linear-gradient(135deg, var(--ui-surface-hover) 0%, var(--academy-accent-border) 100%);
   color: #102b2b;
 }
 
@@ -1179,4 +1179,107 @@
 }
 
 
+}
+
+/* ── Generator panel (was a pop-up): a compact card right under the name,
+   colors and typography it belongs to, with an identity-colored header. ── */
+/* At the readable 85% scale the identity cards keep their natural height and the column scrolls,
+   instead of squeezing name, colors and typography into a short strip. */
+.bs-root.studio-workspace.studio-reference-workspace .studio-workspace-primary,
+.bs-root.studio-workspace.studio-reference-workspace .studio-workspace-primary:has(> .lb-inline-panel) {
+  grid-template-rows: none !important;
+  grid-auto-rows: max-content !important;
+  align-content: start;
+  overflow-y: auto !important;
+}
+.bs-root.studio-workspace.studio-reference-workspace .studio-workspace-primary > .lb-inline-panel {
+  order: 1;
+  flex-shrink: 0;
+  min-height: max-content;
+  margin: 0;
+  padding: 0 !important;
+  border: 1px solid var(--academy-accent-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px -10px rgb(var(--academy-shadow-rgb) / 0.45);
+}
+.lb-inline-panel.studio-element-dialog .studio-generation-header {
+  margin: 0;
+  padding: 12px 52px 12px 16px;
+  background: var(--academy-action-gradient);
+  color: #fff;
+}
+[dir="rtl"] .lb-inline-panel.studio-element-dialog .studio-generation-header,
+.lb-inline-panel.studio-element-dialog[dir="rtl"] .studio-generation-header { padding: 12px 16px 12px 52px; }
+.lb-inline-panel.studio-element-dialog .studio-generation-header :is(h2, p, small, span, svg) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff;
+}
+.lb-inline-panel.studio-element-dialog .studio-generation-header p { opacity: .9; margin: 2px 0 0; font-size: 12px; }
+.lb-inline-panel.studio-element-dialog .studio-generation-icon { background: rgb(255 255 255 / .18); color: #fff; }
+.lb-inline-panel.studio-element-dialog .studio-dialog-close {
+  top: 10px;
+  color: #fff;
+  background: rgb(255 255 255 / .16);
+  border: 1px solid rgb(255 255 255 / .35);
+}
+.lb-inline-panel.studio-element-dialog .studio-generation-header ~ * { margin-inline: 16px; }
+.lb-inline-panel.studio-element-dialog .studio-generation-header ~ :last-child { margin-bottom: 14px; }
+.lb-inline-panel.studio-element-dialog .studio-generation-questions { gap: 10px; margin: 12px 16px; }
+/* Give the three identity cards more width than the preview at the readable scale. */
+@scope (.brand-engine-module) {
+@media (min-width: 768px) {
+  .bs-root.studio-workspace.studio-reference-workspace .studio-workspace-grid {
+    grid-template-columns: minmax(0, 2.3fr) minmax(300px, 1fr);
+  }
+}
+/* Template tiles: one per row so each name and its swatches read in full. */
+.studio-reference-workspace .studio-color-presets .studio-palette-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@scope (.brand-engine-module) {
+/* C2: name card shows a live wordmark and naming tips instead of empty space. */
+.lb-wordmark-preview {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  margin-top: 12px;
+  padding: 22px 12px;
+  border-radius: 12px;
+  background: var(--lb-canvas, #f3f6f8);
+  border: 1px dashed var(--lb-card-border, #e3e9ee);
+}
+.lb-wordmark-preview span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.lb-wordmark-preview i { width: 56px; height: 4px; border-radius: 4px; }
+.lb-name-tips {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lb-name-tips li {
+  position: relative;
+  padding-inline-start: 20px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lb-text-body, #4b5563);
+}
+.lb-name-tips li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 4px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--lb-accent, #00d68f);
+}
 }

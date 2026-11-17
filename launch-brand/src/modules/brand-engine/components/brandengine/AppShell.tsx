@@ -19,7 +19,15 @@ import { WizardPage, BuilderPage, DashboardPage } from "../../pages/workspacePag
 export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }) {
   useWorkspaceNavigation();
   const { mode, language, activeStep } = useAppSelector((s) => s.brand);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Collapsed to icons by default (the top steps already show where you are);
+  // the person's own choice is remembered for next time.
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
+    try { return localStorage.getItem("launch-brand:sidebar-collapsed") !== "false"; } catch { return true; }
+  });
+  const setSidebarCollapsed = (value: boolean) => {
+    setSidebarCollapsedState(value);
+    try { localStorage.setItem("launch-brand:sidebar-collapsed", String(value)); } catch { /* storage unavailable */ }
+  };
   const [navigationOpen, setNavigationOpen] = useState(false);
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();

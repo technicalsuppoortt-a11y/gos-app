@@ -159,14 +159,14 @@
 }
 .studio-palette-grid button:hover,
 .studio-color-presets .studio-palette-special:hover {
-  border-color: #269f90;
+  border-color: var(--academy-accent);
 }
 .studio-color-presets button[aria-pressed="true"] {
-  border-color: #269f90;
-  box-shadow: 0 0 0 1px #269f90;
+  border-color: var(--academy-accent);
+  box-shadow: 0 0 0 1px var(--academy-accent);
 }
 .studio-color-presets button:focus-visible {
-  outline: 2px solid #269f90;
+  outline: 2px solid var(--academy-accent);
   outline-offset: 2px;
 }
 .studio-color-presets button:disabled {

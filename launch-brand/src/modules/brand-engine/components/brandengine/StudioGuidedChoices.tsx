@@ -120,6 +120,21 @@ export function StudioGuidedChoices({
             placeholder={t("Your brand name", "اسم براندك")}
           />
         </article>
+        {/* Live wordmark: the name in the chosen heading font and brand color, so the
+            empty part of this card shows the identity taking shape. */}
+        <div className="lb-wordmark-preview" aria-hidden="true">
+          <span style={{ fontFamily: theme.typography.heading, color: theme.light.primary }} dir="auto">
+            {state.brandName.trim() || t("Your brand", "براندك")}
+          </span>
+          <i style={{ background: `linear-gradient(90deg, ${theme.light.primary}, ${theme.light.secondary})` }} />
+        </div>
+        {names.length === 0 && (
+          <ul className="lb-name-tips">
+            <li>{t("Short and easy to say aloud", "قصير وسهل في النطق")}</li>
+            <li>{t("Easy to spell after hearing it once", "سهل الكتابة بعد ما تسمعه مرة")}</li>
+            <li>{t("Hints at your promise, not your service", "بيلمّح لوعدك مش لخدمتك")}</li>
+          </ul>
+        )}
         {names.length > 0 && (
           <div className="studio-name-options studio-top-name-options" role="group" aria-label={t("Top brand name suggestions", "أبرز اقتراحات اسم البراند")}>
             {names.slice(0, 4).map((candidate) => (

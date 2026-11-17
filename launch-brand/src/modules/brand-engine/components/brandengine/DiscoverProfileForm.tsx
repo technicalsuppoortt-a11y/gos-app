@@ -1,4 +1,4 @@
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, type ReactNode } from "react";
 import {
   Stethoscope,
   Dumbbell,
@@ -136,12 +136,15 @@ export function DiscoverProfileForm({
   edit,
   ar,
   busy,
+  aside,
 }: {
   profile: DiscoveryProfile;
   config: DiscoveryConfiguration;
   edit: (patch: Partial<DiscoveryProfile>) => void;
   ar: boolean;
   busy: boolean;
+  /** Shown in the right rail under the language question (live summary and next steps). */
+  aside?: ReactNode;
 }) {
   const [countryOpen, setCountryOpen] = useState(false);
   const formId = useId();
@@ -357,6 +360,7 @@ export function DiscoverProfileForm({
           </div>
         </div>
       </section>
+      {aside}
       {/*
       <section className={`profile-section section-preferences ${active === 3 ? "is-open" : ""}`}>
         {heading(

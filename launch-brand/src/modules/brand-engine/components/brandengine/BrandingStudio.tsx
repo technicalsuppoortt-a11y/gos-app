@@ -78,15 +78,8 @@ import { BrandLogoImage } from "./BrandLogoImage";
 import { StudioGuidedChoices } from "./StudioGuidedChoices";
 import { StudioElementGenerator } from "./StudioElementGenerator";
 import { StudioOptionalDirections } from "./StudioOptionalDirections";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/modules/brand-engine/lib/inlinePanel";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/modules/brand-engine/components/ui/sheet";
 const colorLabels: Record<keyof BrandColors, [string, string]> = {
   primary: ["Brand color", "لون البراند"],
   buttonBackground: ["Button color", "لون الأزرار"],
@@ -139,6 +132,8 @@ export function BrandingStudio({
   const ar = state.language === "ar";
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const theme = resolveBrandTheme(state);
+  // The chosen identity colors that color the logo's shapes (primary, secondary, accent).
+  const identityPalette = [theme.light.primary, theme.light.secondary, theme.light.buttonBackground];
   const { connection } = useAIConnection();
   const brand = useDashboardBrand();
 
@@ -590,7 +585,7 @@ export function BrandingStudio({
     const identity = currentLogoIdentity();
     const raster = isRasterBrandLogo(identity);
     if (raster && format === "svg") throw new Error(t("This logo is an image. Download it as PNG.", "اللوجو ده صورة. حمّله بصيغة PNG."));
-    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary);
+    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary, { palette: identityPalette });
     const file =
       raster ? await rasterLogoPngFile(identity) : format === "svg"
         ? new File(
@@ -622,7 +617,7 @@ export function BrandingStudio({
     !state.pageParameters["branding"]?.["uploadedLogo"];
   const currentLogoUrl = brand.logoUrl || (showAcademyLogo
     ? joeAcademyLogoUrl
-    : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary)));
+    : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary, { palette: identityPalette })));
   const language = state.language;
   const showAdvanced = advanced,
     setShowAdvanced = setAdvanced;
@@ -843,7 +838,7 @@ export function BrandingStudio({
   const downloadIdentity = async (identity: BrandIdentity, format: "png" | "svg") => {
     const raster = isRasterBrandLogo(identity);
     if (raster && format === "svg") throw new Error(t("This logo is an image. Download it as PNG.", "اللوجو ده صورة. حمّله بصيغة PNG."));
-    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary);
+    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary, { palette: identityPalette });
     const file =
       raster ? await rasterLogoPngFile(identity) : format === "svg"
         ? new File(
@@ -945,7 +940,7 @@ export function BrandingStudio({
         </button>
         <LogoDownloadDialog
           concept
-          logoUrl={logoDataUrl(createBrandLogoSvg(displayed, theme.light.primary))}
+          logoUrl={logoDataUrl(createBrandLogoSvg(displayed, theme.light.primary, { palette: identityPalette }))}
           brandName={displayed.name}
           ar={ar}
           original={false}
@@ -1011,40 +1006,22 @@ export function BrandingStudio({
           {error}
         </p>
       )}
-      {
-        <StudioElementGenerator
-          key={`element-generator-${currentUid.current}`}
-          element={elementToGenerate}
-          busy={Boolean(busy)}
-          connected={Boolean(connection && !connection.aiPaused)}
-          error={error}
-          requestId={elementToGenerate ? activeElementRequest.current?.id : undefined}
-          onClose={() => {
-            setElementToGenerate(null);
-            if (currentUid.current)
-              void saveBrandDraft().catch((error) => toast.error(aiError(error, ar)));
-          }}
-          onGenerate={generateElement}
-          onApply={applyElement}
-        />
-      }
       {/* More Settings Drawer */}
-      <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
-        <SheetContent
+      <Dialog.Root open={showAdvanced} onOpenChange={setShowAdvanced}>
+        <Dialog.Content
           id="studio-advanced-settings"
-          side={ar ? "left" : "right"}
           className="bs-root studio-theme studio-advanced-sheet"
           dir={ar ? "rtl" : "ltr"}
         >
-          <SheetHeader>
-            <SheetTitle>{t("Advanced customization", "تخصيص متقدم")}</SheetTitle>
-            <SheetDescription>
+          <div className="studio-advanced-header">
+            <Dialog.Title>{t("Advanced customization", "تخصيص متقدم")}</Dialog.Title>
+            <Dialog.Description>
               {t(
                 "Optional details. Your identity already works without changing these.",
                 "تفاصيل اختيارية. هويتك جاهزة من غير ما تحتاج تعدّلها.",
               )}
-            </SheetDescription>
-          </SheetHeader>
+            </Dialog.Description>
+          </div>
           <div className="studio-advanced-groups">
             <details>
               <summary>{t("Appearance & protected details", "المظهر والتفاصيل المحمية")}</summary>
@@ -1343,8 +1320,8 @@ export function BrandingStudio({
               </div>
             </details>
           </div>
-        </SheetContent>
-      </Sheet>
+        </Dialog.Content>
+      </Dialog.Root>
 
       <div className="bs-main-split studio-workspace-grid">
         <div className="studio-workspace-column studio-workspace-primary">
@@ -1358,6 +1335,24 @@ export function BrandingStudio({
               setElementToGenerate(element);
             }}
           />
+          {/* Opens in place, right under the name, colors and typography it belongs to. */}
+          {
+            <StudioElementGenerator
+              key={`element-generator-${currentUid.current}`}
+              element={elementToGenerate}
+              busy={Boolean(busy)}
+              connected={Boolean(connection && !connection.aiPaused)}
+              error={error}
+              requestId={elementToGenerate ? activeElementRequest.current?.id : undefined}
+              onClose={() => {
+                setElementToGenerate(null);
+                if (currentUid.current)
+                  void saveBrandDraft().catch((error) => toast.error(aiError(error, ar)));
+              }}
+              onGenerate={generateElement}
+              onApply={applyElement}
+            />
+          }
           {/* Current logo and optional alternatives */}
           <section
             aria-labelledby="studio-logo-heading"
@@ -1426,7 +1421,7 @@ export function BrandingStudio({
                   )
                 ) : (
                   <img
-                    src={showAcademyLogo ? joeAcademyLogoUrl : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))}
+                    src={showAcademyLogo ? joeAcademyLogoUrl : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary, { palette: identityPalette }))}
                     alt={showAcademyLogo ? "Joe Academy" : state.brandName}
                   />
                 )}

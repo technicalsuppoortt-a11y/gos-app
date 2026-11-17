@@ -22,6 +22,10 @@ import { logoAttemptLimit, reserveLogoAttempt, finishLogoAttempt } from "./logoA
 import { readLogoHistory } from "./logoHistory.js";
 import { where } from "firebase/firestore";
 import { generateRasterLogo } from "./logoImageWorkflow.js";
+// Logos are generated as vectors (SVG paths) so they can draw themselves in the
+// chosen identity colors. The raster image workflow is kept intact; set this to
+// "raster" to switch back to it.
+const LOGO_OUTPUT = "vector";
 import { logoImageModelFor } from "./logoImageProvider.js";
 import {
   brandBrief,
@@ -379,7 +383,7 @@ export async function invokeDirectAI(name, input) {
       async (progress) => {
         await progress("generating");
         const logoReferenceParts = element === "logo" ? await createLogoReferenceParts(brief) : [];
-        if (element === "logo" && ["gemini", "openai"].includes(connection.provider)) {
+        if (element === "logo" && LOGO_OUTPUT === "raster" && ["gemini", "openai"].includes(connection.provider)) {
           const imageConnection = trackedBrowserConnection({ ...connection, model: logoImageModelFor(connection.provider), request: undefined }, uid,
             { requestId: input.requestId, operation: "branding" });
           const result = await generateRasterLogo({ uid, requestId: input.requestId, brief, answers,
@@ -451,6 +455,10 @@ export async function invokeDirectAI(name, input) {
           await progress("validating");
           const parsed = JSON.parse(generated.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, "$1"));
           if (element) suggestions = validateElementSuggestions(parsed, element, input.requestId, brief, answers);
+          // Vector logos carry the identity colors they were designed with (primary,
+          // secondary, accent); every render of the logo colors its shapes with them.
+          if (element === "logo" && LOGO_OUTPUT === "vector") suggestions = suggestions.map(suggestion => suggestion.logo ? { ...suggestion,
+            logo: { ...suggestion.logo, palette: [brief.theme?.light?.primary, brief.theme?.light?.secondary, brief.theme?.light?.buttonBackground].filter(color => /^#[0-9a-f]{6}$/i.test(color || "")) } } : suggestion);
           else candidates = validateCandidates(adaptDirectionResult(parsed, input.requestId, brief), input.requestId, { requireDesign: true, brief });
           if (element === "logo") {
             for (const suggestion of suggestions) validateBrandLogoArtwork({

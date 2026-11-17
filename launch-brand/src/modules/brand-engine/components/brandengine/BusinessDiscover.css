@@ -34,27 +34,27 @@
 }
 .discover-page,
 .discover-admin {
-  --dp: #007d70;
+  --dp: var(--academy-accent);
   --dt: #18213e;
   --dm: #65718b;
   --db: #e2e6f0;
   --ds: #fff;
   --df: #f7f9fe;
-  --dl: #e7f8f4;
+  --dl: var(--academy-accent-surface);
   color: var(--dt);
   background: var(--df);
   font-family: inherit;
 }
 .discover-page {
-  --dp: #007d70;
+  --dp: var(--academy-accent);
   --dt: #191b2d;
   --dm: #55596b;
   --db: #eceef4;
   --ds: #ffffff;
-  --df: #f8f9fd;
-  --dl: #e7f8f4;
-  --choice-border: #269f90;
-  --choice-text: #00675d;
+  --df: #f3f6f8;
+  --dl: var(--academy-accent-surface);
+  --choice-border: var(--academy-accent);
+  --choice-text: var(--academy-accent-hover);
   flex: 1 1 0;
   height: auto;
   box-sizing: border-box;
@@ -74,13 +74,13 @@
 }
 :where(:scope).dark .discover-page,
 :where(:scope).dark .discover-admin {
-  --dp: #6ce7d4;
+  --dp: var(--academy-green);
   --dt: #edf0f7;
   --dm: #c0c7d5;
-  --db: #2d3344;
-  --ds: #151a27;
-  --df: #0b1020;
-  --dl: #153c39;
+  --db: #2a3747;
+  --ds: #131d2b;
+  --df: #0a1320;
+  --dl: var(--academy-accent-surface-dark);
   --choice-border: #387c70;
   --choice-text: #c8f5eb;
 }
@@ -629,8 +629,8 @@
 }
 .discover-page .discover-primary:hover:not(:disabled),
 .discover-admin .discover-primary:hover:not(:disabled) {
-  background: #00675d;
-  border-color: #00675d;
+  background: var(--academy-accent-hover);
+  border-color: var(--academy-accent-hover);
   color: #fff;
 }
 .discover-summary {
@@ -1478,7 +1478,7 @@
 .discover-country-search svg {
   width: 17px;
   height: 17px;
-  color: #269f90;
+  color: var(--academy-accent);
   flex-shrink: 0;
 }
 .discover-country-search input {
@@ -1492,7 +1492,7 @@
 }
 .discover-country-dialog button:focus-visible,
 .discover-country-search:focus-within {
-  outline: 2px solid #6ce7d4;
+  outline: 2px solid var(--academy-green);
   outline-offset: 2px;
 }
 .discover-country-dialog button {
@@ -1511,13 +1511,13 @@
   min-width: 0;
 }
 .discover-country-dialog button:hover {
-  border-color: #6ce7d4;
+  border-color: var(--academy-green);
   background: #f1fbf8;
 }
 .discover-country-dialog button[aria-pressed="true"] {
-  background: #e7f8f4;
-  border-color: #007d70;
-  color: #00675d;
+  background: var(--academy-accent-surface);
+  border-color: var(--academy-accent);
+  color: var(--academy-accent-hover);
 }
 .discover-country-dialog button:disabled {
   opacity: 0.4;
@@ -1543,7 +1543,7 @@
 }
 .discover-country-dialog .discover-worldwide {
   background: #f1fbf8;
-  border-color: #b6e6dc;
+  border-color: var(--academy-accent-border);
   font-size: 12px;
 }
 .discover-country-grid {
@@ -1608,9 +1608,9 @@
 }
 /* Country selection shares the calmer accent, including its portal and mobile targets. */
 .discover-country-dialog button[aria-pressed="true"] {
-  background: #e7f8f4;
-  border-color: #6ce7d4;
-  color: #00675d;
+  background: var(--academy-accent-surface);
+  border-color: var(--academy-green);
+  color: var(--academy-accent-hover);
 }
 :where(:scope).dark .discover-country-dialog {
   background: #172136 !important;
@@ -1623,7 +1623,7 @@
   border-color: #344059;
 }
 :where(:scope).dark .discover-country-dialog button[aria-pressed="true"] {
-  background: #153c39;
+  background: var(--academy-accent-surface-dark);
   border-color: #387c70;
   color: #c8f5eb;
 }
@@ -1787,9 +1787,9 @@
 .discover-generation-dialog { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 181; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 24px; border: 1px solid var(--discover-border, #d5e1e7); border-radius: 18px; background: var(--discover-surface, #fff); color: var(--discover-text, #102536); box-shadow: 0 20px 60px rgb(15 23 42 / .2); }
 .discover-generation-dialog h2 { margin: 0 0 8px; font-size: 20px; }
 .discover-generation-dialog > p { margin: 0 0 16px; font-size: 13px; color: #64748b; }
-.discover-generation-close { display: block; margin-inline-start: auto; min-height: 40px; border: 0; border-radius: 9px; padding: 8px 16px; background: #007d70; color: white; font-weight: 600; }
+.discover-generation-close { display: block; margin-inline-start: auto; min-height: 40px; border: 0; border-radius: 9px; padding: 8px 16px; background: var(--academy-accent); color: white; font-weight: 600; }
 .discover-generation-close:disabled { opacity: .55; cursor: wait; }
-.discover-generation-close:focus-visible { outline: 3px solid #6ce7d4; outline-offset: 3px; }
+.discover-generation-close:focus-visible { outline: 3px solid var(--academy-green); outline-offset: 3px; }
 .discover-page .discover-generation-resume {
   width: 100%;
   min-height: 36px;
@@ -1802,7 +1802,7 @@
   line-height: 1.4;
 }
 .discover-generation-resume svg { flex-shrink: 0; }
-.discover-generation-resume:focus-visible { outline: 3px solid #6ce7d4; outline-offset: 3px; }
+.discover-generation-resume:focus-visible { outline: 3px solid var(--academy-green); outline-offset: 3px; }
 
 /* Gos market discovery: page-scoped surfaces, choices and responsive layout. */
 .discover-market-only .discover-layout {
@@ -2079,4 +2079,22 @@
   }
 }
 
+}
+
+/* Reset confirmation (was a pop-up): a small card attached above the Reset
+   button, no overlay; Cancel and Reset behave exactly as before. */
+.discover-footer :has(> .lb-inline-panel) { position: relative; }
+.discover-footer .lb-inline-panel {
+  position: absolute !important;
+  bottom: calc(100% + 10px) !important;
+  inset-inline-end: 0 !important;
+  z-index: 40 !important;
+  width: min(380px, 85vw) !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 1px solid var(--lb-card-border, #e3e9ee) !important;
+  border-radius: 14px !important;
+  background: var(--lb-card, #fff) !important;
+  box-shadow: 0 16px 40px -12px rgb(10 19 32 / 0.25) !important;
+  text-align: start;
 }

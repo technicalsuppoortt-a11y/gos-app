@@ -166,6 +166,10 @@ export function WizardPage() {
   };
   const deploymentInProgress = state.phoenixPreparation.state === "transferring";
   const activeStep = getWizardStepId(state.activeStep);
+  // Keep the Identity Studio (and its live preview frame) mounted once opened, hidden
+  // on other steps, so returning to it does not rebuild the whole studio.
+  const studioOpened = useRef(false);
+  if (activeStep === 14) studioOpened.current = true;
   const current = steps.find((s) => s.id === activeStep);
   const index = wizardOrder.indexOf(activeStep);
   const isRtl = state.language === "ar";
@@ -187,7 +191,7 @@ export function WizardPage() {
         <Rocket aria-hidden="true" />
         {isRtl ? "جارٍ إرسال إعداداتك إلى Joe Academy" : "Sending your configuration to Joe Academy"}
       </button>}
-      {(activeStep === 14 || activeStep === 18) && (
+      {(activeStep === 14 || activeStep === 18 || studioOpened.current) && (
         <section className="studio-page-frame" style={{ display: activeStep === 14 ? undefined : "none" }}>
           <Suspense fallback={activeStep === 14 ? <JoeAcademyLoader /> : null}>
             <BrandingStudio onSaveActionChange={onStudioSaveActionChange} onResetActionChange={onStudioResetActionChange} />
@@ -198,9 +202,9 @@ export function WizardPage() {
         <AnimatePresence mode="sync">
           <motion.div
             key={activeStep}
-            initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
             <Suspense fallback={<JoeAcademyLoader />}>

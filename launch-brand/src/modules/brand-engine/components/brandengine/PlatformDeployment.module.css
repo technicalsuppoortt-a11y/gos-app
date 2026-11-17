@@ -2,7 +2,7 @@
 @scope (:global(.brand-engine-module)) {
 .page {
   /* Keep deployment styling local so the embedded customer site retains its own palette. */
-  --deployment-primary: #6ce7d4;
+  --deployment-primary: var(--academy-green);
   --deployment-primary-foreground: oklch(0.99 0 0);
   min-height: 0;
   padding: 4px 16px 0;
@@ -1904,4 +1904,51 @@
   .reviewAction { bottom: 115px; }
 }
 
+/* Readable workspace scale (72%): stack the summary card so its rows do not wrap. */
+@media (min-width: 768px) {
+  .deploymentGrid { grid-template-columns: minmax(0, 1.9fr) minmax(400px, 1fr); }
+  .workspaceBody { grid-template-columns: minmax(0, 1fr); }
+  .launchStage { min-height: 0; padding-block: 8px 12px; }
+  .mainColumn { min-height: 0; }
+  /* Content taller than the screen scrolls instead of being cut off. */
+  .page { overflow-y: auto !important; padding-bottom: 72px; }
+  /* Marketing and Launch (plan C4/7): the 8 steps become a vertical checklist on
+     the left, and the launch area with its one big button fills the right. */
+  .mainColumn { grid-template-columns: minmax(230px, 280px) minmax(0, 1fr) !important; grid-template-rows: auto !important; }
+  .progress {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-auto-rows: auto;
+    row-gap: 4px;
+    align-content: start;
+    padding: 18px 16px !important;
+    border-bottom: 0 !important;
+    border-inline-end: 1px solid color-mix(in oklab, var(--border) 65%, transparent);
+  }
+  .progress li {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-items: start !important;
+    gap: 12px !important;
+    padding: 8px 6px !important;
+    font-size: .8125rem !important;
+    text-align: start !important;
+  }
+  .progress li > span:last-child { white-space: normal !important; }
+  .progress li:not(:last-child)::after { display: none !important; }
+  .progressDot { width: 28px !important; height: 28px !important; flex: none; }
+  .launchStage { align-content: center; grid-template-columns: minmax(0, 1fr) !important; justify-items: center; }
+  /* The side cards repeat what the checklist on the left already shows. */
+  .launchStage > .workingCard, .launchStage > .readyCard { display: none !important; }
+  .primaryAction {
+    min-height: 48px !important;
+    padding: 12px 28px !important;
+    border-radius: 12px !important;
+    background: var(--lb-action, linear-gradient(135deg, #00805a, #0066dd)) !important;
+    color: #fff !important;
+    font-size: .9375rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 10px 24px -10px rgb(0 102 221 / 0.55) !important;
+  }
+}
 }

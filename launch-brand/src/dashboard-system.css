@@ -1,26 +1,30 @@
 /* Shared identity and theme tokens; auth keeps its existing canvas layout. */
 :root {
-  --academy-green: #00d68f;
-  --academy-teal: #00c6b8;
-  --academy-blue: #0077ff;
-  --academy-accent: #007d70;
-  --academy-accent-hover: #00675d;
-  --academy-accent-text: #00675d;
-  --academy-accent-surface: #e7f8f4;
-  --academy-accent-border: #b6e6dc;
-  --academy-action-blue: #005bbb;
-  --academy-shadow-rgb: 0 125 112;
+  --academy-green: var(--lb-green);
+  --academy-teal: var(--lb-teal);
+  --academy-blue: var(--lb-blue);
+  /* Identity palette (public/Lanuch-brand). Accent and action blue are the
+     identity green and blue deepened so white text on them meets WCAG AA
+     (4.9:1 and 5.3:1); the bright tones stay for gradients and dark mode. */
+  --academy-accent: var(--lb-action-start);
+  --academy-accent-hover: var(--lb-action-hover);
+  --academy-accent-text: var(--lb-accent-text);
+  --academy-accent-surface: var(--lb-accent-surface);
+  --academy-accent-surface-dark: var(--lb-accent-surface-dark);
+  --academy-accent-border: var(--lb-accent-border);
+  --academy-action-blue: var(--lb-action-end);
+  --academy-shadow-rgb: 0 128 90;
   --academy-gradient: linear-gradient(135deg, var(--academy-green), var(--academy-teal), var(--academy-blue));
   --academy-action-gradient: linear-gradient(135deg, var(--academy-accent), var(--academy-action-blue));
   --app-font-sans: var(--font-sans);
   --app-sidebar-width: 244px;
   --app-header-height: 58px;
-  --app-canvas: #f8f9fd;
+  --app-canvas: var(--lb-canvas);
   --app-indigo: var(--academy-accent);
   --brand-gradient: var(--academy-action-gradient);
   --ui-surface: #fff;
   --ui-surface-raised: #f8faff;
-  --ui-surface-hover: #eef9f7;
+  --ui-surface-hover: #eafaf3;
   --ui-accent-surface: var(--academy-accent-surface);
   --ui-text: #191b2d;
   --ui-text-secondary: #55596b;
@@ -33,22 +37,22 @@
   --border-color: var(--ui-border);
 }
 html.dark {
-  --app-canvas: #0b1020;
-  --ui-surface: #151a27;
-  --ui-surface-raised: #1b2030;
-  --ui-surface-hover: #252b3b;
-  --ui-accent-surface: #153230;
+  --app-canvas: var(--lb-canvas);
+  --ui-surface: #131d2b;
+  --ui-surface-raised: #1f2a37;
+  --ui-surface-hover: #26344a;
+  --ui-accent-surface: var(--academy-accent-surface-dark);
   --ui-text: #edf0f7;
   --ui-text-secondary: #c0c7d5;
   --ui-text-muted: #a0aabc;
-  --ui-accent-text: var(--academy-teal);
-  --ui-border: #2d3344;
+  --ui-accent-text: var(--academy-green);
+  --ui-border: #2a3747;
 }
 .identity-badge {
   display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   overflow: hidden; background: var(--academy-gradient);
   color: #001018; font: 700 13px/1 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  border: 1px solid rgba(0,125,112,.25);
+  border: 1px solid rgb(var(--academy-shadow-rgb) / .25);
 }
 .identity-badge svg { width: 52%; height: 52%; max-width: 48px; max-height: 48px; }
 .joe-academy-logo { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; position: relative; isolation: isolate; }
@@ -146,7 +150,7 @@ html[dir='rtl'] .app-dashboard-shell { font-family: 'IBM Plex Sans Arabic', syst
   background: linear-gradient(180deg, #f7faff 0%, #f3f7fc 100%);
   overscroll-behavior: contain;
 }
-html.dark .app-dashboard-shell .layout-sidebar { background: #111522; border-color: #252b3a; }
+html.dark .app-dashboard-shell .layout-sidebar { background: #0e1826; border-color: #252b3a; }
 .layout-sidebar > * { flex-shrink: 0; }
 .layout-sidebar a, .layout-sidebar [class*='select-none'] { font-size: 12px; border-radius: 7px; }
 .layout-sidebar a[class*='relative border'] { min-height: 36px; padding: 8px 10px; }
@@ -154,8 +158,8 @@ html.dark .app-dashboard-shell .layout-sidebar { background: #111522; border-col
 .layout-sidebar img, .layout-sidebar [class*='animate-'] { animation: none; }
 .nav-link-active-gradient, .layout-sidebar a[class*='font-bold'][class*='border-'][class*='bg-'],
 .layout-sidebar [class*='select-none'][class*='font-bold'] {
-  background: var(--academy-gradient) !important;
-  color: #001018 !important;
+  background: var(--academy-action-gradient) !important; /* deepened identity gradient: white text stays readable */
+  color: #fff !important;
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(0,125,112,.22);
 }
@@ -171,7 +175,7 @@ html.dark .app-dashboard-shell .layout-sidebar { background: #111522; border-col
   gap: 12px; padding: 0 23px;
   background: var(--ui-surface); border-bottom: 1px solid var(--ui-border);
 }
-html.dark .app-dashboard-shell .layout-header { background: #111522; }
+html.dark .app-dashboard-shell .layout-header { background: #0e1826; }
 .workspace-breadcrumb { display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--ui-text-muted); }
 .workspace-breadcrumb strong { font-weight: 600; color: var(--ui-text); }
 .dashboard-mobile-nav { position: relative; }

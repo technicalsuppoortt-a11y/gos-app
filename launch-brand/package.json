@@ -6,6 +6,7 @@
   "description": "Launch Brand, moved from Joe Academy (phoenix-app) into gos-app. Built separately because it uses Tailwind 4; gos-app uses Tailwind 3.",
   "scripts": {
     "dev": "vite",
+    "dev:preview": "node scripts/dev-preview.mjs",
     "build": "tsc -p tsconfig.app.json && vite build && node scripts/copy-public.mjs",
     "typecheck": "tsc -p tsconfig.app.json"
   },

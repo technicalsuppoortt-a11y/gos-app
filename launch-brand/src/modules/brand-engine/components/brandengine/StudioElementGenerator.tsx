@@ -1,6 +1,6 @@
 import { brandEnginePortalContainer } from "../../lib/portalContainer";
 import { useEffect, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/modules/brand-engine/lib/inlinePanel";
 import { LoaderCircle, Sparkles, X } from 'lucide-react';
 import { actions } from "@/modules/brand-engine/store/brandSlice";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
@@ -14,6 +14,7 @@ import {
 import { StudioSelect } from "./StudioSelect";
 import { BrandLogoImage } from "./BrandLogoImage";
 import { AIGenerationProgress } from "./AIGenerationProgress";
+import { TypewriterText } from "./TypewriterText";
 import logoDesignSources from "@/modules/brand-engine/configuration/prompts/logoDesignSources.json";
 import { useLogoAttempts } from "../../hooks/useLogoAttempts";
 import { mergeLogoSuggestions } from "../../services/logoHistory.js";
@@ -436,7 +437,7 @@ function StudioElementGeneratorContent({
               </span>
               {element === "name" && (
                 <>
-                  <strong>{c.name}</strong>
+                  <TypewriterText text={c.name ?? ""} delay={index * 900} />
                   {c.arabicName && c.arabicName !== c.name && <small>{c.arabicName}</small>}
                 </>
               )}
@@ -475,6 +476,8 @@ function StudioElementGeneratorContent({
               {element === "logo" && c.logo && c.mark && (
                 <BrandLogoImage
                   primary={theme.light.primary}
+                  palette={[theme.light.primary, theme.light.secondary, theme.light.buttonBackground]}
+                  draw
                   layout="horizontal"
                   identity={{
                     ...state.selectedBrandIdentity,

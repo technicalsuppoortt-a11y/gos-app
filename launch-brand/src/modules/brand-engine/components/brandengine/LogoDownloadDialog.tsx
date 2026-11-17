@@ -1,6 +1,6 @@
 import { brandEnginePortalContainer } from "../../lib/portalContainer";
 import { useId, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/modules/brand-engine/lib/inlinePanel";
 import { Download, FileImage, FileCode2, Check, Loader2, X, ChevronDown } from 'lucide-react';
 import { Button } from "@/modules/brand-engine/components/ui/button";
 import "./LogoDownloadDialog.css";

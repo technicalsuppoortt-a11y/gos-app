@@ -653,6 +653,7 @@ export function BusinessDiscover(_props: {
               edit={editProfile}
               ar={ar}
               busy={busy}
+
             />
           ) : stage === "recommendation" ? (
             <>

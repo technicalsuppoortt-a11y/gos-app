@@ -1233,18 +1233,9 @@
   margin-inline-start: auto;
 }
 .bs-root.studio-advanced-sheet {
-  position: fixed;
-  inset-block: 0;
-  inset-inline-end: 0;
-  inset-inline-start: auto;
-  height: 100dvh;
-  background: var(--background, #fff);
-  width: min(660px, 100vw) !important;
-  max-width: 660px !important;
   display: block;
-  overflow-y: auto;
-  padding: 28px;
-  z-index: 80;
+  padding: 24px;
+  background: var(--background, #fff);
 }
 .bs-root.studio-advanced-sheet > div:first-of-type {
   margin-bottom: 20px;
@@ -1858,3 +1849,38 @@
 }
 
 }
+
+/* ── No pop-ups: dialogs render as inline panels (lib/inlinePanel.tsx) ── */
+.lb-inline-panel {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 12px 0;
+  box-shadow: 0 1px 2px rgb(10 19 32 / 0.06);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--foreground);
+  overflow: visible;
+  scroll-margin: 16px;
+  animation: lb-panel-in 160ms ease-out;
+}
+.lb-inline-panel:focus { outline: none; }
+.lb-inline-panel .studio-dialog-close,
+.lb-inline-panel > button[class*="absolute"] {
+  position: absolute;
+  top: 14px;
+  inset-inline-end: 14px;
+}
+@keyframes lb-panel-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lb-inline-panel { animation: none; } }
+
+/* Typewriter reveal for generated names */
+.lb-typewriter { display: inline-flex; align-items: center; min-height: 1.6em; font-size: 20px; }
+.lb-typewriter-caret { width: 2px; height: 1.1em; margin-inline-start: 2px; background: var(--academy-accent); opacity: 0; }
+.lb-typewriter-caret.is-typing { opacity: 1; animation: lb-caret 0.7s steps(1) infinite; }
+@keyframes lb-caret { 50% { opacity: 0; } }

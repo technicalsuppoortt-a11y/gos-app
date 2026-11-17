@@ -4,7 +4,7 @@
    Compensate viewport dimensions so scaling never leaves an empty outer frame. */
 @media (min-width: 768px) {
   .app-shell.workspace-scaled {
-    --workspace-scale: 0.60;
+    --workspace-scale: 0.75; /* Larger default workspace for readable controls and content. */
     /* Launch Brand shares the viewport with the Phoenix header. Measure its
        available content area instead of expanding beyond that header. */
     --workspace-viewport-width: calc(100cqw / var(--workspace-scale));

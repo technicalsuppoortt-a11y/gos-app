@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { BrandIdentity } from "@/modules/brand-engine/data/types";
-import { createBrandLogoSvg, createBrandLogoCardSvg, logoDataUrl, prepareBrandLogoSvg, isRasterBrandLogo, resolveBrandLogoImage, brandLogoImageUrl } from "@/modules/brand-engine/services/brandLogo";
+import { createBrandLogoSvg, createBrandLogoCardSvg, logoDataUrl, prepareBrandLogoSvg, isRasterBrandLogo, resolveBrandLogoImage, brandLogoImageUrl, withLogoDrawAnimation } from "@/modules/brand-engine/services/brandLogo";
 
 export function BrandLogoImage({
   identity,
@@ -8,14 +8,20 @@ export function BrandLogoImage({
   monochrome,
   className,
   layout = "horizontal",
+  palette,
+  draw = false,
 }: {
   identity: BrandIdentity;
   primary: string;
   monochrome?: "light" | "dark" | undefined;
   className?: string;
   layout?: "horizontal" | "card";
+  /** Identity colors for the mark's shapes (primary, secondary, accent). */
+  palette?: string[] | undefined;
+  /** Draw the vector logo step by step in front of the customer. */
+  draw?: boolean;
 }) {
-  const signature = JSON.stringify({ identity, primary, monochrome, layout });
+  const signature = JSON.stringify({ identity, primary, monochrome, layout, palette, draw });
   const [ready, setReady] = useState<{ signature: string; url: string } | null>(null);
   useEffect(() => {
     let active = true;
@@ -25,9 +31,9 @@ export function BrandLogoImage({
       }).catch(() => { /* The saved-image status reports load errors. */ });
       return () => { active = false; };
     }
-    prepareBrandLogoSvg(identity, primary, { monochrome })
+    prepareBrandLogoSvg(identity, primary, { monochrome, palette })
       .then((svg) => {
-        if (active) setReady({ signature, url: logoDataUrl(layout === "card" ? createBrandLogoCardSvg(identity, primary) : svg) });
+        if (active) setReady({ signature, url: logoDataUrl(layout === "card" ? createBrandLogoCardSvg(identity, primary) : draw ? withLogoDrawAnimation(svg) : svg) });
       })
       .catch(() => {
         /* Keep the readable preview; export reports font failures. */
@@ -42,7 +48,7 @@ export function BrandLogoImage({
       src={
         ready?.signature === signature
           ? ready.url
-          : brandLogoImageUrl(identity) || logoDataUrl(layout === "card" ? createBrandLogoCardSvg(identity, primary) : createBrandLogoSvg(identity, primary, { monochrome }))
+          : brandLogoImageUrl(identity) || logoDataUrl(layout === "card" ? createBrandLogoCardSvg(identity, primary) : createBrandLogoSvg(identity, primary, { monochrome, palette }))
       }
       alt={`${identity.name} logo`}
     />

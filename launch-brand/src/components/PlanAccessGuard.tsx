@@ -14,6 +14,8 @@ export default function PlanAccessGuard({ access, capability, children }: { acce
   const isAr = language === 'ar';
 
   const checkAccess = access !== undefined ? access : location.pathname;
+  // Local preview (?devpreview=1, see host/session.ts) has no plan data.
+  if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true' && location.search.includes('devpreview=1')) return <>{children}</>;
   const roleAllows = !capability || can(role, capability);
   if (roleAllows && hasPlanAccess(accountAccess, userProfile, checkAccess as RouteAccess, role === 'admin')) return <>{children}</>;
 

@@ -1,0 +1,71 @@
+/*
+ * Launch Brand design tokens: the single source for color roles, type scale,
+ * spacing, radius and shadow. Components and older stylesheets read these
+ * variables; change a value here to change it everywhere.
+ *
+ * Palette (public/Lanuch-brand): green #00D68F, teal #00C6B8, blue #0077FF,
+ * dark #0A1320, surface #1F2A37, light #F3F6F8.
+ */
+:root {
+  /* Raw palette */
+  --lb-green: #00d68f;
+  --lb-teal: #00c6b8;
+  --lb-blue: #0077ff;
+  --lb-dark: #0a1320;
+  --lb-surface: #1f2a37;
+  --lb-light: #f3f6f8;
+
+  /* Color roles */
+  --lb-action-start: #00805a;   /* identity green, deepened: white text 4.9:1 */
+  --lb-action-end: #0066dd;     /* identity blue, deepened: white text 5.3:1 */
+  --lb-action: linear-gradient(135deg, var(--lb-action-start), var(--lb-action-end));
+  --lb-action-hover: #006b4f;
+  --lb-on-action: #ffffff;
+  --lb-accent: var(--lb-green);           /* success, selection, progress; never behind white text */
+  --lb-accent-text: #006b4f;
+  --lb-accent-surface: #e6fbf3;
+  --lb-accent-surface-dark: #0d2d26;
+  --lb-accent-border: #a8ecd2;
+  --lb-info: var(--lb-blue);
+  --lb-gradient: linear-gradient(135deg, var(--lb-green), var(--lb-blue));
+  --lb-gradient-dark: linear-gradient(90deg, var(--lb-dark), var(--lb-teal));
+  --lb-canvas: var(--lb-light);
+  --lb-card: #ffffff;
+  --lb-card-border: #e3e9ee;
+  --lb-text: #0a1320;
+  --lb-text-body: #4b5563;
+  --lb-text-hint: #6b7280;      /* lightest grey allowed on white */
+
+  /* Type scale (px) */
+  --lb-font-ar: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --lb-font-en: 'Manrope', 'DM Sans', system-ui, sans-serif;
+  --lb-text-page: 24px;
+  --lb-text-section: 18px;
+  --lb-text-card: 15px;
+  --lb-text-base: 14px;
+  --lb-text-small: 12px;        /* minimum */
+
+  /* Spacing: 8 px grid */
+  --lb-space-1: 4px;
+  --lb-space-2: 8px;
+  --lb-space-3: 12px;
+  --lb-space-4: 16px;
+  --lb-space-5: 24px;
+  --lb-space-6: 32px;
+
+  /* Shape and depth */
+  --lb-radius: 16px;
+  --lb-radius-control: 10px;
+  --lb-card-shadow: 0 1px 2px rgb(10 19 32 / 0.04), 0 10px 28px -18px rgb(10 19 32 / 0.18);
+  --lb-focus-ring: 0 0 0 2px var(--lb-card), 0 0 0 4px var(--lb-blue);
+}
+
+html.dark {
+  --lb-canvas: var(--lb-dark);
+  --lb-card: #131d2b;
+  --lb-card-border: #2a3747;
+  --lb-text: #edf0f7;
+  --lb-text-body: #c0c7d5;
+  --lb-text-hint: #a0aabc;
+  --lb-card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+}

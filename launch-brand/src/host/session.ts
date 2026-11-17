@@ -54,6 +54,22 @@ function accountUser(user: User, claims: Record<string, unknown>, profile: Recor
   };
 }
 
+// Local preview only: `npm run dev:launch-brand` with the Firebase Auth and
+// Firestore emulators running, opened as /launch-brand/?devpreview=1. The Auth
+// emulator accepts an unsigned custom token, so no Joe Academy ticket is needed.
+// import.meta.env.DEV is false in production builds, so none of this ships.
+const devPreview = import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true'
+  && new URLSearchParams(window.location.search).get('devpreview') === '1';
+function devPreviewToken() {
+  const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const now = Math.floor(Date.now() / 1000);
+  return `${encode({ alg: 'none', typ: 'JWT' })}.${encode({
+    iss: 'firebase-auth-emulator@example.com', sub: 'dev-preview-user', aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
+    iat: now, exp: now + 3600, uid: 'dev-preview-user',
+    claims: { launchBrand: true, sourceName: 'Preview User', sourceEmail: 'preview@example.test' },
+  })}.`;
+}
+
 export function startLaunchBrandSession() {
   const store = useStore.getState();
   store.setIsAuthLoading(true);
@@ -76,6 +92,7 @@ export function startLaunchBrandSession() {
   };
   const signIn = (async () => {
     await setPersistence(auth, browserSessionPersistence);
+    if (devPreview) { await signInWithCustomToken(auth, devPreviewToken()); return; }
     if (!ticket) return;
     const result = await exchangeTicket(ticket);
     if ('platformDeployed' in result) { leaveForPlatform(); return; }
@@ -103,11 +120,13 @@ export function startLaunchBrandSession() {
       try {
         const claims = (await user.getIdTokenResult()).claims as Record<string, unknown>;
         if (claims.launchBrand !== true) throw new Error('Not a Launch Brand session.');
-        const { deployed } = await requestGosPlatform('platform-status');
-        if (auth.currentUser?.uid !== user.uid) return;
-        if (deployed === true) { leaveForPlatform(); return; }
-        if (deployed !== false) throw new Error('Could not verify Launch Brand access.');
-        const profile = (await getDoc(doc(db, 'users', user.uid))).data() ?? null;
+        if (!devPreview) {
+          const { deployed } = await requestGosPlatform('platform-status');
+          if (auth.currentUser?.uid !== user.uid) return;
+          if (deployed === true) { leaveForPlatform(); return; }
+          if (deployed !== false) throw new Error('Could not verify Launch Brand access.');
+        }
+        const profile = devPreview ? null : (await getDoc(doc(db, 'users', user.uid))).data() ?? null;
         state.setUser(accountUser(user, claims, profile));
         state.setUserProfile(profile ? { id: user.uid, ...profile } : null);
         state.setRole(normalizeRole(profile?.role));

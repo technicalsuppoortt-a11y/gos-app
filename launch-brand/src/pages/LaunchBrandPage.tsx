@@ -34,7 +34,7 @@ export default function LaunchBrandPage() {
         <span dir="auto">{isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}</span>
       </Link>
       <div className="launch-brand-toolbar-slot" ref={setHeaderTarget} />
-      <div className="launch-brand-identity"><JoeAcademyLogo className="h-9 w-9" /><span>Joe Academy</span></div>
+      <div className="launch-brand-identity"><JoeAcademyLogo className="h-9 w-9" /><span dir="auto">{isAr ? 'جو أكاديمي' : 'Joe Academy'}</span></div>
     </header>
     <main className="launch-brand-content">
       {isAuthLoading ? loading : <PlanAccessGuard access={ROUTE_ACCESS['/launch-brand']}>

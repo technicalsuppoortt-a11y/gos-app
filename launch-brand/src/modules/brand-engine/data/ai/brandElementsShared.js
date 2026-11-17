@@ -13,7 +13,7 @@ export function createBrandElementContracts({ fonts, obj, str, candidateSchema, 
   };
   const elementSchema = element => {
     if (!elements.includes(element)) throw new Error("Unsupported brand element.");
-    const count = element === "name" ? 15 : element === "logo" ? 1 : 3;
+    const count = element === "name" ? 3 : element === "logo" ? 1 : 3;
     // Allow resolved contours; do not force every concept into a tiny icon budget.
     const outputFields = element === "logo" ? { ...fields.logo, logo: obj({
       ...candidateSchema.properties.logo.properties,
@@ -102,7 +102,7 @@ export function createBrandElementContracts({ fonts, obj, str, candidateSchema, 
   };
   function validateElementSuggestions(result, element, requestId, brief, answers = {}) {
     if (result && typeof result === "object" && !Array.isArray(result.suggestions)) result = { ...result, suggestions: result.candidates || result.alternatives || (element === "name" ? result.names : element === "logo" ? result.logos : undefined) };
-    const expectedCount = element === "name" ? 15 : element === "logo" ? 1 : 3;
+    const expectedCount = element === "name" ? 3 : element === "logo" ? 1 : 3;
     if (!elements.includes(element) || !Array.isArray(result?.suggestions) || result.suggestions.length !== expectedCount) throw new Error(`Expected ${expectedCount} brand element suggestions.`);
     const suggestions = result.suggestions.map((item, index) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("Invalid brand suggestion text.");

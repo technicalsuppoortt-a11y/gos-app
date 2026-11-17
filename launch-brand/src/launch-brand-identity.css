@@ -1,0 +1,316 @@
+/*
+ * Launch Brand identity palette (public/Lanuch-brand/.jpeg) and the shared
+ * button hover: every button turns to the identity colors with white text.
+ *
+ * The hover background runs from the identity green to the identity blue,
+ * each deepened (--academy-accent, --academy-action-blue) so white text on
+ * both ends meets WCAG AA (4.9:1 and 5.3:1). The bright #00D68F / #00C6B8 /
+ * #0077FF give white text only 1.9 to 4.1:1, so they stay for accents.
+ *
+ * Opt a button out with class "lb-hover-keep" or data-hover="keep".
+ */
+:root {
+  /* Palette and roles live in launch-brand-tokens.css. */
+  --lb-hover-bg: var(--lb-action);
+  --lb-hover-text: var(--lb-on-action);
+  --lb-hover-shadow: 0 6px 16px -6px rgb(0 102 221 / 0.4);
+}
+
+/* Specificity (0,4,2) with !important: above every existing hover rule in the
+ * workspace, including the wizard footer's (0,4,0) !important overrides. */
+html body :is(.launch-brand-page, .brand-engine-module)
+  :is(button, a.launch-brand-back, [role="button"]):not(:disabled, [aria-disabled="true"], .lb-hover-keep, [data-hover="keep"]):hover {
+  background: var(--lb-hover-bg) !important;
+  border-color: transparent !important;
+  color: var(--lb-hover-text) !important;
+  -webkit-text-fill-color: var(--lb-hover-text) !important;
+  box-shadow: var(--lb-hover-shadow) !important;
+}
+
+/* Labels, hints and icons inside the button follow the white text. Colored
+ * swatches are drawn with background colors, so they are not affected. */
+html body :is(.launch-brand-page, .brand-engine-module)
+  :is(button, a.launch-brand-back, [role="button"]):not(:disabled, [aria-disabled="true"], .lb-hover-keep, [data-hover="keep"]):hover
+  :is(span, strong, small, em, b, p, div, svg, h3, h4, label) {
+  color: var(--lb-hover-text) !important;
+  -webkit-text-fill-color: var(--lb-hover-text) !important;
+}
+
+html body :is(.launch-brand-page, .brand-engine-module)
+  :is(button, a.launch-brand-back, [role="button"]):focus-visible {
+  outline: 2px solid var(--lb-blue);
+  outline-offset: 2px;
+}
+
+
+/* ───────────────────────── Design system layer ─────────────────────────
+ * One consistent look across every Launch Brand tab, in the identity palette:
+ * pill phase tabs (gradient when active), gradient step badges, softer cards
+ * with one radius and shadow, and the identity gradient for primary actions.
+ * Text on every gradient is white; all gradient ends pass WCAG AA for white.
+ */
+
+/* Phase tabs in the top bar */
+/* B1: the four steps read as one progress line: done = green tick, current =
+   gradient pill, next = grey; a thin connector runs between them. */
+html body .launch-brand-page .compact-phase { position: relative; }
+html body .launch-brand-page .compact-phase:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: -6px;
+  width: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lb-card-border);
+}
+html body .launch-brand-page .compact-phase.is-complete:not(:last-child)::after { background: var(--lb-accent); }
+html body .launch-brand-page .compact-phase .compact-phase-tab {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lb-text-hint);
+  min-height: 34px;
+  box-shadow: none;
+}
+html body .launch-brand-page .compact-phase.is-complete .compact-phase-tab {
+  background: var(--lb-accent-surface);
+  border-color: var(--lb-accent-border);
+  color: var(--lb-accent-text);
+}
+html body .launch-brand-page .compact-phase.is-active .compact-phase-tab {
+  border-radius: 999px;
+  background: var(--academy-action-gradient);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--lb-hover-shadow);
+}
+html body .launch-brand-page .compact-phase.is-active .compact-phase-tab :is(.compact-phase-number, .compact-phase-title, .compact-phase-check) { color: #fff; opacity: 1; }
+html body .launch-brand-page .compact-phase.is-active .compact-phase-tab::after { display: none; }
+
+/* Step number badges */
+html body .launch-brand-page :is(.studio-section-number, .discover-title-number, .discover-card-heading > span:first-child:not(:only-child)) {
+  background: var(--academy-action-gradient) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  -webkit-text-fill-color: #fff;
+}
+
+/* Cards: one radius, border and shadow everywhere */
+html body .launch-brand-page :is(.studio-guided-section, .bs-logos-section, .discover-main-card, .studio-identity-columns > section, [class*="_mainColumn_"], [class*="_workspaceCard_"]) {
+  border-radius: var(--lb-radius);
+  border-color: var(--lb-card-border);
+  box-shadow: var(--lb-card-shadow);
+}
+
+/* Sidebar: active item in the identity gradient with white text */
+html body .launch-brand-page .workspace-sidebar :is(button[aria-current="page"], button.active) {
+  background: var(--academy-action-gradient) !important;
+  color: #fff !important;
+}
+html body .launch-brand-page .workspace-sidebar :is(button[aria-current="page"], button.active) :is(span, svg) { color: #fff !important; -webkit-text-fill-color: #fff; }
+
+/* Back to Dashboard: quiet outline button that turns to the gradient on hover */
+html body .launch-brand-page .launch-brand-back {
+  background: var(--ui-surface);
+  border-color: var(--lb-card-border);
+  color: var(--ui-text);
+}
+
+/* ── Three button levels (plan A2) ──────────────────────────────────────
+ * Primary: identity gradient, white text, one per screen (footer main action).
+ * Secondary: white, bordered, dark text (generators, show alternatives).
+ * Quiet: no fill (Back, Reset, Export). All turn to the gradient on hover. */
+html body .launch-brand-page :is(.wizard-actions > button:last-child, .discover-primary) {
+  background: var(--lb-action) !important;
+  color: var(--lb-on-action) !important;
+  border: 0 !important;
+  border-radius: var(--lb-radius-control);
+  font-weight: 700;
+  box-shadow: 0 6px 16px -8px rgb(0 102 221 / 0.45);
+}
+html body .launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle) {
+  background: var(--lb-card) !important;
+  background-image: none !important;
+  color: var(--lb-text) !important;
+  border: 1px solid var(--lb-card-border) !important;
+  border-radius: var(--lb-radius-control) !important;
+  font-size: var(--lb-text-small);
+  font-weight: 600;
+  box-shadow: none;
+}
+html body .launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle) svg { color: var(--lb-action-start); }
+html body .launch-brand-page :is(.wizard-actions > button:not(:last-child), .discover-footer button:not(.discover-primary)) {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--lb-text-body) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+}
+html body .launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle, .wizard-actions > button, .discover-footer button):not(:disabled):hover {
+  background: var(--lb-hover-bg) !important;
+  color: var(--lb-hover-text) !important;
+  border-color: transparent !important;
+}
+html body .launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle):not(:disabled):hover svg { color: #fff; }
+
+/* C1: choice cards read clearly (labels were 11 px). */
+html body .launch-brand-page :is(.profile-option-label, .profile-radio button span:not(.profile-radio-dot)) {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lb-text);
+}
+html body .launch-brand-page .profile-options button { min-height: 44px; border-radius: var(--lb-radius-control); }
+
+/* D1: generated palettes reveal their swatches one by one, like names typing in. */
+@media (prefers-reduced-motion: no-preference) {
+  html body .launch-brand-page .studio-element-result .studio-core-colors > span {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+    animation: lb-swatch-in 420ms cubic-bezier(.22, 1, .36, 1) forwards;
+  }
+  html body .launch-brand-page .studio-element-result .studio-core-colors > span:nth-child(2) { animation-delay: 160ms; }
+  html body .launch-brand-page .studio-element-result .studio-core-colors > span:nth-child(3) { animation-delay: 320ms; }
+  html body .launch-brand-page .studio-element-result:nth-child(2) .studio-core-colors > span { animation-delay: 480ms; }
+  html body .launch-brand-page .studio-element-result:nth-child(3) .studio-core-colors > span { animation-delay: 960ms; }
+}
+@keyframes lb-swatch-in { to { opacity: 1; transform: none; } }
+
+/* ── Professional sidebar ───────────────────────────────────────────────
+ * Brand block on top with its own divider, then the steps as roomy rows with
+ * tinted icon chips and even spacing, then the account at the bottom. Nothing
+ * touches the edges; every row has the same height and gap. */
+html body .launch-brand-page .desktop-workspace-sidebar {
+  display: flex !important;
+  flex-direction: column;
+  padding: 18px 14px 14px !important;
+  gap: 0;
+  border-inline-end: 1px solid var(--lb-card-border);
+  background: var(--lb-card) !important;
+}
+html body .launch-brand-page .desktop-workspace-sidebar > .sidebar-brand {
+  padding: 4px 6px 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--lb-card-border);
+  gap: 12px;
+}
+html body .launch-brand-page .desktop-workspace-sidebar > .sidebar-brand img { width: 36px; height: 36px; }
+html body .launch-brand-page .desktop-workspace-sidebar .sidebar-brand-copy strong { font-size: 15px; color: var(--lb-text); }
+html body .launch-brand-page .desktop-workspace-sidebar .sidebar-brand-copy small { font-size: 12px; color: var(--lb-text-hint); }
+html body .launch-brand-page .desktop-workspace-sidebar > nav {
+  flex: 1 1 auto !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+}
+html body .launch-brand-page .desktop-workspace-sidebar > nav > button {
+  justify-content: flex-start !important;
+  min-height: 50px;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  gap: 12px;
+}
+html body .launch-brand-page .desktop-workspace-sidebar > nav > button .sidebar-item-label {
+  flex: 1 1 auto;
+  text-align: start;
+  font-size: 14px !important;
+  font-weight: 600;
+  color: var(--lb-text-body);
+}
+html body .launch-brand-page .desktop-workspace-sidebar > nav > button .sidebar-item-icon {
+  display: grid;
+  place-items: center;
+  width: 34px !important;
+  height: 34px !important;
+  flex: 0 0 34px !important;
+  border-radius: 10px;
+  background: var(--lb-accent-surface);
+  color: var(--lb-action-start);
+}
+html body .launch-brand-page .desktop-workspace-sidebar > nav > button:is(.active, [aria-current="page"]) .sidebar-item-icon,
+html body .launch-brand-page .desktop-workspace-sidebar > nav > button:not(:disabled):hover .sidebar-item-icon {
+  background: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+html body .launch-brand-page .desktop-workspace-sidebar > .sidebar-footer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--lb-card-border);
+  gap: 8px;
+}
+html body .launch-brand-page .desktop-workspace-sidebar.is-collapsed { padding-inline: 10px !important; }
+html body .launch-brand-page .desktop-workspace-sidebar.is-collapsed > .sidebar-brand { justify-content: center; padding-inline: 0; }
+html body .launch-brand-page .desktop-workspace-sidebar.is-collapsed > nav > button {
+  justify-content: center !important;
+  padding-inline: 0 !important;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────────────
+ * Room between Back, the Wizard / Platform Review switch and the steps; the
+ * switch is a proper segmented control; step labels are readable (12 px). */
+html body .launch-brand-page .launch-brand-header {
+  min-height: 64px;
+  padding: 10px 20px;
+  gap: 20px;
+  background: var(--lb-card);
+  border-bottom: 1px solid var(--lb-card-border);
+}
+html body .launch-brand-page .launch-brand-toolbar .compact-workspace-header { gap: 20px !important; align-items: center; }
+html body .launch-brand-page .launch-brand-toolbar .mode-switch {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--lb-canvas);
+  border: 1px solid var(--lb-card-border);
+}
+html body .launch-brand-page .launch-brand-toolbar .mode-switch button {
+  padding: 7px 14px !important;
+  border-radius: 9px;
+  font-size: 13px !important;
+  font-weight: 600;
+  color: var(--lb-text-hint);
+  background: transparent;
+  white-space: nowrap;
+}
+html body .launch-brand-page .launch-brand-toolbar .mode-switch button.active {
+  background: var(--lb-card);
+  color: var(--lb-text);
+  box-shadow: 0 1px 3px rgb(10 19 32 / 0.12);
+}
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-track { gap: 10px; }
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-title {
+  font-size: 12px !important;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-number { font-size: 12px !important; }
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-tab { min-height: 38px !important; padding: 6px 14px !important; }
+html body .launch-brand-page .compact-phase:not(:last-child)::after { display: none; }
+html body .launch-brand-page .launch-brand-back { padding: 9px 14px; border-radius: 10px; font-size: 13px; }
+
+/* Step names stay on one line; the number is dropped on narrower screens to make room. */
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-title { white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1500px) {
+  html body .launch-brand-page .launch-brand-toolbar .compact-phase-number { display: none; }
+  html body .launch-brand-page .launch-brand-toolbar .compact-phase-tab { padding-inline: 10px !important; }
+  html body .launch-brand-page .launch-brand-toolbar .compact-phase-track { gap: 4px; }
+}
+
+/* Readable top navigation, outside the scaled workspace. */
+html body .launch-brand-page .launch-brand-header { min-height: 64px; padding: 10px 20px; gap: 16px; }
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-tab { min-height: 42px !important; gap: 8px; padding: 8px 14px !important; }
+html body .launch-brand-page .launch-brand-toolbar .compact-phase-title { font-size: 13px !important; line-height: 1.5; }
+html body .launch-brand-page .launch-brand-identity { font-size: 15px; gap: 10px; }
+html body .launch-brand-page .launch-brand-identity .joe-academy-logo { width: 34px; height: 34px; }
+@media (max-width: 640px) {
+  html body .launch-brand-page .launch-brand-header { padding: 8px 12px; gap: 8px; }
+  html body .launch-brand-page .launch-brand-toolbar .compact-workspace-header { gap: 8px !important; }
+  html body .launch-brand-page .launch-brand-toolbar .compact-phase-tab { padding: 7px 8px !important; }
+  html body .launch-brand-page .launch-brand-toolbar .compact-phase-title { font-size: 12px !important; }
+  html body .launch-brand-page .launch-brand-back { padding: 7px 9px; font-size: 11px; }
+}

@@ -56,8 +56,8 @@ export function WorkspaceSidebar({ collapsed, onCollapsedChange, mobile = false,
     <TooltipProvider delayDuration={150}>
     <motion.aside className={`workspace-sidebar ${mobile ? "mobile-drawer-sidebar" : "desktop-workspace-sidebar"} ${collapsed ? "is-collapsed" : ""} ${isDark ? "force-dark" : "force-light"}`} aria-label={isRtl ? "تنقل مساحة العمل" : "Workspace navigation"} animate={{ width: mobile ? "100%" : collapsed ? 64 : 256 }} transition={{ duration: .28, ease: [0.22, 1, 0.36, 1] }}>
       <div className="sidebar-brand">
-        <img src={logo} alt="Joe Academy" className="w-8 h-8 object-contain" />
-        <div className="sidebar-brand-copy"><strong>Joe Academy</strong><small>Build. Launch. Grow.</small></div>
+        <img src={logo} alt={isRtl ? "جو أكاديمي" : "Joe Academy"} className="w-8 h-8 object-contain" />
+        <div className="sidebar-brand-copy"><strong>{isRtl ? "جو أكاديمي" : "Joe Academy"}</strong><small>Build. Launch. Grow.</small></div>
       </div>
       <nav aria-label="Project steps">
         {items.map((item) => {

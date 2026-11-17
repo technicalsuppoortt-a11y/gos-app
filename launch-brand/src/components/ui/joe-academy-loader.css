@@ -15,7 +15,7 @@
 .joe-academy-loading-brand strong { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
 .joe-academy-loading-logo { width: 56px; height: 56px; animation: joe-academy-loading-pulse 1.8s ease-in-out infinite; }
 .joe-academy-loading-logo img { width: 100%; height: 100%; }
-.joe-academy-loading-spinner { width: 32px; height: 32px; border: 2px solid #007d7030; border-top-color: #007d70; border-radius: 50%; animation: joe-academy-loading-spin 800ms linear infinite; }
+.joe-academy-loading-spinner { width: 32px; height: 32px; border: 2px solid #007d7030; border-top-color: var(--academy-accent); border-radius: 50%; animation: joe-academy-loading-spin 800ms linear infinite; }
 @keyframes joe-academy-loading-spin { to { transform: rotate(360deg); } }
 @keyframes joe-academy-loading-pulse { 50% { opacity: 0.65; transform: scale(0.96); } }
 @media (prefers-reduced-motion: reduce) {
