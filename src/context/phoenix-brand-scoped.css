@@ -3162,6 +3162,42 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-ghl-fallback-art{background:linear-gradient(155deg,color-mix(in srgb,var(--card-accent,var(--gp-action-bg, var(--gp-primary, #7C3AED))) 16%,var(--alm-surface)),var(--alm-soft)) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-ghl-fallback-art span{color:var(--card-accent,var(--gp-accent-text, var(--gp-primary, #7C3AED))) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-ghl-overlay{background:linear-gradient(to top,color-mix(in srgb, var(--gp-surface, rgba(15,23,42,.22)) 22%, transparent) 0%,color-mix(in srgb, var(--gp-surface, rgba(15,23,42,.05)) 5%, transparent) 58%,transparent 100%) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-live .alm-ghl-more-btn{border:1px solid color-mix(in srgb, var(--gp-border, rgba(226,232,240,.95)) 95%, transparent) !important;background:color-mix(in srgb, var(--gp-surface, rgba(255,255,255,.95)) 95%, transparent) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-live .alm-ghl-more-btn:hover{background:var(--gp-surface, #fff) !important;color:var(--gp-text, #0f172a) !important;border-color:var(--gp-border, #cbd5e1) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .adm-live .alm-ghl-more-btn{background:color-mix(in srgb, var(--gp-surface, rgba(24,24,38,.92)) 92%, transparent) !important;border-color:color-mix(in srgb, var(--gp-border, rgba(148,163,184,.26)) 26%, transparent) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-live .alm-ghl-menu button.danger:hover:not(:disabled){background:var(--adm-danger-bg,var(--gp-surface, #fff0f2)) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-live .alm-ghl-preview-pill{border:1px solid color-mix(in srgb, var(--gp-border, rgba(226,232,240,.95)) 95%, transparent) !important;background:color-mix(in srgb, var(--gp-surface, rgba(255,255,255,.96)) 96%, transparent) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-live .alm-ghl-preview-pill:hover{background:var(--gp-surface, #fff) !important;border-color:var(--gp-border, #bfdbfe) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .adm-live .alm-ghl-preview-pill{background:color-mix(in srgb, var(--gp-surface, rgba(24,24,38,.94)) 94%, transparent) !important;border-color:color-mix(in srgb, var(--gp-border, rgba(148,163,184,.26)) 26%, transparent) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .adm-live .alm-ghl-title:hover{color:var(--gp-accent-text, var(--gp-primary, #A78BFA)) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-ghl-new-badge{background:var(--gp-surface, #eff6ff) !important}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar {
+  border-bottom: 1px solid var(--alm-border, color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.2)) 20%, transparent)) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.03))) 3%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar > button {
+  border: 1px solid var(--alm-border, color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.28)) 28%, transparent)) !important;
+  background: var(--alm-surface, var(--gp-surface, #ffffff)) !important;
+  color: var(--alm-muted, var(--gp-text, #475569)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .alm-funnel-subview-bar > button {
+  background: var(--gp-surface, #0f172a) !important;
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar > button:hover {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #7c3aed)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar > button.active {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #6366f1)), var(--gp-action-bg, var(--gp-primary, #7c3aed))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar > button > b {
+  background: color-mix(in srgb, var(--gp-surface, rgba(255, 255, 255, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .alm-funnel-subview-bar > button:not(.active) > b {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.1))) 10%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #7c3aed)) !important;
+}
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .adm-tools-search:hover {
@@ -9544,6 +9580,10 @@
   border-color: var(--gp-border, #1e293b) !important;
 }
 
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-tpl-preview-box {
+  border-bottom: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.22)) 22%, transparent) !important;
+}
+
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-tpl-hover-actions {
   background: color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.58)) 58%, transparent) !important;
 }
@@ -9589,6 +9629,208 @@
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-tpl-modal-preview {
   border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.25)) 25%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-user-funnel-scope-btn {
+  border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.32)) 32%, transparent) !important;
+  background: var(--surface-card, var(--gp-surface, #ffffff)) !important;
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-user-funnel-scope-btn {
+  background: var(--gp-surface, #0f172a) !important;
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-user-funnel-scope-btn:hover {
+  border-color: var(--gp-primary, #6366f1) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #4f46e5)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-user-funnel-scope-btn.active {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #6366f1)), var(--gp-action-bg, var(--gp-primary, #7c3aed))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-user-funnel-scope-btn > b {
+  background: color-mix(in srgb, var(--gp-surface, rgba(255, 255, 255, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-user-funnel-scope-btn:not(.active) > b {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.1))) 10%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #4f46e5)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-step-cat-pill {
+  border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.3)) 30%, transparent) !important;
+  background: var(--surface-card, var(--gp-surface, #ffffff)) !important;
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-step-cat-pill {
+  background: var(--gp-surface, #0f172a) !important;
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-step-cat-pill.active {
+  background: var(--gp-action-bg, var(--gp-primary, #4f46e5)) !important;
+  border-color: var(--gp-primary, #4f46e5) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-architect-banner {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.1))) 10%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(139, 92, 246, 0.08))) 8%, transparent)) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-architect-banner {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.18))) 18%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.14))) 14%, transparent)) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(139, 92, 246, 0.35)) 35%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-architect-badge {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #6366f1)), var(--gp-action-bg, var(--gp-primary, #7c3aed))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.25)) 25%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-architect-banner strong {
+  color: var(--text-primary, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-architect-banner p {
+  color: var(--gp-muted-text, #64748b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-architect-banner p {
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-pill {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.14))) 14%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-pill {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(167, 139, 250, 0.18))) 18%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #c4b5fd)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-section {
+  border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.22)) 22%, transparent) !important;
+  background: color-mix(in srgb, var(--gp-surface, rgba(248, 250, 252, 0.6)) 60%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-section {
+  background: color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.55)) 55%, transparent) !important;
+  border-color: var(--gp-border, #1e293b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-section-title {
+  color: var(--text-primary, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-num {
+  background: var(--gp-action-bg, var(--gp-primary, #6366f1)) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-chip {
+  border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.3)) 30%, transparent) !important;
+  background: var(--surface-card, var(--gp-surface, #ffffff)) !important;
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-chip {
+  background: var(--gp-surface, #0f172a) !important;
+  color: var(--gp-muted-text, #94a3b8) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-chip:hover,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-chip.active {
+  border-color: var(--gp-primary, #6366f1) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.1))) 10%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #4f46e5)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-chip.active {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.22))) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-lang-toggle > button {
+  border: 1.5px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.32)) 32%, transparent) !important;
+  background: var(--surface-card, var(--gp-surface, #ffffff)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-lang-toggle > button {
+  background: var(--gp-surface, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-lang-toggle > button.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.09))) 9%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-lang-toggle > button.active {
+  border-color: var(--gp-primary, #a78bfa) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(139, 92, 246, 0.2))) 20%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #ddd6fe)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-swatch.active {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary, rgba(99, 102, 241, 0.28)) 28%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-tone-card {
+  border: 1.5px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.28)) 28%, transparent) !important;
+  background: var(--surface-card, var(--gp-surface, #ffffff)) !important;
+  color: var(--text-primary, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-tone-card {
+  background: var(--gp-surface, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-tone-card small {
+  color: var(--gp-muted-text, #64748b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-tone-card small {
+  color: var(--gp-muted-text, #94a3b8) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-tone-card.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.08))) 8%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.16)) 16%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-progress-status {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.08))) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(99, 102, 241, 0.28)) 28%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #4338ca)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-ai-progress-status {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.16))) 16%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-ai-submit-btn {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #6366f1)), var(--gp-action-bg, var(--gp-primary, #7c3aed))) !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.26)) 26%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-step-cover-wrap {
+  border-bottom: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.2)) 20%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-step-card-desc {
+  color: var(--gp-muted-text, #64748b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sys-step-card-desc {
+  color: var(--gp-muted-text, #94a3b8) !important;
 }
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
@@ -13509,6 +13751,197 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .spt-agent-actions,
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .spt-agent-actions {
   border-top-color: var(--gp-border, #303044) !important;
+}
+}
+@scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] [dir="rtl"] .fb-hero-section::after {
+  background: linear-gradient(
+    270deg,
+    color-mix(in srgb, var(--gp-surface, rgba(7, 10, 19, 0.94)) 94%, transparent) 0%,
+    color-mix(in srgb, var(--gp-surface, rgba(7, 10, 19, 0.80)) 80%, transparent) 48%,
+    color-mix(in srgb, var(--gp-surface, rgba(7, 10, 19, 0.22)) 22%, transparent) 100%
+  ) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step:not(.fb-hero-section) h2,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step:not(.fb-hero-section) > h2 {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step:not(.fb-hero-section) > p,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step:not(.fb-hero-section) p.fb-custom-text {
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step.sys-pro-dark > p,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas-section.sys-pro-step.sys-pro-dark p.fb-custom-text {
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-hero-section.sys-pro-step {
+  background-color: var(--gp-surface, #090d1a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-hero-section.sys-pro-step::after {
+  background: linear-gradient(
+    95deg,
+    color-mix(in srgb, var(--gp-surface, rgba(6, 10, 24, 0.96)) 96%, transparent) 0%,
+    color-mix(in srgb, var(--gp-surface, rgba(9, 14, 32, 0.86)) 86%, transparent) 54%,
+    color-mix(in srgb, var(--gp-surface, rgba(9, 14, 32, 0.42)) 42%, transparent) 100%
+  ) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] [dir="rtl"] .fb-hero-section.sys-pro-step::after {
+  background: linear-gradient(
+    265deg,
+    color-mix(in srgb, var(--gp-surface, rgba(6, 10, 24, 0.96)) 96%, transparent) 0%,
+    color-mix(in srgb, var(--gp-surface, rgba(9, 14, 32, 0.86)) 86%, transparent) 54%,
+    color-mix(in srgb, var(--gp-surface, rgba(9, 14, 32, 0.42)) 42%, transparent) 100%
+  ) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-hero-section.sys-pro-step.sys-pro-hero-center::after {
+  background: radial-gradient(
+    circle at 50% 30%,
+    color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.84)) 84%, transparent) 0%,
+    color-mix(in srgb, var(--gp-surface, rgba(6, 10, 24, 0.95)) 95%, transparent) 100%
+  ) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-site-primary {
+  background: linear-gradient(
+    135deg,
+    var(--fb-accent, var(--gp-action-bg, var(--gp-primary, #4f46e5))) 0%,
+    color-mix(in srgb, var(--fb-accent, var(--gp-action-bg, var(--gp-primary, #4f46e5))) 82%, var(--gp-surface, #0f172a)) 100%
+  ) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--fb-accent, var(--gp-primary, #4f46e5)) 38%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-stats-grid article {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.24)) 24%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-stats-grid article strong {
+  color: var(--fb-accent, var(--gp-accent-text, var(--gp-primary, #4f46e5))) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-stats-grid article span {
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fn-column-layout > div,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fn-column {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1px solid var(--gp-border, #e2e8f0) !important;
+  border-top: 3.5px solid var(--fb-accent, var(--gp-primary, #4f46e5)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fn-column-layout h3.fb-custom-heading {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fn-column-layout p.fb-custom-text {
+  color: var(--gp-text, #475569) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1.5px solid var(--gp-border, #e2e8f0) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-field-label {
+  color: var(--gp-text, #1e293b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form input:not([type="checkbox"]):not([type="radio"]),
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form select,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form textarea {
+  border: 1.5px solid var(--gp-border, #cbd5e1) !important;
+  background: var(--gp-surface, #f8fafc) !important;
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form input:focus,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form select:focus,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-demo-form textarea:focus {
+  background: var(--gp-surface, #ffffff) !important;
+  border-color: var(--fb-accent, var(--gp-primary, #4f46e5)) !important;
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--fb-accent, var(--gp-primary, #4f46e5)) 16%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-booking-preview {
+  border: 2px solid var(--fb-accent, var(--gp-primary, #4f46e5)) !important;
+  background: linear-gradient(180deg, var(--gp-surface, #ffffff) 0%, var(--gp-surface, #f8fafc) 100%) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-booking-preview > svg {
+  color: var(--fb-accent, var(--gp-accent-text, var(--gp-primary, #4f46e5))) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-booking-preview > span {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-values-grid article {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1px solid var(--gp-border, #e2e8f0) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-values-grid article i {
+  background: color-mix(in srgb, var(--fb-accent, var(--gp-action-bg, var(--gp-primary, #4f46e5))) 12%, var(--gp-surface, #ffffff)) !important;
+  color: var(--fb-accent, var(--gp-accent-text, var(--gp-primary, #4f46e5))) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-values-grid article b {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-price-grid article {
+  border: 1.5px solid var(--gp-border, #e2e8f0) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-price-grid article.featured {
+  border: 2px solid var(--fb-accent, var(--gp-primary, #4f46e5)) !important;
+  box-shadow: 0 20px 48px color-mix(in srgb, var(--fb-accent, var(--gp-primary, #4f46e5)) 16%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-price-grid article > small {
+  color: var(--fb-accent, var(--gp-accent-text, var(--gp-primary, #4f46e5))) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-price-grid article > strong {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-price-grid article > strong em {
+  color: var(--gp-muted-text, #64748b) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-review-grid article {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1px solid var(--gp-border, #e2e8f0) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-review-grid article b {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step .fb-review-grid article small {
+  color: var(--gp-muted-text, #64748b) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step details {
+  border: 1px solid var(--gp-border, #e2e8f0) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step details summary {
+  color: var(--gp-text, #0f172a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .sys-pro-step details p {
+  color: var(--gp-text, #475569) !important;
 }
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {

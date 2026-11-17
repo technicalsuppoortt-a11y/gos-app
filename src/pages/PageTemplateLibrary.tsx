@@ -4,10 +4,11 @@ import { LazyBackground } from '../components/common/LazyBackground';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useState, useEffect } from 'react';
-import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw } from 'lucide-react';
+import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw, Layers3, LayoutTemplate } from 'lucide-react';
 import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
 import type { PageTemplate } from './page-templates';
 import { TemplateDesignThumbnail, templateDesignAsset } from './TemplateDesign';
+import { UserStepTemplatesCatalog } from './UserStepTemplatesCatalog';
 import './pagefly-editor.css';
 
 export function PageTemplateCards({templates=[],install}:{templates?:PageTemplate[];install:(template:PageTemplate)=>void | Promise<unknown>}) {
@@ -43,14 +44,17 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
   }))}</>;
 }
 
-export function PageTemplateLibrary({install,initialCategory='All'}:{install:(template:PageTemplate)=>void | Promise<unknown>;initialCategory?:'All'|'Funnels'|'Websites'|'Forms'}) {
-  useUILanguage();
+export function PageTemplateLibrary({install,initialCategory='All',showStepTemplates=false}:{install:(template:PageTemplate)=>void | Promise<unknown>;initialCategory?:'All'|'Funnels'|'Websites'|'Forms';showStepTemplates?:boolean}) {
+  const uiLang = useUILanguage();
+  const ar = uiLang.startsWith('ar');
   const [category,setCategory]=useState(initialCategory);
+  const [funnelSubMode,setFunnelSubMode]=useState<'full'|'steps'>('full');
   const [industry,setIndustry]=useState('All industries'),[goal,setGoal]=useState('All goals'),[search,setSearch]=useState('');
 
   useEffect(() => {
     if (initialCategory) {
       setCategory(initialCategory);
+      if (initialCategory !== 'Funnels') setFunnelSubMode('full');
       setIndustry('All industries');
       setGoal('All goals');
     }
@@ -80,6 +84,7 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
           aria-selected={category===tab}
           onClick={() => {
             setCategory(tab);
+            if (tab !== 'Funnels') setFunnelSubMode('full');
             setIndustry('All industries');
             setGoal('All goals');
           }}
@@ -88,6 +93,43 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
         </button>
       )))}
     </div>
+    {showStepTemplates && category === 'Funnels' && (
+      <div
+        className="sys-user-funnel-scope-bar"
+        role="group"
+        aria-label={ar ? 'نوع قوالب المسارات' : 'Funnel template type'}
+        dir={ar ? 'rtl' : 'ltr'}
+      >
+        <button
+          type="button"
+          data-user-funnel-subview="full"
+          aria-pressed={funnelSubMode === 'full'}
+          className={`sys-user-funnel-scope-btn ${funnelSubMode === 'full' ? 'active' : ''}`}
+          onClick={() => setFunnelSubMode('full')}
+        >
+          <Layers3 size={15} />
+          <span>{ar ? 'مسارات متكاملة جاهزة' : 'Complete Multi-Step Funnels'}</span>
+          <b>{categoryTemplates.length}</b>
+        </button>
+        <button
+          type="button"
+          data-user-funnel-subview="steps"
+          aria-pressed={funnelSubMode === 'steps'}
+          className={`sys-user-funnel-scope-btn ${funnelSubMode === 'steps' ? 'active' : ''}`}
+          onClick={() => setFunnelSubMode('steps')}
+        >
+          <LayoutTemplate size={15} />
+          <span>
+            {ar
+              ? 'قوالب الخطوات (الاشتراك · المبيعات · الطلب · الشكر)'
+              : 'Step Templates (Opt-in · Sales · Order Form · Thank You)'}
+          </span>
+        </button>
+      </div>
+    )}
+    {showStepTemplates && category === 'Funnels' && funnelSubMode === 'steps' ? (
+      <UserStepTemplatesCatalog install={install} />
+    ) : <>
     <div className="pf-template-filters">
       <label>
         <Search size={15}/>
@@ -127,5 +169,6 @@ export function PageTemplateLibrary({install,initialCategory='All'}:{install:(te
       <PageTemplateCards templates={filtered} install={install}/>
     </div>
     {localizeNode(!loading&&!error&&!filtered.length&&<p className="pf-empty-copy">{translateText("No templates match these filters.")}</p>)}
+    </>}
   </>;
 }

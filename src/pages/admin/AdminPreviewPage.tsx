@@ -3,6 +3,7 @@ import { localizeManagedTemplate } from './managed-template';
 import { useSearchParams } from 'react-router-dom';
 import { useAdminManagement } from '../../backend/adminManagement';
 import { useManagedTemplatePreview } from '../../backend/templateOwnership';
+import { useGlobalFunnelTemplates } from '../../backend/globalFunnelTemplates';
 import type { ManagementResource } from './live-model';
 import { TemplateContent } from './AdminRecordDetails';
 import { StandaloneTemplatePreview, useTemplatePreviewLanguage } from '../TemplatePreviewPage';
@@ -16,6 +17,71 @@ import './admin-live.css';
 export function AdminPreviewPage() {
   const [params] = useSearchParams();
   const language = useTemplatePreviewLanguage(params.get('lang'));
+  if (params.get('source') === 'step') {
+    return <AdminStepTemplatePreview templateId={params.get('template') || ''} language={language} />;
+  }
+  return <AdminCatalogOrRecordPreview language={language} />;
+}
+
+function AdminStepTemplatePreview({ templateId, language }: { templateId: string; language: string }) {
+  const ar = language.startsWith('ar');
+  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const { templates, loading, error } = useGlobalFunnelTemplates({ includeDrafts: true, language });
+  const selected = templates.find(item => item.id === templateId);
+  const asset = useMemo<Asset | undefined>(() => {
+    if (!selected) return undefined;
+    return {
+      id: selected.id,
+      kind: 'funnel',
+      name: selected.title,
+      domain: '',
+      image: selected.page.featuredImage || selected.thumbnail || '',
+      updated: selected.updated || new Date().toISOString(),
+      description: selected.description,
+      settings: {
+        seo: selected.title,
+        navigation: selected.page.name,
+        color: selected.color || '#6366f1',
+      },
+      document: {
+        pages: [selected.page],
+        steps: [{ id: selected.page.id, label: selected.page.name, pageId: selected.page.id, type: selected.category }],
+        funnel: {
+          name: selected.title,
+          goal: selected.category,
+          audience: '',
+          offer: selected.title,
+          events: [],
+          status: selected.status,
+          pagesFlow: [selected.page.id],
+        },
+        theme: {
+          color: selected.color || '#6366f1',
+          font: ar ? 'Cairo' : 'Inter',
+          corners: 'Rounded',
+        },
+      },
+    };
+  }, [selected, ar]);
+
+  return (
+    <StandaloneTemplatePreview
+      key={`${templateId}:${language}`}
+      title={selected?.title || t('Step Template Preview', 'معاينة قالب الخطوة')}
+      asset={asset}
+      language={language}
+      template={false}
+      showLanguageToggle
+    >
+      <p role={error ? 'alert' : 'status'}>
+        {error || (loading ? t('Loading preview…', 'جار تحميل المعاينة…') : t('This item is unavailable.', 'هذا العنصر غير متاح.'))}
+      </p>
+    </StandaloneTemplatePreview>
+  );
+}
+
+function AdminCatalogOrRecordPreview({ language }: { language: string }) {
+  const [params] = useSearchParams();
   const ar = language.startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
   const templateId = params.get('template') || '', recordPath = params.get('record') || '';
   const resources = useMemo<ManagementResource[]>(() => recordPath ? ['assets'] : [], [recordPath]);

@@ -36,7 +36,8 @@ const preservedSeeds: [number, Category, string, string, number, number, string[
 
 export const colors = [
   '#6458c9', '#367c73', '#ab6b4c', '#485785', '#8059a0', '#386b9a',
-  '#EA580C', '#072A5E', '#0F5132', '#D97706', '#DC2626', '#FF5A00', '#1E293B', '#EAB308', '#111111'
+  '#EA580C', '#072A5E', '#0F5132', '#D97706', '#DC2626', '#FF5A00', '#1E293B', '#EAB308', '#111111',
+  '#4F46E5', '#059669'
 ];
 
 const ghlWebAndFormMasters: Template[] = [
@@ -84,6 +85,36 @@ const ghlWebAndFormMasters: Template[] = [
     color: '#0F5132',
     thumbnail: '/template-thumbnails/ghl-website-pharmacy.jpg',
     content: { headline: 'Prescriptions made simple. Care that feels personal.', steps: ['Home', 'Pharmacy Services', 'Immunizations', 'Contact & Hours'], settings: { enabled: true, language: 'en' } },
+  },
+  {
+    id: 'upklick-funnel-flagship-sell',
+    name: 'SaaS & Course Direct-Sell Funnel',
+    description: 'Complete high-converting multi-step sales funnel with persuasive offer stack, countdown urgency, pre-linked Order Form checkout, and onboarding Thank You page.',
+    category: 'Funnels',
+    industry: 'SaaS/Agency',
+    goal: 'Direct Sale',
+    source: 'official',
+    tags: ['direct sale', 'order form', 'checkout', '3 steps', 'New'],
+    updated: '2026-11-17',
+    popularity: 842,
+    color: '#4F46E5',
+    thumbnail: '/template-thumbnails/upklick-funnel-flagship-sell.jpg',
+    content: { headline: 'Launch & Scale Digital Revenue With One Conversion System.', steps: ['Offer & Sales Page', 'Order Form', 'Thank You Page'], settings: { enabled: true, language: 'en' } },
+  },
+  {
+    id: 'upklick-funnel-flagship-audience',
+    name: 'Audience Growth & Lead Magnet Funnel',
+    description: 'High-converting 2-step audience builder funnel featuring an editorial Opt-in Squeeze page with social proof, countdown bar, and pre-linked instant resource Thank You page.',
+    category: 'Funnels',
+    industry: 'Fitness/Coaching',
+    goal: 'Lead Generation',
+    source: 'official',
+    tags: ['build an audience', 'opt-in', 'lead magnet', '2 steps', 'New'],
+    updated: '2026-11-17',
+    popularity: 794,
+    color: '#059669',
+    thumbnail: '/template-thumbnails/upklick-funnel-flagship-audience.jpg',
+    content: { headline: 'Get the Free 7-Figure Audience & Funnel Playbook.', steps: ['Opt-in / Squeeze Page', 'Thank You Page'], settings: { enabled: true, language: 'en' } },
   },
   {
     id: 'ghl-funnel-mortgage-company',

@@ -9,6 +9,29 @@ const pageSchema = {
 const builders = {
   website: { action: 'website_ai_generate', permission: 'funnels', tool: 'funnel-builder', schema: pageSchema, instruction: 'Write a landing page headline, short description, call to action, exactly three benefit headings, and up to four FAQ entries.' },
   funnel: { action: 'funnel_ai_generate', permission: 'funnels', tool: 'funnel-builder', schema: { ...pageSchema, nextStep: 'string', confirmation: 'string' }, instruction: 'Draft a conversion funnel with an opening headline, short description, call to action, exactly three benefit headings, up to four FAQ entries, next-step copy, and a confirmation message.' },
+  funnel_architect: {
+    action: 'funnel_ai_generate',
+    permission: 'funnels',
+    tool: 'funnel-builder',
+    schema: {
+      headline: 'string',
+      subheadline: 'string',
+      cta: 'string',
+      benefits: [{ title: 'string', description: 'string' }],
+      testimonials: [{ author: 'string', role: 'string', quote: 'string' }],
+      formTitle: 'string',
+      formSubheadline: 'string',
+      formCta: 'string',
+      formFields: [{ label: 'string', type: { enum: ['text', 'email', 'tel', 'textarea', 'select'] }, required: 'boolean', placeholder: 'string' }],
+      faq: [{ question: 'string', answer: 'string' }],
+      orderHeadline: 'string',
+      orderSummary: 'string',
+      thankYouHeadline: 'string',
+      thankYouBody: 'string',
+      nextActionCta: 'string',
+    },
+    instruction: 'Architect a high-converting multi-step marketing funnel tailored to the business brief, goal, target audience pain points, offer, output language, and tone of voice. Return standard Western digits (0-9) for all numbers, prices, and percentages. Include 3 concrete benefit pillars, 2 illustrative customer perspective quotes, 2 to 5 relevant form fields, up to 4 FAQs, checkout/booking step copy, and thank-you confirmation copy.',
+  },
   form: { action: 'form_ai_generate', permission: 'forms', tool: 'funnel-builder', schema: {
     name: 'string', description: 'string', fields: [{ label: 'string', type: { enum: ['text', 'email', 'tel', 'number', 'textarea', 'select', 'radio', 'checkbox'] }, required: 'boolean', placeholder: 'string', options: ['string'] }],
   }, instruction: 'Design an editable form with 2 to 12 fields, using choices for dropdown and radio fields and empty choices for other fields. Ask only for data needed for the stated purpose.' },
@@ -73,6 +96,16 @@ function completeDraft(kind, draft) {
   if (kind === 'form') {
     return draft.name.trim() && draft.fields.length >= 2 && draft.fields.length <= 12 && draft.fields.every(field =>
       field.label.trim() && (!['select', 'radio'].includes(field.type) || field.options.some(option => option.trim())));
+  }
+  if (kind === 'funnel_architect') {
+    return Boolean(
+      draft.headline?.trim() &&
+      draft.subheadline?.trim() &&
+      draft.cta?.trim() &&
+      Array.isArray(draft.benefits) &&
+      draft.benefits.length >= 2 &&
+      draft.thankYouHeadline?.trim()
+    );
   }
   return draft.headline.trim() && draft.description.trim() && draft.cta.trim() && draft.benefits.length === 3 && draft.faq.length <= 4;
 }

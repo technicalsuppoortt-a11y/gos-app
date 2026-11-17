@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { Users, ShoppingCart, Wand2, Sparkles, LoaderCircle } from 'lucide-react';
 import { Modal } from './settings/kit';
 import { AssetSelect } from './AssetControls';
-import { AIWebsiteDialog } from './AIWebsiteDialog';
+import { AIFunnelArchitectModal } from './AIFunnelArchitectModal';
 import { db } from '../backend/firebase';
 import { SITE_DOMAINS, mapFirestoreDomainToModel, normalizeHost } from '../backend/siteDomains';
 import { useCurrency } from '../context/CurrencyContext';
@@ -116,9 +116,12 @@ export function CreateFunnelModal({
 
   if (showAiFlow) {
     return (
-      <AIWebsiteDialog
-        kind="funnel"
-        close={() => setShowAiFlow(false)}
+      <AIFunnelArchitectModal
+        initialName={name.trim()}
+        domain={selectedDomain === '__default__' ? '' : selectedDomain}
+        currency={currency}
+        onBack={() => setShowAiFlow(false)}
+        close={close}
         onCreate={async aiAsset => {
           const enriched: Asset = {
             ...aiAsset,
@@ -315,7 +318,7 @@ export function CreateFunnelModal({
             ) : goalType === 'ai' ? (
               <>
                 <Sparkles size={14} />
-                {ar ? 'متابعة بالذكاء الاصطناعي' : translateText('Continue with AI')}
+                {ar ? 'حفظ' : translateText('Save')}
               </>
             ) : (
               ar ? 'إنشاء' : translateText('Save')

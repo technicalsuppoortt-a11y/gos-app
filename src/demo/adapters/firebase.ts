@@ -73,6 +73,9 @@ async function demoRequest(name: string, data: any): Promise<any> {
         { type: 'email', label: 'Email address', required: true, placeholder: 'you@example.com', options: [] },
         { type: 'textarea', label: 'Your goals', required: true, placeholder: 'Tell us about your project', options: [] },
       ] };
+      if (data.kind === 'funnel_architect') {
+        return null;
+      }
       return { headline: 'Take the next step with confidence', description: 'Tell us about your goals and find the right next step.', cta: 'Get in touch', benefits: ['Personal guidance', 'Simple next steps', 'Ongoing support'], faq: [], nextStep: 'Tell us about your project.', confirmation: 'Thank you for getting in touch.' };
     }
     case 'queueMessage': {

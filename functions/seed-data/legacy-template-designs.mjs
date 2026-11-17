@@ -16,6 +16,8 @@ export const PHOTOS = {
   locksmithVan: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=900&q=85',
   trainerAthlete: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=1000&q=85',
   architectStudio: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85',
+  saasSellHero: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1400&q=85',
+  audienceCreatorHero: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=85',
 };
 
 const sharedCss = `
@@ -590,5 +592,178 @@ export const COVER_HTML = {
       <div class="btn-black">START THE CONVERSATION</div>
     </div>
   </div></div></body></html>`,
+
+  'upklick-funnel-flagship-sell': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #f8fafc; display: flex; flex-direction: column; }
+    .topbar { background: linear-gradient(90deg, #1e1b4b 0%, #312e81 100%); color: #e0e7ff; font-size: 11.5px; font-weight: 700; padding: 10px 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .timer-pill { background: rgba(251, 191, 36, 0.18); border: 1px solid rgba(251, 191, 36, 0.55); color: #fde68a; padding: 4px 12px; border-radius: 99px; font-weight: 800; font-size: 11px; }
+    .hero { background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.35), transparent 52%), #0f172a; color: #fff; padding: 40px 46px 42px; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 30px; align-items: center; }
+    .kicker { display: inline-block; background: rgba(99, 102, 241, 0.22); border: 1px solid rgba(129, 140, 248, 0.48); color: #c7d2fe; font-size: 10.5px; font-weight: 800; padding: 5px 12px; border-radius: 99px; margin-bottom: 14px; letter-spacing: 0.6px; }
+    .hero h1 { font-size: 34px; line-height: 1.14; font-weight: 800; letter-spacing: -0.6px; }
+    .hero p { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin: 12px 0 20px; }
+    .hero-btns { display: flex; gap: 12px; align-items: center; }
+    .cta-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #fff; padding: 12px 22px; border-radius: 9px; font-size: 12.5px; font-weight: 800; box-shadow: 0 12px 28px rgba(79, 70, 229, 0.42); }
+    .trust-row { display: flex; gap: 14px; margin-top: 16px; font-size: 11px; color: #a5b4fc; font-weight: 600; flex-wrap: wrap; }
+    .hero-card { background: rgba(30, 41, 59, 0.88); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 42px rgba(0, 0, 0, 0.36); }
+    .hero-card img { width: 100%; height: 185px; }
+    .hero-card-body { padding: 16px 18px; }
+    .price-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+    .price-row strong { font-size: 28px; font-weight: 900; color: #fff; }
+    .price-row del { font-size: 13px; color: #94a3b8; }
+    .save-tag { background: #10b981; color: #052e16; font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 99px; }
+    .mid { padding: 32px 46px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 28px; background: #ffffff; flex: 1; align-items: start; }
+    .sec-tag { color: #4f46e5; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .mid h2 { font-size: 23px; font-weight: 800; color: #0f172a; margin-bottom: 14px; line-height: 1.22; }
+    .stack-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .stack-item b { font-size: 12.5px; color: #0f172a; display: block; }
+    .stack-item span { font-size: 11px; color: #64748b; }
+    .val-pill { font-size: 11px; font-weight: 800; color: #4f46e5; background: #eef2ff; padding: 4px 9px; border-radius: 6px; white-space: nowrap; }
+    .order-box { background: #ffffff; border: 2px solid #4f46e5; border-radius: 14px; padding: 20px; box-shadow: 0 16px 36px rgba(79, 70, 229, 0.11); }
+    .order-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+    .order-head b { font-size: 14px; color: #0f172a; }
+    .order-head small { font-size: 11px; color: #059669; font-weight: 700; }
+    .f-inp { height: 36px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 12px; display: flex; align-items: center; font-size: 11.5px; color: #64748b; margin-bottom: 9px; background: #f8fafc; }
+    .order-btn { background: #16a34a; color: #ffffff; height: 42px; border-radius: 9px; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; margin-top: 10px; }
+    .guarantee { margin-top: 10px; font-size: 10.5px; color: #475569; text-align: center; font-weight: 600; }
+    .bottom-band { background: #0f172a; color: #fff; padding: 26px 46px 30px; }
+    .step3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .pcard { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 11px; padding: 14px 16px; }
+    .pcard small { color: #fbbf24; font-size: 11px; font-weight: 800; display: block; margin-bottom: 5px; }
+    .pcard p { font-size: 11px; color: #e2e8f0; line-height: 1.45; margin-bottom: 6px; }
+    .pcard b { font-size: 11px; color: #a5b4fc; }
+    @media (max-width: 959px) {
+      .topbar { flex-wrap: wrap; padding: 10px 20px; }
+      .hero, .mid { grid-template-columns: minmax(0, 1fr); padding: 26px 20px; }
+      .bottom-band { padding: 22px 20px; }
+      .step3 { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="topbar"><span>FLASH FOUNDING OFFER · PRE-LINKED SALES + ORDER FORM + THANK YOU</span><span class="timer-pill">Offer Reserved · 00 : 14 : 59</span></div>
+    <div class="hero">
+      <div>
+        <span class="kicker">ALL-IN-ONE DIRECT SALE FUNNEL</span>
+        <h1>Launch & Scale Digital Revenue With One Conversion System.</h1>
+        <p>Turn cold visitors into verified buyers with a persuasive offer stack, two-step SSL Order Form checkout, and automated Thank You onboarding.</p>
+        <div class="hero-btns"><span class="cta-primary">Claim Founding Access — $97 →</span></div>
+        <div class="trust-row"><span>✓ 256-Bit SSL Checkout</span><span>✓ 14-Day Guarantee</span><span>✓ 4.9/5 (2,840+ Buyers)</span></div>
+      </div>
+      <div class="hero-card">
+        <img src="${PHOTOS.saasSellHero}" alt=""/>
+        <div class="hero-card-body">
+          <div class="price-row"><div><strong>$97</strong> <del>$297</del></div><span class="save-tag">SAVE 67% TODAY</span></div>
+          <span style="font-size:11.5px;color:#cbd5e1;display:block">Includes 6 Action Modules + 12 Ready-to-Deploy Funnel Templates</span>
+        </div>
+      </div>
+    </div>
+    <div class="mid">
+      <div>
+        <div class="sec-tag">COMPLETE VALUE STACK INCLUDED</div>
+        <h2>Everything You Need To Convert Clicks Into Customers</h2>
+        <div class="stack-item"><div><b>6 Step-by-Step Implementation Modules</b><span>Offer architecture, funnel launch & traffic scaling</span></div><span class="val-pill">$297 Value</span></div>
+        <div class="stack-item"><div><b>12 High-Converting Funnel & Order Templates</b><span>Ready to customize in English & Arabic</span></div><span class="val-pill">$197 Value</span></div>
+        <div class="stack-item"><div><b>Automated WhatsApp & Email Follow-Up Pack</b><span>Recover abandoned carts & onboard buyers 24/7</span></div><span class="val-pill">$97 Value</span></div>
+        <div class="stack-item"><div><b>Instant Member Portal + Lifetime Updates</b><span>Delivered automatically on the Thank You step</span></div><span class="val-pill">FREE Bonus</span></div>
+      </div>
+      <div class="order-box">
+        <div class="order-head"><b>Express Order Form · Step 2</b><small>🔒 256-Bit SSL</small></div>
+        <div class="f-inp">Full Name · Alex Morgan</div>
+        <div class="f-inp">Work Email · alex@company.com</div>
+        <div class="f-inp">Phone / WhatsApp · +1 (555) 234-5678</div>
+        <div class="f-inp">Card · •••• •••• •••• 4242 · Stripe Secure</div>
+        <div class="order-btn">Complete Secure Order ($97) →</div>
+        <div class="guarantee">Protected by our 14-Day 100% Money-Back Guarantee</div>
+      </div>
+    </div>
+    <div class="bottom-band">
+      <div class="step3">
+        <div class="pcard"><small>★★★★★ 5.0 VERIFIED</small><p>"Generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate."</p><b>Nadia Al-Mansoor · Digital Academy</b></div>
+        <div class="pcard"><small>★★★★★ 5.0 VERIFIED</small><p>"Mobile buyers finish the Order Form in under 60 seconds with zero drop-off."</p><b>Daniel Mercer · SaaS Growth Lead</b></div>
+        <div class="pcard"><small>3 PRE-LINKED STEPS</small><p>Step 1 Sales Offer → Step 2 Secure Order Form → Step 3 Instant Thank You Portal.</p><b>100% Responsive · AR & EN</b></div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-flagship-audience': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #f0fdf4; display: flex; flex-direction: column; }
+    .topbar { background: #064e3b; color: #d1fae5; font-size: 11.5px; font-weight: 700; padding: 10px 42px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .bonus-pill { background: rgba(16, 185, 129, 0.25); border: 1px solid rgba(52, 211, 153, 0.55); color: #a7f3d0; padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 800; }
+    .hero { background: linear-gradient(135deg, #022c22 0%, #064e3b 62%, #047857 100%); color: #fff; padding: 42px 46px; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 30px; align-items: center; }
+    .kicker { display: inline-block; background: rgba(16, 185, 129, 0.22); border: 1px solid rgba(110, 231, 183, 0.45); color: #a7f3d0; font-size: 10.5px; font-weight: 800; padding: 5px 12px; border-radius: 99px; margin-bottom: 14px; letter-spacing: 0.6px; }
+    .hero h1 { font-size: 33px; line-height: 1.15; font-weight: 800; letter-spacing: -0.5px; }
+    .hero p { font-size: 13px; color: #d1fae5; line-height: 1.55; margin: 12px 0 18px; }
+    .bento-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .stat-box { background: rgba(255, 255, 255, 0.09); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 10px; padding: 10px 12px; }
+    .stat-box strong { display: block; font-size: 18px; font-weight: 900; color: #fff; }
+    .stat-box span { font-size: 10.5px; color: #a7f3d0; }
+    .squeeze-card { background: #ffffff; color: #0f172a; border-radius: 16px; padding: 22px 20px; box-shadow: 0 22px 48px rgba(2, 44, 34, 0.42); }
+    .squeeze-badge { display: inline-block; background: #ecfdf5; color: #047857; font-size: 10.5px; font-weight: 800; padding: 4px 10px; border-radius: 99px; margin-bottom: 8px; }
+    .squeeze-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: #0f172a; }
+    .squeeze-card p { font-size: 11.5px; color: #64748b; margin: 0 0 12px; line-height: 1.45; }
+    .sq-inp { height: 37px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 12px; display: flex; align-items: center; font-size: 11.5px; color: #64748b; margin-bottom: 9px; background: #f8fafc; }
+    .sq-btn { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; height: 42px; border-radius: 9px; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; box-shadow: 0 10px 22px rgba(5, 150, 105, 0.3); }
+    .sq-note { font-size: 10px; color: #64748b; text-align: center; margin-top: 8px; font-weight: 600; }
+    .mid { background: #ffffff; padding: 34px 46px; display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 30px; align-items: center; flex: 1; }
+    .photo-wrap { position: relative; height: 275px; border-radius: 14px; overflow: hidden; box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12); }
+    .photo-wrap img { width: 100%; height: 100%; }
+    .photo-chip { position: absolute; bottom: 12px; inset-inline-start: 12px; background: rgba(6, 78, 59, 0.92); color: #fff; padding: 8px 13px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .sec-kicker { color: #059669; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .mid h2 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 14px; line-height: 1.22; }
+    .bullet { padding: 10px 14px; border-inline-start: 3px solid #10b981; background: #f8fafc; border-radius: 0 9px 9px 0; margin-bottom: 10px; }
+    .bullet b { display: block; font-size: 12.5px; color: #0f172a; margin-bottom: 2px; }
+    .bullet span { font-size: 11px; color: #64748b; line-height: 1.4; display: block; }
+    .bottom-band { background: #064e3b; color: #fff; padding: 26px 46px 30px; }
+    .step3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .rcard { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 11px; padding: 14px 16px; }
+    .rcard small { color: #6ee7b7; font-size: 11px; font-weight: 800; display: block; margin-bottom: 5px; }
+    .rcard p { font-size: 11px; color: #ecfdf5; line-height: 1.45; margin-bottom: 6px; }
+    .rcard b { font-size: 11px; color: #a7f3d0; }
+    @media (max-width: 959px) {
+      .topbar { flex-wrap: wrap; padding: 10px 20px; }
+      .hero, .mid { grid-template-columns: minmax(0, 1fr); padding: 26px 20px; }
+      .bottom-band { padding: 22px 20px; }
+      .step3 { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="topbar"><span>FREE 28-PAGE PLAYBOOK · OPT-IN SQUEEZE + INSTANT THANK YOU DOWNLOAD</span><span class="bonus-pill">Bonus Checklist · 00 : 19 : 59</span></div>
+    <div class="hero">
+      <div>
+        <span class="kicker">BUILD AN AUDIENCE & EMAIL LIST</span>
+        <h1>Get the Free 7-Figure Audience & Funnel Playbook.</h1>
+        <p>Join 18,400+ founders, coaches, and creators using our 3-step squeeze architecture to capture qualified daily subscribers in 15 minutes a day.</p>
+        <div class="bento-stats">
+          <div class="stat-box"><strong>18,400+</strong><span>Active Readers</span></div>
+          <div class="stat-box"><strong>42.8%</strong><span>Avg Opt-In Rate</span></div>
+          <div class="stat-box"><strong>$0</strong><span>Instant PDF Guide</span></div>
+        </div>
+      </div>
+      <div class="squeeze-card">
+        <span class="squeeze-badge">100% FREE INSTANT ACCESS</span>
+        <h3>Unlock Your Free Starter Playbook</h3>
+        <p>Enter your details below and jump straight to your instant PDF download page.</p>
+        <div class="sq-inp">Your First Name</div>
+        <div class="sq-inp">Best Email Address</div>
+        <div class="sq-inp">WhatsApp Number (Optional Bonus)</div>
+        <div class="sq-btn">Send Me the Free Playbook →</div>
+        <div class="sq-note">🔒 Zero spam · Unsubscribe in 1 click · Instant Step 2 redirect</div>
+      </div>
+    </div>
+    <div class="mid">
+      <div class="photo-wrap"><img src="${PHOTOS.audienceCreatorHero}" alt=""/><div class="photo-chip">28 Pages · Swipe Files + Checklists</div></div>
+      <div>
+        <div class="sec-kicker">INSIDE YOUR FREE PLAYBOOK</div>
+        <h2>Three Proven Frameworks You Can Deploy Today</h2>
+        <div class="bullet"><b>01 · Curiosity & Value Hook Formulas</b><span>15 tested headline structures that convert cold social clicks into eager subscribers.</span></div>
+        <div class="bullet"><b>02 · Automated 5-Day Welcome Sequence</b><span>Ready-to-send email & WhatsApp templates that build trust on autopilot.</span></div>
+        <div class="bullet"><b>03 · Instant Thank-You Resource Delivery</b><span>Pre-linked Step 2 Thank You page with one-click PDF download and next steps.</span></div>
+      </div>
+    </div>
+    <div class="bottom-band">
+      <div class="step3">
+        <div class="rcard"><small>★★★★★ 4.9/5 READER SCORE</small><p>"Added 1,420 new email subscribers in 3 weeks using the exact page-6 squeeze layout."</p><b>Layla Haddad · Executive Coach</b></div>
+        <div class="rcard"><small>★★★★★ VERIFIED CREATOR</small><p>"The 5-day welcome sequence turned cold leads into 19 booked strategy calls in week one."</p><b>Ryan Kowalski · ScaleBrief</b></div>
+        <div class="rcard"><small>2 PRE-LINKED STEPS</small><p>Step 1 High-Converting Squeeze Page → Step 2 Instant Resource Download Thank You Page.</p><b>100% Responsive · AR & EN</b></div>
+      </div>
+    </div>
+  </div></body></html>`,
 };
 

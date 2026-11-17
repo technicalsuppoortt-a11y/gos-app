@@ -6,6 +6,9 @@ import { blankPage, hostInstant, dateKey, type Appointment, type BookingPage } f
 import { locationFromLabel } from '../pages/booking/booking-section-schema';
 import { createBuilderDocument } from '../pages/BuilderWorkspace';
 import { MASTER_TEMPLATES } from '../pages/system-template-data';
+import { pageTemplates } from '../pages/page-template-data';
+import { BUILTIN_GLOBAL_FUNNEL_TEMPLATES } from '../backend/globalFunnelTemplates';
+import { encodeFirestoreValue } from '../backend/firestoreCodec';
 import { modulePermissions } from '../pages/settings/localState';
 import type { CanonicalLead } from '../store/slices/crmSlice';
 import type { Conversation } from '../pages/inbox/inboxData';
@@ -33,7 +36,7 @@ import funnelSetupImg from '../assets/products/funnel-setup.jpg';
 // tabs, widgets, tables and charts render populated, realistic data.
 // Times are relative to "now" so the workspace always looks current.
 
-const SEED_VERSION = 2;
+const SEED_VERSION = 4;
 const TENANT = 'account-demo';
 const OWNER_ID = 'demo-account-user';
 
@@ -240,6 +243,28 @@ export function seedAccount() {
   write('entity:assets', assets); write('entity:domains', domains);
   write('gos.assets.workspace.v1', { assets, domains });
   write('entity:userTemplates', MASTER_TEMPLATES.filter((_, i) => i % 7 === 0).slice(0, 6).map((template, i) => ({ ...template, id: `my-template-${i}`, source: 'mine', masterId: template.id, name: `${template.name} · Northstar`, updated: iso(now - int(1, 30) * DAY), popularity: int(10, 90) })));
+  for (const tpl of MASTER_TEMPLATES) {
+    const pt = pageTemplates.find(p => p.id === tpl.id);
+    write(
+      `doc:templateCatalog/${tpl.id}`,
+      encodeFirestoreValue({
+        ...tpl,
+        status: 'Published',
+        active: true,
+        ...(pt ? { pageTemplate: pt, builderDocument: pt.builderDocument } : {}),
+      })
+    );
+  }
+  for (const stepTpl of BUILTIN_GLOBAL_FUNNEL_TEMPLATES) {
+    write(
+      `doc:global_funnel_templates/${stepTpl.id}`,
+      encodeFirestoreValue({
+        ...stepTpl,
+        schemaVersion: 3,
+        deleted: false,
+      })
+    );
+  }
 
   /* -------------------------------------------------------------- Events */
   type SeedEvent = { id: string; type: string; createdAt: string; resource?: string; resourceId?: string; leadId?: string; productId?: string; amount?: number; currency?: string; source?: string; device?: string; step?: string; actorId?: string };

@@ -1,6 +1,7 @@
 import { BuilderFormCaptureContext, sendBuilderLead, type PublicCaptureConfig } from './builder-form-capture';
 import { executeButtonAction, BuilderActionPopupModal } from './button-actions';
 import './published-page.css';
+import './step-templates-pro.css';
 import { Menu, X, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';

@@ -423,3 +423,176 @@ test('4. Page Builder Button Actions Upgrade: All Action Types Execute Correctly
   buttonMod.executeButtonAction({ id: 'b9', type: 'Button', content: { destinationType: 'Send Email', destination: 'vip@example.com', emailSubject: 'Hello Team' }, styles: {} }, env);
   assert.equal(mockWindow.location.href, 'mailto:vip@example.com?subject=Hello%20Team');
 });
+
+test('5. Flagship Multi-Step Funnel Templates (Sell & Build an Audience): Pre-Linked Steps, EN/AR Copy & Western Digits (0-9)', async () => {
+  const { buildTemplateDesigns } = await import('../functions/seed-data/build-template-designs.mjs');
+  const seedRecords = JSON.parse(
+    fs.readFileSync(new URL('../functions/seed-data/system-templates.json', import.meta.url), 'utf8')
+  );
+  const arMeta = JSON.parse(
+    fs.readFileSync(new URL('../functions/seed-data/template-metadata-ar.json', import.meta.url), 'utf8')
+  );
+  const easternDigitRegex = /[٠-٩۰-۹]/;
+
+  const sellTpl = seedRecords.find(r => r.id === 'upklick-funnel-flagship-sell');
+  const audTpl = seedRecords.find(r => r.id === 'upklick-funnel-flagship-audience');
+  assert.ok(sellTpl, 'Flagship Sell Funnel exists in system-templates.json');
+  assert.ok(audTpl, 'Flagship Audience Funnel exists in system-templates.json');
+
+  // Verify pre-linked multi-step Sell Funnel (Sales -> Order Form -> Thank You)
+  assert.equal(sellTpl.category, 'Funnels');
+  assert.equal(sellTpl.builderDocument.pages.length, 3);
+  assert.equal(sellTpl.builderDocument.steps.length, 3);
+  const [sellOffer, sellOrder, sellThanks] = sellTpl.builderDocument.pages;
+  assert.ok(
+    JSON.stringify(sellOffer.sections).includes(sellOrder.id),
+    'Sell Offer Page links directly to Order Form step'
+  );
+  assert.ok(
+    JSON.stringify(sellOrder.sections).includes(sellThanks.id),
+    'Sell Order Form links directly to Thank You step'
+  );
+
+  // Verify pre-linked multi-step Audience Funnel (Opt-in -> Thank You)
+  assert.equal(audTpl.category, 'Funnels');
+  assert.equal(audTpl.builderDocument.pages.length, 2);
+  assert.equal(audTpl.builderDocument.steps.length, 2);
+  const [audOptin, audThanks] = audTpl.builderDocument.pages;
+  assert.ok(
+    JSON.stringify(audOptin.sections).includes(audThanks.id),
+    'Audience Opt-in Page links directly to Thank You step'
+  );
+
+  // Verify EN & AR localized designs and Western digits (0-9)
+  for (const id of ['upklick-funnel-flagship-sell', 'upklick-funnel-flagship-audience']) {
+    assert.ok(arMeta[id]?.title_ar, `Arabic metadata exists for ${id}`);
+    const designs = buildTemplateDesigns(id);
+    assert.ok(designs.design_en?.html.includes('class="page"'));
+    assert.ok(/[ء-ي]/.test(designs.design_ar?.html || ''));
+    assert.equal(
+      easternDigitRegex.test(designs.design_ar.html),
+      false,
+      `${id} Arabic design uses strictly Western digits (0-9)`
+    );
+    assert.equal(
+      easternDigitRegex.test(JSON.stringify(arMeta[id])),
+      false,
+      `${id} Arabic metadata uses strictly Western digits (0-9)`
+    );
+  }
+});
+
+test('6. Upgraded 10 Bilingual Step Templates & AI Funnel Architect Multi-Step Pipeline (EN/AR + Western Digits)', async () => {
+  const easternDigitRegex = /[٠-٩۰-۹]/;
+  const currencyMod = loadTS('../src/utils/currency.ts');
+
+  const globalTemplatesMod = loadTS('../src/backend/globalFunnelTemplates.ts', {
+    react: { useEffect: () => {}, useMemo: fn => fn(), useState: init => [typeof init === 'function' ? init() : init, () => {}] },
+    'firebase/firestore': {
+      collection: () => ({}),
+      doc: () => ({}),
+      setDoc: async () => {},
+      deleteDoc: async () => {},
+      onSnapshot: () => () => {},
+      serverTimestamp: () => 'TS',
+    },
+    './firebase': { db: {}, primaryDb: {}, primaryAuth: {}, backendError: e => String(e) },
+    './firestoreCodec': firestoreCodec,
+    '../store': { store: { getState: () => ({ auth: {} }) } },
+    '../i18n/display': { useUILanguage: () => 'en' },
+  });
+
+  const builtins = globalTemplatesMod.BUILTIN_GLOBAL_FUNNEL_TEMPLATES;
+  assert.equal(builtins.length, 10, 'Exactly 10 upgraded bilingual step templates exist');
+  for (const tpl of builtins) {
+    assert.equal(tpl.schemaVersion, 3);
+    assert.ok(tpl.title_en.length > 5 && tpl.title_ar.length > 5);
+    assert.ok(tpl.page_en.sections.length >= 3, `${tpl.id} EN has rich conversion sections`);
+    assert.ok(tpl.page_ar.sections.length >= 3, `${tpl.id} AR has rich conversion sections`);
+    const enStr = JSON.stringify(tpl.page_en);
+    const arStr = JSON.stringify(tpl.page_ar);
+    assert.equal(enStr.includes('"lead-capture"'), false, `${tpl.id} EN avoids legacy fitness lead-capture layout`);
+    assert.equal(arStr.includes('"lead-capture"'), false, `${tpl.id} AR avoids legacy fitness lead-capture layout`);
+    assert.equal(
+      easternDigitRegex.test(arStr),
+      false,
+      `${tpl.id} AR step template renders all numbers in Western digits (0-9)`
+    );
+    // Every Stats item must begin with a compact Western-digit token so number/label split cleanly
+    for (const pg of [tpl.page_en, tpl.page_ar]) {
+      for (const s of pg.sections) {
+        if (s.type === 'Stats' && s.content?.items) {
+          for (const part of s.content.items.split('·')) {
+            const firstToken = part.trim().split(' ')[0];
+            assert.ok(/\d/.test(firstToken), `${tpl.id} stat token "${firstToken}" starts with Western numerals`);
+          }
+        }
+      }
+    }
+  }
+
+  const aiArchitectMod = loadTS(
+    '../src/backend/aiFunnelArchitect.ts',
+    {
+      './gosApi': { gosApi: { copilot: async () => ({ text: '' }) } },
+      './aiBuilders': { generateBuilderDraft: async () => null },
+      '../utils/currency': currencyMod,
+      '../pages/funnel-systeme-model': systemeModel,
+    },
+    { window: { sessionStorage: { getItem: () => '1' }, location: { search: '?account-demo' } } }
+  );
+
+  // Arabic Sale Funnel with Eastern-Arabic price input ('١٩٧') -> normalized to Western '197'
+  const arSaleAsset = await aiArchitectMod.generateAIFunnelAsset({
+    funnelName: 'مسار بيع الأكاديمية',
+    businessName: 'أكاديمية رواد النمو',
+    niche: 'الدورات التدريبية والاستشارات',
+    goal: 'sale',
+    audienceAndPainPoints: 'المدربون وصناع المحتوى الراغبون في مضاعفة المبيعات الشهرية',
+    offer: 'البرنامج المتكامل لإطلاق الكورسات الرقمية',
+    price: '١٩٧',
+    currency: 'SAR',
+    language: 'ar',
+    tone: 'persuasive',
+  });
+
+  assert.equal(arSaleAsset.kind, 'funnel');
+  assert.equal(arSaleAsset.currency, 'SAR');
+  assert.equal(arSaleAsset.document.pages.length, 3, 'Sale AI funnel generates 3 pre-linked steps');
+  assert.equal(arSaleAsset.document.pages[0].stepCategory, 'Sales');
+  assert.equal(arSaleAsset.document.pages[1].stepCategory, 'Order Form');
+  assert.equal(arSaleAsset.document.pages[2].stepCategory, 'Thank You');
+  assert.ok(arSaleAsset.document.pages.every(p => p.templateSelected === true));
+  const arJson = JSON.stringify(arSaleAsset);
+  assert.equal(easternDigitRegex.test(arJson), false, 'All Arabic AI funnel digits are Western 0-9');
+  assert.ok(arJson.includes('197 SAR'), 'Eastern digits ١٩٧ normalized to Western 197 SAR');
+
+  // English Audience Funnel (2 pre-linked steps) + Booking Funnel (3 pre-linked steps)
+  const enAudienceAsset = await aiArchitectMod.generateAIFunnelAsset({
+    businessName: 'MetricPulse SaaS',
+    niche: 'B2B SaaS Analytics',
+    goal: 'audience',
+    audienceAndPainPoints: 'SaaS founders losing trial signups due to leaky onboarding',
+    offer: '2026 SaaS Activation & Onboarding Playbook',
+    currency: 'USD',
+    language: 'en',
+    tone: 'executive',
+  });
+  assert.equal(enAudienceAsset.document.pages.length, 2);
+  assert.equal(enAudienceAsset.document.pages[0].stepCategory, 'Opt-in');
+  assert.equal(enAudienceAsset.document.pages[1].stepCategory, 'Thank You');
+
+  const enBookingAsset = await aiArchitectMod.generateAIFunnelAsset({
+    businessName: 'Apex Dental Studio',
+    niche: 'Cosmetic Dentistry Clinic',
+    goal: 'booking',
+    audienceAndPainPoints: 'Busy professionals wanting a confident smile makeover consultation',
+    offer: '3D Digital Smile Design Strategy Consultation',
+    price: '49',
+    currency: 'USD',
+    language: 'en',
+    tone: 'friendly',
+  });
+  assert.equal(enBookingAsset.document.pages.length, 3);
+  assert.ok(JSON.stringify(enBookingAsset.document.pages[1].sections).includes('"type":"Booking"'));
+});

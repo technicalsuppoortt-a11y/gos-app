@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { CRMRouting } from './CRMRouting';
 import { PublishedPage } from './PublishedPage';
+import { StepTemplateThumbnail } from './StepTemplateThumbnail';
 import { FunnelAnalytics, FunnelDateRange, FunnelIntegrations, FunnelLeads } from './FunnelInsights';
 import { rangeFor, assetEvents, funnelLeads } from './funnel-data';
 import { AssetOptionsMenu as OptionsMenu } from './AssetOptionsMenu';
@@ -332,15 +333,12 @@ export function FunnelStepWorkspace({
 
     const list: LocalizedGlobalFunnelTemplate[] = [...globalTemplates];
     for (const ct of catalogPageTemplates) {
-      if (!ct.builderDocument?.pages?.length) continue;
+      if (ct.mode !== 'funnel' || !ct.builderDocument?.pages?.length) continue;
       if (list.some(item => item.id === `cat-${ct.id}`)) continue;
       const catPage = ct.builderDocument.pages[0];
-      const inferredCat: FunnelTemplateCategory =
-        ct.mode === 'form'
-          ? 'Opt-in'
-          : ct.goal?.toLowerCase().includes('sale')
-            ? 'Sales'
-            : 'Opt-in';
+      const inferredCat: FunnelTemplateCategory = normalizeStepCategory(
+        catPage.stepCategory || ct.goal
+      );
       list.push({
         id: `cat-${ct.id}`,
         category: inferredCat,
@@ -786,28 +784,7 @@ export function FunnelStepWorkspace({
                           className="sys-tpl-preview-box"
                           style={{ background: tpl.accentBg || tpl.color || '#4f46e5' }}
                         >
-                          {tpl.thumbnail ? (
-                            <img src={tpl.thumbnail} alt={tpl.title} loading="lazy" />
-                          ) : (
-                            <div className="sys-tpl-live-mini" aria-hidden="true">
-                              <PublishedPage
-                                asset={{
-                                  ...asset,
-                                  settings: { ...asset.settings, color: tpl.color || '#6366f1' },
-                                  document: {
-                                    ...asset.document,
-                                    pages: [tpl.page],
-                                  },
-                                }}
-                                pageId={tpl.page.id}
-                                readOnly
-                                thumbnail
-                                viewportDevice="desktop"
-                                viewportWidth={1200}
-                                language={lang}
-                              />
-                            </div>
-                          )}
+                          <StepTemplateThumbnail tpl={tpl} language={lang} />
                           <div className="sys-tpl-hover-actions">
                             <button
                               type="button"
@@ -817,20 +794,18 @@ export function FunnelStepWorkspace({
                               <Check size={15} />
                               {t('Select', 'تحديد')}
                             </button>
-                            <button
-                              type="button"
+                            <a
                               className="sys-tpl-preview-btn"
-                              onClick={() =>
-                                setPreviewTpl({
-                                  title: tpl.title,
-                                  page: tpl.page,
-                                  color: tpl.color,
-                                })
-                              }
+                              href={`/template-preview/${encodeURIComponent(tpl.id)}?${new URLSearchParams({
+                                source: 'step',
+                                lang: ar ? 'ar' : 'en',
+                              })}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               <Eye size={15} />
                               {t('Preview template', 'معاينة النموذج')}
-                            </button>
+                            </a>
                           </div>
                         </div>
                         <div className="sys-tpl-card-foot">

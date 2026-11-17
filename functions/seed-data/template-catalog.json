@@ -98,6 +98,69 @@
     }
   },
   {
+    "id": "upklick-funnel-flagship-sell",
+    "name": "SaaS & Course Direct-Sell Funnel",
+    "description": "Complete high-converting multi-step sales funnel with persuasive offer stack, countdown urgency, pre-linked Order Form checkout, and onboarding Thank You page.",
+    "category": "Funnels",
+    "industry": "SaaS/Agency",
+    "goal": "Direct Sale",
+    "source": "official",
+    "tags": [
+      "direct sale",
+      "order form",
+      "checkout",
+      "3 steps",
+      "New"
+    ],
+    "updated": "2026-11-17",
+    "popularity": 842,
+    "color": "#4F46E5",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fcover.jpg?alt=media&token=b6c5925e-6c2b-4c01-bae9-8bc884578299",
+    "content": {
+      "headline": "Launch & Scale Digital Revenue With One Conversion System.",
+      "steps": [
+        "Offer & Sales Page",
+        "Order Form",
+        "Thank You Page"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
+    "id": "upklick-funnel-flagship-audience",
+    "name": "Audience Growth & Lead Magnet Funnel",
+    "description": "High-converting 2-step audience builder funnel featuring an editorial Opt-in Squeeze page with social proof, countdown bar, and pre-linked instant resource Thank You page.",
+    "category": "Funnels",
+    "industry": "Fitness/Coaching",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "build an audience",
+      "opt-in",
+      "lead magnet",
+      "2 steps",
+      "New"
+    ],
+    "updated": "2026-11-17",
+    "popularity": 794,
+    "color": "#059669",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fcover.jpg?alt=media&token=0311159c-b004-4e6b-a4e9-f863b7eb8a65",
+    "content": {
+      "headline": "Get the Free 7-Figure Audience & Funnel Playbook.",
+      "steps": [
+        "Opt-in / Squeeze Page",
+        "Thank You Page"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    }
+  },
+  {
     "id": "ghl-funnel-mortgage-company",
     "name": "Mortgage Company",
     "description": "Step-by-step mortgage & real estate pre-qualification lead funnel with affordability tiers, soft-pull assurance, and loan officer booking.",
@@ -311,7 +374,8 @@
         "enabled": false,
         "language": "en"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-6%2Fstarter-cover.jpg?alt=media&token=5f3d6928-0a30-41b0-a70b-ac3144fcf619"
   },
   {
     "id": "master-7",
@@ -340,7 +404,8 @@
         "enabled": false,
         "language": "en"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-7%2Fstarter-cover.jpg?alt=media&token=8b6a6d35-a871-4c77-8a4a-523256a573f3"
   },
   {
     "id": "master-8",
@@ -369,7 +434,8 @@
         "enabled": false,
         "language": "en"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-8%2Fstarter-cover.jpg?alt=media&token=2a8dd21e-46aa-485d-957c-dff6fea18018"
   },
   {
     "id": "master-9",

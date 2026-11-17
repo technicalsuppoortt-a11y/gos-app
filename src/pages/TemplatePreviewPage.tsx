@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { pageCatalogTemplates } from '../backend/pageTemplateCatalog';
 import { useTemplateCatalogState } from '../backend/templateCatalog';
+import { useGlobalFunnelTemplates } from '../backend/globalFunnelTemplates';
 import { translateTextForLanguage, useUILanguage } from '../i18n/display';
 import { AssetSelect } from './AssetControls';
 import type { Asset } from './asset-model';
@@ -24,7 +25,64 @@ export function TemplatePreviewPage() {
   const source = params.get('source');
   const uid = useSelector((state: RootState) => state.auth.user?.id);
   const language = useTemplatePreviewLanguage(params.get('lang'));
+  if (source === 'step') {
+    return <StepTemplatePreview key={JSON.stringify([uid, templateId])} templateId={templateId || ''} language={language}/>;
+  }
   return <WorkspaceTemplatePreview key={JSON.stringify([uid, source, templateId])} templateId={templateId || ''} source={source} language={language}/>;
+}
+
+function StepTemplatePreview({ templateId, language }: { templateId: string; language: string }) {
+  const { templates, loading, error } = useGlobalFunnelTemplates({ includeDrafts: false, language });
+  const selected = templates.find(item => item.id === templateId);
+  const asset = useMemo<Asset | undefined>(() => {
+    if (!selected) return undefined;
+    return {
+      id: selected.id,
+      kind: 'funnel',
+      name: selected.title,
+      domain: '',
+      image: selected.page.featuredImage || selected.thumbnail || '',
+      updated: selected.updated || new Date().toISOString(),
+      description: selected.description,
+      settings: {
+        seo: selected.title,
+        navigation: selected.page.name,
+        color: selected.color || '#6366f1',
+      },
+      document: {
+        pages: [selected.page],
+        steps: [{ id: selected.page.id, label: selected.page.name, pageId: selected.page.id, type: selected.category }],
+        funnel: {
+          name: selected.title,
+          goal: selected.category,
+          audience: '',
+          offer: selected.title,
+          events: [],
+          status: 'Published',
+          pagesFlow: [selected.page.id],
+        },
+        theme: {
+          color: selected.color || '#6366f1',
+          font: language.startsWith('ar') ? 'Cairo' : 'Inter',
+          corners: 'Rounded',
+        },
+      },
+    };
+  }, [selected, language]);
+
+  return (
+    <StandaloneTemplatePreview
+      title={selected?.title || translateTextForLanguage('Template preview', language)}
+      asset={asset}
+      language={language}
+      template={false}
+      showLanguageToggle
+    >
+      <p role={error ? 'alert' : 'status'}>
+        {error || translateTextForLanguage(loading ? 'Loading preview…' : 'This template is unavailable.', language)}
+      </p>
+    </StandaloneTemplatePreview>
+  );
 }
 
 function WorkspaceTemplatePreview({ templateId, source, language }: { templateId: string; source: string | null; language: string }) {
@@ -56,7 +114,7 @@ export function useTemplatePreviewLanguage(requested: string | null) {
   return requested === 'ar' || requested === 'en' ? requested : uiLanguage;
 }
 
-export function StandaloneTemplatePreview({ title, asset, children, language, template = true }: { title: string; asset?: Asset; children?: ReactNode; language?: string; template?: boolean }) {
+export function StandaloneTemplatePreview({ title, asset, children, language, template = true, showLanguageToggle = template }: { title: string; asset?: Asset; children?: ReactNode; language?: string; template?: boolean; showLanguageToggle?: boolean }) {
   const uiLanguage = useUILanguage();
   const locale = language || uiLanguage;
   const t = (value: string) => translateTextForLanguage(value, locale);
@@ -88,7 +146,7 @@ export function StandaloneTemplatePreview({ title, asset, children, language, te
   return <main className="template-preview-page" lang={locale} dir={locale.startsWith('ar') ? 'rtl' : 'ltr'}>
     <header className="template-preview-header">
       <div className="template-preview-heading"><h1>{title}</h1>
-        {template && <div className="template-preview-devices" role="group" aria-label={locale === 'ar' ? 'لغة القالب' : 'Template language'}>
+        {showLanguageToggle && <div className="template-preview-devices" role="group" aria-label={locale === 'ar' ? 'لغة القالب' : 'Template language'}>
           {(['en', 'ar'] as const).map(option => <button type="button" key={option} lang={option} aria-pressed={locale.startsWith(option)} onClick={() => setParams(current => {
             const next = new URLSearchParams(current);
             next.set('lang', option);

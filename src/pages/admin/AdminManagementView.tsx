@@ -61,6 +61,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const [page, setPage] = useState(1), [pageSize, setPageSize] = useState(10);
   const [sort, setSort] = useState<{ key: Column; direction: 1 | -1 }>({ key: 'name', direction: 1 });
   const [viewOverride, setViewOverride] = useState<'grid' | 'table' | null>(null);
+  const [funnelSubView, setFunnelSubView] = useState<'full' | 'steps'>('full');
   const [openMenuId, setOpenMenuId] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [deleting, setDeleting] = useState<ManagedTemplate | null>(null);
@@ -100,7 +101,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     catch (error) { const message = backendError(error); setNotice({ message, error: true }); return message; }
     finally { lock.current = false; setBusy(false); }
   }
-  function resetFilters() { setSearch(''); setWorkspace(''); setStatus(''); setSource(''); setCategory(''); setPipeline(''); setCalendar(''); setPage(1); }
+  function resetFilters() { setSearch(''); setWorkspace(''); setStatus(''); setSource(''); setCategory(''); setFunnelSubView('full'); setPipeline(''); setCalendar(''); setPage(1); }
   function changeTab(index: number) { setParams({ tab: String(index) }); setSelectedId(''); setStatus(''); setSource(''); setCategory(''); setPipeline(''); setCalendar(''); setPage(1); }
   function relationOptions(items: LiveRecord[], key: 'pipelineKey' | 'calendarKey', label: 'pipeline' | 'calendar') {
     const options = new Map<string, { value: string; label: string }>();
@@ -153,9 +154,39 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     {notice && <div className={`alm-notice ${notice.error ? 'error' : ''}`} role="status"><span>{notice.error ? <Activity size={17}/> : <Check size={17}/>}</span>{notice.message}<button className="alm-icon-button" aria-label={t('Dismiss', 'إغلاق')} onClick={() => setNotice(null)}><X size={15}/></button></div>}
     {isTemplates && <div className="alm-resource-tabs alm-library-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template libraries', 'مكتبات القوالب')}>{libraries.map(([id, label]) => <button key={id} role="tab" aria-selected={params.get('library') !== 'funnel_global' && library === id} tabIndex={params.get('library') !== 'funnel_global' && library === id ? 0 : -1} onClick={() => { setParams({ library: id }); setSelectedId(''); setCategory(''); setStatus(''); setPage(1); }}>{label}</button>)}{superAdmin && <button key="funnel_global" role="tab" aria-selected={params.get('library') === 'funnel_global'} tabIndex={params.get('library') === 'funnel_global' ? 0 : -1} onClick={() => { setParams({ library: 'funnel_global' }); setSelectedId(''); }}>{t('Funnel Step Templates', 'قوالب خطوات المسارات')}</button>}</div>}
     {isTemplates && superAdmin && params.get('library') === 'funnel_global' ? <SuperAdminFunnelTemplates /> : <>
-    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); setOpenMenuId(''); setPage(1); }}>{item ? templateCategoryLabel(item, ar) : t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{item[ar ? 1 : 0]}</button>)}</div>}
+    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); if (item !== 'Funnels') setFunnelSubView('full'); setOpenMenuId(''); setPage(1); }}>{item ? templateCategoryLabel(item, ar) : t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{item[ar ? 1 : 0]}</button>)}</div>}
     <section className="alm-table-panel" aria-label={view.title[ar ? 1 : 0]}>
       <div className="alm-table-heading"><div><h2>{isTemplates ? categories.find(item => item === category) ? templateCategoryLabel(categories.find(item => item === category)!, ar) : t('Master library', 'المكتبة الرئيسية') : view.tabs[tab]?.[ar ? 1 : 0]}<span>{filtered.length}</span></h2><p>{isTemplates ? (library === 'general' ? t('Templates from the platform library. You can preview, copy, and show or hide them for your users.', 'قوالب مكتبة المنصة. يمكنك معاينتها ونسخها وإظهارها أو إخفاؤها لمستخدميك.') : library === 'mine' ? t('Templates you create are visible only to your users.', 'القوالب التي تنشئها تظهر لمستخدميك فقط.') : library === 'client' ? t('Templates created by admins for their own users · view only.', 'قوالب أنشأها الأدمن لمستخدميهم · للعرض فقط.') : t('Published templates are available to every admin as General templates.', 'القوالب المنشورة متاحة لكل أدمن كقوالب عامة.')) : t('Inspect records while preserving workspace ownership.', 'استعرض السجلات مع الحفاظ على ملكية مساحة العمل.')}</p></div><span className="alm-monitor-label"><ShieldCheck size={14}/>{isTemplates ? t('System managed', 'بإدارة النظام') : t('Monitoring view', 'عرض المراقبة')}</span></div>
+      {isTemplates && superAdmin && category === 'Funnels' && (
+        <div className="alm-funnel-subview-bar" role="group" aria-label={t('Funnel template scope', 'نطاق قوالب المسارات')}>
+          <button
+            type="button"
+            data-funnel-subview="full"
+            aria-pressed={funnelSubView === 'full'}
+            className={funnelSubView === 'full' ? 'active' : ''}
+            onClick={() => setFunnelSubView('full')}
+          >
+            <Layers3 size={15} />
+            <span>{t('Complete Funnel Templates', 'قوالب المسارات الكاملة')}</span>
+            <b>{rows.filter(row => row.type === 'Funnels').length}</b>
+          </button>
+          <button
+            type="button"
+            data-funnel-subview="steps"
+            aria-pressed={funnelSubView === 'steps'}
+            className={funnelSubView === 'steps' ? 'active' : ''}
+            onClick={() => setFunnelSubView('steps')}
+          >
+            <LayoutTemplate size={15} />
+            <span>{t('Step Templates (Opt-in · Sales · Order Form · Thank You)', 'قوالب الخطوات (الاشتراك · المبيعات · الطلب · الشكر)')}</span>
+          </button>
+        </div>
+      )}
+      {isTemplates && superAdmin && category === 'Funnels' && funnelSubView === 'steps' ? (
+        <div className="alm-funnel-steps-embed">
+          <SuperAdminFunnelTemplates />
+        </div>
+      ) : <>
       <div className="alm-filters"><label className="alm-search"><Search size={17}/><input aria-label={t('Search records', 'بحث في السجلات')} placeholder={isTemplates ? t('Search by template name or use case…', 'ابحث باسم القالب أو الاستخدام…') : t('Search name, owner or workspace…', 'ابحث بالاسم أو المالك أو مساحة العمل…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}/>{search && <button className="alm-icon-button" onClick={() => { setSearch(''); setPage(1); }} aria-label={t('Clear search', 'مسح البحث')}><X size={14}/></button>}</label><div className="alm-filter-controls">
         {!isTemplates && <AdminSelect label={t('Workspace', 'مساحة العمل')} value={workspace} onChange={value => { setWorkspace(value); setPipeline(''); setCalendar(''); setPage(1); }} options={[{ value: '', label: t('All workspaces', 'كل مساحات العمل') }, ...Object.entries(live.tenants).map(([id, data]) => ({ value: id, label: `${data.name || id} · ${id}` }))]}/>}
         {resource === 'assets' && select(t('Asset subtype', 'نوع الأصل'), category, ['Funnels', 'Websites', 'Forms'], setCategory)}
@@ -320,6 +351,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
 
       {!live.loading && !filtered.length && <div className="alm-empty"><span><Search size={27}/></span><h3>{unavailable ? t('Records are unavailable', 'السجلات غير متاحة') : filterCount ? t('No matching records.', 'لا توجد سجلات مطابقة.') : t('Your library is ready for its first record', 'المكتبة جاهزة لأول سجل')}</h3><p>{unavailable ? t('Check the connection and administrator permissions.', 'تحقق من الاتصال وصلاحيات الإدارة.') : filterCount ? t('Try another search or adjust the filters.', 'جرب بحثاً آخر أو عدل الفلاتر.') : isTemplates ? t('Create a template or start from a system preset.', 'أنشئ قالباً أو ابدأ من إعداد نظام جاهز.') : t('New workspace records appear here automatically.', 'تظهر سجلات مساحات العمل الجديدة هنا تلقائياً.')}</p>{!!filterCount && <button className="alm-button" onClick={resetFilters}>{t('Clear filters', 'مسح الفلاتر')}</button>}</div>}
       <footer className="alm-pagination"><div><span>{filtered.length ? `${start + 1}–${Math.min(start + pageSize, filtered.length)}` : '0'} {t('of', 'من')} {filtered.length} {t('records', 'سجل')}</span><AdminSelect label={t('Rows per page', 'عدد الصفوف')} value={String(pageSize)} options={[10, 25, 50].map(value => ({ value: String(value), label: `${value} / ${t('page', 'صفحة')}` }))} onChange={value => { setPageSize(Number(value)); setPage(1); }}/></div><div><button className="alm-button" aria-label={t('Previous page', 'الصفحة السابقة')} disabled={current <= 1} onClick={() => setPage(current - 1)}><ChevronLeft size={15}/>{t('Previous', 'السابق')}</button><span>{current} / {pages}</span><button className="alm-button" aria-label={t('Next page', 'الصفحة التالية')} disabled={current >= pages} onClick={() => setPage(current + 1)}>{t('Next', 'التالي')}<ChevronRight size={15}/></button></div></footer>
+      </>}
     </section>
     </>}
     {selected && <AdminRecordDetails value={selected} tenants={live.tenants} users={live.users} related={live.records} close={() => setSelectedId('')} preview={setPreview} templatePreviewHref={isTemplates ? previewHref(selectedId) : undefined}/>}

@@ -33,7 +33,7 @@ const router = createMemoryRouter(createRoutesFromElements(<><Route path="/porta
 </Route>
 <Route path="*" element={ view === 'booking' ? <BookingTemplates/> : view === 'products' ? <ProductTemplateLibrary/> : <main className="aw-workspace" style={{ padding: 24 }}><PageTemplateLibrary install={template => { (window as any).__installedPage = createPageAsset(template.mode, template.name, template); }}/></main>}/><Route path="/dashboard/booking/:id/edit" element={<h1>Booking copy created</h1>}/><Route path="/dashboard/products-payments/products/:id/edit" element={<h1>Product copy created</h1>}/></>), {
   initialEntries: [view === 'password' ? '/portal/paid-course' :
-    view === 'admin' && location.pathname !== '/admin-preview' ? '/super-admin/dashboard-management' :
+    view === 'admin' && location.pathname !== '/admin-preview' && !location.pathname.startsWith('/template-preview/') ? '/super-admin/dashboard-management' :
     view === 'admin-owned' ? '/admin/templates?library=mine' : location.pathname + location.search],
 });
 (window as any).__templateRouter = router;

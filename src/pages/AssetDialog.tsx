@@ -9,6 +9,7 @@ import { Modal } from './settings/kit';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { AssetPreviewDialog } from './AssetPreviewDialog';
 import { AIWebsiteDialog } from './AIWebsiteDialog';
+import { AIFunnelArchitectModal } from './AIFunnelArchitectModal';
 import { images } from './asset-model';
 import type { Asset, BuilderMode, Dialog, Workspace } from './asset-model';
 import { showToast } from '../utils/toast';
@@ -164,7 +165,21 @@ export function AssetDialog({ dialog, kind, workspace, setWorkspace, updateAsset
     };
     if (dialog.type === 'create') return <PageInitializationDialog kind={kind} domains={workspace.domains} close={close} create={async (created, openWorkspace)=>{await setWorkspace(current=>({...current,assets:[created,...current.assets]}));close();if(created.kind==='funnel'&&(openWorkspace||!created.document.pages.length)){go('funnels/'+created.id);}else{go((created.kind==='website'?'websites':'funnels')+'/'+created.id+'/edit/'+created.document.pages[0].id);}}}/>;
     if (dialog.type === 'preview' && asset) return <AssetPreviewDialog asset={asset} pageId={dialog.pageId} close={close}/>;
-    if (dialog.type === 'ai') return <AIWebsiteDialog kind={kind} setWorkspace={setWorkspace} close={close} go={go}/>;
+    if (dialog.type === 'ai') {
+      if (kind === 'funnel') {
+        return (
+          <AIFunnelArchitectModal
+            close={close}
+            onCreate={async created => {
+              await setWorkspace(current => ({ ...current, assets: [created, ...current.assets] }));
+              close();
+              go('funnels/' + created.id);
+            }}
+          />
+        );
+      }
+      return <AIWebsiteDialog kind={kind} setWorkspace={setWorkspace} close={close} go={go}/>;
+    }
     return <Modal title={translateText(dialog.type === 'domain' ? 'Connect a domain' : dialog.type === 'delete' ? 'Delete ' + (dialog.pageId ? (kind === 'funnel' ? 'step' : 'page') : 'asset') : dialog.type === 'preview' ? `${asset?.name} · Preview` : dialog.type === 'add' ? `Add ${kind === 'funnel' ? 'step' : 'page'}` : dialog.type === 'rename' ? 'Rename asset' : `Create ${kind}`)} close={close}><div className={'aw-modal-body '+(dialog.type==='preview'&&kind==='funnel'?'aw-funnel-preview':'')}>
  {localizeNode(dialog.type === 'delete' ? <><p>{localizeNode(dialog.pageId ? 'This page and its content' : 'This asset and all its pages')}{translateText(" will be removed from this workspace. This cannot be undone.")}</p>{localizeNode(asset?.document.pages.length === 1 && dialog.pageId ? <p className="aw-error">{translateText("Keep at least one page. Delete the entire asset if you no longer need it.")}</p> : <AssetAsyncButton className="aw-danger" busyText="Deleting..." onClick={async () => {
    try {

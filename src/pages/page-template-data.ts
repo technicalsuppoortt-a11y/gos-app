@@ -1054,6 +1054,301 @@ const locksmithFunnelDoc: BuilderDocument = {
 };
 
 // ---------------------------------------------------------------------------
+// 2B. FLAGSHIP CONVERSION FUNNELS (Complete "Sell" & "Build an Audience")
+// ---------------------------------------------------------------------------
+
+const flagshipSellSteps: FunnelStep[] = [
+  { id: 'sell-step-offer', label: '1. Offer & Sales Page', pageId: 'sell-offer-page', type: 'Sales', category: 'Sales', templateSelected: true },
+  { id: 'sell-step-order', label: '2. Order Form', pageId: 'sell-order-form', type: 'Order Form', category: 'Order Form', templateSelected: true },
+  { id: 'sell-step-thanks', label: '3. Thank You Page', pageId: 'sell-thank-you', type: 'Thank You', category: 'Thank You', templateSelected: true },
+];
+
+const flagshipSellFunnelDoc: BuilderDocument = {
+  theme: { color: '#4F46E5', font: 'Manrope', corners: 'Rounded' },
+  steps: flagshipSellSteps,
+  funnel: {
+    name: 'SaaS & Course Direct-Sell Funnel',
+    goal: 'Direct Sale',
+    goalType: 'sell',
+    funnelActive: true,
+    audience: 'Founders, course creators, consultants, and agencies scaling predictable online revenue',
+    offer: 'Complete Growth Operating System & Implementation Bundle ($97 Founding Offer)',
+    pagesFlow: flagshipSellSteps.map(s => s.pageId),
+    events: ['Form Submit', 'Checkout'],
+    status: 'Draft',
+  },
+  pages: [
+    {
+      id: 'sell-offer-page',
+      name: 'Offer & Sales Page',
+      status: 'Draft',
+      path: '/offer',
+      seoTitle: 'Launch & Scale Digital Revenue With One Conversion System',
+      seoDescription: 'Turn cold clicks into paid customers with pre-built funnels, automated follow-ups, and instant checkout.',
+      headline: 'Launch & Scale Digital Revenue With One Conversion System.',
+      subheadline: 'Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.',
+      cta: 'Claim Founding Access — $97 →',
+      showHeader: false,
+      header: 'Minimal header',
+      showFooter: false,
+      footer: 'Minimal footer',
+      featuredImage: '/template-thumbnails/upklick-funnel-flagship-sell-hero.jpg',
+      backgroundColor: '#ffffff',
+      isFunnelStep: true,
+      templateSelected: true,
+      stepCategory: 'Sales',
+      sections: [
+        sec('sell-hero', 'Hero', 'Launch & Scale Digital Revenue With One Conversion System.', 'Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.', {
+          button: 'Claim Founding Access — $97 →',
+          destinationType: 'Next Step',
+          destination: 'sell-order-form',
+        }, { backgroundColor: '#1E1B4B', padding: '44' }),
+        sec('sell-urgency-stats', 'Stats', 'Limited Founding Offer · Instant Lifetime Access', 'Protected by our 14-day no-questions-asked satisfaction guarantee.', {
+          items: '14:59 Offer Reserved · 2,840+ Active Customers · 4.9/5 Verified Score · 14-Day Money-Back Guarantee',
+        }, { backgroundColor: '#EEF2FF', padding: '26' }),
+        cols3('sell-pillars', [
+          ['Conversion-Engineered Architecture', 'Structured visual hierarchy with above-the-fold clarity, social proof anchors, and zero-friction mobile checkout.'],
+          ['Pre-Built Offer & Bonus Stack', 'Showcase core deliverables, bonus playbooks, and clear value comparisons that lift average order conversion up to 3.4x.'],
+          ['Automated Post-Purchase Onboarding', 'Every completed order triggers instant receipt confirmation, CRM buyer tagging, and direct member portal access.'],
+        ], '#ffffff'),
+        sec('sell-curriculum', 'Program Cards', 'Everything Included in Your Founding Bundle', 'Six actionable modules plus ready-to-launch funnel assets valued at $591 — yours today for $97.', {
+          eyebrow: 'What You Unlock Today',
+          media: 'numbered',
+          items: '01 Irresistible Offer Blueprint · 02 High-Converting Checkout Templates · 03 Automated WhatsApp & Email Follow-Up',
+          specs: 'Instant lifetime access · Bilingual EN & AR ready · 24/7 priority support',
+          button: 'Proceed to Secure Order Form →',
+          destinationType: 'Next Step',
+          destination: 'sell-order-form',
+        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        sec('sell-reviews', 'Testimonials', 'Trusted by 2,840+ Founders & Digital Creators', '', {
+          testimonials: JSON.stringify([
+            { id: 'sf-r1', author: 'Nadia Al-Mansoor', role: 'Founder, Elevate Digital Academy', quote: 'We switched our flagship course launch to this exact funnel layout and generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate.', rating: 5, avatar: '' },
+            { id: 'sf-r2', author: 'Daniel Mercer', role: 'B2B SaaS Growth Lead', quote: 'Cleanest order flow we have ever deployed. Mobile buyers complete checkout in under 60 seconds without drop-off.', rating: 5, avatar: '' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '32' }),
+        sec('sell-pricing', 'Pricing', 'Lock In 67% Off Founding Member Pricing', 'One-time payment. Zero recurring fees. Instant access to every module and bonus.', {
+          plans: JSON.stringify([
+            {
+              id: 'sf-plan-1',
+              name: 'Complete Growth System + Bonuses',
+              price: '$97',
+              period: 'one-time',
+              features: [
+                '6 Step-by-Step Video Implementation Modules ($297 Value)',
+                '12 High-Converting Funnel & Checkout Templates ($197 Value)',
+                'Automated Follow-Up & Recovery Swipe Files ($97 Value)',
+                '14-Day 100% Money-Back Guarantee',
+              ],
+              button: 'Continue to Order Form →',
+              highlighted: true,
+            },
+          ]),
+          destinationType: 'Next Step',
+          destination: 'sell-order-form',
+        }, { backgroundColor: '#F8FAFC', padding: '36' }),
+        sec('sell-faq', 'FAQ', 'Frequently Asked Questions Before You Enroll', '', {
+          questions: JSON.stringify([
+            { id: 'sf-q1', question: 'How fast do I receive access after completing the order form?', answer: 'Immediately! The moment your order is submitted on the next step, you are redirected to your confirmation page and receive login credentials by email.' },
+            { id: 'sf-q2', question: 'What if it is not the right fit for my business?', answer: 'You are protected by a full 14-day 100% money-back guarantee. Simply message support within 14 days for a prompt refund.' },
+            { id: 'sf-q3', question: 'Does this work on mobile and in both Arabic and English?', answer: 'Yes — every step, form, and checkout card is 100% responsive across desktop, tablet, and mobile in both English (LTR) and Arabic (RTL).' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '32' }),
+      ],
+    },
+    {
+      id: 'sell-order-form',
+      name: 'Order Form',
+      status: 'Draft',
+      path: '/order-form',
+      seoTitle: 'Secure Order Form — Complete Your Enrollment ($97)',
+      seoDescription: '256-bit SSL encrypted order form with instant member portal access and 14-day guarantee.',
+      headline: 'Complete Your Order — Instant Lifetime Access',
+      subheadline: 'Your 67% founding discount ($97 instead of $297) is reserved for the next 14:59 minutes.',
+      cta: 'Complete Secure Order ($97) →',
+      showHeader: false,
+      header: 'Minimal header',
+      showFooter: false,
+      footer: 'Minimal footer',
+      featuredImage: '',
+      backgroundColor: '#F8FAFC',
+      isFunnelStep: true,
+      templateSelected: true,
+      stepCategory: 'Order Form',
+      sections: [
+        sec('sell-order-head', 'Heading', 'Complete Your Order — Instant Lifetime Access', 'Your 67% founding discount ($97 instead of $297) is reserved for 14:59 minutes. Complete Steps 1 & 2 below.', { headingTag: 'H1' }, { backgroundColor: '#1E1B4B', padding: '34', textAlign: 'Center' }),
+        sec('sell-order-trust', 'Stats', '', '', {
+          items: '256-Bit SSL Encrypted · Instant Portal Login · 14-Day Refund Guarantee · 2,840+ Verified Buyers',
+        }, { backgroundColor: '#EEF2FF', padding: '20' }),
+        sec('sell-order-stack', 'Core Values', 'Your Order Includes ($591 Total Value → $97 Today)', '6 Implementation Modules ($297) · 12 Conversion Templates ($197) · Follow-Up Swipe Pack ($97) · Priority Support & Updates ($0)', {}, { backgroundColor: '#ffffff', padding: '26' }),
+        sec('sell-order-contact', 'Form', 'Step 1 · Customer & Delivery Information', 'Enter the name and email address where we should send your receipt and instant login details.', {
+          fields: JSON.stringify(['Name', 'Email', 'Phone']),
+          button: 'Confirm Details & Proceed →',
+          successMessage: 'Customer details verified! Redirecting to confirmation...',
+          nextPage: 'sell-thank-you',
+          destinationType: 'Next Step',
+          destination: 'sell-thank-you',
+        }, { backgroundColor: '#ffffff', padding: '30' }),
+        sec('sell-order-payment', 'Payment', 'Step 2 · Order Summary & Secure Payment', 'One-time payment of $97 · Backed by our 14-day 100% satisfaction guarantee.', {
+          productId: 'Complete Growth System Bundle',
+          price: '$97.00',
+          gateway: 'Stripe · Visa / Mastercard / Apple Pay',
+          button: 'Complete Secure Order ($97) →',
+          destinationType: 'Next Step',
+          destination: 'sell-thank-you',
+        }, { backgroundColor: '#ffffff', padding: '30' }),
+      ],
+    },
+    {
+      id: 'sell-thank-you',
+      name: 'Thank You Page',
+      status: 'Draft',
+      path: '/thank-you',
+      seoTitle: 'Order Confirmed! Welcome to the Program',
+      seoDescription: 'Your payment is verified and your member portal access is ready.',
+      headline: 'Order Confirmed! Your Access Is Live',
+      subheadline: 'Thank you for your order! Your payment of $97 was verified securely and your login credentials are on their way to your inbox.',
+      cta: 'Access Member Portal Now →',
+      showHeader: false,
+      header: 'Minimal header',
+      showFooter: false,
+      footer: 'Minimal footer',
+      featuredImage: '',
+      backgroundColor: '#F8FAFC',
+      isFunnelStep: true,
+      templateSelected: true,
+      stepCategory: 'Thank You',
+      sections: [
+        sec('sell-ty-banner', 'Heading', 'Order Confirmed! Your Access Is Live', 'Thank you for your order! Your payment of $97 was verified securely and your login credentials have been sent to your email.', {
+          headingTag: 'H1',
+          template: 'thank-you',
+        }, { backgroundColor: '#ffffff', padding: '38', textAlign: 'Center' }),
+        sec('sell-ty-cta', 'Button', '', '', {
+          button: 'Access Member Portal Now →',
+          destinationType: 'External URL',
+          destination: '/portal',
+          openInNewTab: 'false',
+        }, { backgroundColor: '#ffffff', padding: '18', textAlign: 'Center' }),
+        cols3('sell-ty-steps', [
+          ['01 · Check Your Inbox (2 Mins)', 'Open our welcome email containing your receipt #ORD-2026 and one-click portal login link.'],
+          ['02 · Start Quick-Win Module 1', 'Watch the 12-minute kickoff walkthrough and import your first ready-made conversion funnel.'],
+          ['03 · Join Live Office Hours', 'Bring your offer to Thursday live Q&A for direct feedback from our senior growth strategists.'],
+        ], '#F8FAFC'),
+      ],
+    },
+  ],
+};
+
+const flagshipAudienceSteps: FunnelStep[] = [
+  { id: 'aud-step-optin', label: '1. Opt-in / Squeeze Page', pageId: 'aud-optin-page', type: 'Opt-in', category: 'Opt-in', templateSelected: true },
+  { id: 'aud-step-thanks', label: '2. Thank You Page', pageId: 'aud-thank-you', type: 'Thank You', category: 'Thank You', templateSelected: true },
+];
+
+const flagshipAudienceFunnelDoc: BuilderDocument = {
+  theme: { color: '#059669', font: 'Manrope', corners: 'Rounded' },
+  steps: flagshipAudienceSteps,
+  funnel: {
+    name: 'Audience Growth & Lead Magnet Funnel',
+    goal: 'Lead Generation',
+    goalType: 'audience',
+    funnelActive: true,
+    audience: 'Creators, coaches, consultants, and SaaS founders building a high-intent email & WhatsApp audience',
+    offer: 'Free 7-Figure Audience & Conversion Playbook + Weekly 5-Minute Growth Frameworks',
+    pagesFlow: flagshipAudienceSteps.map(s => s.pageId),
+    events: ['Form Submit'],
+    status: 'Draft',
+  },
+  pages: [
+    {
+      id: 'aud-optin-page',
+      name: 'Opt-in / Squeeze Page',
+      status: 'Draft',
+      path: '/opt-in',
+      seoTitle: 'Free Download — The 7-Figure Audience & Funnel Playbook',
+      seoDescription: 'Join 18,400+ founders and creators getting actionable conversion frameworks and our free 28-page starter playbook.',
+      headline: 'Get the Free 7-Figure Audience & Funnel Playbook.',
+      subheadline: 'Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.',
+      cta: 'Send Me the Free Playbook →',
+      showHeader: false,
+      header: 'Minimal header',
+      showFooter: false,
+      footer: 'Minimal footer',
+      featuredImage: '/template-thumbnails/upklick-funnel-flagship-audience-hero.jpg',
+      backgroundColor: '#F0FDF4',
+      isFunnelStep: true,
+      templateSelected: true,
+      stepCategory: 'Opt-in',
+      sections: [
+        sec('aud-hero', 'Hero', 'Get the Free 7-Figure Audience & Funnel Playbook.', 'Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.', {
+          button: 'Unlock Free Playbook Now →',
+          destinationType: 'Scroll to Section',
+          destination: 'aud-optin-form',
+        }, { backgroundColor: '#064E3B', padding: '44' }),
+        sec('aud-stats', 'Stats', '100% Free Instant Download · Zero Fluff', 'Actionable templates you can copy and deploy in under 30 minutes.', {
+          items: '18,400+ Subscribers · 4.9/5 Reader Rating · 28-Page Action PDF · 19:59 Bonus Checklist Window',
+        }, { backgroundColor: '#ECFDF5', padding: '24' }),
+        sec('aud-optin-form', 'Form', 'Where Should We Send Your Free Playbook?', 'Enter your name and best email below for instant access to the PDF guide + bonus swipe file.', {
+          template: 'lead-capture',
+          fields: JSON.stringify(['Name', 'Email', 'Phone']),
+          button: 'Send Me the Free Playbook →',
+          successMessage: 'Playbook unlocked! Redirecting to your download page...',
+          nextPage: 'aud-thank-you',
+          destinationType: 'Next Step',
+          destination: 'aud-thank-you',
+        }, { backgroundColor: '#ffffff', padding: '32' }),
+        cols3('aud-pillars', [
+          ['01 · High-Converting Hook Templates', '15 proven headline and curiosity hooks that lift squeeze-page opt-in rates past 42% on cold traffic.'],
+          ['02 · 5-Day Welcome & Trust Sequence', 'Copy-and-paste email and WhatsApp follow-up scripts that turn new subscribers into booked calls and buyers.'],
+          ['03 · Organic & Paid Traffic Checklist', 'Our 15-minute daily distribution checklist across Instagram, LinkedIn, YouTube, and Meta ads.'],
+        ], '#ffffff'),
+        sec('aud-reviews', 'Testimonials', 'What 18,400+ Readers Say About the Playbook', '', {
+          testimonials: JSON.stringify([
+            { id: 'af-r1', author: 'Layla Haddad', role: 'Executive Coach & Creator', quote: 'I applied the headline and squeeze layout from page 6 and grew my email list by 1,420 subscribers in 3 weeks without spending an extra dollar on ads.', rating: 5, avatar: '' },
+            { id: 'af-r2', author: 'Ryan Kowalski', role: 'Founder, ScaleBrief', quote: 'Pure signal, zero filler. The 5-day welcome sequence paid for itself 20x over on our very first newsletter cohort.', rating: 5, avatar: '' },
+          ]),
+        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+      ],
+    },
+    {
+      id: 'aud-thank-you',
+      name: 'Thank You Page',
+      status: 'Draft',
+      path: '/thank-you',
+      seoTitle: 'You Are In! Download Your Free Playbook',
+      seoDescription: 'Instant download link for your free Audience & Funnel Playbook.',
+      headline: 'You Are In! Your Free Playbook Is Ready',
+      subheadline: 'Click the button below to download your 28-page PDF immediately — we also sent a copy straight to your email inbox.',
+      cta: 'Download Free Playbook (PDF) →',
+      showHeader: false,
+      header: 'Minimal header',
+      showFooter: false,
+      footer: 'Minimal footer',
+      featuredImage: '',
+      backgroundColor: '#F0FDF4',
+      isFunnelStep: true,
+      templateSelected: true,
+      stepCategory: 'Thank You',
+      sections: [
+        sec('aud-ty-banner', 'Heading', 'You Are In! Your Free Playbook Is Ready', 'Click the button below to download your 28-page PDF immediately — we also sent a backup copy straight to your inbox.', {
+          headingTag: 'H1',
+          template: 'thank-you',
+        }, { backgroundColor: '#ffffff', padding: '38', textAlign: 'Center' }),
+        sec('aud-ty-btn', 'Button', '', '', {
+          button: 'Download Free Playbook (PDF · 2.4 MB) →',
+          destinationType: 'Download File',
+          destination: 'https://app.upklick.net/Audience-Growth-Playbook.pdf',
+          downloadFilename: 'Audience-Growth-Playbook.pdf',
+        }, { backgroundColor: '#ffffff', padding: '18', textAlign: 'Center' }),
+        cols3('aud-ty-steps', [
+          ['Step 1 · Whitelist Our Email', 'Star our welcome email so you never miss Tuesday 5-minute conversion teardowns.'],
+          ['Step 2 · Apply Page 4 Today', 'Implement the 3-bullet curiosity hero on your main landing page in under 10 minutes.'],
+          ['Step 3 · Share With Your Team', 'Forward your playbook checklist to your marketing or content partner to align your next launch.'],
+        ], '#ECFDF5'),
+      ],
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // 3. FORMS (3 GoHighLevel-Standard Conversion Forms)
 // ---------------------------------------------------------------------------
 
@@ -1245,7 +1540,43 @@ export const pageTemplates: PageTemplate[] = [
     builderDocument: pharmacyWebsiteDoc,
   },
 
-  // ================= FUNNELS (3) =================
+  // ================= FUNNELS (5: 2 Flagship + 3 Industry) =================
+  {
+    mode: 'funnel',
+    id: 'upklick-funnel-flagship-sell',
+    name: 'SaaS & Course Direct-Sell Funnel',
+    description: 'Complete high-converting multi-step sales funnel with persuasive offer stack, countdown urgency, pre-linked Order Form checkout, and onboarding Thank You page.',
+    industry: 'SaaS/Agency',
+    goal: 'Direct Sale',
+    title: 'Launch & Scale Digital Revenue With One Conversion System.',
+    body: 'Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.',
+    cta: 'Claim Founding Access — $97 →',
+    color: '#4F46E5',
+    image: '/template-thumbnails/upklick-funnel-flagship-sell-hero.jpg',
+    thumbnail: '/template-thumbnails/upklick-funnel-flagship-sell.jpg',
+    popularity: 842,
+    tags: ['direct sale', 'order form', 'checkout', '3 steps', 'New'],
+    benefits: ['Pre-Linked Sales + Order Form + Thank You', '14:59 Urgency & 256-Bit SSL Trust Stack', 'Bilingual AR (RTL) & EN (LTR) Ready'],
+    builderDocument: flagshipSellFunnelDoc,
+  },
+  {
+    mode: 'funnel',
+    id: 'upklick-funnel-flagship-audience',
+    name: 'Audience Growth & Lead Magnet Funnel',
+    description: 'High-converting 2-step audience builder funnel featuring an editorial Opt-in Squeeze page with social proof, countdown bar, and pre-linked instant resource Thank You page.',
+    industry: 'Fitness/Coaching',
+    goal: 'Lead Generation',
+    title: 'Get the Free 7-Figure Audience & Funnel Playbook.',
+    body: 'Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.',
+    cta: 'Send Me the Free Playbook →',
+    color: '#059669',
+    image: '/template-thumbnails/upklick-funnel-flagship-audience-hero.jpg',
+    thumbnail: '/template-thumbnails/upklick-funnel-flagship-audience.jpg',
+    popularity: 794,
+    tags: ['build an audience', 'opt-in', 'lead magnet', '2 steps', 'New'],
+    benefits: ['Pre-Linked Opt-in Squeeze + Thank You', '18,400+ Social Proof & Bonus Timer', 'Instant PDF Resource Delivery Step'],
+    builderDocument: flagshipAudienceFunnelDoc,
+  },
   {
     mode: 'funnel',
     id: 'ghl-funnel-mortgage-company',

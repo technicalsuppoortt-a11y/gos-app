@@ -9,15 +9,19 @@ import {
   ImagePlus,
   Layers,
   LayoutTemplate,
+  Monitor,
   Pencil,
   Plus,
   Save,
   Search,
+  Smartphone,
   Sparkles,
+  Tablet,
   Trash2,
 } from 'lucide-react';
 import { BuilderWorkspace, type BuilderDocument, type BuilderPage } from '../BuilderWorkspace';
 import { PublishedPage } from '../PublishedPage';
+import { StepTemplateThumbnail } from '../StepTemplateThumbnail';
 import { Modal } from '../settings/kit';
 import { AdminSelect } from './AdminSelect';
 import { uploadTemplateThumbnail } from '../../backend/adminManagement';
@@ -85,6 +89,7 @@ export function SuperAdminFunnelTemplates() {
   const [previewTarget, setPreviewTarget] = useState<{
     tpl: LocalizedGlobalFunnelTemplate;
     previewLang: 'en' | 'ar';
+    device: 'desktop' | 'tablet' | 'mobile';
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<LocalizedGlobalFunnelTemplate | null>(null);
 
@@ -145,7 +150,7 @@ export function SuperAdminFunnelTemplates() {
     setUploading(true);
     try {
       const url = await uploadTemplateThumbnail(editing.id, file);
-      setEditing(cur => (cur ? { ...cur, thumbnail: url } : cur));
+      setEditing(cur => (cur ? { ...cur, thumbnail: url, useThumbnail: true } : cur));
       showToast.success(t('Thumbnail uploaded.', 'تم رفع صورة القالب.'));
     } catch (err) {
       showToast.error(backendError(err));
@@ -538,21 +543,7 @@ export function SuperAdminFunnelTemplates() {
                 className="sys-tpl-preview-box"
                 style={{ background: tpl.accentBg || tpl.color || '#4f46e5' }}
               >
-                {tpl.thumbnail ? (
-                  <img src={tpl.thumbnail} alt={tpl.title} loading="lazy" />
-                ) : (
-                  <div className="sys-tpl-live-mini" aria-hidden="true">
-                    <PublishedPage
-                      asset={makePreviewAsset(tpl.page, tpl.title, tpl.color)}
-                      pageId={tpl.page.id}
-                      readOnly
-                      thumbnail
-                      viewportDevice="desktop"
-                      viewportWidth={1200}
-                      language={lang}
-                    />
-                  </div>
-                )}
+                <StepTemplateThumbnail tpl={tpl} language={lang} />
                 <div className="sys-tpl-hover-actions">
                   <button
                     type="button"
@@ -562,16 +553,19 @@ export function SuperAdminFunnelTemplates() {
                     <Pencil size={14} />
                     {t('Edit Template', 'تعديل القالب')}
                   </button>
-                  <button
-                    type="button"
+                  <a
                     className="sys-tpl-preview-btn"
-                    onClick={() =>
-                      setPreviewTarget({ tpl, previewLang: ar ? 'ar' : 'en' })
-                    }
+                    href={`/admin-preview?${new URLSearchParams({
+                      template: tpl.id,
+                      source: 'step',
+                      lang: ar ? 'ar' : 'en',
+                    })}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <Eye size={14} />
                     {t('Preview', 'معاينة')}
-                  </button>
+                  </a>
                 </div>
               </div>
 
@@ -594,7 +588,12 @@ export function SuperAdminFunnelTemplates() {
                         : t('Draft', 'مسودة')}
                     </span>
                   </div>
-                  <small>{tpl.categoryLabel}</small>
+                  <small style={{ display: 'block', marginTop: 2 }}>{tpl.categoryLabel}</small>
+                  {tpl.description && (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.75, lineHeight: 1.4 }}>
+                      {tpl.description}
+                    </p>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -676,13 +675,13 @@ export function SuperAdminFunnelTemplates() {
         </div>
       )}
 
-      {/* Preview Modal with EN/AR Switcher */}
+      {/* Preview Modal with EN/AR & Responsive Device Switcher */}
       {previewTarget && (
         <Modal
           title={`${previewTarget.tpl.title} · ${previewTarget.tpl.categoryLabel}`}
           close={() => setPreviewTarget(null)}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
             <div className="sys-filter-pills">
               <button
                 type="button"
@@ -703,6 +702,28 @@ export function SuperAdminFunnelTemplates() {
                 العربية (RTL)
               </button>
             </div>
+            <div className="sys-filter-pills">
+              {(
+                [
+                  { id: 'desktop', label: t('Desktop', 'كمبيوتر'), Icon: Monitor },
+                  { id: 'tablet', label: t('Tablet', 'تابلت'), Icon: Tablet },
+                  { id: 'mobile', label: t('Mobile', 'جوال'), Icon: Smartphone },
+                ] as const
+              ).map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`sys-pill ${previewTarget.device === id ? 'active' : ''}`}
+                  onClick={() =>
+                    setPreviewTarget(cur => (cur ? { ...cur, device: id } : cur))
+                  }
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               className="aw-primary"
@@ -716,19 +737,29 @@ export function SuperAdminFunnelTemplates() {
               {t('Edit Template', 'تعديل القالب')}
             </button>
           </div>
-          <div className="sys-tpl-modal-preview">
+          <div className="sys-tpl-modal-preview" style={{ display: 'flex', justifyContent: 'center', background: '#0f172a0d', padding: previewTarget.device === 'desktop' ? 0 : 12 }}>
             {(() => {
               const localized = localizeGlobalFunnelTemplate(
                 previewTarget.tpl,
                 previewTarget.previewLang === 'ar'
               );
+              const targetWidth =
+                previewTarget.device === 'mobile'
+                  ? 390
+                  : previewTarget.device === 'tablet'
+                    ? 768
+                    : 1120;
               return (
-                <PublishedPage
-                  asset={makePreviewAsset(localized.page, localized.title, localized.color)}
-                  pageId={localized.page.id}
-                  readOnly
-                  language={previewTarget.previewLang}
-                />
+                <div style={{ width: '100%', maxWidth: previewTarget.device === 'desktop' ? '100%' : targetWidth, margin: '0 auto', borderRadius: 10, overflow: 'hidden' }}>
+                  <PublishedPage
+                    asset={makePreviewAsset(localized.page, localized.title, localized.color)}
+                    pageId={localized.page.id}
+                    readOnly
+                    viewportDevice={previewTarget.device}
+                    viewportWidth={targetWidth}
+                    language={previewTarget.previewLang}
+                  />
+                </div>
               );
             })()}
           </div>

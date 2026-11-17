@@ -298,11 +298,11 @@
                 "content": {
                   "title": "Building Excellence, One Frame At A Time",
                   "body": "Comprehensive structural scopes engineered for speed, safety, and code compliance.",
+                  "eyebrow": "Our Services Overview",
+                  "media": "numbered",
                   "items": "Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses",
                   "specs": "Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule",
-                  "button": "Explore Scopes",
-                  "eyebrow": "Our Services Overview",
-                  "media": "numbered"
+                  "button": "Explore Scopes"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -544,11 +544,11 @@
                 "content": {
                   "title": "Representative Portfolio",
                   "body": "On-budget structural execution across residential and commercial sectors.",
+                  "eyebrow": "Featured Projects",
+                  "media": "numbered",
                   "items": "Oakridge 48-Unit Townhomes · Highland Modern Timber Estate · Westgate Medical Retail Shell",
                   "specs": "Completed 2 weeks early · Engineered Glulam package · Light-gauge steel & truss hybrid",
-                  "button": "Request References",
-                  "eyebrow": "Featured Projects",
-                  "media": "numbered"
+                  "button": "Request References"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -854,11 +854,11 @@
               "content": {
                 "title": "Building Excellence, One Frame At A Time",
                 "body": "Comprehensive structural scopes engineered for speed, safety, and code compliance.",
+                "eyebrow": "Our Services Overview",
+                "media": "numbered",
                 "items": "Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses",
                 "specs": "Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule",
-                "button": "Explore Scopes",
-                "eyebrow": "Our Services Overview",
-                "media": "numbered"
+                "button": "Explore Scopes"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -1100,11 +1100,11 @@
               "content": {
                 "title": "Representative Portfolio",
                 "body": "On-budget structural execution across residential and commercial sectors.",
+                "eyebrow": "Featured Projects",
+                "media": "numbered",
                 "items": "Oakridge 48-Unit Townhomes · Highland Modern Timber Estate · Westgate Medical Retail Shell",
                 "specs": "Completed 2 weeks early · Engineered Glulam package · Light-gauge steel & truss hybrid",
-                "button": "Request References",
-                "eyebrow": "Featured Projects",
-                "media": "numbered"
+                "button": "Request References"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -1585,11 +1585,11 @@
                 "content": {
                   "title": "Secure Tomorrow, Enjoy Today",
                   "body": "Three clear steps from side-by-side carrier comparison to active family protection.",
+                  "eyebrow": "How It Works",
+                  "media": "numbered",
                   "items": "1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval",
                   "specs": "Zero broker fees · Living benefits included · Annual policy checkups",
-                  "button": "Compare Rates Now",
-                  "eyebrow": "How It Works",
-                  "media": "numbered"
+                  "button": "Compare Rates Now"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -2106,11 +2106,11 @@
               "content": {
                 "title": "Secure Tomorrow, Enjoy Today",
                 "body": "Three clear steps from side-by-side carrier comparison to active family protection.",
+                "eyebrow": "How It Works",
+                "media": "numbered",
                 "items": "1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval",
                 "specs": "Zero broker fees · Living benefits included · Annual policy checkups",
-                "button": "Compare Rates Now",
-                "eyebrow": "How It Works",
-                "media": "numbered"
+                "button": "Compare Rates Now"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -2537,11 +2537,11 @@
                 "content": {
                   "title": "Everything You Need In One Neighborhood Pharmacy",
                   "body": "Clinical precision paired with warm, unhurried patient support.",
+                  "eyebrow": "Pharmacy Services",
+                  "media": "numbered",
                   "items": "Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding",
                   "specs": "All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts",
-                  "button": "Explore Clinical Services",
-                  "eyebrow": "Pharmacy Services",
-                  "media": "numbered"
+                  "button": "Explore Clinical Services"
                 },
                 "styles": {
                   "backgroundColor": "#ffffff",
@@ -3057,11 +3057,11 @@
               "content": {
                 "title": "Everything You Need In One Neighborhood Pharmacy",
                 "body": "Clinical precision paired with warm, unhurried patient support.",
+                "eyebrow": "Pharmacy Services",
+                "media": "numbered",
                 "items": "Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding",
                 "specs": "All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts",
-                "button": "Explore Clinical Services",
-                "eyebrow": "Pharmacy Services",
-                "media": "numbered"
+                "button": "Explore Clinical Services"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -3378,6 +3378,2353 @@
     }
   },
   {
+    "id": "upklick-funnel-flagship-sell",
+    "name": "SaaS & Course Direct-Sell Funnel",
+    "description": "Complete high-converting multi-step sales funnel with persuasive offer stack, countdown urgency, pre-linked Order Form checkout, and onboarding Thank You page.",
+    "category": "Funnels",
+    "industry": "SaaS/Agency",
+    "goal": "Direct Sale",
+    "source": "official",
+    "tags": [
+      "direct sale",
+      "order form",
+      "checkout",
+      "3 steps",
+      "New"
+    ],
+    "updated": "2026-11-17",
+    "popularity": 842,
+    "color": "#4F46E5",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fcover.jpg?alt=media&token=b6c5925e-6c2b-4c01-bae9-8bc884578299",
+    "content": {
+      "headline": "Launch & Scale Digital Revenue With One Conversion System.",
+      "steps": [
+        "Offer & Sales Page",
+        "Order Form",
+        "Thank You Page"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    },
+    "active": true,
+    "status": "Published",
+    "schemaVersion": 2,
+    "assetType": "funnel",
+    "pageTemplate": {
+      "mode": "funnel",
+      "id": "upklick-funnel-flagship-sell",
+      "name": "SaaS & Course Direct-Sell Funnel",
+      "description": "Complete high-converting multi-step sales funnel with persuasive offer stack, countdown urgency, pre-linked Order Form checkout, and onboarding Thank You page.",
+      "industry": "SaaS/Agency",
+      "goal": "Direct Sale",
+      "title": "Launch & Scale Digital Revenue With One Conversion System.",
+      "body": "Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.",
+      "cta": "Claim Founding Access — $97 →",
+      "color": "#4F46E5",
+      "image": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fhero.jpg?alt=media&token=eabd4c52-e2ba-42b6-af31-dd77c9e835e4",
+      "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fcover.jpg?alt=media&token=b6c5925e-6c2b-4c01-bae9-8bc884578299",
+      "popularity": 842,
+      "tags": [
+        "direct sale",
+        "order form",
+        "checkout",
+        "3 steps",
+        "New"
+      ],
+      "benefits": [
+        "Pre-Linked Sales + Order Form + Thank You",
+        "14:59 Urgency & 256-Bit SSL Trust Stack",
+        "Bilingual AR (RTL) & EN (LTR) Ready"
+      ],
+      "builderDocument": {
+        "theme": {
+          "color": "#4F46E5",
+          "font": "Manrope",
+          "corners": "Rounded"
+        },
+        "steps": [
+          {
+            "id": "sell-step-offer",
+            "label": "1. Offer & Sales Page",
+            "pageId": "sell-offer-page",
+            "type": "Sales",
+            "category": "Sales",
+            "templateSelected": true
+          },
+          {
+            "id": "sell-step-order",
+            "label": "2. Order Form",
+            "pageId": "sell-order-form",
+            "type": "Order Form",
+            "category": "Order Form",
+            "templateSelected": true
+          },
+          {
+            "id": "sell-step-thanks",
+            "label": "3. Thank You Page",
+            "pageId": "sell-thank-you",
+            "type": "Thank You",
+            "category": "Thank You",
+            "templateSelected": true
+          }
+        ],
+        "funnel": {
+          "name": "SaaS & Course Direct-Sell Funnel",
+          "goal": "Direct Sale",
+          "goalType": "sell",
+          "funnelActive": true,
+          "audience": "Founders, course creators, consultants, and agencies scaling predictable online revenue",
+          "offer": "Complete Growth Operating System & Implementation Bundle ($97 Founding Offer)",
+          "pagesFlow": [
+            "sell-offer-page",
+            "sell-order-form",
+            "sell-thank-you"
+          ],
+          "events": [
+            "Form Submit",
+            "Checkout"
+          ],
+          "status": "Draft"
+        },
+        "pages": [
+          {
+            "id": "sell-offer-page",
+            "name": "Offer & Sales Page",
+            "status": "Draft",
+            "path": "/offer",
+            "seoTitle": "Launch & Scale Digital Revenue With One Conversion System",
+            "seoDescription": "Turn cold clicks into paid customers with pre-built funnels, automated follow-ups, and instant checkout.",
+            "headline": "Launch & Scale Digital Revenue With One Conversion System.",
+            "subheadline": "Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.",
+            "cta": "Claim Founding Access — $97 →",
+            "showHeader": false,
+            "header": "Minimal header",
+            "showFooter": false,
+            "footer": "Minimal footer",
+            "featuredImage": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fhero.jpg?alt=media&token=eabd4c52-e2ba-42b6-af31-dd77c9e835e4",
+            "backgroundColor": "#ffffff",
+            "isFunnelStep": true,
+            "templateSelected": true,
+            "stepCategory": "Sales",
+            "sections": [
+              {
+                "id": "sell-hero",
+                "type": "Hero",
+                "content": {
+                  "title": "Launch & Scale Digital Revenue With One Conversion System.",
+                  "body": "Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.",
+                  "button": "Claim Founding Access — $97 →",
+                  "destinationType": "Next Step",
+                  "destination": "sell-order-form"
+                },
+                "styles": {
+                  "backgroundColor": "#1E1B4B",
+                  "padding": "44",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-urgency-stats",
+                "type": "Stats",
+                "content": {
+                  "title": "Limited Founding Offer · Instant Lifetime Access",
+                  "body": "Protected by our 14-day no-questions-asked satisfaction guarantee.",
+                  "items": "14:59 Offer Reserved · 2,840+ Active Customers · 4.9/5 Verified Score · 14-Day Money-Back Guarantee"
+                },
+                "styles": {
+                  "backgroundColor": "#EEF2FF",
+                  "padding": "26",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-pillars-cols",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": [
+                  [
+                    {
+                      "id": "sell-pillars-h-0",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Conversion-Engineered Architecture",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-pillars-p-0",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Structured visual hierarchy with above-the-fold clarity, social proof anchors, and zero-friction mobile checkout."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "sell-pillars-h-1",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Pre-Built Offer & Bonus Stack",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-pillars-p-1",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Showcase core deliverables, bonus playbooks, and clear value comparisons that lift average order conversion up to 3.4x."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "sell-pillars-h-2",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Automated Post-Purchase Onboarding",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-pillars-p-2",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Every completed order triggers instant receipt confirmation, CRM buyer tagging, and direct member portal access."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ]
+                ]
+              },
+              {
+                "id": "sell-curriculum",
+                "type": "Program Cards",
+                "content": {
+                  "title": "Everything Included in Your Founding Bundle",
+                  "body": "Six actionable modules plus ready-to-launch funnel assets valued at $591 — yours today for $97.",
+                  "eyebrow": "What You Unlock Today",
+                  "media": "numbered",
+                  "items": "01 Irresistible Offer Blueprint · 02 High-Converting Checkout Templates · 03 Automated WhatsApp & Email Follow-Up",
+                  "specs": "Instant lifetime access · Bilingual EN & AR ready · 24/7 priority support",
+                  "button": "Proceed to Secure Order Form →",
+                  "destinationType": "Next Step",
+                  "destination": "sell-order-form"
+                },
+                "styles": {
+                  "backgroundColor": "#F8FAFC",
+                  "padding": "32",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-reviews",
+                "type": "Testimonials",
+                "content": {
+                  "title": "Trusted by 2,840+ Founders & Digital Creators",
+                  "body": "",
+                  "testimonials": "[{\"id\":\"sf-r1\",\"author\":\"Nadia Al-Mansoor\",\"role\":\"Founder, Elevate Digital Academy\",\"quote\":\"We switched our flagship course launch to this exact funnel layout and generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate.\",\"rating\":5,\"avatar\":\"\"},{\"id\":\"sf-r2\",\"author\":\"Daniel Mercer\",\"role\":\"B2B SaaS Growth Lead\",\"quote\":\"Cleanest order flow we have ever deployed. Mobile buyers complete checkout in under 60 seconds without drop-off.\",\"rating\":5,\"avatar\":\"\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "32",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-pricing",
+                "type": "Pricing",
+                "content": {
+                  "title": "Lock In 67% Off Founding Member Pricing",
+                  "body": "One-time payment. Zero recurring fees. Instant access to every module and bonus.",
+                  "plans": "[{\"id\":\"sf-plan-1\",\"name\":\"Complete Growth System + Bonuses\",\"price\":\"$97\",\"period\":\"one-time\",\"features\":[\"6 Step-by-Step Video Implementation Modules ($297 Value)\",\"12 High-Converting Funnel & Checkout Templates ($197 Value)\",\"Automated Follow-Up & Recovery Swipe Files ($97 Value)\",\"14-Day 100% Money-Back Guarantee\"],\"button\":\"Continue to Order Form →\",\"highlighted\":true}]",
+                  "destinationType": "Next Step",
+                  "destination": "sell-order-form"
+                },
+                "styles": {
+                  "backgroundColor": "#F8FAFC",
+                  "padding": "36",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-faq",
+                "type": "FAQ",
+                "content": {
+                  "title": "Frequently Asked Questions Before You Enroll",
+                  "body": "",
+                  "questions": "[{\"id\":\"sf-q1\",\"question\":\"How fast do I receive access after completing the order form?\",\"answer\":\"Immediately! The moment your order is submitted on the next step, you are redirected to your confirmation page and receive login credentials by email.\"},{\"id\":\"sf-q2\",\"question\":\"What if it is not the right fit for my business?\",\"answer\":\"You are protected by a full 14-day 100% money-back guarantee. Simply message support within 14 days for a prompt refund.\"},{\"id\":\"sf-q3\",\"question\":\"Does this work on mobile and in both Arabic and English?\",\"answer\":\"Yes — every step, form, and checkout card is 100% responsive across desktop, tablet, and mobile in both English (LTR) and Arabic (RTL).\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "32",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ]
+          },
+          {
+            "id": "sell-order-form",
+            "name": "Order Form",
+            "status": "Draft",
+            "path": "/order-form",
+            "seoTitle": "Secure Order Form — Complete Your Enrollment ($97)",
+            "seoDescription": "256-bit SSL encrypted order form with instant member portal access and 14-day guarantee.",
+            "headline": "Complete Your Order — Instant Lifetime Access",
+            "subheadline": "Your 67% founding discount ($97 instead of $297) is reserved for the next 14:59 minutes.",
+            "cta": "Complete Secure Order ($97) →",
+            "showHeader": false,
+            "header": "Minimal header",
+            "showFooter": false,
+            "footer": "Minimal footer",
+            "featuredImage": "",
+            "backgroundColor": "#F8FAFC",
+            "isFunnelStep": true,
+            "templateSelected": true,
+            "stepCategory": "Order Form",
+            "sections": [
+              {
+                "id": "sell-order-head",
+                "type": "Heading",
+                "content": {
+                  "title": "Complete Your Order — Instant Lifetime Access",
+                  "body": "Your 67% founding discount ($97 instead of $297) is reserved for 14:59 minutes. Complete Steps 1 & 2 below.",
+                  "headingTag": "H1"
+                },
+                "styles": {
+                  "backgroundColor": "#1E1B4B",
+                  "padding": "34",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-order-trust",
+                "type": "Stats",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "items": "256-Bit SSL Encrypted · Instant Portal Login · 14-Day Refund Guarantee · 2,840+ Verified Buyers"
+                },
+                "styles": {
+                  "backgroundColor": "#EEF2FF",
+                  "padding": "20",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-order-stack",
+                "type": "Core Values",
+                "content": {
+                  "title": "Your Order Includes ($591 Total Value → $97 Today)",
+                  "body": "6 Implementation Modules ($297) · 12 Conversion Templates ($197) · Follow-Up Swipe Pack ($97) · Priority Support & Updates ($0)"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "26",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-order-contact",
+                "type": "Form",
+                "content": {
+                  "title": "Step 1 · Customer & Delivery Information",
+                  "body": "Enter the name and email address where we should send your receipt and instant login details.",
+                  "fields": "[\"Name\",\"Email\",\"Phone\"]",
+                  "button": "Confirm Details & Proceed →",
+                  "successMessage": "Customer details verified! Redirecting to confirmation...",
+                  "nextPage": "sell-thank-you",
+                  "destinationType": "Next Step",
+                  "destination": "sell-thank-you"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "30",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-order-payment",
+                "type": "Payment",
+                "content": {
+                  "title": "Step 2 · Order Summary & Secure Payment",
+                  "body": "One-time payment of $97 · Backed by our 14-day 100% satisfaction guarantee.",
+                  "productId": "Complete Growth System Bundle",
+                  "price": "$97.00",
+                  "gateway": "Stripe · Visa / Mastercard / Apple Pay",
+                  "button": "Complete Secure Order ($97) →",
+                  "destinationType": "Next Step",
+                  "destination": "sell-thank-you"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "30",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ]
+          },
+          {
+            "id": "sell-thank-you",
+            "name": "Thank You Page",
+            "status": "Draft",
+            "path": "/thank-you",
+            "seoTitle": "Order Confirmed! Welcome to the Program",
+            "seoDescription": "Your payment is verified and your member portal access is ready.",
+            "headline": "Order Confirmed! Your Access Is Live",
+            "subheadline": "Thank you for your order! Your payment of $97 was verified securely and your login credentials are on their way to your inbox.",
+            "cta": "Access Member Portal Now →",
+            "showHeader": false,
+            "header": "Minimal header",
+            "showFooter": false,
+            "footer": "Minimal footer",
+            "featuredImage": "",
+            "backgroundColor": "#F8FAFC",
+            "isFunnelStep": true,
+            "templateSelected": true,
+            "stepCategory": "Thank You",
+            "sections": [
+              {
+                "id": "sell-ty-banner",
+                "type": "Heading",
+                "content": {
+                  "title": "Order Confirmed! Your Access Is Live",
+                  "body": "Thank you for your order! Your payment of $97 was verified securely and your login credentials have been sent to your email.",
+                  "headingTag": "H1",
+                  "template": "thank-you"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "38",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-ty-cta",
+                "type": "Button",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "button": "Access Member Portal Now →",
+                  "destinationType": "External URL",
+                  "destination": "/portal",
+                  "openInNewTab": "false"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "18",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "sell-ty-steps-cols",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#F8FAFC",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": [
+                  [
+                    {
+                      "id": "sell-ty-steps-h-0",
+                      "type": "Heading",
+                      "content": {
+                        "title": "01 · Check Your Inbox (2 Mins)",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-ty-steps-p-0",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Open our welcome email containing your receipt #ORD-2026 and one-click portal login link."
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "sell-ty-steps-h-1",
+                      "type": "Heading",
+                      "content": {
+                        "title": "02 · Start Quick-Win Module 1",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-ty-steps-p-1",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Watch the 12-minute kickoff walkthrough and import your first ready-made conversion funnel."
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "sell-ty-steps-h-2",
+                      "type": "Heading",
+                      "content": {
+                        "title": "03 · Join Live Office Hours",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "sell-ty-steps-p-2",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Bring your offer to Thursday live Q&A for direct feedback from our senior growth strategists."
+                      },
+                      "styles": {
+                        "backgroundColor": "#F8FAFC",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "builderDocument": {
+      "theme": {
+        "color": "#4F46E5",
+        "font": "Manrope",
+        "corners": "Rounded"
+      },
+      "steps": [
+        {
+          "id": "sell-step-offer",
+          "label": "1. Offer & Sales Page",
+          "pageId": "sell-offer-page",
+          "type": "Sales",
+          "category": "Sales",
+          "templateSelected": true
+        },
+        {
+          "id": "sell-step-order",
+          "label": "2. Order Form",
+          "pageId": "sell-order-form",
+          "type": "Order Form",
+          "category": "Order Form",
+          "templateSelected": true
+        },
+        {
+          "id": "sell-step-thanks",
+          "label": "3. Thank You Page",
+          "pageId": "sell-thank-you",
+          "type": "Thank You",
+          "category": "Thank You",
+          "templateSelected": true
+        }
+      ],
+      "funnel": {
+        "name": "SaaS & Course Direct-Sell Funnel",
+        "goal": "Direct Sale",
+        "goalType": "sell",
+        "funnelActive": true,
+        "audience": "Founders, course creators, consultants, and agencies scaling predictable online revenue",
+        "offer": "Complete Growth Operating System & Implementation Bundle ($97 Founding Offer)",
+        "pagesFlow": [
+          "sell-offer-page",
+          "sell-order-form",
+          "sell-thank-you"
+        ],
+        "events": [
+          "Form Submit",
+          "Checkout"
+        ],
+        "status": "Draft"
+      },
+      "pages": [
+        {
+          "id": "sell-offer-page",
+          "name": "Offer & Sales Page",
+          "status": "Draft",
+          "path": "/offer",
+          "seoTitle": "Launch & Scale Digital Revenue With One Conversion System",
+          "seoDescription": "Turn cold clicks into paid customers with pre-built funnels, automated follow-ups, and instant checkout.",
+          "headline": "Launch & Scale Digital Revenue With One Conversion System.",
+          "subheadline": "Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.",
+          "cta": "Claim Founding Access — $97 →",
+          "showHeader": false,
+          "header": "Minimal header",
+          "showFooter": false,
+          "footer": "Minimal footer",
+          "featuredImage": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-sell%2Fhero.jpg?alt=media&token=eabd4c52-e2ba-42b6-af31-dd77c9e835e4",
+          "backgroundColor": "#ffffff",
+          "isFunnelStep": true,
+          "templateSelected": true,
+          "stepCategory": "Sales",
+          "sections": [
+            {
+              "id": "sell-hero",
+              "type": "Hero",
+              "content": {
+                "title": "Launch & Scale Digital Revenue With One Conversion System.",
+                "body": "Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.",
+                "button": "Claim Founding Access — $97 →",
+                "destinationType": "Next Step",
+                "destination": "sell-order-form"
+              },
+              "styles": {
+                "backgroundColor": "#1E1B4B",
+                "padding": "44",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-urgency-stats",
+              "type": "Stats",
+              "content": {
+                "title": "Limited Founding Offer · Instant Lifetime Access",
+                "body": "Protected by our 14-day no-questions-asked satisfaction guarantee.",
+                "items": "14:59 Offer Reserved · 2,840+ Active Customers · 4.9/5 Verified Score · 14-Day Money-Back Guarantee"
+              },
+              "styles": {
+                "backgroundColor": "#EEF2FF",
+                "padding": "26",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-pillars-cols",
+              "type": "Columns",
+              "content": {
+                "title": "",
+                "body": "",
+                "columnLayout": "3 Col (33/33/33)",
+                "gap": "20"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "28",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              },
+              "children": [
+                [
+                  {
+                    "id": "sell-pillars-h-0",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Conversion-Engineered Architecture",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-pillars-p-0",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Structured visual hierarchy with above-the-fold clarity, social proof anchors, and zero-friction mobile checkout."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "sell-pillars-h-1",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Pre-Built Offer & Bonus Stack",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-pillars-p-1",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Showcase core deliverables, bonus playbooks, and clear value comparisons that lift average order conversion up to 3.4x."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "sell-pillars-h-2",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Automated Post-Purchase Onboarding",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-pillars-p-2",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Every completed order triggers instant receipt confirmation, CRM buyer tagging, and direct member portal access."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ]
+              ]
+            },
+            {
+              "id": "sell-curriculum",
+              "type": "Program Cards",
+              "content": {
+                "title": "Everything Included in Your Founding Bundle",
+                "body": "Six actionable modules plus ready-to-launch funnel assets valued at $591 — yours today for $97.",
+                "eyebrow": "What You Unlock Today",
+                "media": "numbered",
+                "items": "01 Irresistible Offer Blueprint · 02 High-Converting Checkout Templates · 03 Automated WhatsApp & Email Follow-Up",
+                "specs": "Instant lifetime access · Bilingual EN & AR ready · 24/7 priority support",
+                "button": "Proceed to Secure Order Form →",
+                "destinationType": "Next Step",
+                "destination": "sell-order-form"
+              },
+              "styles": {
+                "backgroundColor": "#F8FAFC",
+                "padding": "32",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-reviews",
+              "type": "Testimonials",
+              "content": {
+                "title": "Trusted by 2,840+ Founders & Digital Creators",
+                "body": "",
+                "testimonials": "[{\"id\":\"sf-r1\",\"author\":\"Nadia Al-Mansoor\",\"role\":\"Founder, Elevate Digital Academy\",\"quote\":\"We switched our flagship course launch to this exact funnel layout and generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate.\",\"rating\":5,\"avatar\":\"\"},{\"id\":\"sf-r2\",\"author\":\"Daniel Mercer\",\"role\":\"B2B SaaS Growth Lead\",\"quote\":\"Cleanest order flow we have ever deployed. Mobile buyers complete checkout in under 60 seconds without drop-off.\",\"rating\":5,\"avatar\":\"\"}]"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "32",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-pricing",
+              "type": "Pricing",
+              "content": {
+                "title": "Lock In 67% Off Founding Member Pricing",
+                "body": "One-time payment. Zero recurring fees. Instant access to every module and bonus.",
+                "plans": "[{\"id\":\"sf-plan-1\",\"name\":\"Complete Growth System + Bonuses\",\"price\":\"$97\",\"period\":\"one-time\",\"features\":[\"6 Step-by-Step Video Implementation Modules ($297 Value)\",\"12 High-Converting Funnel & Checkout Templates ($197 Value)\",\"Automated Follow-Up & Recovery Swipe Files ($97 Value)\",\"14-Day 100% Money-Back Guarantee\"],\"button\":\"Continue to Order Form →\",\"highlighted\":true}]",
+                "destinationType": "Next Step",
+                "destination": "sell-order-form"
+              },
+              "styles": {
+                "backgroundColor": "#F8FAFC",
+                "padding": "36",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-faq",
+              "type": "FAQ",
+              "content": {
+                "title": "Frequently Asked Questions Before You Enroll",
+                "body": "",
+                "questions": "[{\"id\":\"sf-q1\",\"question\":\"How fast do I receive access after completing the order form?\",\"answer\":\"Immediately! The moment your order is submitted on the next step, you are redirected to your confirmation page and receive login credentials by email.\"},{\"id\":\"sf-q2\",\"question\":\"What if it is not the right fit for my business?\",\"answer\":\"You are protected by a full 14-day 100% money-back guarantee. Simply message support within 14 days for a prompt refund.\"},{\"id\":\"sf-q3\",\"question\":\"Does this work on mobile and in both Arabic and English?\",\"answer\":\"Yes — every step, form, and checkout card is 100% responsive across desktop, tablet, and mobile in both English (LTR) and Arabic (RTL).\"}]"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "32",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sell-order-form",
+          "name": "Order Form",
+          "status": "Draft",
+          "path": "/order-form",
+          "seoTitle": "Secure Order Form — Complete Your Enrollment ($97)",
+          "seoDescription": "256-bit SSL encrypted order form with instant member portal access and 14-day guarantee.",
+          "headline": "Complete Your Order — Instant Lifetime Access",
+          "subheadline": "Your 67% founding discount ($97 instead of $297) is reserved for the next 14:59 minutes.",
+          "cta": "Complete Secure Order ($97) →",
+          "showHeader": false,
+          "header": "Minimal header",
+          "showFooter": false,
+          "footer": "Minimal footer",
+          "featuredImage": "",
+          "backgroundColor": "#F8FAFC",
+          "isFunnelStep": true,
+          "templateSelected": true,
+          "stepCategory": "Order Form",
+          "sections": [
+            {
+              "id": "sell-order-head",
+              "type": "Heading",
+              "content": {
+                "title": "Complete Your Order — Instant Lifetime Access",
+                "body": "Your 67% founding discount ($97 instead of $297) is reserved for 14:59 minutes. Complete Steps 1 & 2 below.",
+                "headingTag": "H1"
+              },
+              "styles": {
+                "backgroundColor": "#1E1B4B",
+                "padding": "34",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-order-trust",
+              "type": "Stats",
+              "content": {
+                "title": "",
+                "body": "",
+                "items": "256-Bit SSL Encrypted · Instant Portal Login · 14-Day Refund Guarantee · 2,840+ Verified Buyers"
+              },
+              "styles": {
+                "backgroundColor": "#EEF2FF",
+                "padding": "20",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-order-stack",
+              "type": "Core Values",
+              "content": {
+                "title": "Your Order Includes ($591 Total Value → $97 Today)",
+                "body": "6 Implementation Modules ($297) · 12 Conversion Templates ($197) · Follow-Up Swipe Pack ($97) · Priority Support & Updates ($0)"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "26",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-order-contact",
+              "type": "Form",
+              "content": {
+                "title": "Step 1 · Customer & Delivery Information",
+                "body": "Enter the name and email address where we should send your receipt and instant login details.",
+                "fields": "[\"Name\",\"Email\",\"Phone\"]",
+                "button": "Confirm Details & Proceed →",
+                "successMessage": "Customer details verified! Redirecting to confirmation...",
+                "nextPage": "sell-thank-you",
+                "destinationType": "Next Step",
+                "destination": "sell-thank-you"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "30",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-order-payment",
+              "type": "Payment",
+              "content": {
+                "title": "Step 2 · Order Summary & Secure Payment",
+                "body": "One-time payment of $97 · Backed by our 14-day 100% satisfaction guarantee.",
+                "productId": "Complete Growth System Bundle",
+                "price": "$97.00",
+                "gateway": "Stripe · Visa / Mastercard / Apple Pay",
+                "button": "Complete Secure Order ($97) →",
+                "destinationType": "Next Step",
+                "destination": "sell-thank-you"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "30",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sell-thank-you",
+          "name": "Thank You Page",
+          "status": "Draft",
+          "path": "/thank-you",
+          "seoTitle": "Order Confirmed! Welcome to the Program",
+          "seoDescription": "Your payment is verified and your member portal access is ready.",
+          "headline": "Order Confirmed! Your Access Is Live",
+          "subheadline": "Thank you for your order! Your payment of $97 was verified securely and your login credentials are on their way to your inbox.",
+          "cta": "Access Member Portal Now →",
+          "showHeader": false,
+          "header": "Minimal header",
+          "showFooter": false,
+          "footer": "Minimal footer",
+          "featuredImage": "",
+          "backgroundColor": "#F8FAFC",
+          "isFunnelStep": true,
+          "templateSelected": true,
+          "stepCategory": "Thank You",
+          "sections": [
+            {
+              "id": "sell-ty-banner",
+              "type": "Heading",
+              "content": {
+                "title": "Order Confirmed! Your Access Is Live",
+                "body": "Thank you for your order! Your payment of $97 was verified securely and your login credentials have been sent to your email.",
+                "headingTag": "H1",
+                "template": "thank-you"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "38",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-ty-cta",
+              "type": "Button",
+              "content": {
+                "title": "",
+                "body": "",
+                "button": "Access Member Portal Now →",
+                "destinationType": "External URL",
+                "destination": "/portal",
+                "openInNewTab": "false"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "18",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "sell-ty-steps-cols",
+              "type": "Columns",
+              "content": {
+                "title": "",
+                "body": "",
+                "columnLayout": "3 Col (33/33/33)",
+                "gap": "20"
+              },
+              "styles": {
+                "backgroundColor": "#F8FAFC",
+                "padding": "28",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              },
+              "children": [
+                [
+                  {
+                    "id": "sell-ty-steps-h-0",
+                    "type": "Heading",
+                    "content": {
+                      "title": "01 · Check Your Inbox (2 Mins)",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-ty-steps-p-0",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Open our welcome email containing your receipt #ORD-2026 and one-click portal login link."
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "sell-ty-steps-h-1",
+                    "type": "Heading",
+                    "content": {
+                      "title": "02 · Start Quick-Win Module 1",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-ty-steps-p-1",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Watch the 12-minute kickoff walkthrough and import your first ready-made conversion funnel."
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "sell-ty-steps-h-2",
+                    "type": "Heading",
+                    "content": {
+                      "title": "03 · Join Live Office Hours",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "sell-ty-steps-p-2",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Bring your offer to Thursday live Q&A for direct feedback from our senior growth strategists."
+                    },
+                    "styles": {
+                      "backgroundColor": "#F8FAFC",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "upklick-funnel-flagship-audience",
+    "name": "Audience Growth & Lead Magnet Funnel",
+    "description": "High-converting 2-step audience builder funnel featuring an editorial Opt-in Squeeze page with social proof, countdown bar, and pre-linked instant resource Thank You page.",
+    "category": "Funnels",
+    "industry": "Fitness/Coaching",
+    "goal": "Lead Generation",
+    "source": "official",
+    "tags": [
+      "build an audience",
+      "opt-in",
+      "lead magnet",
+      "2 steps",
+      "New"
+    ],
+    "updated": "2026-11-17",
+    "popularity": 794,
+    "color": "#059669",
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fcover.jpg?alt=media&token=0311159c-b004-4e6b-a4e9-f863b7eb8a65",
+    "content": {
+      "headline": "Get the Free 7-Figure Audience & Funnel Playbook.",
+      "steps": [
+        "Opt-in / Squeeze Page",
+        "Thank You Page"
+      ],
+      "settings": {
+        "enabled": true,
+        "language": "en"
+      }
+    },
+    "active": true,
+    "status": "Published",
+    "schemaVersion": 2,
+    "assetType": "funnel",
+    "pageTemplate": {
+      "mode": "funnel",
+      "id": "upklick-funnel-flagship-audience",
+      "name": "Audience Growth & Lead Magnet Funnel",
+      "description": "High-converting 2-step audience builder funnel featuring an editorial Opt-in Squeeze page with social proof, countdown bar, and pre-linked instant resource Thank You page.",
+      "industry": "Fitness/Coaching",
+      "goal": "Lead Generation",
+      "title": "Get the Free 7-Figure Audience & Funnel Playbook.",
+      "body": "Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.",
+      "cta": "Send Me the Free Playbook →",
+      "color": "#059669",
+      "image": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fhero.jpg?alt=media&token=00334642-8f90-423d-9380-656ebb59aa9a",
+      "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fcover.jpg?alt=media&token=0311159c-b004-4e6b-a4e9-f863b7eb8a65",
+      "popularity": 794,
+      "tags": [
+        "build an audience",
+        "opt-in",
+        "lead magnet",
+        "2 steps",
+        "New"
+      ],
+      "benefits": [
+        "Pre-Linked Opt-in Squeeze + Thank You",
+        "18,400+ Social Proof & Bonus Timer",
+        "Instant PDF Resource Delivery Step"
+      ],
+      "builderDocument": {
+        "theme": {
+          "color": "#059669",
+          "font": "Manrope",
+          "corners": "Rounded"
+        },
+        "steps": [
+          {
+            "id": "aud-step-optin",
+            "label": "1. Opt-in / Squeeze Page",
+            "pageId": "aud-optin-page",
+            "type": "Opt-in",
+            "category": "Opt-in",
+            "templateSelected": true
+          },
+          {
+            "id": "aud-step-thanks",
+            "label": "2. Thank You Page",
+            "pageId": "aud-thank-you",
+            "type": "Thank You",
+            "category": "Thank You",
+            "templateSelected": true
+          }
+        ],
+        "funnel": {
+          "name": "Audience Growth & Lead Magnet Funnel",
+          "goal": "Lead Generation",
+          "goalType": "audience",
+          "funnelActive": true,
+          "audience": "Creators, coaches, consultants, and SaaS founders building a high-intent email & WhatsApp audience",
+          "offer": "Free 7-Figure Audience & Conversion Playbook + Weekly 5-Minute Growth Frameworks",
+          "pagesFlow": [
+            "aud-optin-page",
+            "aud-thank-you"
+          ],
+          "events": [
+            "Form Submit"
+          ],
+          "status": "Draft"
+        },
+        "pages": [
+          {
+            "id": "aud-optin-page",
+            "name": "Opt-in / Squeeze Page",
+            "status": "Draft",
+            "path": "/opt-in",
+            "seoTitle": "Free Download — The 7-Figure Audience & Funnel Playbook",
+            "seoDescription": "Join 18,400+ founders and creators getting actionable conversion frameworks and our free 28-page starter playbook.",
+            "headline": "Get the Free 7-Figure Audience & Funnel Playbook.",
+            "subheadline": "Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.",
+            "cta": "Send Me the Free Playbook →",
+            "showHeader": false,
+            "header": "Minimal header",
+            "showFooter": false,
+            "footer": "Minimal footer",
+            "featuredImage": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fhero.jpg?alt=media&token=00334642-8f90-423d-9380-656ebb59aa9a",
+            "backgroundColor": "#F0FDF4",
+            "isFunnelStep": true,
+            "templateSelected": true,
+            "stepCategory": "Opt-in",
+            "sections": [
+              {
+                "id": "aud-hero",
+                "type": "Hero",
+                "content": {
+                  "title": "Get the Free 7-Figure Audience & Funnel Playbook.",
+                  "body": "Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.",
+                  "button": "Unlock Free Playbook Now →",
+                  "destinationType": "Scroll to Section",
+                  "destination": "aud-optin-form"
+                },
+                "styles": {
+                  "backgroundColor": "#064E3B",
+                  "padding": "44",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "aud-stats",
+                "type": "Stats",
+                "content": {
+                  "title": "100% Free Instant Download · Zero Fluff",
+                  "body": "Actionable templates you can copy and deploy in under 30 minutes.",
+                  "items": "18,400+ Subscribers · 4.9/5 Reader Rating · 28-Page Action PDF · 19:59 Bonus Checklist Window"
+                },
+                "styles": {
+                  "backgroundColor": "#ECFDF5",
+                  "padding": "24",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "aud-optin-form",
+                "type": "Form",
+                "content": {
+                  "title": "Where Should We Send Your Free Playbook?",
+                  "body": "Enter your name and best email below for instant access to the PDF guide + bonus swipe file.",
+                  "template": "lead-capture",
+                  "fields": "[\"Name\",\"Email\",\"Phone\"]",
+                  "button": "Send Me the Free Playbook →",
+                  "successMessage": "Playbook unlocked! Redirecting to your download page...",
+                  "nextPage": "aud-thank-you",
+                  "destinationType": "Next Step",
+                  "destination": "aud-thank-you"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "32",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "aud-pillars-cols",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": [
+                  [
+                    {
+                      "id": "aud-pillars-h-0",
+                      "type": "Heading",
+                      "content": {
+                        "title": "01 · High-Converting Hook Templates",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-pillars-p-0",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "15 proven headline and curiosity hooks that lift squeeze-page opt-in rates past 42% on cold traffic."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "aud-pillars-h-1",
+                      "type": "Heading",
+                      "content": {
+                        "title": "02 · 5-Day Welcome & Trust Sequence",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-pillars-p-1",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Copy-and-paste email and WhatsApp follow-up scripts that turn new subscribers into booked calls and buyers."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "aud-pillars-h-2",
+                      "type": "Heading",
+                      "content": {
+                        "title": "03 · Organic & Paid Traffic Checklist",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-pillars-p-2",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Our 15-minute daily distribution checklist across Instagram, LinkedIn, YouTube, and Meta ads."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ffffff",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ]
+                ]
+              },
+              {
+                "id": "aud-reviews",
+                "type": "Testimonials",
+                "content": {
+                  "title": "What 18,400+ Readers Say About the Playbook",
+                  "body": "",
+                  "testimonials": "[{\"id\":\"af-r1\",\"author\":\"Layla Haddad\",\"role\":\"Executive Coach & Creator\",\"quote\":\"I applied the headline and squeeze layout from page 6 and grew my email list by 1,420 subscribers in 3 weeks without spending an extra dollar on ads.\",\"rating\":5,\"avatar\":\"\"},{\"id\":\"af-r2\",\"author\":\"Ryan Kowalski\",\"role\":\"Founder, ScaleBrief\",\"quote\":\"Pure signal, zero filler. The 5-day welcome sequence paid for itself 20x over on our very first newsletter cohort.\",\"rating\":5,\"avatar\":\"\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#F8FAFC",
+                  "padding": "32",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ]
+          },
+          {
+            "id": "aud-thank-you",
+            "name": "Thank You Page",
+            "status": "Draft",
+            "path": "/thank-you",
+            "seoTitle": "You Are In! Download Your Free Playbook",
+            "seoDescription": "Instant download link for your free Audience & Funnel Playbook.",
+            "headline": "You Are In! Your Free Playbook Is Ready",
+            "subheadline": "Click the button below to download your 28-page PDF immediately — we also sent a copy straight to your email inbox.",
+            "cta": "Download Free Playbook (PDF) →",
+            "showHeader": false,
+            "header": "Minimal header",
+            "showFooter": false,
+            "footer": "Minimal footer",
+            "featuredImage": "",
+            "backgroundColor": "#F0FDF4",
+            "isFunnelStep": true,
+            "templateSelected": true,
+            "stepCategory": "Thank You",
+            "sections": [
+              {
+                "id": "aud-ty-banner",
+                "type": "Heading",
+                "content": {
+                  "title": "You Are In! Your Free Playbook Is Ready",
+                  "body": "Click the button below to download your 28-page PDF immediately — we also sent a backup copy straight to your inbox.",
+                  "headingTag": "H1",
+                  "template": "thank-you"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "38",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "aud-ty-btn",
+                "type": "Button",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "button": "Download Free Playbook (PDF · 2.4 MB) →",
+                  "destinationType": "Download File",
+                  "destination": "https://app.upklick.net/Audience-Growth-Playbook.pdf",
+                  "downloadFilename": "Audience-Growth-Playbook.pdf"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "18",
+                  "textAlign": "Center",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "aud-ty-steps-cols",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ECFDF5",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": [
+                  [
+                    {
+                      "id": "aud-ty-steps-h-0",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Step 1 · Whitelist Our Email",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-ty-steps-p-0",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Star our welcome email so you never miss Tuesday 5-minute conversion teardowns."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "aud-ty-steps-h-1",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Step 2 · Apply Page 4 Today",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-ty-steps-p-1",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Implement the 3-bullet curiosity hero on your main landing page in under 10 minutes."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "id": "aud-ty-steps-h-2",
+                      "type": "Heading",
+                      "content": {
+                        "title": "Step 3 · Share With Your Team",
+                        "body": "",
+                        "headingTag": "H3"
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    },
+                    {
+                      "id": "aud-ty-steps-p-2",
+                      "type": "Paragraph",
+                      "content": {
+                        "title": "",
+                        "body": "Forward your playbook checklist to your marketing or content partner to align your next launch."
+                      },
+                      "styles": {
+                        "backgroundColor": "#ECFDF5",
+                        "padding": "8",
+                        "textAlign": "Left",
+                        "typography": "Default",
+                        "customCss": "",
+                        "visibility": "All devices",
+                        "animation": "None"
+                      }
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "builderDocument": {
+      "theme": {
+        "color": "#059669",
+        "font": "Manrope",
+        "corners": "Rounded"
+      },
+      "steps": [
+        {
+          "id": "aud-step-optin",
+          "label": "1. Opt-in / Squeeze Page",
+          "pageId": "aud-optin-page",
+          "type": "Opt-in",
+          "category": "Opt-in",
+          "templateSelected": true
+        },
+        {
+          "id": "aud-step-thanks",
+          "label": "2. Thank You Page",
+          "pageId": "aud-thank-you",
+          "type": "Thank You",
+          "category": "Thank You",
+          "templateSelected": true
+        }
+      ],
+      "funnel": {
+        "name": "Audience Growth & Lead Magnet Funnel",
+        "goal": "Lead Generation",
+        "goalType": "audience",
+        "funnelActive": true,
+        "audience": "Creators, coaches, consultants, and SaaS founders building a high-intent email & WhatsApp audience",
+        "offer": "Free 7-Figure Audience & Conversion Playbook + Weekly 5-Minute Growth Frameworks",
+        "pagesFlow": [
+          "aud-optin-page",
+          "aud-thank-you"
+        ],
+        "events": [
+          "Form Submit"
+        ],
+        "status": "Draft"
+      },
+      "pages": [
+        {
+          "id": "aud-optin-page",
+          "name": "Opt-in / Squeeze Page",
+          "status": "Draft",
+          "path": "/opt-in",
+          "seoTitle": "Free Download — The 7-Figure Audience & Funnel Playbook",
+          "seoDescription": "Join 18,400+ founders and creators getting actionable conversion frameworks and our free 28-page starter playbook.",
+          "headline": "Get the Free 7-Figure Audience & Funnel Playbook.",
+          "subheadline": "Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.",
+          "cta": "Send Me the Free Playbook →",
+          "showHeader": false,
+          "header": "Minimal header",
+          "showFooter": false,
+          "footer": "Minimal footer",
+          "featuredImage": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fupklick-funnel-flagship-audience%2Fhero.jpg?alt=media&token=00334642-8f90-423d-9380-656ebb59aa9a",
+          "backgroundColor": "#F0FDF4",
+          "isFunnelStep": true,
+          "templateSelected": true,
+          "stepCategory": "Opt-in",
+          "sections": [
+            {
+              "id": "aud-hero",
+              "type": "Hero",
+              "content": {
+                "title": "Get the Free 7-Figure Audience & Funnel Playbook.",
+                "body": "Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.",
+                "button": "Unlock Free Playbook Now →",
+                "destinationType": "Scroll to Section",
+                "destination": "aud-optin-form"
+              },
+              "styles": {
+                "backgroundColor": "#064E3B",
+                "padding": "44",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "aud-stats",
+              "type": "Stats",
+              "content": {
+                "title": "100% Free Instant Download · Zero Fluff",
+                "body": "Actionable templates you can copy and deploy in under 30 minutes.",
+                "items": "18,400+ Subscribers · 4.9/5 Reader Rating · 28-Page Action PDF · 19:59 Bonus Checklist Window"
+              },
+              "styles": {
+                "backgroundColor": "#ECFDF5",
+                "padding": "24",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "aud-optin-form",
+              "type": "Form",
+              "content": {
+                "title": "Where Should We Send Your Free Playbook?",
+                "body": "Enter your name and best email below for instant access to the PDF guide + bonus swipe file.",
+                "template": "lead-capture",
+                "fields": "[\"Name\",\"Email\",\"Phone\"]",
+                "button": "Send Me the Free Playbook →",
+                "successMessage": "Playbook unlocked! Redirecting to your download page...",
+                "nextPage": "aud-thank-you",
+                "destinationType": "Next Step",
+                "destination": "aud-thank-you"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "32",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "aud-pillars-cols",
+              "type": "Columns",
+              "content": {
+                "title": "",
+                "body": "",
+                "columnLayout": "3 Col (33/33/33)",
+                "gap": "20"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "28",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              },
+              "children": [
+                [
+                  {
+                    "id": "aud-pillars-h-0",
+                    "type": "Heading",
+                    "content": {
+                      "title": "01 · High-Converting Hook Templates",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-pillars-p-0",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "15 proven headline and curiosity hooks that lift squeeze-page opt-in rates past 42% on cold traffic."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "aud-pillars-h-1",
+                    "type": "Heading",
+                    "content": {
+                      "title": "02 · 5-Day Welcome & Trust Sequence",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-pillars-p-1",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Copy-and-paste email and WhatsApp follow-up scripts that turn new subscribers into booked calls and buyers."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "aud-pillars-h-2",
+                    "type": "Heading",
+                    "content": {
+                      "title": "03 · Organic & Paid Traffic Checklist",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-pillars-p-2",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Our 15-minute daily distribution checklist across Instagram, LinkedIn, YouTube, and Meta ads."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ffffff",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ]
+              ]
+            },
+            {
+              "id": "aud-reviews",
+              "type": "Testimonials",
+              "content": {
+                "title": "What 18,400+ Readers Say About the Playbook",
+                "body": "",
+                "testimonials": "[{\"id\":\"af-r1\",\"author\":\"Layla Haddad\",\"role\":\"Executive Coach & Creator\",\"quote\":\"I applied the headline and squeeze layout from page 6 and grew my email list by 1,420 subscribers in 3 weeks without spending an extra dollar on ads.\",\"rating\":5,\"avatar\":\"\"},{\"id\":\"af-r2\",\"author\":\"Ryan Kowalski\",\"role\":\"Founder, ScaleBrief\",\"quote\":\"Pure signal, zero filler. The 5-day welcome sequence paid for itself 20x over on our very first newsletter cohort.\",\"rating\":5,\"avatar\":\"\"}]"
+              },
+              "styles": {
+                "backgroundColor": "#F8FAFC",
+                "padding": "32",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aud-thank-you",
+          "name": "Thank You Page",
+          "status": "Draft",
+          "path": "/thank-you",
+          "seoTitle": "You Are In! Download Your Free Playbook",
+          "seoDescription": "Instant download link for your free Audience & Funnel Playbook.",
+          "headline": "You Are In! Your Free Playbook Is Ready",
+          "subheadline": "Click the button below to download your 28-page PDF immediately — we also sent a copy straight to your email inbox.",
+          "cta": "Download Free Playbook (PDF) →",
+          "showHeader": false,
+          "header": "Minimal header",
+          "showFooter": false,
+          "footer": "Minimal footer",
+          "featuredImage": "",
+          "backgroundColor": "#F0FDF4",
+          "isFunnelStep": true,
+          "templateSelected": true,
+          "stepCategory": "Thank You",
+          "sections": [
+            {
+              "id": "aud-ty-banner",
+              "type": "Heading",
+              "content": {
+                "title": "You Are In! Your Free Playbook Is Ready",
+                "body": "Click the button below to download your 28-page PDF immediately — we also sent a backup copy straight to your inbox.",
+                "headingTag": "H1",
+                "template": "thank-you"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "38",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "aud-ty-btn",
+              "type": "Button",
+              "content": {
+                "title": "",
+                "body": "",
+                "button": "Download Free Playbook (PDF · 2.4 MB) →",
+                "destinationType": "Download File",
+                "destination": "https://app.upklick.net/Audience-Growth-Playbook.pdf",
+                "downloadFilename": "Audience-Growth-Playbook.pdf"
+              },
+              "styles": {
+                "backgroundColor": "#ffffff",
+                "padding": "18",
+                "textAlign": "Center",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              }
+            },
+            {
+              "id": "aud-ty-steps-cols",
+              "type": "Columns",
+              "content": {
+                "title": "",
+                "body": "",
+                "columnLayout": "3 Col (33/33/33)",
+                "gap": "20"
+              },
+              "styles": {
+                "backgroundColor": "#ECFDF5",
+                "padding": "28",
+                "textAlign": "Left",
+                "typography": "Default",
+                "customCss": "",
+                "visibility": "All devices",
+                "animation": "None"
+              },
+              "children": [
+                [
+                  {
+                    "id": "aud-ty-steps-h-0",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Step 1 · Whitelist Our Email",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-ty-steps-p-0",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Star our welcome email so you never miss Tuesday 5-minute conversion teardowns."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "aud-ty-steps-h-1",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Step 2 · Apply Page 4 Today",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-ty-steps-p-1",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Implement the 3-bullet curiosity hero on your main landing page in under 10 minutes."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ],
+                [
+                  {
+                    "id": "aud-ty-steps-h-2",
+                    "type": "Heading",
+                    "content": {
+                      "title": "Step 3 · Share With Your Team",
+                      "body": "",
+                      "headingTag": "H3"
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  },
+                  {
+                    "id": "aud-ty-steps-p-2",
+                    "type": "Paragraph",
+                    "content": {
+                      "title": "",
+                      "body": "Forward your playbook checklist to your marketing or content partner to align your next launch."
+                    },
+                    "styles": {
+                      "backgroundColor": "#ECFDF5",
+                      "padding": "8",
+                      "textAlign": "Left",
+                      "typography": "Default",
+                      "customCss": "",
+                      "visibility": "All devices",
+                      "animation": "None"
+                    }
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     "id": "ghl-funnel-mortgage-company",
     "name": "Mortgage Company",
     "description": "Step-by-step mortgage & real estate pre-qualification lead funnel with affordability tiers, soft-pull assurance, and loan officer booking.",
@@ -3681,13 +6028,13 @@
                 "content": {
                   "title": "Getting Started Is Simple",
                   "body": "Three streamlined steps from estimate to keys in hand.",
+                  "eyebrow": "The Process",
+                  "media": "numbered",
                   "items": "01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter",
                   "specs": "Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor",
                   "button": "Start Step 1 →",
                   "destinationType": "Next Step",
-                  "destination": "mortgage-quiz",
-                  "eyebrow": "The Process",
-                  "media": "numbered"
+                  "destination": "mortgage-quiz"
                 },
                 "styles": {
                   "backgroundColor": "#F8FAFC",
@@ -4204,13 +6551,13 @@
               "content": {
                 "title": "Getting Started Is Simple",
                 "body": "Three streamlined steps from estimate to keys in hand.",
+                "eyebrow": "The Process",
+                "media": "numbered",
                 "items": "01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter",
                 "specs": "Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor",
                 "button": "Start Step 1 →",
                 "destinationType": "Next Step",
-                "destination": "mortgage-quiz",
-                "eyebrow": "The Process",
-                "media": "numbered"
+                "destination": "mortgage-quiz"
               },
               "styles": {
                 "backgroundColor": "#F8FAFC",
@@ -6861,7 +9208,144 @@
       "industry": "SaaS/Agency",
       "goal": "Lead Generation",
       "color": "#6458c9",
-      "image": ""
+      "image": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-6%2Fstarter-cover.jpg?alt=media&token=5f3d6928-0a30-41b0-a70b-ac3144fcf619",
+      "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-6%2Fstarter-cover.jpg?alt=media&token=5f3d6928-0a30-41b0-a70b-ac3144fcf619",
+      "builderDocument": {
+        "pages": [
+          {
+            "id": "home",
+            "name": "Home",
+            "path": "/",
+            "seoTitle": "SaaS Waitlist",
+            "seoDescription": "Validate your next product with a focused waitlist.",
+            "headline": "SaaS Waitlist",
+            "subheadline": "Validate your next product with a focused waitlist.",
+            "cta": "Get started",
+            "showHeader": true,
+            "header": "Header 1",
+            "showFooter": true,
+            "footer": "Footer 1",
+            "featuredImage": "",
+            "sections": [
+              {
+                "id": "9289fa0f-1510-47fc-a0ef-24f37a01c20f",
+                "type": "Hero",
+                "content": {
+                  "title": "SaaS Waitlist",
+                  "body": "Validate your next product with a focused waitlist.",
+                  "button": "Get started",
+                  "destinationType": "Scroll to Section",
+                  "destination": "4d6383ec-5160-4868-a696-6bd6697d92bb"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "bd7af767-a775-44e5-a2d2-ef3a5c259666",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": []
+              },
+              {
+                "id": "d350d95c-0de0-4157-a1dc-414834a8ed11",
+                "type": "Testimonials",
+                "content": {
+                  "title": "A better experience, from the first step",
+                  "body": "",
+                  "testimonials": "[{\"id\":\"40e02b47-8edf-434f-aacc-c36ed9acf05d\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "4d6383ec-5160-4868-a696-6bd6697d92bb",
+                "type": "Form",
+                "content": {
+                  "title": "Get started",
+                  "body": "Leave your details and our team will be in touch.",
+                  "fields": "[\"Name\",\"Email\",\"Message\"]",
+                  "button": "Get started",
+                  "successMessage": "Thank you! Your request has been received."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "c62c5f26-e6ed-4420-a39d-87f76c55fe00",
+                "type": "FAQ",
+                "content": {
+                  "title": "Questions before getting started?",
+                  "body": "Contact our team for help choosing the right option."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ],
+            "status": "Draft",
+            "isFunnelStep": false
+          }
+        ],
+        "steps": [],
+        "funnel": {
+          "name": "SaaS Waitlist",
+          "goal": "Lead Generation",
+          "audience": "Your ideal customers",
+          "offer": "Strength coaching",
+          "pagesFlow": [],
+          "events": [
+            "Form Submit",
+            "Booking"
+          ],
+          "status": "Draft"
+        },
+        "theme": {
+          "color": "#6458c9",
+          "font": "Inter",
+          "corners": "Square"
+        }
+      }
     },
     "builderDocument": {
       "pages": [
@@ -6881,14 +9365,14 @@
           "featuredImage": "",
           "sections": [
             {
-              "id": "6fbda802-77f2-4b2f-aadd-88877e137ee2",
+              "id": "9289fa0f-1510-47fc-a0ef-24f37a01c20f",
               "type": "Hero",
               "content": {
                 "title": "SaaS Waitlist",
                 "body": "Validate your next product with a focused waitlist.",
                 "button": "Get started",
                 "destinationType": "Scroll to Section",
-                "destination": "d11a2408-6303-443d-a533-e506dea1fa3f"
+                "destination": "4d6383ec-5160-4868-a696-6bd6697d92bb"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -6901,7 +9385,7 @@
               }
             },
             {
-              "id": "9862419e-35c9-4662-a4ba-4d93abf0efa1",
+              "id": "bd7af767-a775-44e5-a2d2-ef3a5c259666",
               "type": "Columns",
               "content": {
                 "title": "",
@@ -6921,12 +9405,12 @@
               "children": []
             },
             {
-              "id": "8abd1a7a-62ca-470b-a6a8-5be432e2f166",
+              "id": "d350d95c-0de0-4157-a1dc-414834a8ed11",
               "type": "Testimonials",
               "content": {
                 "title": "A better experience, from the first step",
                 "body": "",
-                "testimonials": "[{\"id\":\"506a9b96-b176-4286-abb7-a0f4b429478e\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                "testimonials": "[{\"id\":\"40e02b47-8edf-434f-aacc-c36ed9acf05d\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -6939,7 +9423,7 @@
               }
             },
             {
-              "id": "d11a2408-6303-443d-a533-e506dea1fa3f",
+              "id": "4d6383ec-5160-4868-a696-6bd6697d92bb",
               "type": "Form",
               "content": {
                 "title": "Get started",
@@ -6959,7 +9443,7 @@
               }
             },
             {
-              "id": "e123461a-3ce5-4d6a-a613-a76f885eddef",
+              "id": "c62c5f26-e6ed-4420-a39d-87f76c55fe00",
               "type": "FAQ",
               "content": {
                 "title": "Questions before getting started?",
@@ -6998,7 +9482,8 @@
         "font": "Inter",
         "corners": "Square"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-6%2Fstarter-cover.jpg?alt=media&token=5f3d6928-0a30-41b0-a70b-ac3144fcf619"
   },
   {
     "id": "master-7",
@@ -7042,7 +9527,144 @@
       "industry": "Fitness/Coaching",
       "goal": "Direct Sale",
       "color": "#367c73",
-      "image": ""
+      "image": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-7%2Fstarter-cover.jpg?alt=media&token=8b6a6d35-a871-4c77-8a4a-523256a573f3",
+      "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-7%2Fstarter-cover.jpg?alt=media&token=8b6a6d35-a871-4c77-8a4a-523256a573f3",
+      "builderDocument": {
+        "pages": [
+          {
+            "id": "home",
+            "name": "Home",
+            "path": "/",
+            "seoTitle": "Fitness Challenge",
+            "seoDescription": "Fill your next 30-day coaching program.",
+            "headline": "Fitness Challenge",
+            "subheadline": "Fill your next 30-day coaching program.",
+            "cta": "Get started",
+            "showHeader": true,
+            "header": "Header 1",
+            "showFooter": true,
+            "footer": "Footer 1",
+            "featuredImage": "",
+            "sections": [
+              {
+                "id": "f207e14e-bc13-4c2c-abd2-12a8a54197dd",
+                "type": "Hero",
+                "content": {
+                  "title": "Fitness Challenge",
+                  "body": "Fill your next 30-day coaching program.",
+                  "button": "Get started",
+                  "destinationType": "Scroll to Section",
+                  "destination": "10c9fee9-dbd9-48fd-ac55-7232a9437a40"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "a85e4b13-7339-4979-a655-282d62264adb",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": []
+              },
+              {
+                "id": "cd199878-7c1a-4006-a7c3-22af7f3b24ad",
+                "type": "Testimonials",
+                "content": {
+                  "title": "A better experience, from the first step",
+                  "body": "",
+                  "testimonials": "[{\"id\":\"5249cc66-7e73-44a6-a9bf-836ddac89898\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "10c9fee9-dbd9-48fd-ac55-7232a9437a40",
+                "type": "Form",
+                "content": {
+                  "title": "Get started",
+                  "body": "Leave your details and our team will be in touch.",
+                  "fields": "[\"Name\",\"Email\",\"Message\"]",
+                  "button": "Get started",
+                  "successMessage": "Thank you! Your request has been received."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "96b6d837-fc62-48cb-a509-50c07903e2db",
+                "type": "FAQ",
+                "content": {
+                  "title": "Questions before getting started?",
+                  "body": "Contact our team for help choosing the right option."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ],
+            "status": "Draft",
+            "isFunnelStep": false
+          }
+        ],
+        "steps": [],
+        "funnel": {
+          "name": "Fitness Challenge",
+          "goal": "Direct Sale",
+          "audience": "Your ideal customers",
+          "offer": "Strength coaching",
+          "pagesFlow": [],
+          "events": [
+            "Form Submit",
+            "Booking"
+          ],
+          "status": "Draft"
+        },
+        "theme": {
+          "color": "#367c73",
+          "font": "Inter",
+          "corners": "Square"
+        }
+      }
     },
     "builderDocument": {
       "pages": [
@@ -7062,14 +9684,14 @@
           "featuredImage": "",
           "sections": [
             {
-              "id": "ed07d56a-5644-487d-a05a-273bf24835c3",
+              "id": "f207e14e-bc13-4c2c-abd2-12a8a54197dd",
               "type": "Hero",
               "content": {
                 "title": "Fitness Challenge",
                 "body": "Fill your next 30-day coaching program.",
                 "button": "Get started",
                 "destinationType": "Scroll to Section",
-                "destination": "f8c83d77-38ef-4a97-a1c5-5b5c4b1fa12c"
+                "destination": "10c9fee9-dbd9-48fd-ac55-7232a9437a40"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -7082,7 +9704,7 @@
               }
             },
             {
-              "id": "d4e80656-4b74-4cf9-a721-3937b198c7dd",
+              "id": "a85e4b13-7339-4979-a655-282d62264adb",
               "type": "Columns",
               "content": {
                 "title": "",
@@ -7102,12 +9724,12 @@
               "children": []
             },
             {
-              "id": "676c4d0b-e38b-4373-a414-ff709b0fc436",
+              "id": "cd199878-7c1a-4006-a7c3-22af7f3b24ad",
               "type": "Testimonials",
               "content": {
                 "title": "A better experience, from the first step",
                 "body": "",
-                "testimonials": "[{\"id\":\"2ec2d9e0-f5a7-4ea3-a609-f318dfacde06\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                "testimonials": "[{\"id\":\"5249cc66-7e73-44a6-a9bf-836ddac89898\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -7120,7 +9742,7 @@
               }
             },
             {
-              "id": "f8c83d77-38ef-4a97-a1c5-5b5c4b1fa12c",
+              "id": "10c9fee9-dbd9-48fd-ac55-7232a9437a40",
               "type": "Form",
               "content": {
                 "title": "Get started",
@@ -7140,7 +9762,7 @@
               }
             },
             {
-              "id": "5b7631df-a4f7-47c7-af5f-793146fb221c",
+              "id": "96b6d837-fc62-48cb-a509-50c07903e2db",
               "type": "FAQ",
               "content": {
                 "title": "Questions before getting started?",
@@ -7179,7 +9801,8 @@
         "font": "Inter",
         "corners": "Square"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-7%2Fstarter-cover.jpg?alt=media&token=8b6a6d35-a871-4c77-8a4a-523256a573f3"
   },
   {
     "id": "master-8",
@@ -7223,7 +9846,144 @@
       "industry": "Real Estate",
       "goal": "Lead Generation",
       "color": "#ab6b4c",
-      "image": ""
+      "image": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-8%2Fstarter-cover.jpg?alt=media&token=2a8dd21e-46aa-485d-957c-dff6fea18018",
+      "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-8%2Fstarter-cover.jpg?alt=media&token=2a8dd21e-46aa-485d-957c-dff6fea18018",
+      "builderDocument": {
+        "pages": [
+          {
+            "id": "home",
+            "name": "Home",
+            "path": "/",
+            "seoTitle": "Free Market Report",
+            "seoDescription": "Exchange local insights for qualified buyer leads.",
+            "headline": "Free Market Report",
+            "subheadline": "Exchange local insights for qualified buyer leads.",
+            "cta": "Get started",
+            "showHeader": true,
+            "header": "Header 1",
+            "showFooter": true,
+            "footer": "Footer 1",
+            "featuredImage": "",
+            "sections": [
+              {
+                "id": "10c4341d-3e17-41c0-ad69-362fb5838fec",
+                "type": "Hero",
+                "content": {
+                  "title": "Free Market Report",
+                  "body": "Exchange local insights for qualified buyer leads.",
+                  "button": "Get started",
+                  "destinationType": "Scroll to Section",
+                  "destination": "644dbce5-ef30-47d3-ad21-2fdd4a7efa69"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "c37c4c28-f62c-46c0-aea3-5b64f9e0400a",
+                "type": "Columns",
+                "content": {
+                  "title": "",
+                  "body": "",
+                  "columnLayout": "3 Col (33/33/33)",
+                  "gap": "20"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                },
+                "children": []
+              },
+              {
+                "id": "630f7d7c-2025-4502-a70e-80fa3de46408",
+                "type": "Testimonials",
+                "content": {
+                  "title": "A better experience, from the first step",
+                  "body": "",
+                  "testimonials": "[{\"id\":\"e72aba0e-f5e0-4411-a294-554de4a94fdc\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "644dbce5-ef30-47d3-ad21-2fdd4a7efa69",
+                "type": "Form",
+                "content": {
+                  "title": "Get started",
+                  "body": "Leave your details and our team will be in touch.",
+                  "fields": "[\"Name\",\"Email\",\"Message\"]",
+                  "button": "Get started",
+                  "successMessage": "Thank you! Your request has been received."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              },
+              {
+                "id": "3329f9a7-9216-4304-a84c-55d795dc4fba",
+                "type": "FAQ",
+                "content": {
+                  "title": "Questions before getting started?",
+                  "body": "Contact our team for help choosing the right option."
+                },
+                "styles": {
+                  "backgroundColor": "#ffffff",
+                  "padding": "28",
+                  "textAlign": "Left",
+                  "typography": "Default",
+                  "customCss": "",
+                  "visibility": "All devices",
+                  "animation": "None"
+                }
+              }
+            ],
+            "status": "Draft",
+            "isFunnelStep": false
+          }
+        ],
+        "steps": [],
+        "funnel": {
+          "name": "Free Market Report",
+          "goal": "Lead Generation",
+          "audience": "Your ideal customers",
+          "offer": "Strength coaching",
+          "pagesFlow": [],
+          "events": [
+            "Form Submit",
+            "Booking"
+          ],
+          "status": "Draft"
+        },
+        "theme": {
+          "color": "#ab6b4c",
+          "font": "Inter",
+          "corners": "Square"
+        }
+      }
     },
     "builderDocument": {
       "pages": [
@@ -7243,14 +10003,14 @@
           "featuredImage": "",
           "sections": [
             {
-              "id": "29d1b8f0-744f-42bf-a753-7ac750cb8967",
+              "id": "10c4341d-3e17-41c0-ad69-362fb5838fec",
               "type": "Hero",
               "content": {
                 "title": "Free Market Report",
                 "body": "Exchange local insights for qualified buyer leads.",
                 "button": "Get started",
                 "destinationType": "Scroll to Section",
-                "destination": "e27035a8-b615-4031-af8c-d5c336db40d8"
+                "destination": "644dbce5-ef30-47d3-ad21-2fdd4a7efa69"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -7263,7 +10023,7 @@
               }
             },
             {
-              "id": "31a0d21c-6a51-4f3c-aa82-25ab1f63b6c3",
+              "id": "c37c4c28-f62c-46c0-aea3-5b64f9e0400a",
               "type": "Columns",
               "content": {
                 "title": "",
@@ -7283,12 +10043,12 @@
               "children": []
             },
             {
-              "id": "e177a8a5-dc87-4524-a2b1-3aa966f06ad5",
+              "id": "630f7d7c-2025-4502-a70e-80fa3de46408",
               "type": "Testimonials",
               "content": {
                 "title": "A better experience, from the first step",
                 "body": "",
-                "testimonials": "[{\"id\":\"10b266fb-3c1e-494c-a311-dfb8040d7b47\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
+                "testimonials": "[{\"id\":\"e72aba0e-f5e0-4411-a294-554de4a94fdc\",\"author\":\"Alex M.\",\"role\":\"Sample customer story\",\"quote\":\"Clear guidance and thoughtful support made getting started easy.\",\"rating\":5,\"avatar\":\"\"}]"
               },
               "styles": {
                 "backgroundColor": "#ffffff",
@@ -7301,7 +10061,7 @@
               }
             },
             {
-              "id": "e27035a8-b615-4031-af8c-d5c336db40d8",
+              "id": "644dbce5-ef30-47d3-ad21-2fdd4a7efa69",
               "type": "Form",
               "content": {
                 "title": "Get started",
@@ -7321,7 +10081,7 @@
               }
             },
             {
-              "id": "5a94671c-67c4-49ab-acd8-a56e5033d50a",
+              "id": "3329f9a7-9216-4304-a84c-55d795dc4fba",
               "type": "FAQ",
               "content": {
                 "title": "Questions before getting started?",
@@ -7360,7 +10120,8 @@
         "font": "Inter",
         "corners": "Square"
       }
-    }
+    },
+    "thumbnail": "https://firebasestorage.googleapis.com/v0/b/gos-app-3c7fb.firebasestorage.app/o/templateThumbnails%2Fmaster-8%2Fstarter-cover.jpg?alt=media&token=2a8dd21e-46aa-485d-957c-dff6fea18018"
   },
   {
     "id": "master-9",
@@ -7576,9 +10337,9 @@
         "emailNotificationMode": "default",
         "emailTemplateId": ""
       },
-      "id": "76de7a01-3c93-4212-a1b8-e818bb0d676b",
+      "id": "c7d9dbc9-027f-4c6d-ae19-d8f04b543d08",
       "name": "Strategy Session",
-      "slug": "strategy-session-76de7a01",
+      "slug": "strategy-session-c7d9dbc9",
       "duration": 45,
       "durationOptions": [
         45
@@ -7911,9 +10672,9 @@
         "emailNotificationMode": "default",
         "emailTemplateId": ""
       },
-      "id": "e871d71b-2222-4202-aef5-72f1eb769617",
+      "id": "bfd3528e-d970-4d7d-aa02-98b8f932bde2",
       "name": "Clinic Appointment",
-      "slug": "clinic-appointment-e871d71b",
+      "slug": "clinic-appointment-bfd3528e",
       "duration": 30,
       "durationOptions": [
         30
@@ -8250,9 +11011,9 @@
         "emailNotificationMode": "default",
         "emailTemplateId": ""
       },
-      "id": "7ae2a0f6-c157-4f58-a411-94513b3560a7",
+      "id": "801f7678-0af9-4fea-a074-d1dbc6a792b1",
       "name": "Personal Training Intro",
-      "slug": "personal-training-intro-7ae2a0f6",
+      "slug": "personal-training-intro-801f7678",
       "duration": 60,
       "durationOptions": [
         60
@@ -11002,17 +13763,17 @@
             "watermark": false,
             "included": [
               {
-                "id": "1c251694-cf9d-4565-ad8d-5c1620765d54",
+                "id": "28f491b7-b94b-4b70-abfd-79b9527a6ba5",
                 "title": "Digital guide (PDF)",
                 "enabled": true
               },
               {
-                "id": "4d6383ec-5160-4868-a696-6bd6697d92bb",
+                "id": "ef8767ce-c1d7-4805-a131-8723afb199e9",
                 "title": "Action workbook",
                 "enabled": true
               },
               {
-                "id": "bd7af767-a775-44e5-a2d2-ef3a5c259666",
+                "id": "73324053-31c3-4880-abd5-19085ea3145e",
                 "title": "Quick-start checklist",
                 "enabled": true
               }
@@ -11189,17 +13950,17 @@
             "watermark": false,
             "included": [
               {
-                "id": "9289fa0f-1510-47fc-a0ef-24f37a01c20f",
+                "id": "9b90650e-31b4-4ff1-a927-09cd9d106055",
                 "title": "Editable asset library",
                 "enabled": true
               },
               {
-                "id": "40e02b47-8edf-434f-aacc-c36ed9acf05d",
+                "id": "c35a2056-b09e-4bba-ab75-ca9ebd0a9d26",
                 "title": "Content planning templates",
                 "enabled": true
               },
               {
-                "id": "d350d95c-0de0-4157-a1dc-414834a8ed11",
+                "id": "91209166-8dbf-4bee-a8fc-6cf98dfa9dc4",
                 "title": "Getting-started guide",
                 "enabled": true
               }
@@ -11376,17 +14137,17 @@
             "watermark": false,
             "included": [
               {
-                "id": "c62c5f26-e6ed-4420-a39d-87f76c55fe00",
+                "id": "7d504b1f-6171-4405-ac8d-2edbb8a07f95",
                 "title": "Private coaching call",
                 "enabled": true
               },
               {
-                "id": "fa96b588-0e23-4505-a6e9-448e542a887d",
+                "id": "97664eab-f93e-4152-a0be-c2992098f5d6",
                 "title": "Goal review",
                 "enabled": true
               },
               {
-                "id": "c846ea80-cd0d-4fcd-a530-e57bfc640b56",
+                "id": "e1763880-399e-44c4-ac1b-4d8d5a5dc76d",
                 "title": "Personal action plan",
                 "enabled": true
               }
@@ -11562,17 +14323,17 @@
             "watermark": false,
             "included": [
               {
-                "id": "5c90de87-00b3-4412-a95e-d7fba5c60358",
+                "id": "8dcee0ba-ab62-4020-aaa0-515d89fa2777",
                 "title": "Strategy call",
                 "enabled": true
               },
               {
-                "id": "912faf51-77d8-4121-a96e-ac250d9fb505",
+                "id": "095f4055-0e97-4963-af98-f39a4af9bd34",
                 "title": "Opportunity assessment",
                 "enabled": true
               },
               {
-                "id": "689d2490-f4f5-45be-a26d-eca36f0a3e02",
+                "id": "3ad8ea12-2caf-467e-a7d7-cd3c113431d1",
                 "title": "90-day roadmap",
                 "enabled": true
               }
@@ -11719,14 +14480,14 @@
               "title": "Welcome & Preparation",
               "lessons": [
                 {
-                  "id": "10c9fee9-dbd9-48fd-ac55-7232a9437a40",
+                  "id": "b680da66-7aec-49b1-ad7c-886ae2e97d4d",
                   "title": "Learning outcomes",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "a85e4b13-7339-4979-a655-282d62264adb",
+                  "id": "11883676-339f-477a-a0d6-fc67cdd18590",
                   "title": "Prepare your workspace",
                   "kind": "Video",
                   "duration": "",
@@ -11739,14 +14500,14 @@
               "title": "The Core Framework",
               "lessons": [
                 {
-                  "id": "f207e14e-bc13-4c2c-abd2-12a8a54197dd",
+                  "id": "5485a392-971b-421e-a349-597a6e5ca33e",
                   "title": "Understand the framework",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "5249cc66-7e73-44a6-a9bf-836ddac89898",
+                  "id": "d522c73c-e21c-49dd-a7a1-4837f3952b8a",
                   "title": "Follow the guided demonstration",
                   "kind": "Video",
                   "duration": "",
@@ -11759,14 +14520,14 @@
               "title": "Apply & Review",
               "lessons": [
                 {
-                  "id": "cd199878-7c1a-4006-a7c3-22af7f3b24ad",
+                  "id": "65f889a0-2c6e-4c19-a98f-2a3104f0dfd4",
                   "title": "Complete your project",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "96b6d837-fc62-48cb-a509-50c07903e2db",
+                  "id": "e4af2813-d4ad-4ab2-af8e-e2908e467fa1",
                   "title": "Review your next steps",
                   "kind": "Video",
                   "duration": "",
@@ -11809,12 +14570,12 @@
             "watermark": false,
             "included": [
               {
-                "id": "5c0b208a-3c27-4b58-a6b2-2f9cdb93e7f8",
+                "id": "ac44e1c0-101c-4c02-a827-4867370be91c",
                 "title": "Masterclass curriculum",
                 "enabled": true
               },
               {
-                "id": "99ff9c8f-6bb7-4c5f-a7b3-c998256cf775",
+                "id": "5f228067-aa79-4e9d-a421-7d30d6dc078b",
                 "title": "Implementation exercises",
                 "enabled": true
               }
@@ -11961,14 +14722,14 @@
               "title": "Foundations",
               "lessons": [
                 {
-                  "id": "6f62df31-943f-4d17-ab66-ae8ee78644be",
+                  "id": "0537afd5-a077-49a6-ac38-9ce73c44091e",
                   "title": "Welcome and learning path",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "2e0bb1cf-3483-4753-a573-55209dc0a6e5",
+                  "id": "b0bc68fa-1f29-4ea9-a98b-f545c265202d",
                   "title": "Core concepts",
                   "kind": "Video",
                   "duration": "",
@@ -11981,14 +14742,14 @@
               "title": "Planning",
               "lessons": [
                 {
-                  "id": "77a21320-0aed-4793-a889-109113c191fa",
+                  "id": "ef5b601a-552b-42eb-a921-8791b0b441a4",
                   "title": "Define your goal",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "644dbce5-ef30-47d3-ad21-2fdd4a7efa69",
+                  "id": "a44e42c0-a653-4b35-ac76-9aa5be198507",
                   "title": "Build your project plan",
                   "kind": "Video",
                   "duration": "",
@@ -12001,14 +14762,14 @@
               "title": "Execution",
               "lessons": [
                 {
-                  "id": "c37c4c28-f62c-46c0-aea3-5b64f9e0400a",
+                  "id": "adce6b98-db18-4d46-a80c-6e274af0bc55",
                   "title": "Step-by-step walkthrough",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "10c4341d-3e17-41c0-ad69-362fb5838fec",
+                  "id": "e9636407-32aa-4d30-aa2a-c26a25a0b209",
                   "title": "Guided practice",
                   "kind": "Video",
                   "duration": "",
@@ -12021,14 +14782,14 @@
               "title": "Refinement",
               "lessons": [
                 {
-                  "id": "e72aba0e-f5e0-4411-a294-554de4a94fdc",
+                  "id": "5a4ba6f1-cc70-460c-ac20-d2e94d29a9c3",
                   "title": "Review and improve",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "630f7d7c-2025-4502-a70e-80fa3de46408",
+                  "id": "50afde8e-1ba9-4947-add7-2086b1eea4a0",
                   "title": "Common challenges",
                   "kind": "Video",
                   "duration": "",
@@ -12041,14 +14802,14 @@
               "title": "Launch & Next Steps",
               "lessons": [
                 {
-                  "id": "3329f9a7-9216-4304-a84c-55d795dc4fba",
+                  "id": "a3d8c384-84d5-44fb-a9fa-75b31ef44d9b",
                   "title": "Complete the capstone project",
                   "kind": "Video",
                   "duration": "",
                   "url": ""
                 },
                 {
-                  "id": "5f963ee2-f2d1-4901-a165-3a0359cffefb",
+                  "id": "5daecdc7-1796-4873-a322-cb18ed40f513",
                   "title": "Create your next action plan",
                   "kind": "Video",
                   "duration": "",
@@ -12091,17 +14852,17 @@
             "watermark": false,
             "included": [
               {
-                "id": "5591d5c7-1956-4ecc-ab87-fa3da13d532f",
+                "id": "35319f18-cb44-4873-a6d9-cb5f8a55311b",
                 "title": "Complete course curriculum",
                 "enabled": true
               },
               {
-                "id": "9427a899-d06f-47ac-a02d-048cafce61f8",
+                "id": "74784ad8-9235-48cc-ad59-b37a6a901819",
                 "title": "Practice exercises",
                 "enabled": true
               },
               {
-                "id": "df196fa8-25f9-4882-af75-1774069ea7f0",
+                "id": "63d217bd-fbc0-4aa3-a9de-ca22f1c7ab65",
                 "title": "Capstone project brief",
                 "enabled": true
               }
@@ -12277,12 +15038,12 @@
             "watermark": false,
             "included": [
               {
-                "id": "95351220-7129-424c-ac9c-439a3205759c",
+                "id": "4dde3c54-0343-4891-a06f-b8df97db6f40",
                 "title": "Member resource library",
                 "enabled": true
               },
               {
-                "id": "caf11d29-e8c4-4ce2-a5ef-724c2272c9f1",
+                "id": "498e3560-db66-460a-a5fe-3101eaa81ee4",
                 "title": "Monthly planning tools",
                 "enabled": true
               }
