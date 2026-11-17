@@ -141,33 +141,70 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
         leads: demoLeads.slice(0, 20).map((l: any) => ({ id: l.id, name: l.name, stage: l.stage || 'LEAD_CAPTURED', pipelineId: l.pipelineId || 'main', phone: l.phone || '', email: l.email || '' })),
         currency: 'USD',
       };
+      const before = rows('copilotConversations').find(row => row.id === body.conversationId);
+      const turnIndex = Math.floor(((before?.messages as any[])?.length ?? 0) / 2);
+      const isQuestionOrAdvice = /[?؟]\s*$/.test(rawPrompt) || /^(?:how\s+(?:to|do|can|should)|what\s+(?:is|are|should)|why\s+|explain|tips|ideas|write\s+(?:a\s+)?(?:post|email|article))|^(?:ازاي|إزاي|كيف|هل|ليه|لماذا|تنصحني|ايه\s+رأيك|إيه\s+رأيك|اشرح|فكرة|أفكار|اكتبلي\s+(?:بوست|مقال|ايميل|إيميل))/i.test(rawPrompt.trim());
+
       let text = '';
+      let grounded = false;
+      let followUps: string[] = [];
       let form: any = null;
       let leadsOut: any[] | undefined;
       let href: string | undefined;
       let hrefLabel: string | undefined;
 
-      if (/عامل\s*ايه|ازيك|إزيك|اسمك\s*ايه|انت\s*مين|أنت\s*مين|صباح\s*الخير|مساء\s*الخير|مرحبا|اهلا|أهلا/i.test(rawPrompt) || /^(hi|hello|hey|how are you|what('?s| is) your name|who are you)/i.test(rawPrompt)) {
+      if (/اسمك\s*ايه|انت\s*مين|أنت\s*مين|بتعمل\s*ايه|\b(what('?s| is) your name|who are you|what can you do)\b/i.test(rawPrompt)) {
         text = ar
-          ? `أهلاً بك! أنا بخير الحمد لله، اسمي **مساعد الأعمال الذكي من UpKlick (AI Copilot)**. حالياً متصل بمساحة عملك وبها **${demoLeads.length} عميل محتمل** — تقدر تسألني عن أي أرقام أو تحليلات، أو تقولي مثلاً «عاوز أضيف عميل جديد» أو «اعمل حملة واتساب» وهفتحلك فورم تفاعلية جاهزة فوراً!`
-          : `Hello! I'm doing great — I'm your **UpKlick AI Business Copilot**. I'm connected to your workspace (${demoLeads.length} leads active). Ask me anything about your performance, or tell me what you'd like to create (a lead, appointment, campaign, product, or landing page) and I'll open an interactive form right here!`;
+          ? 'أنا **UpKlick Copilot** — مساعدك الذكي وشريكك في التفكير! تقدر تدردش معايا عادي خالص زي ChatGPT في أي موضوع (أفكار، كتابة محتوى، تسويق، برمجة، أو دردشة سريعة)، وكمان متوصل بمساحة شغلك لو حبيت في أي وقت تضيف عميل أو تحجز ميعاد أو تعمل حملة بفورم تفاعلية سريعة. تحب نبدأ بإيه؟'
+          : "I'm **UpKlick Copilot** — your everyday conversational AI partner (just like ChatGPT) with live superpowers across your workspace! We can chat naturally about anything — brainstorming, writing copy, strategy, coding, or casual conversation — and whenever you want to create a lead, booking, or campaign, I'll pop open an interactive form for you.";
+        followUps = ar
+          ? ['اقترح عليّ 3 أفكار محتوى جذابة', 'إزاي أضاعف مبيعاتي الشهر ده؟', 'وريني العملاء المحتملين عندي']
+          : ['Give me 3 viral content hooks', 'How can I boost conversions this week?', 'Show my hot leads'];
+      } else if (/عامل\s*ايه|ازيك|إزيك|اخبارك|أخبارك|صباح|مساء|مرحبا|اهلا|أهلا|هاي|سلام\s*عليكم/i.test(rawPrompt) || /^(hi|hello|hey|yo|good\s+(morning|afternoon|evening)|how\s+are\s+you|what'?s\s+up|how'?s\s+it\s+going)\b/i.test(rawPrompt.trim())) {
+        const arReplies = [
+          'الحمد لله تمام وزي الفل! 😊 إنت عامل إيه النهاردة؟ طمني يومك ماشي إزاي؟',
+          'يا أهلاً بيك! أنا في أحسن حال الحمد لله — قولّي إيه الأخبار عندك؟ بتفكر في حاجة معينة النهاردة ولا ندردش شوية؟',
+          'منور الدنيا كلها! كله تمام الحمد لله وعالي العال. احكيلي، الشغل واليوم ماشيين معاك إزاي النهاردة؟',
+        ];
+        const enReplies = [
+          "Doing great, thanks for asking! How's your day going so far — working on something fun or just checking in?",
+          "Hey there! I'm doing awesome today. What's on your mind — feel like brainstorming, writing something cool, or just chatting?",
+          "All good on my end! How are things going with you today?",
+        ];
+        text = ar ? arReplies[turnIndex % arReplies.length] : enReplies[turnIndex % enReplies.length];
+        followUps = ar
+          ? ['مضغوط شوية وعاوز أرتب يومي', 'قولي فكرة بوست سوشيال ميديا ذكية', 'احكيلي معلومة سريعة ومفيدة']
+          : ['Help me organize my priorities today', 'Write a catchy social media post', 'Share a quick productivity tip'];
+      } else if (/نكتة|ضحكني|\bjoke\b|\bfunny\b/i.test(rawPrompt)) {
+        text = ar
+          ? 'خد دي 😄:\nمرة مسوّق إلكتروني دخل مطعم، الجرسون قاله: «تحب تشوف المنيو؟»\nقاله: «لأ ابعتهالي على الواتساب عشان أعملك Retargeting لو معجبتنيش الأكلة!» 😂\n\nإيه رأيك، تحب واحدة كمان ولا نخش في الجد؟'
+          : "Here's a quick one 😄:\nWhy did the marketer break up with the calendar?\nBecause he felt their days were numbered — and there was zero conversion! 😂\n\nWant another one, or what's on your mind next?";
+        followUps = ar ? ['قولي واحدة كمان 😂', 'اكتبلي بوست خفيف يجيب تفاعل'] : ['Tell me another one!', 'Write an engaging social post'];
+      } else if (/مضغوط|تعبان|زهقان|ترتيب\s+يوم|\b(stressed|overwhelmed|tired|bored|prioritize)\b/i.test(rawPrompt)) {
+        text = ar
+          ? 'حقك والله، ضغط الشغل ساعات بيخلّي الواحد حاسس إن كل حاجة محتاجة تتعمل في نفس اللحظة! خد نفس عميق الأول 🌟\n\nجرب القاعدة البسيطة دي دلوقتي:\n1. **اختار أهم مهمة واحدة بس** لو خلصت النهاردة هتحس بإنجاز حقيقي.\n2. **اقفل أي مشتتات 25 دقيقة** وابدأ فيها فوراً.\n3. **سيب الحاجات الروتينية عليّ** — سواء صياغة رسائل، أفكار، أو تنظيم ردود.\n\nتحب تحكيلي إيه أكتر حاجة شاغلة بالك دلوقتي ونفككها سوا؟'
+          : "Totally relatable — when everything feels urgent at once, it's exhausting. Take a quick breath first!\n\nHere's a dead-simple reset for the next hour:\n1. **Pick just ONE high-impact task** that would make today a win.\n2. **Block 25 distraction-free minutes** just to get momentum.\n3. **Offload the heavy writing/planning to me** — tell me what's on your plate and we'll knock it out together!\n\nWhat's the #1 thing weighing on you right now?";
+        followUps = ar ? ['ساعدني أكتب رسالة احترافية لعميل', 'رتبلي خطة عمل لـ 3 ساعات'] : ['Draft a polite client follow-up', 'Build me a 3-hour focus plan'];
       } else if (/show.*lead|hot\s+lead|وريني\s+العملاء|اعرض\s+العملاء|العملاء\s+المحتملين/i.test(rawPrompt)) {
+        grounded = true;
         leadsOut = demoLeads.slice(0, 4);
         href = '/dashboard/crm';
         hrefLabel = ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads';
         text = ar ? `إليك أبرز **${leadsOut.length}** عملاء محتملين في مساحة عملك حالياً:` : `Here are the top **${leadsOut.length}** leads in your CRM right now:`;
       } else {
-        const formKind =
-          /انقل|تغيير\s+مرحلة|\bmove\s+lead/i.test(rawPrompt) ? 'update_lead_stage' :
-          /اضف\s+عميل|أضف\s+عميل|ضيف\s+عميل|عاوز\s+اضيف\s+عميل|عميل\s+جديد|\b(add|create|new)\s+(a\s+)?lead/i.test(rawPrompt) ? 'create_lead' :
-          /جهة\s+اتصال|\b(add|create)\s+(a\s+)?contact/i.test(rawPrompt) ? 'create_contact' :
-          /احجز\s+(موعد|ميعاد)|\b(book|schedule)\s+(an?\s+)?(appointment|call)/i.test(rawPrompt) ? 'create_appointment' :
-          /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
-          /حملة|campaign/i.test(rawPrompt) ? 'campaign' :
-          /منتج|كورس|course|product/i.test(rawPrompt) ? 'product' :
-          /صفحة\s+هبوط|فانل|landing|funnel/i.test(rawPrompt) ? 'landing' :
-          /معلومة|قاعدة\s+المعرفة|knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
+        const formKind = isQuestionOrAdvice
+          ? null
+          : /انقل|تغيير\s+مرحلة|\bmove\s+lead/i.test(rawPrompt) ? 'update_lead_stage' :
+            /اضف\s+عميل|أضف\s+عميل|ضيف\s+عميل|عاوز\s+اضيف\s+عميل|عميل\s+جديد|\b(add|create|new)\s+(a\s+)?lead/i.test(rawPrompt) ? 'create_lead' :
+            /جهة\s+اتصال|\b(add|create)\s+(a\s+)?contact/i.test(rawPrompt) ? 'create_contact' :
+            /احجز\s+(موعد|ميعاد)|\b(book|schedule)\s+(an?\s+)?(appointment|call)/i.test(rawPrompt) ? 'create_appointment' :
+            /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
+            /(?:انشئ|أنشئ|اعمل|جهز|اطلق)\s+حملة|\b(create|launch|build|new)\s+(a\s+)?(whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
+            /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف)\s+(?:منتج|كورس)|\b(create|build|add|new)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
+            /(?:انشئ|أنشئ|اعمل|صمم)\s+(?:صفحة\s+هبوط|فانل)|\b(create|build|design|new)\s+(a\s+)?(landing\s+page|funnel)/i.test(rawPrompt) ? 'landing' :
+            /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
         if (formKind) {
+          grounded = true;
           const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
           const phoneMatch = rawPrompt.match(/(?:\+?\d[\d\s-]{7,16}\d)/);
           const nameMatch = rawPrompt.match(/(?:اسمه|اسمها|باسم|named|called)\s+([\u0600-\u06FFA-Za-z\s]{2,30}?)(?=\s+(?:تليفون|رقم|phone|email)|$)/i);
@@ -188,20 +225,22 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             : 'Got it! Fill in or review the interactive form below and click Confirm to save it to your workspace.';
         } else {
           text = ar
-            ? `بناءً على بيانات مساحة عملك الحالية (**${demoLeads.length} عميل محتمل** و **${rows('products').length} منتجات**)، أنصح بالتركيز على متابعة العملاء المؤهلين عبر واتساب خلال أول 15 دقيقة لرفع معدل الإغلاق. هل ترغب أن أفتح لك نموذج إنشاء حملة أو إضافة عميل جديد؟`
-            : `Based on your live workspace (**${demoLeads.length} leads** and **${rows('products').length} products**), following up with qualified leads within 15 minutes via WhatsApp yields the highest conversion lift. Would you like me to open a form to launch a campaign or add a new lead?`;
+            ? `سؤال ممتاز! خليني أفكر معاك بشكل عملي ومباشر حول **«${rawPrompt.slice(0, 65)}»**:\n\n1. **التركيز على القيمة والوضوح:** أي فكرة أو رسالة بتنجح لما تبدأ بالمشكلة الحقيقية اللي بتهم جمهورك بلغة بسيطة وقريبة منهم.\n2. **خطوة تنفيذية سريعة:** ابدأ بتجربة صغيرة وقيس التفاعل خلال أول 48 ساعة بدل الانتظار للكمال.\n3. **المتابعة الذكية:** السر دايماً في الاستمرارية والرد السريع والودود.\n\nتحب نكتب صياغة جاهزة دلوقتي أو نفصّل نقطة معينة أكتر؟`
+            : `Great point! Let's break down **"${rawPrompt.slice(0, 65)}"** practically:\n\n1. **Lead with clarity & value:** Hook attention in the first line by addressing the exact outcome that matters most.\n2. **Test fast, iterate faster:** Launch a lean version today and measure real engagement within 48 hours.\n3. **Keep momentum warm:** Consistent, human follow-ups turn interest into lasting results.\n\nWant me to draft ready-to-use copy for this, or dive deeper into step 1?`;
+          followUps = ar
+            ? ['اكتبلي صياغة عملية جاهزة للنشر', 'فصّل لي الخطوة الأولى بأمثلة', 'إزاي أطبق ده على مشروعي؟']
+            : ['Write ready-to-use copy for this', 'Give me concrete examples', 'How do I apply this to my workspace?'];
         }
       }
-      const before = rows('copilotConversations').find(row => row.id === body.conversationId);
       const convId = body.conversationId || crypto.randomUUID();
       const userMsg = { id: body.requestId || crypto.randomUUID(), role: 'user', text: rawPrompt };
-      const assistantMsg = { id: crypto.randomUUID(), role: 'assistant', text, ...(form ? { form } : {}), ...(leadsOut ? { leads: leadsOut } : {}), ...(href ? { href, hrefLabel } : {}) };
+      const assistantMsg = { id: crypto.randomUUID(), role: 'assistant', text, grounded, ...(followUps.length ? { followUps } : {}), ...(form ? { form } : {}), ...(leadsOut ? { leads: leadsOut } : {}), ...(href ? { href, hrefLabel } : {}) };
       const updatedThread = { id: convId, title: before?.title ?? rawPrompt.slice(0, 60), group: 'Today', category: 'General', time: 'Just now', prompt: rawPrompt, updatedAt: new Date().toISOString(), messages: [...(before?.messages ?? []), userMsg, assistantMsg] };
       entityMutation('copilotConversations', convId, updatedThread);
       if (parts[2] === 'voice') {
-        return { transcript: rawPrompt || (ar ? 'رسالة صوتية' : 'Voice note'), conversationId: convId, user: { ...userMsg, transcript: rawPrompt }, assistant: assistantMsg, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
+        return { transcript: rawPrompt || (ar ? 'رسالة صوتية' : 'Voice note'), conversationId: convId, user: { ...userMsg, transcript: rawPrompt }, assistant: assistantMsg, grounded, followUps, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
       }
-      return { text, conversationId: convId, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
+      return { text, grounded, followUps, conversationId: convId, form, leads: leadsOut, href, hrefLabel, conversation: updatedThread } as T;
     }
   }
   if (parts[0] === 'inbox') {

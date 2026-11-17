@@ -1231,3 +1231,154 @@ html.dark .ai-stream-cursor {
     transform: translateY(0);
   }
 }
+
+/* ChatGPT-Grade Rich Markdown & Interactive Follow-Up Chips */
+.ai-formatted-heading {
+  margin: 10px 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.45;
+}
+
+.ai-formatted-olist {
+  margin: 8px 0;
+  padding-inline-start: 22px;
+  list-style: decimal;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.65;
+}
+
+.ai-formatted-quote {
+  margin: 8px 0;
+  padding: 8px 13px;
+  border-inline-start: 3px solid #7c3aed;
+  background: rgba(124, 58, 237, 0.05);
+  border-radius: 0 10px 10px 0;
+  color: #374151;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+[dir='rtl'] .ai-formatted-quote {
+  border-radius: 10px 0 0 10px;
+}
+
+.ai-inline-code {
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  background: rgba(124, 58, 237, 0.09);
+  color: #6d28d9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.ai-code-block {
+  margin: 10px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+}
+
+.ai-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(30, 41, 59, 0.9);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  font-size: 11.5px;
+  color: #94a3b8;
+  text-transform: lowercase;
+}
+
+.ai-code-header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ai-code-header button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.ai-code-block pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.ai-followup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.ai-followup-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 58, 237, 0.22);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(168, 85, 247, 0.03));
+  color: #5b21b6;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ai-followup-chip:hover:not(:disabled) {
+  border-color: #7c3aed;
+  background: rgba(124, 58, 237, 0.12);
+  transform: translateY(-1px);
+}
+
+.ai-followup-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+html.dark .ai-formatted-heading {
+  color: #f3f4f6;
+}
+
+html.dark .ai-formatted-quote {
+  background: rgba(139, 92, 246, 0.12);
+  color: #e2e8f0;
+}
+
+html.dark .ai-inline-code {
+  background: rgba(167, 139, 250, 0.18);
+  color: #ddd6fe;
+}
+
+html.dark .ai-followup-chip {
+  border-color: rgba(167, 139, 250, 0.28);
+  background: rgba(124, 58, 237, 0.14);
+  color: #ddd6fe;
+}
+
+html.dark .ai-followup-chip:hover:not(:disabled) {
+  border-color: #a78bfa;
+  background: rgba(124, 58, 237, 0.26);
+  color: #ffffff;
+}

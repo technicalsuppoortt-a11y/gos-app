@@ -83,6 +83,8 @@ type Message = {
   voiceExtraction?: VoiceExtraction | null;
   streaming?: boolean;
   streamPhase?: string;
+  grounded?: boolean;
+  followUps?: string[];
 };
 type Draft = {
   id: string;
@@ -657,11 +659,16 @@ export const AICopilot: React.FC = () => {
       }
       const normalizedForm = normalizeIncomingForm(answer.form, answer.draft);
       const formId = registerFormState(normalizedForm);
+      const cleanFollowUps = Array.isArray(answer.followUps)
+        ? answer.followUps.filter((s): s is string => typeof s === 'string' && s.trim().length > 0).slice(0, 3)
+        : undefined;
       const updatedMsg: Message = {
         id: assistantMessageId,
         role: 'assistant',
         text: finalText,
         streaming: false,
+        grounded: Boolean(answer.grounded || normalizedForm || (Array.isArray(answer.leads) && answer.leads.length > 0) || answer.href),
+        followUps: !normalizedForm && cleanFollowUps?.length ? cleanFollowUps : undefined,
         formId,
         form: normalizedForm,
         leads: Array.isArray(answer.leads) && answer.leads.length > 0 ? (answer.leads as CanonicalLead[]) : undefined,
@@ -862,11 +869,16 @@ export const AICopilot: React.FC = () => {
       }
       const normalizedForm = normalizeIncomingForm(answer.form, answer.draft);
       const formId = registerFormState(normalizedForm);
+      const cleanFollowUps = Array.isArray(answer.followUps)
+        ? answer.followUps.filter((s): s is string => typeof s === 'string' && s.trim().length > 0).slice(0, 3)
+        : undefined;
       const assistantMsg: Message = {
         id: streamingAssistantId,
         role: 'assistant',
         text: finalText,
         streaming: false,
+        grounded: Boolean(answer.grounded || normalizedForm || (Array.isArray(answer.leads) && answer.leads.length > 0) || answer.href),
+        followUps: !normalizedForm && cleanFollowUps?.length ? cleanFollowUps : undefined,
         formId,
         form: normalizedForm,
         leads: Array.isArray(answer.leads) && answer.leads.length > 0 ? (answer.leads as CanonicalLead[]) : undefined,
@@ -1329,8 +1341,12 @@ export const AICopilot: React.FC = () => {
               </div>
             ) : (
               <div className="ai-message-list">
-                {messages.map(message => {
+                {messages.map((message, msgIdx) => {
                   const activeForm = (message.formId && forms[message.formId]) || message.form;
+                  const isLastMessage = msgIdx === messages.length - 1;
+                  const showGroundedBadge = Boolean(
+                    message.grounded || activeForm || (message.leads && message.leads.length > 0) || message.href,
+                  );
                   const isArabicMsg =
                     isUiArabic ||
                     hasArabicScript(message.text || '') ||
@@ -1427,13 +1443,34 @@ export const AICopilot: React.FC = () => {
                           ),
                         )}
                         {localizeNode(
-                          message.role === 'assistant' && !message.streaming && message.voiceExtraction === undefined && (
+                          message.role === 'assistant' && !message.streaming && showGroundedBadge && message.voiceExtraction === undefined && (
                             <div className="ai-source-note">
                               <ShieldCheck size={12} />
                               {translateText(' Grounded in approved workspace records')}
                             </div>
                           ),
                         )}
+                        {message.role === 'assistant' &&
+                          !message.streaming &&
+                          isLastMessage &&
+                          !activeForm &&
+                          Array.isArray(message.followUps) &&
+                          message.followUps.length > 0 && (
+                            <div className="ai-followup-chips" dir={isArabicMsg ? 'rtl' : 'ltr'}>
+                              {message.followUps.map(chip => (
+                                <button
+                                  key={chip}
+                                  type="button"
+                                  className="ai-followup-chip"
+                                  disabled={composerLocked}
+                                  onClick={() => void runPrompt(chip)}
+                                >
+                                  <Sparkles size={12} />
+                                  <span>{chip}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         {message.role === 'assistant' && !message.streaming && (
                           <div className="ai-response-actions" role="toolbar" aria-label={translateText('Response actions')}>
                             <button
@@ -1949,22 +1986,61 @@ export const AICopilot: React.FC = () => {
   );
 };
 
-function renderInlineBold(line: string): React.ReactNode {
-  const tokens = line.split(/(\*\*[^*]+\*\*)/g);
-  return tokens.map((part, i) =>
-    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
-      <strong key={i} className="ai-inline-strong">
-        {part.slice(2, -2)}
-      </strong>
-    ) : (
-      <React.Fragment key={i}>{part}</React.Fragment>
-    ),
+function renderInlineRich(line: string): React.ReactNode {
+  const tokens = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return tokens.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return (
+        <strong key={i} className="ai-inline-strong">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return (
+        <code key={i} className="ai-inline-code">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+}
+
+function CodeBlockCard({ lang, code, cursor }: { lang: string; code: string; cursor: React.ReactNode }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="ai-code-block" dir="ltr">
+      <div className="ai-code-header">
+        <span>{lang || 'code'}</span>
+        <button
+          type="button"
+          onClick={() => {
+            void navigator.clipboard?.writeText(code);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1800);
+          }}
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          <span>{copied ? 'Copied' : 'Copy'}</span>
+        </button>
+      </div>
+      <pre>
+        <code>
+          {code}
+          {cursor}
+        </code>
+      </pre>
+    </div>
   );
 }
 
 function FormattedCopilotText({ text, role, streaming = false }: { text: string; role: 'user' | 'assistant'; streaming?: boolean }) {
   const cursor = streaming ? <span className="ai-stream-cursor" aria-hidden="true" /> : null;
-  if (role === 'user' || (!text.includes('\n') && !text.includes('**'))) {
+  if (role === 'user') {
+    return <p dir="auto">{text}</p>;
+  }
+  if (!text.includes('\n') && !text.includes('**') && !text.includes('`') && !text.startsWith('#')) {
     return (
       <p dir="auto">
         {text}
@@ -1972,32 +2048,159 @@ function FormattedCopilotText({ text, role, streaming = false }: { text: string;
       </p>
     );
   }
-  const blocks = text.split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+
+  type ParsedSegment =
+    | { kind: 'code'; lang: string; code: string }
+    | { kind: 'heading'; text: string }
+    | { kind: 'blockquote'; lines: string[] }
+    | { kind: 'ul'; items: string[] }
+    | { kind: 'ol'; items: string[] }
+    | { kind: 'p'; lines: string[] };
+
+  const segments: ParsedSegment[] = [];
+  const rawLines = text.split('\n');
+  let i = 0;
+
+  while (i < rawLines.length) {
+    const raw = rawLines[i];
+    const trimmed = raw.trim();
+
+    if (!trimmed) {
+      i++;
+      continue;
+    }
+
+    if (trimmed.startsWith('```')) {
+      const lang = trimmed.slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < rawLines.length && !rawLines[i].trim().startsWith('```')) {
+        codeLines.push(rawLines[i]);
+        i++;
+      }
+      if (i < rawLines.length) i++;
+      segments.push({ kind: 'code', lang, code: codeLines.join('\n') });
+      continue;
+    }
+
+    const headingMatch = trimmed.match(/^#{1,4}\s+(.+)$/);
+    if (headingMatch) {
+      segments.push({ kind: 'heading', text: headingMatch[1].trim() });
+      i++;
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      const qLines: string[] = [];
+      while (i < rawLines.length && /^>\s?/.test(rawLines[i].trim())) {
+        qLines.push(rawLines[i].trim().replace(/^>\s?/, ''));
+        i++;
+      }
+      segments.push({ kind: 'blockquote', lines: qLines });
+      continue;
+    }
+
+    if (/^[-•*]\s+/.test(trimmed)) {
+      const items: string[] = [];
+      while (i < rawLines.length && /^[-•*]\s+/.test(rawLines[i].trim())) {
+        items.push(rawLines[i].trim().replace(/^[-•*]\s+/, ''));
+        i++;
+      }
+      segments.push({ kind: 'ul', items });
+      continue;
+    }
+
+    if (/^(?:\d+|[٠-٩]+)[.)]\s+/.test(trimmed)) {
+      const items: string[] = [];
+      while (i < rawLines.length && /^(?:\d+|[٠-٩]+)[.)]\s+/.test(rawLines[i].trim())) {
+        items.push(rawLines[i].trim().replace(/^(?:\d+|[٠-٩]+)[.)]\s+/, ''));
+        i++;
+      }
+      segments.push({ kind: 'ol', items });
+      continue;
+    }
+
+    const pLines: string[] = [trimmed];
+    i++;
+    while (i < rawLines.length) {
+      const next = rawLines[i].trim();
+      if (
+        !next ||
+        next.startsWith('```') ||
+        /^#{1,4}\s+/.test(next) ||
+        /^>\s?/.test(next) ||
+        /^[-•*]\s+/.test(next) ||
+        /^(?:\d+|[٠-٩]+)[.)]\s+/.test(next)
+      ) {
+        break;
+      }
+      pLines.push(next);
+      i++;
+    }
+    segments.push({ kind: 'p', lines: pLines });
+  }
+
   return (
     <div className="ai-formatted-bubble" dir="auto">
-      {blocks.map((block, bIdx) => {
-        const isLastBlock = bIdx === blocks.length - 1;
-        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-        const isBulletList = lines.length > 1 && lines.every(l => /^[-•*]\s+/.test(l));
-        if (isBulletList) {
+      {segments.map((seg, idx) => {
+        const isLast = idx === segments.length - 1;
+        const tailCursor = isLast ? cursor : null;
+
+        if (seg.kind === 'code') {
+          return <CodeBlockCard key={idx} lang={seg.lang} code={seg.code} cursor={tailCursor} />;
+        }
+        if (seg.kind === 'heading') {
           return (
-            <ul key={bIdx} className="ai-formatted-list">
-              {lines.map((line, lIdx) => (
+            <h4 key={idx} className="ai-formatted-heading" dir="auto">
+              {renderInlineRich(seg.text)}
+              {tailCursor}
+            </h4>
+          );
+        }
+        if (seg.kind === 'blockquote') {
+          return (
+            <blockquote key={idx} className="ai-formatted-quote" dir="auto">
+              {seg.lines.map((l, lIdx) => (
+                <React.Fragment key={lIdx}>
+                  {lIdx > 0 && <br />}
+                  {renderInlineRich(l)}
+                  {isLast && lIdx === seg.lines.length - 1 ? tailCursor : null}
+                </React.Fragment>
+              ))}
+            </blockquote>
+          );
+        }
+        if (seg.kind === 'ul') {
+          return (
+            <ul key={idx} className="ai-formatted-list" dir="auto">
+              {seg.items.map((item, lIdx) => (
                 <li key={lIdx}>
-                  {renderInlineBold(line.replace(/^[-•*]\s+/, ''))}
-                  {isLastBlock && lIdx === lines.length - 1 ? cursor : null}
+                  {renderInlineRich(item)}
+                  {isLast && lIdx === seg.items.length - 1 ? tailCursor : null}
                 </li>
               ))}
             </ul>
           );
         }
+        if (seg.kind === 'ol') {
+          return (
+            <ol key={idx} className="ai-formatted-olist" dir="auto">
+              {seg.items.map((item, lIdx) => (
+                <li key={lIdx}>
+                  {renderInlineRich(item)}
+                  {isLast && lIdx === seg.items.length - 1 ? tailCursor : null}
+                </li>
+              ))}
+            </ol>
+          );
+        }
         return (
-          <p key={bIdx}>
-            {lines.map((line, lIdx) => (
+          <p key={idx} dir="auto">
+            {seg.lines.map((line, lIdx) => (
               <React.Fragment key={lIdx}>
                 {lIdx > 0 && <br />}
-                {renderInlineBold(line)}
-                {isLastBlock && lIdx === lines.length - 1 ? cursor : null}
+                {renderInlineRich(line)}
+                {isLast && lIdx === seg.lines.length - 1 ? tailCursor : null}
               </React.Fragment>
             ))}
           </p>
@@ -2782,7 +2985,7 @@ function CopilotActionForm({
       {form.status === 'completed' && form.resultNote && (
         <div className="ai-iform-success" role="status">
           <CheckCircle2 size={16} />
-          <div className="ai-iform-success-text">{renderInlineBold(form.resultNote)}</div>
+          <div className="ai-iform-success-text">{renderInlineRich(form.resultNote)}</div>
           {form.resultHref && (
             <button type="button" className="ai-iform-open-btn" onClick={() => onOpenHref(form.resultHref!)}>
               <span>{form.resultHrefLabel || t('فتح في مساحة العمل', 'Open in Workspace')}</span>

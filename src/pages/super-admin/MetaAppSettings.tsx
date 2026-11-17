@@ -55,6 +55,8 @@ const CHANNELS = [
 type ChannelId = (typeof CHANNELS)[number]['id'];
 type Settings = {
   apps: Record<ChannelId, { app_id: string | null; config_id: string | null; has_secret: boolean }>;
+  /** Second Instagram config: accounts linked to a Facebook Page. The main one is Unified Login. */
+  instagram_page_config_id?: string | null;
   public_url: string | null;
   allowed_origins: string[];
   unreadable_secrets: ChannelId[];
@@ -103,6 +105,7 @@ function buildFormState(s: Settings): Record<string, string> {
     next[`${id}_app_secret`] = '';
     next[`${id}_config_id`] = s.apps[id]?.config_id ?? '';
   }
+  next.instagram_page_config_id = s.instagram_page_config_id ?? '';
   return next;
 }
 
@@ -586,6 +589,8 @@ export function MetaAppSettings() {
                     </label>
 
                     {renderTextInput(`${id}_config_id`, config, 'e.g. 883920174628190')}
+
+                    {id === 'instagram' && renderTextInput('instagram_page_config_id', 'Facebook Page config ID (optional)', 'e.g. 883920174628190')}
                   </section>
                 );
               })}

@@ -57,7 +57,7 @@ export type CopilotForm = {
 };
 export type CopilotHistoryMessage = { id?: string; role: 'user' | 'assistant'; text: string; transcript?: string };
 export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
-export type CopilotResponse = { text?: string; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; form?: CopilotForm | null; draft?: ApiRecord | null; conversation?: ApiRecord };
+export type CopilotResponse = { text?: string; grounded?: boolean; followUps?: string[]; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; form?: CopilotForm | null; draft?: ApiRecord | null; conversation?: ApiRecord };
 export type CopilotActionInput = { kind: CopilotFormKind; values: Record<string, string>; conversationId?: string; formId?: string; record?: ApiRecord; requestId?: string; uiLanguage?: string };
 type InboxSimulationInput = { channel: string; external_thread_id: string; external_message_id: string; customer_name: string; phone?: string; body: string };
 type FileSourceInput = { type: 'file'; name: string; file: { name: string; mime: string; data: string } };
