@@ -1,8 +1,10 @@
 .launch-brand-page {
-  --launch-brand-ui-scale: 0.65;
+  --launch-brand-ui-scale: 0.75;
   display: flex;
   flex-direction: column;
-  width: calc(100% / var(--launch-brand-ui-scale));
+  /* Percentage widths already fill the parent when CSS zoom is applied. */
+  width: 100%;
+  max-width: 100%;
   height: calc(100dvh / var(--launch-brand-ui-scale));
   zoom: var(--launch-brand-ui-scale);
   min-width: 0;
@@ -144,7 +146,9 @@
   :scope .compact-phase-title { font-size: 12px; }
   }
 }
-.launch-brand-content { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: auto; container-type: size; background: var(--lb-canvas); }
+.launch-brand-content { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; container-type: size; background: var(--lb-canvas); }
+/* The workspace owns page scrolling; its outer wrappers fill the available area. */
+.launch-brand-content > .brand-engine-module { min-width: 0; overflow: hidden; }
 
 @media (max-width: 480px) {
   .launch-brand-header { gap: 6px; min-height: 52px; padding: 8px 12px; }

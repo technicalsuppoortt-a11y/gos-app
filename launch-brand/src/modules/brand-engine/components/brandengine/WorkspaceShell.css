@@ -1,5 +1,5 @@
 @scope (.brand-engine-module) {
-/* Native workspace geometry: density comes from spacing, never page zoom. */
+/* Workspace geometry follows the page's chosen display scale. */
 .compact-workspace-shell {
   --workspace-sidebar-width: 208px;
   --studio-footer-inset: var(--workspace-sidebar-width);
@@ -14,7 +14,7 @@
 .compact-workspace-shell.sidebar-collapsed { --workspace-sidebar-width: 64px; }
 .compact-workspace-shell:not(.has-sidebar) { --workspace-sidebar-width: 0px; }
 .compact-workspace-shell > .workspace-column { min-width: 0; min-height: 0; }
-.compact-workspace-shell .workspace-layout { overscroll-behavior: contain; }
+.compact-workspace-shell .workspace-layout { min-width: 0; min-height: 0; overscroll-behavior: contain; }
 .compact-workspace-shell[data-workspace-mode="wizard"] .workspace-main {
   min-height: 100%;
   padding-inline: 0;
@@ -33,7 +33,7 @@
 }
 .compact-workspace-shell .workspace-sidebar .sidebar-brand {
   height: 44px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   padding-inline: 8px;
   gap: 8px;
 }
@@ -56,8 +56,8 @@
   flex-direction: column;
   justify-content: flex-start;
   gap: clamp(12px, 2vh, 20px);
-  margin-block: auto;
-  padding-block: 20px;
+  margin-block: 0;
+  padding-block: 4px;
   min-height: 0;
   overflow-y: auto;
 }
@@ -117,7 +117,7 @@
   color: var(--lb-text);
 }
 .compact-workspace-shell .workspace-sidebar .sidebar-footer {
-  margin-block-start: 0;
+  margin-block-start: auto;
   flex-shrink: 0;
   padding-block-start: 12px;
   border-color: var(--lb-card-border);
