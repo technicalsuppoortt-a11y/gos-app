@@ -104,7 +104,7 @@ try {
   }
   await page.evaluate(() => window.__setTemplateLanguage('en'));
   assert.equal(await page.locator('.alm-category-tabs [role=tab]').count(), 8);
-  for (const category of ['Websites', 'Funnels', 'Forms']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.equal(await page.locator('.alm-ghl-card').count(), category === 'Funnels' ? 5 : 3); }
+  for (const category of ['Websites', 'Funnels', 'Forms']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.equal(await page.locator('.alm-ghl-card').count(), category === 'Funnels' ? 12 : 3); }
   for (const category of ['Booking Pages', 'CRM Pipelines', 'Products', 'Automations']) { await page.getByRole('tab', { name: category, exact: true }).click(); assert.ok(await page.locator('tbody tr').count() > 0); }
   await page.getByRole('tab', { name: 'All templates', exact: true }).click();
   const selectCover = name => page.locator('.alm-thumbnail-editor input[type=file]').setInputFiles({ name, mimeType: 'image/png', buffer: Buffer.from('cover fixture') });

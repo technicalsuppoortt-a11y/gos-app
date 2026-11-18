@@ -91,7 +91,7 @@ export function FunnelBuilder() {
     const editTarget=editingInactive ? inactiveTarget : asset?.document.pages.find(page=>page.id===pageId||page.path.replace(/^\//,'')===pageId);
     const dialogAsset=workspace.assets.find(item=>item.id===dialog?.assetId);
     const modal=dialog&&(dialog.type==='domain-select'&&dialogAsset?<FunnelDomainPicker asset={dialogAsset} workspace={workspace} setWorkspace={setWorkspace} close={()=>setDialog(null)} add={()=>setDialog({type:'domain',assetId:dialogAsset.id})}/>:<AssetDialog key={`${dialog.type}-${dialog.assetId}-${dialog.pageId}-${dialog.domainId}`} dialog={dialog} kind={kind} workspace={workspace} setWorkspace={setWorkspace} updateAsset={updateAsset} close={() => setDialog(null)} go={go} section={section} selected={setSelectedPage}/>);
-    if (new URLSearchParams(location.search).get('tab') === 'templates') {
+    if (['templates'].includes(new URLSearchParams(location.search).get('tab') || '') || new URLSearchParams(location.search).get('lab') === 'templates') {
       const searchParams = new URLSearchParams(location.search);
       const subCategory = searchParams.get('sub')?.toLowerCase();
       const paramCat = searchParams.get('category') || (subCategory === 'forms' ? 'Forms' : subCategory === 'websites' ? 'Websites' : subCategory === 'funnels' ? 'Funnels' : null);

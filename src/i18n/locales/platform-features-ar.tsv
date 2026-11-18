@@ -109,3 +109,13 @@ Exit Demo Account	الخروج من الحساب التجريبي
 Loading gateway configuration…	جارٍ تحميل إعدادات بوابة الدفع…
 Saved securely — leave blank to keep	محفوظ بأمان — اتركه فارغًا للاحتفاظ به
 Secrets are stored privately and never shown again. Changing the account, mode or region requires new secrets. Checkout is enabled after the provider connection is verified.	تُحفظ المفاتيح السرية بشكل خاص ولا تُعرض مجددًا. يتطلب تغيير الحساب أو الوضع أو المنطقة إدخال مفاتيح جديدة. يُفعّل الدفع بعد التحقق من اتصال البوابة.
+Project Management	إدارة المشاريع
+B2B	أعمال الشركات B2B
+Medical	الحلول الطبية
+Product Development	تطوير المنتجات
+Coaching	التدريب والاستشارات
+SaaS/Agency	البرمجيات والوكالات
+Fitness/Coaching	اللياقة والتدريب
+Healthcare/Clinic	الرعاية الصحية والعيادات
+Professional Services	الخدمات المهنية
+Lead Generation	جذب العملاء المحتملين

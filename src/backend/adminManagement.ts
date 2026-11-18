@@ -11,6 +11,7 @@ import type { ManagedTemplate } from '../pages/admin/managed-template';
 import { initializeTemplateAsset } from '../pages/system-template-assets';
 import { validateSystemTemplate } from '../pages/system-template-validation';
 import { isPlatformTeamRole } from '../router/platformAccess';
+import { buildOfficialFunnelManagedTemplates } from './officialTemplateDesigns';
 
 // This hook never enters the tenant workspace store, changes backend context, or writes tenant documents.
 export function useAdminManagement(resources: readonly ManagementResource[], templates = false, serverOnly = false, reload = 0, enabled = true) {
@@ -126,6 +127,35 @@ export async function uploadTemplateThumbnail(templateId: string, file: File, ow
   const target = ref(getStorage(firebaseApp), ownerUid ? `templateThumbnails/admins/${ownerUid}/${templateId}/${Date.now()}.${extension}` : `templateThumbnails/${templateId}/${Date.now()}.${extension}`);
   await uploadBytes(target, file, { contentType: file.type });
   return getDownloadURL(target);
+}
+export async function syncOfficialFunnelTemplatesToFirestore(existingTemplates: ManagedTemplate[] = []) {
+  if (!primaryAuth.currentUser) throw new Error('Sign in to manage templates.');
+  const existingById = new Map(existingTemplates.map(item => [item.id, item]));
+  const starters = buildOfficialFunnelManagedTemplates();
+  let synced = 0;
+  for (const starter of starters) {
+    const prev = existingById.get(starter.id);
+    const merged: ManagedTemplate = prev
+      ? {
+          ...starter,
+          ...prev,
+          title_en: prev.title_en || prev.name || starter.title_en,
+          title_ar: prev.title_ar?.trim() ? prev.title_ar : starter.title_ar,
+          description_en: prev.description_en || prev.description || starter.description_en,
+          description_ar: prev.description_ar?.trim() ? prev.description_ar : starter.description_ar,
+          design_en: prev.design_en?.html ? prev.design_en : starter.design_en,
+          design_ar: prev.design_ar === null ? null : prev.design_ar?.html ? prev.design_ar : starter.design_ar,
+          builderDocument: prev.builderDocument?.pages?.length ? prev.builderDocument : starter.builderDocument,
+          builder_document_ar: prev.builder_document_ar?.pages?.length ? prev.builder_document_ar : starter.builder_document_ar,
+          thumbnail: prev.thumbnail?.startsWith('https://') ? prev.thumbnail : starter.thumbnail,
+          status: prev.status || 'Published',
+          active: prev.active ?? true,
+        }
+      : starter;
+    await saveManagedTemplate(merged);
+    synced++;
+  }
+  return synced;
 }
 export async function deleteManagedTemplate(id: string) {
   await deleteDoc(doc(primaryDb, 'templateCatalog', id));

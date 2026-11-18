@@ -89,3 +89,55 @@ test('attachment validation rejects foreign paths and malformed rich metadata', 
   assert.equal(validateSupportFiles([file], 'a~u', 'u')[0].duration, 2);
   for (const invalid of [{ ...file, path: 'supportAttachments/foreign/u/file' }, { ...file, duration: NaN }, { ...file, waveform: [2] }]) assert.throws(() => validateSupportFiles([invalid], 'a~u', 'u'), { code: 'invalid-argument' });
 });
+
+test('all support roles send images and documents without text and reject empty messages', async () => {
+  const f = fixture();
+  for (const [uid, recipientId] of [['u', 'a'], ['a', 'u'], ['a', 's'], ['s', 'a']]) {
+    const { roomId } = await f.call(uid, { operation: 'open', recipientId });
+    for (const [name, type] of [['image.png', 'image/png'], ['guide.pdf', 'application/pdf']]) {
+      const messageId = `${uid}-${recipientId}-${name.replace('.', '-')}`;
+      const files = [{ path: `supportAttachments/${roomId}/${uid}/${messageId}`, name, type, size: 128 }];
+      const action = { operation: 'send', recipientId, messageId, files };
+      await f.call(uid, action);
+      await f.call(uid, action);
+      const message = f.rows.get(`supportRooms/${roomId}/messages/${messageId}`);
+      assert.equal(message.text, '');
+      assert.deepEqual(message.files, files);
+      assert.equal(f.rows.get(`supportRooms/${roomId}`).lastMessage, 'Attachment');
+    }
+    await assert.rejects(f.call(uid, { operation: 'send', recipientId, messageId: 'empty', text: '   ', files: [] }), { code: 'invalid-argument' });
+  }
+});
+
+test('participants pin peer messages and attachments, unpin idempotently, and deletion clears the pin', async () => {
+  const f = fixture();
+  for (const [sender, peer] of [['u', 'a'], ['a', 's']]) {
+    const { roomId } = await f.call(sender, { operation: 'open', recipientId: peer });
+    const files = [{ path: `supportAttachments/${roomId}/${sender}/file`, name: 'instructions.pdf', type: 'application/pdf', size: 100 }];
+    await f.call(sender, { operation: 'send', recipientId: peer, messageId: 'attachment', files });
+    const path = `supportRooms/${roomId}/messages/attachment`;
+    const pin = { operation: 'pin', recipientId: sender, messageId: 'attachment', pinned: true };
+    await f.call(peer, pin); await f.call(peer, pin);
+    assert.equal(f.rows.get(path).pinned, true);
+    assert.deepEqual(f.rows.get(path).files, files);
+    await f.call(sender, { ...pin, recipientId: peer, pinned: false });
+    assert.equal(f.rows.get(path).pinned, false);
+    await assert.rejects(f.call(peer, { ...pin, pinned: 'yes' }), { code: 'invalid-argument' });
+    await f.call(peer, pin);
+    await f.call(sender, { operation: 'delete', recipientId: peer, messageId: 'attachment', scope: 'everyone' });
+    assert.equal(f.rows.get(path).pinned, false);
+    await assert.rejects(f.call(peer, pin), { code: 'failed-precondition' });
+  }
+  await assert.rejects(f.call('other', { operation: 'pin', recipientId: 'a', messageId: 'attachment', pinned: true }), { code: 'permission-denied' });
+});
+
+test('attachment captions may be cleared but text-only edits cannot produce empty messages', async () => {
+  const f = fixture(), { roomId } = await f.call('u', { operation: 'open', recipientId: 'a' });
+  const files = [{ path: `supportAttachments/${roomId}/u/file`, name: 'guide.pdf', type: 'application/pdf', size: 100 }];
+  await f.call('u', { operation: 'send', recipientId: 'a', messageId: 'caption', text: 'Caption', files });
+  await f.call('u', { operation: 'edit', recipientId: 'a', messageId: 'caption', text: '' });
+  assert.equal(f.rows.get(`supportRooms/${roomId}/messages/caption`).text, '');
+  assert.equal(f.rows.get(`supportRooms/${roomId}`).lastMessage, 'Attachment');
+  await f.call('u', { operation: 'send', recipientId: 'a', messageId: 'text', text: 'Hello' });
+  await assert.rejects(f.call('u', { operation: 'edit', recipientId: 'a', messageId: 'text', text: '' }), { code: 'invalid-argument' });
+});

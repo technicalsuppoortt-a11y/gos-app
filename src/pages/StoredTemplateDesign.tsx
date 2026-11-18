@@ -5,8 +5,8 @@ const viewportStyles = `
   body { overflow: hidden; }
   .page { max-inline-size: 100%; }
   [dir="rtl"] .page { height: auto; min-block-size: 1240px; }
-  [dir="rtl"] body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
-  [dir="rtl"] :is(h1,h2,h3,p,b,strong,span,label,div) { letter-spacing: normal; }
+  [dir="rtl"] body { font-family: "Cairo", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif; }
+  [dir="rtl"] :is(h1,h2,h3,p,b,strong,span,label,div,small) { letter-spacing: normal; }
   [dir="rtl"] :is(.srv-grid,.grid6,.n-grid) { text-align: start; }
   [dir="rtl"] .check-item { padding-inline: 14px 0; border-left: 0; border-inline-start: 3px solid #ea580c; }
   [dir="rtl"] .photo-accent { left: auto; inset-inline-start: 14px; }
@@ -44,7 +44,7 @@ export function StoredTemplateDesign({ design, language, title, thumbnail }: {
   const locale = arabic ? 'ar' : 'en';
   const source = `<!doctype html><html lang="${locale}" dir="${arabic ? 'rtl' : 'ltr'}"><head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https://images.unsplash.com https://firebasestorage.googleapis.com; form-action 'none'; base-uri 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https://images.unsplash.com https://firebasestorage.googleapis.com data:; form-action 'none'; base-uri 'none'">
     <style>${design.css}\n${viewportStyles}</style></head><body>${design.html}</body></html>`;
   return <iframe className="stored-template-design" title={title} srcDoc={source} sandbox="allow-same-origin"
     referrerPolicy="no-referrer" tabIndex={-1} inert={thumbnail} style={{ height: thumbnail ? 1240 : height }}

@@ -10,8 +10,8 @@ const { createPageAsset } = loadTemplateSource('src/pages/page-templates.ts');
 const { createBookingTemplate } = loadTemplateSource('src/pages/booking/template-presets.ts');
 const { instantiateProductTemplate } = loadTemplateSource('src/pages/commerce/productTemplates.ts');
 const { localizeManagedTemplate, templateIsActive } = loadTemplateSource('src/pages/admin/managed-template.ts');
-test('the nine promoted designs preserve the original CSS, hierarchy and media in both languages', () => {
-  assert.equal(Object.keys(COVER_HTML).length, 9);
+test('all eighteen promoted designs preserve the original CSS, hierarchy and media in both languages', () => {
+  assert.equal(Object.keys(COVER_HTML).length, 18);
   const structure = html => html.replace(/>[^<]+</g, '><');
   for (const [id, original] of Object.entries(COVER_HTML)) {
     const { design_en, design_ar } = buildTemplateDesigns(id);
@@ -51,11 +51,11 @@ test('saved Arabic layouts take precedence and custom layouts can fall back to E
   assert.equal(localizeManagedTemplate({ ...base, builder_document_ar: arabicDocument }, false).builderDocument, base.builderDocument);
 });
 test('migration contains every native preset in all eleven categories and valid asset schemas', () => {
-  assert.equal(catalog.length, 51); assert.equal(new Set(catalog.map(t => t.id)).size, 51);
+  assert.equal(catalog.length, 60); assert.equal(new Set(catalog.map(t => t.id)).size, 60);
   assert.equal(new Set(catalog.map(t => t.category)).size, 11);
   for (const t of catalog) assert.equal(validateSystemTemplate(t).length, 0, `${t.id}: ${validateSystemTemplate(t).join(' ')}`);
   assert.equal(catalog.filter(t => t.category === 'Websites').length, 3);
-  assert.equal(catalog.filter(t => t.category === 'Funnels').length, 3);
+  assert.equal(catalog.filter(t => t.category === 'Funnels').length, 12);
   assert.equal(catalog.filter(t => t.category === 'Forms').length, 3);
   assert.equal(catalog.filter(t => t.category === 'Booking Pages').length, 3);
   assert.equal(catalog.filter(t => t.category === 'Products').length, 16);

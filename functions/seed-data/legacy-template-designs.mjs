@@ -18,6 +18,18 @@ export const PHOTOS = {
   architectStudio: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85',
   saasSellHero: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1400&q=85',
   audienceCreatorHero: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=85',
+  bizDevOffice: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=85',
+  bizDevSmilingMan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85',
+  softCoding: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
+  softPhoto: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80',
+  softTravel: 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=600&q=80',
+  b2bAvatar1: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  b2bAvatar2: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  b2bAvatar3: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+  medDoctorsLab: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1400&q=85',
+  medWomanMask: 'https://images.unsplash.com/photo-1584634731339-252c581abfc5?auto=format&fit=crop&w=900&q=85',
+  coachWomanBlazer: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=900&q=85',
+  coachWomanCoffee: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=85',
 };
 
 const sharedCss = `
@@ -762,6 +774,816 @@ export const COVER_HTML = {
         <div class="rcard"><small>★★★★★ 4.9/5 READER SCORE</small><p>"Added 1,420 new email subscribers in 3 weeks using the exact page-6 squeeze layout."</p><b>Layla Haddad · Executive Coach</b></div>
         <div class="rcard"><small>★★★★★ VERIFIED CREATOR</small><p>"The 5-day welcome sequence turned cold leads into 19 booked strategy calls in week one."</p><b>Ryan Kowalski · ScaleBrief</b></div>
         <div class="rcard"><small>2 PRE-LINKED STEPS</small><p>Step 1 High-Converting Squeeze Page → Step 2 Instant Resource Download Thank You Page.</p><b>100% Responsive · AR & EN</b></div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-business-development': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+    .bd-top { position: relative; background: radial-gradient(#cbd5e1 1px, transparent 1px) 0 0 / 16px 16px, #f7f8fa; padding: 24px 64px 36px; text-align: center; overflow: hidden; }
+    .bd-chevron-bg { position: absolute; inset-inline-end: -60px; top: -40px; width: 380px; height: 380px; border-radius: 50%; background: rgba(15, 23, 42, 0.045); pointer-events: none; }
+    .bd-logo { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 7px; margin-bottom: 18px; }
+    .bd-logo-mark { font-weight: 900; font-size: 20px; color: #0a0a0a; line-height: 1; }
+    .bd-logo-txt { text-align: start; line-height: 1.05; }
+    .bd-logo-txt b { display: block; font-size: 14px; font-weight: 800; letter-spacing: 0.6px; color: #111827; }
+    .bd-logo-txt small { display: block; font-size: 7.5px; letter-spacing: 1.8px; color: #6b7280; font-weight: 700; }
+    .bd-h1 { position: relative; z-index: 2; font-size: 33px; line-height: 1.15; font-weight: 900; color: #09090b; max-width: 610px; margin: 0 auto 10px; letter-spacing: -0.6px; }
+    .bd-sub { position: relative; z-index: 2; font-size: 11.5px; font-weight: 700; color: #1f2937; margin-bottom: 18px; }
+    .bd-vsl { position: relative; z-index: 2; max-width: 560px; margin: 0 auto; border-radius: 3px; overflow: hidden; box-shadow: 0 20px 44px rgba(15, 23, 42, 0.16); background: #060d24; }
+    .bd-vsl-bar { background: #c84b31; color: #ffffff; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px; padding: 7px 14px; text-align: center; }
+    .bd-vsl-screen { position: relative; height: 270px; background: #1c1917; overflow: hidden; }
+    .bd-vsl-screen img { width: 100%; height: 100%; filter: sepia(0.18) contrast(0.96) brightness(0.84); }
+    .bd-sound-pill { position: absolute; top: 10px; inset-inline-start: 10px; background: rgba(0, 0, 0, 0.72); color: #fff; font-size: 9.5px; font-weight: 700; padding: 4px 9px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+    .bd-progress { position: absolute; inset-inline: 10px; bottom: 8px; height: 18px; display: flex; align-items: center; gap: 8px; color: #e2e8f0; font-size: 9px; }
+    .bd-track { flex: 1; height: 3px; background: rgba(255,255,255,0.28); border-radius: 99px; overflow: hidden; }
+    .bd-track i { display: block; width: 38%; height: 100%; background: #c84b31; }
+    .bd-vsl-foot { background: #040b22; padding: 14px 24px 16px; text-align: center; }
+    .bd-vsl-foot p { font-size: 10.5px; color: #cbd5e1; line-height: 1.5; margin-bottom: 5px; }
+    .bd-vsl-foot p b { color: #ffffff; }
+    .bd-vsl-foot strong { display: block; font-size: 13px; font-weight: 900; color: #df5638; }
+    .bd-dark-band { background: linear-gradient(180deg, #050505 0%, #050505 68%, #ffffff 68%, #ffffff 100%); padding: 34px 64px 28px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .bd-dark-h2 { color: #ffffff; font-size: 25px; line-height: 1.22; font-weight: 900; text-align: center; max-width: 580px; margin-bottom: 8px; }
+    .bd-dark-p1 { color: #e5e7eb; font-size: 10.5px; font-weight: 700; text-align: center; margin-bottom: 3px; }
+    .bd-dark-p2 { color: #9ca3af; font-size: 9.5px; text-align: center; margin-bottom: 22px; }
+    .bd-split-card { width: 100%; max-width: 600px; background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14); border: 1px solid #e5e7eb; display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 22px; align-items: center; }
+    .bd-founder-img { height: 278px; border-radius: 8px; overflow: hidden; background: #e5e7eb; }
+    .bd-founder-img img { width: 100%; height: 100%; object-position: center top; }
+    .bd-card-h3 { font-size: 20px; line-height: 1.18; font-weight: 900; color: #09090b; margin-bottom: 12px; }
+    .bd-list { display: grid; gap: 7px; margin-bottom: 13px; }
+    .bd-li { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #374151; line-height: 1.35; }
+    .bd-dot { width: 13px; height: 13px; border-radius: 50%; background: #c84b31; color: #fff; display: inline-grid; place-items: center; font-size: 8px; font-weight: 900; flex-shrink: 0; }
+    .bd-li b { color: #111827; font-weight: 800; }
+    .bd-callout { background: #c84b31; color: #ffffff; border-radius: 6px; padding: 10px 12px; font-size: 9.5px; line-height: 1.42; }
+    .bd-callout b { display: block; font-weight: 800; margin-bottom: 2px; }
+    @media (max-width: 959px) {
+      .bd-top, .bd-dark-band { padding-inline: 20px; }
+      .bd-h1 { font-size: 26px; }
+    }
+    @media (max-width: 600px) {
+      .bd-split-card { grid-template-columns: minmax(0, 1fr); }
+      .bd-founder-img { height: 220px; }
+      .bd-vsl-screen { height: 200px; }
+    }
+  </style></head><body><div class="page">
+    <div class="bd-top">
+      <div class="bd-chevron-bg"></div>
+      <div class="bd-logo"><span class="bd-logo-mark">⟫</span><div class="bd-logo-txt"><b>LOGO NAME</b><small>SLOGAN HERE</small></div></div>
+      <h1 class="bd-h1">You have Laid the Foundation – Now Let It Grow Without You.</h1>
+      <p class="bd-sub">Refine Your Margins. Implement Strong Systems. Build A Solid Team. Scale With Purpose.</p>
+      <div class="bd-vsl">
+        <div class="bd-vsl-bar">🔊 WATCH TO LEARN MORE ABOUT OUR MISSION, HOW WE TRANSFORM LIVES</div>
+        <div class="bd-vsl-screen">
+          <img src="${PHOTOS.bizDevOffice}" alt=""/>
+          <span class="bd-sound-pill">🔇 Enable sound</span>
+          <div class="bd-progress"><span>▶</span><div class="bd-track"><i></i></div><span>🔊 ⛶</span></div>
+        </div>
+        <div class="bd-vsl-foot">
+          <p>If Your Business Is In The <b>$1M–$10M Revenue Range</b>, You're Caught Up In The Day-To-Day, And It Feels Like Everything Relies On YOU...</p>
+          <strong>You're Not Alone — But You Can't Scale This Way.</strong>
+        </div>
+      </div>
+    </div>
+    <div class="bd-dark-band">
+      <h2 class="bd-dark-h2">I Hear You. You've Created Something Remarkable.</h2>
+      <p class="bd-dark-p1">Revenue Is Coming In. You've Built A Team. You're Gaining Momentum...</p>
+      <p class="bd-dark-p2">But If You Were Gone Tomorrow, Your Business Would Fall Apart In A Month.</p>
+      <div class="bd-split-card">
+        <div class="bd-founder-img"><img src="${PHOTOS.bizDevSmilingMan}" alt=""/></div>
+        <div>
+          <h3 class="bd-card-h3">Our Result Speaks for Themselves</h3>
+          <div class="bd-list">
+            <div class="bd-li"><span class="bd-dot">✓</span><span><b>Micromanaging Projects And Staff</b></span></div>
+            <div class="bd-li"><span class="bd-dot">✓</span><span><b>Dealing</b> With Narrow Margins</span></div>
+            <div class="bd-li"><span class="bd-dot">✓</span><span><b>Not Sure</b> If Your Offer Is Fully Optimized</span></div>
+            <div class="bd-li"><span class="bd-dot">✓</span><span><b>Missing</b> The Processes That Would Let You Step Away</span></div>
+            <div class="bd-li"><span class="bd-dot">✓</span><span><b>Away For Any Length Of Time</b></span></div>
+          </div>
+          <div class="bd-callout">
+            <b>Most Importantly:</b>
+            <span>You're not being held accountable to what actually matters—the metrics that move the needle.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-software-platform': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #ffffff; padding: 20px 38px 28px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+    .sp-hero-shell { position: relative; background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 55%, #fae8ff 100%); border-radius: 22px; padding: 16px 36px 0; text-align: center; }
+    .sp-nav { max-width: 560px; margin: 0 auto 22px; background: #ffffff; border-radius: 99px; padding: 8px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 6px 20px rgba(30, 19, 72, 0.06); }
+    .sp-clover { display: inline-grid; grid-template-columns: repeat(2, 8px); gap: 2px; }
+    .sp-clover i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+    .sp-links { display: flex; gap: 16px; font-size: 10px; font-weight: 700; color: #334155; }
+    .sp-h1 { font-size: 30px; line-height: 1.18; font-weight: 800; color: #1a103c; max-width: 520px; margin: 0 auto 10px; letter-spacing: -0.5px; }
+    .sp-sub { font-size: 11px; line-height: 1.5; color: #5b5675; max-width: 490px; margin: 0 auto 14px; }
+    .sp-cta { display: inline-block; background: #1e1348; color: #ffffff; font-size: 10.5px; font-weight: 700; padding: 9px 20px; border-radius: 8px; margin-bottom: 18px; box-shadow: 0 10px 22px rgba(30, 19, 72, 0.22); }
+    .sp-mock { max-width: 620px; margin: 0 auto -36px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1); display: grid; grid-template-columns: 34px 1fr 155px; overflow: hidden; text-align: start; }
+    .sp-rail { background: #f8fafc; border-inline-end: 1px solid #f1f5f9; padding: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 11px; font-size: 9px; color: #94a3b8; }
+    .sp-rail-logo { width: 22px; height: 22px; border-radius: 6px; background: #1e1348; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 10px; }
+    .sp-main { padding: 12px 14px; }
+    .sp-topbar { display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; margin-bottom: 8px; }
+    .sp-tabs { display: flex; gap: 10px; font-size: 8.5px; font-weight: 700; color: #64748b; margin-bottom: 8px; }
+    .sp-tabs b { color: #6d28d9; border-bottom: 2px solid #6d28d9; padding-bottom: 2px; }
+    .sp-search-row { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+    .sp-chip-in { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 99px; padding: 4px 10px; font-size: 8.5px; color: #94a3b8; }
+    .sp-go { width: 20px; height: 20px; border-radius: 50%; background: #7c3aed; color: #fff; display: grid; place-items: center; font-size: 9px; }
+    .sp-role-card { border: 1px solid #f1f5f9; border-radius: 10px; padding: 8px 10px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #ffffff; }
+    .sp-role-left { display: flex; align-items: center; gap: 8px; }
+    .sp-ico { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .sp-role-left b { display: block; font-size: 9.5px; color: #0f172a; }
+    .sp-role-left small { display: block; font-size: 8px; color: #64748b; }
+    .sp-badge-ok { background: #ecfdf5; color: #059669; font-size: 8px; font-weight: 700; padding: 3px 7px; border-radius: 99px; white-space: nowrap; }
+    .sp-side { background: #fafafe; border-inline-start: 1px solid #f1f5f9; padding: 12px 10px; }
+    .sp-side-h { font-size: 9px; font-weight: 800; color: #1e1b4b; margin-bottom: 8px; display: block; }
+    .sp-mini { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+    .sp-mini i { width: 16px; height: 16px; border-radius: 50%; background: #ede9fe; color: #6d28d9; display: grid; place-items: center; font-style: normal; font-size: 8px; font-weight: 800; flex-shrink: 0; }
+    .sp-mini span { font-size: 8px; color: #334155; font-weight: 600; line-height: 1.2; }
+    .sp-trust { padding-top: 48px; text-align: center; }
+    .sp-trust p { font-size: 10px; color: #475569; font-weight: 600; margin-bottom: 12px; }
+    .sp-logos { display: flex; justify-content: center; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .sp-logo-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #312e81; }
+    .sp-logo-dot { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+    .sp-bottom { background: linear-gradient(135deg, #f4f5f9 0%, #f8f5fb 100%); border-radius: 20px; padding: 28px 36px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 26px; align-items: center; border: 1px solid #eef0f6; }
+    .sp-bot-h2 { font-size: 24px; line-height: 1.18; font-weight: 800; color: #1a103c; margin-bottom: 10px; }
+    .sp-bot-p { font-size: 10px; line-height: 1.52; color: #5b5675; margin-bottom: 14px; }
+    .sp-pill-list { display: grid; gap: 8px; }
+    .sp-pill-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 7px; padding: 8px 12px; font-size: 9.5px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+    .sp-cards-collage { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: center; }
+    .sp-gcard { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); border: 1px solid #f1f5f9; text-align: center; padding-bottom: 10px; }
+    .sp-gcard img { width: 100%; height: 58px; }
+    .sp-gcard b { display: block; font-size: 10px; color: #0f172a; margin-top: 8px; }
+    .sp-gcard small { display: block; font-size: 8px; color: #64748b; margin: 2px 0 6px; }
+    .sp-gbtn { display: inline-block; border: 1px solid #c4b5fd; color: #6d28d9; font-size: 8px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+    @media (max-width: 959px) {
+      .page { padding: 16px; height: auto; gap: 20px; }
+      .sp-mock { grid-template-columns: 1fr; margin-bottom: 0; }
+      .sp-rail, .sp-side { display: none; }
+      .sp-trust { padding-top: 12px; }
+      .sp-bottom { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+    }
+    @media (max-width: 600px) {
+      .sp-hero-shell { padding: 14px 16px 18px; }
+      .sp-cards-collage { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="sp-hero-shell">
+      <div class="sp-nav">
+        <span class="sp-clover"><i style="background:#06b6d4"></i><i style="background:#f59e0b"></i><i style="background:#ec4899"></i><i style="background:#8b5cf6"></i></span>
+        <div class="sp-links"><span>About</span><span>Features</span><span>Use Cases</span><span>Testimonials</span></div>
+      </div>
+      <h1 class="sp-h1">Instant Contact Verification For Smarter Outreach</h1>
+      <p class="sp-sub">Our advanced Verification Tool helps you instantly validate emails and phone numbers so you can focus on real connections, not wasted outreach. With real-time accuracy.</p>
+      <span class="sp-cta">Get Started For Free</span>
+      <div class="sp-mock">
+        <div class="sp-rail"><span class="sp-rail-logo">O</span><span>⌂</span><span>✉</span><span>✓</span><span>⚙</span></div>
+        <div class="sp-main">
+          <div class="sp-topbar"><span>🔍 Search verified contacts...</span><span>⚙ Login</span></div>
+          <div class="sp-tabs"><b>All Contacts</b><span>Categories</span><span>Manage</span><span>Saved</span></div>
+          <div class="sp-search-row"><span class="sp-chip-in">Keyword</span><span class="sp-chip-in">Location</span><span class="sp-go">⌕</span></div>
+          <div class="sp-role-card"><div class="sp-role-left"><span class="sp-ico" style="background:#7c3aed">S</span><div><b>Sales & Customer Success Manager</b><small>99.8% Deliverable · Real-Time SMTP</small></div></div><span class="sp-badge-ok">Verified</span></div>
+          <div class="sp-role-card"><div class="sp-role-left"><span class="sp-ico" style="background:#06b6d4">M</span><div><b>Marketing Data Enrichment</b><small>Zero Bounce · Phone + Domain Check</small></div></div><span class="sp-badge-ok">Verified</span></div>
+          <div class="sp-role-card"><div class="sp-role-left"><span class="sp-ico" style="background:#f59e0b">Q</span><div><b>Software Quality Assurance Lead</b><small>CRM Synced · Duplicate Filtered</small></div></div><span class="sp-badge-ok">Verified</span></div>
+        </div>
+        <div class="sp-side">
+          <b class="sp-side-h">Featured Lists</b>
+          <div class="sp-mini"><i>1</i><span>SaaS Decision Makers</span></div>
+          <div class="sp-mini"><i>2</i><span>Enterprise VP Sales</span></div>
+          <div class="sp-mini"><i>3</i><span>Verified Tech Founders</span></div>
+          <div class="sp-mini"><i>4</i><span>Inbound Demo Leads</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sp-trust">
+      <p>Trusted by 60,000+ businesses to accelerate outbound sales and unlock new revenue streams</p>
+      <div class="sp-logos">
+        <span class="sp-logo-item"><i class="sp-logo-dot" style="background:#38bdf8"></i><b>Logoipsum</b></span>
+        <span class="sp-logo-item"><i class="sp-logo-dot" style="background:#06b6d4"></i><b>logoipsum</b></span>
+        <span class="sp-logo-item"><i class="sp-logo-dot" style="background:#a855f7"></i><b>LogoCloud</b></span>
+        <span class="sp-logo-item"><i class="sp-logo-dot" style="background:#6366f1"></i><b>Logoipsum</b></span>
+        <span class="sp-logo-item"><i class="sp-logo-dot" style="background:#0ea5e9"></i><b>LogoSync</b></span>
+      </div>
+    </div>
+    <div class="sp-bottom">
+      <div>
+        <h2 class="sp-bot-h2">Verify Leads Fast, Eliminate Duplicates, Boost ROI</h2>
+        <p class="sp-bot-p">Stop wasting time and ad spend on bad data. Our verification tool instantly checks and validates contact details like emails, phone numbers, and more—so you're only reaching real, qualified leads. Say goodbye to duplicates and fake entries, and start converting with confidence.</p>
+        <div class="sp-pill-list">
+          <div class="sp-pill-row"><span>📋</span><span>Outdated B2B Data Slows Down Your Sales Process.</span></div>
+          <div class="sp-pill-row"><span>🗂</span><span>Direct List Imports Often Contain Invalid Leads.</span></div>
+          <div class="sp-pill-row"><span>☁</span><span>Ensure Every Contact In Your CRM Is Verified.</span></div>
+        </div>
+      </div>
+      <div class="sp-cards-collage">
+        <div class="sp-gcard"><img src="${PHOTOS.softCoding}" alt=""/><b>Programming</b><small>Public Group · 18 members</small><span class="sp-gbtn">View Group</span></div>
+        <div class="sp-gcard"><img src="${PHOTOS.softPhoto}" alt=""/><b>Photography</b><small>Public Group · 9 members</small><span class="sp-gbtn">View Group</span></div>
+        <div class="sp-gcard" style="grid-column: span 2; max-width: 210px; margin: 0 auto; width: 100%;"><img src="${PHOTOS.softTravel}" alt=""/><b>Backpackers Club</b><small>Public Group · 12 members</small><span class="sp-gbtn">View Group</span></div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-project-management-ai': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: radial-gradient(circle at 50% 18%, #e0f2fe 0%, #f8fbff 38%, #ffffff 70%); display: flex; flex-direction: column; justify-content: space-between; padding: 18px 54px 28px; overflow: hidden; }
+    .pm-nav { display: flex; justify-content: space-between; align-items: center; }
+    .pm-brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; color: #0f172a; }
+    .pm-bolt { width: 24px; height: 24px; border-radius: 50%; background: #1da1f2; color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 900; }
+    .pm-cta-solid { background: #1da1f2; color: #ffffff; font-size: 10px; font-weight: 800; padding: 8px 16px; border-radius: 5px; letter-spacing: 0.4px; }
+    .pm-hero { text-align: center; margin-top: 8px; }
+    .pm-h1 { font-size: 32px; line-height: 1.18; font-weight: 800; color: #09090b; max-width: 520px; margin: 0 auto 10px; letter-spacing: -0.5px; }
+    .pm-sub { font-size: 11px; line-height: 1.5; color: #64748b; max-width: 500px; margin: 0 auto 14px; }
+    .pm-cta-outline { display: inline-block; border: 1.5px solid #38bdf8; color: #0284c7; background: #ffffff; font-size: 10px; font-weight: 800; padding: 7px 22px; border-radius: 99px; margin-bottom: 18px; }
+    .pm-dash-wrap { position: relative; max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 50px rgba(2, 132, 199, 0.12); padding: 14px 18px 16px; text-align: start; }
+    .pm-dash-top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 9px; border-bottom: 1px solid #f1f5f9; margin-bottom: 10px; font-size: 9.5px; color: #64748b; }
+    .pm-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+    .pm-kpi { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px 10px; }
+    .pm-kpi small { display: block; font-size: 8px; color: #94a3b8; margin-bottom: 2px; }
+    .pm-kpi b { font-size: 13px; font-weight: 800; }
+    .pm-dash-grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; }
+    .pm-tasks { background: #f8fafc; border-radius: 9px; padding: 10px; font-size: 8.5px; color: #475569; display: grid; gap: 6px; }
+    .pm-task-row { display: flex; justify-content: space-between; padding-bottom: 4px; border-bottom: 1px dashed #e2e8f0; }
+    .pm-bars-card { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 9px; padding: 10px; }
+    .pm-bars { height: 74px; display: flex; align-items: flex-end; gap: 8px; padding-top: 8px; }
+    .pm-bars i { flex: 1; border-radius: 4px 4px 0 0; display: block; }
+    .pm-play-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; background: rgba(15, 23, 42, 0.55); color: #ffffff; display: grid; place-items: center; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .pm-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; align-items: center; margin-top: 12px; }
+    .pm-mid h2 { font-size: 24px; line-height: 1.2; font-weight: 800; color: #09090b; margin-bottom: 10px; }
+    .pm-mid p { font-size: 10.5px; line-height: 1.52; color: #64748b; margin-bottom: 12px; }
+    .pm-chk { display: flex; align-items: flex-start; gap: 8px; font-size: 10px; color: #334155; margin-bottom: 9px; line-height: 1.45; }
+    .pm-chk i { width: 15px; height: 15px; border-radius: 4px; background: #1da1f2; color: #fff; display: inline-grid; place-items: center; font-style: normal; font-size: 9px; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .pm-engage-card { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07); padding: 18px; }
+    .pm-engage-card b { display: block; font-size: 12.5px; color: #0f172a; }
+    .pm-engage-card small { display: block; font-size: 9px; color: #94a3b8; margin-bottom: 10px; }
+    .pm-wave-box { background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .pm-wave-svg { width: 100%; height: 110px; display: block; }
+    .pm-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 8.5px; font-weight: 700; color: #475569; }
+    .pm-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .pm-legend i { width: 14px; height: 5px; border-radius: 99px; display: inline-block; }
+    .pm-foot { text-align: center; padding-top: 8px; }
+    .pm-foot h3 { font-size: 23px; line-height: 1.22; font-weight: 800; color: #09090b; margin-bottom: 6px; }
+    .pm-foot p { font-size: 10.5px; color: #64748b; max-width: 460px; margin: 0 auto 12px; line-height: 1.45; }
+    .pm-peek3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .pm-peek-card { background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 10px 12px; font-size: 10px; font-weight: 700; color: #0369a1; }
+    @media (max-width: 959px) {
+      .page { padding: 16px 20px; height: auto; gap: 22px; }
+      .pm-kpis { grid-template-columns: repeat(2, 1fr); }
+      .pm-mid { grid-template-columns: minmax(0, 1fr); }
+      .pm-peek3 { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .pm-dash-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="pm-nav">
+      <div class="pm-brand"><span class="pm-bolt">⚡</span><b>Logoipsum</b></div>
+      <span class="pm-cta-solid">GET STARTED NOW</span>
+    </div>
+    <div class="pm-hero">
+      <h1 class="pm-h1">The Methodical Approach to Project Management</h1>
+      <p class="pm-sub">Every step of your funnel follows a structured, results-driven process. From planning to execution, AI keeps campaigns organized, efficient, and aligned with your business goals.</p>
+      <span class="pm-cta-outline">WATCH DEMO</span>
+      <div class="pm-dash-wrap">
+        <div class="pm-dash-top"><div class="pm-brand" style="font-size:11px"><span class="pm-bolt" style="width:18px;height:18px;font-size:9px">⚡</span><b>Logoipsum</b></div><span>🔍 Search campaigns & sprints...</span><span>● Active AI Sync</span></div>
+        <div class="pm-kpis">
+          <div class="pm-kpi"><small>Velocity Lift</small><b style="color:#0284c7">52%</b></div>
+          <div class="pm-kpi"><small>Tasks Automated</small><b style="color:#ea580c">18,346</b></div>
+          <div class="pm-kpi"><small>Active Sprints</small><b style="color:#d97706">23</b></div>
+          <div class="pm-kpi"><small>On-Time SLA</small><b style="color:#059669">99.4%</b></div>
+        </div>
+        <div class="pm-dash-grid">
+          <div class="pm-tasks">
+            <div class="pm-task-row"><span>✓ Q4 Funnel Roadmap</span><b>Done</b></div>
+            <div class="pm-task-row"><span>✓ AI Resource Allocation</span><b>Live</b></div>
+            <div class="pm-task-row"><span>✓ Automated Client QA</span><b>98%</b></div>
+            <div class="pm-task-row"><span>✓ Sprint Milestone Sync</span><b>Active</b></div>
+          </div>
+          <div class="pm-bars-card">
+            <div class="pm-bars">
+              <i style="height:48%;background:#38bdf8"></i>
+              <i style="height:82%;background:#0284c7"></i>
+              <i style="height:64%;background:#f59e0b"></i>
+              <i style="height:95%;background:#1da1f2"></i>
+              <i style="height:72%;background:#38bdf8"></i>
+            </div>
+          </div>
+          <div class="pm-play-btn">▶</div>
+        </div>
+      </div>
+    </div>
+    <div class="pm-mid">
+      <div>
+        <h2>Use Our Resources to Deliver Fantastic Customer Service</h2>
+        <p>Our tools give your team the support they need to respond quickly, solve problems effectively, and keep customers happy.</p>
+        <div class="pm-chk"><i>✓</i><span>Streamlined processes cut wait times and make every interaction effortless.</span></div>
+        <div class="pm-chk"><i>✓</i><span>Smart automation keeps your team focused on building strong relationships.</span></div>
+        <div style="margin-top:14px"><span class="pm-cta-solid" style="display:inline-block">GET STARTED NOW</span></div>
+      </div>
+      <div class="pm-engage-card">
+        <b>Engagement Overview</b>
+        <small>Interaction Breakdown · Mon – Sun</small>
+        <div class="pm-wave-box">
+          <svg class="pm-wave-svg" viewBox="0 0 320 110" preserveAspectRatio="none">
+            <path d="M0,55 Q40,18 80,42 T160,30 T240,44 T320,20 L320,62 L0,62 Z" fill="rgba(29,161,242,0.32)"/>
+            <path d="M0,62 Q40,35 80,50 T160,40 T240,52 T320,34" fill="none" stroke="#0284c7" stroke-width="2.5"/>
+            <path d="M0,96 Q45,74 90,88 T180,76 T260,90 T320,72 L320,108 L0,108 Z" fill="rgba(249,115,22,0.26)"/>
+            <path d="M0,96 Q45,74 90,88 T180,76 T260,90 T320,72" fill="none" stroke="#ea580c" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="pm-legend">
+          <span><i style="background:#1da1f2"></i><span>Website Visits</span></span>
+          <span><i style="background:#38bdf8"></i><span>AI Workflows</span></span>
+          <span><i style="background:#fb923c"></i><span>Resolved Tickets</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="pm-foot">
+      <h3>The Features You'll Need to Expand Your Business</h3>
+      <p>Strategic management tools that help you plan smarter, track progress clearly, and scale operations without losing control.</p>
+      <div class="pm-peek3">
+        <div class="pm-peek-card">01 · Automated AI Sprint Planning</div>
+        <div class="pm-peek-card">02 · Real-Time Funnel Bottleneck Alerts</div>
+        <div class="pm-peek-card">03 · Cross-Team Executive Dashboards</div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-b2b-saas': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+    .b2b-topstrip { background: #311b6b; color: #e9d5ff; font-size: 9.5px; font-weight: 700; text-align: center; padding: 7px 20px; }
+    .b2b-topstrip b { color: #34d399; }
+    .b2b-hero { background: linear-gradient(135deg, #e8effc 0%, #f5f8ff 50%, #eaeefc 100%); padding: 20px 56px 68px; text-align: center; }
+    .b2b-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .b2b-brand { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 800; color: #111827; }
+    .b2b-sun { width: 22px; height: 22px; border-radius: 50%; background: #f15a29; color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 900; }
+    .b2b-links { display: flex; gap: 18px; font-size: 10.5px; font-weight: 700; color: #1f2937; }
+    .b2b-kicker { font-size: 14.5px; font-weight: 600; color: #311b6b; margin-bottom: 6px; font-style: italic; }
+    .b2b-h1 { font-size: 44px; line-height: 1.08; font-weight: 900; color: #22b573; margin-bottom: 12px; letter-spacing: -0.7px; }
+    .b2b-sub { font-size: 12.5px; line-height: 1.48; font-weight: 800; color: #1f2937; max-width: 470px; margin: 0 auto 20px; }
+    .b2b-btns { display: flex; justify-content: center; gap: 12px; margin-bottom: 9px; flex-wrap: wrap; }
+    .b2b-btn-orange { background: #f15a29; color: #ffffff; font-size: 11px; font-weight: 800; padding: 11px 22px; border-radius: 5px; box-shadow: 0 10px 22px rgba(241, 90, 41, 0.28); }
+    .b2b-btn-purple { background: #3c2179; color: #ffffff; font-size: 11px; font-weight: 800; padding: 11px 20px; border-radius: 5px; }
+    .b2b-micro { font-size: 9px; color: #64748b; margin-bottom: 18px; }
+    .b2b-checks { display: flex; justify-content: center; gap: 20px; font-size: 10px; font-weight: 800; color: #1e293b; flex-wrap: wrap; }
+    .b2b-checks span i { color: #22b573; font-style: normal; margin-inline-end: 4px; }
+    .b2b-icons-bar { max-width: 680px; width: calc(100% - 64px); margin: -40px auto 30px; background: #ffffff; border-radius: 12px; box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08); border: 1px solid #f1f5f9; padding: 18px 20px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; text-align: center; }
+    .b2b-ic-item i { width: 36px; height: 36px; margin: 0 auto 7px; border-radius: 9px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; display: grid; place-items: center; font-style: normal; font-size: 15px; font-weight: 800; }
+    .b2b-ic-item span { display: block; font-size: 8.5px; font-weight: 800; color: #1e293b; }
+    .b2b-proof { padding: 4px 56px 26px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .b2b-stars { color: #f15a29; font-size: 13px; letter-spacing: 2px; margin-bottom: 4px; }
+    .b2b-script { color: #22b573; font-size: 13.5px; font-style: italic; font-weight: 700; margin-bottom: 5px; }
+    .b2b-h2 { font-size: 22px; line-height: 1.24; font-weight: 900; color: #111827; margin-bottom: 20px; }
+    .b2b-tgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 690px; margin: 0 auto 22px; }
+    .b2b-tcard { background: #ffffff; border-radius: 10px; border: 1px solid #f1f5f9; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); padding: 22px 16px; text-align: center; }
+    .b2b-avatar { width: 68px; height: 68px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; border: 3px solid #ecfdf5; }
+    .b2b-avatar img { width: 100%; height: 100%; }
+    .b2b-tcard b { display: block; font-size: 11.5px; color: #0f172a; }
+    .b2b-tcard small { display: block; font-size: 8.5px; color: #10b981; font-weight: 700; margin-bottom: 10px; }
+    .b2b-tcard p { font-size: 9.2px; line-height: 1.56; color: #475569; }
+    .b2b-rate-note { font-size: 8.5px; color: #475569; line-height: 1.35; margin-top: 4px; }
+    .b2b-foot-band { background: #f6f9fc; border-top: 1px solid #e2e8f0; padding: 26px 84px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 28px; align-items: center; }
+    .b2b-foot-band h3 { font-size: 19px; line-height: 1.22; font-weight: 900; color: #0f172a; margin-bottom: 6px; max-width: 260px; }
+    .b2b-foot-band p { font-size: 9.8px; line-height: 1.5; color: #64748b; max-width: 310px; }
+    .b2b-foot-visual { background: linear-gradient(135deg, #3c2179 0%, #2b1963 60%, #1e3a8a 100%); color: #ffffff; border-radius: 12px; min-height: 92px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 800; box-shadow: 0 14px 30px rgba(60, 33, 121, 0.24); border: 1px solid rgba(255, 255, 255, 0.14); }
+    @media (max-width: 959px) {
+      .page { height: auto; }
+      .b2b-hero, .b2b-proof, .b2b-foot-band { padding-inline: 20px; }
+      .b2b-icons-bar { width: calc(100% - 32px); grid-template-columns: repeat(3, 1fr); }
+      .b2b-tgrid { grid-template-columns: minmax(0, 1fr); }
+      .b2b-foot-band { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .b2b-h1 { font-size: 30px; }
+      .b2b-icons-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="b2b-topstrip"><span>Limited Time: </span><b>Save BIG With Our SaaS Marketing Agency Funnels</b></div>
+    <div class="b2b-hero">
+      <div class="b2b-nav">
+        <div class="b2b-brand"><span class="b2b-sun">☀</span><b>Logoipsum</b></div>
+        <div class="b2b-links"><span>Services</span><span>Features</span><span>FAQs</span></div>
+      </div>
+      <div class="b2b-kicker">Afraid You Won't Be Able To Get A Regular Flow Of Customers?</div>
+      <h1 class="b2b-h1">Boost Your B2B SaaS</h1>
+      <p class="b2b-sub">What We Do Best Is Attract Traffic To Your Website And Convert It Into Contented, Paying Customers.</p>
+      <div class="b2b-btns">
+        <span class="b2b-btn-orange">Begin Your Free Trial Today!</span>
+        <span class="b2b-btn-purple">▶ Watch Free Demo Videos</span>
+      </div>
+      <div class="b2b-micro">Cancel Anytime • No Contracts</div>
+      <div class="b2b-checks">
+        <span><i>✔</i><span>Zero Computer Skills Needed</span></span>
+        <span><i>✔</i><span>For Every Type Of Business</span></span>
+        <span><i>✔</i><span>Market, Sell, And Deliver</span></span>
+      </div>
+    </div>
+    <div class="b2b-icons-bar">
+      <div class="b2b-ic-item"><i>⇶</i><span>Sales Funnels</span></div>
+      <div class="b2b-ic-item"><i>⊞</i><span>Landing Pages</span></div>
+      <div class="b2b-ic-item"><i>📈</i><span>Lead Capture</span></div>
+      <div class="b2b-ic-item"><i>⚙</i><span>Conversion Tools</span></div>
+      <div class="b2b-ic-item"><i>$</i><span>Revenue Growth</span></div>
+      <div class="b2b-ic-item"><i>🚀</i><span>Marketing Funnels</span></div>
+    </div>
+    <div class="b2b-proof">
+      <div class="b2b-stars">★★★★★</div>
+      <div class="b2b-script">Meet people who know us...</div>
+      <h2 class="b2b-h2">World Class Entrepreneur Attract Traffic To Your Website</h2>
+      <div class="b2b-tgrid">
+        <div class="b2b-tcard">
+          <div class="b2b-avatar"><img src="${PHOTOS.b2bAvatar1}" alt=""/></div>
+          <b>John Doe</b><small>Verified Client</small>
+          <p>This platform made the entire process smooth and reliable. Setting things up was easy, and I immediately noticed how much faster my workflow became. The tools are simple to use, yet powerful enough to handle complex needs.</p>
+        </div>
+        <div class="b2b-tcard">
+          <div class="b2b-avatar"><img src="${PHOTOS.b2bAvatar2}" alt=""/></div>
+          <b>Mark Vance</b><small>Verified Client</small>
+          <p>The features are designed with users in mind, making every task feel intuitive and straightforward. I was able to cut down hours of manual work and focus more on growing my business. Support has also been excellent throughout.</p>
+        </div>
+        <div class="b2b-tcard">
+          <div class="b2b-avatar"><img src="${PHOTOS.b2bAvatar3}" alt=""/></div>
+          <b>Jane Doe</b><small>Verified Client</small>
+          <p>From the first day, I could see how much efficiency this solution brought to my team. Managing multiple projects became less stressful, and the smart automation gave us more time to focus on clients instead of admin work.</p>
+        </div>
+      </div>
+      <div><span class="b2b-btn-orange" style="display:inline-block">Begin Your Free Trial Today!</span></div>
+      <div class="b2b-micro" style="margin:5px 0 6px">Cancel Anytime • No Contracts</div>
+      <div class="b2b-stars" style="font-size:11px">★★★★★</div>
+      <div class="b2b-rate-note">Your Company Is Rated Excellent · 4.9 out of 5 based on 1,312 reviews</div>
+    </div>
+    <div class="b2b-foot-band">
+      <div>
+        <h3>Building Strong Foundations for Growth</h3>
+        <p>Clear strategies help transform pipeline challenges into predictable recurring ARR opportunities.</p>
+      </div>
+      <div class="b2b-foot-visual"><span>SaaS Growth Engine · +312% Pipeline</span><span>✈</span></div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-medical-solution': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+    .med-nav { background: #ffffff; padding: 12px 54px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
+    .med-brand { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13.5px; color: #0f172a; }
+    .med-brand i { width: 22px; height: 22px; border-radius: 50%; background: #2ac3e2; color: #fff; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 900; }
+    .med-links { display: flex; gap: 18px; font-size: 10px; font-weight: 700; color: #334155; }
+    .med-hero { position: relative; height: 315px; background: #07192d; overflow: hidden; display: flex; align-items: center; padding: 0 74px; }
+    .med-hero img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.42; object-position: center 25%; }
+    .med-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7, 25, 45, 0.92) 0%, rgba(7, 25, 45, 0.65) 58%, rgba(7, 25, 45, 0.35) 100%); }
+    [dir="rtl"] .med-overlay { background: linear-gradient(270deg, rgba(7, 25, 45, 0.92) 0%, rgba(7, 25, 45, 0.65) 58%, rgba(7, 25, 45, 0.35) 100%); }
+    .med-hero-copy { position: relative; z-index: 2; max-width: 420px; color: #ffffff; }
+    .med-eyebrow { color: #2ac3e2; font-size: 11px; font-weight: 800; margin-bottom: 6px; }
+    .med-h1 { font-size: 32px; line-height: 1.12; font-weight: 900; margin-bottom: 12px; }
+    .med-h1 em { font-style: normal; color: #2ac3e2; display: block; }
+    .med-bullets { display: grid; gap: 5px; margin-bottom: 16px; font-size: 10.5px; color: #e2e8f0; }
+    .med-bullets span i { color: #2ac3e2; font-style: normal; font-weight: 900; margin-inline-end: 6px; }
+    .med-btn { display: inline-block; background: #2ac3e2; color: #042037; font-size: 10.5px; font-weight: 900; padding: 9px 20px; border-radius: 99px; box-shadow: 0 10px 24px rgba(42, 195, 226, 0.32); }
+    .med-seen { background: #102a4c; color: #ffffff; padding: 14px 54px 16px; text-align: center; }
+    .med-seen small { display: block; color: #38bdf8; font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+    .med-seen-logos { display: flex; justify-content: center; gap: 34px; align-items: center; font-size: 12px; font-weight: 800; color: #e2e8f0; flex-wrap: wrap; }
+    .med-mid { background: #f4f8fb; padding: 30px 64px; text-align: center; }
+    .med-italic-kicker { color: #2ac3e2; font-size: 12px; font-style: italic; font-weight: 700; margin-bottom: 3px; }
+    .med-h2 { font-size: 23px; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+    .med-sub { font-size: 10px; line-height: 1.5; color: #64748b; max-width: 500px; margin: 0 auto 20px; }
+    .med-cards4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 680px; margin: 0 auto; }
+    .med-fcard { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px 12px; text-align: center; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.03); }
+    .med-circle { width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid #67e8f9; background: #ecfeff; color: #0891b2; margin: 0 auto 10px; display: grid; place-items: center; font-size: 13px; font-weight: 900; }
+    .med-fcard b { display: block; font-size: 10px; line-height: 1.38; color: #0f172a; font-weight: 800; }
+    .med-bot { background: #ffffff; padding: 30px 74px 28px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .med-bot-head { text-align: center; margin-bottom: 18px; }
+    .med-split { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 28px; align-items: center; max-width: 680px; margin: 0 auto; }
+    .med-split h3 { font-size: 17px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+    .med-split p { font-size: 9.8px; line-height: 1.55; color: #475569; margin-bottom: 9px; }
+    .med-mini-chk { font-size: 10px; font-weight: 800; color: #0891b2; }
+    .med-photo { height: 188px; border-radius: 8px; overflow: hidden; box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1); }
+    .med-photo img { width: 100%; height: 100%; }
+    @media (max-width: 959px) {
+      .page { height: auto; }
+      .med-nav, .med-hero, .med-seen, .med-mid, .med-bot { padding-inline: 20px; }
+      .med-cards4 { grid-template-columns: repeat(2, 1fr); }
+      .med-split { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .med-cards4 { grid-template-columns: minmax(0, 1fr); }
+      .med-hero { height: auto; padding-block: 28px; }
+    }
+  </style></head><body><div class="page">
+    <div class="med-nav">
+      <div class="med-brand"><i>⚡</i><b>Logoipsum</b></div>
+      <div class="med-links"><span>Features & Benefits</span><span>100% Guarantee</span><span>Testimonials</span><span>FAQs</span></div>
+    </div>
+    <div class="med-hero">
+      <img src="${PHOTOS.medDoctorsLab}" alt=""/>
+      <div class="med-overlay"></div>
+      <div class="med-hero-copy">
+        <div class="med-eyebrow">Filter Efficiency Above 99%</div>
+        <h1 class="med-h1">Grab Your N95 Mask Now Up to <em>70% Off!</em></h1>
+        <div class="med-bullets">
+          <span><i>✓</i><span>High-performance filter fabric</span></span>
+          <span><i>✓</i><span>99% particle filtration efficiency</span></span>
+          <span><i>✓</i><span>Captures particles as small as 0.3 microns</span></span>
+        </div>
+        <span class="med-btn">Get Your N95 Mask Now!</span>
+      </div>
+    </div>
+    <div class="med-seen">
+      <small>As Seen On</small>
+      <div class="med-seen-logos"><span>MedWatch</span><span>⇄ Logoipsum</span><span>✚ HealthPlus</span><span>⚡ BioShield</span><span>✺ CareStandard</span></div>
+    </div>
+    <div class="med-mid">
+      <div class="med-italic-kicker">Protective N95 Mask</div>
+      <h2 class="med-h2">Take Care of You And Your Family</h2>
+      <p class="med-sub">With our comprehensive plans, you can be sure your loved ones are covered. We offer reliable, flexible solutions designed to give you peace of mind in every season of life.</p>
+      <div class="med-cards4">
+        <div class="med-fcard"><div class="med-circle">HEPA</div><b>Advanced 4-Stage HEPA Filtration</b></div>
+        <div class="med-fcard"><div class="med-circle">3D</div><b>Dust, Virus & Bacteria Protection</b></div>
+        <div class="med-fcard"><div class="med-circle">🛡</div><b>Shaped for Comfort. Built for Safety.</b></div>
+        <div class="med-fcard"><div class="med-circle">≈</div><b>Soft on Ears, Light on Your Face</b></div>
+      </div>
+    </div>
+    <div class="med-bot">
+      <div class="med-bot-head">
+        <div class="med-italic-kicker">Your Protection Starts with N95</div>
+        <h2 class="med-h2">The #1 Rated Protective N95 Mask</h2>
+        <p class="med-sub" style="margin-bottom:0">Stay safe with the highest level of defense. Our N95 masks provide superior filtration, offering you and your family ultimate peace of mind.</p>
+      </div>
+      <div class="med-split">
+        <div>
+          <h3>Ultra-High Filtration Power</h3>
+          <p>Our advanced N95 masks are engineered with cutting-edge technology to provide maximum protection. The multi-layered design effectively filters out airborne particles, ensuring the air you breathe is clean.</p>
+          <p>Lightweight ergonomic contours ensure a snug, secure seal without discomfort—allowing optimal breathability while delivering hospital-grade defense all day long.</p>
+          <div class="med-mini-chk">✓ High-performance 4-layer filter fabric</div>
+        </div>
+        <div class="med-photo"><img src="${PHOTOS.medWomanMask}" alt=""/></div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-product-development': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #100818; display: flex; flex-direction: column; overflow: hidden; }
+    .pd-topstrip { background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%); color: #ffffff; font-size: 9.5px; font-weight: 700; text-align: center; padding: 6px 20px; }
+    .pd-hero { background: radial-gradient(circle at 20% 58%, rgba(168, 85, 247, 0.36), transparent 48%), radial-gradient(circle at 82% 24%, rgba(236, 72, 153, 0.2), transparent 44%), #100818; color: #ffffff; padding: 20px 56px 46px; text-align: center; }
+    .pd-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .pd-brand { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 800; color: #ffffff; }
+    .pd-clover { width: 20px; height: 20px; border-radius: 6px; background: linear-gradient(135deg, #34d399, #60a5fa, #f472b6); display: inline-block; }
+    .pd-pill-btn { display: inline-block; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(244, 114, 182, 0.55); color: #ffffff; font-size: 9.5px; font-weight: 700; padding: 8px 20px; border-radius: 99px; }
+    .pd-h1 { font-size: 33px; line-height: 1.15; font-weight: 800; max-width: 560px; margin: 0 auto 12px; letter-spacing: -0.5px; }
+    .pd-sub { font-size: 10.5px; line-height: 1.58; color: #cbd5e1; max-width: 540px; margin: 0 auto 20px; }
+    .pd-logos-wrap { margin: 26px 0 28px; }
+    .pd-logos-wrap small { display: block; font-size: 9.5px; color: #e2e8f0; margin-bottom: 12px; font-weight: 600; }
+    .pd-logos { display: flex; justify-content: center; gap: 26px; flex-wrap: wrap; font-size: 12px; font-weight: 800; color: #f8fafc; }
+    .pd-logos span i { color: #f472b6; font-style: normal; margin-inline-end: 4px; }
+    .pd-bento { max-width: 650px; margin: 0 auto; background: rgba(24, 16, 38, 0.9); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 18px; padding: 20px; display: grid; grid-template-columns: 0.9fr 1.25fr 0.85fr; gap: 14px; text-align: start; box-shadow: 0 24px 52px rgba(0, 0, 0, 0.48); }
+    .pd-panel { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 15px 14px; display: flex; flex-direction: column; justify-content: space-between; }
+    .pd-gauge { position: relative; text-align: center; padding-top: 8px; }
+    .pd-gauge svg { width: 132px; height: 78px; margin: 0 auto; display: block; }
+    .pd-gauge b { display: block; font-size: 17px; font-weight: 900; color: #fff; margin-top: -28px; }
+    .pd-gauge small { display: block; font-size: 8.5px; color: #cbd5e1; margin-top: 5px; }
+    .pd-tags3 { display: flex; justify-content: center; gap: 5px; margin-top: 12px; }
+    .pd-tags3 span { font-size: 7.5px; font-weight: 700; padding: 3px 7px; border-radius: 99px; background: rgba(244, 114, 182, 0.22); color: #fbcfe8; }
+    .pd-timeline-h { text-align: center; margin-bottom: 10px; }
+    .pd-timeline-h b { display: block; font-size: 11px; color: #ffffff; margin-bottom: 2px; }
+    .pd-timeline-h small { font-size: 8.5px; color: #94a3b8; }
+    .pd-years { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; position: relative; padding-top: 10px; }
+    .pd-year-col { border-top: 2px solid #a855f7; padding-top: 10px; }
+    .pd-year-col b { display: block; font-size: 11px; color: #f472b6; margin-bottom: 4px; }
+    .pd-year-col p { font-size: 8px; line-height: 1.42; color: #cbd5e1; }
+    .pd-vbars { height: 128px; display: flex; align-items: flex-end; justify-content: space-between; gap: 9px; padding-top: 10px; }
+    .pd-vbar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+    .pd-vbar small { font-size: 9px; font-weight: 800; color: #ffffff; }
+    .pd-vbar i { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #f472b6 0%, #818cf8 100%); display: block; }
+    .pd-white { background: #ffffff; color: #0f172a; padding: 48px 74px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 32px; align-items: center; }
+    .pd-kicker-blue { font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #6366f1; text-transform: uppercase; margin-bottom: 8px; }
+    .pd-white h2 { font-size: 25px; line-height: 1.2; font-weight: 900; color: #09090b; margin-bottom: 10px; }
+    .pd-white p { font-size: 10.5px; line-height: 1.58; color: #475569; margin-bottom: 18px; }
+    .pd-dark-cta { display: inline-block; background: #180c24; color: #ffffff; font-size: 10px; font-weight: 800; padding: 10px 22px; border-radius: 99px; border: 1px solid #ec4899; box-shadow: 0 10px 24px rgba(24, 12, 36, 0.18); }
+    .pd-stat-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .pd-scard { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; }
+    .pd-scard strong { display: block; font-size: 22px; font-weight: 900; color: #6d28d9; margin-bottom: 3px; }
+    .pd-scard span { font-size: 10px; color: #475569; font-weight: 600; }
+    .pd-bot { background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.16), transparent 62%), #100818; color: #ffffff; padding: 34px 64px 32px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+    .pd-bot-top { text-align: center; max-width: 580px; margin: 0 auto; }
+    .pd-bot-top h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .pd-bot-top p { font-size: 10.2px; line-height: 1.55; color: #94a3b8; }
+    .pd-workflow-row { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 28px; align-items: center; max-width: 660px; margin: 0 auto; width: 100%; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 22px; }
+    .pd-wf-left small { display: block; color: #60a5fa; font-size: 9px; font-weight: 800; letter-spacing: 1.2px; margin-bottom: 5px; }
+    .pd-wf-left h3 { font-size: 18px; line-height: 1.26; font-weight: 800; color: #ffffff; }
+    .pd-tiles { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; background: rgba(16, 8, 24, 0.72); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 10px; position: relative; }
+    .pd-tile { width: 31px; height: 31px; border-radius: 7px; display: grid; place-items: center; font-size: 10.5px; font-weight: 900; color: #fff; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35); }
+    @media (max-width: 959px) {
+      .page { height: auto; }
+      .pd-hero, .pd-white, .pd-bot { padding-inline: 20px; }
+      .pd-bento, .pd-white, .pd-workflow-row { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .pd-stat-cards { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style></head><body><div class="page">
+    <div class="pd-topstrip">Get the insights you need—right when you need them. Learn more!</div>
+    <div class="pd-hero">
+      <div class="pd-nav">
+        <div class="pd-brand"><span class="pd-clover"></span><b>Logoipsum</b></div>
+        <span class="pd-pill-btn">Get Insights Now</span>
+      </div>
+      <h1 class="pd-h1">Product Development with Valuable Customer Insights</h1>
+      <p class="pd-sub">Our platform empowers you to capture meaningful insights from your customers, employees, or stakeholders in real time. With advanced analytics and intuitive reporting, you can turn feedback into actionable strategies that drive growth.</p>
+      <span class="pd-pill-btn">Get Insights Now</span>
+      <div class="pd-logos-wrap">
+        <small>Transforming How Leading Companies Innovate with Customer Feedback</small>
+        <div class="pd-logos">
+          <span><i>❖</i><span>Logoipsum</span></span>
+          <span><i>✦</i><span>PulseLabs</span></span>
+          <span><i>❖</i><span>CloudScale</span></span>
+          <span><i>✦</i><span>MetricFlow</span></span>
+          <span><i>❖</i><span>NovaStack</span></span>
+        </div>
+      </div>
+      <div class="pd-bento">
+        <div class="pd-panel">
+          <div class="pd-gauge">
+            <svg viewBox="0 0 120 70">
+              <path d="M14,60 A46,46 0 0,1 106,60" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="10" stroke-linecap="round"/>
+              <path d="M14,60 A46,46 0 0,1 94,28" fill="none" stroke="#ec4899" stroke-width="10" stroke-linecap="round"/>
+            </svg>
+            <b>73%</b>
+            <small>Adopted Feature Velocity</small>
+          </div>
+          <div class="pd-tags3"><span>Feedback</span><span>Insights</span><span>Roadmap</span></div>
+        </div>
+        <div class="pd-panel">
+          <div class="pd-timeline-h"><b>Continuous Product Discovery</b><small>Real-time sentiment & roadmap alignment</small></div>
+          <div class="pd-years">
+            <div class="pd-year-col"><b>2022</b><p>Centralized multi-channel user feedback intake.</p></div>
+            <div class="pd-year-col"><b>2023</b><p>Automated AI theme clustering & sprint scoring.</p></div>
+            <div class="pd-year-col"><b>2024</b><p>Predictive revenue impact & instant release loops.</p></div>
+          </div>
+        </div>
+        <div class="pd-panel">
+          <div class="pd-vbars">
+            <div class="pd-vbar"><small>19</small><i style="height:26%"></i></div>
+            <div class="pd-vbar"><small>78</small><i style="height:82%"></i></div>
+            <div class="pd-vbar"><small>68</small><i style="height:68%"></i></div>
+            <div class="pd-vbar"><small>82</small><i style="height:92%"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pd-white">
+      <div>
+        <div class="pd-kicker-blue">VERIFIED CUSTOMER FEEDBACK INSIGHTS</div>
+        <h2>Prioritize Every Release With Real User Evidence</h2>
+        <p>Eliminate roadmap guesswork by connecting live customer interviews, NPS signals, and feature requests directly to engineering sprints.</p>
+        <span class="pd-dark-cta">Get Insights Now</span>
+      </div>
+      <div class="pd-stat-cards">
+        <div class="pd-scard"><strong>3.4x</strong><span>Faster Feature Validation</span></div>
+        <div class="pd-scard"><strong>94%</strong><span>Stakeholder Alignment</span></div>
+        <div class="pd-scard"><strong>-48%</strong><span>Wasted Sprint Cycles</span></div>
+        <div class="pd-scard"><strong>24/7</strong><span>Live Feedback Sync</span></div>
+      </div>
+    </div>
+    <div class="pd-bot">
+      <div class="pd-bot-top">
+        <h2>Converting Customer Feedback into Actionable Strategies</h2>
+        <p>Trusted by industry leaders, our platform enables you to make confident, data-driven product decisions that deliver measurable results.</p>
+      </div>
+      <div class="pd-workflow-row">
+        <div class="pd-wf-left">
+          <small>SIMPLIFY</small>
+          <h3>From Feedback to Action in One Unified Workflow</h3>
+        </div>
+        <div class="pd-tiles">
+          <span class="pd-tile" style="background:#0284c7">E</span>
+          <span class="pd-tile" style="background:#e11d48">M</span>
+          <span class="pd-tile" style="background:#16a34a">🌱</span>
+          <span class="pd-tile" style="background:#d97706">G</span>
+          <span class="pd-tile" style="background:#2563eb">❄</span>
+          <span class="pd-tile" style="background:#059669">ZF</span>
+          <span class="pd-tile" style="background:#ea580c">⛩</span>
+        </div>
+      </div>
+    </div>
+  </div></body></html>`,
+
+  'upklick-funnel-coaching-collective': `<!doctype html><html><head><style>${sharedCss}
+    .page { width: 960px; height: 1240px; background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+    .cc-hero-wrap { background: radial-gradient(circle at 18% 72%, rgba(103, 232, 249, 0.28), transparent 42%), radial-gradient(circle at 78% 28%, rgba(196, 181, 253, 0.36), transparent 48%), linear-gradient(90deg, rgba(226,232,240,0.35) 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(180deg, rgba(226,232,240,0.35) 1px, transparent 1px) 0 0 / 28px 28px, #fcfcff; padding: 16px 64px 0; }
+    .cc-nav { background: linear-gradient(90deg, #6d28d9 0%, #7c3aed 100%); color: #ffffff; border-radius: 999px; padding: 8px 10px 8px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 12px 28px rgba(109, 40, 217, 0.24); margin-bottom: 24px; }
+    .cc-brand { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; }
+    .cc-brand i { background: rgba(255,255,255,0.2); padding: 3px 6px; border-radius: 99px; font-style: normal; font-size: 9px; }
+    .cc-links { display: flex; gap: 18px; font-size: 10px; font-weight: 600; color: #ede9fe; }
+    .cc-nav-btn { background: #ffffff; color: #5b21b6; font-size: 9.5px; font-weight: 800; padding: 6px 14px; border-radius: 99px; }
+    .cc-hero-grid { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 24px; align-items: end; }
+    .cc-hero-copy { padding-bottom: 28px; }
+    .cc-cohort-pill { display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 99px; padding: 3px 11px 3px 4px; font-size: 9px; color: #475569; font-weight: 600; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(15,23,42,0.04); }
+    .cc-cohort-pill b { background: #7c3aed; color: #ffffff; font-size: 8px; font-weight: 800; padding: 2px 7px; border-radius: 99px; }
+    .cc-h1 { font-size: 34px; line-height: 1.08; font-weight: 900; color: #09090b; letter-spacing: -0.8px; margin-bottom: 12px; max-width: 390px; }
+    .cc-sub { font-size: 10.2px; line-height: 1.55; color: #334155; margin-bottom: 16px; max-width: 400px; }
+    .cc-sub b { color: #09090b; font-weight: 800; }
+    .cc-cta-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .cc-btn-purple { background: #7c3aed; color: #ffffff; font-size: 10px; font-weight: 800; padding: 10px 18px; border-radius: 99px; box-shadow: 0 10px 24px rgba(124, 58, 237, 0.3); }
+    .cc-link-how { font-size: 10px; font-weight: 800; color: #0f172a; }
+    .cc-mini-stats { display: flex; gap: 26px; flex-wrap: wrap; }
+    .cc-mstat strong { display: block; font-size: 17px; font-weight: 900; color: #09090b; }
+    .cc-mstat span { font-size: 7.5px; font-weight: 800; letter-spacing: 0.6px; color: #64748b; text-transform: uppercase; }
+    .cc-hero-photo { height: 340px; border-radius: 18px 18px 0 0; overflow: hidden; box-shadow: 0 -8px 30px rgba(109, 40, 217, 0.08); }
+    .cc-hero-photo img { width: 100%; height: 100%; object-position: center top; }
+    .cc-mid { background: #ffffff; padding: 30px 64px; text-align: center; }
+    .cc-kicker { font-size: 8.5px; font-weight: 800; letter-spacing: 1.2px; color: #7c3aed; text-transform: uppercase; margin-bottom: 4px; }
+    .cc-h2 { font-size: 21px; font-weight: 900; color: #09090b; margin-bottom: 4px; }
+    .cc-h2 em { font-style: normal; color: #7c3aed; }
+    .cc-mid-sub { font-size: 9.8px; color: #64748b; margin-bottom: 16px; }
+    .cc-partners { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 650px; margin: 0 auto 16px; }
+    .cc-partner { background: #f5f3ff; border-radius: 8px; padding: 9px 8px; font-size: 9.5px; font-weight: 800; color: #1e1b4b; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .cc-partner i { width: 14px; height: 14px; border-radius: 4px; background: #7c3aed; color: #fff; font-style: normal; font-size: 8px; display: grid; place-items: center; }
+    .cc-big-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 650px; margin: 0 auto; }
+    .cc-bstat { background: #ffffff; border: 1px solid #ede9fe; border-top: 3px solid #7c3aed; border-radius: 12px; padding: 14px 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); }
+    .cc-bstat.cyan { border-top-color: #22d3ee; }
+    .cc-bstat strong { display: block; font-size: 22px; font-weight: 900; color: #09090b; margin-bottom: 3px; }
+    .cc-bstat span { font-size: 9px; color: #64748b; font-weight: 600; }
+    .cc-story { background: #f4f4f6; padding: 28px 74px; flex: 1; display: grid; grid-template-columns: 0.86fr 1.14fr; gap: 32px; align-items: center; }
+    .cc-portrait-wrap { position: relative; max-width: 260px; margin: 0 auto; width: 100%; }
+    .cc-portrait { height: 270px; border-radius: 16px; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 18px 38px rgba(15, 23, 42, 0.1); }
+    .cc-portrait img { width: 100%; height: 100%; object-position: center top; }
+    .cc-exp-chip { position: absolute; top: 14px; inset-inline-end: -14px; background: #7c3aed; color: #ffffff; padding: 7px 12px; border-radius: 9px; box-shadow: 0 10px 22px rgba(124, 58, 237, 0.32); }
+    .cc-exp-chip b { display: block; font-size: 13px; font-weight: 900; line-height: 1.1; }
+    .cc-exp-chip small { font-size: 7px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: #ede9fe; }
+    .cc-cred-card { position: absolute; bottom: -10px; inset-inline-start: -10px; inset-inline-end: 18px; background: #ffffff; border-radius: 10px; padding: 9px 11px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1); border: 1px solid #f1f5f9; }
+    .cc-cred-card b { display: block; font-size: 7.5px; letter-spacing: 0.8px; color: #7c3aed; margin-bottom: 2px; }
+    .cc-cred-card span { display: block; font-size: 8px; line-height: 1.35; color: #334155; font-weight: 600; }
+    .cc-story-copy h3 { font-size: 22px; line-height: 1.16; font-weight: 900; color: #09090b; margin-bottom: 10px; }
+    .cc-cyan-quote { background: #def7fa; border-radius: 8px; padding: 9px 12px; font-size: 10px; line-height: 1.45; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+    .cc-story-copy p { font-size: 9.2px; line-height: 1.55; color: #475569; margin-bottom: 8px; }
+    .cc-story-copy p b { color: #09090b; }
+    .cc-sig { margin-top: 8px; }
+    .cc-sig b { display: block; font-size: 15px; font-style: italic; font-weight: 900; color: #7c3aed; }
+    .cc-sig small { font-size: 8px; color: #64748b; }
+    @media (max-width: 959px) {
+      .page { height: auto; }
+      .cc-hero-wrap, .cc-mid, .cc-story { padding-inline: 20px; }
+      .cc-hero-grid, .cc-story { grid-template-columns: minmax(0, 1fr); }
+      .cc-partners { grid-template-columns: repeat(2, 1fr); }
+      .cc-big-stats { grid-template-columns: minmax(0, 1fr); }
+      .cc-exp-chip { inset-inline-end: 8px; }
+      .cc-cred-card { inset-inline-start: 8px; }
+    }
+    @media (max-width: 600px) {
+      .cc-links { display: none; }
+      .cc-h1 { font-size: 28px; }
+      .cc-hero-photo { height: 250px; }
+    }
+  </style></head><body><div class="page">
+    <div class="cc-hero-wrap">
+      <div class="cc-nav">
+        <div class="cc-brand"><i>∞</i><b>The Compound Collective</b></div>
+        <div class="cc-links"><span>Home</span><span>About ▾</span><span>Contact</span></div>
+        <span class="cc-nav-btn">Get The Free Guide →</span>
+      </div>
+      <div class="cc-hero-grid">
+        <div class="cc-hero-copy">
+          <div class="cc-cohort-pill"><b>NEW</b><span>Cohort 09 · coaching that compounds</span></div>
+          <h1 class="cc-h1">Build a Smarter Coaching Business That Drives Real Results.</h1>
+          <p class="cc-sub">Led by an <b>ICF-certified coach with 11 years in the field</b>, The Compound Collective has trained 340+ independent operators. Last cohort averaged <b>3x higher client retention</b> and <b>47% more revenue</b> in under 90 days.</p>
+          <div class="cc-cta-row">
+            <span class="cc-btn-purple">Send Me The Free Guide →</span>
+            <span class="cc-link-how">See how it works →</span>
+          </div>
+          <div class="cc-mini-stats">
+            <div class="cc-mstat"><strong>100+</strong><span>COACHES TRAINED</span></div>
+            <div class="cc-mstat"><strong>47%</strong><span>AVG REVENUE LIFT</span></div>
+            <div class="cc-mstat"><strong>42 hrs</strong><span>BACK PER MONTH</span></div>
+          </div>
+        </div>
+        <div class="cc-hero-photo"><img src="${PHOTOS.coachWomanBlazer}" alt=""/></div>
+      </div>
+    </div>
+    <div class="cc-mid">
+      <div class="cc-kicker">TRUSTED BY</div>
+      <h2 class="cc-h2">Trusted By <em>Industry Leaders</em></h2>
+      <p class="cc-mid-sub">Agencies, consultants, and coaching studios building their engine on the same framework.</p>
+      <div class="cc-partners">
+        <span class="cc-partner"><i>◈</i><span>Northwind</span></span>
+        <span class="cc-partner"><i>◈</i><span>Brightpath</span></span>
+        <span class="cc-partner"><i>◈</i><span>Apex Advisory</span></span>
+        <span class="cc-partner"><i>◈</i><span>Crestline</span></span>
+        <span class="cc-partner"><i>◈</i><span>Elevate Co</span></span>
+      </div>
+      <div class="cc-big-stats">
+        <div class="cc-bstat"><strong>10K+</strong><span>Students trained across 9 cohorts</span></div>
+        <div class="cc-bstat cyan"><strong>Top 1%</strong><span>Industry-ranked coaching programs</span></div>
+        <div class="cc-bstat"><strong>$50M+</strong><span>Client revenue generated</span></div>
+      </div>
+    </div>
+    <div class="cc-story">
+      <div class="cc-portrait-wrap">
+        <div class="cc-portrait"><img src="${PHOTOS.coachWomanCoffee}" alt=""/></div>
+        <div class="cc-exp-chip"><b>11 yrs</b><small>COACHING EXPERIENCE</small></div>
+        <div class="cc-cred-card"><b>CREDENTIALS</b><span>ICF-certified · Formerly Head of Coaching, Brightpath Studio · 340+ operators trained</span></div>
+      </div>
+      <div class="cc-story-copy">
+        <div class="cc-kicker">THE WHY BEHIND THE COLLECTIVE</div>
+        <h3>A coach who's been in your chair.</h3>
+        <div class="cc-cyan-quote">Eight years ago this coaching practice looked successful on paper and felt like a trap every Monday morning.</div>
+        <p>22 clients on rolling calls, a calendar that never closed, revenue that flatlined the second a week off came up. Every scaling course said the same thing — post more, hustle harder, build another funnel.</p>
+        <p>The turning point wasn't a new tactic. It was a <b>delivery system</b> — a repeatable coaching framework that could be taught instead of performed. Six months later, hours dropped 40% and rates tripled.</p>
+        <p>Today The Compound Collective helps independent coaches do the same: build an offer that compounds, systemize the messy middle, and get their weekends back. 340+ operators and counting.</p>
+        <div class="cc-sig"><b>The Compound Collective</b><small>Founder · ICF-certified · 11 years in coaching</small></div>
       </div>
     </div>
   </div></body></html>`,

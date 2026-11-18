@@ -4,7 +4,7 @@ import { LazyBackground } from '../components/common/LazyBackground';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useState, useEffect } from 'react';
-import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw, Layers3, LayoutTemplate } from 'lucide-react';
+import { Eye, ArrowRight, Search, LoaderCircle, X, RotateCcw, Layers3, LayoutTemplate, CloudDownload } from 'lucide-react';
 import { usePageTemplateCatalogState } from '../backend/pageTemplateCatalog';
 import type { PageTemplate } from './page-templates';
 import { TemplateDesignThumbnail, templateDesignAsset } from './TemplateDesign';
@@ -33,7 +33,7 @@ export function PageTemplateCards({templates=[],install}:{templates?:PageTemplat
           </LazyBackground>)}
           <div className="pf-template-description">
             <b>{template.name}</b>
-            <small>{template.categoryLabel && <>{template.categoryLabel} · </>}{localizeNode(template.industry)} · {localizeNode(template.goal)}</small>
+            <small>{template.categoryLabel && <>{template.categoryLabel} · </>}{localizeNode(template.industry)} · {localizeNode(template.goal)}{(template.popularity ?? 0) > 0 && <> · <em style={{ fontStyle: 'normal', display: 'inline-flex', alignItems: 'center', gap: 3, verticalAlign: 'middle' }}><CloudDownload size={12}/>{(template.popularity ?? 0).toLocaleString('en-US')}</em></>}</small>
             <span>{busy ? <><LoaderCircle size={12} className="animate-spin"/>{translateText("Creating...")}</> : <>{translateText(isBlank ? "Start Blank Form " : "Use Template ")}<ArrowRight size={12}/></>}</span>
           </div>
         </>}

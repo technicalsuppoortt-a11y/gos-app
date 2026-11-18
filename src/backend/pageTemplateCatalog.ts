@@ -4,9 +4,21 @@ import type { PageTemplate } from '../pages/page-template-data';
 
 const OFFICIAL_PAGE_CATEGORIES = new Set(['Funnels', 'Websites', 'Forms']);
 
+const CURATED_FUNNEL_ORDER = [
+  'upklick-funnel-business-development',
+  'upklick-funnel-software-platform',
+  'upklick-funnel-project-management-ai',
+  'upklick-funnel-b2b-saas',
+  'upklick-funnel-medical-solution',
+  'upklick-funnel-product-development',
+  'upklick-funnel-coaching-collective',
+  'upklick-funnel-flagship-sell',
+  'upklick-funnel-flagship-audience',
+];
+
 export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel?: string; previewSource?: TemplateSource })[]): PageTemplate[] {
   const seen = new Set<string>();
-  return catalog
+  const mapped = catalog
     .filter(t => {
       if (!OFFICIAL_PAGE_CATEGORIES.has(t.category)) return false;
       const dedupeKey = `${t.category}:${(t.title_en || t.name).trim().toLowerCase()}`;
@@ -26,6 +38,7 @@ export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel
         description: t.description,
         categoryLabel: t.categoryLabel,
         tags: t.tags,
+        popularity: t.popularity ?? t.pageTemplate?.popularity,
         mode: t.category === 'Forms' ? 'form' : t.category === 'Funnels' ? 'funnel' : 'website',
         industry: t.industry || t.pageTemplate?.industry || 'Professional Services',
         goal: t.goal || t.pageTemplate?.goal || 'Lead Generation',
@@ -42,6 +55,16 @@ export function pageCatalogTemplates(catalog: (ManagedTemplate & { categoryLabel
         builderDocument,
       } as PageTemplate;
     });
+
+  return mapped.sort((a, b) => {
+    if (a.mode !== 'funnel' || b.mode !== 'funnel') return 0;
+    const ai = CURATED_FUNNEL_ORDER.indexOf(a.id);
+    const bi = CURATED_FUNNEL_ORDER.indexOf(b.id);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return -1;
+    if (bi === -1) return 1;
+    return ai - bi;
+  });
 }
 
 export function usePageTemplateCatalogState() {

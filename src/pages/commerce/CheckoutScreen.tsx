@@ -14,12 +14,14 @@ import { checkoutTotals, resolvePromoDiscount } from './checkout-model';
 import { useProducts } from './repository';
 import './dynamic-checkout.css';
 import './product-checkout.css';
+import { GatewayBrandIcon, hasGatewayBrand } from '../../components/payments/GatewayBrandIcon';
 
 type Totals = ReturnType<typeof checkoutTotals> & { currency: string };
 type Method = { id: string; provider?: string; type?: 'manual' | 'gateway'; name: string; account?: string; instructions?: string };
 
 function CheckoutMethodIcon({ provider, id, name, isManual }: { provider?: string; id?: string; name: string; isManual: boolean }) {
   const key = resolvePaymentProviderKey(provider, id, name);
+  if (hasGatewayBrand(key)) return <GatewayBrandIcon provider={key}/>;
   const logo = manualBrandLogos[key];
   if (logo) {
     return (

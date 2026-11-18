@@ -34,7 +34,7 @@ export function validateSupportFiles(files, roomId, uid) {
 export async function supportRequest(request, { actor, db, copyAttachment = copySupportAttachment }) {
   const user = await actor(request);
   const data = request.data ?? {};
-  if (!['contacts', 'directory', 'assign', 'open', 'send', 'read', 'delete', 'edit', 'react', 'forward'].includes(data.operation)) throw new HttpsError('invalid-argument', 'Unknown support action.');
+  if (!['contacts', 'directory', 'assign', 'open', 'send', 'read', 'delete', 'edit', 'react', 'forward', 'pin'].includes(data.operation)) throw new HttpsError('invalid-argument', 'Unknown support action.');
   if (data.operation === 'assign') {
     if (user.role !== 'SUPER_ADMIN') throw new HttpsError('permission-denied', 'Only the super administrator can assign support teams.');
     if (![data.userId, data.parentId].every(id => typeof id === 'string' && /^[\w-]{1,128}$/.test(id))) throw new HttpsError('invalid-argument', 'Choose a user and support owner.');
@@ -123,7 +123,7 @@ export async function supportRequest(request, { actor, db, copyAttachment = copy
     });
     return { roomId: targetRoom.id };
   }
-  if (['delete', 'edit', 'react'].includes(data.operation)) {
+  if (['delete', 'edit', 'react', 'pin'].includes(data.operation)) {
     await db.runTransaction(async tx => {
       const [old, roomSnapshot] = await Promise.all([tx.get(message), tx.get(room)]);
       const value = old.data();
@@ -134,6 +134,11 @@ export async function supportRequest(request, { actor, db, copyAttachment = copy
         return;
       }
       if (value.deleted || value.hiddenFor?.includes(user.uid)) throw new HttpsError('failed-precondition', 'This message is unavailable.');
+      if (data.operation === 'pin') {
+        if (typeof data.pinned !== 'boolean') throw new HttpsError('invalid-argument', 'Choose whether to pin this message.');
+        tx.update(message, { pinned: data.pinned });
+        return;
+      }
       if (data.operation === 'react') {
         if (!['👍', '❤️', '😂', '🎉', '🙏', '👀'].includes(data.emoji)) throw new HttpsError('invalid-argument', 'Choose a supported reaction.');
         const reactions = { ...(value.reactions ?? {}) };
@@ -143,12 +148,12 @@ export async function supportRequest(request, { actor, db, copyAttachment = copy
       }
       if (value.authorId !== user.uid) throw new HttpsError('permission-denied', 'Only the author can edit or delete this message for everyone.');
       if (data.operation === 'edit') {
-        if (typeof data.text !== 'string' || !data.text.trim() || data.text.length > 5000) throw new HttpsError('invalid-argument', 'Enter a message of up to 5000 characters.');
+        if (typeof data.text !== 'string' || (!data.text.trim() && !value.files?.length) || data.text.length > 5000) throw new HttpsError('invalid-argument', 'Enter a message of up to 5000 characters or keep an attachment.');
         tx.update(message, { text: data.text.trim(), editedAt: FieldValue.serverTimestamp() });
-        if (roomSnapshot.data()?.lastMessageId === message.id) tx.update(room, { lastMessage: data.text.trim() });
+        if (roomSnapshot.data()?.lastMessageId === message.id) tx.update(room, { lastMessage: data.text.trim() || 'Attachment' });
       } else {
         if (data.scope !== undefined && data.scope !== 'everyone') throw new HttpsError('invalid-argument', 'Choose delete for me or everyone.');
-        tx.update(message, { text: '', files: [], reactions: {}, replyContext: null, deleted: true, deletedAt: FieldValue.serverTimestamp() });
+        tx.update(message, { text: '', files: [], reactions: {}, replyContext: null, pinned: false, deleted: true, deletedAt: FieldValue.serverTimestamp() });
         if (roomSnapshot.data()?.lastMessageId === message.id) tx.update(room, { lastMessage: 'Message deleted' });
       }
     });

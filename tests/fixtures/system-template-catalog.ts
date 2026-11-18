@@ -30,3 +30,6 @@ export async function duplicateToMyTemplates() {}
 export async function uploadTemplateThumbnail(id: string, file: File, ownerUid?: string) {
   return '/test-covers/' + (ownerUid || 'system') + '/' + id + '/' + file.name;
 }
+export async function syncOfficialFunnelTemplatesToFirestore() {
+  return 9;
+}

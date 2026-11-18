@@ -14,6 +14,7 @@ import { WalletTopupModal } from './WalletTopupModal';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from '../../backend/firebase';
+import { GatewayBrandIcon, hasGatewayBrand } from '../../components/payments/GatewayBrandIcon';
 
 interface CheckoutModalProps {
   plan: BillingPlan;
@@ -33,6 +34,7 @@ const brandAssets: Record<string, string> = {
 };
 
 function PaymentBrandIcon({ provider }: { provider: string }) {
+  if (hasGatewayBrand(provider)) return <GatewayBrandIcon provider={provider}/>;
   if (provider === 'bank') {
     return (
       <span className="bl-brand-frame" style={{ background: 'var(--bl-surface-2)', color: 'var(--bl-accent)' }}>

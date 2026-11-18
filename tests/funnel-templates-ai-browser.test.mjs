@@ -81,6 +81,53 @@ try {
     localStorage.setItem('theme', 'light');
   });
 
+  await page.goto(`${baseUrl}/dashboard/funnels?lab=templates`);
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+  const expectedNineIds = [
+    'upklick-funnel-business-development',
+    'upklick-funnel-software-platform',
+    'upklick-funnel-project-management-ai',
+    'upklick-funnel-b2b-saas',
+    'upklick-funnel-medical-solution',
+    'upklick-funnel-product-development',
+    'upklick-funnel-coaching-collective',
+    'upklick-funnel-flagship-sell',
+    'upklick-funnel-flagship-audience',
+  ];
+  for (const tplId of expectedNineIds) {
+    await page.locator(`[data-template-id="${tplId}"]`).waitFor();
+  }
+  assert.equal(
+    await page.locator('.pf-template-entry').count(),
+    9,
+    '/dashboard/funnels?lab=templates displays all 9 active Funnel templates'
+  );
+  const labGalleryText = (await page.locator('.pf-template-grid').textContent()) || '';
+  for (const countLabel of ['3,977', '1,073', '1,114', '2,237', '1,834', '3,440', '2,685']) {
+    assert.ok(labGalleryText.includes(countLabel), `Popularity metric ${countLabel} is displayed on card`);
+  }
+
+  // Verify responsive fit-to-view on /dashboard/funnels?lab=templates across Desktop, Tablet, and Mobile (EN & AR)
+  for (const vp of [
+    { width: 1440, height: 960 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(vp);
+    const fitsEn = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2);
+    assert.ok(fitsEn, `/dashboard/funnels?lab=templates fits ${vp.width}px in English LTR without horizontal overflow`);
+  }
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.getByRole('button', { name: 'AR', exact: true }).click();
+  await page.waitForFunction(() => document.documentElement.dir === 'rtl');
+  const arLabText = (await page.locator('.pf-template-grid').textContent()) || '';
+  assert.ok(arLabText.includes('مسار تطوير الأعمال'), 'Arabic localized title renders in Template Lab');
+  assert.equal(easternDigitRegex.test(arLabText), false, 'Template Lab Arabic view uses strictly Western digits (0-9)');
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fitsArMobile = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2);
+  assert.ok(fitsArMobile, '/dashboard/funnels?lab=templates fits 390px mobile in Arabic RTL without horizontal overflow');
+
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto(`${baseUrl}/dashboard/funnels?tab=templates`);
   await page.getByRole('button', { name: 'EN', exact: true }).click();
   await page.locator('[data-template-id="upklick-funnel-flagship-sell"]').waitFor();
@@ -175,7 +222,19 @@ try {
   await page.locator('.sys-workspace').waitFor();
   assert.equal(await page.locator('.sys-step-item').count(), 1, 'Step template installs strictly 1 isolated step');
 
-  // Return to /dashboard/funnels?tab=templates -> Complete Multi-Step Funnels -> verify Preview opens in new tab & installs 3 pre-linked steps
+  // Return to /dashboard/funnels?lab=templates -> verify Preview opens in new tab & installs 3 pre-linked steps for both new & flagship templates
+  await page.goto(`${baseUrl}/dashboard/funnels?lab=templates`);
+  const bizPreviewLink = page
+    .locator('.pf-template-entry')
+    .filter({ has: page.locator('[data-template-id="upklick-funnel-business-development"]') })
+    .locator('a.pf-template-preview-action');
+  assert.equal(await bizPreviewLink.getAttribute('target'), '_blank');
+  await page.locator('[data-template-id="upklick-funnel-business-development"]').click();
+  await page.locator('.fb-editor-header').waitFor();
+  await page.getByRole('button', { name: 'Back to overview', exact: true }).click();
+  await page.locator('.sys-workspace').waitFor();
+  assert.equal(await page.locator('.sys-step-item').count(), 3, 'Business Development Funnel installs 3 pre-linked steps');
+
   await page.goto(`${baseUrl}/dashboard/funnels?tab=templates`);
   const fullPreviewLink = page.locator('.pf-template-entry').filter({ has: page.locator('[data-template-id="upklick-funnel-flagship-sell"]') }).locator('a.pf-template-preview-action');
   assert.equal(await fullPreviewLink.getAttribute('target'), '_blank');
@@ -357,12 +416,34 @@ try {
   }
   await realUserPage.close();
 
-  // 4b) Super Admin Funnels -> Step Templates: all 10 templates + Preview opens in a REAL new browser tab (popup)
+  // 4b) Super Admin Funnels: Complete Multi-Step Funnels (9 Published + Industry Filter + Sync + Bilingual Editor Preview) & Step Templates
   const saPage = await browser.newPage({ viewport: { width: 1440, height: 960 } });
   saPage.setDefaultTimeout(20000);
   saPage.on('pageerror', e => errors.push(e.message));
   await saPage.goto(`${harnessOrigin}/__sa-mgmt`);
   await saPage.getByRole('tab', { name: /Funnels/i }).click();
+  await saPage.getByRole('button', { name: 'Sync 9 Funnel Templates', exact: true }).waitFor();
+  await saPage.getByRole('combobox', { name: 'Status' }).selectOption('Published');
+  assert.equal(
+    await saPage.locator('.adm-template-gallery-card').count(),
+    9,
+    'Super Admin Funnels (Published) displays all 9 active Funnel templates'
+  );
+  await saPage.getByRole('combobox', { name: 'Industry' }).selectOption('Medical');
+  assert.equal(
+    await saPage.locator('.adm-template-gallery-card').count(),
+    1,
+    'Super Admin Industry filter isolates Medical Solution template'
+  );
+  // Open editor on Medical Solution & verify Bilingual EN/AR preview toggle + category chips
+  await saPage.locator('.adm-template-gallery-card').getByRole('button', { name: 'Edit' }).first().click();
+  const saEditor = saPage.getByRole('dialog');
+  await saEditor.waitFor();
+  await saEditor.getByRole('button', { name: /العربية \(RTL\)/i }).click();
+  await saEditor.getByRole('button', { name: /English \(LTR\)/i }).click();
+  await saEditor.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await saPage.getByRole('combobox', { name: 'Industry' }).selectOption('All');
+
   await saPage.locator('[data-funnel-subview="steps"]').waitFor();
   await saPage.locator('[data-funnel-subview="steps"]').click();
   await saPage.getByRole('heading', { name: 'Global Funnel Step Templates Library' }).waitFor();

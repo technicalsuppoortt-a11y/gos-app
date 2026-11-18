@@ -2,7 +2,7 @@ import { BookingSelect as DashboardSelect } from '../booking/BookingSelect';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
-  BookOpen, Check, CheckCircle2, ChevronDown, ChevronUp, Copy, CreditCard, 
+  BookOpen, Check, CheckCircle2, ChevronDown, ChevronUp, Copy, 
   Eye, EyeOff, Landmark, Loader2, Pencil, Plug, Plus, Power, Trash2 
 } from 'lucide-react';
 import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration, type PaymentScope } from '../../backend/paymentMethods';
@@ -14,6 +14,7 @@ import { Card, Field, Modal, PanelHeading, Toggle, Badge } from './kit';
 import { showToast } from '../../utils/toast';
 import './settings.css';
 import './payment-methods.css';
+import { GatewayBrandIcon } from '../../components/payments/GatewayBrandIcon';
 
 interface GatewayGuideInfo {
   title: string;
@@ -320,7 +321,7 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
           {added.map(method => {
             const soon = comingSoonProviders.has(method.provider);
             return <div className="pm-added-row" key={method.id}>
-              <span className="st-service-icon purple">{method.type === 'gateway' ? <CreditCard size={20}/> : <ManualIcon provider={method.provider}/>}</span>
+              <span className="st-service-icon purple">{method.type === 'gateway' ? <GatewayBrandIcon provider={method.provider}/> : <ManualIcon provider={method.provider}/>}</span>
               <div className="pm-account"><b>{t(method.name)}</b><span>{method.account}</span>{method.instructions && <small>{method.instructions}</small>}{method.type === 'gateway' && <small>{t(soon ? 'Coming Soon' : method.status === 'Connected' ? 'Connected · verified with provider' : 'Configured · verification pending')}</small>}</div>
               <Badge tone={method.enabled ? 'green' : 'neutral'}>{t(method.enabled ? 'Enabled' : 'Disabled')}</Badge>
               {admin && <div className="pm-row-actions"><button type="button" className="st-icon-button" title={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} aria-label={t(method.enabled ? `Disable ${method.name}` : `Enable ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.map(item => item.id === method.id ? { ...item, enabled: !item.enabled } : item))}><Power size={14}/></button>{!soon && <button type="button" className="st-icon-button" aria-label={t(`Edit ${method.name}`)} disabled={disabled} onClick={() => configure(method.provider)}><Pencil size={14}/></button>}<button type="button" className="st-icon-button" aria-label={t(`Remove ${method.name}`)} disabled={disabled} onClick={() => void persist(methods.filter(item => item.id !== method.id))}><Trash2 size={14}/></button></div>}
@@ -337,7 +338,7 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
         const configured = methods.filter(method => gateway.ids.includes(method.provider));
         const connected = configured.some(method => method.enabled && method.status === 'Connected');
         return <Card key={gateway.name} className="pm-gateway-card">
-          <div className="pm-gateway-heading"><CreditCard size={18}/><b>{gateway.name}</b>{gateway.comingSoon ? <Badge tone="purple">{t('Coming Soon')}</Badge> : <Badge tone={connected ? 'green' : configured.length ? 'orange' : 'neutral'}>{t(connected ? 'Connected' : configured.length ? 'Configured' : 'Disconnected')}</Badge>}</div>
+          <div className="pm-gateway-heading"><span className="pm-gateway-brands">{gateway.ids.map(provider => <GatewayBrandIcon key={provider} provider={provider}/>)}</span><b>{gateway.name}</b>{gateway.comingSoon ? <Badge tone="purple">{t('Coming Soon')}</Badge> : <Badge tone={connected ? 'green' : configured.length ? 'orange' : 'neutral'}>{t(connected ? 'Connected' : configured.length ? 'Configured' : 'Disconnected')}</Badge>}</div>
           <p className="st-note">{t(gateway.description)}</p>
           {!gateway.comingSoon && configured.length > 0 && <small className="pm-gateway-accounts">{configured.map(method => `${method.name} · ${t(method.status)}`).join(' / ')}</small>}
           {admin && (gateway.comingSoon

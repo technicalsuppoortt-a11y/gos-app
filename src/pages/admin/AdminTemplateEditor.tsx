@@ -17,18 +17,42 @@ import type { CustomTemplate } from '../crm/templateStorage';
 import './admin-template-editor.css';
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Eye, ImagePlus, Layers3, LayoutTemplate, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Code2, Eye, FileUp, ImagePlus, Layers3, LayoutTemplate, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
 import { uploadTemplateFile } from '../../backend/templateFiles';
 import { uploadTemplateThumbnail } from '../../backend/adminManagement';
 import { backendError } from '../../backend/firebase';
-import { BuilderWorkspace, createBuilderDocument } from '../BuilderWorkspace';
+import { BuilderWorkspace } from '../BuilderWorkspace';
 import { adminTemplateCategories as categories, industries, goals } from '../system-template-data';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { AdminSelect } from './AdminSelect';
 import { LiveDialog } from './AdminLiveUI';
 import { TemplateContent } from './AdminRecordDetails';
 import { localizeManagedTemplate, templateArabicDesign, templateArabicMetadata, templateCategoryLabel, templateIsActive, type ManagedTemplate } from './managed-template';
 import type { SitePreview } from './AdminSitePreview';
+
+const INDUSTRY_PRESETS = [
+  'Business',
+  'Software',
+  'Project Management',
+  'B2B',
+  'Medical',
+  'Product Development',
+  'Coaching',
+  'SaaS/Agency',
+  'Fitness/Coaching',
+  'Healthcare/Clinic',
+  'Real Estate',
+  'E-commerce',
+  'Professional Services',
+] as const;
+
+function parseUploadedHtmlDocument(rawHtml: string): { html: string; css: string } {
+  const styleMatches = [...rawHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)];
+  const css = styleMatches.map(m => m[1].trim()).filter(Boolean).join('\n');
+  const bodyMatch = rawHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const html = (bodyMatch ? bodyMatch[1] : rawHtml.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')).trim();
+  return { html, css };
+}
 
 export function newManagedTemplate(category: ManagedTemplate['category'] = 'Funnels'): ManagedTemplate {
   return { id: crypto.randomUUID(), name: '', description: '', category, industry: industries[0], goal: goals[0], source: 'official', tags: [], updated: '', popularity: 0, color: '#7C3AED', active: false, status: 'Draft', content: { headline: '', steps: ['Welcome'], settings: { enabled: false, language: 'en' } } };
@@ -48,6 +72,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   const [, setParams] = useSearchParams();
   const [nativeEditor, setNativeEditor] = useState<'design' | 'booking' | 'product' | null>(null);
   const [builderArabic, setBuilderArabic] = useState(false);
+  const [designCodeTab, setDesignCodeTab] = useState<'en' | 'ar' | 'css'>('en');
   const [productConfigured, setProductConfigured] = useState(Boolean(template.updated && template.productTemplate));
   const [presetId, setPresetId] = useState('');
   const [error, setError] = useState('');
@@ -55,6 +80,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   const [uploading, setUploading] = useState(false);
   const thumbnail = draft.thumbnail ?? draft.pageTemplate?.thumbnail ?? '';
   const imageInput = useRef<HTMLInputElement>(null);
+  const htmlFileInput = useRef<HTMLInputElement>(null);
   const documentRef = useRef(draft.builderDocument);
   const arabicDocumentRef = useRef(draft.builder_document_ar);
   const initialBuilderSnapshot = useRef('');
@@ -62,6 +88,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   const web = ['Funnels', 'Websites', 'Forms', 'Landing Pages'].includes(draft.category);
   const mode = draft.category === 'Funnels' ? 'funnel' : 'website';
   const updateContent = (patch: Partial<ManagedTemplate['content']>) => setDraft(d => ({ ...d, content: { ...d.content, ...patch } }));
+
   function loadPreset(id: string) {
     setPresetId(id);
     const preset = presets.find(item => item.id === id);
@@ -74,6 +101,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     setDraft(next);
     setProductConfigured(Boolean(preset.productTemplate));
   }
+
   async function submit() {
     if (busy || uploading) return;
     if (!draft.name.trim()) { setError(t('Add a name and a headline before saving.', 'أضف اسماً وعنواناً قبل الحفظ.')); return; }
@@ -88,16 +116,22 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
       category_en: draft.category_en?.trim() || draft.category,
       category_ar: draft.category_ar?.trim() || templateCategoryLabel(draft.category, true),
       tags_en: draft.tags, tags_ar: draft.tags_ar || [], content_en: content,
-      content_ar: { ...draft.content_ar, settings: { ...content.settings, language: 'ar' } },
+      content_ar: {
+        headline: draft.content_ar?.headline?.trim() || '',
+        steps: draft.content_ar?.steps ?? [],
+        settings: { ...content.settings, ...draft.content_ar?.settings, language: 'ar' },
+      },
       builder_document_ar: templateArabicDesign({ ...draft, builderDocument: documentRef.current, builder_document_ar: arabicDocumentRef.current }),
     });
     const failures = validateSystemTemplate(value);
     if (value.builder_document_ar || value.booking_page_ar || value.product_template_ar || value.pipeline_template_ar || value.automation_template_ar) {
       failures.push(...validateSystemTemplate(initializeTemplateAsset(localizeManagedTemplate(value, true))));
-    } if (failures.length) { setError(failures.join(' ')); return; }
+    }
+    if (failures.length) { setError(failures.join(' ')); return; }
     const failure = await save(value);
     if (failure) setError(failure);
   }
+
   async function chooseThumbnail(file: File | undefined) {
     if (!file || busy || uploading) return;
     setUploading(true); setError('');
@@ -108,12 +142,50 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     catch (cause) { setError(backendError(cause)); }
     finally { setUploading(false); if (imageInput.current) imageInput.current.value = ''; }
   }
-  const localized = localizeManagedTemplate({ ...draft, title_en: draft.name, description_en: draft.description, content_en: draft.content, builderDocument: documentRef.current, builder_document_ar: arabicDocumentRef.current }, ar);
+
+  async function importHtmlFile(file: File | undefined) {
+    if (!file || busy) return;
+    try {
+      const raw = await file.text();
+      const parsed = parseUploadedHtmlDocument(raw);
+      setDraft(cur => {
+        const css = parsed.css || cur.design_en?.css || cur.design_ar?.css || '';
+        if (designCodeTab === 'ar') {
+          return {
+            ...cur,
+            design_ar: { html: parsed.html, css },
+            design_en: cur.design_en ? { ...cur.design_en, css: cur.design_en.css || css } : undefined,
+          };
+        }
+        return {
+          ...cur,
+          design_en: { html: parsed.html, css },
+          design_ar: cur.design_ar ? { ...cur.design_ar, css } : cur.design_ar,
+        };
+      });
+    } catch (cause) {
+      setError(backendError(cause));
+    } finally {
+      if (htmlFileInput.current) htmlFileInput.current.value = '';
+    }
+  }
+
+  const currentRecord: ManagedTemplate = {
+    ...draft,
+    title_en: draft.name,
+    description_en: draft.description,
+    content_en: draft.content,
+    builderDocument: documentRef.current,
+    builder_document_ar: arabicDocumentRef.current,
+  };
+  const localized = localizeManagedTemplate(currentRecord, ar);
   const openPreview = () => localized.builderDocument ? preview({
     document: localized.builderDocument, name: localized.name || t('Template preview', 'معاينة القالب'), kind: mode,
     image: localized.pageTemplate?.image || localized.builderDocument.pages[0]?.featuredImage,
     template: { formAsset: localized.category === 'Forms', templateDesign: localized.design },
+    templateRecord: currentRecord,
   }) : setShowContentPreview(true);
+
   const openBuilder = (arabic: boolean) => {
     const name = (arabic ? draft.title_ar : draft.name) || draft.name || 'System template';
     const target = arabic ? arabicDocumentRef : documentRef;
@@ -219,11 +291,37 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
     </div>
     <div className="alm-editor" inert={busy}>
       {!template.updated && <section className="alm-preset-banner"><span className="alm-record-icon"><Sparkles size={20}/></span><div><h3>{t('Start with a system preset', 'ابدأ بإعداد نظام جاهز')}</h3><p>{t('Choose a starting point, then make it your own.', 'اختر نقطة بداية ثم خصصها كما تريد.')}</p></div><AdminSelect label={t('System preset', 'إعداد النظام')} value={presetId} onChange={loadPreset} options={[{ value: '', label: t('Blank template', 'قالب فارغ') }, ...presets.map(item => ({ value: item.id, label: `${item.category} · ${item.name}` }))]}/></section>}
-      <div className="alm-form-grid"><label>{t('English title', 'العنوان بالإنجليزية')}<input dir="ltr" aria-label={t("Name", "الاسم")} required maxLength={180} value={draft.name} placeholder={t('e.g. Coaching discovery funnel', 'مثال: قمع استشارات التدريب')} onChange={e => setDraft({ ...draft, name: e.target.value })}/></label><label><span>{t('Category', 'الفئة')}</span><AdminSelect label={t('Category', 'الفئة')} value={draft.category} options={categories.map(value => ({ value, label: templateCategoryLabel(value, ar) }))} onChange={value => { const next = initializeTemplateAsset({ ...draft, category: value as ManagedTemplate['category'], assetType: undefined, pageTemplate: undefined, bookingPage: undefined, productTemplate: undefined, pipelineTemplate: undefined, builderDocument: undefined, builder_document_ar: undefined, design_en: undefined, design_ar: undefined, booking_page_ar: undefined, product_template_ar: undefined, pipeline_template_ar: undefined, automationTemplate: undefined, automation_template_ar: undefined, category_en: undefined, category_ar: undefined }); setDraft(next); setProductConfigured(false); documentRef.current = next.builderDocument; arabicDocumentRef.current = undefined; }}/></label>
-        <label className="full">{t('English description', 'الوصف بالإنجليزية')}<textarea dir="ltr" rows={3} maxLength={2000} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })}/></label><label>{t('Industry', 'المجال')}<input value={draft.industry} onChange={e => setDraft({ ...draft, industry: e.target.value })}/></label><label>{t('Goal', 'الهدف')}<input value={draft.goal} onChange={e => setDraft({ ...draft, goal: e.target.value })}/></label>
+      <div className="alm-form-grid">
+        <label>{t('English title', 'العنوان بالإنجليزية')}<input dir="ltr" aria-label={t("Name", "الاسم")} required maxLength={180} value={draft.name} placeholder={t('e.g. Coaching discovery funnel', 'مثال: قمع استشارات التدريب')} onChange={e => setDraft({ ...draft, name: e.target.value })}/></label>
+        <label><span>{t('Category', 'الفئة')}</span><AdminSelect label={t('Category', 'الفئة')} value={draft.category} options={categories.map(value => ({ value, label: templateCategoryLabel(value, ar) }))} onChange={value => { const next = initializeTemplateAsset({ ...draft, category: value as ManagedTemplate['category'], assetType: undefined, pageTemplate: undefined, bookingPage: undefined, productTemplate: undefined, pipelineTemplate: undefined, builderDocument: undefined, builder_document_ar: undefined, design_en: undefined, design_ar: undefined, booking_page_ar: undefined, product_template_ar: undefined, pipeline_template_ar: undefined, automationTemplate: undefined, automation_template_ar: undefined, category_en: undefined, category_ar: undefined }); setDraft(next); setProductConfigured(false); documentRef.current = next.builderDocument; arabicDocumentRef.current = undefined; }}/></label>
+        <label className="full">{t('English description', 'الوصف بالإنجليزية')}<textarea dir="ltr" rows={3} maxLength={2000} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })}/></label>
+        <label>{t('Industry', 'المجال')}<input value={draft.industry} onChange={e => setDraft({ ...draft, industry: e.target.value })}/></label>
+        <label>{t('Goal', 'الهدف')}<input list="alm-goal-presets" value={draft.goal} onChange={e => setDraft({ ...draft, goal: e.target.value })}/><datalist id="alm-goal-presets">{goals.map(g => <option key={g} value={g}/>)}</datalist></label>
+        <div className="full" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+          <small className="alm-muted" style={{ marginInlineEnd: 4 }}>{t('Quick niche categories:', 'تصنيفات سريعة للمجال:')}</small>
+          {INDUSTRY_PRESETS.map(preset => (
+            <button
+              key={preset}
+              type="button"
+              className="alm-button subtle"
+              aria-pressed={draft.industry === preset}
+              style={{
+                padding: '4px 10px',
+                fontSize: 12,
+                borderColor: draft.industry === preset ? 'var(--adm-accent, #7c3aed)' : undefined,
+                fontWeight: draft.industry === preset ? 700 : 500,
+              }}
+              onClick={() => setDraft(cur => ({ ...cur, industry: preset }))}
+            >
+              {ar ? translateText(preset) : preset}
+            </button>
+          ))}
+        </div>
         {draft.category === 'Email/SMS/WhatsApp' && <label className="full">{t('Message channel', 'قناة الرسائل')}<AdminSelect label={t('Message channel', 'قناة الرسائل')} value={draft.tags.find(tag => ['Email', 'SMS', 'WhatsApp'].includes(tag)) || 'Email'} options={['Email', 'SMS', 'WhatsApp'].map(value => ({ value, label: value }))} onChange={value => setDraft({ ...draft, tags: [...draft.tags.filter(tag => !['Email', 'SMS', 'WhatsApp'].includes(tag)), value] })}/></label>}
         <label>{t('English category label', 'اسم الفئة بالإنجليزية')}<input dir="ltr" maxLength={100} value={draft.category_en ?? draft.category} onChange={e => setDraft({ ...draft, category_en: e.target.value })}/></label>
         <label>{t('English tags (comma-separated)', 'الوسوم بالإنجليزية (مفصولة بفواصل)')}<input dir="ltr" key={presetId + draft.category + draft.tags.filter(tag => ['Email', 'SMS', 'WhatsApp'].includes(tag)).join()} defaultValue={draft.tags.join(', ')} onBlur={e => setDraft(current => ({ ...current, tags: splitTemplateList(e.target.value, /[,،]/) }))}/></label>
+        <label>{t('Brand accent color', 'اللون الرئيسي للقالب')}<input type="color" value={draft.color || '#7C3AED'} onChange={e => setDraft({ ...draft, color: e.target.value })} style={{ height: 40, padding: 4 }}/></label>
+        <label>{t('Install / download counter', 'عداد مرات الاستخدام')}<input type="number" min={0} max={999999} value={draft.popularity ?? 0} onChange={e => setDraft({ ...draft, popularity: Math.max(0, Number(e.target.value) || 0) })}/></label>
       </div>
       <section className="alm-editor-section" dir="rtl" lang="ar">
         <h3>{t('Arabic translation', 'الترجمة العربية')}</h3>
@@ -264,9 +362,73 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
       <section className="alm-editor-section alm-thumbnail-editor"><header><div><h3>{t('Template image', 'صورة القالب')}</h3><p>{t('Shown on this template card in the user template gallery.', 'تظهر على بطاقة هذا القالب في مكتبة قوالب المستخدمين.')}</p></div><ImagePlus size={20}/></header>
         <div className="alm-thumbnail-row">{thumbnail ? <img className="alm-thumbnail-preview" src={thumbnail} alt={t('Template image preview', 'معاينة صورة القالب')}/> : <div className="alm-thumbnail-preview alm-thumbnail-empty">{t('No image yet · the default card art is used.', 'لا توجد صورة بعد · يتم استخدام شكل البطاقة الافتراضي.')}</div>}
           <div className="alm-inline-actions"><input ref={imageInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => void chooseThumbnail(e.target.files?.[0])}/><button type="button" className="alm-button" disabled={busy || uploading} onClick={() => imageInput.current?.click()}><ImagePlus size={15}/>{uploading ? t('Uploading…', 'جار الرفع…') : thumbnail ? t('Change image', 'تغيير الصورة') : t('Upload image', 'رفع صورة')}</button>{thumbnail && <button type="button" className="alm-button subtle" disabled={busy || uploading} onClick={() => setDraft(d => ({ ...d, thumbnail: '', useThumbnail: false }))}><Trash2 size={15}/>{t('Remove', 'إزالة')}</button>}</div></div>
+        <div className="alm-form-grid" style={{ marginTop: 10 }}>
+          <label>{t('Thumbnail URL (optional)', 'رابط صورة الغلاف (اختياري)')}<input dir="ltr" value={thumbnail} placeholder="https://..." onChange={e => setDraft(d => ({ ...d, thumbnail: e.target.value, useThumbnail: Boolean(e.target.value.trim()) }))}/></label>
+          {thumbnail && <label className="alm-checkbox"><input type="checkbox" checked={Boolean(draft.useThumbnail)} onChange={e => setDraft(d => ({ ...d, useThumbnail: e.target.checked }))}/><span>{t('Prefer static cover image over live interactive design preview', 'تفضيل صورة الغلاف الثابتة بدلاً من المعاينة التفاعلية المباشرة')}</span></label>}
+        </div>
         <small className="alm-muted">{t('PNG, JPG or WebP up to 5 MB. Save the template to apply.', 'PNG أو JPG أو WebP حتى 5 ميجابايت. احفظ القالب للتطبيق.')}</small>
       </section>
       {web && <section className="alm-builder-entry"><LayoutTemplate size={26}/><div><h3>{t('Visual page design', 'التصميم المرئي للصفحة')}</h3><p>{documentRef.current ? t('Continue editing the saved page layout.', 'تابع تعديل تخطيط الصفحة المحفوظ.') : t('Design pages, sections, typography and responsive layouts.', 'صمم الصفحات والأقسام والخطوط والتخطيطات المتجاوبة.')}</p></div><div className="alm-inline-actions"><button type="button" className="alm-button" onClick={() => openBuilder(false)}>{t('Open page builder', 'فتح محرر الصفحات')}<ArrowRight size={15}/></button><button type="button" className="alm-button" onClick={() => openBuilder(true)}>{t('Edit Arabic design', 'تحرير التصميم العربي')}<ArrowRight size={15}/></button></div></section>}
+      {web && (
+        <section className="alm-editor-section">
+          <details>
+            <summary style={{ cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Code2 size={17} />
+              <span>{t('Bilingual Custom HTML / CSS Cover Design (EN LTR & AR RTL)', 'تصميم HTML / CSS ثنائي اللغة (عربي وإنجليزي)')}</span>
+            </summary>
+            <div style={{ marginTop: 14, display: 'grid', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button type="button" className={`alm-button ${designCodeTab === 'en' ? 'primary' : 'subtle'}`} onClick={() => setDesignCodeTab('en')}>{t('English HTML (LTR)', 'HTML الإنجليزية (LTR)')}</button>
+                  <button type="button" className={`alm-button ${designCodeTab === 'ar' ? 'primary' : 'subtle'}`} onClick={() => setDesignCodeTab('ar')}>{t('Arabic HTML (RTL)', 'HTML العربية (RTL)')}</button>
+                  <button type="button" className={`alm-button ${designCodeTab === 'css' ? 'primary' : 'subtle'}`} onClick={() => setDesignCodeTab('css')}>{t('Shared CSS', 'تنسيقات CSS')}</button>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input ref={htmlFileInput} type="file" accept=".html,text/html" hidden onChange={e => void importHtmlFile(e.target.files?.[0])} />
+                  <button type="button" className="alm-button subtle" onClick={() => htmlFileInput.current?.click()}>
+                    <FileUp size={14} />
+                    {t('Import HTML file', 'استيراد ملف HTML')}
+                  </button>
+                </div>
+              </div>
+              {designCodeTab === 'en' && (
+                <textarea
+                  dir="ltr"
+                  rows={8}
+                  style={{ fontFamily: 'monospace', fontSize: 12 }}
+                  placeholder='<div class="page">...</div>'
+                  value={draft.design_en?.html || ''}
+                  onChange={e => setDraft(cur => ({ ...cur, design_en: { html: e.target.value, css: cur.design_en?.css || cur.design_ar?.css || '' } }))}
+                />
+              )}
+              {designCodeTab === 'ar' && (
+                <textarea
+                  dir="ltr"
+                  rows={8}
+                  style={{ fontFamily: 'monospace', fontSize: 12 }}
+                  placeholder='<div class="page">...</div>'
+                  value={draft.design_ar?.html || ''}
+                  onChange={e => setDraft(cur => ({ ...cur, design_ar: { html: e.target.value, css: cur.design_ar?.css || cur.design_en?.css || '' } }))}
+                />
+              )}
+              {designCodeTab === 'css' && (
+                <textarea
+                  dir="ltr"
+                  rows={8}
+                  style={{ fontFamily: 'monospace', fontSize: 12 }}
+                  placeholder='.page { width: 960px; min-height: 1240px; }'
+                  value={draft.design_en?.css || draft.design_ar?.css || ''}
+                  onChange={e => setDraft(cur => ({
+                    ...cur,
+                    design_en: cur.design_en ? { ...cur.design_en, css: e.target.value } : { html: '', css: e.target.value },
+                    design_ar: cur.design_ar ? { ...cur.design_ar, css: e.target.value } : cur.design_ar,
+                  }))}
+                />
+              )}
+            </div>
+          </details>
+        </section>
+      )}
       <label className="alm-visibility"><span><strong>{t('Publish to workspaces', 'النشر في مساحات العمل')}</strong><small>{t('Active templates appear in the existing user template galleries.', 'تظهر القوالب النشطة في مكتبات قوالب المستخدمين الحالية.')}</small></span><input role="switch" aria-label={t('Active / Published', 'نشط / منشور')} type="checkbox" checked={templateIsActive(draft)} onChange={e => setDraft({ ...draft, active: e.target.checked, status: e.target.checked ? 'Published' : 'Draft' })}/></label>
       {error && <div className="alm-error-inline" role="alert">{error}</div>}
       <button type="button" className="alm-button" onClick={openPreview}><Eye size={16}/>{t('Preview', 'معاينة')}</button>

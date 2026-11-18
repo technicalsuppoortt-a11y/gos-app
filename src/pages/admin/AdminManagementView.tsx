@@ -1,13 +1,14 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, ArrowUpDown, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, CloudDownload, Copy, Download, Eye, EyeOff, FileText, Globe2, Layers3, LayoutGrid, LayoutTemplate, List, MoreVertical, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
+import { Activity, ArrowUpDown, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, CloudDownload, CloudUpload, Copy, Download, Eye, EyeOff, FileText, Globe2, Layers3, LayoutGrid, LayoutTemplate, List, MoreVertical, Pencil, Plus, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { useTemplateLibrary, saveAdminTemplate, deleteAdminTemplate, setGeneralTemplateHidden, duplicateToMyTemplates, type OwnedTemplate, type TemplateLibraryScope } from '../../backend/templateOwnership';
-import { useAdminManagement, saveManagedTemplate, deleteManagedTemplate } from '../../backend/adminManagement';
+import { useAdminManagement, saveManagedTemplate, deleteManagedTemplate, syncOfficialFunnelTemplatesToFirestore } from '../../backend/adminManagement';
+import { OFFICIAL_NINE_FUNNEL_IDS } from '../../backend/officialTemplateDesigns';
 import { backendError } from '../../backend/firebase';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { adminTemplateCategories as categories } from '../system-template-data';
 import { managementRow, type ManagementResource, type LiveRecord } from './live-model';
 import { localizeManagedTemplate, templateCategoryLabel, templateIsActive, type ManagedTemplate } from './managed-template';
@@ -56,9 +57,9 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const hiddenFor = (id: string) => libraryData.hidden.includes(id);
   const unavailable = !!live.error || Object.keys(live.sourceErrors).length > 0;
   const [search, setSearch] = useState(''), [workspace, setWorkspace] = useState('');
-  const [status, setStatus] = useState(''), [source, setSource] = useState(''), [category, setCategory] = useState('');
+  const [status, setStatus] = useState(''), [source, setSource] = useState(''), [category, setCategory] = useState(''), [industryFilter, setIndustryFilter] = useState('');
   const [pipeline, setPipeline] = useState(''), [calendar, setCalendar] = useState('');
-  const [page, setPage] = useState(1), [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1), [pageSize, setPageSize] = useState(() => isTemplates ? 15 : 10);
   const [sort, setSort] = useState<{ key: Column; direction: 1 | -1 }>({ key: 'name', direction: 1 });
   const [viewOverride, setViewOverride] = useState<'grid' | 'table' | null>(null);
   const [funnelSubView, setFunnelSubView] = useState<'full' | 'steps'>('full');
@@ -85,14 +86,27 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const localizedTemplates = new Map(live.templates.map(template => [template.id, localizeManagedTemplate(template, ar)]));
   const rows: Row[] = isTemplates ? [...localizedTemplates.values()].filter(template => categories.includes(template.category)).map(template => ({ id: template.id, recordId: template.id, name: template.name, tenant: 'Platform', workspaceId: '', owner: library === 'client' ? template.ownerName || template.ownerEmail || 'Admin' : 'System library', ownerId: library === 'client' ? template.ownerEmail || template.ownerUid || '' : '', email: '', status: !templateIsActive(template) ? 'Draft' : library === 'general' && hiddenFor(template.id) ? 'Hidden' : 'Published', type: template.category, source: '', host: '', date: template.updated, amount: '', currency: '', product: '', domain: '', pipeline: '', pipelineKey: '', calendar: '', calendarKey: '' })) : records.map(record => managementRow(record, live.tenants, live.users, calendars, pipelines));
   const workspaceRows = rows.filter(row => !workspace || row.workspaceId === workspace);
-  const filtered = workspaceRows.filter(row => (!status || row.status === status) && (!source || row.source === source) && (!category || row.type === category) && (!pipeline || row.pipelineKey === pipeline) && (!calendar || row.calendarKey === calendar) && [...Object.values(row), localizedTemplates.get(row.id)?.description, localizedTemplates.get(row.id)?.tags.join(' '), localizedTemplates.get(row.id)?.categoryLabel].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
-  const sorted = [...filtered].sort((a, b) => String(a[sort.key]).localeCompare(String(b[sort.key]), ar ? 'ar' : 'en', { numeric: true, sensitivity: 'base' }) * sort.direction);
+  const filtered = workspaceRows.filter(row => (!status || row.status === status) && (!source || row.source === source) && (!category || row.type === category) && (!industryFilter || localizedTemplates.get(row.id)?.industry === industryFilter) && (!pipeline || row.pipelineKey === pipeline) && (!calendar || row.calendarKey === calendar) && [...Object.values(row), localizedTemplates.get(row.id)?.description, localizedTemplates.get(row.id)?.industry, localizedTemplates.get(row.id)?.tags.join(' '), localizedTemplates.get(row.id)?.categoryLabel].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
+  const sorted = [...filtered].sort((a, b) => {
+    if (showTemplateGrid && category === 'Funnels' && sort.key === 'name' && sort.direction === 1) {
+      if (a.status === 'Published' && b.status !== 'Published') return -1;
+      if (a.status !== 'Published' && b.status === 'Published') return 1;
+      const ai = (OFFICIAL_NINE_FUNNEL_IDS as readonly string[]).indexOf(a.id);
+      const bi = (OFFICIAL_NINE_FUNNEL_IDS as readonly string[]).indexOf(b.id);
+      if (ai !== -1 || bi !== -1) {
+        if (ai === -1) return -1;
+        if (bi === -1) return 1;
+        return ai - bi;
+      }
+    }
+    return String(a[sort.key]).localeCompare(String(b[sort.key]), ar ? 'ar' : 'en', { numeric: true, sensitivity: 'base' }) * sort.direction;
+  });
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize)), current = Math.min(page, pages), start = (current - 1) * pageSize;
   const visibleRows = sorted.slice(start, start + pageSize);
   const selected = isTemplates ? localizedTemplates.get(selectedId) : records.find(item => item.path === selectedId);
   const columns: Column[] = ['name', ...(!isTemplates ? ['tenant', 'owner'] as const : library === 'client' ? ['owner'] as const : []), ...(resource === 'leads' ? ['pipeline', 'source'] as const : []), ...(resource === 'bookings' ? ['calendar', 'host', 'date'] as const : []), ...(resource === 'calendars' ? ['host'] as const : []), ...(resource === 'products' || isTemplates || resource === 'assets' ? ['type'] as const : []), ...(['products', 'orders', 'transactions'].includes(resource) ? ['amount', ...(['orders', 'transactions'].includes(resource) ? ['date'] as const : [])] as Column[] : []), 'status'];
   const labels: Partial<Record<Column, string>> = { name: t('Name / reference', 'الاسم / المرجع'), tenant: t('Workspace', 'مساحة العمل'), owner: library === 'client' ? t('Admin', 'الأدمن') : t('Owner', 'المالك'), pipeline: t('Pipeline', 'مسار المبيعات'), calendar: t('Calendar', 'التقويم'), source: t('Source', 'المصدر'), host: t('Host', 'المضيف'), date: t('Date / time', 'التاريخ والوقت'), type: t('Type', 'النوع'), amount: resource === 'products' ? t('Price', 'السعر') : t('Amount', 'المبلغ'), status: t('Status', 'الحالة') };
-  const filterCount = [search, workspace, status, source, category, pipeline, calendar].filter(Boolean).length;
+  const filterCount = [search, workspace, status, source, category, industryFilter, pipeline, calendar].filter(Boolean).length;
 
   async function action(fn: () => Promise<void>, success: string): Promise<string | null> {
     if (lock.current) return t('Another action is still saving.', 'لا يزال إجراء آخر قيد الحفظ.');
@@ -101,7 +115,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     catch (error) { const message = backendError(error); setNotice({ message, error: true }); return message; }
     finally { lock.current = false; setBusy(false); }
   }
-  function resetFilters() { setSearch(''); setWorkspace(''); setStatus(''); setSource(''); setCategory(''); setFunnelSubView('full'); setPipeline(''); setCalendar(''); setPage(1); }
+  function resetFilters() { setSearch(''); setWorkspace(''); setStatus(''); setSource(''); setCategory(''); setIndustryFilter(''); setFunnelSubView('full'); setPipeline(''); setCalendar(''); setPage(1); }
   function changeTab(index: number) { setParams({ tab: String(index) }); setSelectedId(''); setStatus(''); setSource(''); setCategory(''); setPipeline(''); setCalendar(''); setPage(1); }
   function relationOptions(items: LiveRecord[], key: 'pipelineKey' | 'calendarKey', label: 'pipeline' | 'calendar') {
     const options = new Map<string, { value: string; label: string }>();
@@ -141,13 +155,14 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   if (search) chips.push([t('Search', 'بحث'), search, () => setSearch('')]);
   if (workspace) chips.push([t('Workspace', 'مساحة العمل'), live.tenants[workspace]?.name || workspace, () => { setWorkspace(''); setPipeline(''); setCalendar(''); }]);
   if (category) chips.push([t('Type', 'النوع'), templateCategoryLabel(category, ar), () => setCategory('')]);
+  if (industryFilter) chips.push([t('Industry', 'المجال'), ar ? translateText(industryFilter) : industryFilter, () => setIndustryFilter('')]);
   if (pipeline) chips.push([t('Pipeline', 'مسار المبيعات'), relationOptions(pipelines, 'pipelineKey', 'pipeline').find(o => o.value === pipeline)?.label || pipeline, () => setPipeline('')]);
   if (calendar) chips.push([t('Calendar', 'التقويم'), relationOptions(calendars, 'calendarKey', 'calendar').find(o => o.value === calendar)?.label || calendar, () => setCalendar('')]);
   if (source) chips.push([t('Source', 'المصدر'), source, () => setSource('')]);
   if (status) chips.push([t('Status', 'الحالة'), humanLabel(status), () => setStatus('')]);
 
   return <div className="adm-workspace adm-live" data-module={moduleId}>
-    <div className="alm-page-head"><div><span className="alm-kicker">{t('PLATFORM MANAGEMENT', 'إدارة المنصة')}</span><h1>{isTemplates && superAdmin ? t('Templates', 'القوالب') : view.title[ar ? 1 : 0]}</h1><p>{view.description[ar ? 1 : 0]}</p></div><div className="alm-inline-actions"><button className="alm-button" disabled={live.loading || !!live.error || !filtered.length} onClick={() => downloadCSV(filtered, `${moduleId}.csv`)}><Download size={16}/>{t('Export', 'تصدير')}</button>{isTemplates && editable && <button className="alm-button primary" disabled={live.loading || !!live.error || busy} onClick={() => openTemplateEditor()}><Plus size={17}/>{t('Create template', 'إنشاء قالب')}</button>}</div></div>
+    <div className="alm-page-head"><div><span className="alm-kicker">{t('PLATFORM MANAGEMENT', 'إدارة المنصة')}</span><h1>{isTemplates && superAdmin ? t('Templates', 'القوالب') : view.title[ar ? 1 : 0]}</h1><p>{view.description[ar ? 1 : 0]}</p></div><div className="alm-inline-actions"><button className="alm-button" disabled={live.loading || !!live.error || !filtered.length} onClick={() => downloadCSV(filtered, `${moduleId}.csv`)}><Download size={16}/>{t('Export', 'تصدير')}</button>{isTemplates && superAdmin && editable && <button className="alm-button" disabled={live.loading || !!live.error || busy} onClick={() => void action(async () => { await syncOfficialFunnelTemplatesToFirestore(live.templates); }, t('Synced 9 official funnel templates to Firebase.', 'تمت مزامنة قوالب المسارات الـ 9 الرسمية مع Firebase.'))}><CloudUpload size={16}/>{t('Sync 9 Funnel Templates', 'مزامنة قوالب المسارات')}</button>}{isTemplates && editable && <button className="alm-button primary" disabled={live.loading || !!live.error || busy} onClick={() => openTemplateEditor()}><Plus size={17}/>{t('Create template', 'إنشاء قالب')}</button>}</div></div>
     <div className="alm-summary"><div><span className="alm-summary-icon"><Layers3 size={18}/></span><div><small>{t('Total records', 'إجمالي السجلات')}</small><strong>{live.loading ? '—' : rows.length.toLocaleString('en-US')}</strong></div></div><div><span className="alm-summary-icon secondary"><Check size={18}/></span><div><small>{t('Active / published', 'نشط / منشور')}</small><strong>{live.loading ? '—' : rows.filter(r => /^(published|active|confirmed|completed|paid|qualified|won|succeeded)$/i.test(r.status)).length.toLocaleString('en-US')}</strong></div></div><div><span className="alm-summary-icon"><Building2 size={18}/></span><div><small>{isTemplates ? t('Template categories', 'فئات القوالب') : t('Workspaces', 'مساحات العمل')}</small><strong>{isTemplates ? categories.length : Object.keys(live.tenants).length}</strong></div></div><div className="alm-live-state" role="status" data-error={!!live.error} title={live.loading ? t('Using cached offline data — cloud sync in progress', 'يتم استخدام البيانات المخزنة مؤقتاً — جاري المزامنة السحابية') : undefined}><span className={live.loading ? 'loading' : ''}/><div><strong>{live.error ? t('Connection needs attention', 'الاتصال يحتاج إلى متابعة') : live.loading ? t('Syncing with cloud…', 'جاري المزامنة…') : t('Live Cloud Sync', 'مزامنة سحابية مباشرة')}</strong><small>{isTemplates ? t('Master system library', 'مكتبة قوالب النظام') : t('Read-only · All workspaces', 'للقراءة فقط · كل مساحات العمل')}</small></div></div></div>
     {live.error && <div className="alm-error-inline" role="alert"><Activity size={17}/><div><strong>{t('Some records could not be loaded.', 'تعذر تحميل بعض السجلات.')}</strong><p>{live.error}</p></div></div>}
     {!live.error && unavailable && <div className="alm-error-inline" role="status"><Activity size={17}/><div><strong>{t('Some sources are unavailable. Showing accessible records.', 'بعض المصادر غير متاحة. تظهر السجلات المسموح بها.')}</strong><details><summary>{t('Unavailable sources', 'المصادر غير المتاحة')}</summary>{Object.entries(live.sourceErrors).map(([source, message]) => <p key={source}>{source}: {message}</p>)}</details></div></div>}
@@ -194,6 +209,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
         {resource === 'bookings' && <AdminSelect label={t('Calendar', 'التقويم')} value={calendar} onChange={value => { setCalendar(value); setPage(1); }} options={[{ value: '', label: t('All calendars', 'كل التقويم') }, ...relationOptions(calendars, 'calendarKey', 'calendar')]}/>}
         {resource === 'leads' && select(t('All sources', 'كل المصادر'), source, workspaceRows.map(r => r.source), setSource)}
         {resource === 'products' && select(t('Product type', 'نوع المنتج'), category, ['Service', 'Digital Product', 'Course', ...workspaceRows.map(r => r.type)], setCategory)}
+        {isTemplates && <AdminSelect label={t('All industries', 'كل المجالات')} value={industryFilter} onChange={v => { setIndustryFilter(v); setPage(1); }} options={[{ value: '', label: t('All industries', 'كل المجالات') }, ...[...new Set(workspaceRows.filter(r => !category || r.type === category).map(r => localizedTemplates.get(r.id)?.industry).filter((v): v is string => Boolean(v)))].sort().map(v => ({ value: v, label: ar ? translateText(v) : v }))]}/>}
         {select(t('All statuses', 'كل الحالات'), status, workspaceRows.map(r => r.status), setStatus, true)}
         {isTemplates && <div className="alm-view-switch" role="group" aria-label={t('Template layout view', 'طريقة عرض القوالب')}>
           <button type="button" aria-label={t('Grid view', 'عرض البطاقات')} aria-pressed={showTemplateGrid} onClick={() => setViewOverride('grid')} title={t('Grid view', 'عرض البطاقات')}><LayoutGrid size={15}/></button>
@@ -330,6 +346,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
                           {(tpl?.popularity ?? 0).toLocaleString('en-US')}
                         </span>
                         {isNew && <span className="alm-ghl-new-badge">{t('New', 'جديد')}</span>}
+                        {localized?.industry && <span className="alm-ghl-scope-tag">{ar ? translateText(localized.industry) : localized.industry}</span>}
                         {scopeTag && <span className="alm-ghl-scope-tag">{scopeTag}</span>}
                         {!category && <span className="alm-ghl-scope-tag">{localizedTemplates.get(row.id)?.categoryLabel || row.type}</span>}
                       </div>
@@ -350,7 +367,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
       )}
 
       {!live.loading && !filtered.length && <div className="alm-empty"><span><Search size={27}/></span><h3>{unavailable ? t('Records are unavailable', 'السجلات غير متاحة') : filterCount ? t('No matching records.', 'لا توجد سجلات مطابقة.') : t('Your library is ready for its first record', 'المكتبة جاهزة لأول سجل')}</h3><p>{unavailable ? t('Check the connection and administrator permissions.', 'تحقق من الاتصال وصلاحيات الإدارة.') : filterCount ? t('Try another search or adjust the filters.', 'جرب بحثاً آخر أو عدل الفلاتر.') : isTemplates ? t('Create a template or start from a system preset.', 'أنشئ قالباً أو ابدأ من إعداد نظام جاهز.') : t('New workspace records appear here automatically.', 'تظهر سجلات مساحات العمل الجديدة هنا تلقائياً.')}</p>{!!filterCount && <button className="alm-button" onClick={resetFilters}>{t('Clear filters', 'مسح الفلاتر')}</button>}</div>}
-      <footer className="alm-pagination"><div><span>{filtered.length ? `${start + 1}–${Math.min(start + pageSize, filtered.length)}` : '0'} {t('of', 'من')} {filtered.length} {t('records', 'سجل')}</span><AdminSelect label={t('Rows per page', 'عدد الصفوف')} value={String(pageSize)} options={[10, 25, 50].map(value => ({ value: String(value), label: `${value} / ${t('page', 'صفحة')}` }))} onChange={value => { setPageSize(Number(value)); setPage(1); }}/></div><div><button className="alm-button" aria-label={t('Previous page', 'الصفحة السابقة')} disabled={current <= 1} onClick={() => setPage(current - 1)}><ChevronLeft size={15}/>{t('Previous', 'السابق')}</button><span>{current} / {pages}</span><button className="alm-button" aria-label={t('Next page', 'الصفحة التالية')} disabled={current >= pages} onClick={() => setPage(current + 1)}>{t('Next', 'التالي')}<ChevronRight size={15}/></button></div></footer>
+      <footer className="alm-pagination"><div><span>{filtered.length ? `${start + 1}–${Math.min(start + pageSize, filtered.length)}` : '0'} {t('of', 'من')} {filtered.length} {t('records', 'سجل')}</span><AdminSelect label={t('Rows per page', 'عدد الصفوف')} value={String(pageSize)} options={(isTemplates ? [10, 15, 25, 50] : [10, 25, 50]).map(value => ({ value: String(value), label: `${value} / ${t('page', 'صفحة')}` }))} onChange={value => { setPageSize(Number(value)); setPage(1); }}/></div><div><button className="alm-button" aria-label={t('Previous page', 'الصفحة السابقة')} disabled={current <= 1} onClick={() => setPage(current - 1)}><ChevronLeft size={15}/>{t('Previous', 'السابق')}</button><span>{current} / {pages}</span><button className="alm-button" aria-label={t('Next page', 'الصفحة التالية')} disabled={current >= pages} onClick={() => setPage(current + 1)}>{t('Next', 'التالي')}<ChevronRight size={15}/></button></div></footer>
       </>}
     </section>
     </>}

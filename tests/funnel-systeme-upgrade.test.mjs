@@ -596,3 +596,66 @@ test('6. Upgraded 10 Bilingual Step Templates & AI Funnel Architect Multi-Step P
   assert.equal(enBookingAsset.document.pages.length, 3);
   assert.ok(JSON.stringify(enBookingAsset.document.pages[1].sections).includes('"type":"Booking"'));
 });
+
+test('7. All 9 Active Funnel Templates (7 New Industry Funnels + 2 Flagship): Pre-Linked Steps, Popularity, EN/AR Designs & Western Digits', async () => {
+  const { buildTemplateDesigns } = await import('../functions/seed-data/build-template-designs.mjs');
+  const seedRecords = JSON.parse(
+    fs.readFileSync(new URL('../functions/seed-data/system-templates.json', import.meta.url), 'utf8')
+  );
+  const arMeta = JSON.parse(
+    fs.readFileSync(new URL('../functions/seed-data/template-metadata-ar.json', import.meta.url), 'utf8')
+  );
+  const easternDigitRegex = /[٠-٩۰-۹]/;
+
+  const expectedNine = [
+    { id: 'upklick-funnel-business-development', industry: 'Business', popularity: 3977, steps: 3 },
+    { id: 'upklick-funnel-software-platform', industry: 'Software', popularity: 1073, steps: 3 },
+    { id: 'upklick-funnel-project-management-ai', industry: 'Project Management', popularity: 1114, steps: 3 },
+    { id: 'upklick-funnel-b2b-saas', industry: 'B2B', popularity: 2237, steps: 3 },
+    { id: 'upklick-funnel-medical-solution', industry: 'Medical', popularity: 1834, steps: 3 },
+    { id: 'upklick-funnel-product-development', industry: 'Product Development', popularity: 3440, steps: 3 },
+    { id: 'upklick-funnel-coaching-collective', industry: 'Coaching', popularity: 2685, steps: 3 },
+    { id: 'upklick-funnel-flagship-sell', industry: 'SaaS/Agency', popularity: 842, steps: 3 },
+    { id: 'upklick-funnel-flagship-audience', industry: 'Fitness/Coaching', popularity: 794, steps: 2 },
+  ];
+
+  for (const spec of expectedNine) {
+    const rec = seedRecords.find(r => r.id === spec.id);
+    assert.ok(rec, `${spec.id} exists in system-templates.json`);
+    assert.equal(rec.category, 'Funnels');
+    assert.equal(rec.industry, spec.industry);
+    assert.equal(rec.popularity, spec.popularity);
+    assert.equal(rec.builderDocument.pages.length, spec.steps, `${spec.id} has ${spec.steps} EN steps`);
+    assert.equal(rec.builder_document_ar?.pages?.length, spec.steps, `${spec.id} has ${spec.steps} AR steps`);
+
+    // Verify step-to-step linking (step 1 -> step 2, and step 2 -> step 3 when 3 steps)
+    const pages = rec.builderDocument.pages;
+    assert.ok(
+      JSON.stringify(pages[0].sections).includes(pages[1].id),
+      `${spec.id} Step 1 links to Step 2 (${pages[1].id})`
+    );
+    if (pages.length >= 3) {
+      assert.ok(
+        JSON.stringify(pages[1].sections).includes(pages[2].id),
+        `${spec.id} Step 2 links to Step 3 (${pages[2].id})`
+      );
+    }
+
+    assert.ok(arMeta[spec.id]?.title_ar, `${spec.id} has Arabic title_ar`);
+    assert.ok(arMeta[spec.id]?.description_ar, `${spec.id} has Arabic description_ar`);
+
+    const designs = buildTemplateDesigns(spec.id);
+    assert.ok(designs.design_en?.html.includes('class="page"'), `${spec.id} has pixel-perfect EN cover HTML`);
+    assert.ok(/[ء-ي]/.test(designs.design_ar?.html || ''), `${spec.id} has localized AR cover HTML`);
+    assert.equal(
+      easternDigitRegex.test(designs.design_ar.html),
+      false,
+      `${spec.id} AR cover HTML uses strictly Western digits (0-9)`
+    );
+    assert.equal(
+      easternDigitRegex.test(JSON.stringify(rec.builder_document_ar)),
+      false,
+      `${spec.id} AR builderDocument uses strictly Western digits (0-9)`
+    );
+  }
+});
