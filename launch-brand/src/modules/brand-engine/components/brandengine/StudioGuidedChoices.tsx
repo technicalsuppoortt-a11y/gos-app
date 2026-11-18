@@ -66,6 +66,7 @@ export function StudioGuidedChoices({
   const theme = resolveBrandTheme(state),
     colors = theme[state.theme === "dark" ? "dark" : "light"];
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [pendingPalette, setPendingPalette] = useState<string | null>(null);
   const [paletteFilter, setPaletteFilter] = useState<"all" | StudioColorStyle>("all");
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const sections = [
@@ -469,7 +470,10 @@ export function StudioGuidedChoices({
             </div>
           </div>
 
-          <RadixDialog.Root open={templatesOpen} onOpenChange={setTemplatesOpen}>
+          <RadixDialog.Root open={templatesOpen} onOpenChange={(open) => {
+            setTemplatesOpen(open);
+            if (!open) setPendingPalette(null);
+          }}>
             <RadixDialog.Portal>
               <RadixDialog.Overlay className="studio-palettes-gallery-overlay" />
               <RadixDialog.Content
@@ -528,7 +532,7 @@ export function StudioGuidedChoices({
                   {filteredPresets.map((preset) => {
                     const swatches = studioPresetSwatches(preset);
                     const style = studioPresetStyle(preset);
-                    const isSelected = theme.paletteId === preset.id;
+                    const isSelected = (pendingPalette ?? theme.paletteId) === preset.id;
                     return (
                       <button
                         type="button"
@@ -537,8 +541,7 @@ export function StudioGuidedChoices({
                         disabled={busy}
                         className={`studio-gallery-palette-card ${isSelected ? "is-selected" : ""}`}
                         onClick={() => {
-                          pickPreset(preset.id);
-                          setTemplatesOpen(false);
+                          setPendingPalette(preset.id);
                         }}
                       >
                         <span
@@ -574,7 +577,11 @@ export function StudioGuidedChoices({
                       "جميع القوالب تتكيف تلقائيًا مع الوضع الفاتح والداكن في لوحة تحكم UpKlick.",
                     )}
                   </span>
-                  <RadixDialog.Close className="studio-custom-colors-done">{t("Done", "تم")}</RadixDialog.Close>
+                  <button type="button" className="studio-custom-colors-done" disabled={busy} onClick={() => {
+                    if (pendingPalette) pickPreset(pendingPalette);
+                    setPendingPalette(null);
+                    setTemplatesOpen(false);
+                  }}>{t("Done", "تم")}</button>
                 </div>
               </RadixDialog.Content>
             </RadixDialog.Portal>

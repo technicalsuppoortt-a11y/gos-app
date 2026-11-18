@@ -1369,7 +1369,7 @@ export function BrandingStudio({
             key={`guided-${state.userProfile?.uid}`}
             activeSection={activeStudioSection}
             onSectionChange={setActiveStudioSection}
-            generatorPanel={<div hidden={elementToGenerate !== activeStudioSection}>
+            generatorPanel={<div className="studio-generator-slot" hidden={elementToGenerate !== activeStudioSection}>
             <StudioElementGenerator
               key={`element-generator-${currentUid.current}`}
               element={elementToGenerate}

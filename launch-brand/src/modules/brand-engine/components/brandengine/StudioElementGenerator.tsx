@@ -175,7 +175,20 @@ function StudioElementGeneratorContent({
         }),
       );
   }, [answers, element, dispatch, state.pageParameters]);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const existingLogoIds = useRef(new Set(rawSuggestions.map(candidate => candidate.id)));
+  const revealRequested = useRef(false);
+  const activeRegionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const region = activeRegionRef.current;
+      // A logo history can be taller than the viewport; focus the current work.
+      const target = busy
+        ? region?.querySelector('.ai-generation-progress')
+        : element === 'logo' ? region?.querySelector('.studio-element-result:last-child') : region;
+      (target ?? region)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [busy, suggestions.length, element]);
   const [localError, setLocalError] = useState("");
   const visibleError = element === 'logo' && /Firebase|firestore|permission|صلاحيات|AI Center/i.test(localError || error)
     ? t('Generation is temporarily unavailable. We are reconnecting automatically.', 'التوليد غير متاح مؤقتًا. بنحاول نرجّعه تلقائيًا.') : localError || error;
@@ -307,11 +320,10 @@ function StudioElementGeneratorContent({
           e.preventDefault();
           if (logoUnavailable) return;
           setLocalError("");
+          existingLogoIds.current = new Set(rawSuggestions.map(candidate => candidate.id));
+          revealRequested.current = true;
           try {
-            if (await onGenerate(element, answers))
-              requestAnimationFrame(() =>
-                resultsRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
-              );
+            await onGenerate(element, answers);
           } catch (error) {
             setLocalError(error instanceof Error ? error.message : String(error));
           }
@@ -416,6 +428,7 @@ function StudioElementGeneratorContent({
           {t(`Attempts remaining: ${remaining} of 3`, `المحاولات المتبقية: ${remaining} من ٣`)}
         </p>
       )}
+      <div ref={activeRegionRef} className="studio-generation-active-region">
       <AIGenerationProgress
         busy={busy}
         error={visibleError}
@@ -450,7 +463,7 @@ function StudioElementGeneratorContent({
           )}
         </p>
       ) : null}
-      <div ref={resultsRef} className="studio-generation-results">
+      <div className="studio-generation-results">
         {element === "logo" && !logoAttempts.historyLoading && !logoAttempts.historyError && !suggestions.length && (
           <p role="status">{logoAttempts.used > 0
             ? t("No completed logo was saved for these attempts. A failed attempt has no finished design to display.", "المحاولات دي ما اتحفظش منها لوجو مكتمل. المحاولة اللي فشلت ما بيكونش ليها تصميم نهائي نعرضه.")
@@ -505,6 +518,7 @@ function StudioElementGeneratorContent({
               )}
               {element === "logo" && c.logo && c.mark && (
                 <LogoDrawingPreview
+                  animate={revealRequested.current && !existingLogoIds.current.has(c.id)}
                   primary={theme.light.primary}
                   palette={[theme.light.primary, theme.light.secondary, theme.light.buttonBackground]}
                   ar={ar}
@@ -536,6 +550,7 @@ function StudioElementGeneratorContent({
             </article>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -47,6 +47,14 @@ export function AIGenerationProgress({
   const [draftPreview, setDraftPreview] = useState<{ requestId: string; identity: BrandIdentity } | null>(null);
   const [outcome, setOutcome] = useState<"idle" | "success" | "error">("idle");
   const started = useRef<number | null>(null);
+  const progressRegion = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!busy) return;
+    const frame = requestAnimationFrame(() => {
+      progressRegion.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [busy, requestId]);
   const t = (en: string, arabic: string) => (ar ? arabic : en);
 
   useEffect(() => {
@@ -237,6 +245,7 @@ export function AIGenerationProgress({
   return (
     <div
       className={`ai-generation-progress transition-all duration-300 ease-out${logo ? " ai-logo-progress" : ""} ${busy ? "is-running" : failed ? "is-error" : "is-success"}`}
+      ref={progressRegion}
       role={failed ? "alert" : undefined}
     >
       <div
@@ -349,8 +358,8 @@ export function AIGenerationProgress({
                     "تقدر تعيد المحاولة. لسه ما اتأكدش اكتمال لوجو للطلب ده.",
                   )
                 : t(
-                    "Your result is ready below. You can replay its drawing reveal without generating again.",
-                    "النتيجة جاهزة تحت. تقدر تعيد عرض الرسم من غير توليد جديد.",
+                    "Your finished logo is ready below.",
+                    "اللوجو النهائي جاهز تحت.",
                   )}
           </p>
         </div>

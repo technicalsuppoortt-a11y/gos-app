@@ -1424,3 +1424,41 @@
   .studio-compact-workspace *, .studio-compact-workspace *::before, .studio-compact-workspace *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 }
+
+@scope (.brand-engine-module) {
+/* Give an open generator the editor's space instead of stacking it below the form. */
+.studio-compact-editor:has(> .studio-generator-slot:not([hidden]) .studio-element-dialog) > [role="tabpanel"] {
+  display: none;
+}
+.studio-compact-workspace .studio-generator-slot > .studio-element-dialog {
+  margin-block: 0;
+  padding: 14px;
+}
+.studio-compact-workspace .studio-generator-slot .studio-generation-header { margin-bottom: 10px; }
+.studio-compact-workspace .studio-generator-slot .studio-generation-questions { gap: 8px; margin-block: 10px; }
+.studio-compact-workspace .studio-generator-slot .studio-generation-actions { padding-top: 8px; gap: 8px; }
+.studio-compact-workspace .studio-generation-active-region { scroll-margin-block: 12px; }
+.studio-compact-workspace .studio-generator-slot .ai-generation-progress { margin-block: 10px; padding: 10px 12px; gap: 8px; }
+.studio-compact-workspace .studio-generator-slot .studio-generation-results > h3 { margin: 10px 0 8px; }
+.studio-compact-workspace .studio-generator-slot .studio-element-results:not(.studio-logo-results) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.studio-compact-workspace .studio-generator-slot .studio-element-result { min-width: 0; padding: 10px; gap: 6px; }
+.studio-compact-workspace .studio-generator-slot .lb-typewriter { font-size: 17px; overflow-wrap: anywhere; }
+@media (min-width: 768px) {
+  .compact-workspace-shell .bs-root.studio-compact-workspace:has(.studio-generator-slot .studio-element-dialog) {
+    flex: 1 1 0; height: 100%; min-height: 0; overflow: hidden;
+  }
+  .compact-workspace-shell .bs-root.studio-compact-workspace:has(.studio-generator-slot .studio-element-dialog) .studio-workspace-grid {
+    flex: 1 1 0; height: 100%; min-height: 0; overflow: hidden;
+  }
+  .compact-workspace-shell .bs-root.studio-compact-workspace:has(.studio-generator-slot .studio-element-dialog) .studio-workspace-primary {
+    height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  }
+}
+@media (max-width: 540px) {
+  .studio-compact-workspace .studio-generator-slot .studio-element-results:not(.studio-logo-results) { grid-template-columns: minmax(0, 1fr); }
+}
+}

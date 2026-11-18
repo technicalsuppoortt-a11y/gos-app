@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, Eye, LoaderCircle, RotateCcw, Sparkles, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Eye, LoaderCircle, Sparkles, TriangleAlert } from "lucide-react";
 import type { BrandIdentity } from "@/modules/brand-engine/data/types";
 import { isBrandFont } from "@/modules/brand-engine/data/brandFonts";
 import { isRasterBrandLogo } from "@/modules/brand-engine/services/brandLogo";
@@ -12,6 +12,7 @@ export type LogoDrawingPreviewProps = {
   palette?: string[] | undefined;
   ar: boolean;
   compact?: boolean | undefined;
+  animate?: boolean | undefined;
 };
 
 type VectorShape = {
@@ -187,27 +188,14 @@ function extractAnchorNodes(shapes: VectorShape[]): AnchorNode[] {
   return nodes.slice(0, 10);
 }
 
-/** Presentation of returned artwork; replay never starts another AI request. */
+/** Saved previews are static; only newly returned artwork opts into a reveal. */
 export function LogoDrawingPreview(props: LogoDrawingPreviewProps) {
-  const [replay, setReplay] = useState(0);
-  const signature = JSON.stringify([
-    props.identity.id,
-    props.identity.name,
-    props.identity.mark,
-    props.identity.logo,
-    props.primary,
-    props.palette,
-  ]);
-  return (
-    <LogoReveal
-      key={`${signature}:${replay}`}
-      {...props}
-      onReplay={() => setReplay((value) => value + 1)}
-    />
-  );
+  return <LogoReveal key={props.identity.id} {...props} />;
 }
 
 const REVEAL_DURATION_MS = 2750;
+// Keep the original timeline across remounts, palette changes and StrictMode.
+const revealStarts = new Map<string, number>();
 
 function LogoReveal({
   identity,
@@ -215,20 +203,24 @@ function LogoReveal({
   palette,
   ar,
   compact = false,
-  onReplay,
-}: LogoDrawingPreviewProps & { onReplay: () => void }) {
+  animate = false,
+}: LogoDrawingPreviewProps) {
   const raster = isRasterBrandLogo(identity);
   const [rasterState, setRasterState] = useState<"loading" | "ready" | "error">(
     raster ? "loading" : "ready",
   );
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(animate ? 0 : 100);
   const rafRef = useRef<number | null>(null);
   const t = (en: string, arabic: string) => (ar ? arabic : en);
 
   useEffect(() => {
     if (raster && rasterState !== "ready") return;
-    setProgress(0);
-    const startTime = performance.now();
+    if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setProgress(100);
+      return;
+    }
+    const startTime = revealStarts.get(identity.id) ?? performance.now();
+    revealStarts.set(identity.id, startTime);
     const step = (now: number) => {
       const elapsed = now - startTime;
       const pct = Math.min(100, (elapsed / REVEAL_DURATION_MS) * 100);
@@ -241,12 +233,13 @@ function LogoReveal({
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [raster, rasterState]);
+  }, [raster, rasterState, animate, identity.id]);
 
   const skipToFinal = useCallback(() => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    revealStarts.set(identity.id, performance.now() - REVEAL_DURATION_MS);
     setProgress(100);
-  }, []);
+  }, [identity.id]);
 
   const loaded = useCallback(() => setRasterState("ready"), []);
   const failed = useCallback(() => setRasterState("error"), []);
@@ -356,17 +349,6 @@ function LogoReveal({
               {t("Show final", "عرض كامل")}
             </button>
           )}
-          <button
-            type="button"
-            className="logo-drawing-preview__btn"
-            disabled={raster && rasterState === "loading"}
-            onClick={onReplay}
-          >
-            <RotateCcw size={13} aria-hidden="true" />
-            {rasterState === "error"
-              ? t("Reload artwork", "إعادة التحميل")
-              : t("Replay reveal", "إعادة الرسم")}
-          </button>
         </div>
       </div>
 
@@ -609,8 +591,8 @@ function LogoReveal({
                   "بناء هندسي متدرج لمسارات الفيكتور واسم البراند.",
                 )
               : t(
-                  "Custom vector artwork ready. Click Replay reveal anytime without using an attempt.",
-                  "تصميم الفيكتور جاهز. اضغط إعادة الرسم في أي وقت بدون استهلاك محاولة.",
+                  "Custom vector artwork ready.",
+                  "تصميم الفيكتور جاهز.",
                 )}
         </figcaption>
       )}
