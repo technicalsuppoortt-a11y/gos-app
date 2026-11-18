@@ -1952,3 +1952,22 @@
   }
 }
 }
+
+/* Native compact layout replaces the former scaled deployment canvas. */
+@scope (.brand-engine-module) {
+.page.page { height:auto; min-height:100%; padding:20px; overflow:visible; font-family:var(--lb-font-ui); color:var(--lb-text); }
+.page .inner.inner, .page .scaleFrame.scaleFrame { width:100%; max-width:none; height:auto; min-height:0; transform:none; zoom:1; margin:0; }
+.page .hero { margin:0 0 20px; padding:0; }
+.page .heading { font-size:24px; font-weight:600; line-height:1.4; }
+.page :is(.intro,.centerTitle) { font-size:14px; line-height:1.6; }
+.page .deploymentGrid.deploymentGrid { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr); gap:20px; height:auto; }
+.page .mainColumn.mainColumn { grid-template-columns:minmax(0,1fr) !important; height:auto; border-radius:12px; }
+.page .progress.progress { border-inline-end:0; border-bottom:1px solid var(--lb-card-border); padding:16px !important; }
+.page .progress li { font-size:13px !important; font-weight:500; }
+.page .workspaceCard { border:1px solid var(--lb-card-border); border-radius:12px; background:var(--lb-card); box-shadow:var(--lb-card-shadow); height:auto; }
+.page .workspaceHeading h2 { font-size:16px; font-weight:600; }
+.page :is(.workspaceHeading p,.workspaceHeading b,.workspaceLabel,.workspaceAction,.workspaceBrand p,.growthCard p) { font-size:13px; line-height:1.6; }
+.page .primaryAction.primaryAction { min-height:44px !important; font-size:14px !important; font-weight:500 !important; border-radius:8px !important; box-shadow:none !important; }
+@media(max-width:1000px) { .page .deploymentGrid.deploymentGrid { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:600px) { .page.page { padding:14px 12px; } .page .heading { font-size:21px; } }
+}

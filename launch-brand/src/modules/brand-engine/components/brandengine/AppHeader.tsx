@@ -13,7 +13,7 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
   const setLanguage = useStore(state => state.setLanguage);
   const setTheme = useStore(state => state.setTheme);
   const dispatch = useAppDispatch();
-  const { mode, language, theme } = useAppSelector((s) => s.brand);
+  const { mode, language, theme, activeStep } = useAppSelector((s) => s.brand);
   const t = translations[language];
   const modes: { id: AppMode; label: string }[] = [
     { id: "wizard", label: t.wizard },
@@ -22,13 +22,12 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
   
   return (
     <div className="app-header compact-workspace-header backdrop-blur-md bg-white/5 border border-white/10">
-      <div className="mode-switch" role="tablist" aria-label={t.demoMode}>
+      <div className="mode-switch" role="group" aria-label={t.demoMode}>
         {modes.map((m) => (
           <button
             key={m.id}
             type="button"
-            role="tab"
-            aria-selected={mode === m.id}
+            aria-pressed={mode === m.id}
             className={mode === m.id ? "active" : ""}
             onClick={() => dispatch(actions.setMode(m.id))}
           >
@@ -36,11 +35,10 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
           </button>
         ))}
       </div>
-      {mode === "wizard" && <ProgressStepper />}
+      {mode === "wizard" && activeStep === 1 && <ProgressStepper />}
       <div className="header-actions">
-        {/* Hide these controls from the view while preserving their existing logic. */}
-        {false && <>
         <Button
+          type="button"
           className={`header-control ${language === "ar" ? "is-active" : ""}`}
           variant="ghost"
           size="icon"
@@ -52,6 +50,7 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
           <span className="sr-only">{t.switchLanguage}</span>
         </Button>
         <Button
+          type="button"
           className={`header-control ${theme === "dark" ? "is-active" : ""}`}
           variant="ghost"
           size="icon"
@@ -62,8 +61,7 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
           {theme === "light" ? <Moon /> : <Sun />}
         </Button>
         <SaveNotificationBell />
-        </>}
-        {onOpenNavigation && <Button className="mobile-menu" variant="ghost" size="icon" aria-label={t.menu} onClick={onOpenNavigation} aria-haspopup="dialog">
+        {onOpenNavigation && <Button type="button" className="mobile-menu" variant="ghost" size="icon" aria-label={t.menu} onClick={onOpenNavigation} aria-haspopup="dialog">
           <Menu />
         </Button>}
       </div>

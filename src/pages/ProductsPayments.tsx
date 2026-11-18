@@ -1030,13 +1030,13 @@ function TransactionsView({ notify }: { notify?: (s: string) => void }) {
               <table>
                 <thead>
                   <tr>
-                    <th>{translateText('Customer')}</th>
-                    <th>{translateText('Product & ID')}</th>
-                    <th>{translateText('Method')}</th>
-                    <th>{translateText('Amount')}</th>
-                    <th>{translateText('Date')}</th>
-                    <th>{translateText('Status')}</th>
-                    <th>{translateText('Actions')}</th>
+                    <th scope="col">{translateText('Customer')}</th>
+                    <th scope="col">{translateText('Product & ID')}</th>
+                    <th scope="col">{translateText('Method')}</th>
+                    <th scope="col">{translateText('Amount')}</th>
+                    <th scope="col">{translateText('Date')}</th>
+                    <th scope="col">{translateText('Status')}</th>
+                    <th scope="col">{translateText('Actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1417,3 +1417,5 @@ function PaymentMethodsSummary() {
  const navigate = useNavigate();
  return <div className="pp-payments-banner"><span className="pp-payments-banner-icon"><CreditCard size={20}/></span><div className="pp-payments-banner-body"><b>{translateText('Payment Methods')}</b><span>{translateText(error ? 'Payment methods could not be loaded.' : loading ? 'Loading payment methods…' : methods.filter(m=>m.enabled && (m.type === 'manual' || m.status === 'Connected')).map(m=>m.name).join(' · ') || 'No payment methods configured.')}</span></div><button className="cw-button" onClick={()=>navigate('/dashboard/settings/payment-methods')}>{translateText('Manage payment methods')}</button></div>;
 }
+
+import './records-compact.css';

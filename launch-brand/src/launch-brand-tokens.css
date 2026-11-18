@@ -16,34 +16,47 @@
   --lb-light: #f3f6f8;
 
   /* Color roles */
-  --lb-action-start: #00805a;   /* identity green, deepened: white text 4.9:1 */
-  --lb-action-end: #0066dd;     /* identity blue, deepened: white text 5.3:1 */
-  --lb-action: linear-gradient(135deg, var(--lb-action-start), var(--lb-action-end));
-  --lb-action-hover: #006b4f;
+  --lb-action-start: #007d70;
+  --lb-action-end: #005ebb;
+  --lb-action: #007d70;
+  --lb-action-hover: #00695e;
   --lb-on-action: #ffffff;
-  --lb-accent: var(--lb-green);           /* success, selection, progress; never behind white text */
-  --lb-accent-text: #006b4f;
-  --lb-accent-surface: #e6fbf3;
+  --lb-accent: #007d70;
+  --lb-accent-text: #00695e;
+  --lb-accent-surface: #e8f5f1;
   --lb-accent-surface-dark: #0d2d26;
-  --lb-accent-border: #a8ecd2;
-  --lb-info: var(--lb-blue);
+  --lb-accent-border: #b4dcd3;
+  --lb-info: #005ebb;
+  --lb-success: #137a54;
+  --lb-success-surface: #e9f7ef;
+  --lb-warning: #8a560b;
+  --lb-warning-surface: #fff5e4;
+  --lb-error: #b42336;
+  --lb-error-surface: #fff0f1;
   --lb-gradient: linear-gradient(135deg, var(--lb-green), var(--lb-blue));
   --lb-gradient-dark: linear-gradient(90deg, var(--lb-dark), var(--lb-teal));
-  --lb-canvas: var(--lb-light);
+  --lb-canvas: #f4f7f8;
   --lb-card: #ffffff;
-  --lb-card-border: #e3e9ee;
-  --lb-text: #0a1320;
-  --lb-text-body: #4b5563;
-  --lb-text-hint: #6b7280;      /* lightest grey allowed on white */
+  --lb-card-border: #dce5e9;
+  --lb-text: #172a36;
+  --lb-text-body: #435665;
+  --lb-text-hint: #60717d;
 
   /* Type scale (px) */
-  --lb-font-ar: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --lb-font-en: 'Manrope', 'DM Sans', system-ui, sans-serif;
+  --lb-font-ar: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --lb-font-en: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --lb-ui-font: var(--lb-font-en);
+  --lb-font-ui: var(--lb-ui-font);
+  --lb-ui-leading: 1.5;
+  --lb-weight-body: 400;
+  --lb-weight-label: 500;
+  --lb-weight-heading: 600;
   --lb-text-page: 24px;
   --lb-text-section: 18px;
-  --lb-text-card: 15px;
+  --lb-text-card: 16px;
   --lb-text-base: 14px;
-  --lb-text-small: 12px;        /* minimum */
+  --lb-text-small: 12px;
+  --lb-text-label: 13px;
 
   /* Spacing: 8 px grid */
   --lb-space-1: 4px;
@@ -54,18 +67,62 @@
   --lb-space-6: 32px;
 
   /* Shape and depth */
-  --lb-radius: 16px;
-  --lb-radius-control: 10px;
-  --lb-card-shadow: 0 1px 2px rgb(10 19 32 / 0.04), 0 10px 28px -18px rgb(10 19 32 / 0.18);
-  --lb-focus-ring: 0 0 0 2px var(--lb-card), 0 0 0 4px var(--lb-blue);
+  --lb-radius: 12px;
+  --lb-radius-control: 8px;
+  --lb-card-shadow: 0 1px 3px rgb(10 19 32 / 0.04);
+  --lb-focus-ring: 0 0 0 2px var(--lb-card), 0 0 0 4px var(--lb-info);
+  --lb-control-height: 38px;
+  --lb-control-height-small: 32px;
+  --lb-control-padding-inline: 12px;
+  --lb-panel-padding: 18px;
+  --lb-layout-gap: 16px;
+  --lb-motion-fast: 140ms;
+  --lb-motion-normal: 180ms;
+  --lb-motion-ease: cubic-bezier(.2, 0, .2, 1);
+}
+
+html[dir="rtl"],
+:is(.launch-brand-page, .brand-engine-module)[dir="rtl"] {
+  --lb-ui-font: var(--lb-font-ar);
+  --lb-font-ui: var(--lb-ui-font);
+  --lb-ui-leading: 1.65;
+  --lb-text-base: 15px;
+}
+
+:is(.launch-brand-page, .brand-engine-module)[data-density="comfortable"] {
+  --lb-control-height: 44px;
+  --lb-panel-padding: 24px;
+  --lb-layout-gap: 24px;
 }
 
 html.dark {
-  --lb-canvas: var(--lb-dark);
-  --lb-card: #131d2b;
-  --lb-card-border: #2a3747;
-  --lb-text: #edf0f7;
-  --lb-text-body: #c0c7d5;
-  --lb-text-hint: #a0aabc;
-  --lb-card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --lb-canvas: #101820;
+  --lb-card: #17212c;
+  --lb-card-border: #34414b;
+  --lb-text: #e9f0f4;
+  --lb-text-body: #c6d2db;
+  --lb-text-hint: #a8bac7;
+  --lb-accent: #73d7c6;
+  --lb-accent-text: #80dccb;
+  --lb-accent-surface: #173c35;
+  --lb-accent-border: #2d6258;
+  --lb-info: #8bbdff;
+  --lb-success: #8cddb3;
+  --lb-success-surface: #163b2a;
+  --lb-warning: #f4c778;
+  --lb-warning-surface: #3a2b16;
+  --lb-error: #ffacb4;
+  --lb-error-surface: #42212a;
+  --lb-card-shadow: 0 1px 3px rgb(0 0 0 / 0.16);
+}
+
+@media (pointer: coarse) {
+  :is(.launch-brand-page, .brand-engine-module) {
+    --lb-control-height: 44px;
+    --lb-control-height-small: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --lb-motion-fast: 0ms; --lb-motion-normal: 0ms; }
 }

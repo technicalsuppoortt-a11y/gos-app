@@ -1,0 +1,59 @@
+.gos-table-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+.gos-table-scroll:focus-visible {
+  outline: 2px solid var(--gos-action, var(--gp-primary, #007d70));
+  outline-offset: 3px;
+}
+.gos-table {
+  --table-padding-block: var(--gos-row-padding, 9px);
+  width: 100%;
+  color: var(--gos-text, var(--gp-text, var(--ui-text, #172a36)));
+  font-family: var(--gos-ui-font, inherit);
+  font-size: 14px;
+  line-height: 1.5;
+  border-color: var(--gos-border, var(--gp-border, var(--ui-border, #e3e9ee)));
+}
+.gos-table[data-density='comfortable'] { --table-padding-block: 13px; }
+.gos-table .gos-table-head,
+.gos-table .gos-table-cell {
+  padding-block: var(--table-padding-block);
+  padding-inline: 14px;
+  vertical-align: middle;
+}
+.gos-table .gos-table-head {
+  color: var(--gos-muted, var(--gp-muted-text, var(--ui-text-secondary, #566775)));
+  background: var(--gos-canvas, var(--gp-bg, var(--ui-surface-hover, #f3f6f8)));
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.gos-table .gos-table-row {
+  border-bottom: 1px solid var(--gos-border, var(--gp-border, var(--ui-border, #e3e9ee)));
+  transition: background-color 140ms ease;
+}
+.gos-table-body .gos-table-row:last-child { border-bottom: 0; }
+.gos-table-body .gos-table-row:is(:hover, :focus-within) {
+  background: var(--gos-canvas, var(--gp-bg, var(--ui-surface-hover, #f3f6f8)));
+}
+.gos-table-body .gos-table-row:is([data-state='selected'], [aria-selected='true']) {
+  background: var(--gos-soft, var(--ui-accent-surface, #e6f3f0));
+}
+.gos-table .gos-table-head:is([aria-sort='ascending'], [aria-sort='descending']) {
+  color: var(--gos-action, var(--gp-accent-text, var(--ui-accent-text, #007d70)));
+  font-weight: 600;
+}
+.gos-table :is(.gos-table-head, .gos-table-cell)[data-align='end'] { font-variant-numeric: tabular-nums; }
+.gos-table-footer { background: var(--gos-canvas, var(--gp-bg, var(--ui-surface-hover, #f3f6f8))); }
+.gos-table-caption {
+  caption-side: bottom;
+  padding-block: 12px;
+  text-align: start;
+  color: var(--gos-muted, var(--gp-muted-text, var(--ui-text-secondary, #566775)));
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) { .gos-table .gos-table-row { transition: none; } }

@@ -7,6 +7,7 @@ import { activityActions, type SaveActivity } from "@/modules/brand-engine/store
 import { saveFailureMessage } from "@/modules/brand-engine/data/saveFailure";
 import { brandPages } from "@/modules/brand-engine/data/brandPages";
 import "./SaveNotifications.css";
+import { hasUnsavedBrandDraft } from "../../services/brandDraft";
 const arabic: Record<string, string> = {
   business_discovery: "اكتشاف المشروع",
   branding: "هوية البراند",
@@ -47,6 +48,7 @@ export function SaveToast() {
   const dispatch = useAppDispatch();
   const { toastId, toastStartedAt, events } = useAppSelector((state) => state.activity);
   const ar = useAppSelector((state) => state.brand.language) === "ar";
+  const activeStep = useAppSelector((state) => state.brand.activeStep);
   const event = events.find((item) => item.id === toastId);
   useEffect(() => {
     if (!toastId) return;
@@ -56,7 +58,7 @@ export function SaveToast() {
     );
     return () => window.clearTimeout(timer);
   }, [toastId, toastStartedAt, event?.type, dispatch]);
-  if (!event || typeof document === "undefined") return null;
+  if (!event || activeStep === 14 || typeof document === "undefined") return null;
   return createPortal(
     <div
       className={`save-toast ${event.type}`}
@@ -109,6 +111,9 @@ export function SaveNotificationBell() {
   const dispatch = useAppDispatch();
   const activity = useAppSelector((state) => state.activity);
   const ar = useAppSelector((state) => state.brand.language) === "ar";
+  const uid = useAppSelector((state) => state.brand.userProfile?.uid);
+  const brand = useAppSelector((state) => state.brand);
+  const dirty = Boolean(brand && uid && hasUnsavedBrandDraft(uid));
   const [open, setOpen] = useState(false);
   const [top, setTop] = useState(70);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -147,9 +152,9 @@ export function SaveNotificationBell() {
         ? ar
           ? "تعذّر الحفظ"
           : "Save needs attention"
-        : ar
-          ? "كل التغييرات محفوظة"
-          : "All changes saved";
+        : activity.status === "saved" && !dirty
+          ? ar ? "كل التغييرات محفوظة" : "All changes saved"
+          : ar ? "مسودة البراند" : "Brand draft";
   return (
     <>
       <button

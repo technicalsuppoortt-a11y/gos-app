@@ -41,6 +41,8 @@ import { getDiscoverySelection } from "@/modules/brand-engine/data/discovery";
 // } from "@/modules/brand-engine/components/brandengine/JourneyIllustrations";
 import type { AppDispatch, RootState } from "@/modules/brand-engine/store";
 import { store } from "@/modules/brand-engine/store";
+import { DraftSaveStatus } from "../components/brandengine/DraftSaveStatus";
+import "../components/brandengine/WizardCompactFooter.css";
 
 const BrandingStudio = lazy(() => import("../components/brandengine/BrandingStudio").then(module => ({ default: module.BrandingStudio })));
 const PlatformDeployment = lazy(() => import("../components/brandengine/PlatformDeployment").then(module => ({ default: module.PlatformDeployment })));
@@ -218,17 +220,7 @@ export function WizardPage() {
           <div className="step-caption">
             {t.step} {index + 1} {t.of} {wizardOrder.length}
           </div>
-          <div className="architecture-links flex flex-col items-center gap-2">
-            <span className="text-[10px] font-bold text-sa-text-disabled uppercase tracking-wider">
-              {Math.round(((index + 1) / wizardOrder.length) * 100)}% {t.completed}
-            </span>
-            <div className="h-2 w-48 sm:w-64 bg-slate-100 dark:bg-sa-surface-sunken rounded-full overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-[#0fa978] to-[#078a63] text-sa-text-primary border-0 h-full transition-all duration-500 ease-out"
-                style={{ width: `${((index + 1) / wizardOrder.length) * 100}%` }}
-              />
-            </div>
-          </div>
+          <DraftSaveStatus />
           <div className={`wizard-actions flex ${isRtl ? "flex-row-reverse" : "flex-row"}`}>
             {activeStep === 14 && (
               <AlertDialog>

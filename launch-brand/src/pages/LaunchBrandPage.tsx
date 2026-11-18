@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import PlanAccessGuard from '../components/PlanAccessGuard';
 import JoeAcademyLogo from '../components/ui/JoeAcademyLogo';
@@ -28,18 +28,18 @@ export default function LaunchBrandPage() {
   if (!isAuthLoading && isStaffRole(role)) return <Navigate to="/admin" replace />;
 
   return <div className={`launch-brand-page${preview ? ' launch-brand-page--preview' : ''}`} dir={isAr ? 'rtl' : 'ltr'}>
-    <header className="launch-brand-header" dir="ltr" hidden={preview}>
-      <Link className="launch-brand-back" to="/">
-        <ArrowLeft size={18} aria-hidden="true" />
+    <header className="launch-brand-header" hidden={preview}>
+      <Link className="launch-brand-back" to="/" aria-label={isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}>
+        {isAr ? <ArrowRight size={18} aria-hidden="true" /> : <ArrowLeft size={18} aria-hidden="true" />}
         <span dir="auto">{isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}</span>
       </Link>
       <div className="launch-brand-toolbar-slot" ref={setHeaderTarget} />
       <div className="launch-brand-identity"><JoeAcademyLogo className="h-9 w-9" /><span dir="auto">{isAr ? 'جو أكاديمي' : 'Joe Academy'}</span></div>
     </header>
-    <main className="launch-brand-content">
+    <div className="launch-brand-content">
       {isAuthLoading ? loading : <PlanAccessGuard access={ROUTE_ACCESS['/launch-brand']}>
         <Suspense fallback={loading}><BrandEngineModule headerTarget={headerTarget} /></Suspense>
       </PlanAccessGuard>}
-    </main>
+    </div>
   </div>;
 }

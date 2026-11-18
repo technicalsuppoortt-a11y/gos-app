@@ -283,3 +283,5 @@ export function MarketingTracking() {
     <div className="pixel-section-stack">{renderTab()}</div>
   </div>;
 }
+
+import './specialized-compact.css';

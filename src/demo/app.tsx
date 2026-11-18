@@ -26,3 +26,4 @@ window.addEventListener('gos-demo-external', () => showToast.info('External serv
 createRoot(document.getElementById('root')!).render(<App/>);
 
 import '../branding/upclick.css';
+import '../styles/compact-workspace.css';

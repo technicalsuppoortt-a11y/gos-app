@@ -8,7 +8,6 @@ import { confirmedDeploymentSteps } from "@/modules/brand-engine/data/deployment
 import { useEffect, useMemo, useRef, useState } from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Sparkles,
@@ -522,7 +521,7 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
               </div>
               <b>
                 <CircleCheck />
-                {text.live}
+                {showReady ? text.live : deploymentState === "failed" ? text.deploymentFailed : launching ? text.deployingTitle : text.ready}
               </b>
             </div>
             <div className={styles["workspaceBody"]}>
@@ -646,20 +645,6 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
           </div>
         </DialogContent>
       </Dialog>
-      <footer className={styles["footer"]}>
-        <span className={styles["stepCount"]}>{text.step}</span>
-        <div className={styles["footerActions"]}>
-          <Button variant="outline" onClick={() => dispatch(actions.previousStep())}>
-            <ArrowLeft />
-            {text.back}
-          </Button>
-          <Button disabled aria-disabled="true" title={text.finalStep}>
-            {text.continue}
-            <ArrowRight />
-          </Button>
-        </div>
-        <span className={styles["footerHint"]}>{text.finalStep}</span>
-      </footer>
     </section>
   );
 }

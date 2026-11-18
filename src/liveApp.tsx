@@ -12,6 +12,7 @@ import './control-polish.css';
 import './module-updates.css';
 import './branding/upclick.css';
 import './context/workspace-customization.css';
+import './styles/compact-workspace.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

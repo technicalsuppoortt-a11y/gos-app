@@ -1,0 +1,109 @@
+/* Controls belong to the editor; the brand's styles stay inside its preview. */
+.studio-live-preview.studio-live-preview--compact {
+  gap: 12px;
+  min-width: 0;
+  min-height: 360px;
+  container-type: inline-size;
+  color: var(--lb-text, var(--foreground));
+  font-family: var(--lb-font-en, system-ui), var(--lb-font-ar, sans-serif);
+}
+.studio-live-preview--compact:dir(rtl) { font-family: var(--lb-font-ar, sans-serif); }
+.studio-live-preview--compact .studio-preview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  overflow: visible;
+}
+.studio-live-preview--compact :is(.studio-preview-surfaces, .studio-preview-devices, .studio-preview-view-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid var(--lb-card-border, var(--border));
+  border-radius: var(--lb-radius-control, 8px);
+  background: var(--lb-card, var(--card));
+}
+.studio-live-preview.studio-live-preview--compact .studio-preview-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  height: auto;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--lb-text-body, var(--foreground));
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.studio-live-preview--compact .studio-preview-controls button:hover { background: var(--lb-canvas, var(--muted)); }
+.studio-live-preview.studio-live-preview--compact .studio-preview-controls button:is([aria-selected="true"], [aria-pressed="true"]) {
+  color: var(--lb-accent-text, var(--studio-link));
+  border-color: var(--lb-accent-border, var(--border));
+  background: var(--lb-accent-surface, var(--muted));
+  box-shadow: none;
+}
+.studio-live-preview--compact .studio-preview-controls button:focus-visible,
+.studio-live-preview--compact .studio-preview-stage:focus-visible {
+  outline: 2px solid var(--lb-blue, var(--ring));
+  outline-offset: 3px;
+}
+.studio-live-preview.studio-live-preview--compact .studio-preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 320px;
+  height: clamp(320px, 44vh, 560px);
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid var(--lb-card-border, var(--border));
+  border-radius: var(--lb-radius-control, 10px);
+  background: var(--lb-canvas, var(--muted));
+}
+.studio-live-preview--compact .studio-preview-device-frame {
+  flex: 0 0 auto;
+  background: var(--lb-card, var(--card));
+  box-shadow: 0 2px 12px rgb(10 19 32 / .08);
+}
+.studio-live-preview.studio-live-preview--compact .studio-preview-stage--actual {
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.studio-live-preview--compact .studio-preview-caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  color: var(--lb-text-hint, var(--muted-foreground));
+  font-size: 12px;
+  line-height: 1.5;
+}
+.studio-live-preview.studio-live-preview--compact.is-expanded { min-height: 0; }
+.studio-live-preview.studio-live-preview--compact.is-expanded .studio-preview-stage {
+  height: 100%;
+  min-height: 280px;
+  flex: 1 1 0;
+}
+@media (max-width: 720px) {
+  .studio-live-preview--compact .studio-preview-device-label { display: none; }
+  .studio-live-preview.studio-live-preview--compact .studio-preview-stage { height: 360px; }
+}
+@container (max-width: 560px) {
+  .studio-live-preview--compact .studio-preview-device-label { display: none; }
+}
+@media (pointer: coarse) {
+  .studio-live-preview.studio-live-preview--compact .studio-preview-controls button { min-width: 44px; min-height: 44px; }
+}

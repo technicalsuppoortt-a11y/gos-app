@@ -1,0 +1,28 @@
+@scope (.brand-engine-module) {
+.compact-workspace-shell .wizard-footer { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.draft-save-status { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; max-width: 100%; color: var(--lb-text-hint); font-size: 12px; }
+.draft-save-status > span { display: inline-flex; align-items: center; gap: 6px; }
+.draft-save-status small { max-width: 260px; font-size: 12px; overflow-wrap: anywhere; }
+.draft-save-status[data-state="error"] { color: var(--lb-error); }
+.draft-save-status[data-state="saved"] { color: var(--lb-success); }
+.draft-save-status button { min-height: 32px; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px; font: inherit; }
+.compact-workspace-shell .wizard.wizard--brand-studio {
+  --studio-footer-inset: 0px; display: flex; flex-direction: column; height: auto; min-height: 100%; padding: 20px 20px 0; overflow: visible;
+}
+.compact-workspace-shell .workspace-layout:has(.wizard--brand-studio) { display: block; overflow-y: auto; }
+.compact-workspace-shell .workspace-main:has(.wizard--brand-studio) { height: auto; min-height: 100%; padding: 0; overflow: visible; }
+.compact-workspace-shell .studio-page-frame { height: auto; min-height: 0; padding: 0 0 20px; flex: 1; }
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer {
+  position: sticky; inset: auto; bottom: 0; width: auto; height: auto; min-height: 64px;
+  margin: auto -20px 0; padding: 10px 20px; transform: none; z-index: 20;
+  background: var(--lb-card); border-top: 1px solid var(--lb-card-border);
+}
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer { inset-inline-start: auto; margin-inline-start: -20px; width: auto; }
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer .wizard-actions { transform: none; }
+.compact-workspace-shell .wizard-footer .step-caption { color: var(--lb-text-hint); }
+@media(max-width: 767px) {
+  .compact-workspace-shell .wizard.wizard--brand-studio { padding: 14px 12px 0; }
+  .compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer { margin-inline: -12px; padding: 10px 12px; }
+  .compact-workspace-shell .wizard-footer .wizard-actions { width: 100%; justify-content: flex-end; }
+}
+}

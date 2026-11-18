@@ -1,0 +1,24 @@
+.gos-home-dashboard .home-command-section { display: grid; gap: 12px; }
+.gos-home-dashboard [data-dashboard-section="hero"] { min-height: 110px; background: var(--gos-surface, var(--bg-card)); border-color: var(--gos-border); box-shadow: none; }
+.gos-home-dashboard [data-dashboard-section="hero"] > .pointer-events-none,
+.gos-home-dashboard [data-dashboard-section="hero"] > figure { display: none; }
+.gos-home-dashboard #dash-greeting { font-size: 24px; line-height: 1.4; font-weight: 600; letter-spacing: normal; }
+.gos-home-dashboard [data-dashboard-section="hero"] p { font-size: 14px; line-height: 1.6; }
+.gos-home-dashboard [data-dashboard-section="quick-actions"] { padding: 10px 12px; box-shadow: none; background: var(--gos-surface); }
+.gos-home-dashboard .gos-quick-action { min-height: 38px; padding: 8px 10px; background: var(--gos-surface); border-color: var(--gos-border); transform: none; box-shadow: none; }
+.gos-home-dashboard .gos-quick-action:hover { background: var(--gos-soft); border-color: var(--gos-action); }
+.gos-home-dashboard [data-dashboard-section="metrics"] article { min-height: 100px; padding: 16px; box-shadow: none; transform: none; }
+.gos-home-dashboard [data-dashboard-section="metrics"] article .truncate { font-size: 13px; line-height: 1.5; }
+.gos-home-dashboard [data-dashboard-section="metrics"] article .tabular-nums { font-size: 26px; font-weight: 500; line-height: 1.4; }
+.gos-home-dashboard [data-dashboard-section="metrics"] article .sparkline { opacity: .65; }
+.gos-home-dashboard .gos-row { align-items: start; }
+.gos-home-dashboard .gos-row > section { height: auto; min-height: 260px; padding: 18px; }
+.gos-home-dashboard .gos-row > section h2 { font-size: 16px; font-weight: 600; line-height: 1.5; }
+@media(max-width:640px) {
+  .gos-home-dashboard #dash-greeting { font-size: 21px; }
+  .gos-home-dashboard [data-dashboard-section="metrics"] { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article { padding: 12px; flex-wrap: wrap; }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article .truncate { padding-inline-end: 0; white-space: normal; }
+  .gos-home-dashboard [data-dashboard-section="metrics"] .sparkline { display: none; }
+}
+@media(pointer:coarse) { .gos-home-dashboard .gos-quick-action { min-height: 44px; } }

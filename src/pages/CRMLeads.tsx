@@ -740,20 +740,20 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
                   </>
                 ))}
               </div>
-              <div className="crm-contacts-table">
+              <div className="crm-contacts-table" role="region" aria-label={translateText("Contacts")} tabIndex={0}>
                 <table>
                   <thead>
                     <tr>
-                      <th className="text-center" style={{ width: 44 }} />
-                      <th className="text-start">{translateText("Name")}</th>
-                      <th className="text-start">{translateText("Contact Info")}</th>
-                      <th className="text-start">{translateText("Company")}</th>
-                      <th className="text-center">{translateText("Source")}</th>
-                      <th className="text-center">{translateText("Stage")}</th>
-                      <th className="text-start">{translateText("Owner")}</th>
-                      <th className="text-center">{translateText("Last Activity")}</th>
-                      <th className="text-center">{translateText("Created Date")}</th>
-                      <th className="text-center" style={{ width: 56 }}>{translateText("Actions")}</th>
+                      <th scope="col" className="text-center" style={{ width: 44 }}><span className="sr-only">{translateText("Select contacts")}</span></th>
+                      <th scope="col" className="text-start">{translateText("Name")}</th>
+                      <th scope="col" className="text-start">{translateText("Contact Info")}</th>
+                      <th scope="col" className="text-start">{translateText("Company")}</th>
+                      <th scope="col" className="text-center">{translateText("Source")}</th>
+                      <th scope="col" className="text-center">{translateText("Stage")}</th>
+                      <th scope="col" className="text-start">{translateText("Owner")}</th>
+                      <th scope="col" className="text-center">{translateText("Last Activity")}</th>
+                      <th scope="col" className="text-center">{translateText("Created Date")}</th>
+                      <th scope="col" className="text-center" style={{ width: 56 }}>{translateText("Actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1317,3 +1317,5 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
     </div></CRMActionBoundary>
   );
 }
+
+import './records-compact.css';

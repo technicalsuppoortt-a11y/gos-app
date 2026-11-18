@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 105,
+  "scannedStylesheets": 108,
   "correctedDeclarations": 869,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -168,22 +168,22 @@
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 71,
+      "line": 76,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 75,
+      "line": 80,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 93,
+      "line": 98,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/ui/Select.tsx",
-      "line": 124,
+      "line": 132,
       "utility": "text-slate-500"
     },
     {

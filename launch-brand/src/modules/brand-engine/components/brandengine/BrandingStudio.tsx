@@ -8,6 +8,7 @@ import {
   LockKeyhole,
   PanelsTopLeft,
   Save,
+  Settings2,
   Upload,
   X,
 } from 'lucide-react';
@@ -61,7 +62,7 @@ import "./BrandStudio.css";
 import { joeAcademyLogoUrl } from "@/components/ui/JoeAcademyLogo";
 import "./StudioGuided.css";
 import "./BrandStudioWorkspace.css";
-import "./StudioIdentityLayout.css";
+import "./StudioCompactWorkspace.css";
 import {
   brandGenerationFingerprint,
   brandElementFingerprint,
@@ -69,7 +70,7 @@ import {
   resolveIdentityLanguage,
 } from "@/modules/brand-engine/data/ai/brandStudioCore.js";
 import { serializeBrandPages } from "@/modules/brand-engine/data/brandPages";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { usePageParameter } from "@/modules/brand-engine/hooks/usePageParameter";
 import { getDiscoverySelection } from "@/modules/brand-engine/data/discovery";
 import type { BrandIdentity } from "@/modules/brand-engine/data/types";
@@ -139,6 +140,9 @@ export function BrandingStudio({
 
   const [advanced, setAdvanced] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [workspaceView, setWorkspaceView] = useState<"editor" | "preview">("editor");
+  const [logoManagerOpen, setLogoManagerOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
   const [previewSurface, setPreviewSurface] = useState<StudioPreviewSurface>("dashboard");
   const [previewDevice, setPreviewDevice] = useState<StudioPreviewDevice>("desktop");
   const [busy, setBusy] = useState<"generate" | "upload" | "save" | null>(null);
@@ -176,6 +180,8 @@ export function BrandingStudio({
     setUploadError("");
     setAdvanced(false);
     setPreview(false);
+    setWorkspaceView("editor");
+    setLogoManagerOpen(false);
     setGalleryOpen(false);
     setAllConcepts(false);
   }, [state.userProfile?.uid]);
@@ -625,6 +631,14 @@ export function BrandingStudio({
     setShowPreview = setPreview;
   const generating = busy === "generate";
   const logoConceptsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!logoManagerOpen) return;
+    const frame = requestAnimationFrame(() => {
+      logoConceptsRef.current?.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+      document.getElementById("studio-logo-heading")?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [logoManagerOpen, reduceMotion]);
   const [favoriteIdentities, setFavoriteIdentities] = usePageParameter<string[]>(
     "branding",
     "favoriteIdentities",
@@ -643,6 +657,7 @@ export function BrandingStudio({
     dispatch(actions.resetBrandStudio());
     setAdvanced(false);
     setPreview(false);
+    setLogoManagerOpen(false);
     setGalleryOpen(false);
     setAllConcepts(false);
     setShowFavorites(false);
@@ -868,9 +883,9 @@ export function BrandingStudio({
     };
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ duration: reduceMotion ? 0 : 0.16, delay: reduceMotion ? 0 : Math.min(index * 0.025, 0.15) }}
         key={identity.id}
         className={`bs-concept-card${selected ? " selected" : ""}`}
       >
@@ -953,8 +968,9 @@ export function BrandingStudio({
   };
   return (
     <div
-      className="bs-root studio-theme studio-workspace studio-guided-workspace studio-reference-workspace"
+      className="bs-root studio-theme studio-workspace studio-compact-workspace"
       dir={ar ? "rtl" : "ltr"}
+      data-workspace-view={workspaceView}
     >
       {/* Toolbar */}
       <div className="bs-toolbar">
@@ -963,7 +979,7 @@ export function BrandingStudio({
             02
           </span>
           <div>
-            <h1>AI Brand Studio</h1>
+            <h1>{t("Brand Identity Studio", "استوديو هوية البراند")}</h1>
             <p>
               {t(
                 "Build your brand one choice at a time.",
@@ -973,31 +989,25 @@ export function BrandingStudio({
           </div>
         </div>
         <div className="bs-toolbar-actions">
-          {/*
-          <button
-            className={`bs-preview-toggle ${showPreview ? "open" : ""}`}
-            onClick={() => setShowPreview(!showPreview)}
-            title={t("Preview your brand", "معاينة البراند")}
-            aria-label={t("Preview your brand", "معاينة البراند")}
-            aria-pressed={showPreview}
-            type="button"
-          >
-            <Eye size={20} />
-            <span>{t("Preview", "معاينة")}</span>
-          </button>
-          */}
-          {/*
+          <div className="studio-view-switch" role="group" aria-label={t("Workspace view", "عرض مساحة العمل")}>
+            <button type="button" aria-pressed={workspaceView === "editor"} onClick={() => setWorkspaceView("editor")}>
+              {t("Edit", "تحرير")}
+            </button>
+            <button type="button" aria-pressed={workspaceView === "preview"} onClick={() => setWorkspaceView("preview")}>
+              {t("Preview", "المعاينة")}
+            </button>
+          </div>
           <Button
+            type="button"
             variant="outline"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="bs-adv-btn"
             aria-expanded={showAdvanced}
             aria-controls="studio-advanced-settings"
           >
-            <Settings />
-            {t("Advanced", "تخصيص متقدم")}
+            <Settings2 size={16} aria-hidden="true" />
+            {t("More settings", "إعدادات إضافية")}
           </Button>
-          */}
         </div>
       </div>
 
@@ -1357,11 +1367,12 @@ export function BrandingStudio({
           <section
             aria-labelledby="studio-logo-heading"
             className={`bs-logos-section studio-logo-section${galleryOpen ? " gallery-open" : ""}`}
+            id="studio-logo-manager"
+            hidden={!logoManagerOpen}
             ref={logoConceptsRef}
             style={{ scrollMarginTop: 24 }}
           >
             <div className="bs-card-heading studio-logo-heading">
-              <span className="studio-section-number">4</span>
               <div className="studio-logo-heading-copy">
                 <h2 id="studio-logo-heading" tabIndex={-1}>
                   {language === "ar" ? "تصميمات اللوجو" : "Logo concepts"}
@@ -1665,7 +1676,9 @@ export function BrandingStudio({
               </Dialog.Portal>
             </Dialog.Root>
           </section>
-          <StudioOptionalDirections
+          <details className="studio-directions-disclosure">
+            <summary>{t("Explore more brand directions", "استكشف اتجاهات إضافية للبراند")}</summary>
+            <StudioOptionalDirections
             key={state.userProfile?.uid}
             busy={Boolean(busy || pendingLogo)}
             connected={Boolean(connection && !connection.aiPaused)}
@@ -1679,7 +1692,8 @@ export function BrandingStudio({
               setElementToGenerate("name");
             }}
             onApply={(candidate, parts) => void applyDirection(candidate, parts)}
-          />
+            />
+          </details>
         </div>
         <div className="studio-workspace-column studio-workspace-secondary">
           <section className="studio-preview-launch" aria-labelledby="studio-preview-heading">
@@ -1705,7 +1719,7 @@ export function BrandingStudio({
           <section className="studio-assets" aria-labelledby="studio-assets-heading">
             <div className="studio-section-heading">
               <div>
-                <h2 id="studio-assets-heading">{t("Brand Assets", "أصول البراند")}</h2>
+                <h2 id="studio-assets-heading">{t("Your brand kit", "ملفات هوية براندك")}</h2>
                 <p>
                   {t(
                     "Your current logo, colors and typography.",
@@ -1713,6 +1727,18 @@ export function BrandingStudio({
                   )}
                 </p>
               </div>
+              <button
+                type="button"
+                className="studio-text-button"
+                aria-controls="studio-logo-manager"
+                aria-expanded={logoManagerOpen}
+                onClick={() => {
+                  setWorkspaceView("editor");
+                  setLogoManagerOpen((open) => !open);
+                }}
+              >
+                {logoManagerOpen ? t("Close logo manager", "إغلاق إدارة اللوجو") : t("Manage logo", "إدارة اللوجو")}
+              </button>
             </div>
             <div className="studio-assets-grid">
               <article>
@@ -1735,13 +1761,21 @@ export function BrandingStudio({
                 <div className="studio-asset-swatches">
                   {[theme.light.primary, theme.light.secondary, theme.light.buttonBackground].map(
                     (color, i) => (
-                      <i key={i} style={{ background: color }} title={color} />
+                      <i key={i} style={{ background: color }} aria-label={color} />
                     ),
                   )}
                 </div>
                 <strong>{t("Color palette", "ألوان البراند")}</strong>
                 <small dir="ltr">{theme.light.primary}</small>
-                <span>{t("Current colors", "الألوان الحالية")}</span>
+                <button type="button" className="studio-text-button" onClick={() => {
+                  if (!navigator.clipboard) {
+                    toast.error(t("Copy the displayed color values manually.", "انسخ قيم الألوان الظاهرة يدويًا."));
+                    return;
+                  }
+                  void navigator.clipboard.writeText([theme.light.primary, theme.light.secondary, theme.light.buttonBackground].join(", "))
+                    .then(() => toast.success(t("Palette copied", "تم نسخ الألوان")))
+                    .catch(() => toast.error(t("Could not copy colors. Select the color values to copy them.", "تعذّر النسخ. حدد قيم الألوان وانسخها.")));
+                }}>{t("Copy colors", "نسخ الألوان")}</button>
               </article>
               <article>
                 <div

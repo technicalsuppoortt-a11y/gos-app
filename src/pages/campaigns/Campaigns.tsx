@@ -93,9 +93,9 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
 
       <section className="cp-card cp-flush">
         <div className="cp-toolbar">
-          <div className="cp-chips" role="tablist" aria-label={t('Filter by status')}>
+          <div className="cp-chips" role="group" aria-label={t('Filter by status')}>
             {(['all', 'scheduled', 'sending', 'completed', 'draft'] as const).map(s => (
-              <button key={s} type="button" role="tab" aria-selected={filter === s} className={filter === s ? 'is-active' : ''} onClick={() => setFilter(s)}>
+              <button key={s} type="button" aria-pressed={filter === s} className={filter === s ? 'is-active' : ''} onClick={() => setFilter(s)}>
                 {t(s === 'all' ? 'All' : STATUS_LABEL[s])}
               </button>
             ))}
@@ -106,7 +106,7 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
           </label>
         </div>
         {error && <p className="cp-error cp-pad" role="alert">{error} <button type="button" className="cp-link" onClick={load}>{t('Retry')}</button></p>}
-        {campaigns === null && <p className="cp-muted cp-pad">{t('Loading…')}</p>}
+        {campaigns === null && <p className="cp-muted cp-pad" role="status" aria-live="polite">{t('Loading…')}</p>}
         {campaigns !== null && !error && shown.length === 0 && (
           <div className="cp-empty">
             <Megaphone size={28} aria-hidden="true" />
@@ -115,9 +115,9 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
           </div>
         )}
         {shown.length > 0 && (
-          <div className="cp-table-wrap">
+          <div className="cp-table-wrap" role="region" aria-label={t('Campaigns')} tabIndex={0}>
             <table className="cp-table">
-              <thead><tr><th>{t('Campaign')}</th><th>{t('Template')}</th><th>{t('Status')}</th><th>{t('Recipients')}</th><th>{t('Delivered / read')}</th><th>{t('Schedule')}</th></tr></thead>
+              <thead><tr><th scope="col">{t('Campaign')}</th><th scope="col">{t('Template')}</th><th scope="col">{t('Status')}</th><th scope="col">{t('Recipients')}</th><th scope="col">{t('Delivered / read')}</th><th scope="col">{t('Schedule')}</th></tr></thead>
               <tbody>
                 {shown.map(c => (
                   <tr key={c.id}>
@@ -737,7 +737,7 @@ function CampaignReport({ id, onBack, onDuplicate }: { id: string; onBack: () =>
         {recipients === null ? <p className="cp-muted cp-pad">{t('Loading…')}</p> : recipients.length === 0 ? <p className="cp-muted cp-pad">{t('No recipients here')}</p> : (
           <div className="cp-table-wrap">
             <table className="cp-table">
-              <thead><tr><th>{t('Customer')}</th><th>{t('Number')}</th><th>{t('Status')}</th><th>{t('Last update')}</th><th><span className="cp-sr-only">{t('Actions')}</span></th></tr></thead>
+              <thead><tr><th scope="col">{t('Customer')}</th><th scope="col">{t('Number')}</th><th scope="col">{t('Status')}</th><th scope="col">{t('Last update')}</th><th scope="col"><span className="cp-sr-only">{t('Actions')}</span></th></tr></thead>
               <tbody>
                 {recipients.map(r => (
                   <tr key={r.id}>
@@ -756,3 +756,7 @@ function CampaignReport({ id, onBack, onDuplicate }: { id: string; onBack: () =>
     </div>
   )
 }
+
+import '../records-compact.css';
+
+import '../specialized-compact.css';

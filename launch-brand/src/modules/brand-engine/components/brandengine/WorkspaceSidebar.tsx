@@ -9,7 +9,7 @@ import {
   Palette,
   Sparkles,
 } from 'lucide-react';
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { joeAcademyLogoUrl as logo } from "@/components/ui/JoeAcademyLogo";
 import { Button } from "@/modules/brand-engine/components/ui/button";
 import { actions } from "@/modules/brand-engine/store/brandSlice";
@@ -44,6 +44,7 @@ export function WorkspaceSidebar({ collapsed, onCollapsedChange, mobile = false,
   const t = translations[language];
   const isRtl = language === "ar";
   const isDark = theme === "dark";
+  const reduceMotion = useReducedMotion();
 
   const activate = (targetMode: AppMode, step?: number) => {
     if (targetMode === "builder") dispatch(actions.completeStep(4));
@@ -54,12 +55,12 @@ export function WorkspaceSidebar({ collapsed, onCollapsedChange, mobile = false,
 
   return (
     <TooltipProvider delayDuration={150}>
-    <motion.aside className={`workspace-sidebar ${mobile ? "mobile-drawer-sidebar" : "desktop-workspace-sidebar"} ${collapsed ? "is-collapsed" : ""} ${isDark ? "force-dark" : "force-light"}`} aria-label={isRtl ? "تنقل مساحة العمل" : "Workspace navigation"} animate={{ width: mobile ? "100%" : collapsed ? 64 : 256 }} transition={{ duration: .28, ease: [0.22, 1, 0.36, 1] }}>
+    <motion.aside className={`workspace-sidebar ${mobile ? "mobile-drawer-sidebar" : "desktop-workspace-sidebar"} ${collapsed ? "is-collapsed" : ""} ${isDark ? "force-dark" : "force-light"}`} dir={isRtl ? "rtl" : "ltr"} aria-label={isRtl ? "تنقل مساحة العمل" : "Workspace navigation"} initial={false} animate={{ width: mobile ? "100%" : collapsed ? 64 : 208 }} transition={{ duration: reduceMotion ? 0 : .18, ease: [0.22, 1, 0.36, 1] }}>
       <div className="sidebar-brand">
         <img src={logo} alt={isRtl ? "جو أكاديمي" : "Joe Academy"} className="w-8 h-8 object-contain" />
         <div className="sidebar-brand-copy"><strong>{isRtl ? "جو أكاديمي" : "Joe Academy"}</strong><small>Build. Launch. Grow.</small></div>
       </div>
-      <nav aria-label="Project steps">
+      <nav aria-label={isRtl ? "مراحل المشروع" : "Project steps"}>
         {items.map((item) => {
           const Icon = item.icon;
           const active = mode === item.mode && (item.matches?.includes(activeStep) || activeStep === item.step);
@@ -68,6 +69,7 @@ export function WorkspaceSidebar({ collapsed, onCollapsedChange, mobile = false,
             <Tooltip key={item.key}>
             <TooltipTrigger asChild>
             <Button
+              type="button"
               variant="ghost"
               className={active ? "active" : ""}
               aria-label={displayLabel}
@@ -87,7 +89,7 @@ export function WorkspaceSidebar({ collapsed, onCollapsedChange, mobile = false,
       </nav>
       <div className="sidebar-footer">
         <WorkspaceAccount />
-        {!mobile && <Tooltip><TooltipTrigger asChild><Button variant="ghost" className="sidebar-collapse" aria-label={collapsed ? t.sidebarExpand : t.sidebarCollapse} aria-expanded={!collapsed} onClick={() => onCollapsedChange(!collapsed)}>
+        {!mobile && <Tooltip><TooltipTrigger asChild><Button type="button" variant="ghost" className="sidebar-collapse" aria-label={collapsed ? t.sidebarExpand : t.sidebarCollapse} aria-expanded={!collapsed} onClick={() => onCollapsedChange(!collapsed)}>
           <span className="sidebar-item-icon">{collapsed ? (isRtl ? <ChevronLeft /> : <ChevronRight />) : (isRtl ? <ChevronRight /> : <ChevronLeft />)}</span>
           <span className="sidebar-item-label">{t.sidebarCollapse}</span>
         </Button></TooltipTrigger>

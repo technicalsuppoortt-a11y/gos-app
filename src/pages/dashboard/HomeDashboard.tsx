@@ -15,6 +15,7 @@ import {
   Plus,
 } from "lucide-react";
 import "./home-dashboard.css";
+import "./home-compact.css";
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { usePhoenixBrand } from '../../backend/phoenixBrand';
@@ -1343,9 +1344,8 @@ export function HomeDashboard() {
     <div
       className="gos-home-dashboard flex origin-top-left rtl:origin-top-right flex-col gap-2.5 bg-slate-50/50 font-sans dark:bg-transparent w-full flex-1 min-h-0"
     >
-      <HeroBanner />
+      <div className="home-command-section"><HeroBanner /><QuickActions /></div>
       <KpiRow />
-      <QuickActions />
       <div className="gos-row grid grid-cols-1 lg:grid-cols-2 items-stretch gap-2.5 flex-1 min-h-0">
         <ToolsGrid />
         <RevenueOverview />

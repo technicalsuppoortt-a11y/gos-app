@@ -1,0 +1,44 @@
+.gos-select-field { min-width: 0; }
+.gos-select-field, .gos-select-menu {
+  --select-accent: var(--gos-action, var(--gp-primary, #007d70));
+  --select-surface: var(--gos-surface, var(--gp-surface, var(--ui-surface, #fff)));
+  --select-ink: var(--gos-text, var(--gp-text, var(--ui-text, #172a36)));
+  --select-border: var(--gos-border, var(--gp-border, var(--ui-border, #e3e9ee)));
+  --select-muted: var(--gos-muted, var(--gp-muted-text, var(--ui-text-secondary, #566775)));
+  --select-hover: color-mix(in srgb, var(--select-accent) 7%, var(--select-surface));
+  --select-selected: color-mix(in srgb, var(--select-accent) 12%, var(--select-surface));
+}
+.gos-select-control { font-family: var(--gos-ui-font, inherit); }
+:root .gos-select-control[aria-invalid='true'] {
+  border-color: var(--ui-danger-text, #d92d20);
+}
+:root .gos-select-control[aria-invalid='true']:focus-visible {
+  outline-color: var(--ui-danger-text, #d92d20);
+}
+.gos-select-control[data-placeholder] { color: var(--select-muted); }
+.gos-select-menu {
+  font-family: var(--gos-ui-font, 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.gos-select-menu .gos-select-option { gap: 8px; }
+.gos-select-menu .gos-select-option [data-radix-select-item-text] {
+  min-width: 0;
+  max-width: 100%;
+}
+.gos-select-menu .gos-select-scroll { color: var(--select-muted); background: var(--select-surface); }
+.gos-select-empty {
+  display: block;
+  padding: 12px;
+  color: var(--select-muted);
+  font-size: 13px;
+  cursor: default;
+}
+@media (pointer: coarse) {
+  .gos-select-control { min-height: 44px; font-size: 16px; }
+  .gos-select-menu .gos-select-option { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gos-select-control, .gos-select-control [data-select-chevron] { transition: none; }
+  .gos-select-menu { animation: none !important; }
+}

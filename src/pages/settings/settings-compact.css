@@ -1,0 +1,19 @@
+.st-workspace .st-content { min-width: 0; max-width: 1280px; margin-inline: auto; padding: 20px; }
+.st-workspace .st-panel-heading { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.st-workspace .st-panel-heading h2 { font-size: 24px; font-weight: 600; line-height: 1.4; margin: 0; }
+.st-workspace .st-profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; align-items: start; gap: 20px; }
+.st-workspace .st-profile-summary { position: sticky; top: 16px; min-width: 0; }
+.st-workspace .st-card { margin-bottom: 16px; }
+.st-workspace .st-section-title { margin-block: 24px 14px; }
+.st-workspace .st-section-title:first-child { margin-top: 0; }
+.st-workspace .st-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.st-workspace .st-field { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.st-workspace .st-field textarea { min-height: 110px; resize: vertical; }
+.st-workspace .st-form-footer { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding: 14px 0; background: var(--gos-surface, var(--st-surface)); border-top: 1px solid var(--gos-border, var(--st-border)); }
+.st-workspace .st-form-footer > span { color: var(--gos-muted); font-size: 13px; }
+.st-workspace .st-save-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.st-workspace .st-preference { gap: 12px; padding-block: 14px; }
+.st-workspace .st-card-heading { align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.st-workspace .st-loading { min-height: 240px; }
+@media(max-width:900px) { .st-workspace .st-profile-grid { grid-template-columns: minmax(0,1fr); } .st-workspace .st-profile-summary { position: static; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; } }
+@media(max-width:600px) { .st-workspace .st-content { padding: 14px 12px; } .st-workspace .st-form-grid, .st-workspace .st-profile-summary { grid-template-columns: minmax(0,1fr); } .st-workspace .st-field.full-span { grid-column: auto; } .st-workspace .st-form-footer > .st-save-actions { width: 100%; } .st-workspace .st-save-actions > button { flex: 1; } }

@@ -19,8 +19,8 @@
   --color-tech-1: var(--tech-1);
   --color-tech-2: var(--tech-2);
 
-  --font-sans: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-tajawal: 'IBM Plex Sans Arabic', sans-serif;
+  --font-sans: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-tajawal: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
 }
 
 @layer base {
@@ -48,7 +48,7 @@
   body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: var(--font-sans);
+    font-family: var(--lb-ui-font, var(--font-sans));
     height: 100%;
     min-height: 100vh;
     display: flex;
@@ -245,8 +245,8 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #191C25 inset !important;
-  -webkit-text-fill-color: #F2F1EE !important;
-  caret-color: #F2F1EE !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--lb-card) inset !important;
+  -webkit-text-fill-color: var(--lb-text) !important;
+  caret-color: var(--lb-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }

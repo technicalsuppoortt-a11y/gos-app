@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { defaultBrandFont } from "@/modules/brand-engine/data/brandFonts";
 import { StudioSelect } from "./StudioSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/modules/brand-engine/components/ui/dialog";
@@ -37,6 +38,25 @@ export function StudioGuidedChoices({
   const theme = resolveBrandTheme(state),
     colors = theme[state.theme === "dark" ? "dark" : "light"];
   const [custom, setCustom] = useState(false);
+  const [activeSection, setActiveSection] = useState<"name" | "colors" | "typography">("name");
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
+  const sections = [
+    { id: "name" as const, label: t("Name", "الاسم") },
+    { id: "colors" as const, label: t("Colors", "الألوان") },
+    { id: "typography" as const, label: t("Typography", "الخطوط") },
+  ];
+  const sectionIndex = sections.findIndex((section) => section.id === activeSection);
+  const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next = index;
+    if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = sections.length - 1;
+    else if (event.key === "ArrowRight") next = (index + (ar ? -1 : 1) + sections.length) % sections.length;
+    else if (event.key === "ArrowLeft") next = (index + (ar ? 1 : -1) + sections.length) % sections.length;
+    else return;
+    event.preventDefault();
+    setActiveSection(sections[next].id);
+    tabs.current[next]?.focus();
+  };
   const pickPreset = (id: string) => {
     dispatch(actions.setBrandTheme(studioPresetTheme(id, theme)));
     const preset = studioColorPresets.find((item) => item.id === id);
@@ -49,10 +69,10 @@ export function StudioGuidedChoices({
   const names = (generations.name?.suggestions ?? []).filter((candidate) => candidate.name);
   const typographyFonts = [defaultBrandFont, ...(state.brandLanguage === "Arabic" ? arabicBrandFonts : brandFonts).filter((font) => font !== defaultBrandFont)];
   const selectedTypographyFont = state.brandLanguage === "Arabic" ? theme.typography.arabic : theme.typography.heading;
-  const topTypographyFonts = typographyFonts.slice(0, 7);
+  const topTypographyFonts = typographyFonts.slice(0, 3);
   const visibleTypographyFonts = topTypographyFonts.some((font) => font === selectedTypographyFont)
     ? topTypographyFonts
-    : [defaultBrandFont, selectedTypographyFont, ...topTypographyFonts.slice(1, 6)];
+    : [defaultBrandFont, selectedTypographyFont, ...topTypographyFonts.slice(1, 2)];
   const selectedPalette = custom || theme.paletteId === "custom" ? "custom" : theme.paletteId || "dashboard-default";
   const morePaletteValue = selectedPalette === "custom" || selectedPalette === "dashboard-default" || studioColorPresets.slice(0, 3).some((preset) => preset.id === selectedPalette)
     ? ""
@@ -94,23 +114,46 @@ export function StudioGuidedChoices({
     );
   };
   return (
-    <div className="studio-identity-columns">
+    <div className="studio-compact-editor">
+      <div className="studio-editor-tabs" role="tablist" aria-label={t("Brand identity sections", "أقسام هوية البراند")}>
+        {sections.map((section, index) => (
+          <button
+            key={section.id}
+            ref={(element) => { tabs.current[index] = element; }}
+            id={`studio-tab-${section.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeSection === section.id}
+            aria-controls={`studio-panel-${section.id}`}
+            tabIndex={activeSection === section.id ? 0 : -1}
+            onClick={() => setActiveSection(section.id)}
+            onKeyDown={(event) => navigateTabs(event, index)}
+          >
+            <span className="studio-tab-index" aria-hidden="true">{index + 1}</span>
+            {section.label}
+          </button>
+        ))}
+      </div>
       <section
         className="studio-guided-section studio-name-column"
-        aria-labelledby="studio-summary-heading"
+        id="studio-panel-name"
+        role="tabpanel"
+        aria-labelledby="studio-tab-name"
+        hidden={activeSection !== "name"}
       >
         <div className="studio-section-heading">
           <span className="studio-section-number">1</span>
           <div>
             <h2 id="studio-summary-heading" tabIndex={-1}>{t("Your brand name", "اسم البراند")}</h2>
             <p>
-              {t("Generate and choose from AI suggestions.", "ولّد واختار من اقتراحات AI.")}
+              {t("Start with a memorable name. AI suggestions are optional.", "ابدأ باسم سهل تفتكره. اقتراحات AI اختيارية.")}
             </p>
           </div>
           {generate("name", t("Generate Brand Name", "ولّد اسم البراند"))}
           <span className="studio-choice-count">{names.length}</span>
         </div>
         <article className="studio-element-card studio-name-input">
+          <label htmlFor="studio-brand-name">{t("Brand name", "اسم البراند")}</label>
           <input
             id="studio-brand-name"
             value={state.brandName}
@@ -118,12 +161,14 @@ export function StudioGuidedChoices({
             maxLength={80}
             onChange={(e) => dispatch(actions.setBrandName(e.target.value))}
             placeholder={t("Your brand name", "اسم براندك")}
+            aria-describedby="studio-brand-name-hint"
           />
+          <p id="studio-brand-name-hint" className="studio-field-hint">{t("This name appears on your website and dashboard.", "الاسم ده هيظهر في موقعك والداشبورد.")}</p>
         </article>
         {/* Live wordmark: the name in the chosen heading font and brand color, so the
             empty part of this card shows the identity taking shape. */}
         <div className="lb-wordmark-preview" aria-hidden="true">
-          <span style={{ fontFamily: theme.typography.heading, color: theme.light.primary }} dir="auto">
+          <span style={{ fontFamily: ar ? theme.typography.arabic : theme.typography.heading, color: colors.primary }} dir="auto">
             {state.brandName.trim() || t("Your brand", "براندك")}
           </span>
           <i style={{ background: `linear-gradient(90deg, ${theme.light.primary}, ${theme.light.secondary})` }} />
@@ -223,7 +268,10 @@ export function StudioGuidedChoices({
       */}
       <section
         className="studio-guided-section studio-visual-choices"
-        aria-labelledby="studio-visual-heading"
+        id="studio-panel-colors"
+        role="tabpanel"
+        aria-labelledby="studio-tab-colors"
+        hidden={activeSection !== "colors"}
       >
         <div className="studio-section-heading">
           <span className="studio-section-number">2</span>
@@ -285,6 +333,7 @@ export function StudioGuidedChoices({
                 <span className="studio-palette-name">
                   <strong>{t("Keep Dashboard Color", "الاحتفاظ بألوان الداشبورد")}</strong>
                 </span>
+                {selectedPalette === "dashboard-default" && <Check size={16} aria-hidden="true" />}
               </button>
               {studioColorPresets.slice(0, 3).map((preset) => (
                 <button type="button" key={preset.id} aria-pressed={!custom && theme.paletteId === preset.id} disabled={busy} onClick={() => pickPreset(preset.id)}>
@@ -294,6 +343,7 @@ export function StudioGuidedChoices({
                     ))}
                   </span>
                   <span className="studio-palette-name"><strong>{ar ? preset.nameAr : preset.name}</strong><small>{preset.mode === "dark" ? t("Dark", "غامق") : t("Light", "فاتح")}</small></span>
+                  {!custom && theme.paletteId === preset.id && <Check size={16} aria-hidden="true" />}
                 </button>
               ))}
               <StudioSelect
@@ -389,7 +439,10 @@ export function StudioGuidedChoices({
       </section>
       <section
         className="studio-guided-section studio-typography-section"
-        aria-labelledby="studio-typography-heading"
+        id="studio-panel-typography"
+        role="tabpanel"
+        aria-labelledby="studio-tab-typography"
+        hidden={activeSection !== "typography"}
       >
         <div className="studio-section-heading">
           <span className="studio-section-number">3</span>
@@ -406,7 +459,7 @@ export function StudioGuidedChoices({
               <button type="button" key={font} style={font === defaultBrandFont ? { gridColumn: "1 / -1" } : undefined} aria-pressed={font === defaultBrandFont ? Object.values(theme.typography).every((value) => value === defaultBrandFont) : selectedTypographyFont === font} disabled={busy} onClick={() => dispatch(actions.setFontPersonality(font))}>
                 <span className="studio-choice-radio" aria-hidden="true" />
                 <span>
-                  <strong dir={font === defaultBrandFont && ar ? "rtl" : "ltr"}>{font === defaultBrandFont ? t("Keep Triptograph default", "احتفظ بخط Triptograph الافتراضي") : font}</strong>
+                  <strong dir={font === defaultBrandFont && ar ? "rtl" : "ltr"}>{font === defaultBrandFont ? t("Default brand font", "خط البراند الافتراضي") : font}</strong>
                   {font === defaultBrandFont && <small dir="ltr">{defaultBrandFont}</small>}
                   <small lang={state.language} dir={ar ? "rtl" : "ltr"} style={{ fontFamily: font }}>{fontPreview}</small>
                 </span>
@@ -426,7 +479,7 @@ export function StudioGuidedChoices({
                 : dispatch(actions.setFontPersonality(value === "triptograph-default" ? defaultBrandFont : value))
             }
             options={[
-              { value: "triptograph-default", label: t("Keep Triptograph default", "احتفظ بخط Triptograph الافتراضي"), font: defaultBrandFont, preview: fontPreview },
+              { value: "triptograph-default", label: t("Default brand font", "خط البراند الافتراضي"), font: defaultBrandFont, preview: fontPreview },
               ...typographyFonts.map((font) => ({ value: font, label: font, font, preview: fontPreview })),
               { value: "business-context", label: t("Use my business context", "استخدم بيانات حسابي") },
             ]}
@@ -452,6 +505,23 @@ export function StudioGuidedChoices({
           </span>
         )}
       </section>
+      <div className="studio-editor-footer">
+        <span>{t(`Section ${sectionIndex + 1} of ${sections.length}`, `القسم ${sectionIndex + 1} من ${sections.length}`)}</span>
+        <div>
+          {sectionIndex > 0 && (
+            <button type="button" className="studio-text-button" onClick={() => setActiveSection(sections[sectionIndex - 1].id)}>
+              {ar ? <ArrowRight size={15} aria-hidden="true" /> : <ArrowLeft size={15} aria-hidden="true" />}
+              {t("Previous", "السابق")}
+            </button>
+          )}
+          {sectionIndex < sections.length - 1 && (
+            <button type="button" className="studio-section-next" onClick={() => setActiveSection(sections[sectionIndex + 1].id)}>
+              {t(`Next: ${sections[sectionIndex + 1].label}`, `التالي: ${sections[sectionIndex + 1].label}`)}
+              {ar ? <ArrowLeft size={15} aria-hidden="true" /> : <ArrowRight size={15} aria-hidden="true" />}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

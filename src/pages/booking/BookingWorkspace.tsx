@@ -471,12 +471,12 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
                     ['Name', 'Email', 'Phone', 'Company']
                       .filter(c => columns.includes(c))
                       .map(c => (
-                        <th key={c} className={c === 'Phone' ? 'text-center' : 'text-start'}>
+                        <th scope="col" key={c} className={c === 'Phone' ? 'text-center' : 'text-start'}>
                           {localizeNode(c)}
                         </th>
                       ))
                   )}
-                  <th className="bk-action-cell text-center">
+                  <th scope="col" className="bk-action-cell text-center">
                     <span className="sr-only">{translateText('Actions')}</span>
                   </th>
                 </tr>
@@ -576,10 +576,10 @@ export function BookingWorkspace({ notify, createRequested = false, clearCreateR
               <table className="bk-table">
                 <thead>
                   <tr>
-                    <th className="text-start">{translateText('Member')}</th>
-                    <th className="text-center">{translateText('Role')}</th>
-                    <th className="text-center">{translateText('Status')}</th>
-                    <th className="bk-action-cell text-center">
+                    <th scope="col" className="text-start">{translateText('Member')}</th>
+                    <th scope="col" className="text-center">{translateText('Role')}</th>
+                    <th scope="col" className="text-center">{translateText('Status')}</th>
+                    <th scope="col" className="bk-action-cell text-center">
                       <span className="sr-only">{translateText('Actions')}</span>
                     </th>
                   </tr>
@@ -1418,3 +1418,5 @@ function ConfirmDelete({ title, name, close, confirm }: { title: string; name: s
     </Modal>
   );
 }
+
+import '../records-compact.css';
