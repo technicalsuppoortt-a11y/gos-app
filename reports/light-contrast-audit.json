@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 108,
+  "scannedStylesheets": 112,
   "correctedDeclarations": 869,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -853,77 +853,77 @@
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 28,
+      "line": 29,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 81,
+      "line": 82,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 715,
+      "line": 716,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 857,
+      "line": 858,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 923,
+      "line": 924,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 979,
+      "line": 980,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1094,
+      "line": 1095,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1169,
+      "line": 1170,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1181,
+      "line": 1182,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1210,
+      "line": 1211,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1216,
+      "line": 1217,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1230,
+      "line": 1231,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1251,
+      "line": 1252,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1277,
+      "line": 1278,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1310,
+      "line": 1311,
       "utility": "text-slate-500"
     },
     {
