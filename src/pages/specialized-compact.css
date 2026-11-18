@@ -1,0 +1,62 @@
+/* Presentation rules for existing marketing and website workflows, not page canvases. */
+@scope (:is(.aw-workspace, .forms-workspace, .cp-root, .pixel-workspace, .an-page)) to
+  (.aw-live-preview, .aw-thumbnail, .pf-renderer, .pf-canvas, .form-canvas-wrapper, .form-live-preview-card, .cp-phone, [data-form-theme]) {
+  :is(.aw-topbar, .forms-hub-header, .form-studio-nav) { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; min-height: 60px; height: auto; padding: 14px 20px; background: var(--gos-surface); border-bottom: 1px solid var(--gos-border); }
+  .aw-topbar nav { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+  :is(.aw-topbar nav button, .form-studio-nav-tab, .forms-status-tab) { min-height: 38px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+  :is(.aw-topbar nav button.active, .forms-status-tab.active, .form-studio-nav-tab.active) { color: var(--gos-action); background: var(--gos-soft); box-shadow: none; }
+  :is(.aw-actions, .forms-hub-actions, .form-studio-nav-right) { display: flex; flex-wrap: wrap; gap: 8px; }
+  :is(.aw-primary, .aw-secondary) { min-height: 38px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: none; }
+  .aw-primary { background: var(--gos-action); color: var(--gos-on-action); }
+  :is(.forms-hub-title h1, .pf-template-page-header h1) { font-size: 24px; line-height: 1.4; font-weight: 600; }
+  .forms-stats-ribbon { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; padding: 16px 20px; }
+  .forms-stat-card { min-width: 0; padding: 16px; border: 1px solid var(--gos-border); border-radius: 10px; background: var(--gos-surface); box-shadow: none; }
+  .forms-stat-val { font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .forms-stat-label { font-size: 13px; line-height: 1.5; }
+  .forms-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px; }
+  .forms-search-box { flex: 1 1 240px; max-width: 440px; min-height: 40px; }
+  .forms-cards-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(280px,100%),1fr)); gap: 16px; padding: 0 20px 20px; }
+  .form-hub-card { border: 1px solid var(--gos-border); border-radius: 10px; background: var(--gos-surface); box-shadow: none; }
+  .form-hub-card-title { font-size: 16px; line-height: 1.5; font-weight: 500; }
+  .form-hub-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .form-studio-panel { border-color: var(--gos-border); background: var(--gos-surface); }
+  .form-panel-header { min-height: 48px; padding: 14px; font-size: 14px; font-weight: 500; }
+  .form-panel-body { padding: 14px; }
+  .form-palette-btn { min-height: 40px; padding: 10px; border-radius: 8px; font-size: 13px; }
+  .form-inspector-section { gap: 8px; }
+  .form-inspector-section :is(input,select,textarea) { min-width: 0; min-height: 38px; font-size: 14px; border-radius: 8px; }
+  .cp-stack { gap: 20px; }
+  .cp-card { border-radius: 12px; border-color: var(--gos-border); background: var(--gos-surface); box-shadow: none; }
+  .cp-split { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(280px,1fr); align-items: start; gap: 20px; }
+  .cp-field { display: flex; flex-direction: column; gap: 7px; font-size: 13px; font-weight: 500; }
+  .cp-field :is(input,select,textarea) { min-height: 40px; padding: 9px 12px; font-size: 14px; border-radius: 8px; }
+  .cp-steps { display: flex; flex-wrap: wrap; gap: 12px; }
+  .cp-steps li { font-size: 13px; line-height: 1.5; }
+  .cp-template { min-height: 60px; padding: 14px; border-radius: 8px; }
+  .cp-template.is-selected { background: var(--gos-soft); border-color: var(--gos-action); }
+  .cp-row-between { gap: 12px; flex-wrap: wrap; }
+  .pixel-connect-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+  .pixel-connect-card { padding: 18px; border-radius: 12px; border: 1px solid var(--gos-border); background: var(--gos-surface); box-shadow: none; }
+  .pixel-card-header { align-items: start; gap: 12px; flex-wrap: wrap; }
+  .pixel-status-list li { padding-block: 10px; font-size: 13px; line-height: 1.5; }
+  .pixel-consent-row { gap: 16px; align-items: center; flex-wrap: wrap; }
+  .pixel-log-scroll { overflow: auto; border: 1px solid var(--gos-border); border-radius: 8px; }
+  .pixel-log-table { min-width: 640px; font-size: 14px; }
+  .pixel-log-table :is(th,td) { padding: 12px 14px; border-color: var(--gos-border); }
+  .pixel-log-table th { font-size: 12px; font-weight: 500; background: var(--gos-canvas); }
+  .pixel-card-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+  .an-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 16px; border: 1px solid var(--gos-border); border-radius: 10px; background: var(--gos-surface); }
+  .an-filters :is(input,select,button) { min-height: 38px; font-size: 14px; border-radius: 8px; }
+  .an-presets { display: flex; flex-wrap: wrap; gap: 4px; }
+  @media(max-width:900px) { .cp-split { grid-template-columns:minmax(0,1fr); } }
+  @media(max-width:640px) {
+    :is(.aw-topbar,.forms-hub-header,.form-studio-nav) { padding: 12px; }
+    .forms-stats-ribbon { grid-template-columns:minmax(0,1fr); padding: 12px; }
+    .forms-cards-grid { padding: 0 12px 12px; }
+    .forms-filter-bar { padding: 12px; }
+    .forms-search-box { max-width: none; }
+    .pixel-connect-grid { grid-template-columns:minmax(0,1fr); }
+    .cp-grid-3 { grid-template-columns:minmax(0,1fr); }
+  }
+  @media(pointer:coarse) { :is(.aw-primary,.aw-secondary,.form-palette-btn,.form-studio-nav-tab,.an-filters button) { min-height:44px; } }
+}

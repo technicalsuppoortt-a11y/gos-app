@@ -1,0 +1,24 @@
+.logo-drawing-preview {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--lb-card-border, var(--border));
+  border-radius: 10px;
+  background: var(--lb-card, var(--card));
+  color: var(--lb-text, var(--foreground));
+}
+.logo-drawing-preview__heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--lb-card-border, var(--border)); font-size: 13px; font-weight: 500; }
+.logo-drawing-preview__heading button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 6px 9px; border: 1px solid var(--lb-card-border, var(--border)); border-radius: 7px; color: var(--lb-accent-text, var(--foreground)); background: var(--lb-card, var(--card)); font: inherit; cursor: pointer; }
+.logo-drawing-preview__heading button:disabled { opacity: .55; cursor: wait; }
+.logo-drawing-preview__heading button:focus-visible { outline: 2px solid var(--lb-info, var(--ring)); outline-offset: 3px; }
+.logo-drawing-preview__stage { position: relative; display: grid; place-items: center; min-height: 190px; padding: 20px; background: var(--lb-canvas, var(--muted)); }
+.logo-drawing-preview__stage .logo-drawing-preview__image { display: block; width: 100%; max-width: 520px; height: 180px; object-fit: contain; }
+.logo-drawing-preview.is-loading .logo-drawing-preview__image { visibility: hidden; }
+.logo-drawing-preview__message { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 9px; padding: 20px; color: var(--lb-text-hint, var(--muted-foreground)); font-size: 13px; text-align: center; }
+.logo-drawing-preview__spinner { animation: logo-reveal-spin 1s linear infinite; }
+.logo-drawing-preview.has-image-reveal .logo-drawing-preview__image { animation: logo-image-reveal 2.4s ease-out both; }
+.logo-drawing-preview__caption { margin: 0; padding: 10px 12px; color: var(--lb-text-hint, var(--muted-foreground)); font-size: 12px; line-height: 1.6; }
+@keyframes logo-reveal-spin { to { transform: rotate(360deg); } }
+@keyframes logo-image-reveal { from { clip-path: inset(0 100% 0 0); opacity: .25; } to { clip-path: inset(0); opacity: 1; } }
+@media(pointer: coarse) { .logo-drawing-preview__heading button { min-height: 44px; } }
+@media(prefers-reduced-motion: reduce) { .logo-drawing-preview__spinner, .logo-drawing-preview.has-image-reveal .logo-drawing-preview__image { animation: none; } }

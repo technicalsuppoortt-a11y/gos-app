@@ -1,14 +1,13 @@
 import { openPhoenixAccount } from "@/modules/brand-engine/services/phoenixTransfer";
-import { openGosPlatform, requestGosPlatform } from '@/services/gosPlatform';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { openGosPlatform, requestGosPlatform } from "@/services/gosPlatform";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { preparePhoenixConfiguration } from "@/modules/brand-engine/services/brandDraft";
 import { fingerprintBrandPages } from "@/modules/brand-engine/data/brandPages";
 import { confirmedDeploymentSteps } from "@/modules/brand-engine/data/deploymentProgress";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Sparkles,
@@ -16,7 +15,11 @@ import {
   CircleAlert,
   ExternalLink,
   Crown,
-} from 'lucide-react';
+  Rocket,
+  ShieldCheck,
+  Zap,
+  Globe,
+} from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Provider } from "react-redux";
 import { LandingPreviewBridge } from "@/modules/brand-engine/components/brandengine/landing-preview/LandingPreviewBridge";
@@ -33,11 +36,12 @@ import { ReadySaasDeploymentSummary } from "./ReadySaasMarketplace";
 
 const copy = {
   en: {
-    eyebrow: "FINAL STEP. A BIGGER FUTURE.",
+    eyebrow: "FINAL STEP · LAUNCH & REVIEW",
     title: "From idea to a platform ready in minutes",
     centerTitle: "AI Deployment Center",
-    intro: "Save your brand, logo, pages and settings in Joe Academy before publishing.",
-    introAr: "Your website can be published after Joe Academy receives the configuration.",
+    intro: "Review your pre-flight checklist and save your brand, pages, and settings to Joe Academy before publishing.",
+    checklistTitle: "Deployment Checklist & Verification",
+    checklistSub: "8 automated pre-flight checks across brand identity, pages, and workspace sync",
     liveTitle: "Your brand and platform are ready",
     liveBody: "Your brand, pages and settings are saved in Gose. Open your platform from Phoenix.",
     liveBodyAr: "تم إنشاء حساب منصتك وحفظ اختياراتك في Gose.",
@@ -45,36 +49,20 @@ const copy = {
     reviewWebsite: "Review Website",
     startDeployment: "Start Deployment",
     dashboard: "Go to Dashboard",
-    experience: "Preview configuration",
     openDashboard: "Open Dashboard",
     openPortal: "Open Customer Portal",
-    openAiCenter: "Open AI Center",
-    complete: "Completed",
-    completedNow: "Just completed",
     systemsReady: "Configuration received",
-    review: "Review configuration",
-    preview: "Preview",
-    draft: "Draft",
     live: "Prepared",
-    draftHelper: "This preview shows your current draft.",
-    liveHelper: "This preview shows the configuration prepared for Joe Academy.",
-    desktop: "Desktop",
-    tablet: "Tablet",
-    mobile: "Mobile",
-    closePreview: "Close preview",
     unavailable: "A generated landing page is required before it can be reviewed.",
-    step: "Step 13 of 13",
-    finalStep: "Final step completed",
-    back: "Back",
-    continue: "Continue",
     workspace: "Workspace Summary",
     workspaceSub: "Your business workspace",
     platformUrl: "Platform URL",
     admin: "Admin Dashboard",
     portal: "Customer Portal",
-    aiCenter: "AI Center",
     marketplace: "Marketplace",
     ready: "Ready",
+    verified: "Verified",
+    syncing: "Syncing",
     growthTitle: "Your Gose platform is ready",
     growthSub: "Open your platform from Phoenix with the same account.",
     aiWorking: "AI is working...",
@@ -84,18 +72,6 @@ const copy = {
     deploymentFailedBody: "Please check the error and retry. Your draft remains in Joe Academy.",
     retry: "Retry transfer",
     contactSupport: "Contact Support",
-    workingItems: [
-      "Configuring your platform...",
-      "Setting up integrations...",
-      "Optimizing performance...",
-      "Preparing your workspace...",
-    ],
-    workingCaptions: [
-      "Applying your brand, pages, and chosen modules",
-      "Connecting your selected tools and automations",
-      "Checking speed, security, and launch readiness",
-      "Creating your dashboard, portal, and AI workspace",
-    ],
     readyItems: [
       "Brand choices saved",
       "Page parameters copied",
@@ -112,13 +88,24 @@ const copy = {
       "Snapshot received",
       "Ready in Joe Academy",
     ],
+    stepDetails: [
+      "Identity, palette & typography tokens",
+      "Selected website layout & theme",
+      "Enabled SaaS tools & modules",
+      "Connected AI generation settings",
+      "Landing copy & section parameters",
+      "Phoenix owner session verified",
+      "Encrypted cloud snapshot stored",
+      "Gose workspace ready to launch",
+    ],
   },
   ar: {
-    eyebrow: "الخطوة الأخيرة. مستقبل أكبر.",
+    eyebrow: "الخطوة الأخيرة · المراجعة والنشر",
     title: "من الفكرة إلى منصة جاهزة خلال دقائق",
     centerTitle: "مركز النشر بالذكاء الاصطناعي",
-    intro: "احفظ البراند واللوجو والصفحات والاختيارات في Joe Academy قبل نشر الموقع.",
-    introAr: "كل ما تحتاجه من أجل انطلاقة أكثر ذكاءً وسرعة.",
+    intro: "راجع قائمة التحقق واحفظ البراند واللوجو والصفحات والإعدادات في Joe Academy قبل النشر.",
+    checklistTitle: "قائمة التحقق وجاهزية النشر",
+    checklistSub: "٨ فحوصات تلقائية للهوية والصفحات وربط مساحة العمل قبل الإطلاق",
     liveTitle: "تم إنشاء البراند ومنصتك جاهزة",
     liveBody: "تم حفظ هويتك وصفحاتك وإعداداتك في حساب Gose. افتح منصتك من لوحة Phoenix.",
     liveBodyAr: "تم إنشاء حساب منصتك وحفظ اختياراتك في Gose.",
@@ -126,36 +113,20 @@ const copy = {
     reviewWebsite: "مراجعة الموقع",
     startDeployment: "بدء النشر",
     dashboard: "اذهب إلى لوحة التحكم",
-    experience: "معاينة الإعدادات",
     openDashboard: "فتح لوحة التحكم",
     openPortal: "فتح بوابة العملاء",
-    openAiCenter: "فتح مركز الذكاء الاصطناعي",
-    complete: "مكتمل",
-    completedNow: "اكتمل الآن",
     systemsReady: "تم استلام الإعدادات",
-    review: "مراجعة الإعدادات",
-    preview: "معاينة",
-    draft: "مسودة",
     live: "مجهّز",
-    draftHelper: "تعرض هذه المعاينة مسودتك الحالية.",
-    liveHelper: "تعرض المعاينة الإعدادات التي تم تجهيزها لـJoe Academy.",
-    desktop: "سطح المكتب",
-    tablet: "الجهاز اللوحي",
-    mobile: "الهاتف",
-    closePreview: "إغلاق المعاينة",
     unavailable: "يلزم إنشاء صفحة هبوط قبل مراجعتها.",
-    step: "الخطوة 13 من 13",
-    finalStep: "اكتملت الخطوة الأخيرة",
-    back: "رجوع",
-    continue: "متابعة",
     workspace: "ملخص مساحة العمل",
     workspaceSub: "مساحة عمل علامتك التجارية",
     platformUrl: "رابط المنصة",
     admin: "لوحة الإدارة",
     portal: "بوابة العملاء",
-    aiCenter: "مركز الذكاء الاصطناعي",
     marketplace: "المتجر",
     ready: "جاهز",
+    verified: "مؤكّد",
+    syncing: "جارٍ الحفظ",
     growthTitle: "منصتك جاهزة في Gose",
     growthSub: "افتح منصتك من لوحة Phoenix بنفس الحساب.",
     aiWorking: "الذكاء الاصطناعي يعمل...",
@@ -165,8 +136,6 @@ const copy = {
     deploymentFailedBody: "راجع السبب وأعد المحاولة. مسودتك تظل محفوظة في Joe Academy.",
     retry: "إعادة محاولة الإرسال",
     contactSupport: "التواصل مع الدعم",
-    workingItems: ["يجهز منصتك...", "يربط التكاملات...", "يحسن الأداء...", "يجهز مساحة عملك..."],
-    workingCaptions: ["يطبّق الهوية والصفحات والوحدات المختارة", "يربط الأدوات والأتمتة التي اخترتها", "يفحص السرعة والأمان وجاهزية الإطلاق", "ينشئ لوحة التحكم والبوابة ومساحة الذكاء"],
     readyItems: [
       "تم حفظ اختيارات البراند",
       "تم نقل بارامترات الصفحات",
@@ -183,12 +152,22 @@ const copy = {
       "تم استلام النسخة",
       "الإعدادات جاهزة في Joe Academy",
     ],
+    stepDetails: [
+      "الاسم والألوان والخطوط المختارة",
+      "تخطيط الموقع ونمط العرض",
+      "أدوات ووحدات المنصة المفعّلة",
+      "إعدادات وتفضيلات الذكاء الاصطناعي",
+      "نصوص وأقسام صفحة الهبوط",
+      "التحقق من حساب المالك في Phoenix",
+      "حفظ نسخة سحابية مؤمّنة",
+      "مساحة عمل Gose جاهزة للانطلاق",
+    ],
   },
 } as const;
 
 type DeploymentState = "idle" | "deploying" | "success" | "failed";
 
-export function PlatformDeployment({ number = "11" }: { number?: string }) {
+export function PlatformDeployment({ number = "04" }: { number?: string }) {
   const dispatch = useAppDispatch();
   const brand = useAppSelector((state) => state.brand);
   const selectedBrand = useDashboardBrand();
@@ -202,33 +181,47 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
   const [deploymentAttempted, setDeploymentAttempted] = useState(false);
   const [syncingGos, setSyncingGos] = useState(false);
   const [gosReady, setGosReady] = useState(false);
-  const [platformSignInError, setPlatformSignInError] = useState('');
+  const [platformSignInError, setPlatformSignInError] = useState("");
   const [platformSigningIn, setPlatformSigningIn] = useState(false);
   const fingerprint = fingerprintBrandPages(brand);
-  const deploymentState: DeploymentState = syncingGos || brand.phoenixPreparation.state === "transferring" ? "deploying" :
-    gosReady && brand.phoenixPreparation.state === "prepared" && brand.phoenixPreparation.fingerprint === fingerprint ? "success" :
-    brand.phoenixPreparation.state === "failed" ? "failed" : "idle";
+  const deploymentState: DeploymentState =
+    syncingGos || brand.phoenixPreparation.state === "transferring"
+      ? "deploying"
+      : gosReady && brand.phoenixPreparation.state === "prepared" && brand.phoenixPreparation.fingerprint === fingerprint
+        ? "success"
+        : brand.phoenixPreparation.state === "failed"
+          ? "failed"
+          : "idle";
   const launching = deploymentState === "deploying";
+
   useEffect(() => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     let active = true;
-    void getDoc(doc(db, 'users', uid, 'brandEngine', 'gosDeployment')).then(snapshot => {
-      if (active && auth.currentUser?.uid === uid) setGosReady(snapshot.data()?.status === 'prepared' && snapshot.data()?.revision === brand.phoenixPreparation.snapshotId);
-    }).catch(() => { if (active) setGosReady(false); });
-    return () => { active = false; };
+    void getDoc(doc(db, "users", uid, "brandEngine", "gosDeployment"))
+      .then((snapshot) => {
+        if (active && auth.currentUser?.uid === uid) {
+          setGosReady(
+            snapshot.data()?.status === "prepared" && snapshot.data()?.revision === brand.phoenixPreparation.snapshotId,
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setGosReady(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [brand.phoenixPreparation.snapshotId]);
+
   const [completedDeploymentSteps, setCompletedDeploymentSteps] = useState(() =>
     deploymentState === "success" ? text.steps.length : 0,
   );
-  // Animate only as far as the confirmed transfer progress allows. The last
-  // step remains active until Joe Academy confirms a successful save.
   const transferProgress = brand.phoenixPreparation.progress ?? 0;
   const confirmedSteps = confirmedDeploymentSteps(deploymentState, transferProgress, text.steps.length);
-  const animatingSteps = deploymentState === "deploying" ||
-    (deploymentState === "success" && completedDeploymentSteps < text.steps.length);
-  const activeWorkItem = Math.min(text.workingItems.length - 1,
-    Math.floor(completedDeploymentSteps / 2));
+  const animatingSteps =
+    deploymentState === "deploying" || (deploymentState === "success" && completedDeploymentSteps < text.steps.length);
+
   const [readyItemCount, setReadyItemCount] = useState(() =>
     deploymentState === "success" ? text.readyItems.length : 0,
   );
@@ -254,8 +247,13 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
       }
     : undefined;
   const isLive = deploymentState === "success";
-  const showWorking = deploymentState === "deploying";
   const showReady = deploymentState === "success" || (isLive && !launching);
+  const progressPercent = showReady
+    ? 100
+    : launching
+      ? Math.max(12, Math.round((completedDeploymentSteps / text.steps.length) * 100))
+      : 100;
+
   const previewStore = useMemo(
     () =>
       configureStore({
@@ -281,10 +279,7 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
   }, []);
 
   const openDashboard = () => window.location.assign("/dashboard");
-//   const openAICenter = () => {
-//     dispatch(actions.setMode("wizard"));
-//     dispatch(actions.setStep(8));
-//   };
+
   const deployPlatform = async () => {
     if (deploymentState === "deploying") return;
     setDeploymentAttempted(true);
@@ -295,37 +290,57 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
     try {
       const result = await preparePhoenixConfiguration();
       const uid = auth.currentUser?.uid;
-      if (!uid || uid !== result.phoenixUid) throw new Error('The signed-in account changed.');
-      await requestGosPlatform('deploy', result.snapshotId);
-      if (auth.currentUser?.uid !== uid) throw new Error('The signed-in account changed.');
-      await setDoc(doc(db, 'users', uid, 'brandEngine', 'gosDeployment'), { status: 'prepared', revision: result.snapshotId, updatedAt: serverTimestamp() });
+      if (!uid || uid !== result.phoenixUid) throw new Error("The signed-in account changed.");
+      await requestGosPlatform("deploy", result.snapshotId);
+      if (auth.currentUser?.uid !== uid) throw new Error("The signed-in account changed.");
+      await setDoc(doc(db, "users", uid, "brandEngine", "gosDeployment"), {
+        status: "prepared",
+        revision: result.snapshotId,
+        updatedAt: serverTimestamp(),
+      });
       setGosReady(true);
     } catch (error) {
-      if (auth.currentUser?.uid === deploymentUid) dispatch(actions.setPhoenixPreparation({ ...brand.phoenixPreparation, state: 'failed', error: error instanceof Error ? error.message : 'Could not deploy your platform.' }));
+      if (auth.currentUser?.uid === deploymentUid) {
+        dispatch(
+          actions.setPhoenixPreparation({
+            ...brand.phoenixPreparation,
+            state: "failed",
+            error: error instanceof Error ? error.message : "Could not deploy your platform.",
+          }),
+        );
+      }
       return;
     } finally {
       setSyncingGos(false);
     }
     await signInToPlatform();
   };
+
   const signInToPlatform = async () => {
     if (platformSigningIn) return;
     setPlatformSigningIn(true);
-    setPlatformSignInError('');
+    setPlatformSignInError("");
     try {
       await openGosPlatform();
     } catch (error) {
-      setPlatformSignInError(error instanceof Error ? error.message : 'Could not sign in to your platform.');
+      setPlatformSignInError(error instanceof Error ? error.message : "Could not sign in to your platform.");
       setPlatformSigningIn(false);
     }
   };
+
   const openCustomerPortal = () => {
-    if (!showReady) { deployPlatform(); return; }
+    if (!showReady) {
+      void deployPlatform();
+      return;
+    }
     openPhoenixAccount(brand.phoenixPreparation.phoenixOrigin, brand.phoenixPreparation.phoenixUid);
   };
 
   const openPlatform = () => {
-    if (!showReady) { deployPlatform(); return; }
+    if (!showReady) {
+      void deployPlatform();
+      return;
+    }
     void signInToPlatform();
   };
 
@@ -339,7 +354,6 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
       setCompletedDeploymentSteps(confirmedSteps);
       return;
     }
-    // Replay skipped checkpoints one by one when several updates arrive together.
     const timeout = window.setTimeout(() => {
       setCompletedDeploymentSteps((current) => Math.min(current + 1, confirmedSteps));
     }, 320);
@@ -376,290 +390,433 @@ export function PlatformDeployment({ number = "11" }: { number?: string }) {
     >
       <motion.div
         className={styles["inner"]}
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
       >
         <div className={styles["scaleFrame"]}>
           <header className={styles["hero"]}>
-          <div className={styles["heroTitle"]}>
-            <span className={styles["stepBadge"]} aria-label={`Step ${number}`}>
-              {number}
-            </span>
-            <div>
-              <p className={styles["eyebrow"]}>{text.eyebrow}</p>
-              <div className={styles["titleLine"]}>
-                <h1 className={styles["heading"]} id="deployment-title">
-                  {text.title}
-                </h1>
-                <p className={styles["centerTitle"]}>{text.centerTitle}</p>
-              </div>
-              <div className={styles["introLine"]}>
+            <div className={styles["heroTitle"]}>
+              <span className={styles["stepBadge"]} aria-label={`Step ${number}`}>
+                {number}
+              </span>
+              <div className={styles["heroCopy"]}>
+                <p className={styles["eyebrow"]}>{text.eyebrow}</p>
+                <div className={styles["titleLine"]}>
+                  <h1 className={styles["heading"]} id="deployment-title">
+                    {text.title}
+                  </h1>
+                </div>
                 <p className={styles["intro"]}>{text.intro}</p>
               </div>
             </div>
-          </div>
-        </header>
+            <span className={styles["centerTitle"]}>{text.centerTitle}</span>
+          </header>
 
-        {readySaas && readySaasBrand && <ReadySaasDeploymentSummary item={readySaas.item} brand={readySaasBrand} ar={language === "ar"} />}
-        <div className={styles["deploymentGrid"]}>
-          <main className={styles["mainColumn"]}>
-            <ol className={styles["progress"]} aria-label={text.eyebrow}>
-              {text.steps.map((step, index) => (
-                <motion.li
-                  key={step}
-                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.22, delay: reduceMotion ? 0 : index * 0.05 }}
-                  data-state={index < completedDeploymentSteps ? "complete" : index === completedDeploymentSteps && animatingSteps ? "active" : "pending"}
-                  aria-current={index === completedDeploymentSteps && animatingSteps ? "step" : undefined}
-                >
-                  <span className={styles["progressDot"]}>
-                    {index < completedDeploymentSteps ? <Check aria-hidden="true" /> : index + 1}
-                  </span>
-                  <span>{step}</span>
-                </motion.li>
-              ))}
-            </ol>
+          {readySaas && readySaasBrand && (
+            <ReadySaasDeploymentSummary item={readySaas.item} brand={readySaasBrand} ar={language === "ar"} />
+          )}
 
-            <div className={styles["launchStage"]}>
-              <aside
-                className={styles["workingCard"]}
-                data-state={showWorking ? "active" : "complete"}
-                aria-live="polite"
-              >
-                <div className={styles["statusCardTitle"]}>
-                  <span className={styles["statusOrb"]} aria-hidden="true" />
-                  <strong>{deploymentState === "idle" ? text.startDeployment : text.aiWorking}</strong>
-                </div>
-                {text.workingItems.map((item, index) => (
-                  <p key={item} data-active={showWorking && activeWorkItem === index} data-complete={showReady || (showWorking && index < activeWorkItem)}>
-                    <span className={styles["statusCheck"]} aria-hidden="true" />
-                    <span>{item}<small>{text.workingCaptions[index]}</small></span>
-                  </p>
-                ))}
-              </aside>
-              <div className={styles["celebration"]} data-state={deploymentState} aria-live="polite" aria-label={deploymentState === "failed" ? text.deploymentFailed : showReady ? text.liveTitle : text.deployingTitle}>
-                <div className={styles["rings"]} aria-hidden="true">
-                  <span className={styles["ring"]} />
-                  <span className={styles["launchConfetti"]}>
-                    {Array.from({ length: 12 }, (_, index) => (
-                      <i key={index} />
-                    ))}
-                  </span>
-                  <span className={styles["launchCloud"]} aria-hidden="true" />
-                  <span className={styles["rocketWrap"]}>
-                    <img src="/deployment/live-rocket.png" alt="" />
-                  </span>
-                </div>
-                <h2>
-                  {deploymentState === "failed" ? text.deploymentFailed : showReady ? <>{text.liveTitle} <span aria-hidden="true">🎉</span></> : deploymentState === "idle" ? text.startDeployment : text.deployingTitle}
-                </h2>
-                <p>{deploymentState === "failed" ? text.deploymentFailedBody : showReady ? text.liveBody : deploymentState === "idle" ? text.intro : text.deployingBody}</p>
-                {deploymentState === "failed" && <p role="alert">{brand.phoenixPreparation.error}</p>}
-                {platformSignInError && <p role="alert">{platformSignInError}</p>}
-                {showReady && <p className={styles["liveArabic"]}>{text.liveBodyAr}</p>}
-                <div className={styles["actionRow"]}>
-                  <Button
-                    size="lg"
-                    className={styles["primaryAction"]}
-                    onClick={showReady ? openPlatform : deployPlatform}
-                    disabled={deploymentState === "deploying" || platformSigningIn}
-                    aria-label={showReady ? text.open : deploymentState === "failed" ? text.retry : text.startDeployment}
-                  >
-                    {showReady ? <ExternalLink /> : deploymentState === "failed" ? <CircleAlert /> : <Sparkles />}
-                    {showReady ? text.open : deploymentState === "failed" ? text.retry : deploymentState === "deploying" ? text.deployingTitle : text.startDeployment}
-                    <ArrowRight />
-                  </Button>
-                  {deploymentState === "failed" && <a className={styles["supportAction"]} href="mailto:support@brandengine.ai">{text.contactSupport}</a>}
-                  {deploymentState !== "success" && (
-                    <Button
-                      variant="outline"
-                      className={styles["reviewAction"]}
-                      disabled={!hasPreview}
-                      aria-label={text.reviewWebsite}
-                      aria-describedby={!hasPreview ? "preview-unavailable" : undefined}
-                      onClick={() => dispatch(actions.setMode("builder"))}
-                    >
-                      <Sparkles aria-hidden="true" />
-                      {text.reviewWebsite}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <aside
-                className={styles["readyCard"]}
-                data-state={showReady ? "active" : "waiting"}
-                aria-live="polite"
-              >
-                <div className={styles["statusCardTitle"]}>
-                  <span className={styles["readyOrb"]} aria-hidden="true" />
-                  <strong>{showReady ? text.systemsReady : deploymentState === "failed" ? text.deploymentFailed : text.ready}</strong>
-                </div>
-                {text.readyItems.map((item, index) => (
-                  <p key={item} data-ready={index < readyItemCount}>
-                    <span className={styles["statusCheck"]} aria-hidden="true" />
-                    {item}
-                  </p>
-                ))}
-              </aside>
-            </div>
-            {!hasPreview && (
-              <span className={styles["unavailableHint"]} id="preview-unavailable">
-                {text.unavailable}
-              </span>
-            )}
-          </main>
-
-          <aside className={styles["workspaceCard"]}>
-            <div className={styles["workspaceHeading"]}>
-              <span>
-                <Crown />
-              </span>
-              <div>
-                <h2>{text.workspace}</h2>
-                <p>{text.workspaceSub}</p>
-              </div>
-              <b>
-                <CircleCheck />
-                {text.live}
-              </b>
-            </div>
-            <div className={styles["workspaceBody"]}>
-              <div
-                role="link"
-                tabIndex={0}
-                onKeyDown={event => {
-                  if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
-                    event.preventDefault();
-                    dispatch(actions.setMode("builder"));
-                  }
-                }}
-                className={styles["miniSite"]}
-                onClick={() => dispatch(actions.setMode("builder"))}
-                aria-label={`${text.reviewWebsite}: ${workspaceBrandName}`}
-              >
-                <span ref={miniSiteViewportRef} className={styles["miniSiteViewport"]} aria-hidden="true" inert>
-                  <span className={styles["miniSiteCanvas"]} style={{ height: miniSite.height, transform: `scale(${miniSite.scale})` }}>
-                    <Provider store={previewStore}>
-                      <LandingPreviewBridge />
-                    </Provider>
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  className={styles["miniSiteAction"]}
-                  onClick={event => {
-                    event.stopPropagation();
-                    dispatch(actions.setMode("builder"));
-                  }}
-                >
-                  <ExternalLink aria-hidden="true" />
-                  {text.reviewWebsite}
-                </button>
-              </div>
-              <div className={styles["workspaceInfo"]}>
-                <div className={styles["workspaceBrand"]}>
-                  <div className={styles["workspaceBrandMark"]} aria-hidden="true">
-                    <DashboardBrandLogo
-                      identity={workspaceIdentity}
-                      url={selectedBrand.logoUrl}
-                      generated={selectedBrand.generatedLogo}
-                      primary={selectedBrand.primary}
-                    />
+          <div className={`${styles["deploymentGrid"]} grid grid-cols-1 lg:grid-cols-12 gap-5`}>
+            {/* Left Column (7/12): Clean Step-by-Step Checklist + Integrated Launch Command Card */}
+            <main className={`${styles["mainColumn"]} lg:col-span-7`}>
+              <div className={styles["checklistHeader"]}>
+                <div className={styles["checklistHeaderTop"]}>
+                  <div className={styles["checklistTitleGroup"]}>
+                    <span className={styles["checklistIcon"]} aria-hidden="true">
+                      <ShieldCheck size={17} />
+                    </span>
+                    <div>
+                      <h2>{text.checklistTitle}</h2>
+                      <p>{text.checklistSub}</p>
+                    </div>
                   </div>
-                  <div>
+                  <span className={styles["checklistCountPill"]} data-state={deploymentState}>
+                    {showReady
+                      ? `${text.steps.length} / ${text.steps.length} ${text.verified}`
+                      : launching
+                        ? `${completedDeploymentSteps} / ${text.steps.length} ${text.syncing}`
+                        : language === "ar"
+                          ? `${text.steps.length} وحدات جاهزة`
+                          : `${text.steps.length} Checks Ready`}
+                  </span>
+                </div>
+                <div className={styles["checklistMeter"]} aria-hidden="true">
+                  <span
+                    className={styles["checklistMeterFill"]}
+                    data-state={deploymentState}
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className={styles["checklistSpecs"]}>
+                  <div className={styles["specItem"]}>
+                    <small>{language === "ar" ? "البراند" : "Brand Identity"}</small>
                     <strong>{workspaceBrandName}</strong>
-                    {/*<small>{brand.tagline}</small>*/}
-                    {workspaceDescription && <small title={workspaceDescription}>{workspaceDescription}</small>}
+                  </div>
+                  <div className={styles["specItem"]}>
+                    <small>{language === "ar" ? "نظام الألوان" : "Theme System"}</small>
+                    <strong>
+                      {brand.theme === "dark"
+                        ? language === "ar"
+                          ? "داكن · WCAG"
+                          : "Dark · WCAG AA"
+                        : language === "ar"
+                          ? "فاتح · WCAG"
+                          : "Light · WCAG AA"}
+                    </strong>
+                  </div>
+                  <div className={styles["specItem"]}>
+                    <small>{language === "ar" ? "صفحة الموقع" : "Website Funnel"}</small>
+                    <strong>
+                      {hasPreview
+                        ? language === "ar"
+                          ? "جاهزة للمراجعة"
+                          : "Ready to Review"
+                        : language === "ar"
+                          ? "مسودة"
+                          : "Draft"}
+                    </strong>
+                  </div>
+                  <div className={styles["specItem"]}>
+                    <small>{language === "ar" ? "وجهة الحفظ" : "Cloud Target"}</small>
+                    <strong>Joe Academy · Gose</strong>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className={styles["workspaceLink"]}
-                  onClick={openPlatform}
-                >
-                  <span className={styles["workspaceLabel"]}>{text.platformUrl}</span>
-                  <strong>{platformUrl}</strong>
-                  <ExternalLink />
-                </button>
-                <button type="button" className={styles["workspaceLink"]} onClick={openDashboard}>
-                  <span className={styles["workspaceLabel"]}>{text.admin}</span>
-                  <span className={styles["workspaceAction"]}>
-                    {text.openDashboard}
-                    <ArrowRight />
+              </div>
+
+              <ol className={styles["progress"]} aria-label={text.eyebrow}>
+                {text.steps.map((step, index) => {
+                  const itemState =
+                    index < completedDeploymentSteps || showReady
+                      ? "complete"
+                      : index === completedDeploymentSteps && animatingSteps
+                        ? "active"
+                        : "ready";
+                  return (
+                    <motion.li
+                      key={step}
+                      initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18, delay: reduceMotion ? 0 : index * 0.03 }}
+                      data-state={itemState}
+                      aria-current={itemState === "active" ? "step" : undefined}
+                    >
+                      <span className={styles["progressDot"]}>
+                        {itemState === "complete" ? (
+                          <Check size={14} aria-hidden="true" />
+                        ) : (
+                          String(index + 1).padStart(2, "0")
+                        )}
+                      </span>
+                      <div className={styles["progressCopy"]}>
+                        <strong>{step}</strong>
+                        <small>{text.stepDetails[index]}</small>
+                      </div>
+                      <span className={styles["progressTag"]}>
+                        {itemState === "complete"
+                          ? text.verified
+                          : itemState === "active"
+                            ? text.syncing
+                            : text.ready}
+                      </span>
+                    </motion.li>
+                  );
+                })}
+              </ol>
+
+              <div
+                className={styles["launchCommandBar"]}
+                data-state={deploymentState}
+                aria-live="polite"
+                aria-label={
+                  deploymentState === "failed"
+                    ? text.deploymentFailed
+                    : showReady
+                      ? text.liveTitle
+                      : text.deployingTitle
+                }
+              >
+                <div className={styles["telemetryPills"]} aria-hidden="true">
+                  <span>
+                    <ShieldCheck size={13} />
+                    {language === "ar" ? "حماية سحابية متكاملة" : "Cloud Sync Verified"}
                   </span>
-                </button>
-                <button
-                  type="button"
-                  className={styles["workspaceLink"]}
-                  onClick={openCustomerPortal}
-                >
-                  <span className={styles["workspaceLabel"]}>{text.portal}</span>
-                  <span className={styles["workspaceAction"]}>
-                    {text.openPortal}
-                    <ArrowRight />
+                  <span>
+                    <Zap size={13} />
+                    {language === "ar" ? "هوية البراند مرتبطة" : "Brand Identity Linked"}
                   </span>
-                </button>
-                {/* <button type="button" className={styles["workspaceLink"]} onClick={openAICenter}>
-                  <span className={styles["workspaceLabel"]}>{text.aiCenter}</span>
-                  <span className={styles["workspaceAction"]}>
-                    {text.openAiCenter}
-                    <ArrowRight />
+                  <span>
+                    <Globe size={13} />
+                    {language === "ar" ? "بوابة المنصة جاهزة" : "Live Portal Ready"}
                   </span>
-                </button> */}
-                <div className={styles["workspaceMarketplace"]}>
-                  <span className={styles["workspaceLabel"]}>{text.marketplace}</span>
-                  <span className={styles["workspaceAction"]}>{text.ready}</span>
+                </div>
+
+                <div className={styles["launchCommandMain"]}>
+                  <div className={styles["launchCommandInfo"]}>
+                    <span className={styles["launchMedallion"]} data-state={deploymentState} aria-hidden="true">
+                      {deploymentState === "failed" ? (
+                        <CircleAlert size={20} />
+                      ) : showReady ? (
+                        <Check size={20} />
+                      ) : (
+                        <Rocket size={20} />
+                      )}
+                    </span>
+                    <div className={styles["launchCommandCopy"]}>
+                      <h2>
+                        {deploymentState === "failed"
+                          ? text.deploymentFailed
+                          : showReady
+                            ? text.liveTitle
+                            : deploymentState === "idle"
+                              ? text.startDeployment
+                              : text.deployingTitle}
+                      </h2>
+                      <p>
+                        {deploymentState === "failed"
+                          ? text.deploymentFailedBody
+                          : showReady
+                            ? text.liveBody
+                            : deploymentState === "idle"
+                              ? language === "ar"
+                                ? "كل الإعدادات مراجعة وجاهزة للنقل الفوري إلى حسابك."
+                                : "All configuration modules are verified and ready to publish."
+                              : text.deployingBody}
+                      </p>
+                      {deploymentState === "failed" && brand.phoenixPreparation.error && (
+                        <p className={styles["errorAlert"]} role="alert">
+                          {brand.phoenixPreparation.error}
+                        </p>
+                      )}
+                      {platformSignInError && (
+                        <p className={styles["errorAlert"]} role="alert">
+                          {platformSignInError}
+                        </p>
+                      )}
+                      {showReady && <p className={styles["liveArabic"]}>{text.liveBodyAr}</p>}
+                      {!hasPreview && (
+                        <span className={styles["unavailableHint"]} id="preview-unavailable">
+                          {text.unavailable}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles["actionRow"]}>
+                    {deploymentState !== "success" && (
+                      <Button
+                        variant="outline"
+                        className={styles["reviewAction"]}
+                        disabled={!hasPreview}
+                        aria-label={text.reviewWebsite}
+                        aria-describedby={!hasPreview ? "preview-unavailable" : undefined}
+                        onClick={() => dispatch(actions.setMode("builder"))}
+                      >
+                        <ExternalLink aria-hidden="true" />
+                        {text.reviewWebsite}
+                      </Button>
+                    )}
+                    {deploymentState === "failed" && (
+                      <a className={styles["supportAction"]} href="mailto:support@brandengine.ai">
+                        {text.contactSupport}
+                      </a>
+                    )}
+                    <Button
+                      size="lg"
+                      className={styles["primaryAction"]}
+                      onClick={showReady ? openPlatform : deployPlatform}
+                      disabled={deploymentState === "deploying" || platformSigningIn}
+                      aria-label={
+                        showReady ? text.open : deploymentState === "failed" ? text.retry : text.startDeployment
+                      }
+                    >
+                      {showReady ? (
+                        <ExternalLink />
+                      ) : deploymentState === "failed" ? (
+                        <CircleAlert />
+                      ) : (
+                        <Sparkles />
+                      )}
+                      {showReady
+                        ? text.open
+                        : deploymentState === "failed"
+                          ? text.retry
+                          : deploymentState === "deploying"
+                            ? text.deployingTitle
+                            : text.startDeployment}
+                      <ArrowRight />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={styles["growthCard"]}>
-              <span className={styles["growthIcon"]} aria-hidden="true">
-                <i />
-                <i />
-                <i />
-              </span>
-              <div>
-                <strong>{text.growthTitle}</strong>
-                <span>{text.growthSub}</span>
-              </div>
-            </div>
-          </aside>
-        </div>
+            </main>
 
+            {/* Right Column (5/12): Compact, Rich Workspace Summary Card */}
+            <aside className={`${styles["workspaceCard"]} lg:col-span-5`}>
+              <div className={styles["workspaceHeading"]}>
+                <span className={styles["workspaceCrown"]} aria-hidden="true">
+                  <Crown size={18} />
+                </span>
+                <div>
+                  <h2>{text.workspace}</h2>
+                  <p>{text.workspaceSub}</p>
+                </div>
+                <b>
+                  <CircleCheck size={13} />
+                  {showReady
+                    ? text.live
+                    : deploymentState === "failed"
+                      ? text.deploymentFailed
+                      : launching
+                        ? text.syncing
+                        : text.ready}
+                </b>
+              </div>
+
+              <div className={styles["workspaceBody"]}>
+                <div
+                  role="link"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault();
+                      dispatch(actions.setMode("builder"));
+                    }
+                  }}
+                  className={styles["miniSite"]}
+                  onClick={() => dispatch(actions.setMode("builder"))}
+                  aria-label={`${text.reviewWebsite}: ${workspaceBrandName}`}
+                >
+                  <span className={styles["miniSiteChrome"]} aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                    <small dir="ltr">app.upklick.net</small>
+                  </span>
+                  <span ref={miniSiteViewportRef} className={styles["miniSiteViewport"]} aria-hidden="true" inert>
+                    <span
+                      className={styles["miniSiteCanvas"]}
+                      style={{ height: miniSite.height, transform: `scale(${miniSite.scale})` }}
+                    >
+                      <Provider store={previewStore}>
+                        <LandingPreviewBridge />
+                      </Provider>
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className={styles["miniSiteAction"]}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      dispatch(actions.setMode("builder"));
+                    }}
+                  >
+                    <ExternalLink size={12} aria-hidden="true" />
+                    {text.reviewWebsite}
+                  </button>
+                </div>
+
+                <div className={styles["workspaceInfo"]}>
+                  <div className={styles["workspaceBrand"]}>
+                    <div className={styles["workspaceBrandMark"]} aria-hidden="true">
+                      <DashboardBrandLogo
+                        identity={workspaceIdentity}
+                        url={selectedBrand.logoUrl}
+                        generated={selectedBrand.generatedLogo}
+                        primary={selectedBrand.primary}
+                      />
+                    </div>
+                    <div className={styles["workspaceBrandText"]}>
+                      <strong>{workspaceBrandName}</strong>
+                      {workspaceDescription && <small title={workspaceDescription}>{workspaceDescription}</small>}
+                    </div>
+                  </div>
+
+                  <button type="button" className={styles["workspaceLink"]} onClick={openPlatform}>
+                    <span className={styles["workspaceLabel"]}>{text.platformUrl}</span>
+                    <strong dir="ltr">{platformUrl}</strong>
+                    <ExternalLink size={13} />
+                  </button>
+
+                  <button type="button" className={styles["workspaceLink"]} onClick={openDashboard}>
+                    <span className={styles["workspaceLabel"]}>{text.admin}</span>
+                    <span className={styles["workspaceAction"]}>
+                      {text.openDashboard}
+                      <ArrowRight size={12} />
+                    </span>
+                  </button>
+
+                  <button type="button" className={styles["workspaceLink"]} onClick={openCustomerPortal}>
+                    <span className={styles["workspaceLabel"]}>{text.portal}</span>
+                    <span className={styles["workspaceAction"]}>
+                      {text.openPortal}
+                      <ArrowRight size={12} />
+                    </span>
+                  </button>
+
+                  <div className={styles["workspaceMarketplace"]}>
+                    <span className={styles["workspaceLabel"]}>{text.marketplace}</span>
+                    <span className={styles["workspaceAction"]}>{text.ready}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles["growthCard"]}>
+                <span className={styles["growthIcon"]} aria-hidden="true">
+                  <ShieldCheck size={16} />
+                </span>
+                <div>
+                  <strong>{text.growthTitle}</strong>
+                  <span>{text.growthSub}</span>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </motion.div>
+
       <Dialog open={outcomeOpen} onOpenChange={setOutcomeOpen}>
         <DialogContent className={styles["deploymentOutcome"]} dir={language === "ar" ? "rtl" : "ltr"}>
           <div className={styles["outcomeIcon"]} data-state={deploymentState}>
             {deploymentState === "success" ? <Check aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
           </div>
           <DialogTitle>{deploymentState === "success" ? text.liveTitle : text.deploymentFailed}</DialogTitle>
-          <DialogDescription>{deploymentState === "success" ? text.liveBody : brand.phoenixPreparation.error || text.deploymentFailedBody}</DialogDescription>
-          <p className={styles["outcomeStage"]}>{language === "ar" ? "حالة الإرسال" : "Transfer status"}: {deploymentState === "success" ? `${text.steps.length}/${text.steps.length}` : `${completedDeploymentSteps}/${text.steps.length}`}</p>
+          <DialogDescription>
+            {deploymentState === "success"
+              ? text.liveBody
+              : brand.phoenixPreparation.error || text.deploymentFailedBody}
+          </DialogDescription>
+          <p className={styles["outcomeStage"]}>
+            {language === "ar" ? "حالة الإرسال" : "Transfer status"}:{" "}
+            {deploymentState === "success"
+              ? `${text.steps.length}/${text.steps.length}`
+              : `${completedDeploymentSteps}/${text.steps.length}`}
+          </p>
           <div className={styles["outcomeActions"]}>
-            {deploymentState === "failed" && <Button variant="outline" onClick={() => { setOutcomeOpen(false); deployPlatform(); }}>{text.retry}</Button>}
-            <Button onClick={() => { setOutcomeOpen(false); if (deploymentState === "success") openPlatform(); else openDashboard(); }}>
-              {deploymentState === "success" ? text.open : text.dashboard}<ArrowRight />
+            {deploymentState === "failed" && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOutcomeOpen(false);
+                  void deployPlatform();
+                }}
+              >
+                {text.retry}
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                setOutcomeOpen(false);
+                if (deploymentState === "success") openPlatform();
+                else openDashboard();
+              }}
+            >
+              {deploymentState === "success" ? text.open : text.dashboard}
+              <ArrowRight />
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-      <footer className={styles["footer"]}>
-        <span className={styles["stepCount"]}>{text.step}</span>
-        <div className={styles["footerActions"]}>
-          <Button variant="outline" onClick={() => dispatch(actions.previousStep())}>
-            <ArrowLeft />
-            {text.back}
-          </Button>
-          <Button disabled aria-disabled="true" title={text.finalStep}>
-            {text.continue}
-            <ArrowRight />
-          </Button>
-        </div>
-        <span className={styles["footerHint"]}>{text.finalStep}</span>
-      </footer>
     </section>
   );
 }

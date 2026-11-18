@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './launch-brand-tokens.css'
 import './index.css'
+import './launch-brand-identity.css'
 import './i18n';
 import LaunchBrandHost from './host/LaunchBrandHost'
 import { startLaunchBrandSession } from './host/session'

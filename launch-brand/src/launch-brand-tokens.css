@@ -1,0 +1,217 @@
+/*
+ * Launch Brand Unified Design System:
+ * 1. Signature Vibrant Cyan -> Teal -> Deep Blue Gradient
+ * 2. Light-Adapted Architectural Micro-Grid & Soft Diffused Radial Ambient Glow
+ * 3. Smooth Hardware-Accelerated Transitions & WCAG AA Light/Dark Contrast
+ */
+:root {
+  /* Core brand spectrum */
+  --lb-green: #0d9488;
+  --lb-teal: #0891b2;
+  --lb-blue: #1d4ed8;
+  --lb-dark: #0f172a;
+  --lb-surface: #1e293b;
+  --lb-light: #f3f7fb;
+
+  /* Signature multi-stop Cyan -> Teal -> Blue-700 Gradient */
+  --lb-action-start: #0e7490;
+  --lb-action-mid: #0d9488;
+  --lb-action-end: #1d4ed8;
+  --lb-action: #0e7490;
+  --lb-action-hover: #0f766e;
+  --lb-on-action: #ffffff;
+  --lb-gradient: linear-gradient(90deg, #0891b2 0%, #0d9488 46%, #1d4ed8 100%);
+  --lb-gradient-hover: linear-gradient(90deg, #06b6d4 0%, #14b8a6 46%, #2563eb 100%);
+  --lb-gradient-subtle: linear-gradient(135deg, rgb(8 145 178 / 0.11) 0%, rgb(13 148 136 / 0.09) 50%, rgb(29 78 216 / 0.11) 100%);
+  --lb-gradient-glow: 0 10px 24px -8px rgb(29 78 216 / 0.42), 0 4px 12px -4px rgb(8 145 178 / 0.30);
+  --lb-gradient-dark: linear-gradient(90deg, #0f172a 0%, #0e7490 50%, #1d4ed8 100%);
+
+  /* Accessible accent tokens (WCAG AA >= 4.5:1) */
+  --lb-accent: #0e7490;
+  --lb-accent-text: #0f6277;
+  --lb-accent-surface: #ecfeff;
+  --lb-accent-surface-dark: #0c2d3a;
+  --lb-accent-border: #99e2ec;
+  --lb-info: #1d4ed8;
+  --lb-success: #047857;
+  --lb-success-surface: #ecfdf5;
+  --lb-warning: #b45309;
+  --lb-warning-surface: #fffbeb;
+  --lb-error: #be123c;
+  --lb-error-surface: #fff1f2;
+
+  /* Surfaces & Typography (Light) */
+  --lb-canvas: #f2f7fb;
+  --lb-canvas-ambient:
+    radial-gradient(ellipse 900px 500px at 14% -6%, rgb(8 145 178 / 0.09), transparent 62%),
+    radial-gradient(ellipse 820px 480px at 92% 4%, rgb(29 78 216 / 0.08), transparent 60%),
+    #f2f7fb;
+  --lb-card: #ffffff;
+  --lb-card-subtle: #f6fafd;
+  --lb-card-border: #dce6f1;
+  --lb-card-border-strong: #bfd0e2;
+  --lb-text: #0f172a;
+  --lb-text-body: #334155;
+  --lb-text-hint: #64748b;
+
+  /* Light-Adapted Architectural Micro-Grid & Soft Radial Ambient Glow */
+  --lb-arch-grid-line: rgba(15, 23, 42, 0.038);
+  --lb-arch-grid-accent: rgba(8, 145, 178, 0.048);
+  --lb-arch-panel-bg:
+    radial-gradient(ellipse 78% 58% at 50% 0%, rgba(6, 182, 212, 0.09) 0%, rgba(13, 148, 136, 0.04) 46%, transparent 78%),
+    linear-gradient(to right, var(--lb-arch-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lb-arch-grid-line) 1px, transparent 1px),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 250, 254, 0.92) 100%);
+  --lb-arch-panel-size: 100% 100%, 28px 28px, 28px 28px, 100% 100%;
+
+  --lb-arch-tile-bg:
+    radial-gradient(ellipse 85% 70% at 50% 0%, rgba(6, 182, 212, 0.075) 0%, rgba(29, 78, 216, 0.025) 52%, transparent 82%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.034) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.034) 1px, transparent 1px),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, rgba(246, 251, 255, 0.88) 100%);
+  --lb-arch-tile-hover-bg:
+    radial-gradient(ellipse 90% 75% at 50% 0%, rgba(6, 182, 212, 0.14) 0%, rgba(13, 148, 136, 0.06) 52%, transparent 85%),
+    linear-gradient(to right, var(--lb-arch-grid-accent) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lb-arch-grid-accent) 1px, transparent 1px),
+    linear-gradient(160deg, #ffffff 0%, #f4fbff 100%);
+  --lb-arch-tile-active-bg:
+    radial-gradient(ellipse 95% 80% at 50% 0%, rgba(6, 182, 212, 0.18) 0%, rgba(29, 78, 216, 0.08) 56%, transparent 88%),
+    linear-gradient(to right, rgba(8, 145, 178, 0.065) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(8, 145, 178, 0.065) 1px, transparent 1px),
+    linear-gradient(160deg, #f2fcfe 0%, #eef6ff 100%);
+  --lb-arch-tile-size: 100% 100%, 24px 24px, 24px 24px, 100% 100%;
+
+  /* Sleek Glassmorphic Surface System (Light) */
+  --lb-glass-bg: linear-gradient(155deg, rgb(255 255 255 / 0.88) 0%, rgb(247 251 255 / 0.80) 100%);
+  --lb-glass-bg-strong: linear-gradient(160deg, rgb(255 255 255 / 0.94) 0%, rgb(246 250 255 / 0.86) 100%);
+  --lb-glass-tile: linear-gradient(155deg, rgb(255 255 255 / 0.88) 0%, rgb(244 249 254 / 0.76) 100%);
+  --lb-glass-border: rgb(201 217 234 / 0.85);
+  --lb-glass-edge: rgb(255 255 255 / 0.92);
+  --lb-glass-highlight: inset 0 1px 0 rgb(255 255 255 / 0.94);
+  --lb-glass-shadow: 0 10px 28px -14px rgb(15 23 42 / 0.09), 0 2px 6px -2px rgb(15 23 42 / 0.04);
+  --lb-glass-glow: 0 12px 26px -10px rgb(8 145 178 / 0.28), 0 4px 10px -4px rgb(29 78 216 / 0.14);
+
+  /* Type scale (px) */
+  --lb-font-ar: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --lb-font-en: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --lb-ui-font: var(--lb-font-en);
+  --lb-font-ui: var(--lb-ui-font);
+  --lb-ui-leading: 1.5;
+  --lb-weight-body: 400;
+  --lb-weight-label: 500;
+  --lb-weight-heading: 600;
+  --lb-text-page: 22px;
+  --lb-text-section: 17px;
+  --lb-text-card: 15px;
+  --lb-text-base: 14px;
+  --lb-text-small: 12px;
+  --lb-text-label: 13px;
+
+  /* Spacing: 8 px grid */
+  --lb-space-1: 4px;
+  --lb-space-2: 8px;
+  --lb-space-3: 12px;
+  --lb-space-4: 16px;
+  --lb-space-5: 24px;
+  --lb-space-6: 32px;
+
+  /* Shape and depth */
+  --lb-radius: 14px;
+  --lb-radius-control: 9px;
+  --lb-card-shadow: 0 4px 18px -8px rgb(15 23 42 / 0.07), 0 1px 3px 0 rgb(15 23 42 / 0.04);
+  --lb-focus-ring: 0 0 0 2px var(--lb-card), 0 0 0 4px rgb(8 145 178 / 0.35);
+  --lb-control-height: 38px;
+  --lb-control-height-small: 32px;
+  --lb-control-padding-inline: 12px;
+  --lb-panel-padding: 18px;
+  --lb-layout-gap: 16px;
+  --lb-motion-fast: 160ms;
+  --lb-motion-normal: 260ms;
+  --lb-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[dir="rtl"],
+:is(.launch-brand-page, .brand-engine-module)[dir="rtl"] {
+  --lb-ui-font: var(--lb-font-ar);
+  --lb-font-ui: var(--lb-ui-font);
+  --lb-ui-leading: 1.65;
+  --lb-text-base: 15px;
+}
+
+:is(.launch-brand-page, .brand-engine-module)[data-density="comfortable"] {
+  --lb-control-height: 40px;
+  --lb-panel-padding: 20px;
+  --lb-layout-gap: 20px;
+}
+
+.dark,
+:is(.launch-brand-page, .brand-engine-module).dark {
+  --lb-canvas: #08121e;
+  --lb-canvas-ambient:
+    radial-gradient(ellipse 840px 480px at 14% -6%, rgb(6 182 212 / 0.15), transparent 62%),
+    radial-gradient(ellipse 780px 460px at 92% 4%, rgb(37 99 235 / 0.16), transparent 60%),
+    #08121e;
+  --lb-card: #0d1c2e;
+  --lb-card-subtle: #12253b;
+  --lb-card-border: #1e3550;
+  --lb-card-border-strong: #2d4c70;
+  --lb-text: #f8fafc;
+  --lb-text-body: #cbd5e1;
+  --lb-text-hint: #94a3b8;
+  --lb-action-start: #0891b2;
+  --lb-action-mid: #0d9488;
+  --lb-action-end: #2563eb;
+  --lb-action: #0891b2;
+  --lb-action-hover: #06b6d4;
+  --lb-on-action: #ffffff;
+  --lb-gradient: linear-gradient(90deg, #0891b2 0%, #0d9488 48%, #2563eb 100%);
+  --lb-gradient-hover: linear-gradient(90deg, #06b6d4 0%, #14b8a6 48%, #3b82f6 100%);
+  --lb-gradient-subtle: linear-gradient(135deg, rgb(6 182 212 / 0.18) 0%, rgb(13 148 136 / 0.15) 50%, rgb(37 99 235 / 0.18) 100%);
+  --lb-gradient-glow: 0 12px 28px -8px rgb(6 182 212 / 0.42), 0 4px 12px -4px rgb(37 99 235 / 0.35);
+  --lb-accent: #38bdf8;
+  --lb-accent-text: #5eead4;
+  --lb-accent-surface: rgb(8 145 178 / 0.18);
+  --lb-accent-border: rgb(45 212 191 / 0.34);
+  --lb-card-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.58);
+
+  /* Dark Mode Architectural Grid & Ambient Teal-Cyan Glow (Reference Card Aesthetic) */
+  --lb-arch-grid-line: rgba(45, 212, 191, 0.055);
+  --lb-arch-grid-accent: rgba(56, 189, 248, 0.085);
+  --lb-arch-panel-bg:
+    radial-gradient(ellipse 78% 58% at 50% 0%, rgba(20, 184, 166, 0.16) 0%, rgba(8, 145, 178, 0.08) 48%, transparent 80%),
+    linear-gradient(to right, var(--lb-arch-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lb-arch-grid-line) 1px, transparent 1px),
+    linear-gradient(165deg, rgba(13, 30, 46, 0.95) 0%, rgba(10, 22, 36, 0.90) 100%);
+  --lb-arch-tile-bg:
+    radial-gradient(ellipse 85% 70% at 50% 0%, rgba(20, 184, 166, 0.13) 0%, rgba(14, 116, 144, 0.06) 52%, transparent 82%),
+    linear-gradient(to right, rgba(45, 212, 191, 0.048) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(45, 212, 191, 0.048) 1px, transparent 1px),
+    linear-gradient(160deg, rgba(17, 36, 56, 0.90) 0%, rgba(12, 25, 41, 0.84) 100%);
+  --lb-arch-tile-hover-bg:
+    radial-gradient(ellipse 90% 75% at 50% 0%, rgba(6, 182, 212, 0.22) 0%, rgba(20, 184, 166, 0.10) 54%, transparent 85%),
+    linear-gradient(to right, var(--lb-arch-grid-accent) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lb-arch-grid-accent) 1px, transparent 1px),
+    linear-gradient(160deg, rgba(20, 44, 68, 0.94) 0%, rgba(14, 30, 49, 0.88) 100%);
+  --lb-arch-tile-active-bg:
+    radial-gradient(ellipse 95% 80% at 50% 0%, rgba(6, 182, 212, 0.28) 0%, rgba(37, 99, 235, 0.14) 58%, transparent 88%),
+    linear-gradient(to right, rgba(45, 212, 191, 0.095) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(45, 212, 191, 0.095) 1px, transparent 1px),
+    linear-gradient(160deg, rgba(16, 46, 66, 0.96) 0%, rgba(13, 33, 56, 0.92) 100%);
+
+  /* Sleek Glassmorphic Surface System (Dark) */
+  --lb-glass-bg: linear-gradient(155deg, rgb(15 28 46 / 0.88) 0%, rgb(11 21 36 / 0.80) 100%);
+  --lb-glass-bg-strong: linear-gradient(160deg, rgb(16 30 50 / 0.94) 0%, rgb(12 23 39 / 0.86) 100%);
+  --lb-glass-tile: linear-gradient(155deg, rgb(20 35 58 / 0.84) 0%, rgb(15 26 44 / 0.76) 100%);
+  --lb-glass-border: rgb(148 163 184 / 0.18);
+  --lb-glass-edge: rgb(255 255 255 / 0.08);
+  --lb-glass-highlight: inset 0 1px 0 rgb(255 255 255 / 0.09);
+  --lb-glass-shadow: 0 16px 36px -16px rgb(0 0 0 / 0.58);
+  --lb-glass-glow: 0 14px 30px -10px rgb(6 182 212 / 0.36);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lb-motion-fast: 0ms;
+    --lb-motion-normal: 0ms;
+  }
+}

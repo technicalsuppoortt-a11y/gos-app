@@ -4,10 +4,11 @@ import * as RadixSelect from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import { useSelectPortal } from './select-layer';
+import './select.css';
 
 export type SelectOption = string | { value: string; label: string; disabled?: boolean };
 
-export interface SelectProps {
+export interface SelectProps extends Pick<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'aria-labelledby' | 'aria-describedby' | 'aria-invalid'> {
   value: string;
   options: readonly SelectOption[];
   onChange: (value: string) => void;
@@ -33,15 +34,18 @@ export function Select({
   placeholder = 'Select an option',
   className = '',
   triggerClassName = '',
-  icon: Icon, id, name, required
+  icon: Icon, id, name, required,
+  'aria-label': ariaLabel, 'aria-labelledby': labelledBy,
+  'aria-describedby': describedBy, 'aria-invalid': invalid,
 }: SelectProps) {
   useUILanguage();
   const portal = useSelectPortal();
+  const generatedId = React.useId();
   const items = options.map(option => typeof option === 'string' ? { value: option, label: option } : option);
   const selected = items.find(option => option.value === value);
   
   return (
-    <div className={twMerge('block w-full', className)}>
+    <div className={twMerge('gos-select-field block w-full', className)}>
       <RadixSelect.Root
         dir={uiDirection()}
         value={value || (items.some(option => option.value === '') ? emptyValue : '')}
@@ -53,34 +57,35 @@ export function Select({
       >
         <RadixSelect.Trigger
           ref={portal.trigger}
-          id={id}
-          aria-label={translateText(label || placeholder)}
+          id={id ?? generatedId}
+          aria-label={labelledBy ? undefined : ariaLabel ?? translateText(label || placeholder)}
+          aria-labelledby={labelledBy}
+          aria-describedby={describedBy}
+          aria-invalid={invalid}
           className={twMerge(
-            'ui-select-trigger flex items-center gap-2 w-full min-w-0 min-h-[40px]',
-            'rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-600 dark:bg-[#192033]',
-            'text-sm font-medium text-slate-900 dark:text-slate-100 text-start',
-            'transition-all duration-200 ease-in-out',
-            'hover:border-purple-400',
-            'focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500',
+            'ui-select-trigger gos-select-control flex items-center gap-2 w-full min-w-0 min-h-[var(--gos-control-height,40px)]',
+            'rounded-[var(--gos-control-radius,8px)] border border-slate-200 bg-white px-3 py-2 dark:border-slate-600 dark:bg-[#192033]',
+            'text-sm font-normal text-slate-900 dark:text-slate-100 text-start',
+            'transition-colors duration-150 ease-out',
+            'hover:border-[var(--select-accent)]',
             'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-75 dark:disabled:bg-slate-800 dark:disabled:text-slate-400',
-            'data-[state=open]:border-purple-500 data-[state=open]:ring-2 data-[state=open]:ring-purple-500/20',
             triggerClassName
           )}
           title={translateText(selected?.label)}
         >
-          {localizeNode(Icon && <Icon size={16} className="flex-none text-slate-500 dark:text-slate-400" />)}
+          {localizeNode(Icon && <Icon size={16} aria-hidden="true" className="flex-none text-slate-500 dark:text-slate-400" />)}
           <span className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             <RadixSelect.Value placeholder={translateText(placeholder)}>{localizeNode(selected?.label)}</RadixSelect.Value>
           </span>
           <RadixSelect.Icon data-select-chevron className="flex-none text-slate-500 transition-transform duration-200 ease-in-out">
-            <ChevronDown size={16} />
+            <ChevronDown size={16} aria-hidden="true" />
           </RadixSelect.Icon>
         </RadixSelect.Trigger>
         <RadixSelect.Portal container={portal.container}>
           <RadixSelect.Content
             className={twMerge(
-              'ui-select-panel z-[9999] overflow-hidden',
-              'shadow-xl border border-slate-100 rounded-xl bg-white/95 backdrop-blur-md dark:bg-[#192033]/95 dark:border-slate-600',
+              'ui-select-panel gos-select-menu z-[9999] overflow-hidden',
+              'shadow-lg border border-slate-100 rounded-[var(--gos-control-radius,8px)] bg-white dark:bg-[#192033] dark:border-slate-600',
               'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-2',
               'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-2',
               'min-w-[max(170px,var(--radix-select-trigger-width))] max-w-[calc(100vw-24px)]'
@@ -90,8 +95,8 @@ export function Select({
             collisionPadding={12}
             align="start"
           >
-            <RadixSelect.ScrollUpButton className="flex items-center justify-center h-6 bg-white text-slate-500 dark:bg-[#192033] dark:text-slate-300 cursor-default">
-              <ChevronUp size={14} />
+            <RadixSelect.ScrollUpButton className="gos-select-scroll flex items-center justify-center h-6 bg-white text-slate-500 dark:bg-[#192033] dark:text-slate-300 cursor-default">
+              <ChevronUp size={14} aria-hidden="true" />
             </RadixSelect.ScrollUpButton>
             <RadixSelect.Viewport className="p-1.5 max-h-[min(290px,calc(var(--radix-select-content-available-height)-48px))]">
               {localizeNode(items.map(option => (
@@ -100,7 +105,7 @@ export function Select({
                   value={option.value || emptyValue}
                   disabled={option.disabled}
                   className={twMerge(
-                    'relative flex items-center min-h-[36px] w-full',
+                    'gos-select-option relative flex items-center min-h-[36px] w-full',
                     'rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer outline-none select-none',
                     'transition-colors duration-150',
                     'data-[highlighted]:bg-purple-50 data-[highlighted]:text-purple-700 dark:data-[highlighted]:bg-purple-500/20 dark:data-[highlighted]:text-purple-200',
@@ -116,13 +121,16 @@ export function Select({
                     </span>
                   </RadixSelect.ItemText>
                   <RadixSelect.ItemIndicator className="absolute end-2.5 flex items-center text-purple-600 dark:text-purple-300">
-                    <Check size={16} />
+                    <Check size={16} aria-hidden="true" />
                   </RadixSelect.ItemIndicator>
                 </RadixSelect.Item>
               )))}
+              {items.length === 0 && <RadixSelect.Item className="gos-select-empty" value="__gos_no_options_available__" disabled>
+                <RadixSelect.ItemText>{uiDirection() === 'rtl' ? 'لا توجد خيارات متاحة' : 'No options available'}</RadixSelect.ItemText>
+              </RadixSelect.Item>}
             </RadixSelect.Viewport>
-            <RadixSelect.ScrollDownButton className="flex items-center justify-center h-6 bg-white text-slate-500 dark:bg-[#192033] dark:text-slate-300 cursor-default">
-              <ChevronDown size={14} />
+            <RadixSelect.ScrollDownButton className="gos-select-scroll flex items-center justify-center h-6 bg-white text-slate-500 dark:bg-[#192033] dark:text-slate-300 cursor-default">
+              <ChevronDown size={14} aria-hidden="true" />
             </RadixSelect.ScrollDownButton>
           </RadixSelect.Content>
         </RadixSelect.Portal>

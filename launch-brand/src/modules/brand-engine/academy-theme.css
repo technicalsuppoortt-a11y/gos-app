@@ -10,7 +10,7 @@
   background: var(--app-canvas);
   isolation: isolate;
   transform: translateZ(0);
-  --background: #f8f9fd;
+  --background: #f3f6f8;
   --foreground: #191b2d;
   --card: #ffffff;
   --card-foreground: #191b2d;
@@ -22,13 +22,13 @@
   --secondary-foreground: #191b2d;
   --muted: #f3f5fb;
   --muted-foreground: #6b7185;
-  --accent: #eef9f7;
+  --accent: var(--ui-surface-hover);
   --accent-foreground: var(--academy-accent-hover);
   --border: #eceef4;
   --input: #eceef4;
   --ring: var(--academy-action-blue);
   --navy: #191b2d;
-  --sa-bg: #f8f9fd;
+  --sa-bg: #f3f6f8;
   --sa-surface: #ffffff;
   --sa-surface-elevated: #f8faff;
   --sa-surface-sunken: var(--academy-accent-surface);
@@ -39,40 +39,40 @@
   --sa-primary: var(--academy-accent);
   --sa-primary-hover: var(--academy-action-blue);
   --sa-primary-soft: var(--academy-accent-surface);
-  --sa-primary-glow: #007d7033;
+  --sa-primary-glow: rgb(var(--academy-shadow-rgb) / 0.2);
   --sa-accent-text: var(--academy-action-blue);
 }
 .brand-engine-module.dark {
   color-scheme: dark;
-  --background: #0b1020;
+  --background: #0a1320;
   --foreground: #edf0f7;
-  --card: #151a27;
+  --card: #131d2b;
   --card-foreground: #edf0f7;
-  --popover: #1b2030;
+  --popover: #1f2a37;
   --popover-foreground: #edf0f7;
   --primary: var(--academy-accent);
   --primary-foreground: #ffffff;
   --secondary: #252b3b;
   --secondary-foreground: #edf0f7;
-  --muted: #1b2030;
+  --muted: #1f2a37;
   --muted-foreground: #a0aabc;
-  --accent: #153230;
+  --accent: var(--academy-accent-surface-dark);
   --accent-foreground: var(--academy-teal);
-  --border: #2d3344;
-  --input: #2d3344;
+  --border: #2a3747;
+  --input: #2a3747;
   --ring: var(--academy-teal);
-  --navy: #0b1020;
-  --sa-bg: #0b1020;
-  --sa-surface: #151a27;
-  --sa-surface-elevated: #1b2030;
-  --sa-surface-sunken: #111522;
-  --sa-border: #2d3344;
+  --navy: #0a1320;
+  --sa-bg: #0a1320;
+  --sa-surface: #131d2b;
+  --sa-surface-elevated: #1f2a37;
+  --sa-surface-sunken: #0e1826;
+  --sa-border: #2a3747;
   --sa-text-primary: #edf0f7;
   --sa-text-secondary: #c0c7d5;
   --sa-text-disabled: #6b7185;
   --sa-primary: var(--academy-accent);
   --sa-primary-hover: var(--academy-action-blue);
-  --sa-primary-soft: #153230;
+  --sa-primary-soft: var(--academy-accent-surface-dark);
   --sa-primary-glow: #007d7040;
   --sa-accent-text: var(--academy-teal);
 }
@@ -90,9 +90,9 @@
 .brand-engine-module .workspace-column { min-width: 0; }
 .brand-engine-module .workspace-main { min-height: 100%; }
 .brand-engine-module .app-shell .workspace-sidebar button.active {
-  background: var(--academy-gradient) !important;
-  color: #001018 !important;
-  box-shadow: 0 4px 12px rgba(0, 125, 112, 0.22);
+  background: var(--academy-action-gradient) !important; /* deepened identity gradient: white text stays readable */
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgb(var(--academy-shadow-rgb) / 0.22);
 }
 .brand-engine-module .wizard-footer .wizard-actions .bg-gradient-to-r,
 .brand-engine-module .wizard-footer .architecture-links .bg-gradient-to-r {

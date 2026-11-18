@@ -22,6 +22,10 @@ import { logoAttemptLimit, reserveLogoAttempt, finishLogoAttempt } from "./logoA
 import { readLogoHistory } from "./logoHistory.js";
 import { where } from "firebase/firestore";
 import { generateRasterLogo } from "./logoImageWorkflow.js";
+// Logos are generated as vectors (SVG paths) so they can draw themselves in the
+// chosen identity colors. The raster image workflow is kept intact; set this to
+// "raster" to switch back to it.
+const LOGO_OUTPUT = "vector";
 import { logoImageModelFor } from "./logoImageProvider.js";
 import {
   brandBrief,
@@ -151,11 +155,16 @@ async function task(uid, id, kind, connection, operation, inputFingerprint = nul
   });
   if (cached) return cached;
   let result;
-  const progress = async stage => {
+  const progress = async (stage, preview) => {
     await runTransaction(db, async tx => {
       const saved = (await tx.get(job)).data(); unchanged(uid);
       if (saved?.lease !== lease || saved.status !== "running") return;
-      tx.set(job, { ...saved, stage });
+      // A validated vector draft may be shown while quality review runs. Only
+      // status=complete exposes final suggestions to history/attempt accounting.
+      tx.set(job, { ...saved, stage,
+        ...(preview ? { result: { element: 'logo', preview } }
+          : stage === 'generating' && saved.result?.preview ? { result: null } : {}),
+      });
     });
   };
   try { result = await operation(progress); unchanged(uid); }
@@ -379,7 +388,7 @@ export async function invokeDirectAI(name, input) {
       async (progress) => {
         await progress("generating");
         const logoReferenceParts = element === "logo" ? await createLogoReferenceParts(brief) : [];
-        if (element === "logo" && ["gemini", "openai"].includes(connection.provider)) {
+        if (element === "logo" && LOGO_OUTPUT === "raster" && ["gemini", "openai"].includes(connection.provider)) {
           const imageConnection = trackedBrowserConnection({ ...connection, model: logoImageModelFor(connection.provider), request: undefined }, uid,
             { requestId: input.requestId, operation: "branding" });
           const result = await generateRasterLogo({ uid, requestId: input.requestId, brief, answers,
@@ -418,12 +427,26 @@ export async function invokeDirectAI(name, input) {
                         guidance: "Spend the entire design budget on ONE finished business identity, matching the supplied alternatives board's craft. Use as many paths as the construction needs; never simplify to a stock primitive. Rendered results undergo visual art-direction review and weak designs are rejected.",
                       } } : {}),
                       ...(element === "logo" ? { designReferences: logoDesignReferences(answers.preference) } : {}),
-                      ...(element === "name" ? { nameRequirements: {
-                        language: brief.language,
-                        exactWordCount: answers.nameLength === "one" ? 1 : 2,
-                        businessField: answers.interest,
-                        style: answers.detail,
-                      } } : {}),
+                      ...(element === "name" ? (() => {
+                        const discoveryInterests = Array.isArray(brief.discovery?.optionLabels?.interests)
+                          ? brief.discovery.optionLabels.interests
+                              .map((item) => (brief.language === "Arabic" ? item.ar || item.en : item.en || item.ar))
+                              .filter(Boolean)
+                          : [];
+                        const autoBusinessField = [brief.subNiche, brief.niche, ...discoveryInterests].filter(Boolean).join(" · ");
+                        return {
+                          nameRequirements: {
+                            count: 3,
+                            language: brief.language,
+                            exactWordCount: answers.nameLength === "one" ? 1 : 2,
+                            businessField: answers.interest || autoBusinessField,
+                            selectedMarket: brief.niche || "",
+                            selectedSpecialization: brief.subNiche || "",
+                            selectedInterests: discoveryInterests,
+                            style: answers.detail,
+                          },
+                        };
+                      })() : {}),
                       previousSuggestions: element === "name"
                         ? (branding.parameters.choices?.elementGenerations?.name?.suggestions || []).slice(-100).map(({ name }) => ({ name }))
                         : branding.parameters.choices?.elementGenerations?.[element]?.suggestions || [],
@@ -452,6 +475,10 @@ export async function invokeDirectAI(name, input) {
           const parsed = JSON.parse(generated.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, "$1"));
           if (element) suggestions = validateElementSuggestions(parsed, element, input.requestId, brief, answers);
           else candidates = validateCandidates(adaptDirectionResult(parsed, input.requestId, brief), input.requestId, { requireDesign: true, brief });
+          // Vector logos carry the identity colors they were designed with (primary,
+          // secondary, accent); every render of the logo colors its shapes with them.
+          if (element === "logo" && LOGO_OUTPUT === "vector") suggestions = suggestions.map(suggestion => suggestion.logo ? { ...suggestion,
+            logo: { ...suggestion.logo, palette: [brief.theme?.light?.primary, brief.theme?.light?.secondary, brief.theme?.light?.buttonBackground].filter(color => /^#[0-9a-f]{6}$/i.test(color || "")) } } : suggestion);
           if (element === "logo") {
             for (const suggestion of suggestions) validateBrandLogoArtwork({
               name: brief.name,
@@ -463,7 +490,7 @@ export async function invokeDirectAI(name, input) {
             const identity = suggestion => ({ name: brief.name, tagline: brief.tagline || "", typography: brief.theme.typography.heading, mark: suggestion.mark, logo: suggestion.logo });
             await validateBrandLogoDiversity(suggestions.map(identity),
               [...logoReferenceIdentities(brief), ...(branding.parameters.choices?.elementGenerations?.logo?.suggestions || []).slice(-100).map(identity)]);
-            await progress("design-review");
+            await progress("design-review", suggestions[0]);
             lastRenderableSuggestions = suggestions;
             try {
               await reviewBrandLogoQuality({ connection, brief, answers, identities: suggestions.map(identity), referenceParts: logoReferenceParts, generate: generateProviderText });

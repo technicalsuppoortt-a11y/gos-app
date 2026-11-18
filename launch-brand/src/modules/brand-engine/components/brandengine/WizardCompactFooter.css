@@ -1,0 +1,217 @@
+@scope (.brand-engine-module) {
+/* Professional Docked Wizard Footer — Frosted Glass Back + Vibrant Cyan-Teal-Blue Primary Next */
+.compact-workspace-shell .wizard-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--lb-glass-bg-strong) !important;
+  backdrop-filter: blur(18px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(165%) !important;
+  border-top: 1px solid var(--lb-glass-border) !important;
+  box-shadow: 0 -4px 18px -12px rgb(15 23 42 / 0.08), var(--lb-glass-highlight);
+}
+
+.draft-save-status {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  max-width: 100%;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--lb-card-border);
+  background: var(--lb-card-subtle);
+  color: var(--lb-text-hint);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+.draft-save-status > span { display: inline-flex; align-items: center; gap: 6px; }
+.draft-save-status small { max-width: 260px; font-size: 11.5px; overflow-wrap: anywhere; }
+.draft-save-status[data-state="error"] { color: var(--lb-error); border-color: rgb(225 29 72 / 0.25); }
+.draft-save-status[data-state="saved"] { color: var(--lb-success); border-color: rgb(16 185 129 / 0.25); }
+.draft-save-status button { min-height: 28px; padding: 3px 8px; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px; font: inherit; }
+
+.compact-workspace-shell .wizard-footer .step-caption {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--lb-card-subtle);
+  border: 1px solid var(--lb-card-border);
+  color: var(--lb-text-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.compact-workspace-shell .wizard-footer .wizard-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Frosted Glass Outline "Back" Button */
+.compact-workspace-shell .wizard-footer .wizard-actions button:not(:last-child):not(.studio-reset) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--lb-card-border-strong) !important;
+  background: var(--lb-glass-tile) !important;
+  backdrop-filter: blur(12px);
+  color: var(--lb-text) !important;
+  font-size: 13px;
+  font-weight: 650;
+  box-shadow: 0 2px 6px -2px rgb(15 23 42 / 0.05), var(--lb-glass-highlight);
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+.compact-workspace-shell .wizard-footer .wizard-actions button:not(:last-child):not(.studio-reset) svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.compact-workspace-shell .wizard-footer .wizard-actions button:not(:last-child):not(.studio-reset):hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--lb-teal) !important;
+  background: var(--lb-card) !important;
+  box-shadow: 0 6px 14px -6px rgb(8 145 178 / 0.22);
+}
+.compact-workspace-shell:not([dir="rtl"]) .wizard-footer .wizard-actions button:not(:last-child):not(.studio-reset):hover:not(:disabled) svg {
+  transform: translateX(-2.5px);
+}
+.compact-workspace-shell[dir="rtl"] .wizard-footer .wizard-actions button:not(:last-child):not(.studio-reset):hover:not(:disabled) svg {
+  transform: translateX(2.5px);
+}
+
+/* Clean Subtle Reset Button */
+.compact-workspace-shell .wizard-footer .wizard-actions button.studio-reset {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Vibrant Cyan -> Teal -> Blue-700 Primary "Next / Save & Continue" Button */
+.compact-workspace-shell .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 0.24) !important;
+  background: var(--lb-gradient) !important;
+  color: #ffffff !important;
+  font-size: 13.5px;
+  font-weight: 650;
+  box-shadow: var(--lb-gradient-glow), inset 0 1px 0 rgb(255 255 255 / 0.28) !important;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 180ms ease,
+    box-shadow 180ms ease;
+}
+.compact-workspace-shell .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset) svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.compact-workspace-shell .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset):hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  background: var(--lb-gradient-hover) !important;
+  filter: brightness(1.03);
+}
+.compact-workspace-shell:not([dir="rtl"]) .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset):hover:not(:disabled) svg {
+  transform: translateX(2.5px);
+}
+.compact-workspace-shell[dir="rtl"] .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset):hover:not(:disabled) svg {
+  transform: translateX(-2.5px);
+}
+
+/* Studio Fit-to-View Layout Rules */
+.compact-workspace-shell .wizard.wizard--brand-studio {
+  --studio-footer-inset: 0px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 100%;
+  padding: 20px 20px 0;
+  overflow: visible;
+}
+.compact-workspace-shell .workspace-layout:has(.wizard--brand-studio) { display: block; overflow-y: auto; }
+.compact-workspace-shell .workspace-main:has(.wizard--brand-studio) { height: auto; min-height: 100%; padding: 0; overflow: visible; }
+.compact-workspace-shell .studio-page-frame { height: auto; min-height: 0; padding: 0 0 20px; flex: 1; }
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer {
+  position: sticky;
+  inset: auto;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  min-height: 58px;
+  margin: auto -20px 0;
+  padding: 9px 20px;
+  transform: none;
+  z-index: 20;
+}
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer { inset-inline-start: auto; margin-inline-start: -20px; width: auto; }
+.compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer .wizard-actions { transform: none; }
+
+@media (min-width: 1024px) and (min-height: 620px) {
+  .compact-workspace-shell .workspace-layout:has(.wizard--brand-studio) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .workspace-main:has(.wizard--brand-studio) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .wizard.wizard--brand-studio {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    padding: 12px 20px 0;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .studio-page-frame {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    padding: 0 0 8px;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer {
+    position: static;
+    flex: 0 0 auto;
+    min-height: 56px;
+    margin: 0 -20px;
+    padding: 8px 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .compact-workspace-shell .wizard.wizard--brand-studio { padding: 14px 12px 0; }
+  .compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer { margin-inline: -12px; padding: 10px 12px; }
+  .compact-workspace-shell .wizard-footer .wizard-actions { width: 100%; justify-content: flex-end; }
+}
+}

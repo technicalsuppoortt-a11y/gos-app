@@ -1,4 +1,4 @@
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, type ReactNode } from "react";
 import {
   Stethoscope,
   Dumbbell,
@@ -13,10 +13,12 @@ import {
   MapPin,
   Cpu,
   Send,
-  Ellipsis,
+  Compass,
   Check,
   ChevronLeft,
   ChevronRight,
+  Languages,
+  X,
 } from 'lucide-react';
 import type {
   DiscoveryConfiguration,
@@ -39,8 +41,25 @@ const icons = {
   local: MapPin,
   technology: Cpu,
   travel: Send,
-  other: Ellipsis,
+  other: Compass,
 };
+
+const interestHints: Record<string, [string, string]> = {
+  health: ["Clinics, telehealth & patient care", "العيادات والرعاية الصحية"],
+  fitness: ["Gyms, studios & personal training", "الأندية الرياضية واللياقة"],
+  education: ["Courses, cohorts & academies", "الدورات والأكاديميات التعليمية"],
+  "real-estate": ["Brokerage, listings & property", "الوساطة والتطوير العقاري"],
+  professional: ["Consulting, legal & B2B services", "الاستشارات وخدمات الأعمال"],
+  ecommerce: ["Online stores & physical products", "المتاجر الإلكترونية والمنتجات"],
+  hospitality: ["Restaurants, cafes & venues", "المطاعم والكافيهات والضيافة"],
+  beauty: ["Salons, aesthetics & skincare", "التجميل والعناية والسبا"],
+  finance: ["Accounting, advisory & wealth", "المحاسبة والاستشارات المالية"],
+  coaching: ["1:1 mentoring & executive programs", "التدريب الشخصي والإرشاد"],
+  local: ["Home, maintenance & field services", "الخدمات المحلية والمنزلية"],
+  technology: ["SaaS, AI & digital solutions", "البرمجيات والذكاء الاصطناعي"],
+  travel: ["Tours, hospitality & experiences", "السياحة والسفر والتجارب"],
+};
+
 function Options({
   options,
   value,
@@ -67,14 +86,15 @@ function Options({
       .filter((id) => id.toLowerCase() !== "other" && !options.some((o) => o.id === id))
       .map((id) => ({ id, en: id, ar: id })),
   ];
-  const size = compact ? Math.max(1, all.length) : visual ? 14 : 11,
+  const size = compact ? Math.max(1, all.length) : visual ? 16 : 12,
     last = Math.max(0, Math.ceil(all.length / size) - 1),
     current = Math.min(page, last);
   return (
     <div className="profile-option-group">
       <div className={`profile-options ${visual ? "visual" : "plain"}`}>
         {all.slice(current * size, current * size + size).map((option) => {
-          const Icon = icons[option.id as keyof typeof icons] || Ellipsis;
+          const Icon = icons[option.id as keyof typeof icons] || Compass;
+          const hint = interestHints[option.id];
           const selected = value.includes(option.id);
           return (
             <button
@@ -98,8 +118,15 @@ function Options({
                   <Icon aria-hidden="true" />
                 </span>
               )}
-              <span className="profile-option-label">{ar ? option.ar : option.en}</span>
-              {selected && <Check className="profile-option-check" aria-hidden="true" />}
+              <span className="profile-option-copy">
+                <span className="profile-option-label">{ar ? option.ar : option.en}</span>
+                {visual && hint && (
+                  <small className="profile-option-sub">{ar ? hint[1] : hint[0]}</small>
+                )}
+              </span>
+              <span className={`profile-option-indicator ${selected ? "is-checked" : ""}`} aria-hidden="true">
+                {selected && <Check className="profile-option-check" />}
+              </span>
             </button>
           );
         })}
@@ -130,18 +157,22 @@ function Options({
     </div>
   );
 }
+
 export function DiscoverProfileForm({
   profile,
   config,
   edit,
   ar,
   busy,
+  aside,
 }: {
   profile: DiscoveryProfile;
   config: DiscoveryConfiguration;
   edit: (patch: Partial<DiscoveryProfile>) => void;
   ar: boolean;
   busy: boolean;
+  /** Shown in the right rail under the language question (live summary and next steps). */
+  aside?: ReactNode;
 }) {
   const [countryOpen, setCountryOpen] = useState(false);
   const formId = useId();
@@ -154,255 +185,178 @@ export function DiscoverProfileForm({
     return () => viewport.removeEventListener("change", updateCompact);
   }, []);
   const t = (en: string, arabic: string) => (ar ? arabic : en);
-  const heading = (i: number, title: string, description: string) => (
+  const heading = (i: number, title: string, description: string, badge?: ReactNode) => (
     <div
       className="profile-section-heading"
       id={`${formId}-heading-${i}`}
     >
       <b aria-hidden="true">{String(i + 1).padStart(2, "0")}</b>
-      <div>
+      <div className="profile-section-heading-copy">
         <h2>{title}</h2>
         <small>{description}</small>
       </div>
+      {badge}
     </div>
   );
-  const choices = (key: "language" | "defaultLanguage" | "selling" | "time" | "budget", options: DiscoveryOption[]) => (
+  const choices = (
+    key: "language" | "defaultLanguage" | "selling" | "time" | "budget",
+    options: Array<DiscoveryOption & { code?: string; hintEn?: string; hintAr?: string }>,
+  ) => (
     <div className="profile-radio">
-      {options.map((o) => (
-        <button
-          type="button"
-          key={o.id}
-          aria-pressed={profile[key] === o.id}
-          className={profile[key] === o.id ? "selected" : ""}
-          onClick={() => {
-            if (key !== "language") {
-              edit({ [key]: o.id });
-              return;
-            }
-            const language = o.id as DiscoveryProfile["language"];
-            edit({
-              language,
-              defaultLanguage: language === "both"
-                ? profile.defaultLanguage || (profile.language === "ar" || profile.language === "en" ? profile.language : "")
-                : language,
-            });
-          }}
-        >
-          <span className="profile-radio-dot" aria-hidden="true">
-            {profile[key] === o.id && <Check />}
-          </span>
-          <span>{ar ? o.ar : o.en}</span>
-        </button>
-      ))}
+      {options.map((o) => {
+        const isSelected = profile[key] === o.id;
+        return (
+          <button
+            type="button"
+            key={o.id}
+            aria-pressed={isSelected}
+            className={isSelected ? "selected" : ""}
+            onClick={() => {
+              if (key !== "language") {
+                edit({ [key]: o.id });
+                return;
+              }
+              const language = o.id as DiscoveryProfile["language"];
+              edit({
+                language,
+                defaultLanguage: language === "both"
+                  ? profile.defaultLanguage || (profile.language === "ar" || profile.language === "en" ? profile.language : "")
+                  : language,
+              });
+            }}
+          >
+            {o.code && (
+              <span className="profile-lang-badge" aria-hidden="true">
+                {o.code}
+              </span>
+            )}
+            <span className="profile-radio-copy">
+              <strong>{ar ? o.ar : o.en}</strong>
+              {(o.hintEn || o.hintAr) && (
+                <small>{ar ? o.hintAr : o.hintEn}</small>
+              )}
+            </span>
+            <span className="profile-radio-dot" aria-hidden="true">
+              {isSelected && <Check />}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
+
+  const selectedLabels = profile.interests.map((id) => {
+    const found = config.interests.find((opt) => opt.id === id);
+    return { id, label: found ? (ar ? found.ar : found.en) : id };
+  });
+
   return (
     <fieldset
       disabled={busy}
       className="discover-profile-form"
       aria-label={t("Your business profile", "ملف نشاطك التجاري")}
     >
-      <section className="profile-section section-interests is-open">
-        {heading(
-          0,
-          t("What are you interested in?", "ما المجالات التي تهمك؟"),
-          t(
-            "Choose topics you're passionate about. You can select multiple.",
-            "اختر المجالات التي تهمك. يمكنك تحديد أكثر من اختيار.",
-          ),
-        )}
-        <div
-          className="profile-section-body"
-          id={`${formId}-section-0`}
-          aria-labelledby={`${formId}-heading-0`}
-        >
-          <Options
-            compact={compact}
-            visual
-            options={config.interests}
-            value={profile.interests}
-            change={(value) =>
-              edit({
-                interests: value,
-                exclusions: profile.exclusions.filter((id) => !value.includes(id)),
-              })
-            }
-            ar={ar}
-          />
-        </div>
-      </section>
-      {/*
-      <section className={`profile-section section-knowledge ${active === 1 ? "is-open" : ""}`}>
-        {heading(
-          1,
-          t("What do you already know?", "ما الذي تعرفه بالفعل؟"),
-          t(
-            "Select the industries you understand and your main skills.",
-            "حدد الصناعات التي تفهمها ومهاراتك الأساسية.",
-          ),
-        )}
-        <div
-          className="profile-section-body"
-          id={`${formId}-section-1`}
-          aria-labelledby={`${formId}-heading-1`}
-          hidden={compact && active !== 1}
-        >
-          <div className="profile-knowledge-columns">
-            <div>
-              <h3>{t("Industries you understand", "صناعات تفهمها")}</h3>
-              <Options
-                compact={compact}
-                inlinePager
-                options={config.interests}
-                value={profile.industries}
-                change={(industries) => edit({ industries })}
-                ar={ar}
-              />
-            </div>
-            <div>
-              <h3>{t("Your skills or experience", "مهاراتك أو خبرتك")}</h3>
-              <Options
-                compact={compact}
-                options={config.skills}
-                value={profile.skills}
-                change={(skills) => edit({ skills })}
-                ar={ar}
-              />
-            </div>
+      <div className="discover-bento-grid">
+        <section className="profile-section section-interests is-open">
+          {heading(
+            0,
+            t("What are you interested in?", "ما المجالات التي تهمك؟"),
+            t(
+              "Select one or more focus areas so we can tailor your workspace modules and brand recommendations.",
+              "اختر مجالًا واحدًا أو أكثر لتخصيص أدوات منصتك واقتراحات علامتك التجارية.",
+            ),
+            <span className="discover-count-pill">
+              {profile.interests.length} {t("selected", "محدد")}
+            </span>,
+          )}
+          <div
+            className="profile-section-body"
+            id={`${formId}-section-0`}
+            aria-labelledby={`${formId}-heading-0`}
+          >
+            <Options
+              compact={compact}
+              visual
+              options={config.interests}
+              value={profile.interests}
+              change={(value) =>
+                edit({
+                  interests: value,
+                  exclusions: profile.exclusions.filter((id) => !value.includes(id)),
+                })
+              }
+              ar={ar}
+            />
           </div>
-        </div>
-      </section>
-      */}
-      {/*
-      <section className={`profile-section section-markets ${active === 2 ? "is-open" : ""}`}>
-        {heading(
-          2,
-          t("Where do you want to operate?", "أين تريد العمل؟"),
-          t(
-            "Select your target country or region and preferred language.",
-            "حدد البلد أو المنطقة المستهدفة ولغة العمل.",
-          ),
-        )}
-        <div
-          className="profile-section-body profile-market-columns"
-          id={`${formId}-section-2`}
-          aria-labelledby={`${formId}-heading-2`}
-          hidden={compact && active !== 2}
-        >
-          <div>
-            <h3>{t("Target country or region", "الدولة أو المنطقة المستهدفة")}</h3>
-            <div className="profile-country-chips">
-              {markets.map((o) => (
-                <button
-                  type="button"
-                  key={o.id}
-                  aria-pressed={profile.market === o.id}
-                  className={profile.market === o.id ? "selected" : ""}
-                  onClick={() => edit({ market: o.id, customMarket: "" })}
-                >
-                  <CountryFlag code={o.id} />
-                  <span>{ar ? o.ar : o.en}</span>
-                  {profile.market === o.id && (
-                    <Check className="profile-option-check" aria-hidden="true" />
-                  )}
-                </button>
-              ))}
-              {selectedExtraCountry && (
-                <button
-                  type="button"
-                  className="selected"
-                  aria-pressed="true"
-                  onClick={() => setCountryOpen(true)}
-                >
-                  <CountryFlag code={selectedExtraCountry} />
-                  <span>{countryNames.of(selectedExtraCountry)}</span>
-                  <Check className="profile-option-check" aria-hidden="true" />
-                </button>
+          <div className="discover-interests-summary-bar">
+            <div className="discover-interests-summary-chips">
+              <span className="discover-summary-label">
+                {t("Active focus:", "التركيز الحالي:")}
+              </span>
+              {selectedLabels.length === 0 ? (
+                <span className="discover-summary-empty">
+                  {t("Select industries above to personalize your setup", "اختر المجالات أعلاه لتخصيص إعداداتك")}
+                </span>
+              ) : (
+                selectedLabels.slice(0, 4).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="discover-selected-interest-tag"
+                    onClick={() => edit({ interests: profile.interests.filter((id) => id !== item.id) })}
+                  >
+                    <span>{item.label}</span>
+                    <X size={11} aria-hidden="true" />
+                  </button>
+                ))
               )}
+              {selectedLabels.length > 4 && (
+                <span className="discover-summary-more">+{selectedLabels.length - 4}</span>
+              )}
+            </div>
+            {selectedLabels.length > 0 && (
               <button
                 type="button"
-                className={profile.market === "GLOBAL" ? "selected" : ""}
-                aria-pressed={profile.market === "GLOBAL"}
-                aria-haspopup="dialog"
-                aria-expanded={countryOpen}
-                onClick={() => setCountryOpen(true)}
+                className="discover-clear-interests"
+                onClick={() => edit({ interests: [] })}
               >
-                <Globe2 aria-hidden="true" />
-                <span>{t("Global", "العالم")}</span>
-                {profile.market === "GLOBAL" && (
-                  <Check className="profile-option-check" aria-hidden="true" />
-                )}
+                {t("Clear all", "مسح الكل")}
               </button>
-            </div>
-          </div>
-      */}
-      <section className="profile-section section-language">
-        {heading(1, t("Preferred language", "اللغة المفضلة"), t("Choose the language for your brand content.", "اختر اللغة التي تفضلها لمحتوى علامتك التجارية."))}
-        <div className="profile-section-body">
-          <div>
-            {choices("language", [
-              { id: "ar", en: "Arabic", ar: "العربية" },
-              { id: "en", en: "English", ar: "الإنجليزية" },
-              { id: "both", en: "Arabic + English", ar: "العربية + الإنجليزية" },
-            ])}
-            {profile.language === "both" && (
-              <div className="profile-default-language">
-                <h3>{t("Which language should be the default?", "ما اللغة الافتراضية التي تفضلها؟")}</h3>
-                {choices("defaultLanguage", [
-                  { id: "ar", en: "Arabic", ar: "العربية" },
-                  { id: "en", en: "English", ar: "الإنجليزية" },
-                ])}
-              </div>
             )}
           </div>
+        </section>
+
+        <div className="discover-right-rail">
+          <section className="profile-section section-language">
+            {heading(
+              1,
+              t("Preferred language", "اللغة المفضلة"),
+              t("Choose the primary language for your brand content and audience.", "اختر اللغة الأساسية لمحتوى علامتك التجارية وجمهورك."),
+              <span className="discover-lang-icon" aria-hidden="true"><Languages size={15} /></span>,
+            )}
+            <div className="profile-section-body">
+              <div>
+                {choices("language", [
+                  { id: "ar", en: "Arabic", ar: "العربية", code: "AR", hintEn: "Right-to-left interface & copy", hintAr: "واجهة ومحتوى باللغة العربية" },
+                  { id: "en", en: "English", ar: "الإنجليزية", code: "EN", hintEn: "Global English interface & copy", hintAr: "واجهة ومحتوى باللغة الإنجليزية" },
+                  { id: "both", en: "Arabic + English", ar: "العربية + الإنجليزية", code: "AR·EN", hintEn: "Bilingual multi-market experience", hintAr: "تجربة ثنائية اللغة للأسواق المتعددة" },
+                ])}
+                {profile.language === "both" && (
+                  <div className="profile-default-language">
+                    <h3>{t("Default workspace language", "اللغة الافتراضية للمنصة")}</h3>
+                    {choices("defaultLanguage", [
+                      { id: "ar", en: "Arabic", ar: "العربية", code: "AR" },
+                      { id: "en", en: "English", ar: "الإنجليزية", code: "EN" },
+                    ])}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+          {aside}
         </div>
-      </section>
-      {/*
-      <section className={`profile-section section-preferences ${active === 3 ? "is-open" : ""}`}>
-        {heading(
-          3,
-          t("Business preferences", "تفضيلات نشاطك"),
-          t(
-            "Tell us about your ideal business model, time and budget.",
-            "حدد نموذج العمل والوقت والميزانية المناسبين لك.",
-          ),
-        )}
-        <div
-          className="profile-section-body profile-preference-columns"
-          id={`${formId}-section-3`}
-          aria-labelledby={`${formId}-heading-3`}
-          hidden={compact && active !== 3}
-        >
-          <div>
-            <h3>{t("How do you want to sell?", "لمن تريد البيع؟")}</h3>
-            {choices("selling", [
-              { id: "b2b", en: "B2B", ar: "B2B" },
-              { id: "b2c", en: "B2C", ar: "B2C" },
-              { id: "both", en: "Both", ar: "كلاهما" },
-            ])}
-          </div>
-          <div>
-            <h3>{t("Time you can dedicate weekly?", "وقتك المتاح أسبوعيًا؟")}</h3>
-            {choices("time", config.timeRanges)}
-          </div>
-          <div>
-            <h3>
-              {t("Available starting budget", "ميزانية البداية المتاحة")}
-              <select
-                aria-label={t("Currency", "العملة")}
-                value={profile.currency}
-                onChange={(e) => edit({ currency: e.target.value })}
-              >
-                {["USD", "EGP", "SAR", "AED", "EUR", "QAR", "KWD", "JOD"].map((id) => (
-                  <option key={id}>{id}</option>
-                ))}
-              </select>
-            </h3>
-            {choices("budget", config.budgetRanges)}
-          </div>
-        </div>
-      </section>
-      */}
+      </div>
+
       <DiscoveryCountryPicker
         open={countryOpen}
         setOpen={setCountryOpen}

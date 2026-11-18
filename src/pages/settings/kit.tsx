@@ -11,7 +11,8 @@ export function Badge({ children, tone = 'green' }: { children: ReactNode; tone?
   useUILanguage(); return <span className={`st-badge ${tone}`}>{localizeNode(children)}</span>; }
 export function Card({ id, title, description, action, children, className = '' }: { id?: string; title?: string; description?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   useUILanguage();
-  return <section id={id} className={`st-card ${className}`}>{localizeNode(title && <div className="st-card-heading"><div><h3>{localizeNode(title)}</h3>{localizeNode(description && <p>{localizeNode(description)}</p>)}</div>{localizeNode(action)}</div>)}{localizeNode(children)}</section>;
+  const headingId = useId();
+  return <section id={id} aria-labelledby={title ? headingId : undefined} className={`st-card ${className}`}>{localizeNode(title && <div className="st-card-heading"><div><h3 id={headingId}>{localizeNode(title)}</h3>{localizeNode(description && <p>{localizeNode(description)}</p>)}</div>{localizeNode(action)}</div>)}{localizeNode(children)}</section>;
 }
 export function Modal({
   title,

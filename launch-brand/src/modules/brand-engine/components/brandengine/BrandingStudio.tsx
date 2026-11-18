@@ -1,5 +1,5 @@
 import { brandEnginePortalContainer } from "../../lib/portalContainer";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -8,6 +8,7 @@ import {
   LockKeyhole,
   PanelsTopLeft,
   Save,
+  // Settings2,
   Upload,
   X,
 } from 'lucide-react';
@@ -61,7 +62,7 @@ import "./BrandStudio.css";
 import { joeAcademyLogoUrl } from "@/components/ui/JoeAcademyLogo";
 import "./StudioGuided.css";
 import "./BrandStudioWorkspace.css";
-import "./StudioIdentityLayout.css";
+import "./StudioCompactWorkspace.css";
 import {
   brandGenerationFingerprint,
   brandElementFingerprint,
@@ -69,7 +70,7 @@ import {
   resolveIdentityLanguage,
 } from "@/modules/brand-engine/data/ai/brandStudioCore.js";
 import { serializeBrandPages } from "@/modules/brand-engine/data/brandPages";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { usePageParameter } from "@/modules/brand-engine/hooks/usePageParameter";
 import { getDiscoverySelection } from "@/modules/brand-engine/data/discovery";
 import type { BrandIdentity } from "@/modules/brand-engine/data/types";
@@ -78,15 +79,8 @@ import { BrandLogoImage } from "./BrandLogoImage";
 import { StudioGuidedChoices } from "./StudioGuidedChoices";
 import { StudioElementGenerator } from "./StudioElementGenerator";
 import { StudioOptionalDirections } from "./StudioOptionalDirections";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/modules/brand-engine/lib/inlinePanel";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/modules/brand-engine/components/ui/sheet";
 const colorLabels: Record<keyof BrandColors, [string, string]> = {
   primary: ["Brand color", "لون البراند"],
   buttonBackground: ["Button color", "لون الأزرار"],
@@ -139,11 +133,20 @@ export function BrandingStudio({
   const ar = state.language === "ar";
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const theme = resolveBrandTheme(state);
+  // The chosen identity colors that color the logo's shapes (primary, secondary, accent).
+  const identityPalette = useMemo(
+    () => [theme.light.primary, theme.light.secondary, theme.light.buttonBackground],
+    [theme.light.primary, theme.light.secondary, theme.light.buttonBackground],
+  );
   const { connection } = useAIConnection();
   const brand = useDashboardBrand();
 
   const [advanced, setAdvanced] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [workspaceView, setWorkspaceView] = useState<"editor" | "preview">("editor");
+  const [activeStudioSection, setActiveStudioSection] = useState<"name" | "colors" | "typography" | "logo">("name");
+  const logoManagerOpen = activeStudioSection === "logo";
+  const reduceMotion = useReducedMotion();
   const [previewSurface, setPreviewSurface] = useState<StudioPreviewSurface>("dashboard");
   const [previewDevice, setPreviewDevice] = useState<StudioPreviewDevice>("desktop");
   const [busy, setBusy] = useState<"generate" | "upload" | "save" | null>(null);
@@ -181,6 +184,8 @@ export function BrandingStudio({
     setUploadError("");
     setAdvanced(false);
     setPreview(false);
+    setWorkspaceView("editor");
+    setActiveStudioSection("name");
     setGalleryOpen(false);
     setAllConcepts(false);
   }, [state.userProfile?.uid]);
@@ -590,7 +595,7 @@ export function BrandingStudio({
     const identity = currentLogoIdentity();
     const raster = isRasterBrandLogo(identity);
     if (raster && format === "svg") throw new Error(t("This logo is an image. Download it as PNG.", "اللوجو ده صورة. حمّله بصيغة PNG."));
-    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary);
+    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary, { palette: identityPalette });
     const file =
       raster ? await rasterLogoPngFile(identity) : format === "svg"
         ? new File(
@@ -620,16 +625,39 @@ export function BrandingStudio({
   };
   const showAcademyLogo = !logoIdentity.name.trim() && !logoIdentity.logo &&
     !state.pageParameters["branding"]?.["uploadedLogo"];
-  const currentLogoUrl = brand.logoUrl || (showAcademyLogo
-    ? joeAcademyLogoUrl
-    : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary)));
+  const logoIdentityKey = JSON.stringify({
+    id: logoIdentity.id,
+    name: logoIdentity.name,
+    arabicName: logoIdentity.arabicName,
+    tagline: logoIdentity.tagline,
+    palette: logoIdentity.palette,
+    typography: logoIdentity.typography,
+    mark: logoIdentity.mark,
+    logo: logoIdentity.logo,
+  });
+  const inlineLogoSrc = useMemo(
+    () =>
+      showAcademyLogo
+        ? joeAcademyLogoUrl
+        : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary, { palette: identityPalette })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [showAcademyLogo, logoIdentityKey, theme.light.primary, identityPalette],
+  );
   const language = state.language;
   const showAdvanced = advanced,
     setShowAdvanced = setAdvanced;
   const showPreview = preview,
     setShowPreview = setPreview;
+  const handleExpandPreview = useCallback(() => setShowPreview(true), [setShowPreview]);
   const generating = busy === "generate";
   const logoConceptsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!logoManagerOpen) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById("studio-logo-heading")?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [logoManagerOpen]);
   const [favoriteIdentities, setFavoriteIdentities] = usePageParameter<string[]>(
     "branding",
     "favoriteIdentities",
@@ -648,6 +676,7 @@ export function BrandingStudio({
     dispatch(actions.resetBrandStudio());
     setAdvanced(false);
     setPreview(false);
+    setActiveStudioSection("name");
     setGalleryOpen(false);
     setAllConcepts(false);
     setShowFavorites(false);
@@ -713,8 +742,14 @@ export function BrandingStudio({
         ...(directionLogoCandidate.logo ? { logo: directionLogoCandidate.logo } : {}),
       }
     : null;
-  const templateConcepts = createLogoTemplateIdentities(templateIdentity, ar,
-    /\p{Script=Arabic}/u.test(state.brandName) ? theme.typography.arabic : theme.typography.heading);
+  const templateTypography = /\p{Script=Arabic}/u.test(state.brandName)
+    ? theme.typography.arabic
+    : theme.typography.heading;
+  const templateConcepts = useMemo(
+    () => createLogoTemplateIdentities(templateIdentity, ar, templateTypography),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [logoIdentityKey, ar, templateTypography],
+  );
   const elementGenerations = state.pageParameters["branding"]?.["elementGenerations"] as
     Partial<Record<BrandElement, BrandElementGeneration>> | undefined;
   const generatedLogoConcepts: BrandIdentity[] = (elementGenerations?.logo?.suggestions ?? [])
@@ -843,7 +878,7 @@ export function BrandingStudio({
   const downloadIdentity = async (identity: BrandIdentity, format: "png" | "svg") => {
     const raster = isRasterBrandLogo(identity);
     if (raster && format === "svg") throw new Error(t("This logo is an image. Download it as PNG.", "اللوجو ده صورة. حمّله بصيغة PNG."));
-    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary);
+    const svg = raster ? "" : await prepareBrandLogoSvg(identity, theme.light.primary, { palette: identityPalette });
     const file =
       raster ? await rasterLogoPngFile(identity) : format === "svg"
         ? new File(
@@ -873,9 +908,9 @@ export function BrandingStudio({
     };
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ duration: reduceMotion ? 0 : 0.16, delay: reduceMotion ? 0 : Math.min(index * 0.025, 0.15) }}
         key={identity.id}
         className={`bs-concept-card${selected ? " selected" : ""}`}
       >
@@ -945,7 +980,7 @@ export function BrandingStudio({
         </button>
         <LogoDownloadDialog
           concept
-          logoUrl={logoDataUrl(createBrandLogoSvg(displayed, theme.light.primary))}
+          logoUrl={logoDataUrl(createBrandLogoSvg(displayed, theme.light.primary, { palette: identityPalette }))}
           brandName={displayed.name}
           ar={ar}
           original={false}
@@ -958,8 +993,9 @@ export function BrandingStudio({
   };
   return (
     <div
-      className="bs-root studio-theme studio-workspace studio-guided-workspace studio-reference-workspace"
+      className="bs-root studio-theme studio-workspace studio-compact-workspace"
       dir={ar ? "rtl" : "ltr"}
+      data-workspace-view={workspaceView}
     >
       {/* Toolbar */}
       <div className="bs-toolbar">
@@ -968,7 +1004,7 @@ export function BrandingStudio({
             02
           </span>
           <div>
-            <h1>AI Brand Studio</h1>
+            <h1>{t("Brand Identity Studio", "استوديو هوية البراند")}</h1>
             <p>
               {t(
                 "Build your brand one choice at a time.",
@@ -978,29 +1014,25 @@ export function BrandingStudio({
           </div>
         </div>
         <div className="bs-toolbar-actions">
-          {/*
-          <button
-            className={`bs-preview-toggle ${showPreview ? "open" : ""}`}
-            onClick={() => setShowPreview(!showPreview)}
-            title={t("Preview your brand", "معاينة البراند")}
-            aria-label={t("Preview your brand", "معاينة البراند")}
-            aria-pressed={showPreview}
-            type="button"
-          >
-            <Eye size={20} />
-            <span>{t("Preview", "معاينة")}</span>
-          </button>
-          */}
-          {/*
+          <div className="studio-view-switch" role="group" aria-label={t("Workspace view", "عرض مساحة العمل")}>
+            <button type="button" aria-pressed={workspaceView === "editor"} onClick={() => setWorkspaceView("editor")}>
+              {t("Edit", "تحرير")}
+            </button>
+            <button type="button" aria-pressed={workspaceView === "preview"} onClick={() => setWorkspaceView("preview")}>
+              {t("Preview", "المعاينة")}
+            </button>
+          </div>
+          {/* Temporarily hidden: additional settings entry point. Keep the original control.
           <Button
+            type="button"
             variant="outline"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="bs-adv-btn"
             aria-expanded={showAdvanced}
             aria-controls="studio-advanced-settings"
           >
-            <Settings />
-            {t("Advanced", "تخصيص متقدم")}
+            <Settings2 size={16} aria-hidden="true" />
+            {t("More settings", "إعدادات إضافية")}
           </Button>
           */}
         </div>
@@ -1011,40 +1043,22 @@ export function BrandingStudio({
           {error}
         </p>
       )}
-      {
-        <StudioElementGenerator
-          key={`element-generator-${currentUid.current}`}
-          element={elementToGenerate}
-          busy={Boolean(busy)}
-          connected={Boolean(connection && !connection.aiPaused)}
-          error={error}
-          requestId={elementToGenerate ? activeElementRequest.current?.id : undefined}
-          onClose={() => {
-            setElementToGenerate(null);
-            if (currentUid.current)
-              void saveBrandDraft().catch((error) => toast.error(aiError(error, ar)));
-          }}
-          onGenerate={generateElement}
-          onApply={applyElement}
-        />
-      }
       {/* More Settings Drawer */}
-      <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
-        <SheetContent
+      <Dialog.Root open={showAdvanced} onOpenChange={setShowAdvanced}>
+        <Dialog.Content
           id="studio-advanced-settings"
-          side={ar ? "left" : "right"}
           className="bs-root studio-theme studio-advanced-sheet"
           dir={ar ? "rtl" : "ltr"}
         >
-          <SheetHeader>
-            <SheetTitle>{t("Advanced customization", "تخصيص متقدم")}</SheetTitle>
-            <SheetDescription>
+          <div className="studio-advanced-header">
+            <Dialog.Title>{t("Advanced customization", "تخصيص متقدم")}</Dialog.Title>
+            <Dialog.Description>
               {t(
                 "Optional details. Your identity already works without changing these.",
                 "تفاصيل اختيارية. هويتك جاهزة من غير ما تحتاج تعدّلها.",
               )}
-            </SheetDescription>
-          </SheetHeader>
+            </Dialog.Description>
+          </div>
           <div className="studio-advanced-groups">
             <details>
               <summary>{t("Appearance & protected details", "المظهر والتفاصيل المحمية")}</summary>
@@ -1343,38 +1357,50 @@ export function BrandingStudio({
               </div>
             </details>
           </div>
-        </SheetContent>
-      </Sheet>
+        </Dialog.Content>
+      </Dialog.Root>
 
       <div className="bs-main-split studio-workspace-grid">
         <div className="studio-workspace-column studio-workspace-primary">
           <StudioGuidedChoices
             key={`guided-${state.userProfile?.uid}`}
-            busy={Boolean(busy || pendingLogo)}
-            connected={Boolean(connection && !connection.aiPaused)}
-            onApply={applyElement}
-            onGenerate={(element) => {
-              setError("");
-              setElementToGenerate(element);
-            }}
-          />
+            activeSection={activeStudioSection}
+            onSectionChange={setActiveStudioSection}
+            generatorPanel={<div hidden={elementToGenerate !== activeStudioSection}>
+            <StudioElementGenerator
+              key={`element-generator-${currentUid.current}`}
+              element={elementToGenerate}
+              busy={Boolean(busy)}
+              connected={Boolean(connection && !connection.aiPaused)}
+              error={error}
+              requestId={elementToGenerate ? activeElementRequest.current?.id : undefined}
+              onClose={() => {
+                setElementToGenerate(null);
+                if (currentUid.current)
+                  void saveBrandDraft().catch((error) => toast.error(aiError(error, ar)));
+              }}
+              onGenerate={generateElement}
+              onApply={applyElement}
+            />
+            </div>}
+            logoPanel={<>
           {/* Current logo and optional alternatives */}
           <section
             aria-labelledby="studio-logo-heading"
             className={`bs-logos-section studio-logo-section${galleryOpen ? " gallery-open" : ""}`}
+            id="studio-logo-manager"
             ref={logoConceptsRef}
             style={{ scrollMarginTop: 24 }}
           >
             <div className="bs-card-heading studio-logo-heading">
-              <span className="studio-section-number">4</span>
               <div className="studio-logo-heading-copy">
                 <h2 id="studio-logo-heading" tabIndex={-1}>
                   {language === "ar" ? "تصميمات اللوجو" : "Logo concepts"}
                 </h2>
                 <small>
                   {language === "ar"
-                    ? "اختر شعارك. يتم حفظ صورته وتفاصيله تلقائيًا."
-                    : "Choose a vector concept or upload your logo. Your selection is saved automatically."}
+                    ? "كمّل هويتك بلوجو يعبر عنك. ولّد تصميم بالذكاء الاصطناعي أو ارفع اللوجو الخاص بك."
+                    : "Complete your identity with a logo. Generate a design with AI or upload your own."}
                 </small>
               </div>
               <div className="studio-logo-heading-actions">
@@ -1426,7 +1452,7 @@ export function BrandingStudio({
                   )
                 ) : (
                   <img
-                    src={showAcademyLogo ? joeAcademyLogoUrl : logoDataUrl(createBrandLogoSvg(logoIdentity, theme.light.primary))}
+                    src={inlineLogoSrc}
                     alt={showAcademyLogo ? "Joe Academy" : state.brandName}
                   />
                 )}
@@ -1670,7 +1696,18 @@ export function BrandingStudio({
               </Dialog.Portal>
             </Dialog.Root>
           </section>
-          <StudioOptionalDirections
+            </>}
+            busy={Boolean(busy || pendingLogo)}
+            connected={Boolean(connection && !connection.aiPaused)}
+            onApply={applyElement}
+            onGenerate={(element) => {
+              setError("");
+              setElementToGenerate(element);
+            }}
+          />
+          <details className="studio-directions-disclosure">
+            <summary>{t("Explore more brand directions", "استكشف اتجاهات إضافية للبراند")}</summary>
+            <StudioOptionalDirections
             key={state.userProfile?.uid}
             busy={Boolean(busy || pendingLogo)}
             connected={Boolean(connection && !connection.aiPaused)}
@@ -1684,7 +1721,8 @@ export function BrandingStudio({
               setElementToGenerate("name");
             }}
             onApply={(candidate, parts) => void applyDirection(candidate, parts)}
-          />
+            />
+          </details>
         </div>
         <div className="studio-workspace-column studio-workspace-secondary">
           <section className="studio-preview-launch" aria-labelledby="studio-preview-heading">
@@ -1704,62 +1742,8 @@ export function BrandingStudio({
               device={previewDevice}
               onSurfaceChange={setPreviewSurface}
               onDeviceChange={setPreviewDevice}
-              onExpand={() => setShowPreview(true)}
+              onExpand={handleExpandPreview}
             />
-          </section>
-          <section className="studio-assets" aria-labelledby="studio-assets-heading">
-            <div className="studio-section-heading">
-              <div>
-                <h2 id="studio-assets-heading">{t("Brand Assets", "أصول البراند")}</h2>
-                <p>
-                  {t(
-                    "Your current logo, colors and typography.",
-                    "اللوجو والألوان والخطوط الحالية.",
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="studio-assets-grid">
-              <article>
-                <img
-                  src={currentLogoUrl}
-                  alt={t("Current logo", "اللوجو الحالي")}
-                />
-                <strong>{t("Logo", "اللوجو")}</strong>
-                <LogoDownloadDialog
-                  logoUrl={currentLogoUrl}
-                  brandName={state.brandName}
-                  ar={ar}
-                  original={manualLogo || showAcademyLogo}
-                  raster={isRasterBrandLogo(logoIdentity)}
-                  disabled={Boolean(busy) || (manualLogo && !brand.logoUrl) || Boolean(pendingLogo)}
-                  onDownload={downloadLogo}
-                />
-              </article>
-              <article>
-                <div className="studio-asset-swatches">
-                  {[theme.light.primary, theme.light.secondary, theme.light.buttonBackground].map(
-                    (color, i) => (
-                      <i key={i} style={{ background: color }} title={color} />
-                    ),
-                  )}
-                </div>
-                <strong>{t("Color palette", "ألوان البراند")}</strong>
-                <small dir="ltr">{theme.light.primary}</small>
-                <span>{t("Current colors", "الألوان الحالية")}</span>
-              </article>
-              <article>
-                <div
-                  className="studio-asset-type"
-                  style={{ fontFamily: ar ? theme.typography.arabic : theme.typography.heading }}
-                >
-                  {ar ? "أب" : "Aa"}
-                </div>
-                <strong>{t("Typography", "الخطوط")}</strong>
-                <small>{theme.typography.heading}</small>
-                <span>{theme.typography.arabic}</span>
-              </article>
-            </div>
           </section>
         </div>
         <Dialog.Root open={showPreview} onOpenChange={setShowPreview}>

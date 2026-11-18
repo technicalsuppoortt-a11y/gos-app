@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import './table.css';
 
 export type TableColumnAlign = 'start' | 'center' | 'end';
 
@@ -9,24 +10,48 @@ const alignClassMap: Record<TableColumnAlign, string> = {
   end: 'text-end [text-align:end]',
 };
 
-export interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> {}
+export interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> {
+  density?: 'compact' | 'comfortable';
+}
 
 export const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, density = 'compact', ...props }, ref) => (
     <table
       ref={ref}
-      className={cn('w-full border-collapse align-middle text-start', className)}
+      data-density={density}
+      className={cn('gos-table w-full border-collapse align-middle text-start', className)}
       {...props}
     />
   )
 );
 Table.displayName = 'Table';
 
+/** Opt-in scrolling keeps the table element and its ref backwards-compatible. */
+export const TableScrollArea = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, tabIndex = 0, role, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('gos-table-scroll', className)}
+      tabIndex={tabIndex}
+      role={role ?? (props['aria-label'] || props['aria-labelledby'] ? 'region' : undefined)}
+      {...props}
+    />
+  )
+);
+TableScrollArea.displayName = 'TableScrollArea';
+
+export const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(
+  ({ className, ...props }, ref) => (
+    <caption ref={ref} className={cn('gos-table-caption', className)} {...props} />
+  )
+);
+TableCaption.displayName = 'TableCaption';
+
 export interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {}
 
 export const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('[&_tr]:border-b', className)} {...props} />
+    <thead ref={ref} className={cn('gos-table-header [&_tr]:border-b', className)} {...props} />
   )
 );
 TableHeader.displayName = 'TableHeader';
@@ -35,7 +60,7 @@ export interface TableBodyProps extends React.HTMLAttributes<HTMLTableSectionEle
 
 export const TableBody = React.forwardRef<HTMLTableSectionElement, TableBodyProps>(
   ({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} {...props} />
+    <tbody ref={ref} className={cn('gos-table-body [&_tr:last-child]:border-0', className)} {...props} />
   )
 );
 TableBody.displayName = 'TableBody';
@@ -46,7 +71,7 @@ export const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooter
   ({ className, ...props }, ref) => (
     <tfoot
       ref={ref}
-      className={cn('border-t font-medium [&>tr]:last:border-b-0', className)}
+      className={cn('gos-table-footer border-t font-medium [&>tr]:last:border-b-0', className)}
       {...props}
     />
   )
@@ -59,7 +84,7 @@ export const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
   ({ className, ...props }, ref) => (
     <tr
       ref={ref}
-      className={cn('transition-colors hover:bg-slate-50/50 dark:hover:bg-white/[0.02]', className)}
+      className={cn('gos-table-row transition-colors', className)}
       {...props}
     />
   )
@@ -71,12 +96,13 @@ export interface TableHeadProps extends Omit<React.ThHTMLAttributes<HTMLTableCel
 }
 
 export const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
-  ({ className, align = 'start', ...props }, ref) => (
+  ({ className, align = 'start', scope = 'col', ...props }, ref) => (
     <th
       ref={ref}
+      scope={scope}
       data-align={align}
       className={cn(
-        'px-3.5 py-2.5 align-middle font-medium select-none',
+        'gos-table-head px-3.5 py-2.5 align-middle font-medium',
         alignClassMap[align],
         align === 'center' && 'justify-center',
         className
@@ -97,7 +123,7 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
       ref={ref}
       data-align={align}
       className={cn(
-        'px-3.5 py-2.5 align-middle',
+        'gos-table-cell px-3.5 py-2.5 align-middle',
         alignClassMap[align],
         align === 'center' && 'justify-center',
         className

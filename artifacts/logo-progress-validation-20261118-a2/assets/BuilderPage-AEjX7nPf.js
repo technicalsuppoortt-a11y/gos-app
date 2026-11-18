@@ -1,0 +1,1 @@
+import{t as e}from"./LandingPreviewBridge-DsDYOkiR.js";import{O as t}from"./brandPages-ec3cELUU.js";var n=t();function r(){return(0,n.jsx)(`div`,{className:`landing-preview-workspace landing-preview-fullscreen`,style:{height:`100dvh`,minHeight:360},children:(0,n.jsx)(e,{})})}export{r as BuilderPage};

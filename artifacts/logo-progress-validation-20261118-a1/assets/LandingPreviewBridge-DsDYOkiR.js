@@ -1,0 +1,1 @@
+import{n as e,t}from"./GosLiveFrame-CvrlQb0D.js";import{O as n}from"./brandPages-ec3cELUU.js";var r=n();function i({title:n,viewport:i}){let a=e(),o=n??(a.brand.language===`ar`?`معاينة الموقع`:`Website preview`);return(0,r.jsx)(t,{path:`/`,title:o,configuration:a,viewport:i,fullPage:!0})}export{i as t};

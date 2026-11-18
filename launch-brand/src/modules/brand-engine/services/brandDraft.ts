@@ -44,7 +44,12 @@ export function acknowledgeRemoteDraft(saved: NonNullable<typeof lastSaved>) {
   if (prefetchedDraft?.uid === saved.uid) prefetchedDraft = null;
 }
 
+// Local preview (`?devpreview=1`, see host/session.ts): no Firestore, empty draft.
+export const isDevPreview = () => import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true'
+  && new URLSearchParams(window.location.search).get('devpreview') === '1';
+
 async function readDraft(uid: string, workspaceOnly: boolean) {
+  if (isDevPreview()) return { pages: [], revision: null, needsUpgrade: false } as ReturnType<typeof validateDraftSnapshot>;
   // Read the selected screens in one consistent collection snapshot instead of
   // individual transaction reads (and a transaction commit) to open the UI.
   // The manifest may straddle a concurrent save, so retry mismatched revisions.
@@ -266,6 +271,7 @@ export async function preparePhoenixConfiguration() {
 }
 
 export async function loadPhoenixPreparation(uid: string) {
+  if (isDevPreview()) return null;
   const snapshot = await getDoc(doc(db, "users", uid, "brandEngine", "phoenixPreparation"));
   if (auth.currentUser?.uid !== uid) throw new Error('The signed-in account changed.');
   const saved = lastSaved;

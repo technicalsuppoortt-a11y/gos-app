@@ -10,6 +10,17 @@ import {
   X,
   RotateCcw,
   Check,
+  Compass,
+  Layers,
+  Target,
+  BriefcaseBusiness,
+  GraduationCap,
+  ShoppingBag,
+  Stethoscope,
+  Cpu,
+  House,
+  Dumbbell,
+  Utensils,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
 import { store } from "@/modules/brand-engine/store";
@@ -491,6 +502,123 @@ export function BusinessDiscover(_props: {
     );
   };
   const chooserMarket = catalog?.niches.find((item) => item.id === chooserNiche);
+  const marketIconFor = (rawId: string, iconName?: string) => {
+    const key = `${rawId} ${iconName ?? ""}`.toLowerCase();
+    if (/health|med|clinic|dental|care/.test(key)) return Stethoscope;
+    if (/fit|gym|sport|wellness/.test(key)) return Dumbbell;
+    if (/edu|coach|course|learn|academy|graduation/.test(key)) return GraduationCap;
+    if (/real|estate|prop|home|house/.test(key)) return House;
+    if (/shop|ecom|store|retail|product/.test(key)) return ShoppingBag;
+    if (/food|rest|hosp|cafe|hotel/.test(key)) return Utensils;
+    if (/tech|saas|ai|soft|digital|cpu/.test(key)) return Cpu;
+    if (/agency|consult|b2b|prof|biz|business/.test(key)) return BriefcaseBusiness;
+    return Compass;
+  };
+  const topNiches = catalog ? getActiveNiches(catalog).slice(0, 4) : [];
+  const openMarketDirectly = (nicheId: string) => {
+    setChooser(true);
+    setChooserNiche(nicheId);
+    setChooserPage(0);
+    setError("");
+  };
+  const profileAside = (
+    <section className="profile-section discover-launchpad-card" aria-label={t("Market selection", "اختيار السوق")}>
+      <div className="profile-section-heading">
+        <b aria-hidden="true">03</b>
+        <div className="profile-section-heading-copy">
+          <h2>{sub ? t("Selected Market Direction", "اتجاه السوق المختار") : t("Market & Specialization", "السوق والتخصص")}</h2>
+          <small>
+            {sub
+              ? t("Your chosen specialization powers your AI brand & funnel.", "التخصص المختار يوجّه تصميم هويتك ومسار مبيعاتك.")
+              : t("Jump directly into a market category or browse the full catalog.", "اختر قطاعًا مباشرة أو استعرض جميع الأسواق المتاحة.")}
+          </small>
+        </div>
+        <span className="discover-lang-icon" aria-hidden="true">
+          {sub ? <Target size={15} /> : <Compass size={15} />}
+        </span>
+      </div>
+      {sub ? (
+        <div className="discover-selected-launchpad">
+          <div className="discover-selected-summary-box">
+            <div className="discover-selected-badges">
+              {niche && <span className="discover-niche-pill">{ar ? niche.nameAr : niche.nameEn}</span>}
+              {"moduleIds" in sub && Array.isArray(sub.moduleIds) && (
+                <span className="discover-niche-pill is-subtle">
+                  <Layers size={12} aria-hidden="true" />
+                  {sub.moduleIds.length} {t("tools matched", "أداة متوافقة")}
+                </span>
+              )}
+            </div>
+            <strong className="discover-selected-title">{ar ? sub.nameAr : sub.nameEn}</strong>
+            <p className="discover-selected-desc">{ar ? sub.desiredOutcomeAr : sub.desiredOutcomeEn}</p>
+          </div>
+          <ul className="discover-selected-perks" aria-label={t("Included setup modules", "عناصر التجهيز المشمولة")}>
+            <li><Check size={13} aria-hidden="true" /><span>{t("Tailored AI brand names & palette presets", "أسماء وقوالب ألوان مخصصة لمجالك")}</span></li>
+            <li><Check size={13} aria-hidden="true" /><span>{t("Pre-structured landing funnel & offer blocks", "صفحة هبوط ومسار تحويل جاهز للتخصص")}</span></li>
+            <li><Check size={13} aria-hidden="true" /><span>{t("Matched CRM, booking & automation modules", "أدوات إدارة العملاء والحجز والأتمتة")}</span></li>
+          </ul>
+          <div className="discover-launchpad-actions">
+            <button type="button" disabled={busy || !catalog} onClick={openChooser}>
+              {t("Change market", "تغيير التخصص")}
+            </button>
+            <button
+              type="button"
+              className="discover-primary"
+              disabled={busy || !catalog || !preview}
+              onClick={() => void commit()}
+            >
+              {busy ? <Loader2 className="animate-spin" /> : <Check />}
+              {busy ? t("Saving…", "جارٍ الحفظ…") : t("Confirm & Continue", "تأكيد ومتابعة")}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="discover-quick-launchpad">
+          {topNiches.length > 0 ? (
+            <div className="discover-quick-niches">
+              {topNiches.map((item) => {
+                const NicheIcon = marketIconFor(item.id, item.icon);
+                const subCount = catalog ? getActiveSubNiches(catalog, item.id).length : 0;
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    className="discover-quick-niche-btn"
+                    disabled={busy}
+                    onClick={() => openMarketDirectly(item.id)}
+                  >
+                    <span className="discover-quick-niche-icon" aria-hidden="true">
+                      <NicheIcon size={15} />
+                    </span>
+                    <span className="discover-quick-niche-copy">
+                      <strong>{ar ? item.nameAr : item.nameEn}</strong>
+                      {subCount > 0 && <small>{subCount} {t("paths", "تخصص")}</small>}
+                    </span>
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="discover-quick-loading">
+              <Loader2 className="animate-spin" aria-hidden="true" />
+              <span>{t("Preparing market catalog…", "تجهيز كتالوج الأسواق…")}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            className="discover-primary discover-explore-cta"
+            disabled={busy || !catalog}
+            onClick={openChooser}
+          >
+            <Compass size={16} aria-hidden="true" />
+            {t("Explore All Markets & Niches", "استكشاف جميع الأسواق والتخصصات")}
+            <ArrowRight size={15} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+    </section>
+  );
   return (
     <section className="discover-page discover-market-only" dir={ar ? "rtl" : "ltr"}>
       <header className="discover-header">
@@ -506,28 +634,21 @@ export function BusinessDiscover(_props: {
             )}
           </p>
         </div>
-        {/* AI stage navigation temporarily disabled.
-        <StageStepper
-          className="discover-progress-nav"
-          label={t("Discovery stages", "مراحل اكتشاف السوق")}
-          language={state.language}
-          activeId={stage}
-          steps={stages.map((id, index) => ({
-            id,
-            label: labels[index]!,
-            completed: index < stages.indexOf(stage),
-            disabled:
-              busy ||
-              (id !== "profile" && id !== "recommendation" && !selection) ||
-              (id === "recommendation" && !draft.analysis && !selection),
-          }))}
-          onStepChange={(id) => {
-            setStage(id as Stage);
-            setPart(0);
-            setChooser(false);
-          }}
-        />
-        */}
+        <div className="discover-header-pills">
+          <span className="discover-status-chip">
+            <Sparkles size={13} aria-hidden="true" />
+            {profile.interests.length} {t("Interests", "اهتمامات")}
+          </span>
+          <button
+            type="button"
+            className={`discover-status-chip is-action ${sub ? "is-confirmed" : ""}`}
+            disabled={busy || !catalog}
+            onClick={openChooser}
+          >
+            {sub ? <Check size={13} aria-hidden="true" /> : <Compass size={13} aria-hidden="true" />}
+            <span>{sub ? (ar ? sub.nameAr : sub.nameEn) : t("Choose Market", "اختر السوق")}</span>
+          </button>
+        </div>
       </header>
 
       <div className="discover-layout">
@@ -550,24 +671,26 @@ export function BusinessDiscover(_props: {
                     ? t("Choose the specialization that fits your direction. Your choice is provisional until you save.", "اختر التخصص الأنسب لاتجاهك. يظل اختيارك مؤقتًا حتى الحفظ النهائي.")
                     : t("Explore the markets, then choose one to see its specializations.", "استكشف المجالات واختر مجالًا لعرض التخصصات المتاحة.")}</p>
                 </div>
-                <button
-                  className="discover-icon-button"
-                  disabled={busy}
-                  aria-label={t("Close chooser", "إغلاق الاختيارات")}
-                  onClick={() => setChooser(false)}
-                >
-                  <X />
-                </button>
-              </div>
-              {chooserMarket && (
-                <div className="discover-market-context">
-                  <span>{t("Selected market", "المجال المختار")}</span>
-                  <strong>{ar ? chooserMarket.nameAr : chooserMarket.nameEn}</strong>
-                  <button type="button" disabled={busy} onClick={() => { setChooserNiche(""); setChooserPage(0); }}>
-                    {t("Change market", "تغيير المجال")}
+                <div className="discover-chooser-head-actions">
+                  {chooserMarket && (
+                    <div className="discover-market-context">
+                      <span>{t("Market", "المجال")}:</span>
+                      <strong>{ar ? chooserMarket.nameAr : chooserMarket.nameEn}</strong>
+                      <button type="button" disabled={busy} onClick={() => { setChooserNiche(""); setChooserPage(0); }}>
+                        {t("Change", "تغيير")}
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    className="discover-icon-button"
+                    disabled={busy}
+                    aria-label={t("Close chooser", "إغلاق الاختيارات")}
+                    onClick={() => setChooser(false)}
+                  >
+                    <X />
                   </button>
                 </div>
-              )}
+              </div>
               {catalog ? (
                 <>
                   <div className="discover-market-grid">
@@ -576,55 +699,72 @@ export function BusinessDiscover(_props: {
                       : getActiveNiches(catalog)
                     )
                       .slice(chooserPage * 8, chooserPage * 8 + 8)
-                      .map((item, index) => (
-                        <button
-                          type="button"
-                          key={item.id}
-                          disabled={busy}
-                          aria-pressed={chooserNiche ? selection?.subNicheId === item.id : selection?.nicheId === item.id}
-                          className={
-                            item.id ===
-                            (chooserNiche
-                              ? selection?.subNicheId || draft.analysis?.subNicheId
-                              : selection?.nicheId || draft.analysis?.nicheId)
-                              ? "selected"
-                              : ""
-                          }
-                          onClick={() => {
-                            if (chooserNiche) selectManual(item.id);
-                            else {
-                              setChooserNiche(item.id);
-                              setChooserPage(0);
-                            }
-                          }}
-                        >
-                          <span className="discover-market-number" aria-hidden="true" dir="ltr">
-                            {String(chooserPage * 8 + index + 1).padStart(2, "0")}
-                          </span>
-                          <span className="discover-market-copy">
-                            <strong>{ar ? item.nameAr : item.nameEn}</strong>
-                            {(draft.analysis?.subNicheId === item.id ||
-                              draft.analysis?.nicheId === item.id) && (
-                              <small>{t("AI recommended", "ترشيح AI")}</small>
-                            )}
-                          </span>
-                          {chooserNiche && selection?.subNicheId === item.id
-                            ? <Check className="discover-market-check" aria-hidden="true" />
-                            : <ArrowRight aria-hidden="true" />}
-                        </button>
-                      ))}
+                      .map((item, index) => {
+                        const isSelected = item.id === (chooserNiche
+                          ? selection?.subNicheId || draft.analysis?.subNicheId
+                          : selection?.nicheId || draft.analysis?.nicheId);
+                        const CardIcon = marketIconFor(item.id, "icon" in item ? item.icon : chooserMarket?.icon);
+                        const description = "descriptionEn" in item
+                          ? (ar ? item.descriptionAr : item.descriptionEn)
+                          : (ar ? item.desiredOutcomeAr : item.desiredOutcomeEn);
+                        const metaBadge = "descriptionEn" in item
+                          ? `${getActiveSubNiches(catalog, item.id).length} ${t("specializations", "تخصص")}`
+                          : "moduleIds" in item && Array.isArray(item.moduleIds)
+                            ? `${item.moduleIds.length} ${t("modules", "وحدة")}`
+                            : "";
+                        return (
+                          <button
+                            type="button"
+                            key={item.id}
+                            disabled={busy}
+                            aria-pressed={chooserNiche ? selection?.subNicheId === item.id : selection?.nicheId === item.id}
+                            className={`discover-market-tile ${isSelected ? "selected" : ""}`}
+                            onClick={() => {
+                              if (chooserNiche) selectManual(item.id);
+                              else {
+                                setChooserNiche(item.id);
+                                setChooserPage(0);
+                              }
+                            }}
+                          >
+                            <span className="discover-market-tile-top">
+                              <span className="discover-market-icon-wrap" aria-hidden="true">
+                                <CardIcon size={17} />
+                              </span>
+                              <span className="discover-market-number" aria-hidden="true" dir="ltr">
+                                {String(chooserPage * 8 + index + 1).padStart(2, "0")}
+                              </span>
+                              {chooserNiche && selection?.subNicheId === item.id
+                                ? <Check className="discover-market-check" aria-hidden="true" />
+                                : <ArrowRight className="discover-market-arrow" aria-hidden="true" />}
+                            </span>
+                            <span className="discover-market-copy">
+                              <strong>{ar ? item.nameAr : item.nameEn}</strong>
+                              {description && <span className="discover-market-desc">{description}</span>}
+                              <span className="discover-market-badges">
+                                {metaBadge && <em className="discover-market-meta">{metaBadge}</em>}
+                                {(draft.analysis?.subNicheId === item.id ||
+                                  draft.analysis?.nicheId === item.id) && (
+                                  <small>{t("AI recommended", "ترشيح AI")}</small>
+                                )}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
                   </div>
-                  {chooserNiche && selection?.nicheId === chooserNiche && sub && (
-                    <div className="discover-choice-summary" role="status">
-                      <span className="discover-summary-icon"><Check aria-hidden="true" /></span>
-                      <div>
-                        <strong>{t("Your selection", "اختيارك")}: {ar ? sub.nameAr : sub.nameEn}</strong>
-                        <p>{t("Ready? Continue and save to confirm your direction.", "جاهز للخطوة التالية؟ اضغط متابعة وحفظ لتأكيد اتجاهك.")}</p>
-                      </div>
-                    </div>
-                  )}
                   <div className="discover-inline-footer">
-                    <small>{t("Provisional until the final save.", "اختيار مؤقت حتى الحفظ النهائي.")}</small>
+                    {chooserNiche && selection?.nicheId === chooserNiche && sub ? (
+                      <div className="discover-choice-summary" role="status">
+                        <span className="discover-summary-icon"><Check aria-hidden="true" /></span>
+                        <div>
+                          <strong>{t("Your selection", "اختيارك")}: {ar ? sub.nameAr : sub.nameEn}</strong>
+                          <span> · {t("Press Continue and Save to confirm.", "اضغط متابعة وحفظ للتأكيد.")}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <small>{t("Provisional until the final save.", "اختيار مؤقت حتى الحفظ النهائي.")}</small>
+                    )}
                     <Pager
                       ar={ar}
                       page={chooserPage}
@@ -653,6 +793,7 @@ export function BusinessDiscover(_props: {
               edit={editProfile}
               ar={ar}
               busy={busy}
+              aside={profileAside}
             />
           ) : stage === "recommendation" ? (
             <>

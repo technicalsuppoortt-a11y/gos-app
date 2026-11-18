@@ -1,0 +1,44 @@
+/* Screen-specific records layout; public booking/product pages are outside these roots. */
+@scope (:is(.crm2-page, .bk-workspace, .pp-page, .activity-page, .cp-root)) {
+  :scope { min-width: 0; color: var(--gos-text, var(--text)); font-family: var(--gos-ui-font, inherit); }
+  :is(.crm2-header, .bk-page-heading, .activity-page-header, .cp-head) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--gos-border); background: var(--gos-surface); }
+  :is(.crm2-header-title, .bk-page-heading h1, .activity-page-header h1, .cp-head h1) { margin: 0; font-size: 24px; line-height: 1.4; font-weight: 600; }
+  :is(.crm2-header-sub, .bk-page-heading p, .activity-page-header p, .cp-head p) { margin: 4px 0 0; font-size: 13px; line-height: 1.6; color: var(--gos-muted); }
+  :is(.crm2-header-right, .crm-toolbar, .bk-tools, .pp-toolbar, .pp-txn-toolbar, .activity-toolbar, .cp-toolbar) { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; }
+  :is(.crm-toolbar, .bk-tools, .pp-txn-toolbar, .activity-toolbar, .cp-toolbar) { padding: 14px 18px; background: var(--gos-surface); border-bottom: 1px solid var(--gos-border); }
+  :is(.crm-search, .pp-search, .activity-search, .cp-search) { display: flex; flex: 1 1 240px; min-width: 160px; max-width: 440px; min-height: 40px; border: 1px solid var(--gos-border); border-radius: 8px; background: var(--gos-surface); }
+  :is(.crm-search, .pp-search, .activity-search, .cp-search) input { width: 100%; min-width: 0; background: transparent; font-size: 14px; }
+  :is(.crm2-btn-primary, .crm2-btn-secondary, .bk-button, .cp-btn, .activity-export) { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: none; }
+  :is(.crm2-btn-primary, .bk-button.primary, .cp-btn-primary) { background: var(--gos-action); color: var(--gos-on-action); border-color: transparent; }
+  :is(.crm-contacts-table, .bk-table-container, .request-table, .activity-table-scroll, .cp-table-wrap) { width: 100%; min-width: 0; overflow: auto; overscroll-behavior-inline: contain; border: 1px solid var(--gos-border); border-radius: 10px; background: var(--gos-surface); }
+  :is(.crm-contacts-table, .bk-table-container, .request-table, .activity-table-scroll, .cp-table-wrap) table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+  :is(.crm-contacts-table, .bk-table-container, .request-table, .activity-table-scroll, .cp-table-wrap) th { position: sticky; top: 0; z-index: 1; padding: 12px 14px; font-size: 12px; font-weight: 500; line-height: 1.5; text-transform: none; letter-spacing: normal; background: var(--gos-canvas); color: var(--gos-muted); border-bottom: 1px solid var(--gos-border); }
+  :is(.crm-contacts-table, .bk-table-container, .request-table, .activity-table-scroll, .cp-table-wrap) td { padding: 12px 14px; vertical-align: middle; line-height: 1.5; border-bottom: 1px solid var(--gos-border); }
+  tbody tr:focus-within { background: var(--gos-soft); }
+  :is(.crm-table-person, .bk-name-link, .cp-row-link) { text-align: start; font-size: 14px; font-weight: 500; min-height: 32px; }
+  :is(.crm-pagination, .bk-tab-footer, .cr-pagination, .activity-feed-footer) { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 56px; padding: 12px 18px; background: var(--gos-surface); border-top: 1px solid var(--gos-border); font-size: 13px; }
+  :is(.crm-empty, .bk-empty, .pp-empty-results, .activity-empty, .cp-empty) { padding: 36px 20px; text-align: center; }
+  :is(.crm-empty, .bk-empty, .activity-empty, .cp-empty) p { max-width: 48ch; margin: 8px auto 16px; color: var(--gos-muted); font-size: 14px; line-height: 1.6; }
+  .crm-kanban { gap: 14px; padding: 16px; }
+  .crm-kanban-column { min-width: 270px; border-radius: 10px; border-color: var(--gos-border); background: var(--gos-canvas); }
+  .crm-stage-head { min-height: 52px; padding: 12px; }
+  .crm-stage-cards { padding: 8px; }
+  .crm-task-form { display: flex; flex-wrap: wrap; gap: 10px; }
+  .crm-task-form input { min-height: 40px; }
+  .bk-booking-card { border-radius: 10px; box-shadow: none; padding: 16px; border-color: var(--gos-border); }
+  .bk-booking-card-main { min-width: 0; }
+  .bk-card-actions { flex-wrap: wrap; gap: 8px; }
+  .pp-metrics { gap: 12px; }
+  .pp-product-card { border-radius: 10px; box-shadow: none; border-color: var(--gos-border); }
+  .pp-product-title { font-size: 16px; font-weight: 500; line-height: 1.5; }
+  .pp-card-info { padding: 16px; }
+  @media(max-width:640px) {
+    :is(.crm2-header, .bk-page-heading, .activity-page-header, .cp-head) { padding: 14px 12px; }
+    :is(.crm2-header-title, .bk-page-heading h1, .activity-page-header h1, .cp-head h1) { font-size: 21px; }
+    :is(.crm2-header-right, .crm-toolbar-right, .bk-card-actions) { width: 100%; flex-wrap: wrap; }
+    :is(.crm-search, .pp-search, .activity-search, .cp-search) { max-width: none; min-width: 0; flex-basis: 100%; }
+    .bk-booking-card { flex-wrap: wrap; }
+    .crm-kanban-column { min-width: min(270px,85vw); }
+  }
+  @media(pointer:coarse) { :is(.crm2-btn-primary,.crm2-btn-secondary,.bk-button,.cp-btn,.activity-export) { min-height: 44px; } }
+}

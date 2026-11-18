@@ -1,6 +1,6 @@
 import { brandEnginePortalContainer } from "../../lib/portalContainer";
 import { useEffect, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/modules/brand-engine/lib/inlinePanel";
 import { LoaderCircle, Sparkles, X } from 'lucide-react';
 import { actions } from "@/modules/brand-engine/store/brandSlice";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
@@ -12,9 +12,12 @@ import {
   type BrandElementGeneration,
 } from "@/modules/brand-engine/data/brandTheme";
 import { StudioSelect } from "./StudioSelect";
-import { BrandLogoImage } from "./BrandLogoImage";
+import { LogoDrawingPreview } from "./LogoDrawingPreview";
 import { AIGenerationProgress } from "./AIGenerationProgress";
+import { TypewriterText } from "./TypewriterText";
 import logoDesignSources from "@/modules/brand-engine/configuration/prompts/logoDesignSources.json";
+import { getDiscoverySelection } from "@/modules/brand-engine/data/discovery";
+import { defaultDiscoveryConfiguration, type DiscoveryDraft } from "@/modules/brand-engine/data/discoveryProfile";
 import { useLogoAttempts } from "../../hooks/useLogoAttempts";
 import { mergeLogoSuggestions } from "../../services/logoHistory.js";
 
@@ -118,9 +121,25 @@ function StudioElementGeneratorContent({
     state.pageParameters["branding"]?.["elementGenerations"] as
       Partial<Record<BrandElement, BrandElementGeneration>> | undefined
   )?.[element];
-  const suggestions: BrandElementCandidate[] = element === "logo"
+  const rawSuggestions: BrandElementCandidate[] = element === "logo"
     ? mergeLogoSuggestions(logoAttempts.suggestions, generation?.suggestions)
     : generation?.suggestions || [];
+  const suggestions: BrandElementCandidate[] = element === "name"
+    ? rawSuggestions.slice(-3)
+    : rawSuggestions;
+  const discoverySelection = getDiscoverySelection(state.pageParameters["business_discovery"]?.["nicheSelection"]);
+  const discoveryDraft = state.pageParameters["business_discovery"]?.["discoverDraft"] as DiscoveryDraft | undefined;
+  const discoveryInterestLabels = (discoveryDraft?.profile?.interests ?? [])
+    .map((id) => {
+      const match = defaultDiscoveryConfiguration.interests.find((opt) => opt.id === id);
+      return match ? (ar ? match.ar : match.en) : id;
+    })
+    .filter(Boolean);
+  const discoverySummaryParts = [
+    discoverySelection ? (ar ? discoverySelection.subNicheNameAr || discoverySelection.subNicheNameEn : discoverySelection.subNicheNameEn || discoverySelection.subNicheNameAr) : "",
+    discoverySelection ? (ar ? discoverySelection.nicheNameAr || discoverySelection.nicheNameEn : discoverySelection.nicheNameEn || discoverySelection.nicheNameAr) : "",
+    ...discoveryInterestLabels.slice(0, 3),
+  ].filter(Boolean);
   const selectedCandidateId = (
     state.pageParameters["branding"]?.["selectedElementCandidates"] as
       Partial<Record<BrandElement, string>> | undefined
@@ -237,6 +256,13 @@ function StudioElementGeneratorContent({
       >
         <X size={20} />
       </Dialog.Close>
+      {element === "name" && discoverySummaryParts.length > 0 && (
+        <div className="studio-discovery-context-pill" role="status">
+          <strong>{t("Tailored to Step 01:", "مرتبط باختيارات الخطوة 01:")}</strong>
+          <span>{discoverySummaryParts.join(" · ")}</span>
+          <em>{t("3 Names", "٣ أسماء")}</em>
+        </div>
+      )}
       {element === "logo" && (
         <div className="studio-logo-context">
           <strong>{state.brandName}</strong>
@@ -340,7 +366,7 @@ function StudioElementGeneratorContent({
                 <input
                   maxLength={200}
                   value={answers.interest || ""}
-                  placeholder={t("e.g. restaurants, fitness, coffee", "مثال: مطاعم، جيم، قهوة")}
+                  placeholder={discoverySummaryParts.length > 0 ? discoverySummaryParts.join(" · ") : t("e.g. restaurants, fitness, coffee", "مثال: مطاعم، جيم، قهوة")}
                   disabled={busy}
                   onChange={(e) => setAnswers({ ...answers, interest: e.target.value })}
                 />
@@ -397,6 +423,11 @@ function StudioElementGeneratorContent({
         operation="generateBrandElement"
         element={element}
         requestId={requestId}
+        logoContext={element === "logo" ? {
+          identity: { ...state.selectedBrandIdentity, name: state.brandName, tagline: state.tagline, typography: theme.typography.heading, palette: state.brandPalette },
+          primary: theme.light.primary,
+          palette: [theme.light.primary, theme.light.secondary, theme.light.buttonBackground],
+        } : undefined}
       />
       {visibleError && (
         <p role="alert" className="bs-logo-save-status error">
@@ -436,7 +467,7 @@ function StudioElementGeneratorContent({
               </span>
               {element === "name" && (
                 <>
-                  <strong>{c.name}</strong>
+                  <TypewriterText text={c.name ?? ""} delay={index * 900} />
                   {c.arabicName && c.arabicName !== c.name && <small>{c.arabicName}</small>}
                 </>
               )}
@@ -473,9 +504,10 @@ function StudioElementGeneratorContent({
                 </>
               )}
               {element === "logo" && c.logo && c.mark && (
-                <BrandLogoImage
+                <LogoDrawingPreview
                   primary={theme.light.primary}
-                  layout="horizontal"
+                  palette={[theme.light.primary, theme.light.secondary, theme.light.buttonBackground]}
+                  ar={ar}
                   identity={{
                     ...state.selectedBrandIdentity,
                     id: c.id,

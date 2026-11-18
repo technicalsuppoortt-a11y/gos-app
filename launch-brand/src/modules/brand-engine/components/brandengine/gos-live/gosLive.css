@@ -2,12 +2,18 @@
 .studio-preview-layer[hidden] { display: none !important; }
 .gos-live-loading {
   position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-  font-size: 12px; font-weight: 600; color: #64748b;
-  background: linear-gradient(110deg, #f5f6fa 30%, #ffffff 50%, #f5f6fa 70%); background-size: 220% 100%;
-  animation: gos-live-shimmer 1.4s linear infinite;
+  padding: 20px; text-align: center;
+  font-family: var(--lb-font-en, system-ui), var(--lb-font-ar, sans-serif);
+  font-size: 14px; line-height: 1.6; font-weight: 500; color: var(--lb-text-body, #4b5563);
+  background: var(--lb-card, #ffffff);
 }
-.dark .gos-live-loading { color: #94a3b8; background: linear-gradient(110deg, #111827 30%, #1f2937 50%, #111827 70%); background-size: 220% 100%; }
-.gos-live-spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(124, 58, 237, .18); border-top-color: #7c3aed; animation: gos-live-spin .8s linear infinite; }
+.gos-live-loading:dir(rtl) { font-family: var(--lb-font-ar, sans-serif); }
+.dark .gos-live-loading { color: var(--lb-text-body, #c0c7d5); background: var(--lb-card, #131d2b); }
+.gos-live-spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--lb-card-border, #e3e9ee); border-top-color: var(--lb-action-start, #007d70); animation: gos-live-spin .8s linear infinite; }
+.gos-live-loading-detail { max-width: 38ch; font-size: 13px; font-weight: 400; color: var(--lb-text-hint, #6b7280); }
+.gos-live-loading .gos-live-retry { min-height: 40px; padding: 8px 14px; border: 1px solid var(--lb-card-border, #e3e9ee); border-radius: var(--lb-radius-control, 8px); background: var(--lb-card, #fff); color: var(--lb-text, #0a1320); font: inherit; cursor: pointer; }
+.gos-live-retry:hover { background: var(--lb-canvas, #f3f6f8); }
+.gos-live-retry:focus-visible { outline: 2px solid var(--lb-blue, #0077ff); outline-offset: 3px; }
+@media (pointer: coarse) { .gos-live-loading .gos-live-retry { min-height: 44px; } }
 @keyframes gos-live-spin { to { transform: rotate(360deg); } }
-@keyframes gos-live-shimmer { to { background-position: -220% 0; } }
 @media (prefers-reduced-motion: reduce) { .gos-live-loading, .gos-live-spinner { animation: none; } }

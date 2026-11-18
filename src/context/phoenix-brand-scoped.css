@@ -390,6 +390,11 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] :is(.ui-select-trigger,.commerce-select-trigger,.bk-select-trigger,.aw-select-trigger,.adm-select-trigger,.af-select-trigger,.crm-custom-select-trigger,.gos-combo-trigger):is([data-state=open],[aria-expanded=true],:focus-visible){box-shadow:0 0 0 3px color-mix(in srgb, var(--gp-primary, #7c3aed09) 4%, transparent) !important}
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-table-body .gos-table-row:is([data-state='selected'], [aria-selected='true']) {
+  background: var(--gos-soft, var(--ui-accent-surface, var(--gp-background, #e6f3f0))) !important;
+}
+}
+@scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-toggle{background:var(--gp-background, #a9b4c7) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-toggle>span{background:var(--gp-surface, #fff) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-toggle[aria-checked=true]{background:var(--ob-brand-color,var(--gp-action-bg, var(--gp-primary, #7C3AED))) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .gos-toggle:not([aria-checked=true]){background:var(--gp-background, #536078) !important}
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
@@ -1540,10 +1545,6 @@
   border-color: color-mix(in srgb, var(--ws-accent, var(--gp-primary, #7C3AED)) 45%, transparent) !important;
 }
 
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:border-purple-400:hover{
-  border-color: var(--ws-hover, var(--gp-primary, #A78BFA)) !important;
-}
-
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:border-rose-200:hover{
   border-color: color-mix(in srgb, var(--gp-border, rgb(254 205 211 / var(--tw-border-opacity, 1))) calc(var(--tw-border-opacity, 1) * 100%), transparent) !important;
 }
@@ -1850,10 +1851,6 @@
   background-color: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgb(124 58 237 / var(--tw-bg-opacity, 1)))) calc(var(--tw-bg-opacity, 1) * 100%), transparent) !important;
 }
 
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .data-\[state\=open\]\:border-purple-500[data-state="open"]{
-  border-color: var(--ws-accent, var(--gp-primary, #7C3AED)) !important;
-}
-
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .data-\[highlighted\]\:bg-purple-50[data-highlighted]{
   background-color: var(--ws-soft, var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface)))) !important;
 }
@@ -1988,10 +1985,6 @@
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-\[\#192033\]:is(.dark *){
   background-color: color-mix(in srgb, var(--gp-surface, rgb(25 32 51 / var(--tw-bg-opacity, 1))) calc(var(--tw-bg-opacity, 1) * 100%), transparent) !important;
-}
-
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-\[\#192033\]\/95:is(.dark *){
-  background-color: color-mix(in srgb, var(--gp-surface, rgb(25 32 51 / 0.95)) 95%, transparent) !important;
 }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-\[\#1b2238\]:is(.dark *){
@@ -2392,10 +2385,6 @@
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:hover\:bg-white\/5:hover:is(.dark *){
   background-color: color-mix(in srgb, var(--gp-surface, rgb(255 255 255 / 0.05)) 5%, transparent) !important;
-}
-
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:hover\:bg-white\/\[0\.02\]:hover:is(.dark *){
-  background-color: color-mix(in srgb, var(--gp-surface, rgb(255 255 255 / 0.02)) 2%, transparent) !important;
 }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:hover\:bg-white\/\[0\.03\]:hover:is(.dark *){

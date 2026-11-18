@@ -1,195 +1,301 @@
-
 @scope (.brand-engine-module) {
 .app-header.compact-workspace-header {
   container-type: inline-size;
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   height: auto;
-  min-height: 60px;
+  min-height: 54px;
   flex-shrink: 0;
-  gap: 8px;
-  margin: 6px 16px;
-  padding: 8px;
-  border-radius: 12px;
+  gap: 10px;
+  margin: 8px 16px 4px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  background: var(--lb-glass-bg-strong);
+  backdrop-filter: blur(18px) saturate(165%);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  border: 1px solid var(--lb-glass-border);
+  box-shadow: var(--lb-glass-shadow), var(--lb-glass-highlight);
 }
+
 .compact-workspace-header > .mode-switch {
   position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   flex: 0 0 auto;
   height: auto;
   margin: 0;
-  border: 0;
-  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--lb-card-border);
+  border-radius: 10px;
+  background: var(--lb-card-subtle);
 }
+
 .compact-workspace-header .mode-switch button {
   flex: none;
-  padding: 8px 10px;
-  font-size: 15px;
+  min-height: 34px;
+  padding: 6px 13px;
+  border-radius: 7px;
+  border: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lb-text-body);
+  background: transparent;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
+
+.compact-workspace-header .mode-switch button:hover:not(.active):not([aria-pressed="true"]) {
+  color: var(--lb-text);
+  background: color-mix(in srgb, var(--lb-card) 75%, transparent);
+}
+
+.compact-workspace-header .mode-switch button.active,
+.compact-workspace-header .mode-switch button[aria-pressed="true"] {
+  background: var(--lb-gradient) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 14px -6px rgb(0 94 200 / 0.45);
+}
+
 .compact-workspace-header > .header-actions {
   flex: 0 0 auto;
   margin-inline-start: auto;
-  gap: 4px;
-  padding-inline-start: 8px;
-  border-inline-start: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+  gap: 5px;
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--lb-card-border);
 }
+
 .compact-workspace-header .header-actions .header-control,
 .compact-workspace-header .header-actions .save-bell,
 .compact-workspace-header .header-actions .avatar {
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
 }
+
 .compact-workspace-header .header-actions .header-control svg,
 .compact-workspace-header .header-actions .save-bell svg {
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
 }
+
 .compact-workspace-header .header-actions .avatar {
   margin-inline-start: 2px;
   font-size: 10px;
-  color: #269f90;
+  color: var(--lb-accent-text);
 }
+
 .compact-workspace-header .header-actions .header-control:hover,
 .compact-workspace-header .header-actions .header-control.is-active,
 .compact-workspace-header .header-actions .header-control[aria-expanded="true"],
 .compact-workspace-header .header-actions .avatar:hover,
 .compact-workspace-header .header-actions .mobile-menu:hover {
-  border-color: color-mix(in srgb, #269f90 28%, var(--border));
-  background: linear-gradient(90deg, color-mix(in srgb, #269f90 12%, var(--card)) 0%, color-mix(in srgb, #269f90 6%, var(--card)) 100%);
-  color: #269f90;
+  border-color: var(--lb-accent-border);
+  background: var(--lb-gradient-subtle);
+  color: var(--lb-accent-text);
 }
+
 .compact-workspace-header .header-control:hover .header-action-label,
 .compact-workspace-header .header-control.is-active .header-action-label {
   background: transparent;
 }
+
 .compact-workspace-header .header-actions .header-control:focus-visible,
 .compact-workspace-header .header-actions .avatar:focus-visible,
 .compact-workspace-header .header-actions .mobile-menu:focus-visible {
-  outline: 2px solid #269f90;
-  outline-offset: 3px;
+  outline: 2px solid var(--lb-teal);
+  outline-offset: 2px;
 }
+
 .compact-workspace-header .save-bell-dot:not(.error) {
-  background: #269f90;
+  background: var(--lb-action-start);
 }
+
+/* Executive Topbar Phase Stepper */
 .compact-phase-stepper {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1 1 600px;
   min-width: 0;
-  padding-inline-start: 8px;
-  border-inline-start: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--lb-card-border);
 }
+
 .compact-phase-track {
   display: flex;
   align-items: stretch;
   width: 100%;
   margin: 0;
-  padding: 0;
-  gap: 4px;
+  padding: 3px;
+  gap: 6px;
   list-style: none;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--lb-card-subtle) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lb-card-border) 80%, transparent);
 }
+
 .compact-phase {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
 }
+
 .compact-phase-tab {
+  appearance: none;
+  font: inherit;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   width: 100%;
-  min-height: 40px;
-  gap: 5px;
-  padding: 6px 6px;
+  min-height: 36px;
+  gap: 8px;
+  padding: 5px 10px;
   border: 1px solid transparent;
-  border-radius: 8px 8px 0 0;
-  background: color-mix(in oklab, var(--secondary) 55%, transparent);
-  color: color-mix(in oklab, var(--foreground) 74%, var(--muted-foreground));
-  cursor: default;
+  border-radius: 8.5px;
+  background: transparent;
+  color: var(--lb-text-hint);
+  cursor: pointer;
+  transition:
+    background 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 160ms ease;
 }
-.compact-phase-number {
-  flex: none;
-  font-size: 11px;
+
+.compact-phase:not(.is-active) .compact-phase-tab:hover {
+  transform: translateY(-0.5px);
+  border-color: var(--lb-card-border-strong);
+  background: var(--lb-card);
+  color: var(--lb-text);
+  box-shadow: 0 2px 8px -3px rgb(15 23 42 / 0.08);
+}
+
+.compact-phase-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--lb-card-border) 65%, var(--lb-card));
+  color: var(--lb-text-body);
+  font-size: 10.5px;
   font-weight: 700;
-  opacity: .8;
+  font-variant-numeric: tabular-nums;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
 }
+
+.compact-phase:not(.is-active) .compact-phase-tab:hover .compact-phase-badge {
+  background: var(--lb-accent-surface);
+  color: var(--lb-accent-text);
+}
+
+.compact-phase-number {
+  line-height: 1;
+}
+
 .compact-phase-title {
   min-width: 0;
   overflow: hidden;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.35;
-  text-transform: uppercase;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  text-transform: none;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+/* Completed Phase Card */
 .compact-phase.is-complete .compact-phase-tab {
-  background: color-mix(in oklab, #007d70 10%, var(--card));
-  border-color: color-mix(in oklab, #007d70 30%, var(--border));
-  color: var(--foreground);
+  background: var(--lb-gradient-subtle);
+  border-color: var(--lb-accent-border);
+  color: var(--lb-text);
 }
-.compact-phase-check {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: #269f90;
-}
-.compact-phase.is-complete .compact-phase-number {
-  color: #269f90;
-  opacity: 1;
-}
-.compact-phase.is-active .compact-phase-tab {
-  border-color: var(--border);
-  background: var(--card);
-  color: var(--foreground);
-  box-shadow: 0 1px 3px color-mix(in oklab, var(--foreground) 6%, transparent);
-}
-.compact-phase.is-active .compact-phase-number {
-  color: #269f90;
-  opacity: 1;
-}
-.compact-phase.is-active .compact-phase-tab::after {
-  content: "";
-  position: absolute;
-  inset-inline: 4px;
-  bottom: -1px;
-  height: 2px;
-  background: linear-gradient(90deg, #007d70 0%, #6ce7d4 100%);
-}
-.compact-phase-tab:focus-visible {
-  outline: 2px solid #007d70;
-  outline-offset: 2px;
-}
-.compact-phase-tooltip {
-  background: linear-gradient(90deg, #007d70 0%, #6ce7d4 100%);
+
+.compact-phase.is-complete .compact-phase-badge {
+  background: var(--lb-gradient);
   color: #ffffff;
 }
+
+.compact-phase-check {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.75;
+  color: #ffffff;
+}
+
+/* Active Phase Card — Signature Vibrant Teal -> Cyan -> Ocean Blue Gradient */
+.compact-phase.is-active .compact-phase-tab {
+  border-color: rgb(255 255 255 / 0.22);
+  background: var(--lb-gradient);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px -8px rgb(0 94 200 / 0.48),
+    0 3px 8px -3px rgb(0 125 112 / 0.30),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+.compact-phase.is-active .compact-phase-badge {
+  background: rgb(255 255 255 / 0.20);
+  border: 1px solid rgb(255 255 255 / 0.28);
+  color: #ffffff;
+}
+
+.compact-phase.is-active .compact-phase-title {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.compact-phase-tab:focus-visible {
+  outline: 2px solid var(--lb-teal);
+  outline-offset: 2px;
+}
+
+.compact-phase-tooltip {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px -8px rgb(15 23 42 / 0.45);
+}
+
 @container (max-width: 1000px) {
   .compact-workspace-header > .compact-phase-stepper {
     order: 3;
     flex-basis: 100%;
     padding: 8px 0 0;
     border-inline: 0;
-    border-top: 1px solid color-mix(in oklab, var(--foreground) 24%, var(--border));
+    border-top: 1px solid var(--lb-card-border);
   }
 }
+
 @container (max-width: 800px) {
   .compact-phase-track {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .compact-phase-title {
     white-space: normal;
   }
 }
+
 @container (max-width: 440px) {
   .compact-phase-track {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
 @media (max-width: 560px) {
   .app-header.compact-workspace-header {
     margin-inline: 8px;
@@ -197,9 +303,8 @@
     gap: 8px;
   }
   .compact-workspace-header .mode-switch button {
-    padding-inline: 7px;
+    padding-inline: 8px;
     font-size: 12px;
   }
 }
-
 }

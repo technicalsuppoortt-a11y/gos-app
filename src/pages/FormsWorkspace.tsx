@@ -2114,3 +2114,5 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
 }
 
 export default FormsWorkspace;
+
+import './specialized-compact.css';

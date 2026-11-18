@@ -1,0 +1,1 @@
+import{t as e}from"./BrandedDashboard-Cb5iEKh9.js";import{O as t}from"./brandPages-ec3cELUU.js";var n=t();function r({onExitPreview:t,onBackToWorkspace:r}){return(0,n.jsx)(e,{fullPage:!0,onExitPreview:t,onBackToWorkspace:r})}export{r as DashboardPage};

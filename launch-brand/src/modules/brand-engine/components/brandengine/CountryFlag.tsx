@@ -102,10 +102,10 @@ export function CountryFlag({ code }: { code: string }) {
         )}
         {!colors && !["EU", "US"].includes(code) && (
           <>
-            <rect width="30" height="20" fill="#e7f8f4" />
-            <circle cx="15" cy="10" r="7" fill="none" stroke="#007d70" />
-            <ellipse cx="15" cy="10" rx="3" ry="7" fill="none" stroke="#007d70" />
-            <path d="M8 10H22" stroke="#007d70" />
+            <rect width="30" height="20" fill="#e6fbf3" />
+            <circle cx="15" cy="10" r="7" fill="none" stroke="#00805a" />
+            <ellipse cx="15" cy="10" rx="3" ry="7" fill="none" stroke="#00805a" />
+            <path d="M8 10H22" stroke="#00805a" />
           </>
         )}
       </g>

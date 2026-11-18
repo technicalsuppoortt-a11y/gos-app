@@ -72,3 +72,5 @@ export const Analytics = (_props: { notify: (message: string) => void }) => {
     </div>
   </main>;
 };
+
+import './specialized-compact.css';

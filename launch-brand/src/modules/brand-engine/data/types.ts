@@ -105,6 +105,8 @@ export type BrandVectorLogo = {
   // Empty paths with a wordmark represent a name-only logo; never add a fallback symbol.
   paths: Array<{ d: string; fill: boolean; strokeWidth: number }>;
   concept?: string;
+  /** Identity colors for the symbol's shapes, in order (primary, secondary, accent). */
+  palette?: string[];
   wordmark?: {
     font: string;
     weight: number;

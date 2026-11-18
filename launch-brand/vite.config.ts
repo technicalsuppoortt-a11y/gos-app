@@ -28,5 +28,5 @@ export default defineConfig({
   // Tailwind 3 postcss.config.js from the parent folder.
   css: { postcss: { plugins: [] } },
   build: { outDir: '../dist/launch-brand', emptyOutDir: true },
-  server: { port: 5175, strictPort: true, hmr: { clientPort: 5173 } },
+  server: { port: 5175, strictPort: true, hmr: { clientPort: Number(process.env.LB_HMR_PORT) || 5173 } },
 })

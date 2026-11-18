@@ -88,7 +88,7 @@ export const ActivityPage: React.FC = () => {
 
     <section className="activity-feed-card" aria-label={translateText("Activity events")}>
       <div className="activity-feed-heading"><div><h2>{translateText("Recent activity")}</h2><p>{translateText("Events from across your workspace")}</p></div><span className="activity-live-indicator"><i/>{translateText(" Live updates")}</span></div>
-      {localizeNode(filteredEvents.length ? <div className="activity-table-scroll"><table className="activity-table"><thead><tr><th className="text-start">{translateText("Event")}</th><th className="text-start">{translateText("Activity")}</th><th className="text-center">{translateText("Time")}</th><th className="text-center">{translateText("Status")}</th></tr></thead><tbody>{localizeNode(filteredEvents.map(event => {
+      {localizeNode(filteredEvents.length ? <div className="activity-table-scroll"><table className="activity-table"><thead><tr><th scope="col" className="text-start">{translateText("Event")}</th><th scope="col" className="text-start">{translateText("Activity")}</th><th scope="col" className="text-center">{translateText("Time")}</th><th scope="col" className="text-center">{translateText("Status")}</th></tr></thead><tbody>{localizeNode(filteredEvents.map(event => {
         const Icon = eventIcon[event.type];
         const date = dateFromMinutes(event.minutesAgo);
         return <tr key={event.id}>
@@ -102,3 +102,5 @@ export const ActivityPage: React.FC = () => {
     </section>
   </div>;
 };
+
+import './records-compact.css';

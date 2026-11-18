@@ -52,9 +52,26 @@ const { brandPalettes, createBrandTheme } = loadTsModule(
 const { studioColorPresets, studioPresetTheme } = loadTsModule(
   path.join(repoRoot, 'launch-brand/src/modules/brand-engine/data/studioColorPresets.ts'),
 );
-const { createBrandLogoSvg, tightenBrandLogoSvg } = loadTsModule(
+const { createBrandLogoSvg, tightenBrandLogoSvg, withLogoDrawAnimation } = loadTsModule(
   path.join(repoRoot, 'launch-brand/src/modules/brand-engine/services/brandLogo.ts'),
 );
+
+test('logo drawing reveals filled and outlined paths without losing their final appearance', () => {
+  const svg = '<svg><g data-brand-mark="true"><path d="M0 0L20 0L10 20Z" fill="#007D70" stroke="none" stroke-width="0"/><path d="M0 25L20 25" fill="none" stroke="#005EBB" stroke-width="3"/></g><text>Orbit</text></svg>';
+  const animated = withLogoDrawAnimation(svg);
+  assert.match(animated, /fill="#007D70" stroke="#007D70"/);
+  assert.match(animated, /--i:0;--sw:0;--so:0/);
+  assert.match(animated, /--i:1;--sw:3;--so:1/);
+  assert.match(animated, /stroke-opacity:var\(--so\)/);
+  assert.match(animated, /prefers-reduced-motion:reduce/);
+  assert.equal((animated.match(/class="lb-draw"/g) || []).length, 2);
+  assert.equal(withLogoDrawAnimation(animated), animated, 'reprocessing an animated preview must not duplicate paths or animations');
+});
+
+test('a wordmark-only logo remains wordmark-only during drawing presentation', () => {
+  const svg = '<svg><g data-brand-mark="true"></g><text>Orbit</text></svg>';
+  assert.equal(withLogoDrawAnimation(svg), svg);
+});
 
 test('Phoenix color roles replace brand accents, keep muted charcoal text crisp, and preserve semantic soft tokens', () => {
   assert.match(themeColorValue('#7546f5', 'background'), /--gp-primary/);

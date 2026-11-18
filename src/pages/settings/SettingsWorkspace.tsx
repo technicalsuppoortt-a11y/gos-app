@@ -25,6 +25,7 @@ import { type PersonalPreferences } from '../../backend/workspacePreferences';
 import './settings-controls.css';
 import './settings.css';
 import './support-team.css';
+import './settings-compact.css';
 
 const CURRENCY_SELECT_OPTIONS = [
   { value: 'USD', label: '$ · USD (US Dollar)' },
@@ -118,6 +119,7 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
     setDraft(data.business);
   }, [data.business]);
   const update = (key: keyof typeof draft, value: string) => setDraft(p => ({ ...p, [key]: value }));
+  const dirty = JSON.stringify(draft) !== JSON.stringify(data.business);
   return <div className="st-business w-full">
     <PanelHeading title={translateText("Business Settings")} description={translateText("Your business identity and defaults used across Upklick.")}/>
     <form className="st-business-form w-full" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { await save({ ...data, business: draft }); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }}>
@@ -133,8 +135,8 @@ function BusinessPanel({ data, save }: { data: SettingsData; save: (data: Settin
       </Card>
       {localizeNode(error && <p className="st-error" role="alert">{localizeNode(error)}</p>)}
       <div className="st-form-footer">
-        <span/>
-        <button disabled={busy} className="st-primary"><Check size={15}/>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button>
+        <span role="status" aria-live="polite">{translateText(busy ? 'Saving…' : dirty ? 'Unsaved changes' : 'No unsaved changes')}</span>
+        <div className="st-save-actions"><button type="button" className="st-secondary" disabled={!dirty || busy} onClick={() => { setDraft(data.business); setError(''); }}>{translateText('Discard changes')}</button><button disabled={busy || !dirty} className="st-primary"><Check size={15}/>{localizeNode(busy ? 'Saving…' : 'Save Changes')}</button></div>
       </div>
     </form>
   </div>;

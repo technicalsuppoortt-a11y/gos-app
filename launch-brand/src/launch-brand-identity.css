@@ -1,0 +1,145 @@
+/* Launch Brand product identity. Layout belongs to its shell/studio components;
+ * customer-selected branding belongs to the isolated preview, not these tools. */
+:root {
+  --lb-hover-bg: var(--lb-action-hover);
+  --lb-hover-text: var(--lb-on-action);
+  --lb-hover-shadow: none;
+}
+
+:is(.launch-brand-page, .brand-engine-module) {
+  --font-sans: var(--lb-ui-font);
+  --font-head: var(--lb-ui-font);
+  font-family: var(--lb-ui-font);
+  font-size: var(--lb-text-base);
+  font-weight: var(--lb-weight-body);
+  line-height: var(--lb-ui-leading);
+  color: var(--lb-text);
+  background: var(--lb-canvas);
+}
+
+/* A page canvas may deliberately use a decorative customer font. */
+@scope (:is(.launch-brand-page, .brand-engine-module)) to
+  (.be-page-canvas, .brand-preview-viewport, .gos-live-preview, .studio-preview-viewport, [data-public-asset], [data-brand-preview]) {
+  :is(button, input, select, textarea, [role="combobox"]) {
+    font-family: var(--lb-ui-font);
+    font-weight: var(--lb-weight-body);
+  }
+  :is(button, a, input, select, textarea, [role="combobox"]):focus-visible {
+    outline: 2px solid var(--lb-info);
+    outline-offset: 3px;
+  }
+  :is(button, [role="button"]):disabled,
+  :is(button, [role="button"])[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+  :is(button, a, [role="button"]) {
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: var(--lb-motion-fast);
+    transition-timing-function: var(--lb-motion-ease);
+  }
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]), textarea, select) {
+    border-radius: var(--lb-radius-control);
+    border-color: var(--lb-card-border);
+    color: var(--lb-text);
+    background-color: var(--lb-card);
+    font-size: var(--lb-text-base);
+  }
+  :is(input, textarea)::placeholder { color: var(--lb-text-hint); opacity: 1; }
+  :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--lb-action-start); }
+  :is(input, textarea, select)[aria-invalid="true"] { border-color: var(--lb-error); }
+}
+
+/* Explicit action levels replace the former all-buttons gradient hover. */
+.launch-brand-page :is(.wizard-actions > button:last-child, .discover-primary) {
+  min-height: var(--lb-control-height);
+  padding-inline: var(--lb-control-padding-inline);
+  border: 1px solid transparent;
+  border-radius: var(--lb-radius-control);
+  background: var(--lb-action);
+  color: var(--lb-on-action);
+  font-size: var(--lb-text-base);
+  font-weight: var(--lb-weight-label);
+  box-shadow: none;
+}
+.launch-brand-page :is(.wizard-actions > button:last-child, .discover-primary):not(:disabled):hover {
+  background: var(--lb-action-hover);
+}
+.launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle, .launch-brand-back) {
+  min-height: var(--lb-control-height-small);
+  border: 1px solid var(--lb-card-border);
+  border-radius: var(--lb-radius-control);
+  background: var(--lb-card);
+  color: var(--lb-text-body);
+  font-size: var(--lb-text-label);
+  font-weight: var(--lb-weight-label);
+  box-shadow: none;
+}
+.launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle, .launch-brand-back):not(:disabled):hover {
+  background: var(--lb-accent-surface);
+  border-color: var(--lb-accent-border);
+  color: var(--lb-accent-text);
+}
+.launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle) svg { color: currentColor; }
+.launch-brand-page :is(.wizard-actions > button:not(:last-child), .discover-footer button:not(.discover-primary)) {
+  min-height: var(--lb-control-height-small);
+  border-radius: var(--lb-radius-control);
+  color: var(--lb-text-body);
+  font-size: var(--lb-text-label);
+  font-weight: var(--lb-weight-label);
+  box-shadow: none;
+}
+.launch-brand-page :is(.wizard-actions > button:not(:last-child), .discover-footer button:not(.discover-primary)):not(:disabled):hover {
+  background: var(--lb-accent-surface);
+  color: var(--lb-accent-text);
+}
+.launch-brand-page :is(.profile-option-label, .profile-radio button span:not(.profile-radio-dot)) {
+  color: var(--lb-text);
+  font-size: var(--lb-text-base);
+  font-weight: var(--lb-weight-label);
+}
+.launch-brand-page .profile-options button {
+  min-height: var(--lb-control-height);
+  border-radius: var(--lb-radius-control);
+}
+.launch-brand-page :is(.studio-guided-section, .bs-logos-section, .discover-main-card, .studio-identity-columns > section) {
+  border-color: var(--lb-card-border);
+  border-radius: var(--lb-radius);
+  box-shadow: var(--lb-card-shadow);
+}
+.launch-brand-page :is(.studio-section-number, .discover-title-number) {
+  background: var(--lb-action);
+  color: var(--lb-on-action);
+  font-weight: var(--lb-weight-label);
+}
+.launch-brand-page .workspace-sidebar :is(button[aria-current="page"], button.active) {
+  background: var(--lb-accent-surface);
+  color: var(--lb-accent-text);
+  box-shadow: none;
+}
+.launch-brand-page .workspace-sidebar :is(button[aria-current="page"], button.active) :is(span, svg) { color: inherit; }
+.launch-brand-page :is(.sidebar-brand-copy strong, .launch-brand-identity) {
+  color: var(--lb-text);
+  font-weight: var(--lb-weight-heading);
+}
+.launch-brand-page :is(.sidebar-brand-copy small, .wizard-progress-label) { color: var(--lb-text-hint); }
+.launch-brand-page .mode-switch {
+  background: var(--lb-canvas);
+  border: 1px solid var(--lb-card-border);
+  border-radius: var(--lb-radius-control);
+}
+.launch-brand-page .mode-switch button {
+  font-size: var(--lb-text-label);
+  font-weight: var(--lb-weight-label);
+  color: var(--lb-text-body);
+}
+.launch-brand-page .mode-switch button.active {
+  background: var(--lb-card);
+  color: var(--lb-text);
+  box-shadow: var(--lb-card-shadow);
+}
+@media (pointer: coarse) {
+  .launch-brand-page :is(.studio-element-generate, .studio-gallery-toggle, .launch-brand-back, .wizard-actions > button, .discover-footer button) {
+    min-height: 44px;
+  }
+}

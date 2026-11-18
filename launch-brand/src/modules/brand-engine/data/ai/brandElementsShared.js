@@ -13,7 +13,7 @@ export function createBrandElementContracts({ fonts, obj, str, candidateSchema, 
   };
   const elementSchema = element => {
     if (!elements.includes(element)) throw new Error("Unsupported brand element.");
-    const count = element === "name" ? 15 : element === "logo" ? 1 : 3;
+    const count = element === "name" ? 3 : element === "logo" ? 1 : 3;
     // Allow resolved contours; do not force every concept into a tiny icon budget.
     const outputFields = element === "logo" ? { ...fields.logo, logo: obj({
       ...candidateSchema.properties.logo.properties,
@@ -56,12 +56,15 @@ export function createBrandElementContracts({ fonts, obj, str, candidateSchema, 
     const buttonLuminance = luminance(c.buttonBackground), darkLuminance = luminance("#11152D");
     const darkContrast = (Math.max(buttonLuminance, darkLuminance) + .05) / (Math.min(buttonLuminance, darkLuminance) + .05);
     const onPrimary = darkContrast > 1.05 / (buttonLuminance + .05) ? "#11152D" : "#FFFFFF";
+    const mixHex = (hex, neutral, weight) => `#${[1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - weight) + parseInt(neutral.slice(i, i + 2), 16) * weight).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+    const darkPrimary = luminance(c.primary) < .35 ? mixHex(c.primary, "#FFFFFF", .76) : c.primary;
+    const darkSecondary = luminance(c.secondary) < .35 ? mixHex(c.secondary, "#FFFFFF", .72) : c.secondary;
     const footerBackground = `#${[1, 3, 5].map(i => Math.round(parseInt(c.secondary.slice(i, i + 2), 16) * .2 + 12 * .8).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
     const common = { ...c, onPrimary, footerBackground, focus: c.primary };
     return {
       version: 1, paletteId,
       light: { ...common, background: "#F8FAFC", headerBackground: "#F8FAFC", surface: "#FFFFFF", text: "#11152D", mutedText: "#596579", border: "#CBD5E1", success: "#047857", warning: "#B45309", error: "#BE123C" },
-      dark: { ...common, background: "#08131F", headerBackground: "#08131F", surface: "#101E2E", text: "#EDF2FA", mutedText: "#A5B3C7", border: "#334155", success: "#34D399", warning: "#FBBF24", error: "#FB7185" },
+      dark: { ...common, primary: darkPrimary, secondary: darkSecondary, focus: darkPrimary, background: "#08131F", headerBackground: "#08131F", surface: "#101E2E", text: "#EDF2FA", mutedText: "#A5B3C7", border: "#334155", success: "#34D399", warning: "#FBBF24", error: "#FB7185" },
       typography: base?.typography || { heading: "Manrope", body: "Manrope", arabic: "Cairo" },
       buttons: base?.buttons || { variant: "solid", shape: "rounded" },
       appearance: base?.appearance || { radius: 14, shadow: "soft", density: "comfortable" },
@@ -102,7 +105,7 @@ export function createBrandElementContracts({ fonts, obj, str, candidateSchema, 
   };
   function validateElementSuggestions(result, element, requestId, brief, answers = {}) {
     if (result && typeof result === "object" && !Array.isArray(result.suggestions)) result = { ...result, suggestions: result.candidates || result.alternatives || (element === "name" ? result.names : element === "logo" ? result.logos : undefined) };
-    const expectedCount = element === "name" ? 15 : element === "logo" ? 1 : 3;
+    const expectedCount = element === "name" ? 3 : element === "logo" ? 1 : 3;
     if (!elements.includes(element) || !Array.isArray(result?.suggestions) || result.suggestions.length !== expectedCount) throw new Error(`Expected ${expectedCount} brand element suggestions.`);
     const suggestions = result.suggestions.map((item, index) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("Invalid brand suggestion text.");

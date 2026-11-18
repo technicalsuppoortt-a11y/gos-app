@@ -57,7 +57,7 @@ export async function resolveBrandLogoImage(identity: BrandIdentity): Promise<st
 export function createBrandLogoSvg(
   identity: BrandIdentity,
   primary: string,
-  options: { monochrome?: "light" | "dark" | undefined; embedFonts?: boolean } = {},
+  options: { monochrome?: "light" | "dark" | undefined; embedFonts?: boolean; palette?: string[] | undefined } = {},
 ) {
   if (isRasterBrandLogo(identity)) return createRasterBrandLogoSvg(brandLogoImageUrl(identity), identity.name);
   const color = /^#[0-9a-f]{6}$/i.test(primary) ? primary : "#071B38";
@@ -106,8 +106,12 @@ export function createBrandLogoSvg(
     )
       ? geometry
           .map(
-            (path) =>
-              `<path d="${xml(path.d)}" fill="${path.fill ? ink : "none"}" fill-rule="evenodd" stroke="${ink}" stroke-width="${path.strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`,
+            (path, index) => {
+              // Identity colors per shape (primary, secondary, accent) when a palette is given.
+              const tones = options.monochrome ? [] : (options.palette ?? identity.logo?.palette ?? []).filter((tone) => /^#[0-9a-f]{6}$/i.test(tone));
+              const tone = tones.length ? tones[index % tones.length]! : ink;
+              return `<path d="${xml(path.d)}" fill="${path.fill ? tone : "none"}" fill-rule="evenodd" stroke="${tone}" stroke-width="${path.strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`;
+            },
           )
           .join("")
       : null;
@@ -310,7 +314,7 @@ function fitWordmark(
 export async function prepareBrandLogoSvg(
   identity: BrandIdentity,
   primary: string,
-  options: { monochrome?: "light" | "dark" | undefined } = {},
+  options: { monochrome?: "light" | "dark" | undefined; palette?: string[] | undefined } = {},
 ) {
   if (isRasterBrandLogo(identity)) return createRasterBrandLogoSvg(await resolveBrandLogoImage(identity), identity.name);
   const w = identity.logo?.wordmark;
@@ -423,4 +427,25 @@ export async function validateBrandLogoDiversity(
     if ([...old, ...masks.slice(0, i)].some(mask => logoMaskSimilarity(masks[i]!, mask) >= .86))
       throw Object.assign(new Error(`Logo option ${i + 1} is visually too similar to another logo. Redesign its silhouette and concept, not just its coordinates or wording.`), { diagnostic: "brand-similar-logo" });
   }
+}
+
+/**
+ * Makes a vector logo draw itself: each shape of the mark is outlined stroke by
+ * stroke, then filled with its color, one after another, and the name fades in
+ * last. Runs inside the SVG, so it works in an <img>. Reduced motion: no animation.
+ */
+export function withLogoDrawAnimation(svg: string) {
+  let count = 0;
+  const drawn = svg.replace(/(<g data-brand-mark="true"[^>]*>)([\s\S]*?)(<\/g>)/, (_all, open: string, body: string, close: string) =>
+    open + body.replace(/<path (?![^>]*lb-draw)([^>]*?)stroke-width="([\d.]+)"/g, (_path, before: string, width: string) => {
+      const stroke = before.match(/\bstroke="([^"]+)"/)?.[1];
+      const fill = before.match(/\bfill="([^"]+)"/)?.[1];
+      const temporaryOutline = stroke === "none" && fill && fill !== "none";
+      const attributes = temporaryOutline ? before.replace(/\bstroke="none"/, `stroke="${fill}"`) : before;
+      return `<path class="lb-draw" pathLength="1" style="--i:${count++};--sw:${width};--so:${temporaryOutline ? 0 : 1}" ${attributes}stroke-width="${width}"`;
+    }) + close);
+  if (!count) return svg;
+  const textDelay = (count - 1) * 0.45 + 1.5;
+  const style = `<style>.lb-draw{stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;stroke-width:3;animation:lb-stroke 1.1s ease-in-out forwards,lb-fill .6s ease forwards;animation-delay:calc(var(--i)*.45s),calc(var(--i)*.45s + 1s)}text{opacity:0;animation:lb-text .8s ease forwards;animation-delay:${textDelay}s}@keyframes lb-stroke{to{stroke-dashoffset:0}}@keyframes lb-fill{to{fill-opacity:1;stroke-width:var(--sw);stroke-opacity:var(--so)}}@keyframes lb-text{to{opacity:1}}@media (prefers-reduced-motion:reduce){.lb-draw,text{animation:none;stroke-dasharray:none;fill-opacity:1;opacity:1;stroke-width:var(--sw);stroke-opacity:var(--so,1)}}</style>`;
+  return drawn.replace(/(<svg[^>]*>)/, `$1${style}`);
 }

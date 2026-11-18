@@ -2,7 +2,7 @@
 @scope (.brand-engine-module) {
 /* Keep scrollbars subtle while carrying the brand's soft violet gradient. */
 :scope {
-  --scrollbar-accent: #6ce7d4;
+  --scrollbar-accent: var(--academy-green);
   --scrollbar-thumb: rgba(196, 181, 253, 0.42);
   --scrollbar-thumb-hover: rgba(108, 231, 212, 0.62);
   --scrollbar-width: thin;

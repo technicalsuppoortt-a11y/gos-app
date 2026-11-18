@@ -2,22 +2,22 @@
 @scope (.brand-engine-module) {
 /* Shared Joe Academy shell palette; keep page content and preview branding independent. */
 :scope:not(.dark) .app-shell.has-sidebar {
-  --background: #f8f9fd;
-  background: #f8f9fd;
+  --background: #f3f6f8;
+  background: #f3f6f8;
 }
 
 :scope:not(.dark) .app-shell.has-sidebar > .workspace-column,
 :scope:not(.dark) .app-shell.has-sidebar .workspace-layout,
 :scope:not(.dark) .app-shell.has-sidebar .workspace-main {
-  background: #f8f9fd;
+  background: #f3f6f8;
 }
 
 :scope.dark .app-shell.has-sidebar,
 :scope.dark .app-shell.has-sidebar > .workspace-column,
 :scope.dark .app-shell.has-sidebar .workspace-layout,
 :scope.dark .app-shell.has-sidebar .workspace-main {
-  --background: #0b1020;
-  background: #0b1020;
+  --background: #0a1320;
+  background: #0a1320;
 }
 
 .workspace-sidebar:is(.force-light, .force-dark) {
@@ -34,7 +34,7 @@
 
 .workspace-sidebar.force-dark,
 :scope.dark .workspace-sidebar {
-  background: #111522;
+  background: #0e1826;
   border-inline-end-color: #252b3a;
 }
 
@@ -232,7 +232,7 @@
 }
 
 :scope.dark .mobile-workspace-drawer {
-  background: #111522;
+  background: #0e1826;
 }
 
 }

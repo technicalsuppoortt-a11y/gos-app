@@ -1,55 +1,378 @@
-
 @scope (.brand-engine-module) {
-.ai-generation-progress {
-  margin-block: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--studio-border, #d5e1e7);
-  border-radius: 12px;
-  background: var(--studio-panel, #f5f8fa);
-  color: inherit;
-  font-size: 13px;
-}
-.ai-generation-progress-title,
-.ai-generation-timing {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.ai-generation-progress-title {
-  margin-block-end: 8px;
-}
-.ai-generation-progress.is-running .ai-generation-progress-title {
-  color: var(--studio-accent, #007d70);
-}
-.ai-generation-progress.is-success .ai-generation-progress-title {
-  color: #087f5b;
-}
-.ai-generation-progress.is-error .ai-generation-progress-title {
-  color: #bc3434;
-}
-.ai-generation-timing {
-  font-variant-numeric: tabular-nums;
-}
-.ai-generation-timing span + span {
-  margin-inline-start: auto;
-  font-weight: 600;
-}
-.ai-generation-progress small {
-  display: block;
-  margin-block-start: 8px;
-  line-height: 1.5;
-  opacity: 0.8;
-  font-size: 12px;
-}
-.ai-generation-progress p {
-  margin-block: 8px 0;
-  overflow-wrap: anywhere;
-}
-@media (prefers-reduced-motion: reduce) {
-  .ai-generation-progress .animate-spin {
-    animation: none;
+@keyframes aiProgressReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
+@keyframes aiBarSheen {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+
+@keyframes aiPhaseDotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgb(6 182 212 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgb(6 182 212 / 0);
+  }
+}
+
+.ai-generation-progress {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-block: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--lb-accent-border, rgb(8 145 178 / 0.32));
+  background-image: var(--lb-arch-tile-bg);
+  background-size: var(--lb-arch-tile-size);
+  backdrop-filter: blur(16px) saturate(165%);
+  -webkit-backdrop-filter: blur(16px) saturate(165%);
+  box-shadow: var(--lb-glass-shadow), var(--lb-glass-highlight);
+  color: var(--lb-text, #0f172a);
+  font-size: 13px;
+  overflow: hidden;
+  animation: aiProgressReveal 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ai-generation-progress.is-error {
+  border-color: rgb(225 29 72 / 0.38);
+}
+
+.ai-generation-progress.is-success {
+  border-color: rgb(16 185 129 / 0.42);
+}
+
+.ai-generation-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.ai-generation-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 10px;
+  background: var(--lb-gradient);
+  color: #ffffff;
+  box-shadow: 0 6px 16px -4px rgb(8 145 178 / 0.48);
+}
+
+.ai-generation-progress.is-error .ai-generation-orb {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  box-shadow: 0 6px 16px -4px rgb(225 29 72 / 0.42);
+}
+
+.ai-generation-progress.is-success .ai-generation-orb {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 6px 16px -4px rgb(16 185 129 / 0.45);
+}
+
+.ai-generation-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ai-generation-headline {
+  font-size: 13.5px;
+  font-weight: 750;
+  line-height: 1.3;
+  color: var(--lb-text);
+}
+
+.ai-generation-sub {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--lb-text-hint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-generation-percent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--lb-gradient);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 12px -4px rgb(29 78 216 / 0.45);
+  flex-shrink: 0;
+}
+
+.ai-generation-progress.is-error .ai-generation-percent-pill {
+  background: #be123c;
+}
+
+/* Glossy Animated Gradient Progress Track */
+.ai-glossy-bar-track {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lb-card-border) 72%, var(--lb-card-subtle));
+  border: 1px solid color-mix(in srgb, var(--lb-card-border) 85%, transparent);
+  overflow: hidden;
+}
+
+.ai-glossy-bar-fill {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #06b6d4 0%, #0d9488 48%, #2563eb 100%);
+  box-shadow:
+    0 0 14px rgb(6 182 212 / 0.52),
+    inset 0 1px 0 rgb(255 255 255 / 0.45);
+  transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.ai-generation-progress.is-error .ai-glossy-bar-fill {
+  background: linear-gradient(90deg, #f43f5e, #be123c);
+  box-shadow: none;
+}
+
+.ai-glossy-bar-sheen {
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.58), transparent);
+  animation: aiBarSheen 1.65s ease-in-out infinite;
+}
+
+/* 3-Step Real-Time Neural Phase Chips */
+.ai-generation-phases {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ai-phase-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--lb-card-border);
+  background: var(--lb-card);
+  color: var(--lb-text-hint);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+}
+
+.ai-phase-chip > i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--lb-card-border-strong);
+}
+
+.ai-phase-chip[data-phase="active"] {
+  border-color: var(--lb-teal);
+  background: var(--lb-gradient-subtle);
+  color: var(--lb-text);
+  font-weight: 650;
+}
+
+.ai-phase-chip[data-phase="active"] > i {
+  background: #06b6d4;
+  animation: aiPhaseDotPulse 1.5s ease-in-out infinite;
+}
+
+.ai-phase-chip[data-phase="done"] {
+  border-color: var(--lb-accent-border);
+  color: var(--lb-accent-text);
+}
+
+.ai-phase-chip[data-phase="done"] > i {
+  background: #10b981;
+}
+
+.ai-generation-timing {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--lb-text-hint);
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-generation-timing span + span {
+  margin-inline-start: auto;
+  font-weight: 600;
+  color: var(--lb-accent-text);
+}
+
+.ai-generation-progress small {
+  display: block;
+  margin: 0;
+  line-height: 1.45;
+  color: var(--lb-text-hint);
+  font-size: 11.5px;
+}
+
+.ai-generation-error-msg {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgb(225 29 72 / 0.08);
+  border: 1px solid rgb(225 29 72 / 0.24);
+  color: #be123c;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Logo Generation 5-Stage Journey */
+.ai-logo-journey {
+  display: grid;
+  gap: 12px;
+  margin-block: 4px;
+}
+
+.ai-logo-journey ol {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ai-logo-journey li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--lb-text-hint);
+  font-size: 11.5px;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.ai-logo-step-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--lb-card-border);
+  border-radius: 50%;
+  background: var(--lb-card);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-logo-journey li[data-state="complete"] {
+  color: var(--lb-accent-text);
+}
+
+.ai-logo-journey li[data-state="complete"] .ai-logo-step-marker {
+  background: var(--lb-gradient);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.ai-logo-journey li[data-state="current"] {
+  color: var(--lb-text);
+  font-weight: 650;
+}
+
+.ai-logo-journey li[data-state="current"] .ai-logo-step-marker {
+  border-color: var(--lb-teal);
+  box-shadow: 0 0 0 3px rgb(8 145 178 / 0.18);
+  color: var(--lb-accent-text);
+}
+
+.ai-logo-journey li[data-state="error"] {
+  color: var(--lb-error);
+}
+
+.ai-logo-stage-detail {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--lb-card);
+  border: 1px solid var(--lb-card-border);
+}
+
+.ai-logo-stage-detail > strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lb-text);
+}
+
+.ai-logo-stage-detail > span {
+  font-size: 12px;
+  color: var(--lb-text-body);
+}
+
+.ai-logo-progress .ai-logo-progress-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--lb-text-hint);
+}
+
+.ai-logo-live-draft {
+  margin-block: 6px;
+}
+
+.ai-logo-live-draft > p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lb-accent-text);
+}
+
+@media (max-width: 560px) {
+  .ai-generation-phases {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-generation-progress,
+  .ai-generation-progress .animate-spin,
+  .ai-glossy-bar-sheen,
+  .ai-phase-chip > i {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 }

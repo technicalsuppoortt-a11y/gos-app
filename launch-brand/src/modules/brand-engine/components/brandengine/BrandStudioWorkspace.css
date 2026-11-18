@@ -153,14 +153,14 @@
 .bs-root.studio-theme,
 .studio-theme,
 .wizard--brand-studio {
-  --studio-accent: #007d70;
-  --studio-hover: #007d70;
-  --studio-link: #007d70;
+  --studio-accent: var(--academy-accent);
+  --studio-hover: var(--academy-accent);
+  --studio-link: var(--academy-accent);
   --studio-tint: #007d7014;
 }
 :where(:scope).dark .studio-theme,
 :where(:scope).dark .wizard--brand-studio {
-  --studio-link: #6ce7d4;
+  --studio-link: var(--academy-green);
   --studio-tint: #007d7026;
 }
 .studio-theme :is(button, input, textarea, select):focus-visible {
@@ -1554,16 +1554,16 @@
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  color: var(--studio-primary, #007d70);
+  color: var(--studio-primary, var(--academy-accent));
   background: var(--surface);
   border: 1px solid var(--border);
 }
 .studio-workspace .studio-direction-details:hover {
-  background: #e7f8f4;
+  background: var(--academy-accent-surface);
 }
 .studio-workspace .studio-direction-pending .studio-direction-art {
-  background: #e7f8f4;
-  color: #007d70;
+  background: var(--academy-accent-surface);
+  color: var(--academy-accent);
 }
 .studio-workspace .studio-direction-pending > button {
   opacity: 0.65;
@@ -1942,10 +1942,10 @@
   height: auto;
   margin: 0;
   padding: 3px 8px;
-  border: 1px dashed #6ce7d4;
+  border: 1px dashed var(--academy-green);
   border-radius: 7px;
   background: transparent;
-  color: #007d70;
+  color: var(--academy-accent);
   font-size: 14px;
   line-height: 1.2;
   white-space: nowrap;

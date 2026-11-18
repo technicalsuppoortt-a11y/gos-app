@@ -1,0 +1,127 @@
+/* Controls belong to the editor; the brand's styles stay inside its preview. */
+.studio-live-preview.studio-live-preview--compact {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  height: auto;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  color: var(--lb-text, var(--foreground));
+  font-family: var(--lb-font-en, system-ui), var(--lb-font-ar, sans-serif);
+}
+.studio-live-preview--compact:dir(rtl) { font-family: var(--lb-font-ar, sans-serif); }
+.studio-live-preview--compact .studio-preview-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  overflow-x: auto;
+}
+.studio-live-preview--compact :is(.studio-preview-surfaces, .studio-preview-devices) {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 3px;
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid var(--lb-card-border, var(--border));
+  border-radius: var(--lb-radius-control, 9px);
+  background: var(--lb-card-subtle, var(--studio-tint));
+}
+.studio-live-preview--compact .studio-preview-surfaces { flex: 1 0 auto; }
+.studio-live-preview--compact .studio-preview-surfaces button { flex: 1; }
+.studio-live-preview--compact .studio-preview-devices { flex: 0 0 auto; }
+.studio-live-preview.studio-live-preview--compact .studio-preview-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 28px;
+  min-height: 28px;
+  height: auto;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--lb-text-body, var(--foreground));
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.studio-live-preview.studio-live-preview--compact .studio-preview-devices button {
+  width: 28px;
+  padding: 4px;
+}
+.studio-live-preview--compact .studio-preview-controls button:hover { background: var(--lb-canvas, var(--muted)); }
+.studio-live-preview.studio-live-preview--compact .studio-preview-controls button:is([aria-selected="true"], [aria-pressed="true"]) {
+  color: #ffffff;
+  border-color: transparent;
+  background: var(--lb-gradient, var(--lb-action));
+  font-weight: 650;
+  box-shadow: 0 4px 12px -4px rgb(0 94 200 / 0.42);
+}
+.studio-live-preview--compact .studio-preview-controls button:focus-visible,
+.studio-live-preview--compact .studio-preview-stage:focus-visible {
+  outline: 2px solid var(--lb-blue, var(--ring));
+  outline-offset: 3px;
+}
+.studio-live-preview.studio-live-preview--compact .studio-preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 1280 / 850;
+  flex: 0 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--lb-card-border, var(--border));
+  border-radius: var(--lb-radius-control, 9px);
+  background: var(--lb-canvas, var(--muted));
+}
+.studio-live-preview--compact .studio-preview-stage[data-preview-device="desktop"] {
+  background: var(--lb-card, var(--card));
+}
+.studio-live-preview--compact .studio-preview-device-frame {
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--lb-card, var(--card));
+  box-shadow: 0 2px 12px rgb(10 19 32 / .08);
+}
+.studio-live-preview--compact .studio-preview-stage[data-preview-device="desktop"] .studio-preview-device-frame {
+  border-radius: 0;
+  box-shadow: none;
+}
+.studio-live-preview--compact .studio-preview-caption {
+  display: block;
+  flex: 0 0 auto;
+  color: var(--lb-text-hint, var(--muted-foreground));
+  font-size: 11px;
+  line-height: 1.5;
+}
+.studio-live-preview.studio-live-preview--compact.is-expanded {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+}
+.studio-live-preview.studio-live-preview--compact.is-expanded .studio-preview-stage {
+  height: 100%;
+  aspect-ratio: auto;
+  min-height: 0;
+  flex: 1 1 0;
+}
+@media (pointer: coarse) {
+  .studio-live-preview.studio-live-preview--compact .studio-preview-controls button { min-width: 44px; min-height: 44px; }
+}

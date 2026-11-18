@@ -1,0 +1,432 @@
+@scope (.brand-engine-module) {
+/* Signature SaaS Workspace Shell — Frosted Surfaces & Vibrant Teal-to-Ocean-Blue Gradient */
+.compact-workspace-shell {
+  --workspace-sidebar-width: 288px;
+  --studio-footer-inset: var(--workspace-sidebar-width);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100% !important;
+  overflow: hidden;
+  background: var(--lb-canvas-ambient, var(--lb-canvas));
+  color: var(--lb-text);
+  font-family: var(--lb-font-ui, var(--font-sans));
+}
+.compact-workspace-shell.sidebar-collapsed { --workspace-sidebar-width: 68px; }
+.compact-workspace-shell:not(.has-sidebar) { --workspace-sidebar-width: 0px; }
+.compact-workspace-shell > .workspace-column { min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
+.compact-workspace-shell .workspace-layout { min-width: 0; min-height: 0; height: 100%; overscroll-behavior: contain; }
+@keyframes workspaceModeEnter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.compact-workspace-shell .workspace-main {
+  animation: workspaceModeEnter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.compact-workspace-shell[data-workspace-mode="wizard"] .workspace-main {
+  height: 100%;
+  min-height: 0;
+  padding-inline: 0;
+}
+.compact-workspace-shell .landing-preview-exit {
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--lb-glass-border) !important;
+  border-radius: 999px !important;
+  box-shadow: var(--lb-glass-shadow), var(--lb-glass-highlight) !important;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, box-shadow 180ms ease !important;
+}
+.compact-workspace-shell .landing-preview-exit:hover {
+  transform: translateY(-1.5px);
+  border-color: var(--lb-teal) !important;
+}
+
+/* Signature Sidebar — Exact Match to Screen 4 Vibrant Teal-to-Blue Gradient */
+.compact-workspace-shell .desktop-workspace-sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 var(--workspace-sidebar-width);
+  width: var(--workspace-sidebar-width);
+  min-width: var(--workspace-sidebar-width);
+  max-width: var(--workspace-sidebar-width);
+  height: 100%;
+  overflow: hidden;
+  padding: 16px 14px 12px;
+  background: var(--lb-glass-bg-strong);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  color: var(--lb-text-body);
+  border-inline-end: 1px solid var(--lb-card-border);
+  box-shadow: 2px 0 18px -12px rgb(15 23 42 / 0.08);
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-brand {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  margin-bottom: 12px;
+  padding-inline: 6px;
+  gap: 11px;
+  flex-shrink: 0;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-brand-logo-wrap {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--lb-gradient-subtle);
+  border: 1px solid var(--lb-accent-border);
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-brand img { width: 22px; height: 22px; }
+.compact-workspace-shell .workspace-sidebar .sidebar-brand-copy strong {
+  color: var(--lb-text);
+  font-size: 14.5px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-brand-copy small {
+  color: var(--lb-text-hint);
+  font-size: 11.5px;
+  line-height: 1.35;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Setup Progress Meter with Vibrant Gradient Fill */
+.compact-workspace-shell .workspace-sidebar .sidebar-journey-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0 2px 14px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--lb-glass-tile);
+  border: 1px solid var(--lb-card-border);
+  box-shadow: var(--lb-glass-highlight);
+  flex-shrink: 0;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-journey-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--lb-text-hint);
+  font-weight: 600;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-journey-meta strong {
+  color: var(--lb-accent-text);
+  font-weight: 700;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-journey-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--lb-card-border);
+  overflow: hidden;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-journey-track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lb-gradient);
+  transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.compact-workspace-shell .workspace-sidebar nav {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-block: 2px 0;
+  padding-block: 2px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.compact-workspace-shell .workspace-sidebar nav button,
+.compact-workspace-shell .workspace-sidebar .sidebar-collapse {
+  position: relative;
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding: 9px 11px;
+  gap: 10px;
+  border-radius: 12px;
+  color: var(--lb-text-body);
+  font-size: 13.5px;
+  line-height: 1.35;
+  font-weight: 500;
+  white-space: nowrap;
+  justify-content: flex-start;
+  text-align: start;
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  transition:
+    background 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 160ms ease;
+}
+.compact-workspace-shell .workspace-sidebar nav button {
+  flex-shrink: 0;
+  min-height: 46px;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-item-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.compact-workspace-shell .workspace-sidebar nav button .sidebar-item-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8px;
+  background: var(--lb-card-subtle);
+  color: var(--lb-text-hint);
+  border: 1px solid var(--lb-card-border);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+.compact-workspace-shell .workspace-sidebar nav button .sidebar-item-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-collapse .sidebar-item-icon,
+.compact-workspace-shell .workspace-sidebar .sidebar-collapse .sidebar-item-icon svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+
+.compact-workspace-shell .workspace-sidebar .sidebar-step-pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 650;
+  background: var(--lb-card-subtle);
+  border: 1px solid var(--lb-card-border);
+  color: var(--lb-text-hint);
+  flex-shrink: 0;
+}
+.compact-workspace-shell .workspace-sidebar .sidebar-step-pill.is-done {
+  background: var(--lb-accent-surface);
+  color: var(--lb-accent-text);
+  border-color: var(--lb-accent-border);
+}
+
+.compact-workspace-shell .workspace-sidebar nav button:not(.active):hover,
+.compact-workspace-shell .workspace-sidebar .sidebar-collapse:hover {
+  background: var(--lb-card-subtle);
+  border-color: var(--lb-card-border);
+  color: var(--lb-text);
+}
+.compact-workspace-shell .workspace-sidebar nav button:not(.active):hover .sidebar-item-icon {
+  color: var(--lb-accent-text);
+  border-color: var(--lb-accent-border);
+  background: var(--lb-accent-surface);
+}
+
+/* Vibrant Teal -> Cyan -> Ocean Blue Active Sidebar Pill (Matching Screen 4) */
+.compact-workspace-shell .workspace-sidebar nav button.active {
+  background: var(--lb-gradient) !important;
+  color: #ffffff !important;
+  border-color: rgb(255 255 255 / 0.20) !important;
+  box-shadow:
+    0 12px 26px -8px rgb(0 94 200 / 0.44),
+    0 4px 12px -4px rgb(0 125 112 / 0.30),
+    inset 0 1px 0 rgb(255 255 255 / 0.26) !important;
+}
+.compact-workspace-shell .workspace-sidebar nav button.active .sidebar-item-label {
+  font-weight: 650;
+  color: #ffffff !important;
+}
+.compact-workspace-shell .workspace-sidebar nav button.active .sidebar-item-icon {
+  background: rgb(255 255 255 / 0.16) !important;
+  color: #ffffff !important;
+  border-color: rgb(255 255 255 / 0.26) !important;
+}
+.compact-workspace-shell .workspace-sidebar nav button.active .sidebar-item-icon svg {
+  color: #ffffff !important;
+}
+.compact-workspace-shell .workspace-sidebar nav button.active .sidebar-step-pill {
+  background: rgb(255 255 255 / 0.18) !important;
+  color: #ffffff !important;
+  border-color: rgb(255 255 255 / 0.26) !important;
+}
+
+.compact-workspace-shell .workspace-sidebar .sidebar-footer {
+  margin-block-start: auto;
+  flex-shrink: 0;
+  padding-block-start: 12px;
+  border-color: var(--lb-card-border);
+}
+.compact-workspace-shell .workspace-sidebar.is-collapsed :is(nav button, .sidebar-collapse) {
+  width: 44px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+.compact-workspace-shell .workspace-sidebar.is-collapsed .sidebar-step-pill { display: none; }
+.compact-workspace-shell .workspace-sidebar.is-collapsed nav { align-items: center; gap: 8px; }
+.compact-workspace-shell .workspace-sidebar.is-collapsed .sidebar-collapse { margin-inline: auto; }
+.compact-workspace-shell .workspace-sidebar.is-collapsed .sidebar-brand { padding-inline: 0; justify-content: center; }
+.compact-workspace-shell .workspace-sidebar :is(nav button, .sidebar-collapse):focus-visible {
+  outline: 2px solid var(--lb-teal);
+  outline-offset: -2px;
+}
+
+/* Wizard Footer + Vibrant Primary CTA */
+.compact-workspace-shell.has-sidebar:is(.sidebar-expanded, .sidebar-collapsed) .wizard-footer {
+  inset-inline-start: var(--workspace-sidebar-width);
+  height: auto;
+  min-height: 56px;
+  padding: 8px 20px calc(8px + env(safe-area-inset-bottom, 0px));
+  gap: 12px;
+  background: var(--lb-glass-bg-strong);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-color: var(--lb-card-border);
+  transition: inset-inline-start 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.compact-workspace-shell .wizard-footer .wizard-actions { flex-wrap: wrap; gap: 8px; }
+.compact-workspace-shell .wizard-footer .wizard-actions button { min-height: 38px; font-size: 13.5px; border-radius: 10px; }
+.compact-workspace-shell .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset) {
+  background: var(--lb-gradient) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: var(--lb-gradient-glow);
+  font-weight: 650;
+  transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+}
+.compact-workspace-shell .wizard-footer .wizard-actions button:last-child:not([class*="outline"]):not(.discover-reset):hover:not(:disabled) {
+  background: var(--lb-gradient-hover) !important;
+  transform: translateY(-1px);
+}
+.compact-workspace-shell .wizard-footer .step-caption { font-size: 12px; font-weight: 500; }
+.compact-workspace-shell .landing-preview-workspace { padding: 20px; }
+.compact-workspace-shell .landing-preview-workspace.landing-preview-fullscreen {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.compact-workspace-shell .wizard--website > .wizard-footer { width: calc(100% - 40px); }
+
+@media (min-width: 1024px) and (min-height: 620px) {
+  .compact-workspace-shell .workspace-layout:has(.wizard--deployment) { overflow: hidden !important; }
+  .compact-workspace-shell .workspace-main:has(.wizard--deployment) { height: 100%; min-height: 0; overflow: hidden !important; }
+  .compact-workspace-shell .wizard--deployment {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .wizard--deployment > div:has(section[aria-labelledby="deployment-title"]) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100%;
+    overflow: hidden;
+  }
+  .compact-workspace-shell .wizard--deployment section[aria-labelledby="deployment-title"] {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding: 14px 20px 12px !important;
+  }
+  .compact-workspace-shell .wizard--deployment .wizard-footer {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    flex-shrink: 0;
+    height: auto;
+    min-height: 54px;
+  }
+}
+
+@media (max-width: 1023px), (max-height: 619px) {
+  .compact-workspace-shell .workspace-layout:has(.wizard--deployment) { overflow-y: auto !important; }
+  .compact-workspace-shell .workspace-main:has(.wizard--deployment) { height: auto; overflow: visible !important; }
+  .compact-workspace-shell .wizard--deployment { height: auto; min-height: 100% !important; overflow: visible; }
+  .compact-workspace-shell .wizard--deployment > div:has(section[aria-labelledby="deployment-title"]) {
+    height: auto;
+    flex: 1 0 auto !important;
+  }
+  .compact-workspace-shell .wizard--deployment section[aria-labelledby="deployment-title"] {
+    height: auto !important;
+    overflow: visible;
+    padding: 16px 20px 24px !important;
+  }
+  .compact-workspace-shell .wizard--deployment .wizard-footer {
+    position: sticky !important;
+    inset: auto !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: auto;
+    min-height: 56px;
+  }
+}
+
+@media (max-width: 767px) {
+  .compact-workspace-shell { --workspace-sidebar-width: 0px; --studio-footer-inset: 0px; }
+  .compact-workspace-shell > .desktop-workspace-sidebar { display: none; }
+  .compact-workspace-shell.has-sidebar:is(.sidebar-expanded, .sidebar-collapsed) .wizard-footer {
+    inset-inline: 0 !important;
+    padding-inline: 12px;
+    min-height: 68px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+  .compact-workspace-shell .wizard-footer .wizard-actions button { min-height: 44px; }
+  .compact-workspace-shell .landing-preview-workspace { padding: 12px; }
+  .compact-workspace-shell .landing-preview-workspace.landing-preview-fullscreen { padding: 0; }
+  .compact-workspace-shell .wizard--website > .wizard-footer { width: 100%; }
+  .app-header.compact-workspace-header { flex-wrap: wrap; }
+  .app-header.compact-workspace-header > .mode-switch { width: auto; flex: 1 1 auto; }
+  .app-header.compact-workspace-header > .header-actions { width: auto; flex: 0 0 auto; }
+  .compact-workspace-header .header-actions :is(.header-control, .save-bell, .mobile-menu) { width: 40px; min-width: 40px; height: 40px; }
+  .mobile-workspace-drawer { max-height: 100dvh; background: var(--lb-card); color: var(--lb-text); }
+  .mobile-workspace-drawer .workspace-sidebar { background: var(--lb-card); }
+  .mobile-workspace-drawer .workspace-sidebar nav { margin-block: 0; gap: 8px; padding-block: 12px; }
+  .mobile-workspace-drawer .workspace-sidebar .sidebar-item-label { white-space: normal; }
+}
+@media (max-width: 440px) {
+  .app-header.compact-workspace-header > .mode-switch { flex-basis: 100%; }
+  .app-header.compact-workspace-header > .header-actions { margin-inline-start: auto; }
+}
+@media (pointer: coarse) {
+  .compact-workspace-header .header-actions :is(.header-control, .save-bell, .mobile-menu),
+  .compact-workspace-header .mode-switch button { min-width: 44px; min-height: 44px; height: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .compact-workspace-shell .workspace-main,
+  .compact-workspace-shell.has-sidebar .wizard-footer,
+  .compact-workspace-shell .workspace-sidebar nav button,
+  .compact-workspace-shell .workspace-sidebar .sidebar-journey-track > i { animation: none !important; transition: none; transform: none !important; }
+}
+}

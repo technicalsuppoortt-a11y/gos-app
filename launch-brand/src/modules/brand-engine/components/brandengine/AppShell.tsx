@@ -10,16 +10,23 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/modules/brand-en
 import { useIsMobile } from "@/modules/brand-engine/hooks/use-mobile";
 import { useWorkspaceNavigation } from "@/modules/brand-engine/hooks/useWorkspaceNavigation";
 import "./MobileWorkspace.css";
-import "./WorkspaceScale.css";
-import "./WorkspaceReadability.css";
 import "./WorkspaceTheme.css";
+import "./WorkspaceShell.css";
 
 import { WizardPage, BuilderPage, DashboardPage } from "../../pages/workspacePages";
 
 export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }) {
   useWorkspaceNavigation();
   const { mode, language, activeStep } = useAppSelector((s) => s.brand);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // The sidebar is the single reference for project navigation. Preserve a
+  // returning person's choice; show labels on the first visit.
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
+    try { return localStorage.getItem("launch-brand:sidebar-collapsed") === "true"; } catch { return false; }
+  });
+  const setSidebarCollapsed = (value: boolean) => {
+    setSidebarCollapsedState(value);
+    try { localStorage.setItem("launch-brand:sidebar-collapsed", String(value)); } catch { /* storage unavailable */ }
+  };
   const [navigationOpen, setNavigationOpen] = useState(false);
   const isMobile = useIsMobile();
   const dispatch = useAppDispatch();
@@ -41,8 +48,9 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
 
   return (
     <div
-      style={{ overflow: "clip" }}
-      className={`app-shell ${innerWorkspace && ![3, 4, 5, 15].includes(activeStep) ? "workspace-scaled" : ""} flex flex-row w-full h-full overflow-hidden ${mode === "wizard" && activeStep === 13 ? "discover-mode" : ""} ${innerWorkspace ? "has-sidebar" : ""} ${sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"} ${mode === "wizard" ? "with-stepper" : ""}`}
+      dir={language === "ar" ? "rtl" : "ltr"}
+      data-workspace-mode={mode}
+      className={`app-shell compact-workspace-shell flex flex-row w-full h-full overflow-hidden ${mode === "wizard" && activeStep === 13 ? "discover-mode" : ""} ${innerWorkspace ? "has-sidebar" : ""} ${sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"} ${mode === "wizard" && !innerWorkspace ? "with-stepper" : ""}`}
     >
       {innerWorkspace && (
         <>

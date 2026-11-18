@@ -11,7 +11,7 @@ import { loadBrandDraft, loadPhoenixPreparation } from './services/brandDraft';
 import { bindBrandDraftLifecycle } from './services/brandDraftLifecycle';
 import { saveFailureCode, saveFailureMessage } from './data/saveFailure';
 import { AppShell } from './components/brandengine/AppShell';
-import { preloadWorkspacePage } from './pages/workspacePages';
+import { preloadAllWorkspacePages, preloadWorkspacePage } from './pages/workspacePages';
 import { fingerprintBrandPages } from './data/brandPages';
 import './academy-theme.css';
 
@@ -41,6 +41,10 @@ export default function BrandEngineModule({ headerTarget }: { headerTarget?: HTM
       const { mode, activeStep } = store.getState().brand;
       preloadWorkspacePage(mode, activeStep);
       setOwner(uid);
+      // Load every tab's code while the person is still on the first one, so switching
+      // tabs later is instant instead of waiting for a download.
+      const idle = (window as Window & { requestIdleCallback?: (callback: () => void) => number }).requestIdleCallback;
+      if (idle) idle(() => void preloadAllWorkspacePages()); else window.setTimeout(() => void preloadAllWorkspacePages(), 1500);
       // Preparation depends on the loaded draft revision. It must neither race
       // that read nor hold the entire workspace behind a second request.
       void loadPhoenixPreparation(uid).then(preparation => {
