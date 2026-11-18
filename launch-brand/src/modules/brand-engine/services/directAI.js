@@ -155,11 +155,16 @@ async function task(uid, id, kind, connection, operation, inputFingerprint = nul
   });
   if (cached) return cached;
   let result;
-  const progress = async stage => {
+  const progress = async (stage, preview) => {
     await runTransaction(db, async tx => {
       const saved = (await tx.get(job)).data(); unchanged(uid);
       if (saved?.lease !== lease || saved.status !== "running") return;
-      tx.set(job, { ...saved, stage });
+      // A validated vector draft may be shown while quality review runs. Only
+      // status=complete exposes final suggestions to history/attempt accounting.
+      tx.set(job, { ...saved, stage,
+        ...(preview ? { result: { element: 'logo', preview } }
+          : stage === 'generating' && saved.result?.preview ? { result: null } : {}),
+      });
     });
   };
   try { result = await operation(progress); unchanged(uid); }
@@ -455,11 +460,11 @@ export async function invokeDirectAI(name, input) {
           await progress("validating");
           const parsed = JSON.parse(generated.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, "$1"));
           if (element) suggestions = validateElementSuggestions(parsed, element, input.requestId, brief, answers);
+          else candidates = validateCandidates(adaptDirectionResult(parsed, input.requestId, brief), input.requestId, { requireDesign: true, brief });
           // Vector logos carry the identity colors they were designed with (primary,
           // secondary, accent); every render of the logo colors its shapes with them.
           if (element === "logo" && LOGO_OUTPUT === "vector") suggestions = suggestions.map(suggestion => suggestion.logo ? { ...suggestion,
             logo: { ...suggestion.logo, palette: [brief.theme?.light?.primary, brief.theme?.light?.secondary, brief.theme?.light?.buttonBackground].filter(color => /^#[0-9a-f]{6}$/i.test(color || "")) } } : suggestion);
-          else candidates = validateCandidates(adaptDirectionResult(parsed, input.requestId, brief), input.requestId, { requireDesign: true, brief });
           if (element === "logo") {
             for (const suggestion of suggestions) validateBrandLogoArtwork({
               name: brief.name,
@@ -471,7 +476,7 @@ export async function invokeDirectAI(name, input) {
             const identity = suggestion => ({ name: brief.name, tagline: brief.tagline || "", typography: brief.theme.typography.heading, mark: suggestion.mark, logo: suggestion.logo });
             await validateBrandLogoDiversity(suggestions.map(identity),
               [...logoReferenceIdentities(brief), ...(branding.parameters.choices?.elementGenerations?.logo?.suggestions || []).slice(-100).map(identity)]);
-            await progress("design-review");
+            await progress("design-review", suggestions[0]);
             lastRenderableSuggestions = suggestions;
             try {
               await reviewBrandLogoQuality({ connection, brief, answers, identities: suggestions.map(identity), referenceParts: logoReferenceParts, generate: generateProviderText });

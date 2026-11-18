@@ -1,5 +1,6 @@
-import { SaveNotificationBell } from "./SaveNotifications";
-import { Languages, Menu, Moon, Sun } from 'lucide-react';
+// import { SaveNotificationBell } from "./SaveNotifications";
+// import { Languages, Moon, Sun } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from "@/modules/brand-engine/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
 import { actions } from "@/modules/brand-engine/store/brandSlice";
@@ -7,13 +8,14 @@ import { translations } from "@/modules/brand-engine/locales/translations";
 import type { AppMode } from "@/modules/brand-engine/data/types";
 import { ProgressStepper } from "./ProgressStepper";
 import "./CompactWorkspaceHeader.css";
-import { useStore } from '../../../../store/useStore';
+// import { useStore } from '../../../../store/useStore';
 
 export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void) | undefined } = {}) {
-  const setLanguage = useStore(state => state.setLanguage);
-  const setTheme = useStore(state => state.setTheme);
+  // const setLanguage = useStore(state => state.setLanguage);
+  // const setTheme = useStore(state => state.setTheme);
   const dispatch = useAppDispatch();
-  const { mode, language, theme, activeStep } = useAppSelector((s) => s.brand);
+  // const { mode, language, theme, activeStep } = useAppSelector((s) => s.brand);
+  const { mode, language } = useAppSelector((s) => s.brand);
   const t = translations[language];
   const modes: { id: AppMode; label: string }[] = [
     { id: "wizard", label: t.wizard },
@@ -35,8 +37,9 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
           </button>
         ))}
       </div>
-      {mode === "wizard" && activeStep === 1 && <ProgressStepper />}
+      {mode === "wizard" && <ProgressStepper />}
       <div className="header-actions">
+        {/* Temporarily hidden: language, theme and save notifications. Keep controls for reuse.
         <Button
           type="button"
           className={`header-control ${language === "ar" ? "is-active" : ""}`}
@@ -61,6 +64,7 @@ export function AppHeader({ onOpenNavigation }: { onOpenNavigation?: (() => void
           {theme === "light" ? <Moon /> : <Sun />}
         </Button>
         <SaveNotificationBell />
+        */}
         {onOpenNavigation && <Button type="button" className="mobile-menu" variant="ghost" size="icon" aria-label={t.menu} onClick={onOpenNavigation} aria-haspopup="dialog">
           <Menu />
         </Button>}

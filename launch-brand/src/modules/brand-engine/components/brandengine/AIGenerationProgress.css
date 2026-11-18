@@ -46,10 +46,34 @@
   margin-block: 8px 0;
   overflow-wrap: anywhere;
 }
+.ai-logo-progress {
+  background: var(--lb-card, var(--card));
+  border-color: var(--lb-card-border, var(--border));
+  color: var(--lb-text, var(--foreground));
+  padding: 18px;
+}
+.ai-logo-journey { display: grid; gap: 16px; margin-block: 18px; }
+.ai-logo-journey ol { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 6px; list-style: none; padding: 0; margin: 0; }
+.ai-logo-journey li { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; color: var(--lb-text-hint, var(--muted-foreground)); font-size: 12px; text-align: center; line-height: 1.5; }
+.ai-logo-step-marker { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--lb-card-border, var(--border)); border-radius: 50%; background: var(--lb-canvas, var(--muted)); font-variant-numeric: tabular-nums; }
+.ai-logo-journey li[data-state="complete"] { color: var(--lb-success, var(--studio-accent)); }
+.ai-logo-journey li[data-state="current"] { color: var(--lb-accent-text, var(--studio-accent)); font-weight: 500; }
+.ai-logo-journey li[data-state="current"] .ai-logo-step-marker { border-color: var(--lb-accent-text, var(--studio-accent)); box-shadow: 0 0 0 3px var(--lb-accent-surface, var(--muted)); }
+.ai-logo-journey li[data-state="error"] { color: var(--lb-error, #bc3434); }
+.ai-logo-stage-detail { display: grid; gap: 6px; padding: 14px; border-radius: 8px; background: var(--lb-canvas, var(--muted)); }
+.ai-logo-stage-detail > strong { font-size: 13px; font-weight: 500; }
+.ai-logo-stage-detail > span { font-size: 13px; color: var(--lb-text-body, var(--muted-foreground)); }
+.ai-logo-stage-activity { height: 4px; margin-top: 6px; overflow: hidden; border-radius: 4px; background: var(--lb-accent-surface, var(--muted)); }
+.ai-logo-stage-activity > span { display: block; width: 35%; height: 100%; border-radius: inherit; background: var(--lb-action-start, var(--studio-accent)); animation: ai-logo-stage-working 1.8s ease-in-out infinite; }
+.ai-logo-progress .ai-logo-progress-note { margin: 0; font-size: 12px; line-height: 1.6; color: var(--lb-text-hint, var(--muted-foreground)); }
+.ai-logo-live-draft { margin-block: 16px; }
+.ai-logo-live-draft > p { font-size: 13px; font-weight: 500; color: var(--lb-warning, var(--lb-text-body)); }
+@keyframes ai-logo-stage-working { 0% { transform: translateX(-110%); } 100% { transform: translateX(390%); } }
 @media (prefers-reduced-motion: reduce) {
   .ai-generation-progress .animate-spin {
     animation: none;
   }
+  .ai-logo-stage-activity > span { animation: none; width: 100%; opacity: .55; }
 }
 
 }

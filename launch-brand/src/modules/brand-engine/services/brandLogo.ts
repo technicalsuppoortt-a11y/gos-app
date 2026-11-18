@@ -437,10 +437,15 @@ export async function validateBrandLogoDiversity(
 export function withLogoDrawAnimation(svg: string) {
   let count = 0;
   const drawn = svg.replace(/(<g data-brand-mark="true"[^>]*>)([\s\S]*?)(<\/g>)/, (_all, open: string, body: string, close: string) =>
-    open + body.replace(/<path (?![^>]*lb-draw)([^>]*?)stroke-width="([\d.]+)"/g, (_path, before: string, width: string) =>
-      `<path class="lb-draw" pathLength="1" style="--i:${count++};--sw:${width}" ${before}stroke-width="${width}"`) + close);
+    open + body.replace(/<path (?![^>]*lb-draw)([^>]*?)stroke-width="([\d.]+)"/g, (_path, before: string, width: string) => {
+      const stroke = before.match(/\bstroke="([^"]+)"/)?.[1];
+      const fill = before.match(/\bfill="([^"]+)"/)?.[1];
+      const temporaryOutline = stroke === "none" && fill && fill !== "none";
+      const attributes = temporaryOutline ? before.replace(/\bstroke="none"/, `stroke="${fill}"`) : before;
+      return `<path class="lb-draw" pathLength="1" style="--i:${count++};--sw:${width};--so:${temporaryOutline ? 0 : 1}" ${attributes}stroke-width="${width}"`;
+    }) + close);
   if (!count) return svg;
   const textDelay = (count - 1) * 0.45 + 1.5;
-  const style = `<style>.lb-draw{stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;stroke-width:3;animation:lb-stroke 1.1s ease-in-out forwards,lb-fill .6s ease forwards;animation-delay:calc(var(--i)*.45s),calc(var(--i)*.45s + 1s)}text{opacity:0;animation:lb-text .8s ease forwards;animation-delay:${textDelay}s}@keyframes lb-stroke{to{stroke-dashoffset:0}}@keyframes lb-fill{to{fill-opacity:1;stroke-width:var(--sw)}}@keyframes lb-text{to{opacity:1}}@media (prefers-reduced-motion:reduce){.lb-draw,text{animation:none;stroke-dasharray:none;fill-opacity:1;opacity:1;stroke-width:var(--sw)}}</style>`;
+  const style = `<style>.lb-draw{stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;stroke-width:3;animation:lb-stroke 1.1s ease-in-out forwards,lb-fill .6s ease forwards;animation-delay:calc(var(--i)*.45s),calc(var(--i)*.45s + 1s)}text{opacity:0;animation:lb-text .8s ease forwards;animation-delay:${textDelay}s}@keyframes lb-stroke{to{stroke-dashoffset:0}}@keyframes lb-fill{to{fill-opacity:1;stroke-width:var(--sw);stroke-opacity:var(--so)}}@keyframes lb-text{to{opacity:1}}@media (prefers-reduced-motion:reduce){.lb-draw,text{animation:none;stroke-dasharray:none;fill-opacity:1;opacity:1;stroke-width:var(--sw);stroke-opacity:var(--so,1)}}</style>`;
   return drawn.replace(/(<svg[^>]*>)/, `$1${style}`);
 }

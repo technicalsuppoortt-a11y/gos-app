@@ -179,7 +179,7 @@
 @container (max-width: 800px) {
   .compact-phase-track {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .compact-phase-title {
     white-space: normal;

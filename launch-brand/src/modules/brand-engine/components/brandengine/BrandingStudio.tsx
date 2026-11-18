@@ -8,7 +8,7 @@ import {
   LockKeyhole,
   PanelsTopLeft,
   Save,
-  Settings2,
+  // Settings2,
   Upload,
   X,
 } from 'lucide-react';
@@ -997,6 +997,7 @@ export function BrandingStudio({
               {t("Preview", "المعاينة")}
             </button>
           </div>
+          {/* Temporarily hidden: additional settings entry point. Keep the original control.
           <Button
             type="button"
             variant="outline"
@@ -1008,6 +1009,7 @@ export function BrandingStudio({
             <Settings2 size={16} aria-hidden="true" />
             {t("More settings", "إعدادات إضافية")}
           </Button>
+          */}
         </div>
       </div>
 

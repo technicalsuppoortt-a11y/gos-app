@@ -12,7 +12,7 @@ import {
   type BrandElementGeneration,
 } from "@/modules/brand-engine/data/brandTheme";
 import { StudioSelect } from "./StudioSelect";
-import { BrandLogoImage } from "./BrandLogoImage";
+import { LogoDrawingPreview } from "./LogoDrawingPreview";
 import { AIGenerationProgress } from "./AIGenerationProgress";
 import { TypewriterText } from "./TypewriterText";
 import logoDesignSources from "@/modules/brand-engine/configuration/prompts/logoDesignSources.json";
@@ -398,6 +398,11 @@ function StudioElementGeneratorContent({
         operation="generateBrandElement"
         element={element}
         requestId={requestId}
+        logoContext={element === "logo" ? {
+          identity: { ...state.selectedBrandIdentity, name: state.brandName, tagline: state.tagline, typography: theme.typography.heading, palette: state.brandPalette },
+          primary: theme.light.primary,
+          palette: [theme.light.primary, theme.light.secondary, theme.light.buttonBackground],
+        } : undefined}
       />
       {visibleError && (
         <p role="alert" className="bs-logo-save-status error">
@@ -474,11 +479,10 @@ function StudioElementGeneratorContent({
                 </>
               )}
               {element === "logo" && c.logo && c.mark && (
-                <BrandLogoImage
+                <LogoDrawingPreview
                   primary={theme.light.primary}
                   palette={[theme.light.primary, theme.light.secondary, theme.light.buttonBackground]}
-                  draw
-                  layout="horizontal"
+                  ar={ar}
                   identity={{
                     ...state.selectedBrandIdentity,
                     id: c.id,
