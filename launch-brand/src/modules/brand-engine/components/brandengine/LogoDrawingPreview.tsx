@@ -294,11 +294,17 @@ function LogoReveal({
         : displayName.toLowerCase();
 
   const roundedPct = Math.round(progress);
-  const isAnimating = progress < 100 && rasterState !== "error";
+  const isAnimating = progress < 100 && rasterState === "ready";
 
   const stageLabel =
     rasterState === "error"
       ? t("Artwork unavailable", "تعذّر تحميل الشعار")
+      : rasterState === "loading"
+        ? t("Loading your generated logo…", "جارٍ تحميل اللوجو المولّد…")
+      : raster
+        ? roundedPct < 100
+          ? t("Revealing your logo", "إظهار اللوجو")
+          : t("Your generated logo is ready", "اللوجو المولّد جاهز")
       : roundedPct < 24
         ? t("1/4 · Plotting vector nodes", "١/٤ · تحديد نقاط الفيكتور")
         : roundedPct < 66
@@ -331,12 +337,12 @@ function LogoReveal({
       <div className="logo-drawing-preview__heading">
         <div className="logo-drawing-preview__status">
           <span className="logo-drawing-preview__badge" aria-hidden="true">
-            {isAnimating ? <Sparkles size={12} /> : <CheckCircle2 size={12} />}
+            {rasterState === "loading" ? <LoaderCircle size={12} /> : rasterState === "error" ? <TriangleAlert size={12} /> : isAnimating ? <Sparkles size={12} /> : <CheckCircle2 size={12} />}
           </span>
           <span className="logo-drawing-preview__stage-text">{stageLabel}</span>
-          <span className="logo-drawing-preview__pct" dir="ltr">
+          {rasterState === "ready" && <span className="logo-drawing-preview__pct" dir="ltr">
             {roundedPct}%
-          </span>
+          </span>}
         </div>
         <div className="logo-drawing-preview__controls">
           {isAnimating && (
@@ -358,8 +364,8 @@ function LogoReveal({
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={roundedPct}
-        aria-label={t("Logo vector construction progress", "تقدم بناء الشعار")}
+        aria-valuenow={rasterState === "ready" ? roundedPct : undefined}
+        aria-label={t("Logo reveal progress", "تقدم عرض الشعار")}
       >
         <div
           className="logo-drawing-preview__progress-fill"
@@ -386,7 +392,7 @@ function LogoReveal({
               <div
                 className="logo-drawing-preview__raster-wrap"
                 style={{
-                  clipPath: `inset(0 ${Math.max(0, 100 - progress)}% 0 0)`,
+                  clipPath: ar ? `inset(0 0 0 ${Math.max(0, 100 - progress)}%)` : `inset(0 ${Math.max(0, 100 - progress)}% 0 0)`,
                   opacity: Math.max(0.25, progress / 100),
                 }}
               >
@@ -585,6 +591,12 @@ function LogoReveal({
         <figcaption className="logo-drawing-preview__caption" aria-live="polite">
           {rasterState === "error"
             ? t("Your previous logo choices stay available.", "اختيارات اللوجو السابقة تفضل متاحة.")
+            : raster
+              ? rasterState === "loading"
+                ? t("Loading the saved artwork.", "جارٍ تحميل التصميم المحفوظ.")
+                : isAnimating
+                  ? t("Revealing the generated artwork in your brand colors.", "إظهار التصميم المولّد بألوان براندك.")
+                  : t("Your logo is ready.", "اللوجو جاهز.")
             : isAnimating
               ? t(
                   "Step-by-step vector geometry & brand wordmark construction.",

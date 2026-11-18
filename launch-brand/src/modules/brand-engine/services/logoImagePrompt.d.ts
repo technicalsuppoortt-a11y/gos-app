@@ -13,7 +13,7 @@ export type LogoImagePromptBrief = {
   };
 };
 
-export const logoImagePromptVersion: 'native-logo-image-v1';
+export const logoImagePromptVersion: 'native-logo-image-v2-transparent';
 
 export function buildLogoImagePrompt(input: {
   brief: LogoImagePromptBrief;

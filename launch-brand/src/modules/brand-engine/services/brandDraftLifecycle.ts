@@ -1,12 +1,12 @@
 import { store } from '../store';
 import { activityActions } from '../store/activitySlice';
 import { saveFailureCode } from '../data/saveFailure';
-import { hasUnsavedBrandDraft, saveBrandDraft } from './brandDraft';
+import { hasUnsavedBrandDraft, isBrandDraftSavePaused, saveBrandDraft } from './brandDraft';
 
 // Flush React navigation and backgrounding; protect edits still awaiting the server.
 export function bindBrandDraftLifecycle(uid: string) {
   const flush = () => {
-    if (!hasUnsavedBrandDraft(uid)) return;
+    if (!hasUnsavedBrandDraft(uid) || isBrandDraftSavePaused(uid)) return;
     void saveBrandDraft().catch(error => {
       if (store.getState().brand.userProfile?.uid === uid)
         store.dispatch(activityActions.saveFailed(saveFailureCode(error)));

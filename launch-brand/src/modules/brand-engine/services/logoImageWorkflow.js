@@ -25,7 +25,7 @@ export async function generateRasterLogo({
     ...(previousParts.length ? [{ text: 'PREVIOUS OUTPUTS FOR THIS BRAND. Create a visibly different concept and silhouette; do not repeat or slightly rotate these designs.' }, ...previousParts] : []),
   ];
   let reviewFeedback = '';
-  let fallbackImage;
+  let fallbackArtwork;
   for (let attempt = 0; attempt < 2; attempt++) {
     await progress('generating');
     let generated, recovered = false;
@@ -36,14 +36,14 @@ export async function generateRasterLogo({
         aspectRatio: '16:9',
       });
     } catch (error) {
-      if (fallbackImage) { generated = fallbackImage; recovered = true; }
+      if (fallbackArtwork) { generated = fallbackArtwork.generated; recovered = true; }
       else {
         if (error.diagnostic === 'provider-model') throw Object.assign(error, { diagnostic: 'brand-logo-image-model' });
         throw error;
       }
     }
     await progress('validating');
-    const prepared = await prepareImage(generated.dataUrl);
+    const prepared = recovered ? fallbackArtwork.prepared : await prepareImage(generated.dataUrl);
     const font = brief.language === 'Arabic' ? brief.theme.typography.arabic : brief.theme.typography.heading;
     const identity = {
       id: `${requestId}-0`, name: brief.name, tagline: brief.tagline || '', palette: brief.theme.paletteId || 'custom',
@@ -55,35 +55,37 @@ export async function generateRasterLogo({
           width: prepared.width, height: prepared.height, dataUrl: prepared.dataUrl || generated.dataUrl },
       },
     };
-    await progress('design-review');
+    // Persist the validated image before previewing it. Jobs only carry a small
+    // asset reference, and a draft never activates the logo or enters history.
+    let image = recovered ? fallbackArtwork.image : undefined;
+    for (let saveAttempt = 0; !image && saveAttempt < 3; saveAttempt++) {
+      try { image = await persistImage(prepared.file, identity); }
+      catch (error) {
+        const transient = /unavailable|deadline-exceeded|network-request-failed/.test(error.code || '') || /timed? out|took too long|network/i.test(error.message || '');
+        if (!transient || saveAttempt === 2) throw Object.assign(error, { diagnostic: error.diagnostic || 'brand-logo-image-save' });
+      }
+    }
+    const suggestion = { id: identity.id, rationale: identity.logo.concept, mark: identity.mark,
+      logo: { ...identity.logo, image } };
+    await progress('design-review', { ...suggestion, qualityStatus: 'pending' });
     let qualityStatus = recovered ? 'rejected' : 'approved';
     try {
       if (!recovered) await review({ connection: reviewConnection, brief, answers, identities: [identity], referenceParts, previousParts, generate: generateReview });
     } catch (error) {
       if (attempt === 0 && error.diagnostic === 'brand-weak-logo') {
         reviewFeedback = String(error.message).slice(0, 1600);
-        fallbackImage = generated;
+        fallbackArtwork = { generated, prepared, image };
         continue;
       }
       // Preserve real artwork when an advisory review fails. Never label it approved
       // or spend a credit; the user can inspect and download the saved design.
       qualityStatus = error.diagnostic === 'brand-weak-logo' ? 'rejected' : 'pending';
     }
-    // Save only a small immutable reference in jobs and page drafts, never PNG bytes.
     await progress('saving');
-    let image;
-    for (let saveAttempt = 0; saveAttempt < 3; saveAttempt++) {
-      try { image = await persistImage(prepared.file, identity); break; }
-      catch (error) {
-        const transient = /unavailable|deadline-exceeded|network-request-failed/.test(error.code || '') || /timed? out|took too long|network/i.test(error.message || '');
-        if (!transient || saveAttempt === 2) throw Object.assign(error, { diagnostic: error.diagnostic || 'brand-logo-image-save' });
-      }
-    }
     return {
       qualityStatus,
-      suggestions: [{ id: identity.id, rationale: identity.logo.concept, mark: identity.mark, qualityStatus,
-        logo: { ...identity.logo, image } }],
-      model: generated.model, provider: 'gemini', imagePromptVersion: logoImagePromptVersion,
+      suggestions: [{ ...suggestion, qualityStatus }],
+      model: generated.model, provider: imageConnection.provider, imagePromptVersion: logoImagePromptVersion,
     };
   }
 }

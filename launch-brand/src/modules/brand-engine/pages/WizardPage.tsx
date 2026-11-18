@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useRef, useCallback } from "react";
+import { lazy, Suspense, useState, useRef, useCallback, useEffect } from "react";
 import JoeAcademyLoader from "../../../components/ui/JoeAcademyLoader";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -168,34 +168,37 @@ export function WizardPage() {
   };
   const deploymentInProgress = state.phoenixPreparation.state === "transferring";
   const activeStep = getWizardStepId(state.activeStep);
-  // Keep the Identity Studio (and its live preview frame) mounted once opened, hidden
-  // on other steps, so returning to it does not rebuild the whole studio.
-  const studioOpened = useRef(false);
-  if (activeStep === 14) studioOpened.current = true;
+  const inWizard = state.mode === "wizard";
+  // Keep the Identity Studio (and its live preview frames) mounted and warm in the
+  // background so entering it or returning to it is instant.
+  const [studioMounted, setStudioMounted] = useState(() => activeStep === 14);
+  if (activeStep === 14 && !studioMounted) setStudioMounted(true);
+  useEffect(() => {
+    if (studioMounted) return;
+    const timer = window.setTimeout(() => setStudioMounted(true), 450);
+    return () => window.clearTimeout(timer);
+  }, [studioMounted]);
   const current = steps.find((s) => s.id === activeStep);
   const index = wizardOrder.indexOf(activeStep);
   const isRtl = state.language === "ar";
   const t = translations[state.language];
 
-//   useEffect(() => {
-//     if (!initialBootDelayed) {
-//       const timer = setTimeout(() => {
-//         initialBootDelayed = true;
-//       }, 3100);
-//       return () => clearTimeout(timer);
-//     }
-//   }, []);
-//
   if (!current) return null;
+  const studioVisible = inWizard && activeStep === 14;
   return (
-    <div className={`wizard ${state.activeStep === 1 ? "vision-mode" : ""} ${activeStep === 14 ? "wizard--brand-studio" : ""} ${activeStep === 18 ? "wizard--deployment" : ""} ${activeStep === 4 ? "wizard--website" : ""}`}>
+    <div className={`wizard ${inWizard && state.activeStep === 1 ? "vision-mode" : ""} ${studioVisible ? "wizard--brand-studio" : ""} ${inWizard && activeStep === 18 ? "wizard--deployment" : ""} ${inWizard && activeStep === 4 ? "wizard--website" : ""}`}>
       {deploymentInProgress && <button type="button" className="deployment-status-pill" onClick={() => dispatch(actions.setStep(18))} aria-live="polite">
         <Rocket aria-hidden="true" />
         {isRtl ? "جارٍ إرسال إعداداتك إلى Joe Academy" : "Sending your configuration to Joe Academy"}
       </button>}
-      {(activeStep === 14 || activeStep === 18 || studioOpened.current) && (
-        <section className="studio-page-frame" style={{ display: activeStep === 14 ? undefined : "none" }}>
-          <Suspense fallback={activeStep === 14 ? <JoeAcademyLoader /> : null}>
+      {studioMounted && (
+        <section
+          className="studio-page-frame"
+          aria-hidden={!studioVisible || undefined}
+          inert={!studioVisible}
+          style={studioVisible ? undefined : { position: "fixed", inset: 0, visibility: "hidden", pointerEvents: "none", zIndex: -1, overflow: "hidden" }}
+        >
+          <Suspense fallback={studioVisible ? <JoeAcademyLoader /> : null}>
             <BrandingStudio onSaveActionChange={onStudioSaveActionChange} onResetActionChange={onStudioResetActionChange} />
           </Suspense>
         </section>

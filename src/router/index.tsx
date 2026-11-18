@@ -2,13 +2,12 @@ import { PlatformToolBoundary } from '../backend/platformTools';
 import type { RouteObject } from 'react-router-dom';
 import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode } from '../i18n/display';
-import React, { lazy as reactLazy } from 'react';
+import React from 'react';
 import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
 import { platformTeamRoles } from './platformAccess';
 import { Suspended } from './RouteBoundary';
-import { retryImport } from './chunkRecovery';
-const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
+import { preloadableLazy as lazy } from './preloadableLazy';
 import type { Role } from '../types/auth';
 import '../route-loading.css';
 
@@ -234,3 +233,30 @@ export const router = createBrowserRouter([
   },
   { path: '*', element: <DefaultRedirect/> },
 ]);
+
+/** Preloads the initial route's components so the first render never flashes a skeleton. */
+export async function preloadInitialRoute(pathname: string, search = '') {
+  try {
+    if (pathname === '/' && !new URLSearchParams(search).has('oobCode')) {
+      await LandingPage.preload();
+      return;
+    }
+    if (/^\/(?:funnels|websites|forms)(?:\/|$)/i.test(pathname) || /^\/dashboard\/(?:funnels|websites|forms)(?:\/|$)/i.test(pathname)) {
+      await Promise.all([UserLayout.preload(), FunnelBuilder.preload()]);
+      return;
+    }
+    if (/^\/dashboard\/?$/i.test(pathname)) {
+      await Promise.all([
+        UserLayout.preload(),
+        DashboardPage.preload(),
+        import('../pages/DashboardPage').then(mod => mod.preloadDashboardSubpage('home')),
+      ]);
+      return;
+    }
+    if (/^\/dashboard(?:\/|$)/i.test(pathname)) {
+      await Promise.all([UserLayout.preload(), DashboardPage.preload()]);
+    }
+  } catch {
+    /* Let RouteErrorBoundary / React.lazy handle retries on render if needed. */
+  }
+}

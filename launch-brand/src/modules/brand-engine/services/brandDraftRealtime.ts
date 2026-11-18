@@ -5,7 +5,7 @@ import { actions } from "@/modules/brand-engine/store/brandSlice";
 import {
   fingerprintBrandPages,
   fingerprintPages,
-  serializeBrandPages,
+  serializeWorkspacePages,
   hydrateBrandPages,
   type SavedBrandPage,
   workspacePageIds,
@@ -22,11 +22,9 @@ import { activityActions } from "@/modules/brand-engine/store/activitySlice";
 import { saveFailureCode } from "@/modules/brand-engine/data/saveFailure";
 import { validateDraftPages } from '../data/brandDraftSnapshot';
 
-export function subscribeBrandDraft(uid: string, workspaceOnly = false) {
+export function subscribeBrandDraft(uid: string) {
   return onSnapshot(
-    workspaceOnly
-      ? query(collection(db, "users", uid, "pages"), where(documentId(), 'in', workspacePageIds))
-      : collection(db, "users", uid, "pages"),
+    query(collection(db, "users", uid, "pages"), where(documentId(), 'in', workspacePageIds)),
     (snapshot) => {
       if (
         snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache ||
@@ -46,29 +44,31 @@ export function subscribeBrandDraft(uid: string, workspaceOnly = false) {
         return;
       }
       let pages: SavedBrandPage[];
-      try { pages = validateDraftPages(records, revision, workspaceOnly ? workspacePageIds : undefined); }
+      try { pages = validateDraftPages(records, revision, workspacePageIds); }
       catch { store.dispatch(activityActions.syncError('invalid-draft')); return; }
       store.dispatch(activityActions.syncError(null));
       // An acknowledgement of this session's autosave is not a remote edit.
       if (isLocalDraftRevision(uid, revision)) return;
       const hydrated = hydrateBrandPages(pages);
       // A scoped snapshot must preserve choices belonging to older hidden screens.
-      if (workspaceOnly) hydrated.pageParameters = { ...store.getState().brand.pageParameters, ...hydrated.pageParameters };
+      hydrated.pageParameters = { ...store.getState().brand.pageParameters, ...hydrated.pageParameters };
       const {
         activeStep: _step,
         completedSteps: _completed,
+        language: _language,
+        theme: _theme,
         ...incoming
       } = hydrated;
       const serialized = fingerprintBrandPages({ ...store.getState().brand, ...incoming });
       const saved = getLastSavedDraft();
       const local = fingerprintBrandPages(store.getState().brand);
       if (saved?.uid === uid && saved.revision === revision) return;
-      const localPages = serializeBrandPages(store.getState().brand);
+      const localPages = serializeWorkspacePages(store.getState().brand);
       const remotePages = JSON.parse(serialized) as SavedBrandPage[];
       const base =
         saved?.uid === uid ? (JSON.parse(saved.serialized) as SavedBrandPage[]) : localPages;
       const merged = mergeBrandDraft(base, localPages, remotePages);
-      acknowledgeRemoteDraft({ uid, serialized, revision, ...(workspaceOnly ? { workspaceOnly: true } : {}) });
+      acknowledgeRemoteDraft({ uid, serialized, revision });
       if (fingerprintPages(merged) !== local)
         store.dispatch(actions.hydrateUserDraft(hydrateBrandPages(merged)));
       // Resolve concurrency without a banner: current edits win, unrelated remote edits merge.

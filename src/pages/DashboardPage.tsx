@@ -13,23 +13,41 @@ import { showToast } from '../utils/toast';
 import type { RootState } from '../store';
 
 import { Suspended } from '../router/RouteBoundary';
-import { retryImport } from '../router/chunkRecovery';
+import { preloadableLazy } from '../router/preloadableLazy';
 import type { TemplateScope } from './TemplatesWorkspace';
-const AICopilot = React.lazy(() => retryImport(() => import('./AICopilot')).then(module => ({ default: module.AICopilot })));
-const FunnelBuilder = React.lazy(() => retryImport(() => import('./FunnelBuilder')).then(module => ({ default: module.FunnelBuilder })));
-const KnowledgePanel = React.lazy(() => retryImport(() => import('./settings/KnowledgePanel')).then(module => ({ default: module.KnowledgePanel })));
-const HomeDashboard = React.lazy(() => retryImport(() => import('./dashboard/HomeDashboard')).then(module => ({ default: module.HomeDashboard })));
-const Inbox = React.lazy(() => retryImport(() => import('./Inbox')).then(module => ({ default: module.Inbox })));
-const CRMLeads = React.lazy(() => retryImport(() => import('./CRMLeads')).then(module => ({ default: module.CRMLeads })));
-const AIFollowUp = React.lazy(() => retryImport(() => import('./AIFollowUp')).then(module => ({ default: module.AIFollowUp })));
-const BookingCalendar = React.lazy(() => retryImport(() => import('./BookingCalendar')).then(module => ({ default: module.BookingCalendar })));
-const ProductsPayments = React.lazy(() => retryImport(() => import('./ProductsPayments')).then(module => ({ default: module.ProductsPayments })));
-const ProductTemplateLibrary = React.lazy(() => retryImport(() => import('./commerce/ProductTemplateLibrary')).then(module => ({ default: module.ProductTemplateLibrary })));
-const BookingTemplates = React.lazy(() => retryImport(() => import('./booking/BookingTemplates')).then(module => ({ default: module.BookingTemplates })));
-const TemplatesWorkspace = React.lazy(() => retryImport(() => import('./TemplatesWorkspace')).then(module => ({ default: module.TemplatesWorkspace })));
-const Analytics = React.lazy(() => retryImport(() => import('./Analytics')).then(module => ({ default: module.Analytics })));
+const AICopilot = preloadableLazy(() => import('./AICopilot').then(module => ({ default: module.AICopilot })));
+const FunnelBuilder = preloadableLazy(() => import('./FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
+const KnowledgePanel = preloadableLazy(() => import('./settings/KnowledgePanel').then(module => ({ default: module.KnowledgePanel })));
+const HomeDashboard = preloadableLazy(() => import('./dashboard/HomeDashboard').then(module => ({ default: module.HomeDashboard })));
+const Inbox = preloadableLazy(() => import('./Inbox').then(module => ({ default: module.Inbox })));
+const CRMLeads = preloadableLazy(() => import('./CRMLeads').then(module => ({ default: module.CRMLeads })));
+const AIFollowUp = preloadableLazy(() => import('./AIFollowUp').then(module => ({ default: module.AIFollowUp })));
+const BookingCalendar = preloadableLazy(() => import('./BookingCalendar').then(module => ({ default: module.BookingCalendar })));
+const ProductsPayments = preloadableLazy(() => import('./ProductsPayments').then(module => ({ default: module.ProductsPayments })));
+const ProductTemplateLibrary = preloadableLazy(() => import('./commerce/ProductTemplateLibrary').then(module => ({ default: module.ProductTemplateLibrary })));
+const BookingTemplates = preloadableLazy(() => import('./booking/BookingTemplates').then(module => ({ default: module.BookingTemplates })));
+const TemplatesWorkspace = preloadableLazy(() => import('./TemplatesWorkspace').then(module => ({ default: module.TemplatesWorkspace })));
+const Analytics = preloadableLazy(() => import('./Analytics').then(module => ({ default: module.Analytics })));
 
 type PageKey='home'|'copilot'|'funnels'|'crm'|'contacts'|'inbox'|'follow-up'|'automation'|'booking'|'products'|'analytics'|'knowledge';
+
+export function preloadDashboardSubpage(page: PageKey): Promise<unknown> {
+  switch (page) {
+    case 'home': return HomeDashboard.preload();
+    case 'copilot': return AICopilot.preload();
+    case 'funnels': return FunnelBuilder.preload();
+    case 'crm':
+    case 'contacts': return CRMLeads.preload();
+    case 'inbox': return Inbox.preload();
+    case 'follow-up':
+    case 'automation': return AIFollowUp.preload();
+    case 'booking': return BookingCalendar.preload();
+    case 'products': return ProductsPayments.preload();
+    case 'analytics': return Analytics.preload();
+    case 'knowledge': return KnowledgePanel.preload();
+  }
+}
+
 function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{eyebrow?:string;title:string;description?:string;action?:string;actionIcon?:React.ElementType}){
   useUILanguage();return <div className="page-heading"><div>{localizeNode(eyebrow&&<div className="eyebrow">{localizeNode(eyebrow)}</div>)}<h1>{localizeNode(title)}</h1>{localizeNode(description&&<p>{localizeNode(description)}</p>)}</div>{localizeNode(action&&<button className="button-primary"><Icon size={16}/>{localizeNode(action)}</button>)}</div>}
 function Pill({children,tone='neutral'}:{children:React.ReactNode;tone?:string}){

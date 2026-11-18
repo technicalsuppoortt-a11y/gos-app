@@ -1,6 +1,6 @@
 {
-  "scannedStylesheets": 112,
-  "correctedDeclarations": 869,
+  "scannedStylesheets": 113,
+  "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -733,72 +733,72 @@
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 471,
+      "line": 473,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 475,
+      "line": 477,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 508,
+      "line": 510,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 536,
+      "line": 538,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 559,
+      "line": 561,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 628,
+      "line": 630,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 651,
+      "line": 653,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 685,
+      "line": 687,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 737,
+      "line": 739,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 751,
+      "line": 753,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 775,
+      "line": 777,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 779,
+      "line": 781,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 876,
+      "line": 878,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 924,
+      "line": 926,
       "utility": "text-slate-500"
     },
     {
@@ -4955,7 +4955,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5099,7 +5099,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
@@ -7842,7 +7842,15 @@
     },
     {
       "file": "src/pages/support/support.css",
-      "line": 7,
+      "line": 9,
+      "selector": ".support-chat .support-message.own .support-pinned-label",
+      "before": "#ede9fe",
+      "after": "#334155",
+      "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/support/support.css",
+      "line": 16,
       "selector": ".support-message.own>.support-forwarded",
       "before": "#ede9fe",
       "after": "#334155",
@@ -7850,7 +7858,7 @@
     },
     {
       "file": "src/pages/support/support.css",
-      "line": 7,
+      "line": 16,
       "selector": ".support-message.own .support-file-label small",
       "before": "#ede9fe",
       "after": "#475569",

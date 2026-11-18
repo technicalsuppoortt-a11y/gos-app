@@ -3,6 +3,7 @@ import type { DiscoveryDraft } from "@/modules/brand-engine/data/discoveryProfil
 import { dashboardBrand } from "@/modules/brand-engine/data/dashboardBrand";
 import { dashboardSettings } from "@/modules/brand-engine/data/dashboardSettings";
 import type { BrandPreviewModel } from "./types";
+import { resolveBrandMode } from "@/modules/brand-engine/data/studioColorPresets";
 
 const text = (value: unknown) => (typeof value === "string" ? value : "");
 export function selectBrandPreview(state: BrandState, logoUrl = ""): BrandPreviewModel {
@@ -12,13 +13,14 @@ export function selectBrandPreview(state: BrandState, logoUrl = ""): BrandPrevie
     : discovery?.profile?.language;
   const language = preferredLanguage === "ar" || preferredLanguage === "en" ? preferredLanguage : state.language;
   const brand = dashboardBrand(state);
+  const mode = resolveBrandMode(state);
   const profile = state.pageParameters["dashboard"]?.["workspaceProfile"] as
     Record<string, unknown> | undefined;
   return {
     owner: state.userProfile?.uid ?? "signed-out",
     name: brand.name,
     tagline: brand.tagline,
-    primary: brand.theme[state.theme].primary,
+    primary: brand.theme[mode].primary,
     design: brand.theme,
     keepDashboardColors: brand.theme.paletteId === "dashboard-default",
     onPrimary: brand.onPrimary,
@@ -35,7 +37,7 @@ export function selectBrandPreview(state: BrandState, logoUrl = ""): BrandPrevie
     business: state.business,
     description: state.brandDescription || state.businessDescription,
     audience: state.targetAudience,
-    theme: state.theme,
+    theme: mode,
     language,
     groups: dashboardSettings(state, language === "ar").map((group) => ({
       id: group.id,

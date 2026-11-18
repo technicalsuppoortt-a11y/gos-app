@@ -1042,10 +1042,12 @@
   .inner,
   .scaleFrame {
     height: auto;
+    flex: none;
   }
   .deploymentGrid {
     grid-template-columns: minmax(0, 1fr);
     height: auto;
+    flex: none;
   }
   .mainColumn,
   .workspaceCard {
@@ -1058,6 +1060,10 @@
   }
   .miniSite {
     min-height: 160px;
+  }
+  .workspaceBody {
+    flex: none;
+    overflow: visible;
   }
 }
 

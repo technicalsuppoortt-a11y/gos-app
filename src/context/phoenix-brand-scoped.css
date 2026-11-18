@@ -149,6 +149,10 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .sa-table-scroll td { border-top-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.14)) 14%, transparent) !important; }
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gateway-brand-icon{background:var(--gp-surface, #fff) !important;border:1px solid var(--gp-border, #e2e8f0) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gateway-brand-paddle,:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gateway-brand-paymob{background:var(--gp-surface, #111827) !important;border-color:var(--gp-border, #111827) !important}
+}
+@scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .gos-combo-trigger {
   border: 1px solid var(--gp-border, #dce0eb) !important;
   background: var(--gp-surface, #ffffff) !important;

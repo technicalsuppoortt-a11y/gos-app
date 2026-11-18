@@ -2,6 +2,7 @@ import type { BrandState } from "@/modules/brand-engine/store/brandSlice";
 import { brandPaletteColors } from "./brandPages.ts";
 import { resolveBrandTheme } from "./brandTheme.ts";
 import { isBrandFont } from "./brandFonts.ts";
+import { resolveBrandMode } from "./studioColorPresets.ts";
 
 export const dashboardLayoutVersion = "copilot-v1";
 
@@ -19,7 +20,7 @@ export function readableForeground(hex: string) {
 
 export function dashboardBrand(state: BrandState) {
   const theme = resolveBrandTheme(state);
-  const colors = theme[state.theme === "dark" ? "dark" : "light"];
+  const colors = theme[resolveBrandMode(state)];
   const primary = state.brandTheme ? colors.primary : brandPaletteColors[state.brandPalette] ?? "#6835cf";
   const selectedFont = state.brandTheme ? theme.typography.body : state.fontPersonality.split(" + ")[0]?.trim() ?? "IBM Plex Sans Arabic";
   const font = isBrandFont(selectedFont)

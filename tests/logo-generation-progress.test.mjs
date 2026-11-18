@@ -24,22 +24,18 @@ function load(file, overrides = {}) {
 }
 const contracts = load(path.join(root, 'data/ai/brandStudioCore.js'));
 const { readLogoHistory } = load(path.join(root, 'services/logoHistory.js'));
+const { generateRasterLogo } = load(path.join(root, 'services/logoImageWorkflow.js'), {
+  './logoImageProvider.js': {}, './logoQualityReview.js': {},
+});
 const deferred = () => {
   let resolve;
   const promise = new Promise(done => { resolve = done; });
   return { promise, resolve };
 };
 
-const artwork = {
-  id: 'logo-progress-0', rationale: 'A distinctive leaf mark.', mark: 'prism',
-  logo: {
-    paths: [{ d: 'M20 70 Q20 20 80 20 Q80 70 20 70 Z', fill: true, strokeWidth: 0 }],
-    wordmark: { font: 'Inter', weight: 500, letterSpacing: 0, casing: 'original', separator: false, descriptor: '' },
-    concept: 'A distinctive leaf mark.',
-  },
-};
+const artwork = 'data:image/png;base64,iVBORw0KGgo=';
 
-function harness({ refine = false } = {}) {
+function harness({ refine = false, provider = 'openai', reviewFailure } = {}) {
   const documents = new Map([
     ['users/test-user', { role: 'user' }],
     ['users/test-user/pages/business_discovery', { parameters: {}, revision: 'discovery-1' }],
@@ -56,6 +52,16 @@ function harness({ refine = false } = {}) {
   let providerCalls = 0;
   let reviewCalls = 0;
   let validated = false;
+  let saved = 0;
+  const review = async () => {
+    reviewCalls++;
+    assert.equal(validated, true);
+    assert.ok(saved > 0, 'The preview must be a persisted asset reference');
+    enteredReview.resolve();
+    if (refine && reviewCalls === 1) throw Object.assign(new Error('Refine the mark'), { diagnostic: 'brand-weak-logo' });
+    if (reviewFailure) throw Object.assign(new Error('Review unavailable'), { diagnostic: reviewFailure });
+    if (!refine) await reviewGate.promise;
+  };
   const overrides = {
     'firebase/firestore': {
       doc: (_db, ...parts) => parts.join('/'),
@@ -71,41 +77,48 @@ function harness({ refine = false } = {}) {
     '@/modules/brand-engine/firebase': { auth: { currentUser: { uid: 'test-user' } }, db: {} },
     './browserAIConnections.js': {
       browserConnectionActions: [],
-      loadBrowserConnection: async () => ({ provider: 'openai', model: 'mock-text-model', revision: 'connection-1' }),
+      loadBrowserConnection: async () => ({ provider, model: 'mock-text-model', revision: 'connection-1' }),
     },
     './browserUsage.js': { recordBrowserOperation: async () => {}, trackedBrowserConnection: value => value },
     '../configuration/catalog': {},
     '../data/platformAccess': { isActivePlatformMember: () => true },
     './directProvider.js': {
       aiFailure: (code, message) => Object.assign(new Error(message), { code }),
-      generateProviderText: async () => {
-        providerCalls++;
-        if (refine && providerCalls === 2) { enteredRefinement.resolve(); await refinementGate.promise; }
-        return { text: JSON.stringify({ suggestions: [artwork] }) };
-      },
+      generateProviderText: async () => { throw new Error('Logos must use native image generation, not text/SVG generation'); },
     },
     '@/modules/brand-engine/data/ai/brandStudioCore.js': {
       ...contracts,
       brandBrief: () => ({ name: 'Juniper', language: 'English', tagline: '', theme: { paletteId: 'custom', light: { primary: '#007D70', secondary: '#005EBB', buttonBackground: '#FFFFFF' }, typography: { heading: 'Inter', arabic: 'IBM Plex Sans Arabic' } } }),
       brandGenerationFingerprint: () => 'base',
-      validateElementSuggestions: parsed => { validated = true; return structuredClone(parsed.suggestions); },
     },
-    './brandLogo.ts': { validateBrandLogoArtwork: () => assert.equal(validated, true), validateBrandLogoDiversity: async () => {} },
-    './logoQualityReview.js': { reviewBrandLogoQuality: async () => {
-      reviewCalls++;
-      // The only UI preview must already have passed artwork validation.
-      assert.equal(validated, true);
-      enteredReview.resolve();
-      if (refine && reviewCalls === 1) throw Object.assign(new Error('Refine the mark'), { diagnostic: 'brand-weak-logo' });
-      if (!refine) await reviewGate.promise;
-    } },
+    './brandLogo.ts': {},
+    './logoQualityReview.js': {},
+    './logoImageProvider.js': { logoImageModelFor: value => `mock-${value}-image` },
+    './logoImageWorkflow.js': { generateRasterLogo: options => generateRasterLogo({
+      ...options,
+      generate: async connection => {
+        assert.equal(connection.provider, provider);
+        assert.equal(connection.model, `mock-${provider}-image`);
+        providerCalls++;
+        if (refine && providerCalls === 2) { enteredRefinement.resolve(); await refinementGate.promise; }
+        return { dataUrl: artwork, contentType: 'image/png', model: connection.model };
+      },
+      prepareImage: async () => { validated = true; return { file: { type: 'image/png' }, width: 1536, height: 1024, dataUrl: artwork }; },
+      persistImage: async (_file, identity) => {
+        saved++;
+        const { dataUrl, ...image } = identity.logo.image;
+        assert.equal(dataUrl, artwork);
+        return { ...image, assetId: `asset-${saved}` };
+      },
+      review, loadPreviousImage: async () => null,
+    }) },
     './logoAttempts.js': { logoAttemptLimit: 3, reserveLogoAttempt: async () => 'mock-slot', finishLogoAttempt: async (_tx, _slot, _lease, charged) => charges.push(charged) },
     './logoHistory.js': { readLogoHistory },
     './logoReferenceBoard.ts': { createLogoReferenceParts: async () => [], logoReferenceIdentities: () => [] },
     '../data/ai/logoDesignReferences.js': { logoDesignReferences: () => [] },
     './directDiscovery.js': { discoveryActions: [] },
   };
-  for (const id of ['./logoImageWorkflow.js', './logoImageProvider.js', '@/modules/brand-engine/data/ai/discoveryCore.js', '@/modules/brand-engine/data/ai/copilotCore.js']) overrides[id] = {};
+  for (const id of ['@/modules/brand-engine/data/ai/discoveryCore.js', '@/modules/brand-engine/data/ai/copilotCore.js']) overrides[id] = {};
   const { invokeDirectAI } = load(path.join(root, 'services/directAI.js'), overrides);
   return {
     job: () => documents.get(jobPath), history, charges, enteredReview, reviewGate, enteredRefinement, refinementGate,
@@ -124,7 +137,10 @@ test('validated artwork is previewable before review completes, without appearin
   assert.equal(app.job().status, 'running');
   assert.equal(app.job().stage, 'design-review');
   assert.equal(app.job().result.element, 'logo');
-  assert.deepEqual(app.job().result.preview.logo.paths, artwork.logo.paths);
+  assert.deepEqual(app.job().result.preview.logo.paths, []);
+  assert.equal(app.job().result.preview.logo.image.assetId, 'asset-1');
+  assert.equal(app.job().result.preview.logo.image.dataUrl, undefined);
+  assert.equal(app.job().result.preview.qualityStatus, 'pending');
   assert.equal(app.job().result.suggestions, undefined);
   assert.deepEqual(app.history(), { requestIds: [], suggestions: [] });
   assert.deepEqual(app.charges, []);
@@ -136,6 +152,28 @@ test('validated artwork is previewable before review completes, without appearin
   assert.deepEqual(app.history().requestIds, ['logo-progress']);
   assert.equal(app.history().suggestions.length, 1);
   assert.deepEqual(app.charges, [true]);
+});
+
+test('Gemini logos use the native image route and retain the actual provider and model', async () => {
+  const app = harness({ provider: 'gemini' });
+  const generation = app.generate();
+  await Promise.race([app.enteredReview.promise, generation]);
+  app.reviewGate.resolve();
+  const result = await generation;
+  assert.equal(app.providerCalls(), 1);
+  assert.equal(result.provider, 'gemini');
+  assert.equal(result.model, 'mock-gemini-image');
+  assert.equal(result.suggestions[0].logo.image.model, result.model);
+});
+
+test('an unavailable advisory review preserves the image without charging a successful attempt', async () => {
+  const app = harness({ reviewFailure: 'provider-timeout' });
+  const result = await app.generate();
+  assert.equal(result.qualityStatus, 'pending');
+  assert.equal(result.provider, 'openai');
+  assert.equal(result.suggestions[0].logo.image.assetId, 'asset-1');
+  assert.equal(app.providerCalls(), 1);
+  assert.deepEqual(app.charges, [false]);
 });
 
 test('refinement clears the previous draft preview while the new model request is pending', { timeout: 15000 }, async () => {

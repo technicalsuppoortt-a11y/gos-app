@@ -15,6 +15,9 @@ export default defineConfig({
       // Launch Brand dev server (npm run dev:launch-brand), on the same address as gos for the live previews.
       '/launch-brand': { target: 'http://localhost:5175', ws: true },
     },
+    watch: {
+      ignored: ['**/.tmp/**', '**/.git/**'],
+    },
   },
   optimizeDeps: {
     include: [

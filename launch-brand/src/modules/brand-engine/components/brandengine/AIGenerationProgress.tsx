@@ -369,6 +369,7 @@ export function AIGenerationProgress({
         <div className="ai-logo-live-draft">
           <p>{t("Draft artwork — quality review in progress", "مسودة التصميم — مراجعة الجودة جارية")}</p>
           <LogoDrawingPreview
+            animate
             identity={draftPreview.identity}
             primary={logoContext.primary}
             palette={logoContext.palette}

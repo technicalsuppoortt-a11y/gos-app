@@ -1,5 +1,6 @@
-/* Live previews: kept-alive layers and a loading state while the platform starts. */
+/* Live previews: kept-alive layers preserve real dimensions so background frames paint immediately. */
 .studio-preview-layer[hidden] { display: none !important; }
+.studio-preview-layer[data-inactive="true"] { position: absolute !important; inset: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
 .gos-live-loading {
   position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   padding: 20px; text-align: center;

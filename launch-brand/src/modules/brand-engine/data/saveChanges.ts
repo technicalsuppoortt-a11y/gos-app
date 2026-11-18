@@ -8,6 +8,7 @@ export function describeChanges(previous: string, current: string): SavedChange[
  const changes: SavedChange[] = [];
  function walk(pageId: string, old: Record<string, unknown>, next: Record<string, unknown>, prefix = "") {
   for (const key of new Set([...Object.keys(old), ...Object.keys(next)])) {
+   if (pageId === "deployment" && !prefix && /^(activeStep|completedSteps|language|theme)$/.test(key)) continue;
    if (/password|secret|token|apiKey|credential|dataUrl|svg|fingerprint|revision|updatedAt/i.test(key)) continue;
    if (JSON.stringify(old[key]) === JSON.stringify(next[key])) continue;
    if (key === "colors" || (key === "logo" && Object.hasOwn(next, "choices"))) continue; // Palette already describes the same choice.

@@ -1,17 +1,19 @@
 import { lazy } from 'react';
 import type { AppMode } from '../data/types';
+import { BuilderPage as EagerBuilderPage } from './BuilderPage';
+import { DashboardPage as EagerDashboardPage } from './DashboardPage';
 
 const loaders = {
   wizard: () => import('./WizardPage').then(module => ({ default: module.WizardPage })),
-  builder: () => import('./BuilderPage').then(module => ({ default: module.BuilderPage })),
-  dashboard: () => import('./DashboardPage').then(module => ({ default: module.DashboardPage })),
+  builder: () => Promise.resolve({ default: EagerBuilderPage }),
+  dashboard: () => Promise.resolve({ default: EagerDashboardPage }),
 };
 const loadBranding = () => import('../components/brandengine/BrandingStudio').then(module => ({ default: module.BrandingStudio }));
 const loadDeployment = () => import('../components/brandengine/PlatformDeployment').then(module => ({ default: module.PlatformDeployment }));
 
 export const WizardPage = lazy(loaders.wizard);
-export const BuilderPage = lazy(loaders.builder);
-export const DashboardPage = lazy(loaders.dashboard);
+export const BuilderPage = EagerBuilderPage;
+export const DashboardPage = EagerDashboardPage;
 
 // Start code loading alongside the draft request, before the shell mounts.
 // A failed preload is retried by React.lazy when the page is rendered.
@@ -25,6 +27,6 @@ export function preloadWorkspacePage(mode: AppMode = 'wizard', step = 13) {
 
 export function preloadAllWorkspacePages() {
   return Promise.allSettled([
-    loaders.wizard(), loadBranding(), loaders.dashboard(), loaders.builder(), loadDeployment(),
+    loaders.wizard(), loadBranding(), loadDeployment(),
   ]);
 }

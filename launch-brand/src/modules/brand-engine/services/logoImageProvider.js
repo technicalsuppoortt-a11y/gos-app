@@ -1,9 +1,9 @@
 import { aiFailure } from './directProvider.js';
 
-export const logoImageModel = 'gemini-2.5-flash-image';
+export const logoImageModel = 'gemini-3-pro-image';
 // OpenAI image models, best first. Later ones are used only when the key's
 // project cannot use an earlier one (for example before organization verification).
-export const openAILogoImageModels = ['gpt-image-1.5', 'gpt-image-1', 'dall-e-3'];
+export const openAILogoImageModels = ['gpt-image-2.6-sunburst', 'gpt-image-2.6-flare'];
 export const logoImageModelFor = provider => provider === 'openai' ? openAILogoImageModels[0] : logoImageModel;
 const maxImageBytes = 5 * 1024 * 1024;
 const imageTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
@@ -34,7 +34,7 @@ async function imageRequest(url, init, fetcher = fetch) {
   let response;
   // An overloaded model (500/502/503/504) produced no image, so it is safe to ask again.
   for (let attempt = 0; ; attempt++) {
-    try { response = await fetcher(url, { ...init, signal: AbortSignal.timeout(120000) }); }
+    try { response = await fetcher(url, { ...init, signal: AbortSignal.timeout(180000) }); }
     catch (error) { throw failure('unavailable', ['TimeoutError', 'AbortError'].includes(error?.name) ? 'provider-timeout' : 'provider-network'); }
     if (![500, 502, 503, 504].includes(response.status) || attempt >= 2) break;
     await new Promise(resolve => setTimeout(resolve, attempt ? 4000 : 1500));
@@ -43,9 +43,12 @@ async function imageRequest(url, init, fetcher = fetch) {
     const body = typeof response.json === 'function' ? await response.json().catch(() => ({})) : {};
     const reasons = (body.error?.details || []).map(item => item.reason);
     const message = String(body.error?.message || '');
+    const modelUnavailable = /model_not_found|model_not_available/.test(String(body.error?.code || '')) ||
+      /(?:model.*(?:not found|does not exist|not available|do not have access)|(?:access|permission|verif\w*).*model)/i.test(message);
     const diagnostic = response.status === 429 ? 'provider-quota'
       : response.status === 401 || reasons.includes('API_KEY_INVALID') || /API key not valid|API key expired/i.test(message) ? 'provider-key'
       : reasons.some(reason => ['API_KEY_SERVICE_BLOCKED', 'API_KEY_HTTP_REFERRER_BLOCKED', 'SERVICE_DISABLED'].includes(reason)) ? 'provider-restriction'
+      : modelUnavailable ? 'provider-model'
       : response.status === 403 ? 'provider-permission'
       : response.status === 404 ? 'provider-model'
       : response.status === 400 ? 'provider-request' : 'provider-unavailable';
@@ -57,25 +60,25 @@ async function imageRequest(url, init, fetcher = fetch) {
 
 // Native image generation is separate from the configured text model. The
 // connection still supplies the platform credential and tracked request wrapper.
-const openAISizes = { wide: ['1536x1024', '1792x1024'], tall: ['1024x1536', '1024x1792'], square: ['1024x1024', '1024x1024'] };
-function openAISize(aspectRatio, legacy) {
+const openAISizes = { wide: '1536x1024', tall: '1024x1536', square: '1024x1024' };
+function openAISize(aspectRatio) {
   const [w, h] = aspectRatio.split(':').map(Number);
   const shape = w > h ? 'wide' : w < h ? 'tall' : 'square';
-  return openAISizes[shape][legacy ? 1 : 0];
+  return openAISizes[shape];
 }
 
-// OpenAI: the same one-logo contract, through the Images API. Reference images
-// cannot be sent to the generation endpoint, so their written guidance is kept.
+// Reference boards and previous concepts go to the image edits endpoint as
+// visual guidance; text-only briefs use image generations.
 async function generateOpenAILogoImage(connection, { prompt, referenceParts, aspectRatio }, fetcher) {
   const guidance = referenceParts.filter(part => typeof part?.text === 'string').map(part => part.text).join('\n');
+  const referenceImages = referenceParts.filter(part => part.inlineData).map(part => part.inlineData);
   const brief = `Create exactly ONE finished, professional brand logo image from this design brief. Clean vector-style artwork, crisp edges, balanced negative space, no mockups, no photos, no grids, no alternatives, no watermark.\n\n${guidance ? guidance + '\n\n' : ''}${prompt.trim()}`;
   let lastError;
   for (const model of openAILogoImageModels) {
-    const legacy = model === 'dall-e-3';
-    const body = legacy
-      ? { model, prompt: brief.slice(0, 3900), n: 1, size: openAISize(aspectRatio, true), quality: 'hd', style: 'natural', response_format: 'b64_json' }
-      : { model, prompt: brief.slice(0, 30000), n: 1, size: openAISize(aspectRatio, false), quality: 'high', output_format: 'png' };
-    const url = 'https://api.openai.com/v1/images/generations';
+    const body = { model, prompt: brief.slice(0, 30000), n: 1, size: openAISize(aspectRatio), quality: 'high', output_format: 'png',
+      ...(referenceImages.length ? { images: referenceImages.map(reference => ({ image_url: `data:${reference.mimeType};base64,${reference.data}` })) } : {}),
+    };
+    const url = `https://api.openai.com/v1/images/${referenceImages.length ? 'edits' : 'generations'}`;
     const init = { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${connection.apiKey.trim()}` }, body: JSON.stringify(body) };
     let result;
     try {
@@ -84,7 +87,7 @@ async function generateOpenAILogoImage(connection, { prompt, referenceParts, asp
       lastError = error;
       // Only "this model is not available to this key" moves on to the next model;
       // anything else (quota, safety, timeouts) is reported as it is.
-      if (['provider-model', 'provider-permission', 'provider-request'].includes(error?.diagnostic) && model !== openAILogoImageModels.at(-1)) continue;
+      if (error?.diagnostic === 'provider-model' && model !== openAILogoImageModels.at(-1)) continue;
       throw error;
     }
     const images = (result.data || []).filter(item => typeof item?.b64_json === 'string');
@@ -126,7 +129,7 @@ export async function generateLogoImage(connection, { prompt, referenceParts = [
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': connection.apiKey.trim() },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [...references, { text: `Create exactly ONE finished logo image from this design brief. Return the actual image, not JSON, SVG code, a grid, alternatives, or a mockup.\n\n${prompt.trim()}` }] }],
-      generationConfig: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { aspectRatio } },
+      generationConfig: { responseModalities: ['TEXT', 'IMAGE'], imageConfig: { aspectRatio, imageSize: '2K' } },
     }),
   };
   // Never retry inference here: a timed-out image request may already be billed.

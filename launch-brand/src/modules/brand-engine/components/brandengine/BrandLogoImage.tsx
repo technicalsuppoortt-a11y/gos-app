@@ -54,7 +54,7 @@ export function BrandLogoImage({
       active = false;
     };
   }, [signature]);
-  const drawingPending = draw && ready?.signature !== signature;
+  const drawingPending = (draw || isRasterBrandLogo(identity)) && ready?.signature !== signature;
   return (
     <img
       className={className}

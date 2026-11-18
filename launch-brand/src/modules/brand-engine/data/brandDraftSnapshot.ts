@@ -1,4 +1,4 @@
-import { brandPages, type BrandPageId, type SavedBrandPage } from './brandPages';
+import { brandPages, workspacePageIds, type BrandPageId, type SavedBrandPage } from './brandPages';
 
 type RecordValue = Record<string, unknown>;
 const record = (value: unknown): value is RecordValue =>
@@ -52,7 +52,8 @@ export function validateDraftSnapshot(manifest: unknown, records: unknown[], sel
   if ((!unversioned && !versioned) || (versioned && revision !== undefined && revisions[0] !== revision))
     throw draftFailure('invalid-draft', 'The saved workspace contains conflicting page revisions.');
   const needsUpgrade = metadata['schemaVersion'] !== 1 || !Array.isArray(declared) ||
-    declared.length !== ids.length || !versioned || revision === undefined;
+    declared.length !== workspacePageIds.length || !workspacePageIds.every(id => declared.includes(id)) ||
+    !versioned || revision === undefined;
   return {
     pages: brandPages.flatMap(spec => pages.filter(page => page.pageId === spec.id)),
     revision: typeof revision === 'string' ? revision : null,
@@ -60,10 +61,10 @@ export function validateDraftSnapshot(manifest: unknown, records: unknown[], sel
   };
 }
 
-export function validateDraftPages(records: unknown[], revision: string, selectedIds?: readonly BrandPageId[]): SavedBrandPage[] {
-  const specs = selectedIds ? brandPages.filter(page => selectedIds.includes(page.id)) : brandPages;
+export function validateDraftPages(records: unknown[], revision: string, selectedIds: readonly BrandPageId[] = workspacePageIds): SavedBrandPage[] {
+  const specs = selectedIds.map(id => brandPages.find(page => page.id === id)!);
   if (records.length !== specs.length)
-    throw draftFailure('invalid-draft', 'The saved workspace does not contain all ten pages.');
+    throw draftFailure('invalid-draft', 'The saved workspace does not contain all required pages.');
   return specs.map(spec => {
     const matching = records.filter(value => record(value) && value['pageId'] === spec.id);
     const value = matching[0];

@@ -1,5 +1,6 @@
 import type { BrandState } from "@/modules/brand-engine/store/brandSlice";
 import { resolveBrandTheme } from "./brandTheme.ts";
+import { resolveBrandMode } from "./studioColorPresets.ts";
 
 // Stable identifiers are independent of translations and wizard step numbers.
 export const brandPages = [
@@ -7,12 +8,12 @@ export const brandPages = [
   { id: "business_discovery", name: "AI Business Discovery", fields: ["business", "subNiche", "businessDescription", "targetAudience", "brandKeywords"] },
   { id: "branding", name: "AI Branding Studio", fields: ["brandName", "tagline", "brandDescription", "brandKeywords", "targetAudience", "brandPalette", "brandTheme", "brandCandidates", "brandLocks", "logoStyles", "fontPersonality", "brandLanguage", "brandVoices", "selectedBrandIdentity"] },
   { id: "template_builder", name: "Website & Funnel", fields: ["builderBrandLinked", "selectedTemplate", "readySaasSelection", "builderBlocks", "hiddenBlocks", "builderPalette", "builderHeadingFont", "builderBodyFont", "builderButtonStyle", "builderPublished", "device", "zoom", "platformBlueprint", "platformBuilderMessages"] },
-  { id: "dashboard", name: "Live Dashboard Review", fields: ["dashboardSetupMode", "dashboardBundle", "dashboardWidgets", "dashboardModuleOrder", "dashboardModuleSections"] },
+  { id: "dashboard", name: "Live Dashboard Review", fields: ["dashboardSetupMode", "dashboardBundle", "dashboardWidgets", "dashboardModuleOrder", "dashboardModuleSections", "modules"] },
   { id: "integrations", name: "Integration Tools & Setup", fields: ["modules"] },
   { id: "ai_center", name: "AI Center Chat", fields: ["messages"] },
   { id: "content_planner", name: "AI Content Planner", fields: [] },
   { id: "marketing", name: "Marketing Strategy", fields: [] },
-  { id: "deployment", name: "Platform Deployment", fields: ["deployed"] },
+  { id: "deployment", name: "Platform Deployment", fields: ["deployed", "language", "theme", "activeStep", "completedSteps"] },
 ] as const;
 
 export type BrandPageId = typeof brandPages[number]["id"];
@@ -32,13 +33,16 @@ export const brandPaletteColors: Record<string, string> = {
   noir: "#111111", blanc: "#F7F7F7", sunset: "#ED7544", electric: "#009CB1",
 };
 
-export function serializeBrandPages(state: BrandState): SavedBrandPage[] {
-  return brandPages.map((page) => {
+export function serializeBrandPages(state: BrandState, selectedIds?: readonly BrandPageId[]): SavedBrandPage[] {
+  const specs = selectedIds ? selectedIds.map(id => brandPages.find(page => page.id === id)!) : brandPages;
+  return specs.map((page) => {
     const values = Object.fromEntries(page.fields.map((field) => [field, state[field as keyof BrandState]]));
     return {
       pageId: page.id, pageName: page.name, schemaVersion: 1,
       parameters: {
         ...values,
+        // The deployment bridge already reads this field as the brand's mode.
+        ...(page.id === "vision_journey" || page.id === "deployment" ? { theme: resolveBrandMode(state) } : {}),
         choices: state.pageParameters[page.id] ?? {},
         ...(page.id === "dashboard" ? { layoutVersion: "copilot-v1" } : {}),
         ...(page.id === "branding" ? {
@@ -49,6 +53,12 @@ export function serializeBrandPages(state: BrandState): SavedBrandPage[] {
       },
     };
   });
+}
+
+// Only the five visible setup screens participate in draft persistence. Legacy
+// pages remain readable for imports and AI context, without being rewritten.
+export function serializeWorkspacePages(state: BrandState) {
+  return serializeBrandPages(state, workspacePageIds);
 }
 
 export function hydrateBrandPages(pages: SavedBrandPage[]): Partial<BrandState> {
@@ -84,5 +94,5 @@ export function fingerprintPages(pages: SavedBrandPage[]) {
     ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right))) : value);
 }
 export function fingerprintBrandPages(state: BrandState) {
-  return fingerprintPages(serializeBrandPages(state));
+  return fingerprintPages(serializeWorkspacePages(state));
 }

@@ -3,7 +3,7 @@ import { LandingPreviewBridge } from "@/modules/brand-engine/components/brandeng
 /** The Builder tab is a read-only first look at the customer's website. */
 export function BuilderPage() {
   return (
-    <div className="landing-preview-workspace landing-preview-fullscreen" style={{ height: "100dvh", minHeight: 360 }}>
+    <div className="landing-preview-workspace landing-preview-fullscreen" style={{ height: "100%", minHeight: 0 }}>
       <LandingPreviewBridge />
     </div>
   );
