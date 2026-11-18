@@ -50,7 +50,9 @@ export async function generateProviderText(connection, { instruction, contents, 
   const provider = connection.provider;
   const request = (url, init, fetcher) => connection.request ? connection.request(url, init, fetcher, providerRequest) : providerRequest(url, init, fetcher);
   const system = `${connection.systemInstructions || ""}\n\n${instruction}${schema ? `\nReturn valid JSON matching this schema exactly: ${JSON.stringify(schema)}` : ""}`;
-  const tokens = Math.min(maxTokens, connection.maxOutputTokens || 5000);
+  // Structured multi-candidate brand/logo JSON needs sufficient output budget even when default maxOutputTokens is 5000.
+  const ceiling = schema ? Math.max(connection.maxOutputTokens || 5000, 12288) : (connection.maxOutputTokens || 5000);
+  const tokens = Math.min(maxTokens, ceiling);
   let result;
   if (provider === "gemini") {
     // Keep the full contract in the prompt and validate it locally. Gemini's

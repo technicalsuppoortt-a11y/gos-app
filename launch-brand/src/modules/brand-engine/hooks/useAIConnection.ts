@@ -5,8 +5,20 @@ import { useAppSelector } from "@/modules/brand-engine/store/hooks";
 import type { AIConnection } from "@/modules/brand-engine/services/aiConnection";
 import type { AISettings } from "@/modules/brand-engine/services/userAI";
 import { removeLegacyPersonalAI } from "@/modules/brand-engine/services/browserAIConnections.js";
-import { retrySubscription } from '../services/retrySubscription.js';
-import type { DocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { retrySubscription } from "../services/retrySubscription.js";
+import { isDevPreview } from "@/modules/brand-engine/services/brandDraft";
+import type { DocumentSnapshot, DocumentData } from "firebase/firestore";
+
+const DEV_PREVIEW_CONNECTION: AIConnection = {
+  provider: "gemini",
+  source: "platform",
+  model: "gemini-2.5-flash",
+  keyLast4: "0000",
+  status: "connected",
+  revision: "dev-preview-v1",
+  capabilities: { text: true, images: true },
+};
+
 type State = {
   uid: string;
   platform: AIConnection | null;
@@ -15,13 +27,16 @@ type State = {
   error: boolean;
   platformError: boolean;
 };
+
 export function useAIConnection() {
   const uid = useAppSelector((s) => s.brand.userProfile?.uid);
+  const preview = isDevPreview();
   const [state, setState] = useState<State | null>(null);
   const [revision, setRevision] = useState(0);
+
   useEffect(() => {
     setState(null);
-    if (!uid) return;
+    if (!uid || preview) return;
     void removeLegacyPersonalAI(uid).catch(() => {});
     const initial: State = {
       uid,
@@ -45,21 +60,42 @@ export function useAIConnection() {
         () => update(key, null, true),
       ),
     );
-    return () => { active = false; stops.forEach((stop) => stop()); };
+    return () => {
+      active = false;
+      stops.forEach((stop) => stop());
+    };
     function update(key: string, value: unknown, error = false) {
       if (!active) return;
       resolved.add(key);
-      if (error) failures.add(key); else failures.delete(key);
+      if (error) failures.add(key);
+      else failures.delete(key);
       setState((old) => {
-        const next = { ...(old && old.uid === uid ? old : initial), ready: resolved.size,
-          error: failures.size > 0, platformError: failures.has('platform') };
-        if (key === "platform") next.platform = error ? null : value as AIConnection | null;
+        const next = {
+          ...(old && old.uid === uid ? old : initial),
+          ready: resolved.size,
+          error: failures.size > 0,
+          platformError: failures.has("platform"),
+        };
+        if (key === "platform") next.platform = error ? null : (value as AIConnection | null);
         else if (key === "settings")
           next.settings = (value as AISettings) || { source: "platform" };
         return next;
       });
     }
-  }, [uid, revision]);
+  }, [uid, revision, preview]);
+
+  if (preview) {
+    return {
+      connection: DEV_PREVIEW_CONNECTION,
+      platform: DEV_PREVIEW_CONNECTION,
+      settings: { source: "platform" as const },
+      loading: false,
+      error: false,
+      platformError: false,
+      retry: () => setRevision((value) => value + 1),
+    };
+  }
+
   const current = state && state.uid === uid ? state : null;
   const settings = current?.settings || { source: "platform" as const };
   const connection = current?.platform || null;
@@ -70,6 +106,6 @@ export function useAIConnection() {
     loading: Boolean(uid && current?.ready !== 2),
     error: current?.error || false,
     platformError: current?.platformError || false,
-    retry: () => setRevision(value => value + 1),
+    retry: () => setRevision((value) => value + 1),
   };
 }

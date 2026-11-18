@@ -36,7 +36,7 @@ import { useAIConnection } from "@/modules/brand-engine/hooks/useAIConnection";
 import { generateBrandIdentity, generateBrandElement, aiError } from "@/modules/brand-engine/services/aiConnection";
 import { uploadBrandImage, prepareBrandImage, brandUploadError } from "@/modules/brand-engine/services/brandAssets";
 import { beginLogoSelection, logoSelectionVersion } from "@/modules/brand-engine/data/logoSelection";
-import { saveBrandDraft } from "@/modules/brand-engine/services/brandDraft";
+import { saveBrandDraft, isDevPreview } from "@/modules/brand-engine/services/brandDraft";
 import {
   currentLogoFingerprint,
   currentLogoIdentity,
@@ -76,6 +76,7 @@ import { getDiscoverySelection } from "@/modules/brand-engine/data/discovery";
 import type { BrandIdentity } from "@/modules/brand-engine/data/types";
 import { createLogoTemplateIdentities } from "@/modules/brand-engine/data/logoTemplates";
 import { BrandLogoImage } from "./BrandLogoImage";
+import { LogoDrawingPreview } from "./LogoDrawingPreview";
 import { StudioGuidedChoices } from "./StudioGuidedChoices";
 import { StudioElementGenerator } from "./StudioElementGenerator";
 import { StudioOptionalDirections } from "./StudioOptionalDirections";
@@ -258,7 +259,7 @@ export function BrandingStudio({
   const generate = async () => {
     const uid = currentUid.current;
     if (!connection || !uid || busy) return;
-    if (!getDiscoverySelection(state.pageParameters["business_discovery"]?.["nicheSelection"])) {
+    if (!getDiscoverySelection(state.pageParameters["business_discovery"]?.["nicheSelection"]) && !state.business?.trim()) {
       setError(
         t(
           "Choose your niche and sub-niche in Business Discover before generating a brand.",
@@ -300,7 +301,7 @@ export function BrandingStudio({
     setError("");
 
     try {
-      await saveBrandDraft();
+      if (!isDevPreview()) await saveBrandDraft();
       if (currentUid.current !== uid) return;
       if (generationFingerprint() !== fingerprint)
         throw new Error("Brand inputs changed while saving.");
@@ -329,7 +330,7 @@ export function BrandingStudio({
         throw designError;
       }
       dispatch(actions.appendBrandCandidates(result.candidates));
-      await saveBrandDraft();
+      if (!isDevPreview()) await saveBrandDraft();
       toast.success(
         t(
           "Three complete identities are ready. Choose one to apply.",
@@ -352,7 +353,8 @@ export function BrandingStudio({
     if (
       !getDiscoverySelection(
         store.getState().brand.pageParameters["business_discovery"]?.["nicheSelection"],
-      )
+      ) &&
+      !store.getState().brand.business?.trim()
     ) {
       setError(
         t(
@@ -395,7 +397,7 @@ export function BrandingStudio({
     setBusy("generate");
     setError("");
     try {
-      await saveBrandDraft();
+      if (!isDevPreview()) await saveBrandDraft();
       if (currentUid.current !== uid) return false;
       if (brandElementFingerprint(generationFingerprint(), element, answers) !== fingerprint)
         throw new Error(
@@ -468,7 +470,7 @@ export function BrandingStudio({
           },
         }),
       );
-      await saveBrandDraft();
+      if (!isDevPreview()) await saveBrandDraft();
       if (currentUid.current !== uid) return false;
       activeElementRequest.current = null;
       return true;
@@ -635,7 +637,7 @@ export function BrandingStudio({
     mark: logoIdentity.mark,
     logo: logoIdentity.logo,
   });
-  const inlineLogoSrc = useMemo(
+  const _inlineLogoSrc = useMemo(
     () =>
       showAcademyLogo
         ? joeAcademyLogoUrl
@@ -643,6 +645,7 @@ export function BrandingStudio({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [showAcademyLogo, logoIdentityKey, theme.light.primary, identityPalette],
   );
+  void _inlineLogoSrc;
   const language = state.language;
   const showAdvanced = advanced,
     setShowAdvanced = setAdvanced;
@@ -700,7 +703,7 @@ export function BrandingStudio({
     if (!state.userProfile?.uid || busy === "upload" || pendingLogo) return;
     let active = true;
     setLogoError("");
-    if (manualLogo) {
+    if (manualLogo || isDevPreview()) {
       setLogoStatus("saved");
       return;
     }
@@ -820,7 +823,7 @@ export function BrandingStudio({
         value: candidate.id,
       }),
     );
-    if (!uid) return;
+    if (!uid || isDevPreview()) return;
     setBusy("save");
     try {
       if (parts.logo || !manualLogo) await ensureBrandLogoSaved();
@@ -1038,7 +1041,7 @@ export function BrandingStudio({
         </div>
       </div>
 
-      {error && (
+      {error && !elementToGenerate && (
         <p className="bs-logo-save-status error" role="alert">
           {error}
         </p>
@@ -1376,7 +1379,7 @@ export function BrandingStudio({
               requestId={elementToGenerate ? activeElementRequest.current?.id : undefined}
               onClose={() => {
                 setElementToGenerate(null);
-                if (currentUid.current)
+                if (currentUid.current && !isDevPreview())
                   void saveBrandDraft().catch((error) => toast.error(aiError(error, ar)));
               }}
               onGenerate={generateElement}
@@ -1451,9 +1454,15 @@ export function BrandingStudio({
                     </span>
                   )
                 ) : (
-                  <img
-                    src={inlineLogoSrc}
-                    alt={showAcademyLogo ? "Joe Academy" : state.brandName}
+                  <LogoDrawingPreview
+                    compact
+                    identity={{
+                      ...logoIdentity,
+                      name: logoIdentity.name.trim() || (ar ? "?????? ????????" : "Your Brand"),
+                    }}
+                    primary={theme.light.primary}
+                    palette={identityPalette}
+                    ar={ar}
                   />
                 )}
               </div>

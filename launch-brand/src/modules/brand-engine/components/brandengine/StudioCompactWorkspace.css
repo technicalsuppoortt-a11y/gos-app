@@ -920,7 +920,15 @@
   background-image: var(--lb-arch-tile-bg);
   background-size: var(--lb-arch-tile-size);
 }
-.bs-root.studio-workspace.studio-compact-workspace .studio-logo-section .bs-logo-preview img {
+.bs-root.studio-workspace.studio-compact-workspace .studio-logo-section .bs-logo-preview:has(.logo-drawing-preview) {
+  display: block;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.bs-root.studio-workspace.studio-compact-workspace .studio-logo-section .bs-logo-preview > img {
   display: block; width: 100%; height: 130px; max-width: 260px; max-height: 130px; object-fit: contain;
 }
 .bs-root.studio-workspace.studio-compact-workspace .studio-logo-section .bs-logo-manager {

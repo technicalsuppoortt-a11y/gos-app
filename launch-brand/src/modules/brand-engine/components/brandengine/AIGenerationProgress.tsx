@@ -161,6 +161,12 @@ export function AIGenerationProgress({
     );
   }, [busy, requestId, logoContext]);
 
+  useEffect(() => {
+    if (!busy && !error && outcome === "error") {
+      setOutcome("idle");
+    }
+  }, [busy, error, outcome]);
+
   if (!busy && outcome === "idle") return null;
 
   const failed = !busy && (Boolean(error) || outcome === "error");

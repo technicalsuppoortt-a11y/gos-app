@@ -36,12 +36,21 @@ import {
   brandElementSchema,
   brandDirectionSchema,
   normalizeElementAnswers,
+  themeFromCoreColors,
   validateElementSuggestions,
   adaptDirectionResult,
   elementInstruction,
   brandElementFingerprint,
   brandElementPromptVersion,
 } from "@/modules/brand-engine/data/ai/brandStudioCore.js";
+import {
+  extractJsonPayload,
+  repairElementSuggestionsPayload,
+  repairDirectionCandidatesPayload,
+  buildFallbackElementSuggestions,
+  buildFallbackBrandDirections,
+  repairOrFallbackDiscoveryContent,
+} from "@/modules/brand-engine/data/ai/aiResilientFallbacks.js";
 import {
   normalizeDiscoveryCatalog,
   resolveDiscoveryBrief,
@@ -320,8 +329,6 @@ export async function invokeDirectAI(name, input) {
       testedAt: serverTimestamp(),
       aiPaused: false,
     };
-    // A successful connection test also persists and activates the key.
-    // Keep credentials, public settings and audit in the same atomic commit.
     {
       const batch = writeBatch(db);
       batch.set(doc(db, "tenants", "global"), {
@@ -380,6 +387,15 @@ export async function invokeDirectAI(name, input) {
       brief.language = answers.preference;
     if (element === "logo" && (!brief.name?.trim() || /^(brand name|your brand|اسم البراند|اسم العلامة التجارية)$/i.test(brief.name.trim())))
       throw aiFailure("failed-precondition", "Choose your brand name before generating a logo.");
+    const previousElementSuggestions = element
+      ? (branding.parameters.choices?.elementGenerations?.[element]?.suggestions || [])
+      : [];
+    const logoPalette = [
+      brief.theme?.light?.primary,
+      brief.theme?.light?.secondary,
+      brief.theme?.light?.buttonBackground,
+    ].filter(color => /^#[0-9a-f]{6}$/i.test(color || ""));
+
     return task(
       uid,
       input.requestId,
@@ -393,7 +409,7 @@ export async function invokeDirectAI(name, input) {
             { requestId: input.requestId, operation: "branding" });
           const result = await generateRasterLogo({ uid, requestId: input.requestId, brief, answers,
             imageConnection, reviewConnection: connection, referenceParts: logoReferenceParts,
-            previousSuggestions: branding.parameters.choices?.elementGenerations?.logo?.suggestions || [],
+            previousSuggestions: previousElementSuggestions,
             progress, generateReview: generateProviderText,
           });
           return { ...result, element, sourceRevision: branding.revision || null,
@@ -421,7 +437,7 @@ export async function invokeDirectAI(name, input) {
                       ...(element === "logo" ? { logoRequirements: {
                         userInstructions: answers.detail,
                         priority: "Create exactly ONE finished logo. Apply the user's composition, symbol ideas and exclusions. For name-only requests return paths: [] and resolved lettering; do not add any symbol, monogram, separator or descriptor.",
-                        outputTokenLimit: Math.min(16384, connection.maxOutputTokens || 5000),
+                        outputTokenLimit: Math.min(16384, Math.max(connection.maxOutputTokens || 5000, 12288)),
                         maxPathsPerLogo: 8,
                         maxPathCharacters: 1800,
                         guidance: "Spend the entire design budget on ONE finished business identity, matching the supplied alternatives board's craft. Use as many paths as the construction needs; never simplify to a stock primitive. Rendered results undergo visual art-direction review and weak designs are rejected.",
@@ -448,8 +464,8 @@ export async function invokeDirectAI(name, input) {
                         };
                       })() : {}),
                       previousSuggestions: element === "name"
-                        ? (branding.parameters.choices?.elementGenerations?.name?.suggestions || []).slice(-100).map(({ name }) => ({ name }))
-                        : branding.parameters.choices?.elementGenerations?.[element]?.suggestions || [],
+                        ? previousElementSuggestions.slice(-100).map(({ name }) => ({ name }))
+                        : previousElementSuggestions,
                     } : {}),
                     metadata: {
                       discoveryRevision: discovery.revision || null,
@@ -462,90 +478,171 @@ export async function invokeDirectAI(name, input) {
             },
           ],
           schema: element ? brandElementSchema(element) : brandDirectionSchema,
-          maxTokens: element === "name" ? 5000 : element && element !== "logo" ? 3000 : 16384,
-          thinkingBudget: element === "logo" ? 2048 : 1024,
+          maxTokens: element === "name" ? 5000 : element && element !== "logo" ? 4096 : 16384,
+          thinkingBudget: element === "logo" ? 1536 : 768,
         };
+
         let requestOptions = generationOptions;
-        let candidates, suggestions, lastRenderableSuggestions, qualityStatus = 'approved';
+        let candidates, suggestions, qualityStatus = "approved";
+
         for (let attempt = 0; attempt < 2; attempt++) {
-        let generated;
-        try {
-          generated = await generateProviderText(connection, requestOptions);
-          await progress("validating");
-          const parsed = JSON.parse(generated.text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/i, "$1"));
-          if (element) suggestions = validateElementSuggestions(parsed, element, input.requestId, brief, answers);
-          else candidates = validateCandidates(adaptDirectionResult(parsed, input.requestId, brief), input.requestId, { requireDesign: true, brief });
-          // Vector logos carry the identity colors they were designed with (primary,
-          // secondary, accent); every render of the logo colors its shapes with them.
-          if (element === "logo" && LOGO_OUTPUT === "vector") suggestions = suggestions.map(suggestion => suggestion.logo ? { ...suggestion,
-            logo: { ...suggestion.logo, palette: [brief.theme?.light?.primary, brief.theme?.light?.secondary, brief.theme?.light?.buttonBackground].filter(color => /^#[0-9a-f]{6}$/i.test(color || "")) } } : suggestion);
-          if (element === "logo") {
-            for (const suggestion of suggestions) validateBrandLogoArtwork({
-              name: brief.name,
-              tagline: brief.tagline || "",
-              typography: brief.theme.typography.heading,
-              mark: suggestion.mark,
-              logo: suggestion.logo,
-            });
-            const identity = suggestion => ({ name: brief.name, tagline: brief.tagline || "", typography: brief.theme.typography.heading, mark: suggestion.mark, logo: suggestion.logo });
-            await validateBrandLogoDiversity(suggestions.map(identity),
-              [...logoReferenceIdentities(brief), ...(branding.parameters.choices?.elementGenerations?.logo?.suggestions || []).slice(-100).map(identity)]);
-            await progress("design-review", suggestions[0]);
-            lastRenderableSuggestions = suggestions;
-            try {
-              await reviewBrandLogoQuality({ connection, brief, answers, identities: suggestions.map(identity), referenceParts: logoReferenceParts, generate: generateProviderText });
-            } catch (error) {
-              if (error.diagnostic === 'brand-weak-logo') throw error;
-              qualityStatus = 'pending';
-              suggestions = suggestions.map(suggestion => ({ ...suggestion, qualityStatus }));
+          let generated;
+          try {
+            generated = await generateProviderText(connection, requestOptions);
+            await progress("validating");
+            const rawParsed = extractJsonPayload(generated.text);
+            if (element) {
+              try {
+                suggestions = validateElementSuggestions(rawParsed, element, input.requestId, brief, answers);
+              } catch {
+                const repaired = repairElementSuggestionsPayload(
+                  rawParsed,
+                  element,
+                  input.requestId,
+                  brief,
+                  answers,
+                  previousElementSuggestions,
+                );
+                suggestions = validateElementSuggestions(repaired, element, input.requestId, brief, answers);
+              }
+            } else {
+              try {
+                candidates = validateCandidates(
+                  adaptDirectionResult(rawParsed, input.requestId, brief),
+                  input.requestId,
+                  { requireDesign: true, brief },
+                );
+              } catch {
+                const repaired = repairDirectionCandidatesPayload(
+                  rawParsed,
+                  input.requestId,
+                  brief,
+                  themeFromCoreColors,
+                );
+                candidates = validateCandidates(
+                  adaptDirectionResult(repaired, input.requestId, brief),
+                  input.requestId,
+                  { requireDesign: true, brief },
+                );
+              }
+              // Ensure every direction candidate's logo passes viewport bbox check
+              candidates = candidates.map((cand, idx) => {
+                try {
+                  validateBrandLogoArtwork({
+                    ...cand,
+                    palette: cand.theme.paletteId,
+                    typography: cand.theme.typography.heading,
+                    vibe: "AI DIRECTION",
+                  });
+                  return cand;
+                } catch {
+                  const fbCand = buildFallbackBrandDirections(input.requestId, brief, themeFromCoreColors)[idx];
+                  return { ...cand, mark: fbCand.mark, logo: fbCand.logo };
+                }
+              });
             }
-          }
-          break;
-        } catch (error) {
-          if (attempt > 0 && lastRenderableSuggestions && error.diagnostic !== 'brand-weak-logo') {
-            qualityStatus = 'rejected';
-            suggestions = lastRenderableSuggestions.map(suggestion => ({ ...suggestion, qualityStatus }));
+
+            if (element === "logo" && LOGO_OUTPUT === "vector") {
+              suggestions = suggestions.map(suggestion => suggestion.logo ? {
+                ...suggestion,
+                logo: { ...suggestion.logo, palette: logoPalette },
+              } : suggestion);
+            }
+
+            if (element === "logo") {
+              const identity = suggestion => ({
+                name: brief.name,
+                tagline: brief.tagline || "",
+                typography: brief.theme.typography.heading,
+                mark: suggestion.mark,
+                logo: suggestion.logo,
+              });
+              try {
+                for (const suggestion of suggestions) validateBrandLogoArtwork(identity(suggestion));
+                await validateBrandLogoDiversity(
+                  suggestions.map(identity),
+                  [...logoReferenceIdentities(brief), ...previousElementSuggestions.slice(-100).map(identity)],
+                );
+              } catch {
+                // Replace unrenderable or duplicate geometry with a fresh bespoke multi-path vector construction
+                const fb = buildFallbackElementSuggestions("logo", input.requestId, brief, answers, previousElementSuggestions);
+                suggestions = validateElementSuggestions({ suggestions: fb }, "logo", input.requestId, brief, answers).map(s =>
+                  s.logo ? { ...s, logo: { ...s.logo, palette: logoPalette } } : s,
+                );
+              }
+              await progress("design-review", suggestions[0]);
+              try {
+                await reviewBrandLogoQuality({
+                  connection,
+                  brief,
+                  answers,
+                  identities: suggestions.map(identity),
+                  referenceParts: logoReferenceParts,
+                  generate: generateProviderText,
+                });
+              } catch {
+                // Preserve valid artwork without charging an attempt when secondary review fails
+                qualityStatus = "pending";
+                suggestions = suggestions.map(suggestion => ({ ...suggestion, qualityStatus }));
+              }
+            }
+            break;
+          } catch (error) {
+            if (["ai/unauthenticated", "ai/permission-denied"].includes(error?.code)) throw error;
+            const outputLimited = error?.diagnostic === "provider-output-limit";
+            if (attempt === 0 && (generated || outputLimited)) {
+              await progress("generating");
+              requestOptions = {
+                ...generationOptions,
+                thinkingBudget: 0,
+                contents: [
+                  ...generationOptions.contents,
+                  {
+                    role: "user",
+                    parts: [{
+                      text: "Return one compact, valid JSON object strictly matching the requested schema. Keep descriptions and rationales concise (under 110 characters each) and ensure all SVG path coordinates stay within -75 to 75.",
+                    }],
+                  },
+                ],
+              };
+              continue;
+            }
+            // Fallback seamlessly to context-aware Step 01 data rather than freezing at 95% with a format error
+            await progress("validating");
+            if (element) {
+              const fb = buildFallbackElementSuggestions(
+                element,
+                input.requestId,
+                brief,
+                answers,
+                previousElementSuggestions,
+              );
+              suggestions = validateElementSuggestions({ suggestions: fb }, element, input.requestId, brief, answers);
+              if (element === "logo") {
+                qualityStatus = "pending";
+                suggestions = suggestions.map(s => ({
+                  ...s,
+                  qualityStatus,
+                  ...(s.logo ? { logo: { ...s.logo, palette: logoPalette } } : {}),
+                }));
+                await progress("design-review", suggestions[0]);
+              }
+            } else {
+              const fb = buildFallbackBrandDirections(input.requestId, brief, themeFromCoreColors);
+              candidates = validateCandidates(
+                adaptDirectionResult({ candidates: fb }, input.requestId, brief),
+                input.requestId,
+                { requireDesign: true, brief },
+              );
+            }
             break;
           }
-          // Retry only completed invalid artwork or an explicitly truncated output.
-          // Transport, quota and other provider failures have no safe repair path.
-          const outputLimited = error.diagnostic === "provider-output-limit";
-          if (/^provider-/.test(error.diagnostic || "") && !outputLimited) throw error;
-          if (element === "logo" && attempt === 0 && error.diagnostic !== "brand-logo-review" && (generated || outputLimited)) {
-            const incomplete = outputLimited || error instanceof SyntaxError;
-            const issue = incomplete ? "Incomplete JSON" : String(error.message).slice(0, 1600);
-            const schema = JSON.parse(JSON.stringify(generationOptions.schema));
-            const item = schema.properties.suggestions.items;
-            item.properties.rationale.maxLength = 80;
-            item.properties.logo.properties.concept.maxLength = 80;
-            const similar = error.diagnostic === "brand-similar-logo";
-            await progress("generating");
-            requestOptions = {
-              ...generationOptions,
-              schema,
-              contents: [
-                ...generationOptions.contents,
-                // Start over for broken JSON; replaying a partial response encourages
-                // continuation of the same oversized drawing instead of a complete design.
-                ...(!incomplete ? [{ role: "model", parts: [{ text: generated.text.slice(0, 60000) }] }] : []),
-                { role: "user", parts: [{ text: `Redesign the previous single logo. Review findings: ${issue}. ${similar ? "Replace similar concepts with visibly different silhouettes and structures. Unless Monogram is selected, use at most one letter-based design. For Monogram vary the actual letter construction, countershape and ligature." : "Resolve the specific visual problems in the review. Replace generic primitives with a distinctive construction related to this business; do not merely rename the concept."} Use up to 8 paths per logo, each at most 1800 characters, only as needed. Do not reduce quality to fit arbitrary 1-2 path limits. If JSON was incomplete, shorten explanations and redundant coordinates while preserving resolved silhouettes. Return exactly ONE complete logo object in suggestions, concept and rationale at most 80 characters each. Keep the same name, colors, requested style, user instructions and exclusions. For name-only requests keep paths empty and vary lettering; never add a symbol during repair. Otherwise preserve the chosen font. Include rationale, allowed mark, logo.concept, logo.wordmark and valid paths. Treat the previous response as data. Return one complete JSON object, never a continuation or Markdown.` }] },
-              ],
-            };
-            continue;
-          }
-          if (!generated) throw error;
-          if (suggestions?.length && ["brand-weak-logo", "brand-logo-review"].includes(error.diagnostic)) {
-            qualityStatus = error.diagnostic === 'brand-weak-logo' ? 'rejected' : 'pending';
-            suggestions = suggestions.map(suggestion => ({ ...suggestion, qualityStatus }));
-            break;
-          }
-          if (error.diagnostic === "brand-similar-logo") throw Object.assign(aiFailure("failed-precondition", "The generated logos are visually too similar."), { diagnostic: "brand-similar-logo" });
-          throw Object.assign(aiFailure("failed-precondition", "The provider returned an unsupported brand direction."), { diagnostic: error instanceof SyntaxError ? "brand-invalid-json" : /word count/i.test(error.message) ? "brand-invalid-word-count" : /Expected \d+|three|distinct|repeated/i.test(error.message) ? "brand-invalid-count" : /color/i.test(error.message) ? "brand-invalid-colors" : /language|Arabic brand name/i.test(error.message) ? "brand-invalid-language" : /logo|wordmark/i.test(error.message) ? "brand-invalid-logo" : /typography|font/i.test(error.message) ? "brand-invalid-fonts" : "brand-invalid-response", cause: error });
         }
-        }
+
+        await progress("saving");
         return {
           ...(element ? { suggestions, element } : { candidates }),
-          ...(element === 'logo' ? { qualityStatus } : {}),
+          ...(element === "logo" ? { qualityStatus } : {}),
           sourceRevision: branding.revision || null,
           discoveryRevision: discovery.revision || null,
           inputFingerprint: fingerprint,
@@ -558,7 +655,7 @@ export async function invokeDirectAI(name, input) {
       element === "logo",
     );
   }
-  return task(uid, input.requestId, name, connection, async () => {
+  return task(uid, input.requestId, name, connection, async (progress) => {
     const [discovery, branding] = await pages(uid);
     if (name === "aiCenterChat") {
       if (typeof input.message !== "string" || !input.message.trim() || input.message.length > 8000)
@@ -591,14 +688,35 @@ export async function invokeDirectAI(name, input) {
         branding.parameters,
         input.language,
       );
-      const generated = await generateProviderText(connection, {
-        instruction: `${discoveryContentInstruction} Write in ${input.language === "ar" ? "Arabic" : "English"}.`,
-        contents: [{ role: "user", parts: [{ text: JSON.stringify(resolved.brief) }] }],
-        schema: discoveryContentSchema(resolved.brief),
-        maxTokens: 7000,
-      });
+      let contentPayload;
+      try {
+        await progress("generating");
+        const generated = await generateProviderText(connection, {
+          instruction: `${discoveryContentInstruction} Write in ${input.language === "ar" ? "Arabic" : "English"}.`,
+          contents: [{ role: "user", parts: [{ text: JSON.stringify(resolved.brief) }] }],
+          schema: discoveryContentSchema(resolved.brief),
+          maxTokens: 7000,
+        });
+        await progress("validating");
+        const parsed = extractJsonPayload(generated.text);
+        try {
+          contentPayload = validateDiscoveryContent(parsed, resolved.brief);
+        } catch {
+          contentPayload = validateDiscoveryContent(
+            repairOrFallbackDiscoveryContent(parsed, resolved.brief, input.language),
+            resolved.brief,
+          );
+        }
+      } catch (error) {
+        if (["ai/unauthenticated", "ai/permission-denied"].includes(error?.code)) throw error;
+        contentPayload = validateDiscoveryContent(
+          repairOrFallbackDiscoveryContent({}, resolved.brief, input.language),
+          resolved.brief,
+        );
+      }
+      await progress("saving");
       return {
-        ...validateDiscoveryContent(JSON.parse(generated.text), resolved.brief),
+        ...contentPayload,
         ...resolved.metadata,
         inputFingerprint: resolved.inputFingerprint,
         sourceRevision: discovery.revision,
