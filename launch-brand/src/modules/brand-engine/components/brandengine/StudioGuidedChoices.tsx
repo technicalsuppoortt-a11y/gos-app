@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { defaultBrandFont } from "@/modules/brand-engine/data/brandFonts";
 import { StudioSelect } from "./StudioSelect";
@@ -24,7 +24,15 @@ export function StudioGuidedChoices({
   connected,
   onGenerate,
   onApply,
+  logoPanel,
+  generatorPanel,
+  activeSection,
+  onSectionChange: setActiveSection,
 }: {
+  logoPanel: ReactNode;
+  generatorPanel: ReactNode;
+  activeSection: "name" | "colors" | "typography" | "logo";
+  onSectionChange: (section: "name" | "colors" | "typography" | "logo") => void;
   busy: boolean;
   connected: boolean;
   onGenerate: (element: BrandElement) => void;
@@ -38,12 +46,12 @@ export function StudioGuidedChoices({
   const theme = resolveBrandTheme(state),
     colors = theme[state.theme === "dark" ? "dark" : "light"];
   const [custom, setCustom] = useState(false);
-  const [activeSection, setActiveSection] = useState<"name" | "colors" | "typography">("name");
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const sections = [
     { id: "name" as const, label: t("Name", "الاسم") },
     { id: "colors" as const, label: t("Colors", "الألوان") },
     { id: "typography" as const, label: t("Typography", "الخطوط") },
+    { id: "logo" as const, label: t("Logo", "اللوجو") },
   ];
   const sectionIndex = sections.findIndex((section) => section.id === activeSection);
   const navigateTabs = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -505,6 +513,10 @@ export function StudioGuidedChoices({
           </span>
         )}
       </section>
+      <div id="studio-panel-logo" role="tabpanel" aria-labelledby="studio-tab-logo" hidden={activeSection !== "logo"}>
+        {logoPanel}
+      </div>
+      {generatorPanel}
       <div className="studio-editor-footer">
         <span>{t(`Section ${sectionIndex + 1} of ${sections.length}`, `القسم ${sectionIndex + 1} من ${sections.length}`)}</span>
         <div>

@@ -23,18 +23,16 @@ export function StudioPreviewSurface({ surface, device, onSurfaceChange, onDevic
   const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
   const width = device === "desktop" ? 1280 : device === "tablet" ? 768 : 390;
   const baseHeight = device === "desktop" ? 850 : device === "tablet" ? 1024 : 844;
-  // A desktop preview fills the card; its page scrolls inside the frame.
-  const height = device === "desktop" && frameSize.width > 0
-    ? Math.max(1, Math.round(frameSize.height * width / frameSize.width)) : baseHeight;
+  const height = baseHeight;
   useEffect(() => {
     const stage = host.current;
     if (!stage) return;
     const measure = () => {
       const availableWidth = Math.max(1, stage.clientWidth);
       const availableHeight = Math.max(1, stage.clientHeight);
-      const nextWidth = device === "desktop" ? Math.min(width, availableWidth)
-        : Math.max(1, Math.min(width, availableWidth - 12, (availableHeight - 12) * width / baseHeight));
-      const nextHeight = device === "desktop" ? availableHeight : nextWidth * baseHeight / width;
+      const scale = Math.min(1, availableWidth / width, availableHeight / baseHeight);
+      const nextWidth = width * scale;
+      const nextHeight = baseHeight * scale;
       setFrameSize(previous => previous.width === nextWidth && previous.height === nextHeight
         ? previous : { width: nextWidth, height: nextHeight });
     };

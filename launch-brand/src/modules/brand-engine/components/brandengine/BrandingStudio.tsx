@@ -141,7 +141,8 @@ export function BrandingStudio({
   const [advanced, setAdvanced] = useState(false);
   const [preview, setPreview] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<"editor" | "preview">("editor");
-  const [logoManagerOpen, setLogoManagerOpen] = useState(false);
+  const [activeStudioSection, setActiveStudioSection] = useState<"name" | "colors" | "typography" | "logo">("name");
+  const logoManagerOpen = activeStudioSection === "logo";
   const reduceMotion = useReducedMotion();
   const [previewSurface, setPreviewSurface] = useState<StudioPreviewSurface>("dashboard");
   const [previewDevice, setPreviewDevice] = useState<StudioPreviewDevice>("desktop");
@@ -181,7 +182,7 @@ export function BrandingStudio({
     setAdvanced(false);
     setPreview(false);
     setWorkspaceView("editor");
-    setLogoManagerOpen(false);
+    setActiveStudioSection("name");
     setGalleryOpen(false);
     setAllConcepts(false);
   }, [state.userProfile?.uid]);
@@ -657,7 +658,7 @@ export function BrandingStudio({
     dispatch(actions.resetBrandStudio());
     setAdvanced(false);
     setPreview(false);
-    setLogoManagerOpen(false);
+    setActiveStudioSection("name");
     setGalleryOpen(false);
     setAllConcepts(false);
     setShowFavorites(false);
@@ -1339,16 +1340,9 @@ export function BrandingStudio({
         <div className="studio-workspace-column studio-workspace-primary">
           <StudioGuidedChoices
             key={`guided-${state.userProfile?.uid}`}
-            busy={Boolean(busy || pendingLogo)}
-            connected={Boolean(connection && !connection.aiPaused)}
-            onApply={applyElement}
-            onGenerate={(element) => {
-              setError("");
-              setElementToGenerate(element);
-            }}
-          />
-          {/* Opens in place, right under the name, colors and typography it belongs to. */}
-          {
+            activeSection={activeStudioSection}
+            onSectionChange={setActiveStudioSection}
+            generatorPanel={<div hidden={elementToGenerate !== activeStudioSection}>
             <StudioElementGenerator
               key={`element-generator-${currentUid.current}`}
               element={elementToGenerate}
@@ -1364,13 +1358,13 @@ export function BrandingStudio({
               onGenerate={generateElement}
               onApply={applyElement}
             />
-          }
+            </div>}
+            logoPanel={<>
           {/* Current logo and optional alternatives */}
           <section
             aria-labelledby="studio-logo-heading"
             className={`bs-logos-section studio-logo-section${galleryOpen ? " gallery-open" : ""}`}
             id="studio-logo-manager"
-            hidden={!logoManagerOpen}
             ref={logoConceptsRef}
             style={{ scrollMarginTop: 24 }}
           >
@@ -1381,8 +1375,8 @@ export function BrandingStudio({
                 </h2>
                 <small>
                   {language === "ar"
-                    ? "اختر شعارك. يتم حفظ صورته وتفاصيله تلقائيًا."
-                    : "Choose a vector concept or upload your logo. Your selection is saved automatically."}
+                    ? "كمّل هويتك بلوجو يعبر عنك. ولّد تصميم بالذكاء الاصطناعي أو ارفع اللوجو الخاص بك."
+                    : "Complete your identity with a logo. Generate a design with AI or upload your own."}
                 </small>
               </div>
               <div className="studio-logo-heading-actions">
@@ -1678,6 +1672,15 @@ export function BrandingStudio({
               </Dialog.Portal>
             </Dialog.Root>
           </section>
+            </>}
+            busy={Boolean(busy || pendingLogo)}
+            connected={Boolean(connection && !connection.aiPaused)}
+            onApply={applyElement}
+            onGenerate={(element) => {
+              setError("");
+              setElementToGenerate(element);
+            }}
+          />
           <details className="studio-directions-disclosure">
             <summary>{t("Explore more brand directions", "استكشف اتجاهات إضافية للبراند")}</summary>
             <StudioOptionalDirections
@@ -1736,7 +1739,7 @@ export function BrandingStudio({
                 aria-expanded={logoManagerOpen}
                 onClick={() => {
                   setWorkspaceView("editor");
-                  setLogoManagerOpen((open) => !open);
+                  setActiveStudioSection(logoManagerOpen ? "name" : "logo");
                 }}
               >
                 {logoManagerOpen ? t("Close logo manager", "إغلاق إدارة اللوجو") : t("Manage logo", "إدارة اللوجو")}

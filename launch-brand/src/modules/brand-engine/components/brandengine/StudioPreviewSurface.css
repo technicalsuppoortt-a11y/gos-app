@@ -75,8 +75,10 @@
   justify-content: center;
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 240px;
-  height: clamp(240px, 40vh, 480px);
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 1280 / 850;
+  flex: 0 0 auto;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--lb-card-border, var(--border));
@@ -108,7 +110,8 @@
 .studio-live-preview.studio-live-preview--compact.is-expanded { min-height: 0; }
 .studio-live-preview.studio-live-preview--compact.is-expanded .studio-preview-stage {
   height: 100%;
-  min-height: 280px;
+  aspect-ratio: auto;
+  min-height: 0;
   flex: 1 1 0;
 }
 @media (pointer: coarse) {
