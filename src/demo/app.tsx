@@ -33,5 +33,5 @@ export async function mountDemoApp() {
   if (profile) store.dispatch(loginSuccess({ ...demoSession, user: { ...demoSession.user, name: profile.name, email: profile.email, avatar: profile.photo } }));
   window.addEventListener('gos-demo-external', () => showToast.info('External services are simulated in this demo.'));
   await preloadInitialRoute(location.pathname, location.search);
-  createRoot(document.getElementById('root')!).render(<App/>);
+  createRoot(document.getElementById('root')!).render(<App />);
 }

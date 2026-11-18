@@ -63,7 +63,7 @@ function demoFrame(frame: HTMLIFrameElement, value: string) {
   return 'about:blank';
 }
 Object.defineProperty(HTMLIFrameElement.prototype, 'src', { ...frameSrc, set(value: string) { frameSrc.set!.call(this, demoFrame(this, value)); } });
-Element.prototype.setAttribute = function(name: string, value: string) {
+Element.prototype.setAttribute = function (name: string, value: string) {
   nativeAttribute.call(this, name, this instanceof HTMLIFrameElement && name.toLowerCase() === 'src' ? demoFrame(this, value) : value);
 };
 document.addEventListener('click', event => {

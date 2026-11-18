@@ -29,9 +29,9 @@ const BookingTemplates = preloadableLazy(() => import('./booking/BookingTemplate
 const TemplatesWorkspace = preloadableLazy(() => import('./TemplatesWorkspace').then(module => ({ default: module.TemplatesWorkspace })));
 const Analytics = preloadableLazy(() => import('./Analytics').then(module => ({ default: module.Analytics })));
 
-type PageKey='home'|'copilot'|'funnels'|'crm'|'contacts'|'inbox'|'follow-up'|'automation'|'booking'|'products'|'analytics'|'knowledge';
+type PageKey = 'home' | 'copilot' | 'funnels' | 'crm' | 'contacts' | 'inbox' | 'follow-up' | 'automation' | 'booking' | 'products' | 'analytics' | 'knowledge';
 
-export function preloadDashboardSubpage(page: PageKey): Promise<unknown> {
+export function preloadDashboardSubpage(page: PageKey) {
   switch (page) {
     case 'home': return HomeDashboard.preload();
     case 'copilot': return AICopilot.preload();
@@ -48,44 +48,48 @@ export function preloadDashboardSubpage(page: PageKey): Promise<unknown> {
   }
 }
 
-function PageHeading({eyebrow,title,description,action,actionIcon:Icon=Plus}:{eyebrow?:string;title:string;description?:string;action?:string;actionIcon?:React.ElementType}){
-  useUILanguage();return <div className="page-heading"><div>{localizeNode(eyebrow&&<div className="eyebrow">{localizeNode(eyebrow)}</div>)}<h1>{localizeNode(title)}</h1>{localizeNode(description&&<p>{localizeNode(description)}</p>)}</div>{localizeNode(action&&<button className="button-primary"><Icon size={16}/>{localizeNode(action)}</button>)}</div>}
-function Pill({children,tone='neutral'}:{children:React.ReactNode;tone?:string}){
-  useUILanguage();return <span className={`pill pill-${tone}`}>{localizeNode(children)}</span>}
+function PageHeading({ eyebrow, title, description, action, actionIcon: Icon = Plus }: { eyebrow?: string; title: string; description?: string; action?: string; actionIcon?: React.ElementType }) {
+  useUILanguage(); return <div className="page-heading"><div>{localizeNode(eyebrow && <div className="eyebrow">{localizeNode(eyebrow)}</div>)}<h1>{localizeNode(title)}</h1>{localizeNode(description && <p>{localizeNode(description)}</p>)}</div>{localizeNode(action && <button className="button-primary"><Icon size={16} />{localizeNode(action)}</button>)}</div>
+}
+function Pill({ children, tone = 'neutral' }: { children: React.ReactNode; tone?: string }) {
+  useUILanguage(); return <span className={`pill pill-${tone}`}>{localizeNode(children)}</span>
+}
 
-const DashboardContent:React.FC<{page:PageKey}>=({page})=>{
+const DashboardContent: React.FC<{ page: PageKey }> = ({ page }) => {
   useUILanguage();
- const location=useLocation();
- const [activeChannel,setActiveChannel]=React.useState('whatsapp');
- const [activeConversation,setActiveConversation]=React.useState('ld-101');
- const [aiMode,setAiMode]=React.useState(true);
- const [sent,setSent]=React.useState(false);
- const [showModal,setShowModal]=React.useState(false);
- React.useEffect(()=>{const leadId=new URLSearchParams(location.search).get('leadId');if(leadId)setActiveConversation(leadId)},[location.search]);
- const notify=(s:string)=>{showToast.success(s)};
- const canonicalLeads=useSelector((state:RootState)=>state.crm.leads);
- const selected=canonicalLeads.find(l=>l.id===activeConversation)??canonicalLeads[0];
- const templateScope = ['booking', 'follow-up', 'products', 'copilot', 'knowledge'].includes(page) ? page as TemplateScope : null;
- if (page === 'booking' && new URLSearchParams(location.search).get('tab') === 'templates') return <BookingTemplates/>;
- if (page === 'products' && new URLSearchParams(location.search).get('tab') === 'templates') return <ProductTemplateLibrary/>;
- if (templateScope && new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page}>{translateText("Back to ")}{localizeNode(page)}</Link></div><TemplatesWorkspace key={templateScope} scope={templateScope} onInstall={templateScope === 'follow-up' ? template => { const key = template.category === 'Automations' ? WORKFLOWS_KEY : 'gos.ai-followup.templates.v1'; const saved = JSON.parse(cloudStorage.getItem(key) ?? 'null'); const items = Array.isArray(saved) ? saved : []; const item = template.category === 'Automations' ? workflowFromTemplate(template) : { id: template.id, title: template.name, description: template.description, iconKey: 'message', custom: true, category: template.category, prompt: template.content.headline, variables: '{{first_name}}' }; cloudStorage.setItem(key, JSON.stringify([...items, item])); } : undefined}/></>;
- const content=(()=>{switch(page){
- case 'home':return <HomeDashboard/>;
- case 'copilot':return <AICopilot/>;
- case 'crm':return <CRMLeads notify={notify}/>;
- case 'contacts':return <CRMLeads notify={notify} isContactsPage/>;
- case 'inbox':return <Inbox selected={selected} activeChannel={activeChannel} setActiveChannel={setActiveChannel} activeConversation={activeConversation} setActiveConversation={setActiveConversation} aiMode={aiMode} setAiMode={setAiMode} sent={sent} setSent={setSent}/>;
- case 'follow-up':return <AIFollowUp notify={notify}/>;
- case 'automation':return <AIFollowUp notify={notify} section="automation"/>;
- case 'booking':return <BookingCalendar createRequested={showModal} clearCreateRequest={()=>setShowModal(false)} notify={notify}/>;
- case 'funnels':return <FunnelBuilder/>;
- case 'products':return <ProductsPayments showModal={showModal} setShowModal={setShowModal} notify={notify}/>;
- case 'analytics':return <Analytics notify={notify}/>;
- case 'knowledge':return <KnowledgePanel/>;
+  const location = useLocation();
+  const [activeChannel, setActiveChannel] = React.useState('whatsapp');
+  const [activeConversation, setActiveConversation] = React.useState('ld-101');
+  const [aiMode, setAiMode] = React.useState(true);
+  const [sent, setSent] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+  React.useEffect(() => { const leadId = new URLSearchParams(location.search).get('leadId'); if (leadId) setActiveConversation(leadId) }, [location.search]);
+  const notify = (s: string) => { showToast.success(s) };
+  const canonicalLeads = useSelector((state: RootState) => state.crm.leads);
+  const selected = canonicalLeads.find(l => l.id === activeConversation) ?? canonicalLeads[0];
+  const templateScope = ['booking', 'follow-up', 'products', 'copilot', 'knowledge'].includes(page) ? page as TemplateScope : null;
+  if (page === 'booking' && new URLSearchParams(location.search).get('tab') === 'templates') return <BookingTemplates />;
+  if (page === 'products' && new URLSearchParams(location.search).get('tab') === 'templates') return <ProductTemplateLibrary />;
+  if (templateScope && new URLSearchParams(location.search).get('tab') === 'templates') return <><div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page}>{translateText("Back to ")}{localizeNode(page)}</Link></div><TemplatesWorkspace key={templateScope} scope={templateScope} onInstall={templateScope === 'follow-up' ? template => { const key = template.category === 'Automations' ? WORKFLOWS_KEY : 'gos.ai-followup.templates.v1'; const saved = JSON.parse(cloudStorage.getItem(key) ?? 'null'); const items = Array.isArray(saved) ? saved : []; const item = template.category === 'Automations' ? workflowFromTemplate(template) : { id: template.id, title: template.name, description: template.description, iconKey: 'message', custom: true, category: template.category, prompt: template.content.headline, variables: '{{first_name}}' }; cloudStorage.setItem(key, JSON.stringify([...items, item])); } : undefined} /></>;
+  const content = (() => {
+    switch (page) {
+      case 'home': return <HomeDashboard />;
+      case 'copilot': return <AICopilot />;
+      case 'crm': return <CRMLeads notify={notify} />;
+      case 'contacts': return <CRMLeads notify={notify} isContactsPage />;
+      case 'inbox': return <Inbox selected={selected} activeChannel={activeChannel} setActiveChannel={setActiveChannel} activeConversation={activeConversation} setActiveConversation={setActiveConversation} aiMode={aiMode} setAiMode={setAiMode} sent={sent} setSent={setSent} />;
+      case 'follow-up': return <AIFollowUp notify={notify} />;
+      case 'automation': return <AIFollowUp notify={notify} section="automation" />;
+      case 'booking': return <BookingCalendar createRequested={showModal} clearCreateRequest={() => setShowModal(false)} notify={notify} />;
+      case 'funnels': return <FunnelBuilder />;
+      case 'products': return <ProductsPayments showModal={showModal} setShowModal={setShowModal} notify={notify} />;
+      case 'analytics': return <Analytics notify={notify} />;
+      case 'knowledge': return <KnowledgePanel />;
 
- }})();
- return <>{localizeNode(templateScope && !['booking', 'products', 'follow-up'].includes(page) && <div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page + '?tab=templates'}>{localizeNode(page === 'follow-up' ? 'Automation templates' : 'Templates')} <ArrowRight size={14}/></Link></div>)}{localizeNode(content)}</>;
+    }
+  })();
+  return <>{localizeNode(templateScope && !['booking', 'products', 'follow-up'].includes(page) && <div className="native-template-nav"><Link className="st-secondary" to={'/dashboard/' + page + '?tab=templates'}>{localizeNode(page === 'follow-up' ? 'Automation templates' : 'Templates')} <ArrowRight size={14} /></Link></div>)}{localizeNode(content)}</>;
 };
 
 
-export const DashboardPage: React.FC<{page: PageKey}> = ({page}) => <Suspended><DashboardContent page={page}/></Suspended>;
+export const DashboardPage: React.FC<{ page: PageKey }> = ({ page }) => <Suspended><DashboardContent page={page} /></Suspended>;

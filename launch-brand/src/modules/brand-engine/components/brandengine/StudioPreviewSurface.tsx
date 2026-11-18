@@ -85,11 +85,11 @@ function StudioPreviewSurfaceComponent({ surface, device, onSurfaceChange, onDev
           const label = value === "desktop" ? t("Desktop", "كمبيوتر") : value === "tablet" ? t("Tablet", "تابلت") : t("Mobile", "موبايل");
           return <button key={value} type="button" aria-label={label} title={label}
             aria-pressed={device === value} onClick={() => onDeviceChange(value)}>
-            {value === "desktop" ? <Laptop size={15} aria-hidden="true"/> : value === "tablet" ? <Tablet size={15} aria-hidden="true"/> : <Smartphone size={15} aria-hidden="true"/>}
+            {value === "desktop" ? <Laptop size={15} aria-hidden="true" /> : value === "tablet" ? <Tablet size={15} aria-hidden="true" /> : <Smartphone size={15} aria-hidden="true" />}
           </button>;
         })}
         {onExpand && <button type="button" aria-label={t("Expand preview", "تكبير المعاينة")}
-          title={t("Expand preview", "تكبير المعاينة")} onClick={onExpand}><Maximize2 size={15} aria-hidden="true"/></button>}
+          title={t("Expand preview", "تكبير المعاينة")} onClick={onExpand}><Maximize2 size={15} aria-hidden="true" /></button>}
       </div>
     </div>
     <div ref={host} className="studio-preview-stage" data-preview-stage data-preview-device={device}
