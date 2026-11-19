@@ -7,10 +7,30 @@ const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODUL
 const fixture = 'virtual:studio-zoom';
 const server = await createServer({
   root: path.resolve('launch-brand'), configFile: path.resolve('launch-brand/vite.config.ts'),
+  define: { 'import.meta.env.VITE_USE_EMULATORS': JSON.stringify('true') },
   plugins: [{
     name: 'studio-zoom',
-    resolveId: id => id === fixture ? '\0' + id : null,
+    enforce: 'pre',
+    resolveId(id, importer) {
+      if (id === fixture) return '\0' + id;
+      if (/\/services\/aiConnection(?:\.ts)?$/.test(id) && importer?.endsWith('/BrandingStudio.tsx')) return '\0studio-zoom-ai';
+      return null;
+    },
     load(id) {
+      // Keep the real UI/state transitions; replace only the paid AI operation.
+      if (id === '\0studio-zoom-ai') return `
+        export * from '/src/modules/brand-engine/services/aiConnection.ts';
+        let sequence = 0;
+        export async function generateBrandElement(element, answers, requestId, language, inputFingerprint) {
+          const outcome = await new Promise(resolve => { window.finishLogoGeneration = resolve; });
+          window.finishLogoGeneration = null;
+          if (outcome === 'error') throw new Error('Test generation failed. Please retry.');
+          return {inputFingerprint, promptVersion:'test', suggestions:[{
+            id:'zoom-logo-' + (++sequence), mark:'prism',
+            logo:{paths:[{d:'M-60 -60H60V60H-60Z',fill:true,strokeWidth:0}]},
+          }]};
+        }
+      `;
       if (id !== '\0' + fixture) return;
       return `
         import React from 'react';
@@ -27,6 +47,9 @@ const server = await createServer({
         import '@/pages/launch-brand-page.css';
         store.dispatch(actions.setStep(14));
         store.dispatch(actions.setMode('wizard'));
+        store.dispatch(actions.setUserProfile({uid:'zoom-fixture',displayName:'Layout test',email:''}));
+        store.dispatch(actions.setBrandName('Juniper Studio'));
+        store.dispatch(actions.setBusiness('Education'));
         window.setLanguage = language => store.dispatch(actions.setLanguage(language));
         window.setLanguage('en');
         createRoot(document.getElementById('fixture')).render(React.createElement(Provider, {store}, React.createElement(BrowserRouter, null, React.createElement(AppShell, {headerTarget: document.querySelector(".launch-brand-header")}))));
@@ -54,7 +77,7 @@ try {
     if (route.request().isNavigationRequest() && route.request().frame() !== page.mainFrame()) return route.fulfill({contentType:'text/html', body:'<!doctype html><html><head><style>body{margin:0}</style></head><body>Preview fixture</body></html>'});
     return new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort();
   });
-  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/launch-brand/__zoom`);
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/launch-brand/__zoom?devpreview=1&view=branding`);
   await page.locator('#studio-tab-name').waitFor({timeout: 60000});
   for (const language of ['en', 'ar']) {
     await page.evaluate(language => window.setLanguage(language), language);
@@ -69,10 +92,42 @@ try {
       await tab.scrollIntoViewIfNeeded();
       await tab.click({timeout:5000});
       assert(await page.locator('#studio-brand-name').isVisible(), 'Brand name editor remains visible');
-      for (const step of ['colors', 'typography', 'logo', 'name']) {
+      for (const step of ['colors', 'typography', 'logo']) {
         await page.locator('#studio-tab-' + step).click({timeout:5000});
         assert.equal(await page.locator('#studio-tab-' + step).getAttribute('aria-selected'), 'true');
       }
+      await page.locator('#studio-generate-logo').click({timeout:5000});
+      const generator = page.locator('.studio-logo-generator-dialog');
+      await generator.waitFor();
+      const generatorBox = await generator.boundingBox();
+      assert(generatorBox && generatorBox.height > 150);
+      const submit = generator.locator('button[type="submit"]');
+      await submit.click({timeout:5000});
+      await generator.locator('.ai-generation-progress').waitFor();
+      await page.waitForFunction(() => typeof window.finishLogoGeneration === 'function');
+      // A pending request must survive crossing the height breakpoint at zoom.
+      await page.setViewportSize({...size, height:size.height < 620 ? 625 : 600});
+      await page.setViewportSize(size);
+      await page.evaluate(() => window.finishLogoGeneration('success'));
+      const option = generator.locator('.studio-element-result').last();
+      await option.waitFor();
+      if (language === 'en' && size.width === 1223) {
+        await option.scrollIntoViewIfNeeded();
+        await page.screenshot({path:path.resolve('node_modules/.cache/launch-brand-logo-zoom.png')});
+      }
+      await option.locator('button.studio-done-button').click({timeout:5000});
+      await generator.waitFor({state:'hidden'});
+      await page.locator('#studio-generate-logo').click({timeout:5000});
+      await generator.waitFor();
+      assert(await generator.locator('.studio-element-result').count() > 0, 'Generated logo remains after reopening');
+      await submit.click({timeout:5000});
+      await generator.locator('.ai-generation-progress').waitFor();
+      await page.waitForFunction(() => typeof window.finishLogoGeneration === 'function');
+      await page.evaluate(() => window.finishLogoGeneration('error'));
+      await generator.getByRole('alert').first().waitFor();
+      assert((await generator.getByRole('alert').first().innerText()).trim(), 'Failed generation shows a message');
+      await generator.getByRole('button', {name:language === 'en' ? 'Close' : 'إغلاق', exact:true}).click({timeout:5000});
+      await page.locator('#studio-tab-name').click({timeout:5000});
       const footer = page.locator('.wizard--brand-studio > .wizard-footer');
       await footer.scrollIntoViewIfNeeded();
       const footerBox = await footer.boundingBox();
@@ -81,7 +136,7 @@ try {
     }
   }
   assert.deepEqual(errors, []);
-  console.log('PASS: branding editor remains usable across zoom-equivalent desktop, short, tablet and mobile viewports in English and Arabic.');
+  console.log('PASS: logo generation pending/success/selection/reopen/failure/close, resizing during generation, tabs and footer across nine desktop/tablet/mobile sizes in English and Arabic (AI operation mocked).');
 } finally {
   await browser?.close();
   await server.close();

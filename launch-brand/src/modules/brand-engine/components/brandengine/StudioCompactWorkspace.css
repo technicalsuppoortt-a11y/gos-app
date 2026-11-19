@@ -1466,7 +1466,10 @@
     scrollbar-width: thin;
   }
 }
-@media (min-width: 768px) {
+/* A zero flex basis requires the definite height chain supplied by the desktop
+   shell. Below that breakpoint the studio scrolls and must keep its natural
+   content height, including while a generator is open. */
+@media (min-width: 1024px) and (min-height: 620px) {
   .compact-workspace-shell .bs-root.studio-compact-workspace:has(.studio-generator-slot .studio-element-dialog) {
     flex: 1 1 0; height: 100%; min-height: 0; overflow: hidden;
   }
