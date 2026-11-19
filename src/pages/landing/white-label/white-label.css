@@ -420,7 +420,7 @@
   border: 1.5px solid transparent;
   border-radius: 18px;
   background:
-    linear-gradient(90deg, var(--wl-tint) 0%, var(--wl-card) 50%, var(--wl-tint) 100%) padding-box,
+    linear-gradient(90deg, color-mix(in srgb, var(--wl-accent) 13%, var(--wl-card)) 0%, var(--wl-card) 50%, color-mix(in srgb, var(--wl-accent) 13%, var(--wl-card)) 100%) padding-box,
     linear-gradient(90deg, color-mix(in srgb, var(--wl-accent) 45%, var(--wl-card-border)), #A78BFA, color-mix(in srgb, var(--wl-accent) 45%, var(--wl-card-border))) border-box;
   box-shadow: var(--wl-shadow);
   color: var(--wl-accent);
@@ -428,6 +428,7 @@
   font-weight: 800;
   line-height: 1.65;
 }
+.dark .lp .wl-solution, [data-theme='dark'] .lp .wl-solution { color: #e9d5ff; }
 .wl-solution::after {
   content: '';
   position: absolute;
@@ -658,7 +659,7 @@
   box-shadow: 0 4px 10px -4px rgba(124, 58, 237, .28);
   animation: wl-step-nudge 2.8s ease-in-out infinite;
 }
-.lp[dir='rtl'] .wl-timeline__arrows svg { animation-name: wl-step-nudge-rtl; }
+.lp[dir='rtl'] .wl-timeline__arrows svg { scale: -1 1; transform: none; animation-name: wl-step-nudge-rtl; }
 .wl-timeline__arrows svg:nth-child(2) { animation-delay: .35s; }
 .wl-timeline__arrows svg:nth-child(3) { animation-delay: .7s; }
 @keyframes wl-step-nudge { 0%, 100% { translate: 0 0; } 50% { translate: 3px 0; } }
@@ -741,15 +742,16 @@
   height: 58px;
   border: 1px solid color-mix(in srgb, var(--wl-accent) 16%, transparent);
   border-radius: 17px;
-  background: var(--wl-tint);
+  background-color: var(--wl-tint);
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, .32), transparent 70%);
   color: var(--wl-accent);
-  transition: transform .45s cubic-bezier(.22, 1, .36, 1), background .35s ease, color .35s ease, border-color .35s ease, box-shadow .4s ease;
+  transition: transform .45s cubic-bezier(.22, 1, .36, 1), background-color .38s ease, color .38s ease, border-color .38s ease, box-shadow .4s ease;
 }
 .wl-timeline__item.is-active .wl-timeline__icon,
 .wl-timeline__item:hover .wl-timeline__icon {
   transform: scale(1.08) translateY(-2px);
   border-color: transparent;
-  background: linear-gradient(135deg, #7C3AED, #9F67FF);
+  background-color: #7C3AED;
   color: #fff;
   box-shadow: 0 12px 24px -8px rgba(124, 58, 237, .68);
 }

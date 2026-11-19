@@ -17,6 +17,7 @@ import { isLaunchBrandPreview } from '../../branding/launchBrandPreview';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import './landing.css';
 import './launch-brand-preview.css';
+import './landing-sections-polish.css';
 import { NativeDashboardPreview } from './NativeDashboardPreview';
 
 
@@ -610,24 +611,26 @@ function HowItWorks({ copy }: { copy: LandingCopy }) {
   return (
     <section className="lp-section lp-how" id="how-it-works" aria-labelledby="lp-how-title">
       <div className="lp-container">
-        <div className="lp-section-head lp-reveal">
-          <SectionBadge num="06">{copy.how.badge}</SectionBadge>
-          <h2 id="lp-how-title" className="lp-h2">{copy.how.title}</h2>
-          <p className="lp-lead">{copy.how.text}</p>
+        <div className="lp-how__banner">
+          <div className="lp-section-head lp-reveal">
+            <SectionBadge num="06" tone="light">{copy.how.badge}</SectionBadge>
+            <h2 id="lp-how-title" className="lp-h2">{copy.how.title}</h2>
+            <p className="lp-lead">{copy.how.text}</p>
+          </div>
+          <ol className="lp-steps lp-reveal lp-stagger">
+            {copy.how.steps.map((step, index) => {
+              const Icon = howIcons[index];
+              return (
+                <li key={step.title} className="lp-step">
+                  <span className="lp-step__num">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="lp-step__icon"><Icon size={18} strokeWidth={2.1} /></span>
+                  <b>{step.title}</b>
+                  <small>{step.text}</small>
+                </li>
+              );
+            })}
+          </ol>
         </div>
-        <ol className="lp-steps lp-reveal lp-stagger">
-          {copy.how.steps.map((step, index) => {
-            const Icon = howIcons[index];
-            return (
-              <li key={step.title} className="lp-step">
-                <span className="lp-step__num">{index + 1}</span>
-                <span className="lp-step__icon"><Icon size={18} strokeWidth={2.1} /></span>
-                <b>{step.title}</b>
-                <small>{step.text}</small>
-              </li>
-            );
-          })}
-        </ol>
       </div>
     </section>
   );
