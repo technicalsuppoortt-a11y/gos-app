@@ -1063,87 +1063,87 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 108,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 109,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 111,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1000,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1147,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1207,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1291,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1366,
+      "line": 110,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1378,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1528,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1559,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1591,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1670,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1822,
+      "line": 112,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1851,
+      "line": 1111,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1884,
+      "line": 1256,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1320,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1461,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1536,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1554,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1711,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1742,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1774,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1853,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2005,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2034,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2082,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1896,
+      "line": 2094,
       "utility": "text-slate-400"
     },
     {
@@ -5075,7 +5075,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5219,7 +5219,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
