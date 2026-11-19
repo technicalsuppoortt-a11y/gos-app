@@ -1,5 +1,5 @@
-export const logoImageModel: 'gemini-2.5-flash-image';
-export const openAILogoImageModels: readonly ['gpt-image-1.5', 'gpt-image-1', 'dall-e-3'];
+export const logoImageModel: 'gemini-3-pro-image';
+export const openAILogoImageModels: readonly ['gpt-image-2.6-sunburst', 'gpt-image-2.6-flare'];
 export function logoImageModelFor(provider: string): string;
 export type LogoImageContentType = 'image/png' | 'image/jpeg' | 'image/webp';
 export type LogoImageReferencePart = { text: string } | { inlineData: { mimeType: string; data: string } };

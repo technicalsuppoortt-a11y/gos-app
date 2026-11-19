@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 242,
+  "utilityOccurrences": 267,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -1152,6 +1152,131 @@
       "utility": "text-slate-400"
     },
     {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 465,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 523,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 612,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 622,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 782,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 815,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 859,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 875,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 904,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 914,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 974,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 984,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1014,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1056,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1074,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1093,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1126,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1182,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1192,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1331,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1341,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1403,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1410,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1418,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1431,
+      "utility": "text-slate-400"
+    },
+    {
       "file": "src/pages/PrivacyPage.tsx",
       "line": 91,
       "utility": "text-slate-500"
@@ -1386,7 +1511,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 204,
+      "line": 215,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -4955,7 +5080,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5099,7 +5224,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56

@@ -3,7 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import { createHash, randomBytes } from 'node:crypto';
-import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds, mergePublishedPages } from './bridge.js';
+import { PAGE_IDS, WORKSPACE_PAGE_IDS, decodeFields, validateLaunch, collectAssetIds, mergePublishedPages } from './bridge.js';
 import phoenixConfig from './phoenix-public-config.json' with { type: 'json' };
 import { launchBrandAdminSession } from './launch-brand-admin.js';
 
@@ -171,19 +171,24 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         readTime = latest.updateTime;
         const ids = latest.data.pageIds || PAGE_IDS;
         if (!Array.isArray(ids) || ids.some(id => !PAGE_IDS.includes(id)) || new Set(ids).size !== ids.length) throw new Error('Invalid saved page list.');
+        const workspaceOnly = ids.length === WORKSPACE_PAGE_IDS.length && WORKSPACE_PAGE_IDS.every(id => ids.includes(id));
+        const previousIds = workspaceOnly ? [] : current.pageIds || PAGE_IDS;
+        if (!Array.isArray(previousIds) || previousIds.some(id => !PAGE_IDS.includes(id)) || new Set(previousIds).size !== previousIds.length) throw new Error('Invalid published page list.');
         const [saved, previous] = await Promise.all([
           Promise.all(ids.map(id => source(`pages/${id}`, readTime))),
-          Promise.all(PAGE_IDS.map(async id => (await db.doc(`users/${link.gosUid}/brandEngineSnapshots/${current.snapshotId}/pages/${id}`).get()).data())),
+          Promise.all(previousIds.map(async id => (await db.doc(`users/${link.gosUid}/brandEngineSnapshots/${current.snapshotId}/pages/${id}`).get()).data())),
         ]);
         pages = mergePublishedPages(previous, saved.map(page => page.data), latest.data.revision, ids);
         preparation = { data: { state: 'prepared', snapshotId: latest.data.revision } };
       } else {
         preparation = await source('brandEngine/phoenixPreparation');
         readTime = preparation.updateTime;
-        const [savedManifest, ...pageDocuments] = await Promise.all([
-          source('brandEngine/draft', readTime), ...PAGE_IDS.map(id => source(`pages/${id}`, readTime)),
-        ]);
-        manifest = savedManifest;
+        manifest = await source('brandEngine/draft', readTime);
+        const ids = manifest.data.pageIds || PAGE_IDS;
+        if (!Array.isArray(ids) || ![WORKSPACE_PAGE_IDS.length, PAGE_IDS.length].includes(ids.length) ||
+            !WORKSPACE_PAGE_IDS.every(id => ids.includes(id)) || ids.some(id => !PAGE_IDS.includes(id)) ||
+            new Set(ids).size !== ids.length) throw new Error('Invalid saved page list.');
+        const pageDocuments = await Promise.all(ids.map(id => source(`pages/${id}`, readTime)));
         pages = pageDocuments.map(page => page.data);
       }
       validateLaunch(manifest.data, preparation.data, pages);
@@ -224,7 +229,8 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       const tenantId = `phoenix_${uid}`;
       const branding = pages.find(page => page.pageId === 'branding').parameters;
       const discovery = pages.find(page => page.pageId === 'business_discovery').parameters;
-      const vision = pages.find(page => page.pageId === 'vision_journey').parameters;
+      const vision = { ...pages.find(page => page.pageId === 'vision_journey')?.parameters,
+        ...pages.find(page => page.pageId === 'deployment')?.parameters };
       const snapshotRef = db.doc(`users/${account.uid}/brandEngineSnapshots/${revision}`);
       const writer = db.bulkWriter();
       const writes = [
@@ -232,7 +238,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         ...[...assets].map(([id, asset]) => writer.set(snapshotRef.collection('assets').doc(id), asset)),
       ];
       await Promise.all([Promise.all(writes), writer.close()]);
-      const pointer = { schemaVersion: 1, status: 'prepared', sourceProject: 'phoenix-app-8bc7b', sourceUid: uid, snapshotId: revision, sourceRevision: revision, pageIds: PAGE_IDS, sourcePreparedAt: readTime, tenantId, updatedAt: FieldValue.serverTimestamp() };
+      const pointer = { schemaVersion: 1, status: 'prepared', sourceProject: 'phoenix-app-8bc7b', sourceUid: uid, snapshotId: revision, sourceRevision: revision, pageIds: pages.map(page => page.pageId), sourcePreparedAt: readTime, tenantId, updatedAt: FieldValue.serverTimestamp() };
       const preferredLanguage = discovery.choices?.discoverDraft?.profile?.language;
       const brand = { name: branding.brandName || branding.selectedBrandIdentity?.name || 'My platform', tagline: branding.tagline || '', description: branding.brandDescription || discovery.businessDescription || '', business: discovery.business || '', theme: branding.brandTheme || null, logoAssetId: branding.choices?.uploadedLogo?.assetId || branding.logo?.assetId || null, language: (preferredLanguage === 'both' ? discovery.choices.discoverDraft.profile.defaultLanguage : preferredLanguage || vision.language) === 'en' ? 'en' : 'ar', mode: vision.theme === 'light' ? 'light' : 'dark' };
       // Publish the pointer only after every page and asset has been confirmed saved.

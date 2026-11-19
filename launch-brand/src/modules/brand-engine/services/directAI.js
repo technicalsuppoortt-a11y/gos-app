@@ -22,10 +22,9 @@ import { logoAttemptLimit, reserveLogoAttempt, finishLogoAttempt } from "./logoA
 import { readLogoHistory } from "./logoHistory.js";
 import { where } from "firebase/firestore";
 import { generateRasterLogo } from "./logoImageWorkflow.js";
-// Logos are generated as vectors (SVG paths) so they can draw themselves in the
-// chosen identity colors. The raster image workflow is kept intact; set this to
-// "raster" to switch back to it.
-const LOGO_OUTPUT = "vector";
+// Use native image models for new logos. Existing SVG identities still render
+// and replay through the same preview component.
+const LOGO_OUTPUT = "raster";
 import { logoImageModelFor } from "./logoImageProvider.js";
 import {
   brandBrief,
@@ -168,7 +167,7 @@ async function task(uid, id, kind, connection, operation, inputFingerprint = nul
     await runTransaction(db, async tx => {
       const saved = (await tx.get(job)).data(); unchanged(uid);
       if (saved?.lease !== lease || saved.status !== "running") return;
-      // A validated vector draft may be shown while quality review runs. Only
+      // A validated draft may be shown while quality review runs. Only
       // status=complete exposes final suggestions to history/attempt accounting.
       tx.set(job, { ...saved, stage,
         ...(preview ? { result: { element: 'logo', preview } }

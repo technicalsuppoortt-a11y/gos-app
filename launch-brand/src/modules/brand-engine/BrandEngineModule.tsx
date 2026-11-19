@@ -13,6 +13,8 @@ import { saveFailureCode, saveFailureMessage } from './data/saveFailure';
 import { AppShell } from './components/brandengine/AppShell';
 import { preloadAllWorkspacePages, preloadWorkspacePage } from './pages/workspacePages';
 import { fingerprintBrandPages } from './data/brandPages';
+// Start reading saved preview snapshots while the draft loads.
+import './components/brandengine/gos-live/previewSnapshot';
 import './academy-theme.css';
 
 export default function BrandEngineModule({ headerTarget }: { headerTarget?: HTMLElement | null }) {

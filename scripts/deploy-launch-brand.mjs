@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-// Deploy only the bridge and Hosting. Copilot's Secret Manager parameters do
+// Deploy the bridge, Launch Brand's database rules and Hosting. Copilot's Secret Manager parameters do
 // not belong to Launch Brand, which uses its saved AI Center connection.
 const root = path.resolve(import.meta.dirname, '..');
 const source = '.firebase/phoenix-bridge-deploy';
@@ -35,7 +35,7 @@ catch {
 try {
   await writeFile(temporaryConfig, JSON.stringify(config, null, 2));
   const code = await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [cli, 'deploy', '--config', path.basename(temporaryConfig), '--project', 'gos-app-3c7fb', '--only', functionsOnly ? 'functions:user-dashboard:phoenixPlatform' : 'functions:user-dashboard:phoenixPlatform,hosting', '--non-interactive', ...(process.argv.includes('--debug') ? ['--debug'] : [])], {
+    const child = spawn(process.execPath, [cli, 'deploy', '--config', path.basename(temporaryConfig), '--project', 'gos-app-3c7fb', '--only', functionsOnly ? 'functions:user-dashboard:phoenixPlatform' : 'functions:user-dashboard:phoenixPlatform,firestore:launch-brand,hosting', '--non-interactive', ...(process.argv.includes('--debug') ? ['--debug'] : [])], {
       cwd: root, stdio: 'inherit', env: { ...process.env, FUNCTIONS_DISCOVERY_TIMEOUT: '120' },
     });
     child.once('error', reject); child.once('exit', resolve);

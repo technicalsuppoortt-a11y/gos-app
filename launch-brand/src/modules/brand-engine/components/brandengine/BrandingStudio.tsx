@@ -33,6 +33,7 @@ import {
   type BrandDirectionParts,
 } from "@/modules/brand-engine/data/brandTheme";
 import { useAIConnection } from "@/modules/brand-engine/hooks/useAIConnection";
+import { resolveBrandMode } from "@/modules/brand-engine/data/studioColorPresets";
 import { generateBrandIdentity, generateBrandElement, aiError } from "@/modules/brand-engine/services/aiConnection";
 import { uploadBrandImage, prepareBrandImage, brandUploadError } from "@/modules/brand-engine/services/brandAssets";
 import { beginLogoSelection, logoSelectionVersion } from "@/modules/brand-engine/data/logoSelection";
@@ -190,7 +191,7 @@ export function BrandingStudio({
     setGalleryOpen(false);
     setAllConcepts(false);
   }, [state.userProfile?.uid]);
-  const mode = state.theme === "dark" ? "dark" : "light";
+  const mode = resolveBrandMode(state);
   const colors = theme[mode];
   const issues = brandContrastIssues(theme, mode);
   const manualLogo = Boolean(

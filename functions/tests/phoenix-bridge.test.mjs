@@ -1,10 +1,11 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { PAGE_IDS, decodeFields, validateLaunch, collectAssetIds } from '../bridge.js';
+import { PAGE_IDS, WORKSPACE_PAGE_IDS, decodeFields, validateLaunch, collectAssetIds } from '../bridge.js';
 
 const documents = new Map();
 const source = new Map();
+const sourceReads = [];
 let validToken = true, verified = false, disabled = false, failWrite = false;
 let accounts = new Map(), signCount = 0, created = 0;
 let syncedPasswords = 0, sourcePasswordUid = 'owner', passwordValid = true;
@@ -49,12 +50,14 @@ globalThis.fetch = async (url, options) => {
   }
   assert.equal(options.headers.Authorization, 'Bearer phoenix-id-token');
   const path = new URL(url).pathname.split('/documents/')[1];
+  sourceReads.push(path);
   assert(path.startsWith('users/owner/'), 'all source reads are scoped to the verified owner');
   const data = source.get(path);
   return { ok: !!data, json: async () => ({ fields: encode(data).mapValue.fields, updateTime: '2026-10-18T00:00:00.000000Z' }) };
 };
 function reset() {
   documents.clear(); source.clear(); accounts.clear(); validToken = true; verified = false; disabled = false; failWrite = false; created = 0; signCount = 0;
+  sourceReads.length = 0;
   syncedPasswords = 0; sourcePasswordUid = 'owner'; passwordValid = true;
   serverTime = Date.parse('2026-10-18T00:01:00Z');
   source.set('users/owner/brandEngine/phoenixPreparation', { state: 'prepared', snapshotId: 'revision-1' });
@@ -114,6 +117,54 @@ test('deploy provisions ADMIN plus linked default agency user and repeat deploym
   assert.equal((await request()).statusCode, 200);
   assert.equal(created, 2);
   assert.equal(signCount, 0);
+});
+
+test('a five-page workspace deploys and refreshes without reading or creating hidden pages', async () => {
+  reset();
+  source.get('users/owner/brandEngine/draft').pageIds = WORKSPACE_PAGE_IDS;
+  for (const id of PAGE_IDS.filter(id => !WORKSPACE_PAGE_IDS.includes(id))) source.delete(`users/owner/pages/${id}`);
+  Object.assign(source.get('users/owner/pages/deployment').parameters, { language: 'en', theme: 'light', activeStep: 18, completedSteps: [13, 14, 5] });
+  assert.equal((await request()).statusCode, 200);
+  const currentPath = 'users/phoenix_owner/brandEngine/current';
+  assert.deepEqual(documents.get(currentPath).pageIds, WORKSPACE_PAGE_IDS);
+  assert.equal(documents.get(currentPath).brand.language, 'en');
+  assert.equal(documents.get(currentPath).brand.mode, 'light');
+  assert.equal([...documents.keys()].filter(path => path.includes('/brandEngineSnapshots/revision-1/pages/')).length, 5);
+  source.get('users/owner/brandEngine/draft').revision = 'revision-2';
+  for (const id of WORKSPACE_PAGE_IDS) source.get(`users/owner/pages/${id}`).revision = 'revision-2';
+  source.get('users/owner/pages/branding').parameters.brandName = 'Updated five-page brand';
+  assert.equal((await request('open')).statusCode, 200);
+  assert.deepEqual(documents.get(currentPath).pageIds, WORKSPACE_PAGE_IDS);
+  assert.equal(documents.get(currentPath).brand.name, 'Updated five-page brand');
+  assert.equal([...documents.keys()].filter(path => path.includes('/brandEngineSnapshots/revision-2/pages/')).length, 5);
+  assert.ok(sourceReads.filter(path => path.includes('/pages/')).every(path => WORKSPACE_PAGE_IDS.includes(path.split('/').at(-1))));
+});
+
+test('deployment rejects an incomplete five-page draft before provisioning a platform', async () => {
+  reset();
+  source.get('users/owner/brandEngine/draft').pageIds = WORKSPACE_PAGE_IDS.slice(0, 4);
+  assert.equal((await request()).statusCode, 409);
+  assert.equal(created, 0);
+  assert.equal(documents.size, 0);
+  source.get('users/owner/brandEngine/draft').pageIds = WORKSPACE_PAGE_IDS;
+  source.delete('users/owner/pages/dashboard');
+  assert.equal((await request()).statusCode, 409);
+  assert.equal(created, 0);
+  assert.equal(documents.size, 0);
+});
+
+test('refreshing a legacy platform from the five current pages writes a five-page snapshot and preserves the old snapshot', async () => {
+  reset();
+  assert.equal((await request()).statusCode, 200);
+  source.get('users/owner/brandEngine/draft').pageIds = WORKSPACE_PAGE_IDS;
+  source.get('users/owner/brandEngine/draft').revision = 'five-page-update';
+  for (const id of WORKSPACE_PAGE_IDS) source.get(`users/owner/pages/${id}`).revision = 'five-page-update';
+  sourceReads.length = 0;
+  assert.equal((await request('open')).statusCode, 200);
+  assert.deepEqual(documents.get('users/phoenix_owner/brandEngine/current').pageIds, WORKSPACE_PAGE_IDS);
+  assert.equal([...documents.keys()].filter(path => path.includes('/brandEngineSnapshots/five-page-update/pages/')).length, 5);
+  assert.equal([...documents.keys()].filter(path => path.includes('/brandEngineSnapshots/revision-1/pages/')).length, 10);
+  assert.ok(sourceReads.filter(path => path.includes('/pages/')).every(path => WORKSPACE_PAGE_IDS.includes(path.split('/').at(-1))));
 });
 test('opening a deployed platform uses saved Gose data and signs only for the linked owner', async () => {
   reset(); await request(); source.clear();

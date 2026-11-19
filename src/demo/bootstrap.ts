@@ -63,7 +63,7 @@ function demoFrame(frame: HTMLIFrameElement, value: string) {
   return 'about:blank';
 }
 Object.defineProperty(HTMLIFrameElement.prototype, 'src', { ...frameSrc, set(value: string) { frameSrc.set!.call(this, demoFrame(this, value)); } });
-Element.prototype.setAttribute = function(name: string, value: string) {
+Element.prototype.setAttribute = function (name: string, value: string) {
   nativeAttribute.call(this, name, this instanceof HTMLIFrameElement && name.toLowerCase() === 'src' ? demoFrame(this, value) : value);
 };
 document.addEventListener('click', event => {
@@ -74,17 +74,35 @@ document.addEventListener('click', event => {
   // Router links handle themselves; only redirect links that would open a new tab.
   if (link.target && link.target !== '_self') { event.preventDefault(); window.open(url.pathname + url.search + url.hash, '_self'); }
 }, true);
-// Request the selected preview's route chunks alongside the app instead of
-// waiting for each nested Suspense boundary to render. Keep every import in the
-// isolated demo graph and let the router handle retries if a preload fails.
+
+// Download the initial route's chunks and brand stylesheet in parallel with the
+// Demo Account shell so the first render paints the complete Demo Account page
+// synchronously with all CSS loaded and zero skeleton/spinner flash.
 const params = new URLSearchParams(location.search);
-if (params.get('launch-brand-preview') === '1') {
-  if (/^\/dashboard\/?$/i.test(location.pathname)) {
-    void import('../components/layout/UserLayout.tsx?account-demo').catch(() => undefined);
-    void import('../pages/DashboardPage.tsx?account-demo').catch(() => undefined);
-    void import('../pages/dashboard/HomeDashboard.tsx?account-demo').catch(() => undefined);
-  } else if (location.pathname === '/' && !params.has('oobCode')) {
-    void import('../pages/landing/LandingPage.tsx?account-demo').catch(() => undefined);
-  }
+const preloads: Promise<unknown>[] = [];
+if (/^\/dashboard\/?$/i.test(location.pathname)) {
+  preloads.push(
+    import('../components/layout/UserLayout.tsx?account-demo').catch(() => undefined),
+    import('../pages/DashboardPage.tsx?account-demo').catch(() => undefined),
+    import('../pages/dashboard/HomeDashboard.tsx?account-demo').catch(() => undefined),
+  );
+} else if (location.pathname === '/' && !params.has('oobCode')) {
+  preloads.push(
+    import('../pages/landing/LandingPage.tsx?account-demo').catch(() => undefined),
+  );
+} else if (/^\/(?:funnels|websites|forms)(?:\/|$)/i.test(location.pathname) || /^\/dashboard\/(?:funnels|websites|forms)(?:\/|$)/i.test(location.pathname)) {
+  preloads.push(
+    import('../components/layout/UserLayout.tsx?account-demo').catch(() => undefined),
+    import('../pages/FunnelBuilder.tsx?account-demo').catch(() => undefined),
+  );
 }
-void import('./app.tsx?account-demo');
+const isPreview = params.get('launch-brand-preview') === '1';
+const hasScope = 'CSSScopeRule' in window;
+if (isPreview && hasScope) {
+  preloads.push(import('../context/phoenix-brand-scoped.css').catch(() => undefined));
+}
+if (isPreview && !hasScope) {
+  preloads.push(import('../context/phoenix-brand-generated.css').catch(() => undefined));
+}
+const demoAppPromise = import('./app.tsx?account-demo');
+void Promise.all([demoAppPromise, ...preloads]).then(([app]) => app.mountDemoApp());

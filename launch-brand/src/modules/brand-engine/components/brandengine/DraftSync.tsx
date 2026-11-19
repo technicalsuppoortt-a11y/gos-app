@@ -2,7 +2,7 @@ import { subscribeSaveNotifications } from "@/modules/brand-engine/services/save
 import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
 import { fingerprintBrandPages } from "@/modules/brand-engine/data/brandPages";
-import { saveBrandDraft } from "@/modules/brand-engine/services/brandDraft";
+import { isBrandDraftSavePaused, retryBrandDraftSave, saveBrandDraft } from "@/modules/brand-engine/services/brandDraft";
 import { activityActions } from "@/modules/brand-engine/store/activitySlice";
 import { SaveToast } from "./SaveNotifications";
 import { subscribeBrandDraft } from "@/modules/brand-engine/services/brandDraftRealtime";
@@ -30,11 +30,12 @@ export function DraftSync() {
   const uid = brand.userProfile?.uid || null;
   const content = fingerprintBrandPages(brand);
   const acknowledged = useRef({ uid, content });
+  const lastRetry = useRef({ uid, count: activity.retry });
   useEffect(() => {
     if (!uid) {
       return;
     }
-    return subscribeBrandDraft(uid, true);
+    return subscribeBrandDraft(uid);
   }, [uid, activity.retry]);
   useEffect(() => {
     acknowledged.current = { uid, content };
@@ -46,12 +47,23 @@ export function DraftSync() {
   }, [uid, activity.retry]);
   useEffect(() => {
     if (!uid) return;
-    const reconnect = () => dispatch(activityActions.retrySave());
+    const reconnect = () => {
+      if (!isBrandDraftSavePaused(uid)) dispatch(activityActions.retrySave());
+    };
     window.addEventListener("online", reconnect);
     return () => window.removeEventListener("online", reconnect);
   }, [uid, dispatch]);
   useEffect(() => {
+    const previous = lastRetry.current;
+    lastRetry.current = { uid, count: activity.retry };
+    if (uid && previous.uid === uid && activity.retry > previous.count) retryBrandDraftSave(uid);
+  }, [uid, activity.retry]);
+  useEffect(() => {
     if (!uid) return;
+    if (isBrandDraftSavePaused(uid)) {
+      dispatch(activityActions.saveFailed("resource-exhausted"));
+      return;
+    }
     let active = true;
     dispatch(activityActions.setStatus("saving"));
     const timer = window.setTimeout(() => {
@@ -76,7 +88,7 @@ export function DraftSync() {
             }),
           );
         });
-    }, 700);
+    }, 1500);
     return () => {
       active = false;
       window.clearTimeout(timer);

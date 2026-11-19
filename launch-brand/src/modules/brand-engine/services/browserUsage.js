@@ -21,8 +21,15 @@ export async function finalizeBrowserUsage(uid, event) {
 export function trackedBrowserConnection(connection, uid, context = {}) {
   return { ...connection, request: async (url, init, fetcher, request) => {
     assertOwner(uid);
+    // Image requests can select a different model from the platform text model
+    // or fall back to another available image model.
+    let requestModel = connection.model;
+    try {
+      const model = typeof init.body === 'string' ? JSON.parse(init.body).model : null;
+      if (typeof model === 'string' && model) requestModel = model;
+    } catch { /* Non-JSON bodies use the connection's model. */ }
     const now = Date.now(), day = new Date(now).toISOString().slice(0, 10), minute = Math.floor(now / 60000);
-    const event = { callId: crypto.randomUUID(), requestId: context.requestId || crypto.randomUUID(), operation: context.operation || 'connection_test', provider: connection.provider, model: connection.model, source: connection.source || 'platform', startedAt: now, completedAt: null, durationMs: null, status: 'pending', ...normalizeUsage(connection.provider) };
+    const event = { callId: crypto.randomUUID(), requestId: context.requestId || crypto.randomUUID(), operation: context.operation || 'connection_test', provider: connection.provider, model: requestModel, source: connection.source || 'platform', startedAt: now, completedAt: null, durationMs: null, status: 'pending', ...normalizeUsage(connection.provider) };
     const ref = doc(db, 'users', uid, 'aiUsageEvents', event.callId);
     const userQuota = doc(db, 'users', uid, 'aiUsage', 'platform');
     const globalQuota = doc(db, 'aiUsage', 'platform');

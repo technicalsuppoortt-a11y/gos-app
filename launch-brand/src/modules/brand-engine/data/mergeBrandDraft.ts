@@ -64,9 +64,9 @@ export function mergeBrandDraft(
         incoming.parameters,
       ) as Record<string, unknown>),
     };
-    if (page.pageId === "vision_journey") {
-      parameters["activeStep"] = page.parameters["activeStep"];
-      parameters["completedSteps"] = page.parameters["completedSteps"];
+    if (page.pageId === "vision_journey" || page.pageId === "deployment") {
+      for (const key of ["activeStep", "completedSteps"])
+        if (Object.hasOwn(page.parameters, key)) parameters[key] = page.parameters[key];
     }
     if (page.pageId === "business_discovery" && record(parameters["choices"])) {
       const choices = { ...parameters["choices"] };
@@ -124,6 +124,7 @@ export function mergeBrandDraft(
             "dashboardWidgets",
             "dashboardModuleOrder",
             "dashboardModuleSections",
+            "modules",
           ])
             page.parameters[key] = source.parameters[key];
           const sourceChoices = source.parameters["choices"];

@@ -16,22 +16,38 @@ import { hasWorkspaceBookingConflict, type WorkspaceBooking } from "@/modules/br
 import { auth, db } from "@/modules/brand-engine/firebase";
 import { store } from "@/modules/brand-engine/store";
 import { actions } from "@/modules/brand-engine/store/brandSlice";
+import { saveFailureCode } from "../data/saveFailure";
 
 import { ensureBrandLogoSaved } from "./brandLogoPersistence";
 import { draftFailure, hashDraftFingerprint, validateDraftSnapshot } from '../data/brandDraftSnapshot';
 import {
-  brandPages,
   fingerprintBrandPages,
   fingerprintPages,
   hydrateBrandPages,
-  serializeBrandPages,
+  serializeWorkspacePages,
   type SavedBrandPage,
   workspacePageIds,
 } from "@/modules/brand-engine/data/brandPages";
 
 let writes: Promise<unknown> = Promise.resolve();
-let lastSaved: { uid: string; serialized: string; revision: string; workspaceOnly?: boolean } | null = null;
-let loadedBaseline: { uid: string; serialized: string; revision: string | null; needsUpgrade: boolean; workspaceOnly?: boolean } | null = null;
+type DraftSaveRequest = {
+  uid: string;
+  captured: ReturnType<typeof store.getState>["brand"];
+  fingerprint: string;
+  requestedBase: string | null;
+  promise: Promise<string>;
+};
+const queuedSaves = new Map<string, DraftSaveRequest>();
+let activeSave: DraftSaveRequest | null = null;
+const quotaFailures = new Map<string, unknown>();
+export const isBrandDraftSavePaused = (uid: string) => quotaFailures.has(uid);
+// Only an explicit Retry resumes writes after a quota error. Editing, reconnecting,
+// realtime reconciliation and lifecycle flushes must not create another retry loop.
+export function retryBrandDraftSave(uid: string) {
+  if (auth.currentUser?.uid === uid) quotaFailures.delete(uid);
+}
+let lastSaved: { uid: string; serialized: string; revision: string } | null = null;
+let loadedBaseline: { uid: string; serialized: string; revision: string | null; needsUpgrade: boolean } | null = null;
 let loadSequence = 0;
 const localRevisions = new Map<string, Set<string>>();
 export const isLocalDraftRevision = (uid: string, revision: string) =>
@@ -48,7 +64,7 @@ export function acknowledgeRemoteDraft(saved: NonNullable<typeof lastSaved>) {
 export const isDevPreview = () => import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true'
   && new URLSearchParams(window.location.search).get('devpreview') === '1';
 
-async function readDraft(uid: string, workspaceOnly: boolean) {
+async function readDraft(uid: string) {
   if (isDevPreview()) return { pages: [], revision: null, needsUpgrade: false } as ReturnType<typeof validateDraftSnapshot>;
   // Read the selected screens in one consistent collection snapshot instead of
   // individual transaction reads (and a transaction commit) to open the UI.
@@ -57,15 +73,13 @@ async function readDraft(uid: string, workspaceOnly: boolean) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const [manifest, pages] = await Promise.all([
       getDocFromServer(doc(db, 'users', uid, 'brandEngine', 'draft')),
-      getDocsFromServer(workspaceOnly
-        ? query(collection(db, 'users', uid, 'pages'), where(documentId(), 'in', workspacePageIds))
-        : collection(db, 'users', uid, 'pages')),
+      getDocsFromServer(query(collection(db, 'users', uid, 'pages'), where(documentId(), 'in', workspacePageIds))),
     ]);
     if (auth.currentUser?.uid !== uid)
       throw new Error('The signed-in account changed.');
     try {
       saved = validateDraftSnapshot(manifest.data(), pages.docs.map(page => page.data()),
-        workspaceOnly ? workspacePageIds : undefined);
+        workspacePageIds);
       break;
     } catch (error) {
       if (attempt === 2 || (error as { code?: string }).code !== 'invalid-draft') throw error;
@@ -80,7 +94,7 @@ export function clearPrefetchedBrandDraft() { prefetchedDraft = null; }
 export function prefetchBrandDraft(uid: string) {
   if (auth.currentUser?.uid !== uid) return Promise.reject(new Error('The signed-in account changed.'));
   if (prefetchedDraft?.uid === uid && prefetchedDraft.expires > Date.now()) return prefetchedDraft.promise;
-  const entry = { uid, expires: Date.now() + 300_000, promise: writes.catch(() => undefined).then(() => readDraft(uid, true)) };
+  const entry = { uid, expires: Date.now() + 300_000, promise: writes.catch(() => undefined).then(() => readDraft(uid)) };
   prefetchedDraft = entry;
   void entry.promise.catch(() => { if (prefetchedDraft === entry) prefetchedDraft = null; });
   return entry.promise;
@@ -97,40 +111,57 @@ export async function loadBrandDraft(uid: string, options: {
     throw new Error('The signed-in account changed.');
   lastSaved = null;
   loadedBaseline = null;
-  const saved = await (options.workspaceOnly ? prefetchBrandDraft(uid) : readDraft(uid, false));
+  const saved = await prefetchBrandDraft(uid);
   if (sequence !== loadSequence || auth.currentUser?.uid !== uid)
     throw new Error('The signed-in account changed.');
   const draft: Partial<typeof initial> = saved.pages.length ? hydrateBrandPages(saved.pages) : {};
   if (options.workspaceOnly && saved.pages.length && options.progress) {
-    if (Number.isInteger(options.progress.activeStep)) draft.activeStep = options.progress.activeStep;
-    if (Array.isArray(options.progress.completedSteps))
+    if (draft.activeStep === undefined && Number.isInteger(options.progress.activeStep)) draft.activeStep = options.progress.activeStep;
+    if (draft.completedSteps === undefined && Array.isArray(options.progress.completedSteps))
       draft.completedSteps = options.progress.completedSteps.filter(Number.isInteger);
   }
   const serialized = fingerprintBrandPages({ ...initial, ...draft });
-  loadedBaseline = { uid, serialized, revision: saved.revision, needsUpgrade: saved.needsUpgrade, workspaceOnly: options.workspaceOnly };
-  lastSaved = saved.revision && !saved.needsUpgrade ? { uid, serialized, revision: saved.revision, workspaceOnly: options.workspaceOnly } : null;
+  loadedBaseline = { uid, serialized, revision: saved.revision, needsUpgrade: saved.needsUpgrade };
+  lastSaved = saved.revision && !saved.needsUpgrade ? { uid, serialized, revision: saved.revision } : null;
   return draft;
 }
 
-export function saveBrandDraft(options: { completeSnapshot?: boolean } = {}) {
+export function saveBrandDraft() {
   const uid = auth.currentUser?.uid;
   if (!uid || store.getState().brand.userProfile?.uid !== uid) {
     return Promise.reject(new Error("Please sign in again before saving."));
   }
   // Capture when requested, including the last edit before React unmounts.
   const captured = store.getState().brand;
+  const fingerprint = fingerprintBrandPages(captured);
   const requestedBase = lastSaved?.uid === uid ? lastSaved.serialized
     : loadedBaseline?.uid === uid ? loadedBaseline.serialized : null;
+  const queued = queuedSaves.get(uid);
+  if (queued) {
+    // Keep one waiting snapshot containing the latest edits, rather than replaying
+    // every intermediate state after a slow connection recovers.
+    Object.assign(queued, { captured, fingerprint, requestedBase });
+    return queued.promise;
+  }
+  if (activeSave?.uid === uid && activeSave.fingerprint === fingerprint) return activeSave.promise;
+  const request: DraftSaveRequest = {
+    uid, captured, fingerprint, requestedBase, promise: Promise.resolve(""),
+  };
   const operation = writes
     .catch(() => undefined)
     .then(async () => {
+      if (queuedSaves.get(uid) === request) queuedSaves.delete(uid);
+      activeSave = request;
+      const { captured, requestedBase } = request;
       if (auth.currentUser?.uid !== uid) throw new Error("The signed-in account changed.");
-      let pages = serializeBrandPages(captured);
+      let pages = serializeWorkspacePages(captured);
       if (requestedBase && lastSaved?.uid === uid && lastSaved.serialized !== requestedBase)
         pages = mergeBrandDraft(JSON.parse(requestedBase) as SavedBrandPage[], pages, JSON.parse(lastSaved.serialized) as SavedBrandPage[]);
       const serialized = fingerprintPages(pages);
-      if (lastSaved?.uid === uid && lastSaved.serialized === serialized &&
-          !(options.completeSnapshot && lastSaved.workspaceOnly)) return lastSaved.revision;
+      if (lastSaved?.uid === uid && lastSaved.serialized === serialized) return lastSaved.revision;
+      if (quotaFailures.has(uid)) throw quotaFailures.get(uid);
+      if (typeof navigator !== "undefined" && navigator.onLine === false)
+        throw draftFailure("unavailable", "Could not connect. Check your internet connection, then retry.");
       if (prefetchedDraft?.uid === uid) prefetchedDraft = null;
       const revision = crypto.randomUUID();
       const revisions = localRevisions.get(uid) ?? new Set<string>();
@@ -146,21 +177,21 @@ export function saveBrandDraft(options: { completeSnapshot?: boolean } = {}) {
         const manifestReference = doc(db, "users", uid, "brandEngine", "draft");
         const manifest = await batch.get(manifestReference);
         const upgrading = Boolean(baseline && 'needsUpgrade' in baseline && baseline.needsUpgrade);
-        const canReusePages = Boolean(!upgrading && !baseline?.workspaceOnly && expectedRevision && manifest.data()?.["revision"] === expectedRevision);
+        const canReusePages = Boolean(!upgrading && expectedRevision && manifest.data()?.["revision"] === expectedRevision);
         committedPages = pages;
         if (!canReusePages) {
           const snapshots = await Promise.all(
-            brandPages.map((spec) => batch.get(doc(db, "users", uid, "pages", spec.id))),
+            workspacePageIds.map((pageId) => batch.get(doc(db, "users", uid, "pages", pageId))),
           );
-          const remote = validateDraftSnapshot(manifest.data(), snapshots.map(snapshot => snapshot.data()));
+          const remote = validateDraftSnapshot(manifest.data(), snapshots.map(snapshot => snapshot.data()), workspacePageIds);
           if (upgrading && !remote.pages.length)
             throw draftFailure('draft-changed', 'The saved workspace changed before its upgrade. Reload before saving.');
-          if (remote.revision !== expectedRevision || upgrading || (baseline?.workspaceOnly && remote.pages.length)) {
+          if (remote.revision !== expectedRevision || upgrading) {
             if (!baseline || (!remote.revision && !upgrading))
               throw draftFailure('draft-changed', 'Reload the saved workspace before saving these changes.');
             const incoming = { ...captured, ...hydrateBrandPages(remote.pages) };
-            const merged = mergeBrandDraft(JSON.parse(previous!) as SavedBrandPage[], pages, serializeBrandPages(incoming));
-            committedPages = serializeBrandPages({ ...captured, ...hydrateBrandPages(merged) });
+            const merged = mergeBrandDraft(JSON.parse(previous!) as SavedBrandPage[], pages, serializeWorkspacePages(incoming));
+            committedPages = serializeWorkspacePages({ ...captured, ...hydrateBrandPages(merged) });
           }
         }
         const choices = committedPages.find((page) => page.pageId === "dashboard")?.parameters[
@@ -215,13 +246,22 @@ export function saveBrandDraft(options: { completeSnapshot?: boolean } = {}) {
       if (auth.currentUser?.uid === uid && store.getState().brand.userProfile?.uid === uid) {
         lastSaved = { uid, serialized: committed, revision };
         const latest = store.getState().brand;
-        const rebased = mergeBrandDraft(pages, serializeBrandPages(latest), committedPages);
+        const rebased = mergeBrandDraft(pages, serializeWorkspacePages(latest), committedPages);
         if (fingerprintPages(rebased) !== fingerprintBrandPages(latest))
           store.dispatch(actions.hydrateUserDraft(hydrateBrandPages(rebased)));
       }
       if (previous) void persistSaveNotification(uid, revision, previous, committed);
       return revision;
+    })
+    .catch((error: unknown) => {
+      if (saveFailureCode(error) === "resource-exhausted") quotaFailures.set(uid, error);
+      throw error;
+    })
+    .finally(() => {
+      if (activeSave === request) activeSave = null;
     });
+  request.promise = operation;
+  queuedSaves.set(uid, request);
   writes = operation;
   return operation;
 }
@@ -237,7 +277,7 @@ export async function preparePhoenixConfiguration() {
       throw new Error("The signed-in account changed.");
     store.dispatch(actions.setPhoenixPreparation({ state: 'transferring', fingerprint, snapshotId: null, error: null, progress: 30, stage: 'pages' }));
     store.dispatch(actions.completeStep(18));
-    const revision = await saveBrandDraft({ completeSnapshot: true });
+    const revision = await saveBrandDraft();
     if (auth.currentUser?.uid !== uid) throw new Error("The signed-in account changed.");
     const saved = lastSaved;
     if (!saved || saved.uid !== uid || saved.revision !== revision)

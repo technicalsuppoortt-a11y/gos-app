@@ -42,8 +42,22 @@ function StudioPreviewSurfaceComponent({ surface, device, onSurfaceChange, onDev
     observer.observe(stage);
     return () => observer.disconnect();
   }, [width, baseHeight, device, expanded]);
-  const [mounted, setMounted] = useState<Record<StudioPreviewSurface, boolean>>(() => ({ dashboard: surface === "dashboard", landing: surface === "landing" }));
-  useEffect(() => { setMounted(current => current[surface] ? current : { ...current, [surface]: true }); }, [surface]);
+
+  // Mount the active preview immediately, and warm up the sibling tab right behind it
+  // so switching between Dashboard and Landing Page is 0ms instant.
+  const [mounted, setMounted] = useState<Record<StudioPreviewSurface, boolean>>(() => ({
+    dashboard: surface === "dashboard",
+    landing: surface === "landing",
+  }));
+  useEffect(() => {
+    setMounted(current => current[surface] ? current : { ...current, [surface]: true });
+  }, [surface]);
+  useEffect(() => {
+    if (mounted.dashboard && mounted.landing) return;
+    const timer = window.setTimeout(() => setMounted({ dashboard: true, landing: true }), 120);
+    return () => window.clearTimeout(timer);
+  }, [mounted.dashboard, mounted.landing]);
+
   const surfaces = ["dashboard", "landing"] as const;
   return <div className={`studio-live-preview studio-live-preview--compact${expanded ? " is-expanded" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <div className="studio-preview-controls">
@@ -51,6 +65,8 @@ function StudioPreviewSurfaceComponent({ surface, device, onSurfaceChange, onDev
         {surfaces.map((value, index) => <button key={value} type="button" role="tab"
           id={`${id}-${value}`} aria-controls={`${id}-panel`} aria-selected={surface === value}
           tabIndex={surface === value ? 0 : -1} onClick={() => onSurfaceChange(value)}
+          onMouseEnter={() => setMounted(current => current[value] ? current : { ...current, [value]: true })}
+          onFocus={() => setMounted(current => current[value] ? current : { ...current, [value]: true })}
           onKeyDown={(event) => {
             let next = index;
             if (event.key === "ArrowRight") next = (index + (ar ? -1 : 1) + surfaces.length) % surfaces.length;
@@ -69,21 +85,21 @@ function StudioPreviewSurfaceComponent({ surface, device, onSurfaceChange, onDev
           const label = value === "desktop" ? t("Desktop", "كمبيوتر") : value === "tablet" ? t("Tablet", "تابلت") : t("Mobile", "موبايل");
           return <button key={value} type="button" aria-label={label} title={label}
             aria-pressed={device === value} onClick={() => onDeviceChange(value)}>
-            {value === "desktop" ? <Laptop size={15} aria-hidden="true"/> : value === "tablet" ? <Tablet size={15} aria-hidden="true"/> : <Smartphone size={15} aria-hidden="true"/>}
+            {value === "desktop" ? <Laptop size={15} aria-hidden="true" /> : value === "tablet" ? <Tablet size={15} aria-hidden="true" /> : <Smartphone size={15} aria-hidden="true" />}
           </button>;
         })}
         {onExpand && <button type="button" aria-label={t("Expand preview", "تكبير المعاينة")}
-          title={t("Expand preview", "تكبير المعاينة")} onClick={onExpand}><Maximize2 size={15} aria-hidden="true"/></button>}
+          title={t("Expand preview", "تكبير المعاينة")} onClick={onExpand}><Maximize2 size={15} aria-hidden="true" /></button>}
       </div>
     </div>
     <div ref={host} className="studio-preview-stage" data-preview-stage data-preview-device={device}
       id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${surface}`} tabIndex={0}>
-      <div className="studio-preview-device-frame" style={{width: frameSize.width || "100%", height: frameSize.height || "100%"}}>
-        {/* Both previews stay loaded once opened, so switching tabs or devices never reloads them. */}
-        {mounted.dashboard && <div className="studio-preview-layer" hidden={surface !== "dashboard"} style={layer}>
+      <div className="studio-preview-device-frame" style={{ position: "relative", width: frameSize.width || "100%", height: frameSize.height || "100%" }}>
+        {/* Both previews stay loaded at real dimensions so switching tabs or devices never reloads them. */}
+        {mounted.dashboard && <div className="studio-preview-layer" data-inactive={surface !== "dashboard" ? "true" : undefined} aria-hidden={surface !== "dashboard" || undefined} inert={surface !== "dashboard"} style={layer}>
           <BrandedDashboard readOnly viewport={{ width, height }} />
         </div>}
-        {mounted.landing && <div className="studio-preview-layer" hidden={surface !== "landing"} style={layer}>
+        {mounted.landing && <div className="studio-preview-layer" data-inactive={surface !== "landing" ? "true" : undefined} aria-hidden={surface !== "landing" || undefined} inert={surface !== "landing"} style={layer}>
           <LandingPreviewBridge viewport={{ width, height }} title={t("Live landing page preview", "معاينة صفحة الهبوط الحالية")} />
         </div>}
       </div>

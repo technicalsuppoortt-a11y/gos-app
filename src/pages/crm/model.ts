@@ -15,7 +15,7 @@ export const templates = [
 export const mainPipeline: Pipeline = { id: 'main', name: 'Main Pipeline', stages: templates[0].stages.map((label, i) => ({ id: stageIds[i], label, color: colors[i] })) };
 export const templateStages = (labels: string[]): PipelineStage[] => labels.map((label, i) => ({ id: i === labels.length - 1 ? 'PAYMENT_COMPLETED' : stageIds.filter(id => id !== 'PAYMENT_COMPLETED')[i], label, color: colors[i] }));
 export const owners = ['Unassigned'];
-export const sources = ['Website', 'Instagram', 'WhatsApp', 'Referral', 'LinkedIn', 'Facebook', 'Email'];
+export const sources = ['Website', 'Instagram', 'WhatsApp', 'Facebook', 'Website Chat', 'Booking', 'Services', 'Forms', 'AI Copilot', 'Referral', 'LinkedIn', 'Email'];
 export const euro = (value: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
 export function activityTime(at: string): number {
   const parsed = Date.parse(at);
@@ -108,7 +108,7 @@ export function mergeCRMLeads(apiRows: Partial<CanonicalLead>[], workspaceRows: 
     records.set(api.id, { ...secondary, ...primary, activities, notes: [...new Set([...primary.notes, ...secondary.notes])],
       // These existing CRM controls persist in Firestore rather than Laravel.
       tasks: workspace.tasks ?? api.tasks, attachedProducts: workspace.attachedProducts ?? api.attachedProducts,
-      nextFollowUpAt: workspace.nextFollowUpAt ?? api.nextFollowUpAt, nextFollowUp: workspace.nextFollowUp ?? api.nextFollowUp,
+      nextFollowUpAt: primary.nextFollowUpAt || secondary.nextFollowUpAt, nextFollowUp: primary.nextFollowUp || secondary.nextFollowUp,
     });
   }
   return [...records.values()];

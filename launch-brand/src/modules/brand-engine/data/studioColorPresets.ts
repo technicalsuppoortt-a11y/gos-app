@@ -1,4 +1,14 @@
 import { createBrandTheme, readableBrandForeground, type BrandTheme } from "./brandTheme.ts";
+import type { BrandState } from "../store/brandSlice";
+
+/** Brand appearance is independent of the person's workspace display preference. */
+export function resolveBrandMode(state: Pick<BrandState, "pageParameters" | "brandTheme" | "brandPalette" | "theme">): "light" | "dark" {
+  const mode = state.pageParameters["branding"]?.["brandMode"];
+  if (mode === "light" || mode === "dark") return mode;
+  const palette = state.brandTheme?.paletteId ?? state.brandPalette;
+  return studioColorPresets.find(preset => preset.id === palette)?.mode
+    ?? (palette === "dashboard-default" ? "light" : state.theme);
+}
 
 export type StudioColorStyle = "light" | "dark" | "vibrant" | "bold";
 

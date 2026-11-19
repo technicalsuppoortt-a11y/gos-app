@@ -2,13 +2,12 @@ import { PlatformToolBoundary } from '../backend/platformTools';
 import type { RouteObject } from 'react-router-dom';
 import { WorkspaceData } from '../backend/workspace';
 import { useUILanguage, localizeNode } from '../i18n/display';
-import React, { lazy as reactLazy } from 'react';
+import React from 'react';
 import { createBrowserRouter, Navigate, useSearchParams } from 'react-router-dom';
 import { DefaultRedirect, ProtectedRoute } from './ProtectedRoute';
 import { platformTeamRoles } from './platformAccess';
 import { Suspended } from './RouteBoundary';
-import { retryImport } from './chunkRecovery';
-const lazy: typeof reactLazy = loader => reactLazy(() => retryImport(loader));
+import { preloadableLazy as lazy } from './preloadableLazy';
 import type { Role } from '../types/auth';
 import '../route-loading.css';
 
@@ -68,7 +67,7 @@ const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePrevi
 const ProductPublicPreview = lazy(() => import('../pages/commerce/ProductPublicPreview').then(module => ({ default: module.ProductPublicPreview })));
 function ProductPreviewRoute() {
   const [params] = useSearchParams();
-  return params.has('workspace') ? <Suspended><ProductPublicPreview/></Suspended> : <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview/></Suspended></WorkspaceData></ProtectedRoute>;
+  return params.has('workspace') ? <Suspended><ProductPublicPreview /></Suspended> : <ProtectedRoute allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']}><WorkspaceData><Suspended><ProductLivePreview /></Suspended></WorkspaceData></ProtectedRoute>;
 }
 const ProductAccess = lazy(() => import('../pages/commerce/ProductAccess').then(module => ({ default: module.ProductAccess })));
 const CustomerDeliveryPreview = lazy(() => import('../pages/commerce/CustomerPortal').then(module => ({ default: module.CustomerDeliveryPreview })));
@@ -77,11 +76,11 @@ const CustomerPortal = lazy(() => import('../pages/commerce/CustomerPortal').the
 const ProductWorkspace = lazy(() => import('../pages/commerce/ProductWorkspace').then(module => ({ default: module.ProductWorkspace })));
 
 const crmChildren = [
-  { index: true, element: <Suspended><DashboardPage page="crm"/></Suspended> },
-  ...['pipeline', 'activities', 'tasks', 'overview', 'templates'].map(path => ({ path, element: <Suspended><DashboardPage page="crm"/></Suspended> })),
-  { path: 'contacts', element: <Navigate to="/dashboard/contacts" replace/> },
-  { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
-  { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
+  { index: true, element: <Suspended><DashboardPage page="crm" /></Suspended> },
+  ...['pipeline', 'activities', 'tasks', 'overview', 'templates'].map(path => ({ path, element: <Suspended><DashboardPage page="crm" /></Suspended> })),
+  { path: 'contacts', element: <Navigate to="/dashboard/contacts" replace /> },
+  { path: 'contacts/:id', element: <Suspended><CRMRecord /></Suspended> },
+  { path: 'opportunities/:id', element: <Suspended><CRMRecord /></Suspended> },
 ];
 
 function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Role[] }>) {
@@ -90,147 +89,174 @@ function GuardedLayout({ roles, children }: React.PropsWithChildren<{ roles: Rol
 }
 
 export const router = createBrowserRouter([
-  { path: '/auth/phoenix', element: <Suspended><PhoenixSignIn/></Suspended> },
-  { path: '/activate', element: <Suspended><ActivationPage/></Suspended> },
-  { path: '/onboarding/activate-account', element: <Suspended><ActivateAccountPage/></Suspended> },
+  { path: '/auth/phoenix', element: <Suspended><PhoenixSignIn /></Suspended> },
+  { path: '/activate', element: <Suspended><ActivationPage /></Suspended> },
+  { path: '/onboarding/activate-account', element: <Suspended><ActivateAccountPage /></Suspended> },
   // Keep activation links usable while the onboarding cycle is disabled.
-  { path: '/onboarding', element: <Navigate to="/dashboard" replace/> },
-  { path: '/product-preview/:token', element: <ProductPreviewRoute/> },
-  { path: '/product-access', element: <Suspended><ProductAccess/></Suspended> },
-  { path: '/customer/change-password', element: <ProtectedRoute allowedRoles={['CUSTOMER']} allowPendingPassword><Suspended><CustomerChangePassword/></Suspended></ProtectedRoute> },
-  { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal/></WorkspaceData></GuardedLayout> },
-  { path: '/portal/preview/:productId', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><CustomerDeliveryPreview/></Suspended></WorkspaceData></ProtectedRoute> },
-  { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal/></WorkspaceData></GuardedLayout> },
-  { path: '/template-preview/:templateId', element: <GuardedLayout roles={['USER']}><TemplatePreviewPage/></GuardedLayout> },
-  { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview/></Suspended></WorkspaceData></ProtectedRoute> },
-  { path: '/book/:slug', element: <Suspended><PublicBookingPage/></Suspended> },
-  { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage/></Suspended> },
-  { path: '/privacy', element: <Suspended><PrivacyPage/></Suspended> },
-  { path: '/terms-of-service', element: <Suspended><TermsOfServicePage/></Suspended> },
-  { path: '/Terms-of-Service', element: <Navigate to="/terms-of-service" replace/> },
-  { path: '/terms', element: <Navigate to="/terms-of-service" replace/> },
-  { path: '/data-deletion', element: <Suspended><DataDeletionPage/></Suspended> },
-  { path: '/Data-Deletion', element: <Navigate to="/data-deletion" replace/> },
-  { path: '/data-deletion-instructions', element: <Navigate to="/data-deletion" replace/> },
-  { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace/> },
-  { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
-  { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace/> },
+  { path: '/onboarding', element: <Navigate to="/dashboard" replace /> },
+  { path: '/product-preview/:token', element: <ProductPreviewRoute /> },
+  { path: '/product-access', element: <Suspended><ProductAccess /></Suspended> },
+  { path: '/customer/change-password', element: <ProtectedRoute allowedRoles={['CUSTOMER']} allowPendingPassword><Suspended><CustomerChangePassword /></Suspended></ProtectedRoute> },
+  { path: '/portal', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal /></WorkspaceData></GuardedLayout> },
+  { path: '/portal/preview/:productId', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><CustomerDeliveryPreview /></Suspended></WorkspaceData></ProtectedRoute> },
+  { path: '/portal/:purchaseId', element: <GuardedLayout roles={['CUSTOMER', 'USER', 'ADMIN', ...platformTeamRoles]}><WorkspaceData><CustomerPortal /></WorkspaceData></GuardedLayout> },
+  { path: '/template-preview/:templateId', element: <GuardedLayout roles={['USER']}><TemplatePreviewPage /></GuardedLayout> },
+  { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview /></Suspended></WorkspaceData></ProtectedRoute> },
+  { path: '/book/:slug', element: <Suspended><PublicBookingPage /></Suspended> },
+  { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage /></Suspended> },
+  { path: '/privacy', element: <Suspended><PrivacyPage /></Suspended> },
+  { path: '/terms-of-service', element: <Suspended><TermsOfServicePage /></Suspended> },
+  { path: '/Terms-of-Service', element: <Navigate to="/terms-of-service" replace /> },
+  { path: '/terms', element: <Navigate to="/terms-of-service" replace /> },
+  { path: '/data-deletion', element: <Suspended><DataDeletionPage /></Suspended> },
+  { path: '/Data-Deletion', element: <Navigate to="/data-deletion" replace /> },
+  { path: '/data-deletion-instructions', element: <Navigate to="/data-deletion" replace /> },
+  { path: '/settings/privacy', element: <Navigate to="/dashboard/settings/privacy" replace /> },
+  { path: '/settings', element: <Navigate to="/dashboard/settings/profile" replace /> },
+  { path: '/settings/*', element: <Navigate to="/dashboard/settings" replace /> },
   // Public marketing landing page — intentionally NOT wrapped in ProtectedRoute/GuardedLayout.
-  { path: '/', element: new URLSearchParams(window.location.search).has('oobCode') ? <Suspended><EmailActionPage/></Suspended> : <Suspended><LandingPage/></Suspended> },
-  { path: '/login', element: <Suspended><LoginPage/></Suspended> },
-  { path: '/auth/login', element: <Suspended><LoginPage/></Suspended> },
-  { path: '/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
-  { path: '/auth/forgot-password', element: <Suspended><ForgotPasswordPage/></Suspended> },
-  { path: '/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
-  { path: '/auth/reset-password', element: <Suspended><EmailActionPage/></Suspended> },
-  { path: '/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
-  { path: '/__/auth/action', element: <Suspended><EmailActionPage/></Suspended> },
-  { path: '/auth/*', element: <DefaultRedirect/> },
-  ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: [{ path:'*', element:<PlatformToolBoundary><Suspended><FunnelBuilder/></Suspended></PlatformToolBoundary> }] })),
-  { path: '/domains/*', element: <Navigate to="/dashboard/settings/domains" replace/> },
-  { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
+  { path: '/', element: new URLSearchParams(window.location.search).has('oobCode') ? <Suspended><EmailActionPage /></Suspended> : <Suspended><LandingPage /></Suspended> },
+  { path: '/login', element: <Suspended><LoginPage /></Suspended> },
+  { path: '/auth/login', element: <Suspended><LoginPage /></Suspended> },
+  { path: '/forgot-password', element: <Suspended><ForgotPasswordPage /></Suspended> },
+  { path: '/auth/forgot-password', element: <Suspended><ForgotPasswordPage /></Suspended> },
+  { path: '/reset-password', element: <Suspended><EmailActionPage /></Suspended> },
+  { path: '/auth/reset-password', element: <Suspended><EmailActionPage /></Suspended> },
+  { path: '/auth/action', element: <Suspended><EmailActionPage /></Suspended> },
+  { path: '/__/auth/action', element: <Suspended><EmailActionPage /></Suspended> },
+  { path: '/auth/*', element: <DefaultRedirect /> },
+  ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path: `/${path}`, element: <GuardedLayout roles={['USER']}><UserLayout /></GuardedLayout>, children: [{ path: '*', element: <PlatformToolBoundary><Suspended><FunnelBuilder /></Suspended></PlatformToolBoundary> }] })),
+  { path: '/domains/*', element: <Navigate to="/dashboard/settings/domains" replace /> },
+  { path: '/crm', element: <GuardedLayout roles={['USER']}><UserLayout /></GuardedLayout>, children: crmChildren.map(controlToolRoute) },
   {
     path: '/contacts',
-    element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={['USER']}><UserLayout /></GuardedLayout>,
     children: [
-      { index: true, element: <Suspended><DashboardPage page="contacts"/></Suspended> },
-      { path: ':id', element: <Suspended><CRMRecord/></Suspended> },
-      { path: 'opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
+      { index: true, element: <Suspended><DashboardPage page="contacts" /></Suspended> },
+      { path: ':id', element: <Suspended><CRMRecord /></Suspended> },
+      { path: 'opportunities/:id', element: <Suspended><CRMRecord /></Suspended> },
     ].map(controlToolRoute),
   },
   {
     path: '/dashboard',
-    element: <GuardedLayout roles={['USER']}><UserLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={['USER']}><UserLayout /></GuardedLayout>,
     children: [
-      { index: true, element: <Suspended><DashboardPage page="home"/></Suspended> },
-      { path: 'support', element: <Suspended><UserSupportPage/></Suspended> },
-      { path: 'plans', element: <Navigate to="/dashboard/settings/billing?tab=plans" replace/> },
-      { path: 'copilot', element: <Suspended><AICopilot/></Suspended> },
-      ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path, element: <Suspended><FunnelBuilder/></Suspended> })),
-      { path: 'domains/*', element: <Navigate to="/dashboard/settings/domains" replace/> },
-      { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace/> },
+      { index: true, element: <Suspended><DashboardPage page="home" /></Suspended> },
+      { path: 'support', element: <Suspended><UserSupportPage /></Suspended> },
+      { path: 'plans', element: <Navigate to="/dashboard/settings/billing?tab=plans" replace /> },
+      { path: 'copilot', element: <Suspended><AICopilot /></Suspended> },
+      ...['funnels/*', 'websites/*', 'forms/*'].map(path => ({ path, element: <Suspended><FunnelBuilder /></Suspended> })),
+      { path: 'domains/*', element: <Navigate to="/dashboard/settings/domains" replace /> },
+      { path: 'templates', element: <Navigate to="/dashboard/funnels?tab=templates" replace /> },
       { path: 'crm', children: crmChildren },
-      { path: 'contacts', element: <Suspended><DashboardPage page="contacts"/></Suspended> },
-      { path: 'contacts/:id', element: <Suspended><CRMRecord/></Suspended> },
-      { path: 'contacts/opportunities/:id', element: <Suspended><CRMRecord/></Suspended> },
-      { path: 'crm-leads/contacts', element: <Navigate to="/dashboard/contacts" replace/> },
-      { path: 'inbox', element: <Suspended><DashboardPage page="inbox"/></Suspended> },
-      { path: 'automation', element: <Suspended><DashboardPage page="automation"/></Suspended> },
-      { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
-      { path: 'ai-followup', element: <Suspended><DashboardPage page="follow-up"/></Suspended> },
-      { path: 'booking/new', element: <Suspended><BookingEditorPage/></Suspended> },
-      { path: 'booking/appointments/new', element: <Suspended><AppointmentEditorPage/></Suspended> },
-      { path: 'booking/appointments/:appointmentId/edit', element: <Suspended><AppointmentEditorPage/></Suspended> },
-      { path: 'booking/:pageId/edit', element: <Suspended><BookingEditorPage/></Suspended> },
-      { path: 'booking', element: <Suspended><DashboardPage page="booking"/></Suspended> },
-      { path: 'products', element: <Suspended><DashboardPage page="products"/></Suspended> },
-      { path: 'products-payments', element: <Suspended><DashboardPage page="products"/></Suspended> },
-      { path: 'products-payments/products/new', element: <Suspended><ProductWorkspace mode="create"/></Suspended> },
-      { path: 'products-payments/products/:id/pricing', element: <Suspended><ProductWorkspace mode="edit" defaultTab="pricing"/></Suspended> },
-      { path: 'products-payments/products/:id/edit', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
-      { path: 'products-payments/products/:id', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
-      { path: 'products-payments/course/:id', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
-      { path: 'products-payments/course/:id/edit', element: <Suspended><ProductWorkspace mode="edit"/></Suspended> },
-      { path: 'products-payments/course/:id/orders', element: <Suspended><ProductWorkspace mode="edit" defaultTab="orders"/></Suspended> },
-      { path: 'products-payments/course/:id/students', element: <Suspended><ProductWorkspace mode="edit" defaultTab="access"/></Suspended> },
-      { path: 'products-payments/discounts/new', element: <Suspended><DiscountEditorPage/></Suspended> },
-      { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage/></Suspended> },
-      { path: 'analytics', element: <Suspended><DashboardPage page="analytics"/></Suspended> },
-      { path: 'marketing-tracking', element: <Navigate to="/dashboard/settings/pixel" replace/> },
-      { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge"/></Suspended> },
-      { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator"/></Suspended> },
-      { path: 'academy', element: <Suspended><PagePlaceholder title="Upklick Academy"/></Suspended> },
-      { path: 'activity', element: <Suspended><ActivityPage/></Suspended> },
-      { path: 'integrations', element: <Suspended><SettingsWorkspace/></Suspended> },
-      { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace/> },
-      { path: 'settings/*', element: <Suspended><SettingsWorkspace/></Suspended> },
+      { path: 'contacts', element: <Suspended><DashboardPage page="contacts" /></Suspended> },
+      { path: 'contacts/:id', element: <Suspended><CRMRecord /></Suspended> },
+      { path: 'contacts/opportunities/:id', element: <Suspended><CRMRecord /></Suspended> },
+      { path: 'crm-leads/contacts', element: <Navigate to="/dashboard/contacts" replace /> },
+      { path: 'inbox', element: <Suspended><DashboardPage page="inbox" /></Suspended> },
+      { path: 'automation', element: <Suspended><DashboardPage page="automation" /></Suspended> },
+      { path: 'follow-up', element: <Suspended><DashboardPage page="follow-up" /></Suspended> },
+      { path: 'ai-followup', element: <Suspended><DashboardPage page="follow-up" /></Suspended> },
+      { path: 'booking/new', element: <Suspended><BookingEditorPage /></Suspended> },
+      { path: 'booking/appointments/new', element: <Suspended><AppointmentEditorPage /></Suspended> },
+      { path: 'booking/appointments/:appointmentId/edit', element: <Suspended><AppointmentEditorPage /></Suspended> },
+      { path: 'booking/:pageId/edit', element: <Suspended><BookingEditorPage /></Suspended> },
+      { path: 'booking', element: <Suspended><DashboardPage page="booking" /></Suspended> },
+      { path: 'products', element: <Suspended><DashboardPage page="products" /></Suspended> },
+      { path: 'products-payments', element: <Suspended><DashboardPage page="products" /></Suspended> },
+      { path: 'products-payments/products/new', element: <Suspended><ProductWorkspace mode="create" /></Suspended> },
+      { path: 'products-payments/products/:id/pricing', element: <Suspended><ProductWorkspace mode="edit" defaultTab="pricing" /></Suspended> },
+      { path: 'products-payments/products/:id/edit', element: <Suspended><ProductWorkspace mode="edit" /></Suspended> },
+      { path: 'products-payments/products/:id', element: <Suspended><ProductWorkspace mode="edit" /></Suspended> },
+      { path: 'products-payments/course/:id', element: <Suspended><ProductWorkspace mode="edit" /></Suspended> },
+      { path: 'products-payments/course/:id/edit', element: <Suspended><ProductWorkspace mode="edit" /></Suspended> },
+      { path: 'products-payments/course/:id/orders', element: <Suspended><ProductWorkspace mode="edit" defaultTab="orders" /></Suspended> },
+      { path: 'products-payments/course/:id/students', element: <Suspended><ProductWorkspace mode="edit" defaultTab="access" /></Suspended> },
+      { path: 'products-payments/discounts/new', element: <Suspended><DiscountEditorPage /></Suspended> },
+      { path: 'products-payments/discounts/:id/edit', element: <Suspended><DiscountEditorPage /></Suspended> },
+      { path: 'analytics', element: <Suspended><DashboardPage page="analytics" /></Suspended> },
+      { path: 'marketing-tracking', element: <Navigate to="/dashboard/settings/pixel" replace /> },
+      { path: 'knowledge', element: <Suspended><DashboardPage page="knowledge" /></Suspended> },
+      { path: 'content', element: <Suspended><PagePlaceholder title="Content Generator" /></Suspended> },
+      { path: 'academy', element: <Suspended><PagePlaceholder title="Upklick Academy" /></Suspended> },
+      { path: 'activity', element: <Suspended><ActivityPage /></Suspended> },
+      { path: 'integrations', element: <Suspended><SettingsWorkspace /></Suspended> },
+      { path: 'settings', element: <Navigate to="/dashboard/settings/profile" replace /> },
+      { path: 'settings/*', element: <Suspended><SettingsWorkspace /></Suspended> },
     ].map(controlToolRoute),
   },
-  { path: '/admin-preview', element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminPreviewPage/></GuardedLayout> },
+  { path: '/admin-preview', element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminPreviewPage /></GuardedLayout> },
   {
     path: '/admin',
-    element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={['ADMIN', 'SUPER_ADMIN']}><AdminLayout /></GuardedLayout>,
     children: [
-      { index: true, element: <Navigate to="/admin/dashboard" replace/> },
-      { path: 'support', element: <Suspended><SupportChat/></Suspended> },
-      { path: 'tools', element: <Suspended><AdminTools/></Suspended> },
-      { path: 'users', element: <Suspended><AdminUsers/></Suspended> },
-      { path: 'dashboard', element: <Suspended><AdminDashboard/></Suspended> },
-      { path: 'business-assets', element: <Suspended><BusinessAssetsPage/></Suspended> },
-      ...['conversations','plans','payments-gateways','user-billing-settings','transactions','funnels','funnels-websites','crm','booking','products','templates','analytics','landing','ai-usage','domains','integrations','settings'].map(path=>({path,element:<Suspended><AdminWorkspace/></Suspended>})),
-      { path: 'templates/new', element: <Suspended><AdminTemplateEditorPage scope="mine"/></Suspended> },
-      { path: 'templates/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="mine"/></Suspended> },
-      { path: 'leads', element: <Navigate to="/admin/crm" replace/> },
-      { path: 'billing', element: <Navigate to="/admin/transactions" replace/> },
+      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+      { path: 'support', element: <Suspended><SupportChat /></Suspended> },
+      { path: 'tools', element: <Suspended><AdminTools /></Suspended> },
+      { path: 'users', element: <Suspended><AdminUsers /></Suspended> },
+      { path: 'dashboard', element: <Suspended><AdminDashboard /></Suspended> },
+      { path: 'business-assets', element: <Suspended><BusinessAssetsPage /></Suspended> },
+      ...['conversations', 'plans', 'payments-gateways', 'user-billing-settings', 'transactions', 'funnels', 'funnels-websites', 'crm', 'booking', 'products', 'templates', 'analytics', 'landing', 'ai-usage', 'domains', 'integrations', 'settings'].map(path => ({ path, element: <Suspended><AdminWorkspace /></Suspended> })),
+      { path: 'templates/new', element: <Suspended><AdminTemplateEditorPage scope="mine" /></Suspended> },
+      { path: 'templates/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="mine" /></Suspended> },
+      { path: 'leads', element: <Navigate to="/admin/crm" replace /> },
+      { path: 'billing', element: <Navigate to="/admin/transactions" replace /> },
     ],
   },
   {
     path: '/super-admin',
-    element: <GuardedLayout roles={platformTeamRoles}><SuperAdminLayout/></GuardedLayout>,
+    element: <GuardedLayout roles={platformTeamRoles}><SuperAdminLayout /></GuardedLayout>,
     children: [
-      { index: true, element: <Suspended><SuperAdminDashboard/></Suspended> },
-      { path: 'support', element: <Suspended><SupportChat/></Suspended> },
-      { path: 'clients', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'clients/:adminId/sub-users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'subscriptions', element: <Navigate to="/super-admin" replace/> },
-      { path: 'plans', element: <Suspended><SuperAdminPlansPage/></Suspended> },
-      { path: 'analytics', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'wallet', element: <Navigate to="/super-admin" replace/> },
-      { path: 'settings', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'users', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace/> },
-      { path: 'funnel-templates', element: <Suspended><div className="adm-shell sa-templates"><div className="adm-workspace adm-live"><SuperAdminFunnelTemplates/></div></div></Suspended> },
-      { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace/></div></Suspended> },
-      { path: 'dashboard-management/new', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
-      { path: 'dashboard-management/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="system"/></Suspended> },
-      { path: 'integrations', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'domains', element: <Suspended><DomainsPage scope="super_admin"/></Suspended> },
-      { path: 'payment-methods', element: <Suspended><PaymentMethodsPanel scope="super_admin"/></Suspended> },
-      { path: 'meta-app', element: <Suspended><MetaAppSettings/></Suspended> },
-      { path: 'payments', element: <Suspended><SuperAdminWorkspace/></Suspended> },
-      { path: 'marketing-tracking', element: <Suspended><MarketingTracking/></Suspended> },
-      { path: 'logs', element: <Suspended><SuperAdminWorkspace/></Suspended> },
+      { index: true, element: <Suspended><SuperAdminDashboard /></Suspended> },
+      { path: 'support', element: <Suspended><SupportChat /></Suspended> },
+      { path: 'clients', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'clients/:adminId/sub-users', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'subscriptions', element: <Navigate to="/super-admin" replace /> },
+      { path: 'plans', element: <Suspended><SuperAdminPlansPage /></Suspended> },
+      { path: 'analytics', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'wallet', element: <Navigate to="/super-admin" replace /> },
+      { path: 'settings', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'users', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'templates', element: <Navigate to="/super-admin/dashboard-management" replace /> },
+      { path: 'funnel-templates', element: <Suspended><div className="adm-shell sa-templates"><div className="adm-workspace adm-live"><SuperAdminFunnelTemplates /></div></div></Suspended> },
+      { path: 'dashboard-management', element: <Suspended><div className="adm-shell sa-templates"><AdminWorkspace /></div></Suspended> },
+      { path: 'dashboard-management/new', element: <Suspended><AdminTemplateEditorPage scope="system" /></Suspended> },
+      { path: 'dashboard-management/:templateId/edit', element: <Suspended><AdminTemplateEditorPage scope="system" /></Suspended> },
+      { path: 'integrations', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'domains', element: <Suspended><DomainsPage scope="super_admin" /></Suspended> },
+      { path: 'payment-methods', element: <Suspended><PaymentMethodsPanel scope="super_admin" /></Suspended> },
+      { path: 'meta-app', element: <Suspended><MetaAppSettings /></Suspended> },
+      { path: 'payments', element: <Suspended><SuperAdminWorkspace /></Suspended> },
+      { path: 'marketing-tracking', element: <Suspended><MarketingTracking /></Suspended> },
+      { path: 'logs', element: <Suspended><SuperAdminWorkspace /></Suspended> },
     ],
   },
-  { path: '*', element: <DefaultRedirect/> },
+  { path: '*', element: <DefaultRedirect /> },
 ]);
+
+/** Preloads the initial route's components so the first render never flashes a skeleton. */
+export async function preloadInitialRoute(pathname: string, search = '') {
+  try {
+    if (pathname === '/' && !new URLSearchParams(search).has('oobCode')) {
+      await LandingPage.preload();
+      return;
+    }
+    if (/^\/(?:funnels|websites|forms)(?:\/|$)/i.test(pathname) || /^\/dashboard\/(?:funnels|websites|forms)(?:\/|$)/i.test(pathname)) {
+      await Promise.all([UserLayout.preload(), FunnelBuilder.preload()]);
+      return;
+    }
+    if (/^\/dashboard\/?$/i.test(pathname)) {
+      await Promise.all([
+        UserLayout.preload(),
+        DashboardPage.preload(),
+        import('../pages/DashboardPage').then(async mod => { await mod.preloadDashboardSubpage('home'); }),
+      ]);
+      return;
+    }
+    if (/^\/dashboard(?:\/|$)/i.test(pathname)) {
+      await Promise.all([UserLayout.preload(), DashboardPage.preload()]);
+    }
+  } catch {
+    /* Let RouteErrorBoundary / React.lazy handle retries on render if needed. */
+  }
+}

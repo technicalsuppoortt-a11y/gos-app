@@ -165,6 +165,33 @@
 .compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer { inset-inline-start: auto; margin-inline-start: -20px; width: auto; }
 .compact-workspace-shell .wizard.wizard--brand-studio > .wizard-footer .wizard-actions { transform: none; }
 
+/* Zoom can move a laptop below the fit-to-view breakpoint. In the scrolling
+   layout, size the studio from its content instead of a zero flex basis in an
+   auto-height parent. Keep these rules separate from the desktop height chain. */
+@media (max-width: 1023px), (max-height: 619px) {
+  .compact-workspace-shell .wizard--brand-studio > .studio-page-frame {
+    display: block;
+    flex: 1 0 auto;
+    height: auto;
+    overflow: visible;
+  }
+  .compact-workspace-shell .wizard--brand-studio > .studio-page-frame > .bs-root.studio-compact-workspace {
+    flex: none;
+    height: auto;
+    overflow: visible;
+  }
+  .compact-workspace-shell .wizard--brand-studio .bs-root.studio-compact-workspace .studio-workspace-grid {
+    flex: none;
+    height: auto;
+    overflow: visible;
+  }
+  .compact-workspace-shell .wizard--brand-studio .bs-root.studio-compact-workspace .studio-workspace-column {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 @media (min-width: 1024px) and (min-height: 620px) {
   .compact-workspace-shell .workspace-layout:has(.wizard--brand-studio) {
     display: flex;

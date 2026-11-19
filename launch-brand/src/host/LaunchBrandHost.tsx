@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LaunchBrandPage from '../pages/LaunchBrandPage';
 import AppNotifications from '../components/AppNotifications';
 import { useStore } from '../store/useStore';
 import OpenFromAcademy from './OpenFromAcademy';
 import { JOE_ACADEMY_ORIGIN } from './config';
-import AdminSettingsHost from './AdminSettingsHost';
+const AdminSettingsHost = lazy(() => import('./AdminSettingsHost'));
 
 function ExternalRedirect({ to }: { to: string }) {
   useEffect(() => { window.location.replace(to); }, [to]);
@@ -34,7 +34,7 @@ export default function LaunchBrandHost() {
     <AppNotifications theme={theme} language={language} />
     <Routes>
       <Route path="/launch-brand" element={<LaunchBrandPage />} />
-      <Route path="/launch-brand/admin-settings" element={<AdminSettingsHost />} />
+      <Route path="/launch-brand/admin-settings" element={<Suspense fallback={null}><AdminSettingsHost /></Suspense>} />
       <Route path="/" element={<ExternalRedirect to={`${JOE_ACADEMY_ORIGIN}/dashboard`} />} />
       <Route path="*" element={<OpenFromAcademy />} />
     </Routes>

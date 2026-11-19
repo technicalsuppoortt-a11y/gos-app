@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState, type CSSProperties } from "react";
 import JoeAcademyLoader from "../../../../components/ui/JoeAcademyLoader";
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { WorkspaceHeader } from "./WorkspaceHeader";
@@ -9,11 +9,30 @@ import { DraftSync } from "./DraftSync";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/modules/brand-engine/components/ui/sheet";
 import { useIsMobile } from "@/modules/brand-engine/hooks/use-mobile";
 import { useWorkspaceNavigation } from "@/modules/brand-engine/hooks/useWorkspaceNavigation";
+import type { AppMode } from "@/modules/brand-engine/data/types";
 import "./MobileWorkspace.css";
 import "./WorkspaceTheme.css";
 import "./WorkspaceShell.css";
 
 import { WizardPage, BuilderPage, DashboardPage } from "../../pages/workspacePages";
+
+const hiddenViewStyle: CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  visibility: "hidden",
+  pointerEvents: "none",
+  zIndex: -1,
+  overflow: "hidden",
+};
+
+const activePreviewStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  width: "100%",
+  height: "100%",
+  minHeight: 0,
+};
 
 export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }) {
   useWorkspaceNavigation();
@@ -45,6 +64,24 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
   useEffect(() => {
     if (!isMobile || !innerWorkspace) setNavigationOpen(false);
   }, [isMobile, innerWorkspace]);
+
+  // Mount the active view first, then warm-mount the other views in the background
+  // so opening Dashboard or Website & Funnel is 0ms instant and never reloads frames.
+  const [warmed, setWarmed] = useState<Record<AppMode, boolean>>(() => ({
+    wizard: mode === "wizard",
+    dashboard: mode === "dashboard",
+    builder: mode === "builder",
+  }));
+  useEffect(() => {
+    setWarmed(current => current[mode] ? current : { ...current, [mode]: true });
+  }, [mode]);
+  useEffect(() => {
+    if (warmed.wizard && warmed.dashboard && warmed.builder) return;
+    const timer = window.setTimeout(() => {
+      setWarmed({ wizard: true, dashboard: true, builder: true });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [warmed.wizard, warmed.dashboard, warmed.builder]);
 
   return (
     <div
@@ -82,15 +119,34 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
           <Suspense fallback={<JoeAcademyLoader />}>
             <main
               className="workspace-main flex flex-col flex-1"
-              style={mode !== "wizard" ? { padding: 0, margin: 0 } : {}}
-              key={mode}
+              style={mode !== "wizard" ? { padding: 0, margin: 0, height: "100%" } : {}}
             >
-              {mode === "wizard" ? (
-                <WizardPage />
-              ) : mode === "builder" ? (
-                <BuilderPage />
-              ) : (
-                <DashboardPage onExitPreview={exitDashboard} onBackToWorkspace={backToWorkspace} />
+              {warmed.wizard && (
+                <div
+                  style={mode === "wizard" ? { display: "contents" } : hiddenViewStyle}
+                  aria-hidden={mode !== "wizard" || undefined}
+                  inert={mode !== "wizard"}
+                >
+                  <WizardPage />
+                </div>
+              )}
+              {warmed.builder && (
+                <div
+                  style={mode === "builder" ? activePreviewStyle : hiddenViewStyle}
+                  aria-hidden={mode !== "builder" || undefined}
+                  inert={mode !== "builder"}
+                >
+                  <BuilderPage />
+                </div>
+              )}
+              {warmed.dashboard && (
+                <div
+                  style={mode === "dashboard" ? activePreviewStyle : hiddenViewStyle}
+                  aria-hidden={mode !== "dashboard" || undefined}
+                  inert={mode !== "dashboard"}
+                >
+                  <DashboardPage onExitPreview={exitDashboard} onBackToWorkspace={backToWorkspace} />
+                </div>
               )}
             </main>
           </Suspense>

@@ -439,6 +439,9 @@ service cloud.firestore {
       return ['vision_journey', 'business_discovery', 'branding', 'template_builder',
         'dashboard', 'integrations', 'ai_center', 'content_planner', 'marketing', 'deployment'];
     }
+    function workspacePageIds() {
+      return ['business_discovery', 'branding', 'dashboard', 'template_builder', 'deployment'];
+    }
     function brandImageManifest(assetId, data) {
       return data.encoding == 'chunked-data-url-v1'
         && !('parentAssetId' in data)
@@ -727,7 +730,7 @@ service cloud.firestore {
           && request.resource.data.schemaVersion == 1
           && request.resource.data.revision is string
           && request.resource.data.revision.size() > 0 && request.resource.data.revision.size() <= 128
-          && request.resource.data.pageIds == pageIds()
+          && (request.resource.data.pageIds == workspacePageIds() || request.resource.data.pageIds == pageIds())
           && request.resource.data.updatedAt == request.time;
         allow delete: if false;
       }

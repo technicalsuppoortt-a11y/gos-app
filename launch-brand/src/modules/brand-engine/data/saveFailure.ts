@@ -5,6 +5,8 @@ export function saveFailureCode(error: unknown): string {
     if (/sign in|signed-in account/i.test(error.message)) return "unauthenticated";
     if (/bookings overlap/i.test(error.message)) return "booking-conflict";
     if (/too large/i.test(error.message)) return "too-large";
+    if (/failed to fetch|network\s*(error|request failed)|ERR_(NAME_NOT_RESOLVED|CONNECTION_RESET|INTERNET_DISCONNECTED)/i.test(error.message))
+      return "unavailable";
   }
   return "unknown";
 }
@@ -27,6 +29,10 @@ export function saveFailureMessage(code: string | null | undefined, ar: boolean)
       return ar
         ? "انتهت صلاحية الجلسة. أعد تسجيل الدخول للحفظ."
         : "Your session needs to be renewed. Sign in again to save.";
+    case "resource-exhausted":
+      return ar
+        ? "وصل الحفظ السحابي إلى حد الاستخدام وتوقف الحفظ التلقائي مؤقتًا. تعديلاتك باقية في هذه الجلسة؛ انتظر ثم اضغط إعادة المحاولة، أو تواصل مع الدعم إذا استمرت المشكلة."
+        : "Cloud saving has reached its usage limit, so autosave is paused. Your edits are still in this session. Wait before retrying, or contact support if this continues.";
     case "unavailable":
     case "deadline-exceeded":
       return ar

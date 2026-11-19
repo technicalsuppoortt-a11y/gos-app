@@ -29,8 +29,15 @@
           document.documentElement.classList.add('dark');
         }
       } catch(e) {}
+      // Launch Brand's live previews show their own snapshot while the page starts.
+      try {
+        if (window.parent !== window && /(?:^|[?&])launch-brand-preview=1(?:&|$)/.test(location.search)) {
+          document.documentElement.classList.add('launch-brand-frame');
+        }
+      } catch(e) {}
     </script>
     <style>
+      html.launch-brand-frame #app-preloader { display: none !important; }
       #app-preloader {
         position: fixed;
         inset: 0;

@@ -1447,6 +1447,25 @@
 }
 .studio-compact-workspace .studio-generator-slot .studio-element-result { min-width: 0; padding: 10px; gap: 6px; }
 .studio-compact-workspace .studio-generator-slot .lb-typewriter { font-size: 17px; overflow-wrap: anywhere; }
+.studio-compact-workspace .studio-generator-slot .studio-generation-results .studio-logo-results {
+  max-height: clamp(190px, 42dvh, 360px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+@media (min-width: 1024px) and (min-height: 620px) {
+  .compact-workspace-shell .bs-root.studio-compact-workspace .studio-compact-editor:has(> .studio-editor-tabs #studio-tab-logo[aria-selected="true"]) {
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+  }
+}
 @media (min-width: 768px) {
   .compact-workspace-shell .bs-root.studio-compact-workspace:has(.studio-generator-slot .studio-element-dialog) {
     flex: 1 1 0; height: 100%; min-height: 0; overflow: hidden;

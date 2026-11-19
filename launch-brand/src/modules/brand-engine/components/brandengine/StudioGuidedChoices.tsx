@@ -6,7 +6,6 @@ import { StudioSelect } from "./StudioSelect";
 import { AIGenerateMark } from "./AIGenerateMark";
 import { actions } from "@/modules/brand-engine/store/brandSlice";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
-import { useStore } from "../../../../store/useStore";
 import {
   brandFonts,
   arabicBrandFonts,
@@ -20,6 +19,7 @@ import {
   studioPresetTheme,
   studioPresetSwatches,
   studioPresetStyle,
+  resolveBrandMode,
   type StudioColorStyle,
 } from "@/modules/brand-engine/data/studioColorPresets";
 
@@ -64,7 +64,7 @@ export function StudioGuidedChoices({
     t = (en: string, arabic: string) => (ar ? arabic : en);
   const fontPreview = t("Your brand, clearly.", "هوية واضحة لبراندك");
   const theme = resolveBrandTheme(state),
-    colors = theme[state.theme === "dark" ? "dark" : "light"];
+    colors = theme[resolveBrandMode(state)];
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [pendingPalette, setPendingPalette] = useState<string | null>(null);
   const [paletteFilter, setPaletteFilter] = useState<"all" | StudioColorStyle>("all");
@@ -91,8 +91,7 @@ export function StudioGuidedChoices({
     dispatch(actions.setBrandTheme(studioPresetTheme(id, theme)));
     const preset = studioColorPresets.find((item) => item.id === id);
     const targetMode = preset ? preset.mode : "light";
-    useStore.getState().setTheme(targetMode);
-    if (targetMode !== state.theme) dispatch(actions.toggleTheme());
+    dispatch(actions.setPageParameter({ pageId: "branding", key: "brandMode", value: targetMode }));
   };
   const generations = (state.pageParameters["branding"]?.["elementGenerations"] || {}) as Partial<
     Record<BrandElement, BrandElementGeneration>
@@ -289,7 +288,7 @@ export function StudioGuidedChoices({
             <span>
               {t("Font:", "الخط:")} <strong dir="ltr">{activeFontName}</strong>
             </span>
-            <span>{state.theme === "dark" ? t("Dark Surface", "الوضع الداكن") : t("Light Surface", "الوضع الفاتح")}</span>
+            <span>{resolveBrandMode(state) === "dark" ? t("Dark Surface", "الوضع الداكن") : t("Light Surface", "الوضع الفاتح")}</span>
           </div>
         </div>
 
